@@ -1,0 +1,109 @@
+<project name="jsqlparser" default="main" basedir=".">
+  
+    <property environment="env"/>
+  
+      <property file="src/net/sf/jsqlparser/version.properties" />
+  
+      <property name="javacchome"       value="./javacc-5.0"/>
+      <property name="build.compiler"     value="modern"/>
+      <property name="build.dir"          value="./classes" />
+      <property name="src.dir"            value="./src"/>
+      <property name="test.build.dir"          value="./testclasses" />
+      <property name="test.src.dir"            value="./testsrc"/>
+      <property name="junit.jar"            value="./testlib/junit.jar"/>
+      <property name="parser.dir"            value="${src.dir}/net/sf/jsqlparser/parser"/>
+      <property name="jar.file"              value="jsqlparser"/>
+      <property name="jar.file.name"      value="${jar.file}-${version}.jar"/>
+      <property name="binjar.file.name"      value="./lib/${jar.file}.jar"/>
+  
+	<path id="project.class.path">
+	    <pathelement path="${build.dir}"/>
+	</path>
+
+	<path id="testproject.class.path">
+		<path refid="project.class.path" />
+	    <pathelement path="${test.build.dir}" />
+	    <pathelement path="${junit.jar}" />
+	</path>
+  
+      <target name="clean">
+          <delete dir="${build.dir}" includeEmptyDirs="true" />
+          <delete dir="${test.build.dir}" includeEmptyDirs="true" />
+      </target>
+  
+	  
+      <target name="prep">
+          <mkdir dir="${build.dir}"/>
+          <mkdir dir="${test.build.dir}"/>
+      </target>
+
+      <target name="javacc">
+          <delete file="${parser.dir}/TokenMgrError.java" />
+          <delete file="${parser.dir}/ParseException.java" />
+          <delete file="${parser.dir}/Token.java" />
+          <delete file="${parser.dir}/ASCII_CharStream.java" />
+          <delete file="${parser.dir}/CCJSqlParser.java" />
+          <delete file="${parser.dir}/CCJSqlParserConstants.java" />
+          <delete file="${parser.dir}/CCJSqlParserTokenManager.java" />
+          <delete file="${parser.dir}/ParseException.java" />
+          <delete file="${parser.dir}/SimpleCharStream.java" />
+          <delete file="${parser.dir}/TokenMgrError.java" />
+          <javacc target="${parser.dir}/JSqlParserCC.jj"
+				    outputdirectory="${src.dir}/net/sf/jsqlparser/parser"
+					    javacchome="${javacchome}" />
+      </target>
+  
+      <target name="compile" >
+        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="true" debuglevel="lines,vars,source" source="1.5">
+        	<classpath refid="project.class.path" />
+        </javac>
+        <javac srcdir="${test.src.dir}" destdir="${test.build.dir}" debug="true"  debuglevel="lines,vars,source" source="1.5">
+        	<classpath refid="testproject.class.path" />
+        </javac>
+      </target>
+  
+      <target name="test">
+  		 <junit  haltonfailure="yes">
+	  		<classpath refid="testproject.class.path"/>
+	  		<formatter type="plain" usefile="false"/>
+			<test name="net.sf.jsqlparser.test.tablesfinder.TablesNamesFinderTest"/>
+			<test name="net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest"/>
+			<test name="net.sf.jsqlparser.test.select.SelectTest"/>
+			<test name="net.sf.jsqlparser.test.delete.DeleteTest"/>
+			<test name="net.sf.jsqlparser.test.insert.InsertTest"/>
+			<test name="net.sf.jsqlparser.test.replace.ReplaceTest"/>
+			<test name="net.sf.jsqlparser.test.update.UpdateTest"/>
+			<test name="net.sf.jsqlparser.test.create.CreateTableTest"/>
+			<test name="net.sf.jsqlparser.test.drop.DropTest"/>
+			<test name="net.sf.jsqlparser.test.truncate.TruncateTest"/>
+			<test name="net.sf.jsqlparser.test.select.SpeedTest"/>
+		</junit>
+      </target>
+  
+      <target name="binjar">
+	     <delete file="${binjar.file.name}"  />
+		 <jar destfile="${binjar.file.name}" > 
+		 	<fileset dir="./classes"/>
+		 </jar>
+      </target>
+
+      <target name="jar">
+	     <delete file="${jar.file.name}"  />
+		 <jar destfile="${jar.file.name}" 
+		 		basedir="./../" 
+		 	    includes="jsqlparser/docs/**,jsqlparser/src/**,jsqlparser/testsrc/**,jsqlparser/testfiles/**,jsqlparser/lib/**,jsqlparser/build.xml,jsqlparser/change.log" excludes="**/cvs/*,**/cvs"/> 
+      </target>
+  
+     <target name="javadoc">
+        <javadoc destdir="docs" access="private" use="true" source="1.5"
+            notree="false" nonavbar="false" noindex="false"
+            splitindex="true" author="true" version="true" 
+            nodeprecatedlist="false" nodeprecated="false"
+            packagenames="net.sf.jsqlparser.*"
+            sourcepath="src"
+            classpath="testclasses;classes;./testlib/junit.jar" additionalparam="-tag to.do:a:&quot;To Do:&quot;"/>
+    </target>
+
+    <target name="main" depends="clean, prep,javacc,compile, test, binjar, javadoc, jar"/> 
+  
+  </project>

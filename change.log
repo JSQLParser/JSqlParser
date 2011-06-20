@@ -1,0 +1,143 @@
+0.2
+added optional ';' at the end of the statements
+LIMIT
+fixed "all columns" parsing bug, as in "select table_name.* from table_name"
+UNION
+
+0.2.1
+DISTINCT ON clause
+OFFSET without LIMIT
+
+0.3
+added select test cases
+Fixed bug in table name (schema was swapped with the name)
+Changed tableName field into table (since it is a Table object) in AllTableColumns class
+added INNER join
+fixed bug in IN,BETWEEN,IS NULL
+fixed bug in GROUP BY (comma between list of columns was missing)
+HAVING is not tied to GROUP BY anymore
+Changed OrderBy in OrderByElement and OrderByClause in OrderBy
+added all different syntaxes for REPLACE
+Changed Update in order to be more similar to Replace
+Added CREATE TABLE, DROP
+
+0.3.1
+added SpeedTest
+
+0.3.2
+added Truncate
+
+0.3.3
+Added de-parsers
+Removed OrderBy (it was just a list of collection of ColumnRefences)
+Removed GroupBy (it was just a list of collection of GroupByElements)
+Removed list in case they are empty (just leave them as null)
+
+0.3.4
+table name and schema default to null
+
+0.3.5
+added USING in Joins and functions handling
+
+0.3.6
+proper numbers management
+
+0.3.7
+added date,time and timestamp parsing
+fixed double alias in deparser
+
+0.3.8
+escaped functions
+SQLExpressionList is a list of Expressions, not SimpleExpressions
+
+0.3.9
+fixed bug in no-args function deparser
+
+0.3.10
+fixed bug in GROUP BY and LIMIT in DeParser
+
+0.3.11
+fixed ASC/DESC bug in SelectDeParser
+added toString methods
+added TOP
+
+
+0.3.12
+toStrings
+
+0.3.13
+fixed minor toString bug
+
+0.3.16
+escape clause
+fixed bug in order of having and order by items
+
+0.4.0
+added EXISTS clause
+
+
+0.4.1
+removed bug on Function names
+
+0.4.2
+Added ANY, SOME, ALL conditions
+
+0.4.3
+Removed bug 1928388 
+
+0.4.4
+Added NOT to binaryexpressions
+Fixed double handling (1e2, e3 etc)
+
+0.4.5
+Fixed NOT handling
+Fixed not-SQL statement parsing (lots of changes in the parser)
+
+0.5.0
+Fixed "case when a > 0 then b + a"
+Fixed "from tab1, left join tab2 on ..., tab3" case
+
+0.5.1
+Added RIGHT NATURAL FULL joins
+
+0.5.2
+Added SubJoin for: select * from foo as f LEFT JOIN  
+(bar as b RIGHT JOIN baz as z ON f.id=z.id)  
+ON f.id=b.id  
+
+0.6.0
+Added WITH clause
+
+0.6.1
+fixed tab1, tab2 treated as INNER JOIN
+Added UNION ALL or DISTINCT (but works only for first UNION)
+
+0.6.1.a 
+Docs dir was missing
+
+0.6.2
+where expr1 and NOT (expr2) was not working
+
+0.6.2.a
+right expression in AND NOT didn't use NOT
+
+0.6.3
+better join.toString method
+
+0.6.4
+Alias was missing in Join SelectDeParser handling
+Added DISINCT
+Fixed alias in table for update
+
+0.6.5
+Added backtick ` as a quote identifier
+Added support for "__" identifiers
+
+0.6.6
+Added concat (||) operator
+Arithmetic expressions in CASE expression
+
+0.7.0
+Added matches (@@) operator
+Changed order by and group by to be Expressions
+Added bitwise operators (|, ^, &)

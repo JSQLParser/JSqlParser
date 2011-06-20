@@ -1,0 +1,419 @@
+// -----------------------------------------------------------------------------------------------------------------------
+// CREATE requests test
+//
+// The request must have the following format:
+// #begin
+// <CREATE TABLE request>
+// #end
+// <isValid flag>: true if this request is valid
+//
+// If the request is valid:
+// <table concerned by the request>
+// <columns concerned by the request> (eg: "col1.unique col2 col3", .unique 
+// means the column is unique.
+//
+// If the request is not valid:
+// <error message>
+//
+// do not add empty line between the lines defining a test
+// line beginning by a // are ignored except in a test
+// -----------------------------------------------------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------------------------------------------------
+// RUBiS database (PostgreSQL)
+// -----------------------------------------------------------------------------------------------------------------------
+
+#begin
+CREATE TABLE categories (
+   id   SERIAL,
+   name VARCHAR(50),
+   PRIMARY KEY(id)
+)
+#end
+true
+categories
+id.unique name
+
+#begin
+CREATE TABLE regions (
+   id   SERIAL,
+   name VARCHAR(25),
+   PRIMARY KEY(id)
+)
+#end
+true
+regions
+id.unique name
+
+#begin
+CREATE TABLE users (
+   id            SERIAL,
+   firstname     VARCHAR(20),
+   lastname      VARCHAR(20),
+   nickname      VARCHAR(20) NOT NULL UNIQUE,
+   password      VARCHAR(20) NOT NULL,
+   email         VARCHAR(50) NOT NULL,
+   rating        INTEGER,
+   balance       FLOAT,
+   creation_date DATETIME,
+   region        INTEGER NOT NULL,
+   PRIMARY KEY(id)
+)
+#end
+true
+users
+id.unique firstname lastname nickname.unique password email rating balance creation_date region
+
+//CREATE INDEX auth ON users (nickname,password);
+//CREATE INDEX region_id ON users (region);
+
+#begin
+CREATE TABLE items (
+   id            SERIAL,
+   name          VARCHAR(100),
+   description   TEXT,
+   initial_price FLOAT NOT NULL,
+   quantity      INTEGER NOT NULL,
+   reserve_price FLOAT DEFAULT 0,
+   buy_now       FLOAT DEFAULT 0,
+   nb_of_bids    INTEGER DEFAULT 0,
+   max_bid       FLOAT DEFAULT 0,
+   start_date    DATETIME,
+   end_date      DATETIME,
+   seller        INTEGER NOT NULL,
+   category      INTEGER NOT NULL,
+   PRIMARY KEY(id)
+)
+#end
+true
+items
+id.unique name description initial_price quantity reserve_price buy_now nb_of_bids max_bid start_date end_date seller category
+
+//CREATE INDEX seller_id ON items (seller);
+//CREATE INDEX category_id ON items (category);
+
+#begin
+CREATE TABLE old_items (
+   id            SERIAL,
+   name          VARCHAR(100),
+   description   TEXT,
+   initial_price FLOAT NOT NULL,
+   quantity      INTEGER NOT NULL,
+   reserve_price FLOAT DEFAULT 0,
+   buy_now       FLOAT DEFAULT 0,
+   nb_of_bids    INTEGER DEFAULT 0,
+   max_bid       FLOAT DEFAULT 0,
+   start_date    DATETIME,
+   end_date      DATETIME,
+   seller        INTEGER NOT NULL,
+   category      INTEGER NOT NULL,
+   PRIMARY KEY(id)
+)
+#end
+true
+old_items
+id.unique name description initial_price quantity reserve_price buy_now nb_of_bids max_bid start_date end_date seller category
+
+//CREATE INDEX old_seller_id ON old_items (seller);
+//CREATE INDEX old_category_id ON old_items (category);
+
+#begin
+CREATE TABLE bids (
+   id      SERIAL,
+   user_id INTEGER NOT NULL,
+   item_id INTEGER NOT NULL,
+   qty     INTEGER NOT NULL,
+   bid     FLOAT NOT NULL,
+   max_bid FLOAT NOT NULL,
+   date    DATETIME,
+   PRIMARY KEY(id)
+)
+#end
+true
+bids
+id.unique user_id item_id qty bid max_bid date
+
+//CREATE INDEX bid_item ON bids (item_id);
+//CREATE INDEX bid_user ON bids (user_id);
+
+#begin
+CREATE TABLE comments (
+   id           SERIAL,
+   from_user_id INTEGER NOT NULL,
+   to_user_id   INTEGER NOT NULL,
+   item_id      INTEGER NOT NULL,
+   rating       INTEGER,
+   date         DATETIME,
+   comment      TEXT,
+   PRIMARY KEY(id)
+)
+#end
+true
+comments
+id.unique from_user_id to_user_id item_id rating date comment
+
+//CREATE INDEX from_user ON comments (from_user_id);
+//CREATE INDEX to_user ON comments (to_user_id);
+//CREATE INDEX item ON comments (item_id);
+
+#begin
+CREATE TABLE buy_now (
+   id       SERIAL,
+   buyer_id INTEGER NOT NULL,
+   item_id  INTEGER NOT NULL,
+   qty      INTEGER NOT NULL,
+   date     DATETIME,
+   PRIMARY KEY(id)
+)
+#end
+true
+buy_now
+id.unique buyer_id item_id qty date
+
+//CREATE INDEX buyer ON buy_now (buyer_id);
+//CREATE INDEX buy_now_item ON buy_now (item_id);
+
+#begin
+CREATE TABLE ids (
+   id        INTEGER NOT NULL UNIQUE,
+   category  INTEGER NOT NULL,
+   region    INTEGER NOT NULL,
+   users     INTEGER NOT NULL,
+   item      INTEGER NOT NULL,
+   comment   INTEGER NOT NULL,
+   bid       INTEGER NOT NULL,
+   buyNow    INTEGER NOT NULL,
+   PRIMARY KEY(id)
+)
+#end
+true
+ids
+id.unique category region users item comment bid buynow
+
+// -----------------------------------------------------------------------------------------------------------------------
+// RUBiS database (mysql)
+// -----------------------------------------------------------------------------------------------------------------------
+
+#begin
+CREATE TABLE categories (
+   id INTEGER UNSIGNED NOT NULL UNIQUE AUTO_INCREMENT,
+   name VARCHAR(50),
+   PRIMARY KEY(id)
+)
+#end
+true
+categories
+id.unique name
+
+#begin
+CREATE TABLE regions (
+   id INTEGER UNSIGNED NOT NULL UNIQUE AUTO_INCREMENT,
+   name VARCHAR(25),
+   PRIMARY KEY(id)
+)
+#end
+true
+regions
+id.unique name
+
+#begin
+CREATE TABLE users (
+   id            INTEGER UNSIGNED NOT NULL UNIQUE AUTO_INCREMENT,
+   firstname     VARCHAR(20),
+   lastname      VARCHAR(20),
+   nickname      VARCHAR(20) NOT NULL UNIQUE,
+   password      VARCHAR(20) NOT NULL,
+   email         VARCHAR(50) NOT NULL,
+   rating        INTEGER,
+   balance       FLOAT,
+   creation_date DATETIME,
+   region        INTEGER UNSIGNED NOT NULL,
+   PRIMARY KEY(id),
+   INDEX auth (nickname,password),
+   INDEX region_id (region)
+)
+#end
+true
+users
+id.unique firstname lastname nickname.unique password email rating balance creation_date region
+
+#begin
+CREATE TABLE items (
+   id            INTEGER UNSIGNED NOT NULL UNIQUE AUTO_INCREMENT,
+   name          VARCHAR(100),
+   description   TEXT,
+   initial_price FLOAT UNSIGNED NOT NULL,
+   quantity      INTEGER UNSIGNED NOT NULL,
+   reserve_price FLOAT UNSIGNED DEFAULT 0,
+   buy_now       FLOAT UNSIGNED DEFAULT 0,
+   nb_of_bids    INTEGER UNSIGNED DEFAULT 0,
+   max_bid       FLOAT UNSIGNED DEFAULT 0,
+   start_date    DATETIME,
+   end_date      DATETIME,
+   seller        INTEGER UNSIGNED NOT NULL,
+   category      INTEGER UNSIGNED NOT NULL,
+   PRIMARY KEY(id),
+   INDEX seller_id (seller),
+   INDEX category_id (category)
+)
+#end
+true
+items
+id.unique name description initial_price quantity reserve_price buy_now nb_of_bids max_bid start_date end_date seller category
+
+#begin
+CREATE TABLE old_items (
+   id            INTEGER UNSIGNED NOT NULL UNIQUE,
+   name          VARCHAR(100),
+   description   TEXT,
+   initial_price FLOAT UNSIGNED NOT NULL,
+   quantity      INTEGER UNSIGNED NOT NULL,
+   reserve_price FLOAT UNSIGNED DEFAULT 0,
+   buy_now       FLOAT UNSIGNED DEFAULT 0,
+   nb_of_bids    INTEGER UNSIGNED DEFAULT 0,
+   max_bid       FLOAT UNSIGNED DEFAULT 0,
+   start_date    DATETIME,
+   end_date      DATETIME,
+   seller        INTEGER UNSIGNED NOT NULL,
+   category      INTEGER UNSIGNED NOT NULL,
+   PRIMARY KEY(id),
+   INDEX seller_id (seller),
+   INDEX category_id (category)
+)
+#end
+true
+old_items
+id.unique name description initial_price quantity reserve_price buy_now nb_of_bids max_bid start_date end_date seller category
+
+#begin
+CREATE TABLE bids (
+   id      INTEGER UNSIGNED NOT NULL UNIQUE AUTO_INCREMENT,
+   user_id INTEGER UNSIGNED NOT NULL,
+   item_id INTEGER UNSIGNED NOT NULL,
+   qty     INTEGER UNSIGNED NOT NULL,
+   bid     FLOAT UNSIGNED NOT NULL,
+   max_bid FLOAT UNSIGNED NOT NULL,
+   date    DATETIME,
+   PRIMARY KEY(id),
+   INDEX item (item_id),
+   INDEX user (user_id)
+)
+#end
+true
+bids
+id.unique user_id item_id qty bid max_bid date
+
+#begin
+CREATE TABLE comments (
+   id           INTEGER UNSIGNED NOT NULL UNIQUE AUTO_INCREMENT,
+   from_user_id INTEGER UNSIGNED NOT NULL,
+   to_user_id   INTEGER UNSIGNED NOT NULL,
+   item_id      INTEGER UNSIGNED NOT NULL,
+   rating       INTEGER,
+   date         DATETIME,
+   comment      TEXT,
+   PRIMARY KEY(id),
+   INDEX from_user (from_user_id),
+   INDEX to_user (to_user_id),
+   INDEX item (item_id)
+)
+#end
+true
+comments
+id.unique from_user_id to_user_id item_id rating date comment
+
+#begin
+CREATE TABLE buy_now (
+   id       INTEGER UNSIGNED NOT NULL UNIQUE AUTO_INCREMENT,
+   buyer_id INTEGER UNSIGNED NOT NULL,
+   item_id  INTEGER UNSIGNED NOT NULL,
+   qty      INTEGER UNSIGNED NOT NULL,
+   date     DATETIME,
+   PRIMARY KEY(id),
+   INDEX buyer (buyer_id),
+   INDEX item (item_id)
+)
+#end
+true
+buy_now
+id.unique buyer_id item_id qty date
+
+#begin
+CREATE TABLE ids (
+   id        INTEGER UNSIGNED NOT NULL UNIQUE,
+   category  INTEGER UNSIGNED NOT NULL,
+   region    INTEGER UNSIGNED NOT NULL,
+   users     INTEGER UNSIGNED NOT NULL,
+   item      INTEGER UNSIGNED NOT NULL,
+   comment   INTEGER UNSIGNED NOT NULL,
+   bid       INTEGER UNSIGNED NOT NULL,
+   buyNow    INTEGER UNSIGNED NOT NULL,
+   PRIMARY KEY(id)
+)
+#end
+true
+ids
+id.unique category region users item comment bid buynow
+
+#begin
+CREATE TEMPORARY TABLE tmp_ids (
+   id        INTEGER PRIMARY KEY,
+   category  INTEGER UNSIGNED NOT NULL
+)
+#end
+true
+tmp_ids
+id.unique category
+
+// -----------------------------------------------------------------------------------------------------------------------
+// Other tests
+// -----------------------------------------------------------------------------------------------------------------------
+
+#begin
+CREATE TABLE foo
+#end
+true
+foo
+null
+
+#begin
+CREATE TABLE foo(id int4, name text
+#end
+false
+Syntax error in this CREATE statement: 'create table foo(id int4, name text'
+
+#begin
+CREATE TABLE foo id int4, name text)
+#end
+false
+Syntax error in this CREATE statement: 'create table foo id int4, name text)'
+
+#begin
+CREATE TABLE foo(id int4, name)
+#end
+false
+Syntax error in this CREATE statement: 'create table foo(id int4, name)'
+
+//#begin
+//CREATE TABLE foo(id int4 name text)
+//#end
+//false
+//Syntax error in this CREATE statement: 'create table foo(id int4 name text)'
+
+//#begin
+//CREATE TABLE foo(id int4, name text)foo
+//#end
+//false
+//Syntax error in this CREATE statement: 'create table foo(id int4, name text)foo'
+
+//#begin
+//CREATE TABLE foo((id int4, name text)
+//#end
+//false
+//Syntax error in this CREATE statement: 'create table foo((id int4, name text)'
+
+#begin
+CREATE TABLE categories(id INT4, name TEXT, PRIMARY KEY((id))
+#end
+false
+Syntax error in this CREATE statement: 'create table categories(id int4, name text, primary key((id))'

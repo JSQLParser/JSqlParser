@@ -1,0 +1,17 @@
+net.sf.jsqlparser
+net.sf.jsqlparser.expression
+net.sf.jsqlparser.expression.operators.arithmetic
+net.sf.jsqlparser.expression.operators.conditional
+net.sf.jsqlparser.expression.operators.relational
+net.sf.jsqlparser.parser
+net.sf.jsqlparser.schema
+net.sf.jsqlparser.statement
+net.sf.jsqlparser.statement.create.table
+net.sf.jsqlparser.statement.delete
+net.sf.jsqlparser.statement.drop
+net.sf.jsqlparser.statement.insert
+net.sf.jsqlparser.statement.replace
+net.sf.jsqlparser.statement.select
+net.sf.jsqlparser.statement.truncate
+net.sf.jsqlparser.statement.update
+net.sf.jsqlparser.util.deparser

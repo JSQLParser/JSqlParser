@@ -1,0 +1,488 @@
+// -----------------------------------------------------------------------------------------------------------------------
+// SELECT requests test
+//
+// The requests must have the following format:
+// #begin
+// <SELECT request>
+// #end
+// <isValid flag>: true if this request is valid
+//
+// If the request is valid:
+// <selected columns concerning by the select clause prefixed by the table>: for example: my_table.id
+// <selected table concerning by the from clause, eventually suffixed by an alias>: for example: my_table, my_table.my_alias, my_table
+// <selected columns concerning by the where clause prefixed by the table>: for example: my_table.id
+// <request type>: either CACHEABLE, UNCACHEABLE or UNIQUE_CACHEABLE
+//
+// If the request is not valid:
+// <error message>
+//
+// do not add empty line between the lines defining a test
+// line beginning by a // are ignored except in a test
+// -----------------------------------------------------------------------------------------------------------------------
+
+//1
+#begin
+SELECT * FROM items WHERE items.seller=? AND items.end_date>=NOW()
+#end
+true
+items.id items.name items.description items.initial_price items.quantity items.reserve_price items.buy_now items.nb_of_bids items.max_bid items.start_date items.end_date items.seller items.category
+items
+items.seller items.end_date
+CACHEABLE
+
+//2
+#begin
+SELECT * FROM old_items 
+WHERE old_items.seller=? AND TO_DAYS(NOW()) - TO_DAYS(old_items.end_date) < 30.3
+#end
+true
+old_items.id old_items.name old_items.description old_items.initial_price old_items.quantity old_items.reserve_price old_items.buy_now old_items.nb_of_bids old_items.max_bid old_items.start_date old_items.end_date old_items.seller old_items.category
+old_items
+old_items.seller old_items.end_date
+CACHEABLE
+
+//3
+#begin
+SELECT * FROM buy_now 
+WHERE buy_now.buyer_id=? AND TO_DAYS(NOW()) - TO_DAYS(buy_now.date)<=-30
+#end
+true
+buy_now.id buy_now.buyer_id buy_now.item_id buy_now.qty buy_now.date
+buy_now
+buy_now.buyer_id buy_now.date
+CACHEABLE
+
+//4
+#begin
+SELECT nickname FROM users WHERE id=?
+#end
+true
+users.nickname
+users
+users.id
+UNIQUE_CACHEABLE
+
+//5
+#begin
+SELECT item_id 
+FROM bids, old_items 
+WHERE 
+	bids.user_id=? 
+	AND bids.item_id=old_items.id 
+	AND TO_DAYS(NOW()) - TO_DAYS(old_items.end_date) < 30 
+GROUP BY item_id
+#end
+true
+bids.item_id
+bids old_items
+bids.user_id bids.item_id old_items.id old_items.end_date
+CACHEABLE
+
+//6
+#begin
+SELECT * FROM old_items WHERE id=?
+#end
+true
+old_items.id old_items.name old_items.description old_items.initial_price old_items.quantity old_items.reserve_price old_items.buy_now old_items.nb_of_bids old_items.max_bid old_items.start_date old_items.end_date old_items.seller old_items.category
+old_items
+old_items.id
+UNIQUE_CACHEABLE
+
+//7
+#begin
+SELECT * FROM comments WHERE to_user_id=?
+#end
+true
+comments.id comments.from_user_id comments.to_user_id comments.item_id comments.rating comments.date comments.comment
+comments
+comments.to_user_id
+CACHEABLE
+
+//8
+#begin
+SELECT item_id, bids.max_bid FROM bids, items WHERE bids.user_id=? AND bids.item_id=items.id AND items.end_date>=NOW() GROUP BY item_id
+#end
+true
+bids.item_id bids.max_bid
+bids items
+bids.user_id bids.item_id items.id items.end_date
+CACHEABLE
+
+//9
+#begin
+SELECT * FROM items WHERE id=?
+#end
+true
+items.id items.name items.description items.initial_price items.quantity items.reserve_price items.buy_now items.nb_of_bids items.max_bid items.start_date items.end_date items.seller items.category
+items
+items.id
+UNIQUE_CACHEABLE
+
+//10
+#begin
+SELECT * FROM users WHERE id=?
+#end
+true
+users.id users.firstname users.lastname users.nickname users.password users.email users.rating users.balance users.creation_date users.region
+users
+users.id
+UNIQUE_CACHEABLE
+
+//11
+#begin
+SELECT users.id FROM users WHERE nickname=? AND password=?
+#end
+true
+users.id
+users
+users.nickname users.password
+CACHEABLE
+
+//12
+#begin
+SELECT name, id FROM categories
+#end
+true
+categories.id categories.name
+categories
+null
+CACHEABLE
+
+//13
+#begin
+SELECT id FROM regions WHERE name=?
+#end
+true
+regions.id
+regions
+regions.name
+CACHEABLE
+
+//14
+#begin
+SELECT name, id FROM regions
+#end
+true
+regions.id regions.name
+regions
+null
+CACHEABLE
+
+//15
+#begin
+SELECT COUNT(*) AS bid FROM bids WHERE item_id=?
+#end
+true
+null
+bids
+bids.item_id
+CACHEABLE
+
+//16
+#begin
+SELECT name FROM items WHERE id=?
+#end
+true
+items.name
+items
+items.id
+UNIQUE_CACHEABLE
+
+//17
+#begin
+SELECT id FROM items WHERE name=?
+#end
+true
+items.id
+items
+items.name
+CACHEABLE
+
+//18
+#begin
+SELECT nickname FROM users WHERE nickname=?
+#end
+true
+users.nickname
+users
+users.nickname
+CACHEABLE
+
+//19
+#begin
+SELECT id, creation_date FROM users WHERE nickname=?
+#end
+true
+users.id users.creation_date 
+users
+users.nickname
+CACHEABLE
+
+//20
+#begin
+SELECT items.name, items.id, items.end_date, items.max_bid, items.nb_of_bids, items.initial_price
+FROM items
+WHERE items.category=? AND end_date>=NOW()
+LIMIT ?,?
+#end
+true
+items.name items.id items.end_date items.max_bid items.nb_of_bids items.initial_price
+items
+items.category items.end_date
+CACHEABLE
+
+//21
+#begin
+SELECT
+	items.name, items.id, items.end_date, items.max_bid, items.nb_of_bids, items.initial_price
+FROM
+	items,users
+WHERE
+	items.category=? AND items.seller=users.id AND users.region=? AND end_date>=NOW()
+LIMIT ?,?
+#end
+true
+items.name items.id items.end_date items.max_bid items.nb_of_bids items.initial_price
+items users
+items.category items.seller users.id users.region items.end_date
+CACHEABLE
+
+//22
+#begin
+SELECT id, qty, max_bid FROM bids WHERE item_id=? ORDER BY bid DESC LIMIT ?
+#end
+true
+bids.id bids.qty bids.max_bid
+bids
+bids.item_id
+CACHEABLE
+
+//23
+#begin
+SELECT nb_of_bids, max_bid FROM items WHERE id=?
+#end
+true
+items.nb_of_bids items.max_bid
+items
+items.id
+UNIQUE_CACHEABLE
+
+//24
+#begin
+SELECT quantity, end_date FROM items WHERE id=?
+#end
+true
+items.quantity items.end_date
+items
+items.id
+UNIQUE_CACHEABLE
+
+//25
+#begin
+SELECT rating FROM users WHERE id=?
+#end
+true
+users.rating
+users
+users.id
+UNIQUE_CACHEABLE
+
+//26
+#begin
+SELECT * FROM bids WHERE item_id=? ORDER BY date DESC
+#end
+true
+bids.id bids.user_id bids.item_id bids.qty bids.bid bids.max_bid bids.date
+bids
+bids.item_id
+CACHEABLE
+
+//27
+#begin
+SELECT MAX(bid) AS bid FROM bids WHERE item_id=?
+#end
+true
+bids.bid
+bids
+bids.item_id
+CACHEABLE
+
+//28
+#begin
+SELECT rating FROM users WHERE id='17'
+#end
+true
+users.rating
+users
+users.id
+UNIQUE_CACHEABLE
+
+//29
+#begin
+SELECT id FROM old_items 
+WHERE old_items.id='27'
+#end
+true
+old_items.id
+old_items
+old_items.id
+UNIQUE_CACHEABLE
+
+//30
+#begin
+SELECT id FROM old_items 
+WHERE '27'=old_items.id AND old_items.seller=?
+#end
+true
+old_items.id
+old_items
+old_items.id old_items.seller
+CACHEABLE
+
+//31
+#begin
+SELECT id FROM old_items 
+WHERE '27' = old_items.id OR old_items.seller=?
+#end
+true
+old_items.id
+old_items
+old_items.id old_items.seller
+CACHEABLE
+
+//32
+#begin
+SELECT id FROM old_items 
+WHERE '27' = old_items.id 
+#end
+true
+old_items.id
+old_items
+old_items.id
+UNIQUE_CACHEABLE
+
+//33
+#begin
+SELECT id FROM old_items 
+WHERE id='7' and sellerseller=?
+#end
+true
+old_items.id
+old_items
+old_items.id
+UNIQUE_CACHEABLE
+
+//34
+#begin
+SELECT id FROM old_items 
+WHERE id='7' and seller=?
+#end
+true
+old_items.id
+old_items
+old_items.id
+CACHEABLE
+
+//35
+#begin
+SELECT items.id FROM items WHERE items.category="Books, antique & stuff" AND end_date>=NOW() ORDER BY end_date ASC LIMIT ?,?
+#end
+true
+items.id
+items
+items.category items.end_date
+CACHEABLE
+
+//36
+#begin
+SELECT count(*) FROM (SELECT items.id FROM items WHERE items.category="Books, antique & stuff" AND end_date>=NOW() ORDER BY end_date ASC LIMIT ?,?)
+#end
+true
+null
+items
+null
+CACHEABLE
+
+//37
+#begin
+SELECT count(*) FROM (SELECT items.id FROM items)
+#end
+true
+null
+items
+null
+CACHEABLE
+
+//38
+#begin
+SELECT id FROM regions WHERE name = 5 and name = 6
+#end
+true
+regions.id
+regions
+regions.name
+CACHEABLE
+
+//39
+#begin
+SELECT regions.name,regions.id FROM regions WHERE regions.id = 1
+#end
+true
+regions.id regions.name
+regions
+regions.id
+UNIQUE_CACHEABLE
+
+
+//40
+#begin
+SELECT regions.name,regions.id FROM regions WHERE regions.id =    1234
+#end
+true
+regions.id regions.name
+regions
+regions.id
+UNIQUE_CACHEABLE
+
+
+//41
+#begin
+SELECT MAX(creation_date) FROM regions,(SELECT id FROM users WHERE id>10)
+#end
+true
+users.creation_date
+regions users
+null
+CACHEABLE
+
+//42
+#begin
+SELECT items.id FROM items,users WHERE items.category=4 AND items.seller=users.id AND users.region=1 AND end_date>=NOW() ORDER BY items.end_date ASC LIMIT 0,25
+#end
+true
+items.id
+items users
+items.category items.seller users.id users.region items.end_date
+CACHEABLE
+
+//43
+#begin
+SELECT id FROM users LEFT JOIN (SELECT user_id FROM bids)
+#end
+true
+users.id bids.user_id
+users bids
+null
+CACHEABLE
+
+//44
+#begin
+SELECT id FROM users WHERE EXISTS (SELECT * FROM tab2)
+#end
+true
+users.id
+users tab2
+null
+CACHEABLE
+
+
