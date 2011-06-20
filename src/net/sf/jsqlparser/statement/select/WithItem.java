@@ -1,7 +1,6 @@
 package net.sf.jsqlparser.statement.select;
 
 import java.util.List;
-import net.sf.jsqlparser.statement.select.SelectBody;
 
 /**
  * One of the parts of a "WITH" clause of a "SELECT" statement

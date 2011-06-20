@@ -22,8 +22,6 @@
 
 package net.sf.jsqlparser.expression.operators.relational;
 
-import java.awt.event.ItemListener;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 

@@ -1,6 +1,5 @@
 package net.sf.jsqlparser.statement.create.table;
 
-import java.util.Iterator;
 import java.util.List;
 
 import net.sf.jsqlparser.statement.select.PlainSelect;

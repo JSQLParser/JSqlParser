@@ -25,7 +25,6 @@ package net.sf.jsqlparser.schema;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.IntoTableVisitor;
-import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 
 /**
  * A table. It can have an alias and the schema name it belongs to.

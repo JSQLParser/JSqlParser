@@ -23,7 +23,6 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 /**
  * An expression as in "SELECT expr1 AS EXPR"

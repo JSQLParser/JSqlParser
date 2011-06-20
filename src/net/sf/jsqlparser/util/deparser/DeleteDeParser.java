@@ -2,7 +2,6 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.delete.Delete;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a

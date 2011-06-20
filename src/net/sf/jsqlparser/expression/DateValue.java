@@ -22,7 +22,6 @@
 package net.sf.jsqlparser.expression;
 
 import java.sql.Date;
-import java.text.SimpleDateFormat;
 
 /**
  * A Date in the form {d 'yyyy-mm-dd'}
