@@ -19,7 +19,7 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.statement.select;
 
 import java.util.List;
@@ -39,10 +39,11 @@ public class Join {
 	private boolean simple = false;
 	private FromItem rightItem;
 	private Expression onExpression;
-	private List usingColumns; 
+	private List usingColumns;
 
 	/**
 	 * Whether is a tab1,tab2 join
+	 * 
 	 * @return true if is a "tab1,tab2" join
 	 */
 	public boolean isSimple() {
@@ -52,8 +53,10 @@ public class Join {
 	public void setSimple(boolean b) {
 		simple = b;
 	}
+
 	/**
 	 * Whether is a "INNER" join
+	 * 
 	 * @return true if is a "INNER" join
 	 */
 	public boolean isInner() {
@@ -63,9 +66,10 @@ public class Join {
 	public void setInner(boolean b) {
 		inner = b;
 	}
-	
+
 	/**
 	 * Whether is a "OUTER" join
+	 * 
 	 * @return true if is a "OUTER" join
 	 */
 	public boolean isOuter() {
@@ -78,6 +82,7 @@ public class Join {
 
 	/**
 	 * Whether is a "LEFT" join
+	 * 
 	 * @return true if is a "LEFT" join
 	 */
 	public boolean isLeft() {
@@ -90,6 +95,7 @@ public class Join {
 
 	/**
 	 * Whether is a "RIGHT" join
+	 * 
 	 * @return true if is a "RIGHT" join
 	 */
 	public boolean isRight() {
@@ -102,6 +108,7 @@ public class Join {
 
 	/**
 	 * Whether is a "NATURAL" join
+	 * 
 	 * @return true if is a "NATURAL" join
 	 */
 	public boolean isNatural() {
@@ -114,6 +121,7 @@ public class Join {
 
 	/**
 	 * Whether is a "FULL" join
+	 * 
 	 * @return true if is a "FULL" join
 	 */
 	public boolean isFull() {
@@ -160,10 +168,9 @@ public class Join {
 	public String toString() {
 		if (isSimple())
 			return "" + rightItem;
-		else
-		{
+		else {
 			String type = "";
-	
+
 			if (isRight())
 				type += "RIGHT ";
 			else if (isNatural())
@@ -172,17 +179,15 @@ public class Join {
 				type += "FULL ";
 			else if (isLeft())
 				type += "LEFT ";
-			
+
 			if (isOuter())
 				type += "OUTER ";
 			else if (isInner())
 				type += "INNER ";
 
-			return type +"JOIN " +
-			rightItem+
-			((onExpression!=null)?" ON "+onExpression+"":"")+
-			PlainSelect.getFormatedList(usingColumns, "USING", true, true);
+			return type + "JOIN " + rightItem + ((onExpression != null) ? " ON " + onExpression + "" : "")
+					+ PlainSelect.getFormatedList(usingColumns, "USING", true, true);
 		}
-		
+
 	}
 }

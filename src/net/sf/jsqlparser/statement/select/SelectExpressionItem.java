@@ -31,7 +31,7 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 public class SelectExpressionItem implements SelectItem {
 	private Expression expression;
 	private String alias;
-	
+
 	public String getAlias() {
 		return alias;
 	}
@@ -51,8 +51,8 @@ public class SelectExpressionItem implements SelectItem {
 	public void accept(SelectItemVisitor selectItemVisitor) {
 		selectItemVisitor.visit(this);
 	}
-	
+
 	public String toString() {
-		return expression+((alias!=null)?" AS "+alias:"");
+		return expression + ((alias != null) ? " AS " + alias : "");
 	}
 }

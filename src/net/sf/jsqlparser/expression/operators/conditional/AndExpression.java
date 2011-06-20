@@ -19,23 +19,23 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.expression.operators.conditional;
 
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
-
 public class AndExpression extends BinaryExpression {
 	public AndExpression(Expression leftExpression, Expression rightExpression) {
 		setLeftExpression(leftExpression);
 		setRightExpression(rightExpression);
 	}
+
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
-	
+
 	public String getStringExpression() {
 		return "AND";
 	}

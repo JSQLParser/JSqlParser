@@ -23,6 +23,6 @@ public class Truncate implements Statement {
 	}
 
 	public String toString() {
-		return "TRUNCATE TABLE "+table;
+		return "TRUNCATE TABLE " + table;
 	}
 }

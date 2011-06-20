@@ -19,12 +19,11 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-
 
 /**
  * A "BETWEEN" expr1 expr2 statement
@@ -72,7 +71,7 @@ public class Between implements Expression {
 	}
 
 	public String toString() {
-		return leftExpression + " " + (not?"NOT ":"") + "BETWEEN "+
-		betweenExpressionStart+" AND "+betweenExpressionEnd;
+		return leftExpression + " " + (not ? "NOT " : "") + "BETWEEN " + betweenExpressionStart + " AND "
+				+ betweenExpressionEnd;
 	}
 }

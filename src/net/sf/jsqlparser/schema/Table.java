@@ -19,7 +19,7 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.schema;
 
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -28,13 +28,13 @@ import net.sf.jsqlparser.statement.select.IntoTableVisitor;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 
 /**
- * A table. It can have an alias and the schema name it belongs to. 
+ * A table. It can have an alias and the schema name it belongs to.
  */
 public class Table implements FromItem {
 	private String schemaName;
 	private String name;
 	private String alias;
-	
+
 	public Table() {
 	}
 
@@ -42,7 +42,7 @@ public class Table implements FromItem {
 		this.schemaName = schemaName;
 		this.name = name;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -66,7 +66,7 @@ public class Table implements FromItem {
 	public void setAlias(String string) {
 		alias = string;
 	}
-	
+
 	public String getWholeTableName() {
 
 		String tableWholeName = null;
@@ -78,7 +78,7 @@ public class Table implements FromItem {
 		} else {
 			tableWholeName = name;
 		}
-		
+
 		return tableWholeName;
 
 	}
@@ -86,13 +86,12 @@ public class Table implements FromItem {
 	public void accept(FromItemVisitor fromItemVisitor) {
 		fromItemVisitor.visit(this);
 	}
-	
+
 	public void accept(IntoTableVisitor intoTableVisitor) {
 		intoTableVisitor.visit(this);
 	}
-	
-	
+
 	public String toString() {
-		return getWholeTableName()+((alias!=null)?" AS "+alias:"");
+		return getWholeTableName() + ((alias != null) ? " AS " + alias : "");
 	}
 }

@@ -22,10 +22,9 @@
 
 package net.sf.jsqlparser.expression;
 
-
 /**
- * A basic class for binary expressions, that is expressions having a left member and a right member
- * which are in turn expressions. 
+ * A basic class for binary expressions, that is expressions having a left member and a right member which are in turn
+ * expressions.
  */
 public abstract class BinaryExpression implements Expression {
 	private Expression leftExpression;
@@ -34,7 +33,6 @@ public abstract class BinaryExpression implements Expression {
 
 	public BinaryExpression() {
 	}
-	
 
 	public Expression getLeftExpression() {
 		return leftExpression;
@@ -61,9 +59,9 @@ public abstract class BinaryExpression implements Expression {
 	}
 
 	public String toString() {
-		return (not? "NOT ":"") + getLeftExpression()+" "+getStringExpression()+" "+getRightExpression();
+		return (not ? "NOT " : "") + getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
 	}
 
 	public abstract String getStringExpression();
-	
+
 }

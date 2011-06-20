@@ -19,7 +19,7 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.statement.delete;
 
 import net.sf.jsqlparser.expression.Expression;
@@ -30,7 +30,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 public class Delete implements Statement {
 	private Table table;
 	private Expression where;
-	
+
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}
@@ -52,6 +52,6 @@ public class Delete implements Statement {
 	}
 
 	public String toString() {
-		return "DELETE FROM "+table+((where!=null)?" WHERE "+where:"");
+		return "DELETE FROM " + table + ((where != null) ? " WHERE " + where : "");
 	}
 }

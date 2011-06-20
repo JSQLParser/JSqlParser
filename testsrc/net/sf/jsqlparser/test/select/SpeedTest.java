@@ -84,7 +84,7 @@ public class SpeedTest extends TestCase {
 		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
 		ArrayList parsedSelects = new ArrayList(NUM_REPS * statementsList.size());
 		long time = System.currentTimeMillis();
-		
+
 		// measure the time to parse NUM_REPS times all statements in the 2 files
 		for (int i = 0; i < NUM_REPS; i++) {
 			try {
@@ -108,8 +108,8 @@ public class SpeedTest extends TestCase {
 		df.setMaximumFractionDigits(7);
 		df.setMinimumFractionDigits(4);
 		System.out.println(numTests + " statements parsed in " + elapsedTime + " milliseconds");
-		System.out.println(" (" +
-			statementsPerSecond + " statements per second,  " + df.format(1.0 / statementsPerSecond) + " seconds per statement )");
+		System.out.println(" (" + statementsPerSecond + " statements per second,  "
+				+ df.format(1.0 / statementsPerSecond) + " seconds per statement )");
 
 		numTests = 0;
 		time = System.currentTimeMillis();
@@ -124,11 +124,8 @@ public class SpeedTest extends TestCase {
 		elapsedTime = System.currentTimeMillis() - time;
 		statementsPerSecond = numTests * 1000 / elapsedTime;
 		System.out.println(numTests + " select scans for table name executed in " + elapsedTime + " milliseconds");
-		System.out.println(" (" +
-			statementsPerSecond
-				+ " select scans for table name per second,  "
-				+ df.format(1.0 / statementsPerSecond)
-				+ " seconds per select scans for table name)");
+		System.out.println(" (" + statementsPerSecond + " select scans for table name per second,  "
+				+ df.format(1.0 / statementsPerSecond) + " seconds per select scans for table name)");
 
 	}
 

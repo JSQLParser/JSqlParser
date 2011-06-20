@@ -19,7 +19,7 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.expression;
 
 /**
@@ -31,12 +31,11 @@ public class Parenthesis implements Expression {
 
 	public Parenthesis() {
 	}
-	
-	
+
 	public Parenthesis(Expression expression) {
-		setExpression(expression); 
+		setExpression(expression);
 	}
-	
+
 	public Expression getExpression() {
 		return expression;
 	}
@@ -56,8 +55,8 @@ public class Parenthesis implements Expression {
 	public boolean isNot() {
 		return not;
 	}
-	
+
 	public String toString() {
-		return (not? "NOT ":"") + "("+expression+")";
+		return (not ? "NOT " : "") + "(" + expression + ")";
 	}
 }

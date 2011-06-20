@@ -22,7 +22,6 @@
 
 package net.sf.jsqlparser.test;
 
-
 /**
  * An exception class with stack trace informations
  */
@@ -45,7 +44,7 @@ public class TestException extends Exception {
 		super(arg0);
 		this.cause = arg1;
 	}
-	
+
 	public Throwable getCause() {
 		return cause;
 	}

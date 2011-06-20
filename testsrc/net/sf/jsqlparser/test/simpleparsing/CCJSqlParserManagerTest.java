@@ -30,9 +30,9 @@ public class CCJSqlParserManagerTest extends TestCase {
 				statement = CCJSqlParserManagerTest.getStatement(in);
 				if (statement == null)
 					break;
-					
+
 				Statement parsedStm = parserManager.parse(new StringReader(statement));
-				//System.out.println(statement);
+				// System.out.println(statement);
 			} catch (JSQLParserException e) {
 				throw new TestException("impossible to parse statement: " + statement, e);
 			}
@@ -66,7 +66,8 @@ public class CCJSqlParserManagerTest extends TestCase {
 			line = in.readLine();
 			if (line != null) {
 				line.trim();
-//				if ((line.length() != 0) && ((line.length() < 2) ||  (line.length() >= 2) && !(line.charAt(0) == '/' && line.charAt(1) == '/')))
+				// if ((line.length() != 0) && ((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/'
+				// && line.charAt(1) == '/')))
 				if (((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/' && line.charAt(1) == '/')))
 					break;
 			} else {

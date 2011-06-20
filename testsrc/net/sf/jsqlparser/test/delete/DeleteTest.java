@@ -19,7 +19,7 @@ public class DeleteTest extends TestCase {
 
 		Delete delete = (Delete) parserManager.parse(new StringReader(statement));
 		assertEquals("mytable", delete.getTable().getName());
-		assertEquals(statement, ""+delete);
+		assertEquals(statement, "" + delete);
 	}
 
 	public static void main(String[] args) {

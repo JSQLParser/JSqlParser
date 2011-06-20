@@ -6,20 +6,22 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.update.Update;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string)
- * an {@link net.sf.jsqlparser.statement.update.Update}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) an
+ * {@link net.sf.jsqlparser.statement.update.Update}
  */
 public class UpdateDeParser {
 	protected StringBuffer buffer;
 	protected ExpressionVisitor expressionVisitor;
-	
+
 	public UpdateDeParser() {
 	}
-	
+
 	/**
-	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share the same<br>
-	 * StringBuffer (buffer parameter) as this object in order to work
-	 * @param buffer the buffer that will be filled with the select
+	 * @param expressionVisitor
+	 *            a {@link ExpressionVisitor} to de-parse expressions. It has to share the same<br>
+	 *            StringBuffer (buffer parameter) as this object in order to work
+	 * @param buffer
+	 *            the buffer that will be filled with the select
 	 */
 	public UpdateDeParser(ExpressionVisitor expressionVisitor, StringBuffer buffer) {
 		this.buffer = buffer;
@@ -47,7 +49,7 @@ public class UpdateDeParser {
 			}
 
 		}
-		
+
 		if (update.getWhere() != null) {
 			buffer.append(" WHERE ");
 			update.getWhere().accept(expressionVisitor);

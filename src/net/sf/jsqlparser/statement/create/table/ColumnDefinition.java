@@ -12,7 +12,7 @@ public class ColumnDefinition {
 	private String columnName;
 	private ColDataType colDataType;
 	private List columnSpecStrings;
-	
+
 	/**
 	 * A list of strings of every word after the datatype of the column.<br>
 	 * Example ("NOT", "NULL")
@@ -26,7 +26,7 @@ public class ColumnDefinition {
 	}
 
 	/**
-	 * The {@link ColDataType} of this column definition 
+	 * The {@link ColDataType} of this column definition
 	 */
 	public ColDataType getColDataType() {
 		return colDataType;
@@ -43,9 +43,9 @@ public class ColumnDefinition {
 	public void setColumnName(String string) {
 		columnName = string;
 	}
-	
+
 	public String toString() {
-		return columnName+" "+colDataType+" "+PlainSelect.getStringList(columnSpecStrings, false, false);
+		return columnName + " " + colDataType + " " + PlainSelect.getStringList(columnSpecStrings, false, false);
 	}
 
 }

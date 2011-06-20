@@ -15,20 +15,18 @@ public class DropTest extends TestCase {
 	}
 
 	public void testDrop() throws JSQLParserException {
-		String statement =
-			"DROP TABLE mytab";
+		String statement = "DROP TABLE mytab";
 		Drop drop = (Drop) parserManager.parse(new StringReader(statement));
 		assertEquals("TABLE", drop.getType());
 		assertEquals("mytab", drop.getName());
-		assertEquals(statement, ""+drop);
-		
-		statement =
-					"DROP INDEX myindex CASCADE";
+		assertEquals(statement, "" + drop);
+
+		statement = "DROP INDEX myindex CASCADE";
 		drop = (Drop) parserManager.parse(new StringReader(statement));
 		assertEquals("INDEX", drop.getType());
 		assertEquals("myindex", drop.getName());
 		assertEquals("CASCADE", drop.getParameters().get(0));
-		assertEquals(statement, ""+drop);
+		assertEquals(statement, "" + drop);
 	}
 
 	public static void main(String[] args) {

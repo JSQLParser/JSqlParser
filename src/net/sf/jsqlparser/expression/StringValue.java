@@ -19,7 +19,7 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.expression;
 
 /**
@@ -27,12 +27,12 @@ package net.sf.jsqlparser.expression;
  */
 public class StringValue implements Expression {
 	private String value = "";
-	
+
 	public StringValue(String escapedValue) {
-		// romoving "'" at the start and at the end 
+		// romoving "'" at the start and at the end
 		value = escapedValue.substring(1, escapedValue.length() - 1);
 	}
-	
+
 	public String getValue() {
 		return value;
 	}
@@ -42,8 +42,8 @@ public class StringValue implements Expression {
 		int index = 0;
 		int deletesNum = 0;
 		while ((index = value.indexOf("''", index)) != -1) {
-			buffer.deleteCharAt(index-deletesNum);
-			index+=2;
+			buffer.deleteCharAt(index - deletesNum);
+			index += 2;
 			deletesNum++;
 		}
 		return buffer.toString();
@@ -52,12 +52,12 @@ public class StringValue implements Expression {
 	public void setValue(String string) {
 		value = string;
 	}
-	
+
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
 
 	public String toString() {
-		return "'"+value+"'";
+		return "'" + value + "'";
 	}
 }

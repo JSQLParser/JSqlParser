@@ -26,8 +26,7 @@ public class CreateTableTest extends TestCase {
 	}
 
 	public void testCreateTable() throws JSQLParserException {
-		String statement =
-			"CREATE TABLE mytab (mycol a (10, 20) c nm g, mycol2 mypar1 mypar2 (23,323,3) asdf ('23','123') dasd, "
+		String statement = "CREATE TABLE mytab (mycol a (10, 20) c nm g, mycol2 mypar1 mypar2 (23,323,3) asdf ('23','123') dasd, "
 				+ "PRIMARY KEY (mycol2, mycol)) type = myisam";
 		CreateTable createTable = (CreateTable) parserManager.parse(new StringReader(statement));
 		assertEquals(2, createTable.getColumnDefinitions().size());
@@ -35,12 +34,13 @@ public class CreateTableTest extends TestCase {
 		assertEquals("mycol2", ((ColumnDefinition) createTable.getColumnDefinitions().get(1)).getColumnName());
 		assertEquals("PRIMARY KEY", ((Index) createTable.getIndexes().get(0)).getType());
 		assertEquals("mycol", ((Index) createTable.getIndexes().get(0)).getColumnsNames().get(1));
-		assertEquals(statement, ""+createTable);
+		assertEquals(statement, "" + createTable);
 	}
 
 	public void testRUBiSCreateList() throws Exception {
 
-		BufferedReader in = new BufferedReader(new FileReader("testfiles" + File.separator + "RUBiS-create-requests.txt"));
+		BufferedReader in = new BufferedReader(new FileReader("testfiles" + File.separator
+				+ "RUBiS-create-requests.txt"));
 		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
 
 		try {
@@ -81,10 +81,10 @@ public class CreateTableTest extends TestCase {
 
 						List colsListList = new ArrayList();
 						while (tokenizer.hasMoreTokens()) {
-						    colsListList.add(tokenizer.nextToken());
+							colsListList.add(tokenizer.nextToken());
 						}
-						
-						colsList = (String[])colsListList.toArray(new String[colsListList.size()]); 
+
+						colsList = (String[]) colsListList.toArray(new String[colsListList.size()]);
 
 					}
 					List colsFound = new ArrayList();
@@ -96,9 +96,8 @@ public class CreateTableTest extends TestCase {
 							if (createTable.getIndexes() != null) {
 								for (Iterator iterator = createTable.getIndexes().iterator(); iterator.hasNext();) {
 									Index index = (Index) iterator.next();
-									if (index.getType().equals("PRIMARY KEY")
-										&& index.getColumnsNames().size() == 1
-										&& index.getColumnsNames().get(0).equals(colName)) {
+									if (index.getType().equals("PRIMARY KEY") && index.getColumnsNames().size() == 1
+											&& index.getColumnsNames().get(0).equals(colName)) {
 										unique = true;
 									}
 
@@ -107,11 +106,13 @@ public class CreateTableTest extends TestCase {
 
 							if (!unique) {
 								if (columnDefinition.getColumnSpecStrings() != null) {
-									for (Iterator iterator = columnDefinition.getColumnSpecStrings().iterator(); iterator.hasNext();) {
+									for (Iterator iterator = columnDefinition.getColumnSpecStrings().iterator(); iterator
+											.hasNext();) {
 										String par = (String) iterator.next();
 										if (par.equals("UNIQUE")) {
 											unique = true;
-										} else if (par.equals("PRIMARY") && iterator.hasNext() && iterator.next().equals("KEY")) {
+										} else if (par.equals("PRIMARY") && iterator.hasNext()
+												&& iterator.next().equals("KEY")) {
 											unique = true;
 										}
 									}
@@ -148,7 +149,9 @@ public class CreateTableTest extends TestCase {
 			line = in.readLine();
 			if (line != null) {
 				line.trim();
-				if ((line.length() != 0) && ((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/' && line.charAt(1) == '/')))
+				if ((line.length() != 0)
+						&& ((line.length() < 2) || (line.length() >= 2)
+								&& !(line.charAt(0) == '/' && line.charAt(1) == '/')))
 					break;
 			} else {
 				break;

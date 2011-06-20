@@ -19,7 +19,7 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.statement.select;
 
 import java.util.Iterator;
@@ -31,7 +31,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 public class Select implements Statement {
 	private SelectBody selectBody;
 	private List withItemsList;
-	
+
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}
@@ -43,13 +43,13 @@ public class Select implements Statement {
 	public void setSelectBody(SelectBody body) {
 		selectBody = body;
 	}
-	
+
 	public String toString() {
 		StringBuffer retval = new StringBuffer();
 		if (withItemsList != null && !withItemsList.isEmpty()) {
 			retval.append("WITH ");
 			for (Iterator iter = withItemsList.iterator(); iter.hasNext();) {
-				WithItem withItem = (WithItem)iter.next();
+				WithItem withItem = (WithItem) iter.next();
 				retval.append(withItem);
 				if (iter.hasNext())
 					retval.append(",");

@@ -18,6 +18,7 @@ public class UpdateTest extends TestCase {
 	public UpdateTest(String arg0) {
 		super(arg0);
 	}
+
 	public void testUpdate() throws JSQLParserException {
 		String statement = "UPDATE mytable set col1='as', col2=?, col3=565 Where o >= 3";
 		Update update = (Update) parserManager.parse(new StringReader(statement));

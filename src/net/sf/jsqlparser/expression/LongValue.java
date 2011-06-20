@@ -19,7 +19,7 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.expression;
 
 /**
@@ -30,9 +30,9 @@ public class LongValue implements Expression {
 	private String stringValue;
 
 	public LongValue(String value) {
-	    if (value.charAt(0) == '+') {
-	        value = value.substring(1);
-	    }
+		if (value.charAt(0) == '+') {
+			value = value.substring(1);
+		}
 		this.value = Long.parseLong(value);
 		setStringValue(value);
 	}

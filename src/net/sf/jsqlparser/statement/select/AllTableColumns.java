@@ -29,7 +29,7 @@ import net.sf.jsqlparser.schema.Table;
 
 public class AllTableColumns implements SelectItem {
 	private Table table;
-	
+
 	public AllTableColumns() {
 	}
 
@@ -37,7 +37,6 @@ public class AllTableColumns implements SelectItem {
 		this.table = tableName;
 	}
 
-	
 	public Table getTable() {
 		return table;
 	}
@@ -49,9 +48,9 @@ public class AllTableColumns implements SelectItem {
 	public void accept(SelectItemVisitor selectItemVisitor) {
 		selectItemVisitor.visit(this);
 	}
-	
+
 	public String toString() {
-		return table+".*";
+		return table + ".*";
 	}
 
 }

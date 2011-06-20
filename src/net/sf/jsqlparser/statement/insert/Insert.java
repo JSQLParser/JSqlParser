@@ -30,17 +30,15 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-
 /**
- * The insert statement.
- * Every column name in <code>columnNames</code> matches an item in <code>itemsList</code>
+ * The insert statement. Every column name in <code>columnNames</code> matches an item in <code>itemsList</code>
  */
 public class Insert implements Statement {
 	private Table table;
 	private List columns;
 	private ItemsList itemsList;
 	private boolean useValues = true;
-	
+
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}
@@ -55,6 +53,7 @@ public class Insert implements Statement {
 
 	/**
 	 * Get the columns (found in "INSERT INTO (col1,col2..) [...]" )
+	 * 
 	 * @return a list of {@link net.sf.jsqlparser.schema.Column}
 	 */
 	public List getColumns() {
@@ -66,7 +65,8 @@ public class Insert implements Statement {
 	}
 
 	/**
-	 * Get the values (as VALUES (...) or SELECT) 
+	 * Get the values (as VALUES (...) or SELECT)
+	 * 
 	 * @return the values of the insert
 	 */
 	public ItemsList getItemsList() {
@@ -77,27 +77,27 @@ public class Insert implements Statement {
 		itemsList = list;
 	}
 
-    public boolean isUseValues() {
-        return useValues;
-    }
-    
-    public void setUseValues(boolean useValues) {
-        this.useValues = useValues;
-    }
-    
+	public boolean isUseValues() {
+		return useValues;
+	}
+
+	public void setUseValues(boolean useValues) {
+		this.useValues = useValues;
+	}
+
 	public String toString() {
 		String sql = "";
 
 		sql = "INSERT INTO ";
-		sql += table+" ";
-		sql += ((columns!=null)?PlainSelect.getStringList(columns, true, true)+" ":"");
-		
-		if(useValues) {
-			sql += "VALUES "+itemsList+"";
+		sql += table + " ";
+		sql += ((columns != null) ? PlainSelect.getStringList(columns, true, true) + " " : "");
+
+		if (useValues) {
+			sql += "VALUES " + itemsList + "";
 		} else {
-			sql += ""+itemsList+"";
+			sql += "" + itemsList + "";
 		}
-		
+
 		return sql;
 	}
 

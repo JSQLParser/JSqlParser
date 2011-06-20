@@ -24,7 +24,9 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.schema.Table;
 
 public interface FromItemVisitor {
-	public void visit(Table tableName); 
+	public void visit(Table tableName);
+
 	public void visit(SubSelect subSelect);
-	public void visit(SubJoin subjoin); 
+
+	public void visit(SubJoin subjoin);
 }

@@ -7,14 +7,15 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string)
- * a {@link net.sf.jsqlparser.statement.create.table.CreateTable}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
+ * {@link net.sf.jsqlparser.statement.create.table.CreateTable}
  */
 public class CreateTableDeParser {
 	protected StringBuffer buffer;
 
 	/**
-	 * @param buffer the buffer that will be filled with the select
+	 * @param buffer
+	 *            the buffer that will be filled with the select
 	 */
 	public CreateTableDeParser(StringBuffer buffer) {
 		this.buffer = buffer;
@@ -30,7 +31,8 @@ public class CreateTableDeParser {
 				buffer.append(" ");
 				buffer.append(columnDefinition.getColDataType().getDataType());
 				if (columnDefinition.getColDataType().getArgumentsStringList() != null) {
-					for (Iterator iterator = columnDefinition.getColDataType().getArgumentsStringList().iterator(); iterator.hasNext();) {
+					for (Iterator iterator = columnDefinition.getColDataType().getArgumentsStringList().iterator(); iterator
+							.hasNext();) {
 						buffer.append(" ");
 						buffer.append((String) iterator.next());
 					}
@@ -67,7 +69,7 @@ public class CreateTableDeParser {
 			buffer.append(" \n} ");
 		}
 	}
-	
+
 	public StringBuffer getBuffer() {
 		return buffer;
 	}

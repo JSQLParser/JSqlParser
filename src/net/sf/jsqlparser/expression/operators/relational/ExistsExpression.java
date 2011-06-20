@@ -19,12 +19,11 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-
 
 public class ExistsExpression implements Expression {
 	private Expression rightExpression;
@@ -51,7 +50,7 @@ public class ExistsExpression implements Expression {
 	}
 
 	public String getStringExpression() {
-		return ((not)?"NOT ":"")+"EXISTS";
+		return ((not) ? "NOT " : "") + "EXISTS";
 	}
 
 	public String toString() {

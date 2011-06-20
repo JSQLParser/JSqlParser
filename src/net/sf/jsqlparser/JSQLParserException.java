@@ -22,7 +22,6 @@
 
 package net.sf.jsqlparser;
 
-
 /**
  * An exception class with stack trace informations
  */
@@ -45,7 +44,7 @@ public class JSQLParserException extends Exception {
 		super(arg0);
 		this.cause = arg1;
 	}
-	
+
 	public Throwable getCause() {
 		return cause;
 	}

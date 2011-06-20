@@ -19,12 +19,11 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-
 
 public class IsNullExpression implements Expression {
 	private Expression leftExpression;
@@ -49,9 +48,9 @@ public class IsNullExpression implements Expression {
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
-	
+
 	public String toString() {
-        return leftExpression + " IS "+((not)?"NOT ":"")+"NULL";
-    }
+		return leftExpression + " IS " + ((not) ? "NOT " : "") + "NULL";
+	}
 
 }

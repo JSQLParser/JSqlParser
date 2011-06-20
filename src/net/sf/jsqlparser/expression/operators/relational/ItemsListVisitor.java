@@ -19,12 +19,13 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 public interface ItemsListVisitor {
 	public void visit(SubSelect subSelect);
+
 	public void visit(ExpressionList expressionList);
 }

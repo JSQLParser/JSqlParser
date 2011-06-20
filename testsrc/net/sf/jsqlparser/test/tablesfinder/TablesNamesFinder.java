@@ -69,7 +69,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
 	public void visit(PlainSelect plainSelect) {
 		plainSelect.getFromItem().accept(this);
-		
+
 		if (plainSelect.getJoins() != null) {
 			for (Iterator joinsIt = plainSelect.getJoins().iterator(); joinsIt.hasNext();) {
 				Join join = (Join) joinsIt.next();
@@ -209,29 +209,33 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
 	}
 
-    public void visit(DateValue dateValue) {
-    }
+	public void visit(DateValue dateValue) {
+	}
 
-    public void visit(TimestampValue timestampValue) {
-    }
-    
-    public void visit(TimeValue timeValue) {
-    }
+	public void visit(TimestampValue timestampValue) {
+	}
 
-	/* (non-Javadoc)
+	public void visit(TimeValue timeValue) {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sf.jsqlparser.expression.ExpressionVisitor#visit(net.sf.jsqlparser.expression.CaseExpression)
 	 */
 	public void visit(CaseExpression caseExpression) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sf.jsqlparser.expression.ExpressionVisitor#visit(net.sf.jsqlparser.expression.WhenClause)
 	 */
 	public void visit(WhenClause whenClause) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void visit(AllComparisonExpression allComparisonExpression) {

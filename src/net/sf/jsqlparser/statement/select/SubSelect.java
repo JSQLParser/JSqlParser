@@ -27,7 +27,6 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 
-
 /**
  * A subselect followed by an optional alias.
  */
@@ -63,7 +62,7 @@ public class SubSelect implements FromItem, Expression, ItemsList {
 		itemsListVisitor.visit(this);
 	}
 
-	public String toString () {
-		return "("+selectBody+")"+((alias!=null)?" AS "+alias:"");
+	public String toString() {
+		return "(" + selectBody + ")" + ((alias != null) ? " AS " + alias : "");
 	}
 }

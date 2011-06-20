@@ -60,6 +60,7 @@ public class Update implements Statement {
 
 	/**
 	 * The {@link net.sf.jsqlparser.schema.Column}s in this update (as col1 and col2 in UPDATE col1='a', col2='b')
+	 * 
 	 * @return a list of {@link net.sf.jsqlparser.schema.Column}s
 	 */
 	public List getColumns() {
@@ -68,6 +69,7 @@ public class Update implements Statement {
 
 	/**
 	 * The {@link Expression}s in this update (as 'a' and 'b' in UPDATE col1='a', col2='b')
+	 * 
 	 * @return a list of {@link Expression}s
 	 */
 	public List getExpressions() {

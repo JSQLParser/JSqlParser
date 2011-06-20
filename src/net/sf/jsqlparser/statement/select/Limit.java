@@ -5,11 +5,11 @@ package net.sf.jsqlparser.statement.select;
  */
 public class Limit {
 	private long offset;
-	private long rowCount ;
+	private long rowCount;
 	private boolean rowCountJdbcParameter = false;
 	private boolean offsetJdbcParameter = false;
 	private boolean limitAll;
-	
+
 	public long getOffset() {
 		return offset;
 	}
@@ -42,7 +42,6 @@ public class Limit {
 		rowCountJdbcParameter = b;
 	}
 
-
 	/**
 	 * @return true if the limit is "LIMIT ALL [OFFSET ...])
 	 */
@@ -55,13 +54,13 @@ public class Limit {
 	}
 
 	public String toString() {
-	    String retVal = "";
-	    if (rowCount > 0 || rowCountJdbcParameter ) {
-	        retVal += " LIMIT "+(rowCountJdbcParameter?"?":rowCount+"");
-	    }
-	    if (offset > 0 || offsetJdbcParameter) {
-	        retVal += " OFFSET "+(offsetJdbcParameter?"?":offset+"");
-	    }
-	    return retVal;
+		String retVal = "";
+		if (rowCount > 0 || rowCountJdbcParameter) {
+			retVal += " LIMIT " + (rowCountJdbcParameter ? "?" : rowCount + "");
+		}
+		if (offset > 0 || offsetJdbcParameter) {
+			retVal += " OFFSET " + (offsetJdbcParameter ? "?" : offset + "");
+		}
+		return retVal;
 	}
 }

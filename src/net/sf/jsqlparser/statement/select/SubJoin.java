@@ -22,7 +22,6 @@
 
 package net.sf.jsqlparser.statement.select;
 
-
 /**
  * A table created by "(tab1 join tab2)".
  */
@@ -42,7 +41,7 @@ public class SubJoin implements FromItem {
 	public void setLeft(FromItem l) {
 		left = l;
 	}
-	
+
 	public Join getJoin() {
 		return join;
 	}
@@ -58,8 +57,8 @@ public class SubJoin implements FromItem {
 	public void setAlias(String string) {
 		alias = string;
 	}
-	
-	public String toString () {
-		return "("+left+" "+join+")"+((alias!=null)?" AS "+alias:"");
+
+	public String toString() {
+		return "(" + left + " " + join + ")" + ((alias != null) ? " AS " + alias : "");
 	}
 }

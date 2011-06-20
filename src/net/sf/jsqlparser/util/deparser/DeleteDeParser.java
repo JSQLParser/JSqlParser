@@ -5,8 +5,8 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string)
- * a {@link net.sf.jsqlparser.statement.delete.Delete}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
+ * {@link net.sf.jsqlparser.statement.delete.Delete}
  */
 public class DeleteDeParser {
 	protected StringBuffer buffer;
@@ -16,15 +16,17 @@ public class DeleteDeParser {
 	}
 
 	/**
-	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share the same<br>
-	 * StringBuffer (buffer parameter) as this object in order to work
-	 * @param buffer the buffer that will be filled with the select
+	 * @param expressionVisitor
+	 *            a {@link ExpressionVisitor} to de-parse expressions. It has to share the same<br>
+	 *            StringBuffer (buffer parameter) as this object in order to work
+	 * @param buffer
+	 *            the buffer that will be filled with the select
 	 */
 	public DeleteDeParser(ExpressionVisitor expressionVisitor, StringBuffer buffer) {
 		this.buffer = buffer;
 		this.expressionVisitor = expressionVisitor;
 	}
-	
+
 	public StringBuffer getBuffer() {
 		return buffer;
 	}
@@ -41,6 +43,7 @@ public class DeleteDeParser {
 		}
 
 	}
+
 	public ExpressionVisitor getExpressionVisitor() {
 		return expressionVisitor;
 	}

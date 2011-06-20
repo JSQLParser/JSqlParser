@@ -8,7 +8,7 @@ public class Concat extends BinaryExpression {
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
-	
+
 	public String getStringExpression() {
 		return "||";
 	}

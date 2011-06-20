@@ -24,7 +24,6 @@ package net.sf.jsqlparser.expression;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 
-
 /**
  * A Date in the form {d 'yyyy-mm-dd'}
  */
@@ -32,13 +31,12 @@ public class DateValue implements Expression {
 	private Date value;
 
 	public DateValue(String value) {
-		this.value = Date.valueOf(value.substring(1, value.length()-1));
+		this.value = Date.valueOf(value.substring(1, value.length() - 1));
 	}
-	
+
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
-
 
 	public Date getValue() {
 		return value;
@@ -47,6 +45,5 @@ public class DateValue implements Expression {
 	public void setValue(Date d) {
 		value = d;
 	}
-
 
 }

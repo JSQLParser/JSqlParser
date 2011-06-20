@@ -10,7 +10,7 @@ public class Drop implements Statement {
 	private String type;
 	private String name;
 	private List parameters;
-	
+
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}
@@ -40,12 +40,12 @@ public class Drop implements Statement {
 	}
 
 	public String toString() {
-		String sql = "DROP "+type+" "+name;
-		
-		if( parameters != null && parameters.size() > 0) {
-			sql += " "+PlainSelect.getStringList(parameters);
+		String sql = "DROP " + type + " " + name;
+
+		if (parameters != null && parameters.size() > 0) {
+			sql += " " + PlainSelect.getStringList(parameters);
 		}
-		
+
 		return sql;
 	}
 }

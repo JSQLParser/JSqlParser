@@ -33,9 +33,8 @@ public class Union implements SelectBody {
 	private Limit limit;
 	private boolean distinct;
 	private boolean all;
-	
-	
-	public void accept(SelectVisitor selectVisitor){
+
+	public void accept(SelectVisitor selectVisitor) {
 		selectVisitor.visit(this);
 	}
 
@@ -45,6 +44,7 @@ public class Union implements SelectBody {
 
 	/**
 	 * the list of {@link PlainSelect}s in this UNION
+	 * 
 	 * @return the list of {@link PlainSelect}s
 	 */
 	public List getPlainSelects() {
@@ -66,7 +66,7 @@ public class Union implements SelectBody {
 	public void setLimit(Limit limit) {
 		this.limit = limit;
 	}
-	
+
 	/**
 	 * This is not 100% right; every UNION should have their own All/Distinct clause...
 	 */
@@ -88,7 +88,7 @@ public class Union implements SelectBody {
 	public void setDistinct(boolean distinct) {
 		this.distinct = distinct;
 	}
-	
+
 	public String toString() {
 
 		String selects = "";
@@ -98,15 +98,13 @@ public class Union implements SelectBody {
 		} else if (isDistinct()) {
 			allDistinct = "DISTINCT ";
 		}
-			
+
 		for (int i = 0; i < plainSelects.size(); i++) {
 			selects += "(" + plainSelects.get(i) + ((i < plainSelects.size() - 1) ? ") UNION " + allDistinct : ")");
 		}
 
-		return selects + 
-				((orderByElements!=null)?PlainSelect.orderByToString(orderByElements):"") +
-				((limit!=null)?limit+"":"");  
+		return selects + ((orderByElements != null) ? PlainSelect.orderByToString(orderByElements) : "")
+				+ ((limit != null) ? limit + "" : "");
 	}
-	
 
 }

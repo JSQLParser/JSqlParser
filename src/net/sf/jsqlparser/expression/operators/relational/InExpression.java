@@ -19,7 +19,7 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 package net.sf.jsqlparser.expression.operators.relational;
 
 import java.awt.event.ItemListener;
@@ -27,13 +27,11 @@ import java.awt.event.ItemListener;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
-
-
 public class InExpression implements Expression {
 	private Expression leftExpression;
-	private ItemsList itemsList; 
+	private ItemsList itemsList;
 	private boolean not = false;
-	
+
 	public InExpression() {
 	}
 
@@ -41,7 +39,7 @@ public class InExpression implements Expression {
 		setLeftExpression(leftExpression);
 		setItemsList(itemsList);
 	}
-	
+
 	public ItemsList getItemsList() {
 		return itemsList;
 	}
@@ -71,6 +69,6 @@ public class InExpression implements Expression {
 	}
 
 	public String toString() {
-		return leftExpression + " "+((not)?"NOT ":"")+"IN "+ itemsList+"";
+		return leftExpression + " " + ((not) ? "NOT " : "") + "IN " + itemsList + "";
 	}
 }

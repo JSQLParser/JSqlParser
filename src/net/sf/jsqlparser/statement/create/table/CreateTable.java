@@ -12,73 +12,73 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  */
 public class CreateTable implements Statement {
 
-    private Table table;
-    private List tableOptionsStrings;
-    private List columnDefinitions;
-    private List indexes;
+	private Table table;
+	private List tableOptionsStrings;
+	private List columnDefinitions;
+	private List indexes;
 
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
-    }
+	public void accept(StatementVisitor statementVisitor) {
+		statementVisitor.visit(this);
+	}
 
-    /**
-     * The name of the table to be created
-     */
-    public Table getTable() {
-        return table;
-    }
+	/**
+	 * The name of the table to be created
+	 */
+	public Table getTable() {
+		return table;
+	}
 
-    public void setTable(Table table) {
-        this.table = table;
-    }
+	public void setTable(Table table) {
+		this.table = table;
+	}
 
-    /**
-     * A list of {@link ColumnDefinition}s of this table.
-     */
-    public List getColumnDefinitions() {
-        return columnDefinitions;
-    }
+	/**
+	 * A list of {@link ColumnDefinition}s of this table.
+	 */
+	public List getColumnDefinitions() {
+		return columnDefinitions;
+	}
 
-    public void setColumnDefinitions(List list) {
-        columnDefinitions = list;
-    }
+	public void setColumnDefinitions(List list) {
+		columnDefinitions = list;
+	}
 
-    /**
-     * A list of options (as simple strings) of this table definition, as ("TYPE", "=", "MYISAM") 
-     */
-    public List getTableOptionsStrings() {
-        return tableOptionsStrings;
-    }
+	/**
+	 * A list of options (as simple strings) of this table definition, as ("TYPE", "=", "MYISAM")
+	 */
+	public List getTableOptionsStrings() {
+		return tableOptionsStrings;
+	}
 
-    public void setTableOptionsStrings(List list) {
-        tableOptionsStrings = list;
-    }
+	public void setTableOptionsStrings(List list) {
+		tableOptionsStrings = list;
+	}
 
-    /**
-     * A list of {@link Index}es (for example "PRIMARY KEY") of this table.<br>
-     * Indexes created with column definitions (as in mycol INT PRIMARY KEY) are not inserted into this list.  
-     */
-    public List getIndexes() {
-        return indexes;
-    }
+	/**
+	 * A list of {@link Index}es (for example "PRIMARY KEY") of this table.<br>
+	 * Indexes created with column definitions (as in mycol INT PRIMARY KEY) are not inserted into this list.
+	 */
+	public List getIndexes() {
+		return indexes;
+	}
 
-    public void setIndexes(List list) {
-        indexes = list;
-    }
+	public void setIndexes(List list) {
+		indexes = list;
+	}
 
-    public String toString() {
-        String sql = "";
+	public String toString() {
+		String sql = "";
 
-        sql = "CREATE TABLE " + table + " (";
+		sql = "CREATE TABLE " + table + " (";
 
-        sql += PlainSelect.getStringList(columnDefinitions, true, false);
-        if (indexes != null && indexes.size() != 0) {
-            sql += ", ";
-            sql += PlainSelect.getStringList(indexes);
-        }
-        sql += ") ";
-        sql += PlainSelect.getStringList(tableOptionsStrings, false, false);
+		sql += PlainSelect.getStringList(columnDefinitions, true, false);
+		if (indexes != null && indexes.size() != 0) {
+			sql += ", ";
+			sql += PlainSelect.getStringList(indexes);
+		}
+		sql += ") ";
+		sql += PlainSelect.getStringList(tableOptionsStrings, false, false);
 
-        return sql;
-    }
+		return sql;
+	}
 }

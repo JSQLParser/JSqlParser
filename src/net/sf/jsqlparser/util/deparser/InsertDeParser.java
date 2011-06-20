@@ -11,10 +11,9 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
-
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string)
- * an {@link net.sf.jsqlparser.statement.insert.Insert}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) an
+ * {@link net.sf.jsqlparser.statement.insert.Insert}
  */
 public class InsertDeParser implements ItemsListVisitor {
 	protected StringBuffer buffer;
@@ -25,12 +24,16 @@ public class InsertDeParser implements ItemsListVisitor {
 	}
 
 	/**
-	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse {@link net.sf.jsqlparser.expression.Expression}s. It has to share the same<br>
-	 * StringBuffer (buffer parameter) as this object in order to work
-	 * @param selectVisitor a {@link SelectVisitor} to de-parse {@link net.sf.jsqlparser.statement.select.Select}s.
-	 * It has to share the same<br>
-	 * StringBuffer (buffer parameter) as this object in order to work
-	 * @param buffer the buffer that will be filled with the insert
+	 * @param expressionVisitor
+	 *            a {@link ExpressionVisitor} to de-parse {@link net.sf.jsqlparser.expression.Expression}s. It has to
+	 *            share the same<br>
+	 *            StringBuffer (buffer parameter) as this object in order to work
+	 * @param selectVisitor
+	 *            a {@link SelectVisitor} to de-parse {@link net.sf.jsqlparser.statement.select.Select}s. It has to
+	 *            share the same<br>
+	 *            StringBuffer (buffer parameter) as this object in order to work
+	 * @param buffer
+	 *            the buffer that will be filled with the insert
 	 */
 	public InsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuffer buffer) {
 		this.buffer = buffer;
@@ -75,10 +78,11 @@ public class InsertDeParser implements ItemsListVisitor {
 		}
 		buffer.append(")");
 	}
-	
+
 	public void visit(SubSelect subSelect) {
 		subSelect.getSelectBody().accept(selectVisitor);
 	}
+
 	public ExpressionVisitor getExpressionVisitor() {
 		return expressionVisitor;
 	}

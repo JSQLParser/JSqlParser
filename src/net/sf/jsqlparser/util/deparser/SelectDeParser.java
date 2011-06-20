@@ -26,8 +26,8 @@ import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.Union;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string)
- * a {@link net.sf.jsqlparser.statement.select.Select}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
+ * {@link net.sf.jsqlparser.statement.select.Select}
  */
 public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItemVisitor, FromItemVisitor {
 	protected StringBuffer buffer;
@@ -37,9 +37,11 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	}
 
 	/**
-	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share the same<br>
-	 * StringBuffer (buffer parameter) as this object in order to work
-	 * @param buffer the buffer that will be filled with the select
+	 * @param expressionVisitor
+	 *            a {@link ExpressionVisitor} to de-parse expressions. It has to share the same<br>
+	 *            StringBuffer (buffer parameter) as this object in order to work
+	 * @param buffer
+	 *            the buffer that will be filled with the select
 	 */
 	public SelectDeParser(ExpressionVisitor expressionVisitor, StringBuffer buffer) {
 		this.buffer = buffer;
@@ -76,7 +78,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		}
 
 		buffer.append(" ");
-		
+
 		if (plainSelect.getFromItem() != null) {
 			buffer.append("FROM ");
 			plainSelect.getFromItem().accept(this);
@@ -85,7 +87,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		if (plainSelect.getJoins() != null) {
 			for (Iterator iter = plainSelect.getJoins().iterator(); iter.hasNext();) {
 				Join join = (Join) iter.next();
-				deparseJoin(join);		
+				deparseJoin(join);
 			}
 		}
 
@@ -146,7 +148,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		orderBy.getExpression().accept(expressionVisitor);
 		if (orderBy.isAsc())
 			buffer.append(" ASC");
-		else     
+		else
 			buffer.append(" DESC");
 	}
 
@@ -196,7 +198,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	}
 
 	public void deparseLimit(Limit limit) {
-		// LIMIT n OFFSET skip 
+		// LIMIT n OFFSET skip
 		buffer.append(" LIMIT ");
 		if (limit.isRowCountJdbcParameter()) {
 			buffer.append("?");
@@ -204,10 +206,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 			buffer.append(limit.getRowCount());
 		} else {
 			/*
-			 from mysql docs:
-			 For compatibility with PostgreSQL, MySQL also supports the LIMIT row_count OFFSET offset syntax.
-			 To retrieve all rows from a certain offset up to the end of the result set, you can use some large number
-			 for the second parameter. 
+			 * from mysql docs: For compatibility with PostgreSQL, MySQL also supports the LIMIT row_count OFFSET offset
+			 * syntax. To retrieve all rows from a certain offset up to the end of the result set, you can use some
+			 * large number for the second parameter.
 			 */
 			buffer.append("18446744073709551615");
 		}
@@ -247,9 +248,8 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	public void deparseJoin(Join join) {
 		if (join.isSimple())
 			buffer.append(", ");
-		else
-		{
-	
+		else {
+
 			if (join.isRight())
 				buffer.append("RIGHT ");
 			else if (join.isNatural())
@@ -258,7 +258,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 				buffer.append("FULL ");
 			else if (join.isLeft())
 				buffer.append("LEFT ");
-			
+
 			if (join.isOuter())
 				buffer.append("OUTER ");
 			else if (join.isInner())
@@ -267,7 +267,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 			buffer.append("JOIN ");
 
 		}
-		
+
 		FromItem fromItem = join.getRightItem();
 		fromItem.accept(this);
 		if (join.getOnExpression() != null) {
