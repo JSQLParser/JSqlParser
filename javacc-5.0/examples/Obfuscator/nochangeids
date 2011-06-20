@@ -1,0 +1,6 @@
+// Identifiers that must not be obfuscated.
+
+System
+out
+println
+String

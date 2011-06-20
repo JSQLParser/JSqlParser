@@ -1,0 +1,72 @@
+<project name="examples" default="eg1" basedir=".">
+
+  <property name="javacc.home" value="/usr/local/javacc/"/>
+
+  <target name="eg1" description="Builds example 'eg1'">
+    <delete dir="eg1"/>
+    <mkdir dir="eg1"/> 
+    <copy file="eg1.jjt" todir="eg1"/>
+    <jjtree target="eg1.jjt" outputdirectory="eg1" javacchome="${javacc.home}"/>
+    <javacc target="eg1/eg1.jj" outputdirectory="eg1" javacchome="${javacc.home}"/>
+    <javac deprecation="false" srcdir="eg1" destdir="eg1"/>
+    <echo message="*******"/>
+    <echo message="******* Now cd into the eg1 directory and run 'java Eg1' ******"/>
+    <echo message="*******"/>
+  </target>
+
+  <target name="eg2" description="Builds example 'eg2'">
+    <delete dir="eg2"/>
+    <mkdir dir="eg2"/> 
+    <copy file="eg2.jjt" todir="eg2"/>
+    <copy file="ASTMyID.java" todir="eg2"/>
+    <jjtree target="eg2.jjt" outputdirectory="eg2" javacchome="${javacc.home}"/>
+    <javacc target="eg2/eg2.jj" outputdirectory="eg2" javacchome="${javacc.home}"/>
+    <javac deprecation="false" srcdir="eg2" destdir="eg2"/>
+    <echo message="*******"/>
+    <echo message="******* Now cd into the eg2 directory and run 'java Eg2' ******"/>
+    <echo message="*******"/>
+  </target>
+
+  <target name="eg3" description="Builds example 'eg3'">
+    <delete dir="eg3"/>
+    <mkdir dir="eg3"/> 
+    <copy file="eg3.jjt" todir="eg3"/>
+    <copy file="ASTMyID.java" todir="eg3"/>
+    <jjtree target="eg3.jjt" outputdirectory="eg3" javacchome="${javacc.home}"/>
+    <javacc target="eg3/eg3.jj" outputdirectory="eg3" javacchome="${javacc.home}"/>
+    <javac deprecation="false" srcdir="eg3" destdir="eg3"/>
+    <echo message="*******"/>
+    <echo message="******* Now cd into the eg3 directory and run 'java Eg3' ******"/>
+    <echo message="*******"/>
+  </target>
+
+  <target name="eg4" description="Builds example 'eg4'">
+    <delete dir="eg4"/>
+    <mkdir dir="eg4"/> 
+    <copy file="eg4.jjt" todir="eg4"/>
+    <copy file="ASTMyID.java" todir="eg4"/>
+    <copy file="ASTMyOtherID.java" todir="eg4"/>
+    <copy file="Eg4DumpVisitor.java" todir="eg4"/>
+    <jjtree target="eg4.jjt" outputdirectory="eg4" javacchome="${javacc.home}"/>
+    <javacc target="eg4/eg4.jj" outputdirectory="eg4" javacchome="${javacc.home}"/>
+    <javac deprecation="false" srcdir="eg4" destdir="eg4"/>
+    <echo message="*******"/>
+    <echo message="******* Now cd into the eg4 directory and run 'java Eg4' ******"/>
+    <echo message="*******"/>
+  </target>
+
+  <target name="all" description="Builds all examples" depends="clean,eg1,eg2,eg3,eg4">
+    <echo message="*******"/>
+    <echo message="******* All Built ******"/>
+    <echo message="*******"/>
+  </target>
+    
+  <target name="clean" description="Cleans up any example directories">
+    <delete dir="eg1"/>
+    <delete dir="eg2"/>
+    <delete dir="eg3"/>
+    <delete dir="eg4"/>
+  </target>
+    
+
+</project>

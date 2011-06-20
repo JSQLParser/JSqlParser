@@ -1,0 +1,110 @@
+/* Copyright (c) 2006, Sun Microsystems, Inc.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ *     * Redistributions of source code must retain the above copyright notice,
+ *       this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the Sun Microsystems, Inc. nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+This example illustrates the use of lexical states.
+
+In this directory are two grammar files Digest.jj and Faq.jj.  These
+generate parsers that process RMAIL files that are created by the GNU
+emacs editor.  A sample RMAIL file called sampleMailFile is also
+included.
+
+Digest.jj and Faq.jj are both identical in their grammar and lexical
+specifications.  They only differ in their actions.  Digest.jj takes a
+mail file as standard input and produces a digest version of the
+messages to standard output.  This is what we used (before we moved
+over to an automatic mailing list software) to produce the weekly mail
+digest of the JavaCC mailing list.  Faq.jj takes a mail file as
+standard input and produces a mail FAQ in HTML format.  It produces a
+file "index.html" that contains all the mail headers and links to
+other HTML files called "1.html", "2.html", etc. that contain the 1st,
+2nd, etc. messages.  The parser generated from Faq.jj accepts an
+optional integer argument that specifies the message number from where
+to begin processing.
+
+Type the following:
+
+	javacc Digest.jj
+	javacc Faq.jj
+	javac *.java
+	java Digest < sampleMailFile > digestFile
+	java Faq < sampleMailFile
+
+And take a look at the output files created.
+
+
+MORE DETAILS ON HOW THE GRAMMARS WORK:
+
+The grammar specification is rather trivial.  It simply says that a
+MailFile is is a sequence of MailMessage's followed by an end of file.
+And that a MailMessage is a list of one or more <SUBJECT>'s, <FROM>'s,
+and <DATE>'s followed by a list of zero or more <BODY>'s followed by
+an <END>.
+
+Essentially, there are five lexical tokens:
+
+<SUBJECT>, <FROM, <DATE> : Are the strings of the Subject, From, and
+Date fields of the message.
+
+<BODY> : Is a single line of the message body.
+
+<END> : is the end of message token.
+
+The lexical specification starts with a set of reusable private
+regular expressions EOL, TWOEOLS, and NOT_EOL.  These are defined to
+be portable across different platforms where the end of line
+characters are different.
+
+In the <DEFAULT> lexical state, the token manager simply eats up
+characters until it sees the beginning of a message which is marked by
+<<EOL> "*** EOOH ***" <EOL>>.  See the sample mail file for details.
+At this point, it switches to state <MAILHEADER>.
+
+In the state <MAILHEADER>, two consecutive end of line's indicate the
+end of the mail header and therefore the token manager goes to the
+<MAILBODY> lexical state.  Also, if it sees "Subject: ", it goes to
+the <MAILSUBJECT> lexical state, and similarly for "From: " and "Date: ".
+
+The end of message is signified by the "^_" character, of "\u001f".
+The state <MAILBODY> returns to the <DEFAULT> state when it sees this
+character, otherwise it simply returns message body lines one by one.
+
+The general flow chart for the lexical states is shown below.  It is
+useful to make such a diagram when building complex lexical
+specifications.
+
+
+      <DEFAULT> ---> <MAILHEADER> --+--> <MAILSUBJECT> -->+
+       ^                |    ^      |                     |
+       |                |    |      |                     |
+       |                |    |      +--> <MAILFROM> ----->+
+       +- <MAILBODY> <--+    |      |                     |
+                             |      |                     |
+                             |      +--> <MAILDATE> ----->+
+                             |                            |
+                             |                            |
+                             +----------------------------+

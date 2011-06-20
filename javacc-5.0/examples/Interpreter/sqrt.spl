@@ -1,0 +1,12 @@
+
+int val;
+
+read val;
+int sqrt;
+
+sqrt = 1;
+
+while (sqrt * sqrt <= val && ((sqrt + 1) * (sqrt + 1)) <= val)
+  sqrt = sqrt + 1;
+
+write sqrt

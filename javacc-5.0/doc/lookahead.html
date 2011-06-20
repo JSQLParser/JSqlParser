@@ -1,0 +1,986 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Copyright (c) 2006, Sun Microsystems, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the Sun Microsystems, Inc. nor the names of its
+      contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+-->
+<head>
+ <title>JavaCC: LOOKAHEAD MiniTutorial</title>
+<!-- Changed by: Michael Van De Vanter, 14-Jan-2003 -->
+</head>
+<body bgcolor="#FFFFFF" >
+
+<h1>JavaCC [tm]: LOOKAHEAD MiniTutorial</h1>
+
+
+<p>
+<strong>This tutorial refers
+to examples that are available in the Lookahead directory under the
+examples directory of the release.  Currently, this page is a copy of
+the contents of the README file within that directory.
+</strong>
+</p>
+
+
+<h1>Lookahead tutorial</h1>
+
+<p>
+We assume that you have already taken a look at some of the simple
+examples provided in the release before you read this section.
+</p>
+
+<h2>WHAT IS LOOKAHEAD?</h2>
+
+<p>
+The job of a parser is to read an input stream and determine whether
+or not the input stream conforms to the grammar.
+</p>
+<p>
+This determination in its most general form can be quite time
+consuming.  Consider the following example (file Example1.jj):
+</p>
+<pre><tt>
+
+	void Input() :
+	{}
+	{
+	  "a" BC() "c"
+	}
+
+	void BC() :
+	{}
+	{
+	  "b" [ "c" ]
+	}
+</tt></pre>
+<p>
+In this simple example, it is quite clear that there are exactly two
+strings that match the above grammar, namely:
+</p>
+<pre><tt>
+	abc
+	abcc
+</tt></pre>
+<p>
+The general way to perform this match is to walk through the grammar
+based on the string as follows.  Here, we use "abc" as the input
+string:
+</p>
+<ul>
+<li><b>Step 1.</b>
+There is only one choice here - the first input character
+must be 'a' - and since that is indeed the case, we are OK.
+</li>
+<li><b>Step 2.</b>
+We now proceed on to non-terminal BC.  Here again, there is
+only one choice for the next input character - it must be 'b'.  The
+input matches this one too, so we are still OK.
+</li>
+<li><b>Step 3.</b>
+We now come to a "choice point" in the grammar.
+We can either
+go inside the [...] and match it, or ignore it altogether.  We decide
+to go inside.  So the next input character must be a 'c'.  We are
+again OK.
+</li>
+<li><b>Step 4.</b>
+Now we have completed with non-terminal BC and go back to
+non-terminal Input.  Now the grammar says the next character must be
+yet another 'c'.  But there are no more input characters.  So we have
+a problem.
+</li>
+<li><b>Step 5.</b>
+When we have such a problem in the general case, we conclude
+that we may have made a bad choice somewhere.  In this case, we made
+the bad choice in Step 3.  So we retrace our steps back to step 3 and
+make another choice and try that.  This process is called
+"backtracking".
+</li>
+<li><b>Step 6.</b>
+ We have now backtracked and made the other choice we could
+have made at Step 3 - namely, ignore the [...].  Now we have completed
+with non-terminal BC and go back to non-terminal Input.  Now the
+grammar says the next character must be yet another 'c'.  The next
+input character is a 'c', so we are OK now.
+</li>
+<li><b>Step 7.</b>
+ We realize we have reached the end of the grammar (end of
+non-terminal Input) successfully.  This means we have successfully
+matched the string "abc" to the grammar.
+</li>
+</ul>
+<p>
+As the above example indicates, the general problem of matching an
+input with a grammar may result in large amounts of backtracking and
+making new choices and this can consume a lot of time.  The amount of
+time taken can also be a function of how the grammar is written.  Note
+that many grammars can be written to cover the same set of inputs - or
+the same language (i.e., there can be multiple equivalent grammars for
+the same input language).
+</p>
+<hr />
+<p>
+For example, the following grammar would speed up the parsing of the
+same language as compared to the previous grammar:
+</p>
+<pre><tt>
+	void Input() :
+	{}
+	{
+	  "a" "b" "c" [ "c" ]
+	}
+</tt></pre>
+<p>
+while the following grammar slows it down even more since the parser
+has to backtrack all the way to the beginning:
+</p>
+<pre><tt>
+	void Input() :
+	{}
+	{
+	  "a" "b" "c" "c"
+	|
+	  "a" "b" "c"
+	}
+</tt></pre>
+<p>
+One can even have a grammar that looks like the following:
+</p>
+<pre><tt>
+
+	void Input() :
+	{}
+	{
+	  "a" ( BC1() | BC2() )
+	}
+
+	void BC1() :
+	{}
+	{
+	  "b" "c" "c"
+	}
+
+	void BC2() :
+	{}
+	{
+	  "b" "c" [ "c" ]
+	}
+</tt></pre>
+<p>
+This grammar can match "abcc" in two ways, and is therefore considered
+"ambiguous".
+</p>
+<hr />
+<p>
+The performance hit from such backtracking is unacceptable for most
+systems that include a parser.  Hence most parsers do not backtrack in
+this general manner (or do not backtrack at all), rather they make
+decisions at choice points based on limited information and then
+commit to it.
+</p>
+<p>
+Parsers generated by Java Compiler Compiler make decisions at choice
+points based on some exploration of tokens further ahead in the input
+stream, and once they make such a decision, they commit to it.  i.e.,
+No backtracking is performed once a decision is made.
+</p>
+<p>
+
+The process of exploring tokens further in the input stream is termed
+"looking ahead" into the input stream - hence our use of the term
+"LOOKAHEAD".
+</p>
+<p>
+Since some of these decisions may be made with less than perfect
+information (JavaCC [tm] will warn you in these situations, so you don't
+have to worry), you need to know something about LOOKAHEAD to make
+your grammar work correctly.
+</p>
+<p>
+The two ways in which you make the choice decisions work properly are:
+</p>
+<ul>
+<li>
+ Modify the grammar to make it simpler.
+</li>
+<li>
+ Insert hints at the more complicated choice points to help the
+  parser make the right choices.
+</li>
+</ul>
+
+<h2>CHOICE POINTS IN JAVACC GRAMMARS</h2>
+
+<p>
+There are 4 different kinds of choice points in JavaCC:
+</p>
+<ol>
+<li>
+  An expansion of the form: ( exp1 | exp2 | ... ).  In this case, the
+  generated parser has to somehow determine which of exp1, exp2, etc.
+  to select to continue parsing.
+</li>
+<li>
+  An expansion of the form: ( exp )?.  In this case, the generated parser
+  must somehow determine whether to choose exp or to continue beyond
+  the ( exp )? without choosing exp.  Note: ( exp )? may also be written
+  as [ exp ].
+</li>
+<li>
+  An expansion of the form ( exp )*.  In this case, the generated parser
+  must do the same thing as in the previous case, and furthermore, after
+  each time a successful match of exp (if exp was chosen) is completed,
+  this choice determination must be made again.
+</li>
+<li>
+  An expansion of the form ( exp )+.  This is essentially similar to
+  the previous case with a mandatory first match to exp.
+</li>
+</ol>
+<p>
+Remember that token specifications that occur within angular
+brackets &lt;...&gt; also have choice points.  But these choices are made
+in different ways and are the subject of a different tutorial.
+</p>
+
+<h2>THE DEFAULT CHOICE DETERMINATION ALGORITHM</h2>
+
+<p>
+The default choice determination algorithm looks ahead 1 token in the
+input stream and uses this to help make its choice at choice points.
+</p>
+<p>
+The following examples will describe the default algorithm fully:
+</p>
+<p>
+Consider the following grammar (file Example2.jj):
+</p>
+<pre><tt>
+	void basic_expr() :
+	{}
+	{
+	  &lt;ID&gt; "(" expr() ")"	// Choice 1
+	|
+	  "(" expr() ")"	// Choice 2
+	|
+	  "new" &lt;ID&gt;		// Choice 3
+	}
+</tt></pre>
+<p>
+The choice determination algorithm works as follows:
+</p>
+<pre><tt>
+
+	if (next token is &lt;ID&gt;) {
+	  choose Choice 1
+	} else if (next token is "(") {
+	  choose Choice 2
+	} else if (next token is "new") {
+	  choose Choice 3
+	} else {
+	  produce an error message
+	}
+</tt></pre>
+<hr />
+<p>
+In the above example, the grammar has been written such that the
+default choice determination algorithm does the right thing.  Another
+thing to note is that the choice determination algorithm works in a
+top to bottom order - if Choice 1 was selected, the other choices are
+not even considered.  While this is not an issue in this example
+(except for performance), it will become important later below when
+local ambiguities require the insertion of LOOKAHEAD hints.
+</p>
+<p>
+Suppose the above grammar was modified to (file Example3.jj):
+</p>
+<pre><tt>
+	void basic_expr() :
+	{}
+	{
+	  &lt;ID&gt; "(" expr() ")"	// Choice 1
+	|
+	  "(" expr() ")"	// Choice 2
+	|
+	  "new" &lt;ID&gt;		// Choice 3
+	|
+	  &lt;ID&gt; "." &lt;ID&gt;		// Choice 4
+	}
+
+</tt></pre>
+<p>
+Then the default algorithm will always choose Choice 1 when the next
+input token is &lt;ID&gt; and never choose Choice 4 even if the token
+following &lt;ID&gt; is a ".".  More on this later.
+</p>
+<p>
+You can try running the parser generated from Example3.jj on the input
+"id1.id2".  It will complain that it encountered a "." when it was
+expecting a "(".  Note - when you built the parser, it would have
+given you the following warning message:
+</p>
+<pre><tt>
+Warning: Choice conflict involving two expansions at
+         line 25, column 3 and line 31, column 3 respectively.
+         A common prefix is: &lt;ID&gt;
+         Consider using a lookahead of 2 for earlier expansion.
+</tt></pre>
+<p>
+Essentially, JavaCC is saying it has detected a situation in your
+grammar which may cause the default lookahead algorithm to do strange
+things.  The generated parser will still work using the default
+lookahead algorithm - except that it may not do what you expect of it.
+</p>
+<hr />
+<p>
+Now consider the following example (file Example 4.jj):
+</p>
+<pre><tt>
+
+	void identifier_list() :
+	{}
+	{
+	  &lt;ID&gt; ( "," &lt;ID&gt; )*
+	}
+
+</tt></pre>
+<p>
+Suppose the first &lt;ID&gt; has already been matched and that the parser
+has reached the choice point (the (...)* construct).  Here's how the
+choice determination algorithm works:
+</p>
+<pre><tt>
+
+	while (next token is ",") {
+	  choose the nested expansion (i.e., go into the (...)* construct)
+	  consume the "," token
+	  if (next token is &lt;ID&gt;) consume it, otherwise report error
+	}
+
+</tt></pre>
+<hr />
+<p>
+In the above example, note that the choice determination algorithm
+does not look beyond the (...)* construct to make its decision.
+Suppose there was another production in that same grammar as follows
+(file Example5.jj):
+</p>
+<pre><tt>
+	void funny_list() :
+	{}
+	{
+	  identifier_list() "," &lt;INT&gt;
+	}
+</tt></pre>
+<p>
+When the default algorithm is making a choice at ( "," &lt;ID&gt; )*, it
+will always go into the (...)* construct if the next token is a ",".
+It will do this even when identifier_list was called from funny_list
+and the token after the "," is an &lt;INT&gt;.  Intuitively, the right thing
+to do in this situation is to skip the (...)* construct and return to
+funny_list.  More on this later.
+</p>
+<p>
+As a concrete example, suppose your input was "id1, id2, 5", the
+parser will complain that it encountered a 5 when it was expecting an
+&lt;ID&gt;.  Note - when you built the parser, it would have given you the
+following warning message:
+</p>
+<pre><tt>
+
+Warning: Choice conflict in (...)* construct at line 25, column 8.
+         Expansion nested within construct and expansion following construct
+         have common prefixes, one of which is: ","
+         Consider using a lookahead of 2 or more for nested expansion.
+</tt></pre>
+<p>
+Essentially, JavaCC is saying it has detected a situation in your
+grammar which may cause the default lookahead algorithm to do strange
+things.  The generated parser will still work using the default
+lookahead algorithm - except that it may not do what you expect of it.
+</p>
+<hr />
+<p>We have shown you examples of two kinds of choice points in the
+examples above - "exp1 | exp2 | ...", and "(exp)*".  The other two
+kinds of choice points - "(exp)+" and "(exp)?" - behave similarly to
+(exp)* and we will not be providing examples of their use here.
+</p>
+
+<h3>MULTIPLE TOKEN LOOKAHEAD SPECIFICATIONS</h3>
+
+<p>
+So far, we have described the default lookahead algorithm of the
+generated parsers.  In the majority of situations, the default
+algorithm works just fine.  In situations where it does not work
+well, Java Compiler Compiler provides you with warning messages like
+the ones shown above.  If you have a grammar that goes through
+Java Compiler Compiler without producing any warnings, then the
+grammar is a LL(1) grammar.  Essentially, LL(1) grammars are those
+that can be handled by top-down parsers (such as those generated
+by Java Compiler Compiler) using at most one token of LOOKAHEAD.
+</p>
+<p>
+When you get these warning messages, you can do one of two things.
+</p>
+<p><b>Option 1</b></p>
+<p>
+You can modify your grammar so that the warning messages go away.
+That is, you can attempt to make your grammar LL(1) by making some
+changes to it.
+</p>
+<p>
+The following (file Example6.jj) shows how you may change Example3.jj
+to make it LL(1):
+</p>
+<pre><tt>
+	void basic_expr() :
+	{}
+	{
+	  &lt;ID&gt; ( "(" expr() ")" | "." &lt;ID&gt; )
+	|
+	  "(" expr() ")"
+	|
+	  "new" &lt;ID&gt;
+	}
+
+</tt></pre>
+<p>
+What we have done here is to factor the fourth choice into the first
+choice.  Note how we have placed their common first token &lt;ID&gt; outside
+the parentheses, and then within the parentheses, we have yet another
+choice which can now be performed by looking at only one token in the
+input stream and comparing it with "(" and ".".  This process of
+modifying grammars to make them LL(1) is called "left factoring".
+</p>
+<p>
+The following (file Example7.jj) shows how Example5.jj may be changed
+to make it LL(1):
+</p>
+<pre><tt>
+	void funny_list() :
+	{}
+	{
+	  &lt;ID&gt; "," ( &lt;ID&gt; "," )* &lt;INT&gt;
+	}
+</tt></pre>
+<p>
+Note that this change is somewhat more drastic.
+</p>
+<hr />
+<p><b>Option 2</b></p>
+<p>
+You can provide the generated parser with some hints to help it out
+in the non-LL(1) situations that the warning messages bring to your
+attention.
+</p>
+<p>
+All such hints are specified using either setting the global LOOKAHEAD
+value to a larger value (see below) or by using the LOOKAHEAD(...)
+construct to provide a local hint.
+</p>
+<p>
+A design decision must be made to determine if Option 1 or Option 2 is
+the right one to take.  The only advantage of choosing Option 1 is
+that it makes your grammar perform better.  JavaCC generated parsers
+can handle LL(1) constructs much faster than other constructs.
+However, the advantage of choosing Option 2 is that you have a simpler
+grammar - one that is easier to develop and maintain - one that
+focuses on human-friendliness and not machine-friendliness.
+</p>
+<p>
+
+Sometimes Option 2 is the only choice - especially in the presence of
+user actions.  Suppose Example3.jj contained actions as shown below:
+</p>
+<pre><tt>
+
+	void basic_expr() :
+	{}
+	{
+	  { initMethodTables(); } &lt;ID&gt; "(" expr() ")"
+	|
+	  "(" expr() ")"
+	|
+	  "new" &lt;ID&gt;
+	|
+	  { initObjectTables(); } &lt;ID&gt; "." &lt;ID&gt;
+	}
+</tt></pre>
+<p>
+Since the actions are different, left-factoring cannot be performed.
+
+</p>
+
+<h3>SETTING A GLOBAL LOOKAHEAD SPECIFICATION</h3>
+
+<p>
+You can set a global LOOKAHEAD specification by using the option
+"LOOKAHEAD" either from the command line, or at the beginning of the
+grammar file in the options section.  The value of this option is an
+integer which is the number of tokens to look ahead when making choice
+decisions.  As you may have guessed, the default value of this option
+is 1 - which derives the default LOOKAHEAD algorithm described above.
+</p>
+<p>
+Suppose you set the value of this option to 2.  Then the LOOKAHEAD
+algorithm derived from this looks at two tokens (instead of just one
+token) before making a choice decision.  Hence, in Example3.jj, choice
+1 will be taken only if the next two tokens are &lt;ID&gt; and "(", while
+choice 4 will be taken only if the next two tokens are &lt;ID&gt; and ".".
+Hence, the parser will now work properly for Example3.jj.  Similarly,
+the problem with Example5.jj also goes away since the parser goes into
+the (...)* construct only when the next two tokens are "," and &lt;ID&gt;.
+</p>
+<p>
+By setting the global LOOKAHEAD to 2, the parsing algorithm
+essentially becomes LL(2).  Since you can set the global LOOKAHEAD to
+any value, parsers generated by Java Compiler Compiler are called
+LL(k) parsers.
+</p>
+
+<h3>SETTING A LOCAL LOOKAHEAD SPECIFICATION</h3>
+
+<p>
+You can also set a local LOOKAHEAD specification that affects only a
+specific choice point.  This way, the majority of the grammar can
+remain LL(1) and hence perform better, while at the same time one gets
+the flexibility of LL(k) grammars.  Here's how Example3.jj is modified
+with local LOOKAHEAD to fix the choice ambiguity problem (file
+Example8.jj):
+</p>
+<pre><tt>
+
+	void basic_expr() :
+	{}
+	{
+	  LOOKAHEAD(2)
+	  &lt;ID&gt; "(" expr() ")"	// Choice 1
+	|
+	  "(" expr() ")"	// Choice 2
+	|
+	  "new" &lt;ID&gt;		// Choice 3
+	|
+	  &lt;ID&gt; "." &lt;ID&gt;		// Choice 4
+	}
+</tt></pre>
+<p>
+Only the first choice (the first condition in the translation below)
+is affected by the LOOKAHEAD specification.  All others continue to
+use a single token of LOOKAHEAD:
+</p>
+<pre><tt>
+
+	if (next 2 tokens are &lt;ID&gt; and "(" ) {
+	  choose Choice 1
+	} else if (next token is "(") {
+	  choose Choice 2
+	} else if (next token is "new") {
+	  choose Choice 3
+	} else if (next token is &lt;ID&gt;) {
+	  choose Choice 4
+	} else {
+	  produce an error message
+	}
+</tt></pre>
+<p>
+Similarily, Example5.jj can be modified as shown below (file
+Example9.jj):
+</p>
+<pre><tt>
+
+	void identifier_list() :
+	{}
+	{
+	  &lt;ID&gt; ( LOOKAHEAD(2) "," &lt;ID&gt; )*
+	}
+</tt></pre>
+<p>
+Note, the LOOKAHEAD specification has to occur inside the (...)* which
+is the choice is being made.  The translation for this construct is
+shown below (after the first &lt;ID&gt; has been consumed):
+</p>
+<pre><tt>
+
+	while (next 2 tokens are "," and &lt;ID&gt;) {
+	  choose the nested expansion (i.e., go into the (...)* construct)
+	  consume the "," token
+	  consume the &lt;ID&gt; token
+	}
+</tt></pre>
+<hr />
+<p>
+We strongly discourage you from modifying the global LOOKAHEAD
+default.  Most grammars are predominantly LL(1), hence you will be
+unnecessarily degrading performance by converting the entire grammar
+to LL(k) to facilitate just some portions of the grammar that are not
+LL(1).  If your grammar and input files being parsed are very small,
+then this is okay.
+</p>
+<p>
+You should also keep in mind that the warning messages JavaCC prints
+when it detects ambiguities at choice points (such as the two messages
+shown earlier) simply tells you that the specified choice points are
+not LL(1).  JavaCC does not verify the correctness of your local
+LOOKAHEAD specification - it assumes you know what you are doing, in
+fact, it really cannot verify the correctness of local LOOKAHEAD's as
+the following example of if statements illustrates (file
+Example10.jj):
+</p>
+<pre><tt>
+
+	void IfStm() :
+	{}
+	{
+	 "if" C() S() [ "else" S() ]
+	}
+
+	void S() :
+	{}
+	{
+	  ...
+	|
+	  IfStm()
+	}
+
+</tt></pre>
+<p>
+This example is the famous "dangling else" problem.  If you have a
+program that looks like:
+</p>
+<pre><tt>
+
+	"if C1 if C2 S1 else S2"
+
+</tt></pre>
+<p>
+The "else S2" can be bound to either of the two if statements.  The
+standard interpretation is that it is bound to the inner if statement
+(the one closest to it).  The default choice determination algorithm
+happens to do the right thing, but it still prints the following
+warning message:
+</p>
+<pre><tt>
+
+Warning: Choice conflict in [...] construct at line 25, column 15.
+         Expansion nested within construct and expansion following construct
+         have common prefixes, one of which is: "else"
+         Consider using a lookahead of 2 or more for nested expansion.
+
+</tt></pre>
+<p>
+To suppress the warning message, you could simply tell JavaCC that
+you know what you are doing as follows:
+</p>
+<pre><tt>
+	void IfStm() :
+	{}
+	{
+	 "if" C() S() [ LOOKAHEAD(1) "else" S() ]
+	}
+</tt></pre>
+<p>
+To force lookahead ambiguity checking in such instances, set the option
+FORCE_LA_CHECK to true.
+</p>
+
+<h3>SYNTACTIC LOOKAHEAD</h3>
+
+<p>
+Consider the following production taken from the Java grammar:
+</p>
+<pre><tt>
+
+	void TypeDeclaration() :
+	{}
+	{
+	  ClassDeclaration()
+	|
+	  InterfaceDeclaration()
+	}
+</tt></pre>
+<p>
+At the syntactic level, ClassDeclaration can start with any number of
+"abstract"s, "final"s, and "public"s.  While a subsequent semantic
+check will produce error messages for multiple uses of the same
+modifier, this does not happen until parsing is completely over.
+Similarly, InterfaceDeclaration can start with any number of
+"abstract"s and "public"s.
+</p>
+<p>
+What if the next tokens in the input stream are a very large number of
+"abstract"s (say 100 of them) followed by "interface"?  It is clear
+that a fixed amount of LOOKAHEAD (such as LOOKAHEAD(100) for example)
+will not suffice.  One can argue that this is such a weird situation
+that it does not warrant any reasonable error message and that it is
+okay to make the wrong choice in some pathological situations.  But
+suppose one wanted to be precise about this.
+</p>
+<p>
+The solution here is to set the LOOKAHEAD to infinity - that is set no
+bounds on the number of tokens to look ahead.  One way to do this is
+to use a very large integer value (such as the largest possible
+integer) as follows:
+</p>
+<pre><tt>
+	void TypeDeclaration() :
+	{}
+	{
+	  LOOKAHEAD(2147483647)
+	  ClassDeclaration()
+	|
+	  InterfaceDeclaration()
+	}
+</tt></pre>
+<p>
+One can also achieve the same effect with "syntactic LOOKAHEAD".  In
+syntactic LOOKAHEAD, you specify an expansion to try out and it that
+succeeds, then the following choice is taken.  The above example is
+rewritten using syntactic LOOKAHEAD below:
+</p>
+<pre><tt>
+
+	void TypeDeclaration() :
+	{}
+	{
+	  LOOKAHEAD(ClassDeclaration())
+	  ClassDeclaration()
+	|
+	  InterfaceDeclaration()
+	}
+</tt></pre>
+<p>
+Essentially, what this is saying is:
+</p>
+<pre><tt>
+
+	if (the tokens from the input stream match ClassDeclaration) {
+	  choose ClassDeclaration()
+	} else if (next token matches InterfaceDeclaration) {
+	  choose InterfaceDeclaration()
+	} else {
+	  produce an error message
+	}
+
+</tt></pre>
+<p>
+The problem with the above syntactic LOOKAHEAD specification is that
+the LOOKAHEAD calculation takes too much time and does a lot of
+unnecessary checking.  In this case, the LOOKAHEAD calculation can
+stop as soon as the token "class" is encountered, but the
+specification forces the calculation to continue until the end of the
+class declaration has been reached - which is rather time consuming.
+This problem can be solved by placing a shorter expansion to try out
+in the syntactic LOOKAHEAD specification as in the following example:
+</p>
+<pre><tt>
+
+	void TypeDeclaration() :
+	{}
+	{
+	  LOOKAHEAD( ( "abstract" | "final" | "public" )* "class" )
+	  ClassDeclaration()
+	|
+	  InterfaceDeclaration()
+	}
+</tt></pre>
+<p>
+Essentially, what this is saying is:
+</p>
+<pre><tt>
+	if (the nest set of tokens from the input stream are a sequence of
+	    "abstract"s, "final"s, and "public"s followed by a "class") {
+	  choose ClassDeclaration()
+	} else if (next token matches InterfaceDeclaration) {
+	  choose InterfaceDeclaration()
+	} else {
+	  produce an error message
+	}
+</tt></pre>
+<p>
+By doing this, you make the choice determination algorithm stop as
+soon as it sees "class" - i.e., make its decision at the earliest
+possible time.
+</p>
+<p>
+You can place a bound on the number of tokens to consume during
+syntactic lookahead as follows:
+</p>
+<pre><tt>
+	void TypeDeclaration() :
+	{}
+	{
+	  LOOKAHEAD(10, ( "abstract" | "final" | "public" )* "class" )
+	  ClassDeclaration()
+	|
+	  InterfaceDeclaration()
+	}
+</tt></pre>
+<p>
+In this case, the LOOKAHEAD determination is not permitted to go beyond
+10 tokens.  If it reaches this limit and is still successfully matching
+( "abstract" | "final" | "public" )* "class", then ClassDeclaration is
+selected.
+</p>
+<p>
+Actually, when such a limit is not specified, it defaults to the largest
+integer value (2147483647).
+</p>
+
+<h3>SEMANTIC LOOKAHEAD</h3>
+
+<p>
+Let us go back to Example1.jj:
+</p>
+<pre><tt>
+
+	void Input() :
+	{}
+	{
+	  "a" BC() "c"
+	}
+
+	void BC() :
+	{}
+	{
+	  "b" [ "c" ]
+	}
+</tt></pre>
+<p>
+Let us suppose that there is a good reason for writing a grammar this
+way (maybe the way actions are embedded).  As noted earlier, this
+grammar recognizes two string "abc" and "abcc".  The problem here is
+that the default LL(1) algorithm will choose the [ "c" ] every time
+it sees a "c" and therefore "abc" will never be matched.  We need to
+specify that this choice must be made only when the next token is a
+"c", and the token following that is not a "c".  This is a negative
+statement - one that cannot be made using syntactic LOOKAHEAD.
+</p>
+<p>
+We can use semantic LOOKAHEAD for this purpose.  With semantic
+LOOKAHEAD, you can specify any arbitrary boolean expression whose
+evaluation determines which choice to take at a choice point.  The
+above example can be instrumented with semantic LOOKAHEAD as follows:
+</p>
+<pre><tt>
+	void BC() :
+	{}
+	{
+	  "b"
+	  [ LOOKAHEAD( { getToken(1).kind == C &amp;&amp; getToken(2).kind != C } )
+	    &lt;C:"c"&gt;
+	  ]
+	}
+</tt></pre>
+<p>
+First we give the token "c" a label C so that we can refer to it from
+the semantic LOOKAHEAD.  The boolean expression essentially states the
+desired property.  The choice determination decision is therefore:
+</p>
+<pre><tt>
+	if (next token is "c" and following token is not "c") {
+	  choose the nested expansion (i.e., go into the [...] construct)
+	} else {
+	  go beyond the [...] construct without entering it.
+	}
+</tt></pre>
+<p>
+This example can be rewritten to combine both syntactic and semantic
+LOOKAHEAD as follows (recognize the first "c" using syntactic
+LOOKAHEAD and the absence of the second using semantic LOOKAHEAD):
+</p>
+<pre><tt>
+	void BC() :
+	{}
+	{
+	  "b"
+	  [ LOOKAHEAD( "c", { getToken(2).kind != C } )
+	    &lt;C:"c"&gt;
+	  ]
+	}
+</tt></pre>
+
+<h3>GENERAL STRUCTURE OF LOOKAHEAD</h3>
+
+<p>
+We've pretty much covered the various aspects of LOOKAHEAD in the
+previous sections.  A couple of advanced topics follow.  However,
+we shall now present a formal language reference for LOOKAHEAD in
+Java Compiler Compiler:
+</p>
+<p>
+The general structure of a LOOKAHEAD specification is:
+</p>
+<pre><tt>
+
+	LOOKAHEAD( amount,
+	           expansion,
+	           { boolean_expression }
+	         )
+</tt></pre>
+<p>
+"amount" specifies the number of tokens to LOOKAHEAD,"expansion"
+specifies the expansion to use to perform syntactic LOOKAHEAD, and
+"boolean_expression" is the expression to use for semantic
+LOOKAHEAD.
+</p>
+<p>
+At least one of the three entries must be present.  If more than
+one are present, they are separated by commas.  The default values
+for each of these entities is defined below:
+</p>
+<pre><tt>
+
+"amount":
+ - if "expansion is present, this defaults to 2147483647.
+ - otherwise ("boolean_expression" must be present then) this
+   defaults to 0.
+
+Note: When "amount" is 0, no syntactic LOOKAHEAD is performed.  Also,
+"amount" does not affect the semantic LOOKAHEAD.
+
+"expansion":
+- defaults to the expansion being considered.
+
+"boolean_expression":
+
+- defaults to true.
+</tt></pre>
+
+<h3>NESTED EVALUATION OF SEMANTIC LOOKAHEAD</h3>
+<p>
+To be done.
+</p>
+
+<h3>JAVACODE PRODUCTIONS</h3>
+<p>
+To be done. 
+</p>
+
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Copyright (c) 2006, Sun Microsystems, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the Sun Microsystems, Inc. nor the names of its
+      contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+-->
+<head>
+ <title>JavaCC: JJTree README</title>
+<!-- Changed by: Michael Van De Vanter, 14-Jan-2003 -->
+</head>
+<body bgcolor="#FFFFFF" >
+
+<h1>JavaCC [tm]: README for JJTreeExamples</h1>
+
+<pre>
+JJTreeExamples
+
+This directory contains some simple JJTree input files intended to
+illustrate some of the basic ideas.  All of them are based on an
+grammar to recognize arithmetic expressions built out of identifiers
+and constants.
+
+eg1.jjt
+
+This example is just the JavaCC [tm] grammar, with a little extra code in
+the parser's main method to call the dump method on the generated
+tree.  It illustrates how the default behavior of JJTree will produce
+a tree of non-terminals.
+
+eg2.jjt
+
+This example is the same grammar as eg1.jjt with modifications to
+customize the generated tree.  It illustrates how unnecessary
+intermediate nodes can be suppressed, and how actions in the grammar
+can attach extra information to the nodes.
+
+eg3.jjt
+
+This example is a modification of eg2.jjt with the NODE_DEFAULT_VOID
+option set.  This instructs JJTree to treat all undecorated
+non-terminals as if they were decorated as #void. The default JJTree
+behavior is to treat such non-terminals as if they were decorated
+with the name of the non-terminal.
+
+eg4.jjt
+
+This is a modification of eg3.jjt with the VISITOR option set.  This
+instructs JJTree to insert a jjtAccept() method into all nodes it
+generates, and to produce a visitor class.  The visitor is used to
+dump the tree.
+
+
+Here are some instructions on how to run the examples and the output
+you can expect to see.
+
+eg1.jjt
+-------
+
+The only bit of JJTree-specific code is an action in the start
+production that dumps the constructed parse tree when the parse is
+complete.  It uses JJTree simple mode.
+
+The input file is eg1.jjt.
+
+trane% jjtree eg1.jjt
+<<< Version and copyright info>>>
+(type "jjtree" with no arguments for help)
+Reading from file eg1.jjt . . .
+Annotated grammar generated successfully in eg1.jj
+trane%
+
+JJTree has now generated the JavaCC parser source, as well as Java
+source for the parse tree node building classes.  Running JavaCC in
+the normal way generates the remaining Java code.
+
+trane% javacc eg1.jj
+<<< Version and copyright info>>>
+(type "javacc" with no arguments for help)
+Reading from file eg1.jj . . .
+File "TokenMgrError.java" does not exist.  Will create one.
+File "ParseException.java" does not exist.  Will create one.
+File "Token.java" does not exist.  Will create one.
+File "ASCII_CharStream.java" does not exist.  Will create one.
+Parser generated successfully.
+trane%
+
+Compile and run the Java program as usual.  The expression is read from the
+standard input (you type in "(a + b) * (c + 1);"):
+
+trane% javac eg1.java
+trane% java eg1
+Reading from standard input...
+(a + b) * (c + 1);
+Start
+ Expression
+  AdditiveExpression
+   MultiplicativeExpression
+    UnaryExpression
+     Expression
+      AdditiveExpression
+       MultiplicativeExpression
+        UnaryExpression
+         Identifier
+       MultiplicativeExpression
+        UnaryExpression
+         Identifier
+    UnaryExpression
+     Expression
+      AdditiveExpression
+       MultiplicativeExpression
+        UnaryExpression
+         Identifier
+       MultiplicativeExpression
+        UnaryExpression
+         Integer
+Thank you.
+trane%
+
+eg2.jjt
+-------
+
+This is a modification of the first example to illustrate how the
+parse tree can be customized:
+
+trane% jjtree eg2.jjt
+<<< Version and copyright info>>>
+(type "jjtree" with no arguments for help)
+Reading from file eg2.jjt . . .
+File "Node.java" does not exist.  Will create one.
+File "SimpleNode.java" does not exist.  Will create one.
+File "ASTStart.java" does not exist.  Will create one.
+File "ASTAdd.java" does not exist.  Will create one.
+File "ASTMult.java" does not exist.  Will create one.
+File "ASTInteger.java" does not exist.  Will create one.
+Annotated grammar generated successfully in eg2.jj
+trane%
+trane% javacc eg2.jj
+<<< Version and copyright info>>>
+(type "javacc" with no arguments for help)
+Reading from file eg2.jj . . .
+File "TokenMgrError.java" does not exist.  Will create one.
+File "ParseException.java" does not exist.  Will create one.
+File "Token.java" does not exist.  Will create one.
+File "ASCII_CharStream.java" does not exist.  Will create one.
+Parser generated successfully.
+trane%
+trane% javac eg2.java
+trane% java eg2
+Reading from standard input...
+(a + b) * (c + 1);
+Start
+ Mult
+  Add
+   Identifier: a
+   Identifier: b
+  Add
+   Identifier: c
+   Integer
+Thank you.
+trane%
+
+Look at eg2.jjt to see how node annotations can be used to restructure
+the parse tree, and at ASTMyID.java to see how you can write your own
+node classes that maintain more information from the input stream.
+
+eg3.jjt
+-------
+
+This example can be run in the same manner as you ran eg2.jjt.
+
+eg4.jjt
+-------
+
+This example again can be run in the same manner as you ran eg2.jjt.
+One thing to take care in this case is that you must run jjtree on
+a clean directory (that does not contain previously generated files).
+For example, the file SimpleNode.java is different when the option
+VISITOR is set to true.
+</pre>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Copyright (c) 2006, Sun Microsystems, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the Sun Microsystems, Inc. nor the names of its
+      contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+-->
+<head>
+ <title>JavaCC: JJDoc Documentation</title>
+<!-- Changed by: Michael Van De Vanter, 14-Jan-2003 -->
+<!-- Changed by: Tim Pizey, 08-March-2007 -->
+</head>
+<body bgcolor="#FFFFFF" >
+
+<h1>JavaCC [tm]: JJDoc Documentation</h1>
+<p>
+JJDoc takes a JavaCC [tm] parser specification and produces documentation
+for the BNF grammar.  It can operate in several modes, determined by
+command line options.
+</p>
+
+<dl>
+  <dt><code>TEXT</code></dt>
+
+  <dd>(default false)
+
+	<p>
+	Setting <code>TEXT</code> to true causes JJDoc to generate
+	a plain text format description of the BNF.  Some formatting
+	is done via tab characters, but the intention is to leave it
+	as plain as possible.
+	</p>
+
+	<p>
+	The default value of <code>TEXT</code> causes JJDoc to
+	generate a hyperlinked HTML document.
+	</p>
+  </dd>
+
+  <dt><code>BNF</code></dt>
+
+  <dd>(default false)
+	<p>
+	Setting <code>BNF</code> to true causes JJDoc to generate
+	a pure BNF document.
+	</p>
+  </dd>
+
+  <dt><code>ONE_TABLE</code></dt>
+
+  <dd>(default true)
+
+	<p>
+	The default value of <code>ONE_TABLE</code> is used to
+	generate a single HTML table for the BNF.  Setting it to
+	false will produce one table for every production in the
+	grammar.
+	</p>
+  </dd>
+
+  <dt><code>OUTPUT_FILE</code></dt>
+
+  <dd>
+	<p>
+    The default behavior is to put the JJDoc output into a file
+	with either .html or .txt added as a suffix to the input
+	file's base name.  You can supply a different file name with
+	this option.
+	</p>
+  </dd>
+
+  <dt><code>CSS</code></dt>
+
+  <dd>
+	<p>
+      This option allows you to specify a CSS file name.  If you supply
+      a file name in this option it will appear in a <code>LINK</code> element
+      in the <code>HEAD</code> section of the file.  This option only applies
+      to HTML output.
+	</p>
+  </dd>
+</dl>
+
+<p>
+Comments in the JavaCC source that immediately precede a
+production are passed through to the generated documentation.
+</p>
+
+<p>
+The results for JavaCC are given as <a href="JavaCC.txt">text</a> or <a href="JavaCC.html">HTML</a>.
+</p>
+
+<hr />
+
+</body>
+</html>

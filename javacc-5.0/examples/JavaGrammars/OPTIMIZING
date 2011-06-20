@@ -1,0 +1,267 @@
+/* Copyright (c) 2006, Sun Microsystems, Inc.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ *     * Redistributions of source code must retain the above copyright notice,
+ *       this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the Sun Microsystems, Inc. nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+This file describes in a step by step manner how you can modify the
+lookaheads in your grammar to optimize for space in the generated
+parser.  This is only necessary until JavaCC is improved to do this
+optimization automatically (at which time, we will delete this file).
+
+1. How much space optimization can one expect?
+
+The optimizations that we show here gets rid of all methods in the
+generated parser which start with "jj_2" and "jj_3" respectively.  So
+take a look at your generated parser and figure out how much space is
+occupied by these methods.  When we performed this optimization on the
+Java grammar, we were able to decrease the size of the generated
+parser by more than 50%.
+
+2. Why are "jj_2" and "jj_3" methods generated?
+
+These methods are generated to handle all lookaheads except the
+following:
+
+a. A syntactic lookahead of 1 (the most common situation).
+b. For any amount of syntactic lookahead - when the target expansion can
+   match the empty string.
+c. When the syntactic lookahead is 0.  Typically there is only semantic
+   lookahead this situation.
+
+The "jj_2" and "jj_3" methods are also generated for lookaheads in the
+(a) and (b) categories above when hoisting of semantic predicates is
+required.
+
+3. Summary of how we achieve the optimization:
+
+Essentially, we go through the entire grammar looking for choice
+points that are not one of (a), (b), or (c) above.  We then replace
+the lookaheads at these points with one of kind (c) above.
+
+When we do this, JavaCC generates a parser where all the new semantic
+lookaheads causes hoisting which affect other related choice points
+and cause the "jj_2" and "jj_3" methods to be generated there.
+
+So the final step is to locate these related choice points and insert
+explicit lookahead specifications here to prevent hoisting from taking
+place.
+
+4. When is a grammar amenable to such optimization?
+
+If the majority of the choice points in your grammar use lookaheads
+that fall into the categories (a), (b), or (c) above then go for it.
+Otherwise, you'll be spending too much work and essentially rewriting
+the entire parser.  It took a few hours to optimize the Java grammar.
+But I would not recommend doing it for C++ (for C++, just wait for
+JavaCC to be upgraded to do it automatically).
+
+5. Step by step instructions:
+
+Suppose your grammar file is called Grammar.jj.  You are going to go
+through two steps - in the first step, you create Grammar1.jj, and
+in the second step you create the final grammar file - Grammar2.jj.
+Lets also assume that the parsers generated from these grammar files
+are Grammar.java, Grammar1.java, and Grammar2.java respectively.
+
+STEP 1:
+
+For every lookahead in your grammar that does not fit into categories
+(a), (b), or (c) above, replace it with an equivalent semantic
+lookahead.  When you're done with all such replacements, the resulting
+file is Grammar1.jj.
+
+Example:
+
+In the Java1.1.jj grammar, we have the following production for Name:
+
+void Name() :
+{}
+{
+  <IDENTIFIER>
+  ( LOOKAHEAD(2)
+    "." <IDENTIFIER>
+  )*
+}
+
+It uses a lookahead of 2 - obviously this means that the choice
+selection succeeds only if the next two characters are a "." and
+an <IDENTIFIER>.  The following modification replaces the syntactic
+lookahead with a semantic lookahead:
+
+void Name() :
+{}
+{
+  <IDENTIFIER>
+  ( LOOKAHEAD( { getToken(1).kind == DOT && getToken(2).kind == IDENTIFIER } )
+    "." <IDENTIFIER>
+  )*
+}
+
+STEP 2:
+
+Run JavaCC on both Grammar.jj and Grammar1.jj to obtain Grammar.java
+and Grammar1.java.  Remember, the goal is to get rid of "jj_2" and
+"jj_3" methods from the grammar.  Changes are you will see a bunch of
+"jj_2" and "jj_3" methods in Grammar1.java.  We need to focus only
+on the "jj_2" methods.  When these methods are removed, the "jj_3"
+methods automatically go away too.  In the Java grammar, we found 23
+"jj_2" methods to get rid of in this step.
+
+Search for calls to "jj_2" methods in Grammar1.java.  Locate the
+corresponding portions in Grammar1.jj (the choice points in the grammar
+corresponding to these calls).  These calls are there to perform
+hoisting (which you don't want - you don't need to understand hoisting
+to perform this step).
+
+Now look for corresponding locations in Grammar.java.  You will see
+references to a token mask array instead of a "jj_2" call at these
+locations.  Take a look at the value of the token mask array.  Use
+these values to create a new lookahead for this choice point to get
+rid of the "jj_2" call.
+
+The resulting grammar (Grammar2.jj) is the grammar you want.
+
+Obviously, we need an example:
+
+The Java parser generated after performing step 1 has the following
+method with a call to a "jj_2" method ("jj_2_3"):
+
+  static final public void UnmodifiedInterfaceDeclaration() throws ParseException {
+    jj_consume_token(INTERFACE);
+    jj_consume_token(IDENTIFIER);
+    if (jj_mask_29[getToken(1).kind]) {
+      jj_consume_token(EXTENDS);
+      NameList();
+    } else {
+      jj_expLA1[29] = jj_gen;
+      ;
+    }
+    jj_consume_token(LBRACE);
+    label_8:
+    while (true) {
+      if (jj_2_3(1)) {
+        ;
+      } else {
+        break label_8;
+      }
+      InterfaceMemberDeclaration();
+    }
+    jj_consume_token(RBRACE);
+  }
+
+The corresponding location in the Java grammar is:
+
+void UnmodifiedInterfaceDeclaration() :
+{}
+{
+  "interface" <IDENTIFIER> [ "extends" NameList() ]
+  "{"
+    ( // <-- the choice point
+      InterfaceMemberDeclaration()
+    )*
+  "}"
+}
+
+The choice point corresponding to the call to "jj_2_3" above is
+marked by the arrow.
+
+Now lets take a look at the parser generated from the original Java
+grammar.  The above method is shown below:
+
+  static final public void UnmodifiedInterfaceDeclaration() throws ParseException {
+    jj_consume_token(INTERFACE);
+    jj_consume_token(IDENTIFIER);
+    if (jj_mask_40[getToken(1).kind]) {
+      jj_consume_token(EXTENDS);
+      NameList();
+    } else {
+      jj_expLA1[40] = jj_gen;
+      ;
+    }
+    jj_consume_token(LBRACE);
+    label_9:
+    while (true) {
+      if (jj_mask_41[getToken(1).kind]) {
+        ;
+      } else {
+        jj_expLA1[41] = jj_gen;
+        break label_9;
+      }
+      InterfaceMemberDeclaration();
+    }
+    jj_consume_token(RBRACE);
+  }
+
+Instead of the call to "jj_2_3", there is a reference to the token
+mask array "jj_mask_41".  Now take a look at the initialization of
+"jj_mask_41" that occurs a few lines further on:
+
+  static boolean[] jj_mask_41 = new boolean[120];
+  static {
+    jj_mask_41[ABSTRACT] =
+    jj_mask_41[BOOLEAN] =
+    jj_mask_41[BYTE] =
+    jj_mask_41[CHAR] =
+    jj_mask_41[CLASS] =
+    jj_mask_41[DOUBLE] =
+    jj_mask_41[FINAL] =
+    jj_mask_41[FLOAT] =
+    jj_mask_41[INT] =
+    jj_mask_41[INTERFACE] =
+    jj_mask_41[LONG] =
+    jj_mask_41[NATIVE] =
+    jj_mask_41[PRIVATE] =
+    jj_mask_41[PROTECTED] =
+    jj_mask_41[PUBLIC] =
+    jj_mask_41[SHORT] =
+    jj_mask_41[STATIC] =
+    jj_mask_41[SYNCHRONIZED] =
+    jj_mask_41[TRANSIENT] =
+    jj_mask_41[VOID] =
+    jj_mask_41[VOLATILE] =
+    jj_mask_41[IDENTIFIER] = true;
+  }
+
+This defines the tokens that must be matched at the choice point
+in order for that choice point to succeed.  Use this to explicitly
+insert a lookahead specification into the grammar to prevent the
+hoisting of semantic predicates.  Hence the resulting production
+in the final grammar is:
+
+void UnmodifiedInterfaceDeclaration() :
+{}
+{
+  "interface" <IDENTIFIER> [ "extends" NameList() ]
+  "{"
+    (
+      LOOKAHEAD(1, <ABSTRACT> | <BOOLEAN> | <BYTE> | <CHAR> | <CLASS> | <DOUBLE> |
+                   <FINAL> | <FLOAT> | <INT> | <INTERFACE> | <LONG> | <NATIVE> |
+                   <PRIVATE> | <PROTECTED> | <PUBLIC> | <SHORT> | <STATIC> |
+                   <SYNCHRONIZED> | <TRANSIENT> | <VOID> | <VOLATILE> | <IDENTIFIER>)
+      InterfaceMemberDeclaration()
+    )*
+  "}"
+}

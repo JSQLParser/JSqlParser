@@ -1,0 +1,92 @@
+/* Copyright (c) 2006, Sun Microsystems, Inc.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ *     * Redistributions of source code must retain the above copyright notice,
+ *       this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the Sun Microsystems, Inc. nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+This directory contains many examples of JavaCC and JJTree input grammars.
+We recommend you see the examples in the following order.  Each directory
+contains a README file with more detailed instructions:
+
+SimpleExamples:
+	This is a set of very simple JavaCC examples.  After trying these
+	examples out, you should be able to build reasonably complex
+	examples yourself.
+
+MailProcessing:
+	These examples illustrate the use of JavaCC in parsing emacs
+	mail files.  They highlight the use of lexical states.
+
+JJTreeExamples:
+	There are simple input grammars for JJTree, the tree building
+	preprocessor.
+
+CORBA-IDL:
+	This is a grammar for the IDL interface definition language of
+	OMG CORBA 2.0.
+
+JavaGrammars:
+	This directory contains extremely well debugged and maintained
+	Java grammars for both the 1.0.2 and 1.1 versions of the
+	language.
+
+JavaCCGrammar:
+	This directory contains the official JavaCC/JJTree grammar.  This
+	is the grammar based on which JavaCC and JJTree are built.
+
+Transformer:
+	This example illustrates how a Java language extension is defined
+	and transformed back into Java.  This makes use of JJTree.
+
+GUIParsing:
+	These examples illustrate how one may obtain input for parsing
+	or lexical analysis from a GUI, and thereby provide "parsing"
+	of GUI interactions.  In addition, one of these examples
+	illustrates how state machines may be described as lexical
+	specifications.
+
+Obfuscator:
+	This is a complete implementation of a Java obfuscator.  This
+	allows one to take a set of Java source files and modify them
+	into semantically equivalent source files that are much more
+	difficult to read.  This example shows the usage of multiple
+	parsers used from one system.
+
+Interpreter:
+	This is an interpreter for a simple language with declarations,
+	assignments, expressions, conditionals, loops, etc.  It
+	demonstrates really nicely a complex example where JJTree is
+	used to drastically simplify the process of generating parse
+	trees.  All actions are really methods built into the generated
+	tree nodes.
+
+Lookahead:
+	This directory contains the tutorial on LOOKAHEAD along with all
+	examples used in the tutorial.
+
+VTransformer:
+	This directory contains an example of using the Visitor design
+	pattern with JJTree.  Like the Transformer example, it shows how
+	a Java program can be processed into a slightly different form.

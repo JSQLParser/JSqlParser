@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Copyright (c) 2006, Sun Microsystems, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the Sun Microsystems, Inc. nor the names of its
+      contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+-->
+<head>
+ <title>JavaCC Command Line Syntax</title>
+<!-- Changed by: Michael Van De Vanter, 14-Jan-2003 -->
+</head>
+<body bgcolor="#FFFFFF" >
+
+<h1>JavaCC [tm]: Command Line Syntax</h1>
+<p>
+First, you can obtain a synopsis of the command line syntax by simply
+typing "javacc".  This is what you get:
+</p>
+<pre>
+% javacc
+&lt;&lt;&lt;&lt; Version and copyright info&gt;&gt;&gt;
+
+Usage:
+    javacc option-settings inputfile
+
+"option-settings" is a sequence of settings separated by spaces.
+Each option setting must be of one of the following forms:
+
+    -optionname=value (e.g., -STATIC=false)
+    -optionname:value (e.g., -STATIC:false)
+    -optionname       (equivalent to -optionname=true.  e.g., -STATIC)
+    -NOoptionname     (equivalent to -optionname=false. e.g., -NOSTATIC)
+
+Option settings are not case-sensitive, so one can say "-nOsTaTiC" instead
+of "-NOSTATIC".  Option values must be appropriate for the corresponding
+option, and must be either an integer, a boolean, or a string value.
+
+The integer valued options are:
+
+    LOOKAHEAD              (default 1)
+    CHOICE_AMBIGUITY_CHECK (default 2)
+    OTHER_AMBIGUITY_CHECK  (default 1)
+
+The boolean valued options are:
+
+    STATIC                 (default true)
+    SUPPORT_CLASS_VISIBILITY_PUBLIC (default true)
+    DEBUG_PARSER           (default false)
+    DEBUG_LOOKAHEAD        (default false)
+    DEBUG_TOKEN_MANAGER    (default false)
+    ERROR_REPORTING        (default true)
+    JAVA_UNICODE_ESCAPE    (default false)
+    UNICODE_INPUT          (default false)
+    IGNORE_CASE            (default false)
+    COMMON_TOKEN_ACTION    (default false)
+    USER_TOKEN_MANAGER     (default false)
+    USER_CHAR_STREAM       (default false)
+    BUILD_PARSER           (default true)
+    BUILD_TOKEN_MANAGER    (default true)
+    TOKEN_MANAGER_USES_PARSER (default false)
+    SANITY_CHECK           (default true)
+    FORCE_LA_CHECK         (default false)
+    CACHE_TOKENS           (default false)
+    KEEP_LINE_COLUMN       (default true)
+
+The string valued options are:
+
+    OUTPUT_DIRECTORY       (default Current Directory)
+    TOKEN_EXTENDS          (java.lang.Object)
+    TOKEN_FACTORY          (java.lang.Object)
+    JDK_VERSION            (1.5)
+    GRAMMAR_ENCODING       (default file.encoding)
+
+EXAMPLE:
+    javacc -STATIC=false -LOOKAHEAD:2 -debug_parser mygrammar.jj
+
+ABOUT JavaCC:
+
+    JavaCC is a parser generator for the Java [tm] programming
+    language originally built by
+    Sriram Sankar (http://www.cs.stanford.edu/~sankar) and
+    Sreeni Viswanadha (http://www.cs.albany.edu/~sreeni).
+
+%
+</pre>
+<p>
+Any option may be set either on the command line as shown in the help message
+above, or in the grammar file as described in
+<a href="javaccgrm.html">JavaCC grammar syntax</a>.
+The effect is exactly the same.
+</p>
+<p>
+If the same option is set in both the
+command line and the grammar file, then the option setting in the command
+line takes precedence.
+</p>
+
+</body>
+</html>

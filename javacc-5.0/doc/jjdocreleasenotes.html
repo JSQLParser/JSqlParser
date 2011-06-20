@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Copyright (c) 2006, Sun Microsystems, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the Sun Microsystems, Inc. nor the names of its
+      contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+-->
+<head>
+ <title>JavaCC: JJDoc Release Notes</title>
+<!-- Changed by: Michael Van De Vanter, 14-Jan-2003 -->
+</head>
+<body bgcolor="#FFFFFF" >
+
+<h1>JavaCC [tm]: JJDoc Release Notes</h1>
+
+<pre>
+=================================
+Changes from JJDoc 0.1.5 to 0.1.6
+=================================
+
+----------------------------------------------------------------
+
+Refactored to make Generator a settable interface,
+enabling Maven or other generators.
+Existing Generator becomes TextGenerator.
+
+----------------------------------------------------------------
+
+=================================
+Changes from JJDoc 0.1.4 to 0.1.5
+=================================
+
+----------------------------------------------------------------
+
+Fixed bug where Writers were not being closed correctly.
+Fixed bug where help message would not appear on command line.
+Added the "CSS" option.
+
+----------------------------------------------------------------
+
+=================================
+Changes from JJDoc 0.1.3 to 0.1.4
+=================================
+
+----------------------------------------------------------------
+
+Now accepts JavaCC try/catch/finally blocks.
+
+----------------------------------------------------------------
+
+=================================
+Changes from JJDoc 0.1.2 to 0.1.3
+=================================
+
+----------------------------------------------------------------
+
+Made appropriate internal modifications for the JavaCC 0.7 parse error
+exceptions.
+
+----------------------------------------------------------------
+
+=================================
+Changes from JJDoc 0.1.1 to 0.1.2
+=================================
+
+----------------------------------------------------------------
+
+Fixed bug where ()+ expansions were being reported as ()*.
+
+----------------------------------------------------------------
+
+===============================
+Changes from JJDoc 0.1 to 0.1.1
+===============================
+
+----------------------------------------------------------------
+
+Fixed several stupid bugs in the Macintosh main class.
+
+----------------------------------------------------------------
+
+Fixed bug where production comments were being generated multiple
+times in text modes and one table HTML mode.
+
+----------------------------------------------------------------
+
+Moved production comments to the correct place: they were coming out
+with the preceding production in one table HTML mode.
+
+----------------------------------------------------------------
+
+=========
+JJDoc 0.1
+=========
+
+JJDoc takes a JavaCC parser specification and produces documentation
+for the BNF grammar.  It can operate in three modes, determined by
+command line options.
+
+    TEXT                   (default false)
+
+Setting TEXT to true causes JJDoc to generate a plain text format
+description of the BNF.  Some formatting is done via tab characters,
+but the intention is to leave it as plain as possible.
+
+The default value of TEXT causes JJDoc to generate a hyperlinked HTML
+document.
+
+    ONE_TABLE              (default true)
+
+The default value of ONE_TABLE is used to generate a single HTML table
+for the BNF.  Setting it to false will produce one table for every
+production in the grammar.
+
+    OUTPUT_FILE
+
+The default behavior is to put the JJDoc output into a file with
+either .html or .txt added as a suffix to the input file's base name.
+You can supply a different file name with this option.
+</pre>
+
+</body>
+</html>

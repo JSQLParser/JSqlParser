@@ -1,0 +1,501 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Copyright (c) 2006, Sun Microsystems, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the Sun Microsystems, Inc. nor the names of its
+      contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+-->
+<head>
+ <title>JavaCC: JJTree Introduction</title>
+<!-- Changed by: Michael Van De Vanter, 14-Jan-2003 -->
+</head>
+<body bgcolor="#FFFFFF" >
+
+<h1>JavaCC [tm]: JJTree Introduction</h1>
+
+<pre>
+JJTree is a preprocessor for JavaCC [tm] that inserts parse tree building actions
+at various places in the JavaCC source. The output of JJTree is run through
+JavaCC to create the parser. This document describes how to use JJTree, and
+how you can interface your parser to it.
+
+By default, JJTree generates code to construct parse tree nodes for each
+nonterminal in the language. This behavior can be modified so that some
+nonterminals do not have nodes generated, or so that a node is generated for a
+part of a production's expansion.
+
+JJTree defines a Java interface Node that all parse tree nodes must
+implement. The interface provides methods for operations such as setting the
+parent of the node, and for adding children and retrieving them.
+
+JJTree operates in one of two modes, simple and multi (for want of better
+terms). In simple mode, each parse tree node is of concrete type SimpleNode; in
+multi mode, the type of the parse tree node is derived from the name of the
+node. If you don't provide implementations for the node classes JJTree will
+generate sample implementations based on SimpleNode for you. You can then
+modify the implementations to suit.
+
+Although JavaCC is a top-down parser, JJTree constructs the parse tree from
+the bottom up. To do this it uses a stack where it pushes nodes after they
+have been created. When it finds a parent for them, it pops the children from
+the stack and adds them to the parent, and finally pushes the new parent node
+itself. The stack is open, which means that you have access to it from within
+grammar actions: you can push, pop and otherwise manipulate its contents
+however you feel appropriate. See Node Scopes and User Actions below for more
+important information.
+
+JJTree provides decorations for two basic varieties of nodes, and some
+syntactic shorthand to make their use convenient.
+     1.
+
+        A definite node is constructed with a specific number of
+        children. That many nodes are popped from the stack and made the
+        children of the new node, which is then pushed on the stack
+        itself. You notate a definite node like this:
+
+        #ADefiniteNode(INTEGER EXPRESSION)
+
+        A definite node descriptor expression can be any integer expression,
+        although literal integer constants are by far the most common
+        expressions.
+     2.
+
+        A conditional node is constructed with all of the children that were
+        pushed on the stack within its node scope if and only if its condition
+        evaluates to true. If it evaluates to false, the node is not
+        constructed, and all of the children remain on the node stack. You
+        notate a conditional node like this:
+
+        #ConditionalNode(BOOLEAN EXPRESSION)
+
+        A conditional node descriptor expression can be any boolean
+        expression. There are two common shorthands for conditional nodes:
+         1)
+
+            Indefinite nodes
+
+            #IndefiniteNode is short for #IndefiniteNode(true)
+         2)
+
+            Greater-than nodes
+
+            #GTNode(>1) is short for #GTNode(jjtree.arity() > 1)
+
+        The indefinite node shorthand (1) can lead to ambiguities in the
+        JJTree source when it is followed by a parenthesized expansion. In
+        those cases the shorthand must be replaced by the full expression. For
+        example:
+
+
+        	  ( ... ) #N ( a() )
+
+        is ambiguous; you have to use the explicit condition:
+
+                  ( ... ) #N(true) ( a() )
+
+WARNING: node descriptor expression should not have side-effects. JJTree
+doesn't specify how many times the expression will be evaluated.
+
+By default JJTree treats each nonterminal as an indefinite node and derives
+the name of the node from the name of its production. You can give it a
+different name with the following syntax:
+
+
+    void P1() #MyNode : { ... } { ... }
+
+When the parser recognizes a P1 nonterminal it begins an indefinite node. It
+marks the stack, so that any parse tree nodes created and pushed on the stack
+by nonterminals in the expansion for P1 will be popped off and made children
+of the node MyNode.
+
+If you want to suppress the creation of a node for a production, you can use
+the following syntax:
+
+
+    void P2() #void : { ... } { ... }
+
+Now any parse tree nodes pushed by nonterminals in the expansion of P2 will
+remain on the stack, to be popped and made children of a production further up
+the tree. You can make this the default behavior for non-decorated nodes by
+using the NODE_DEFAULT_VOID option.
+
+
+    void P3() : {}
+    {
+        P4() ( P5() )+ P6()
+    }
+
+In this example, an indefinite node P3 is begun, marking the stack, and then a
+P4 node, one or more P5 nodes and a P6 node are parsed. Any nodes that they
+push are popped and made the children of P3. You can further customize the
+generated tree:
+
+
+    void P3() : {}
+    {
+        P4() ( P5() )+ #ListOfP5s P6()
+    }
+
+Now the P3 node will have a P4 node, a ListOfP5s node and a P6 node as
+children. The #Name construct acts as a postfix operator, and its scope is the
+immediately preceding expansion unit.
+
+Node Scopes and User Actions
+
+Each node is associated with a node scope. User actions within this scope can
+access the node under construction by using the special identifier jjtThis to
+refer to the node. This identifier is implicitly declared to be of the correct
+type for the node, so any fields and methods that the node has can be easily
+accessed.
+
+A scope is the expansion unit immediately preceding the node decoration. This
+can be a parenthesized expression. When the production signature is decorated
+(perhaps implicitly with the default node), the scope is the entire right hand
+side of the production including its declaration block.
+
+You can also use an expression involving jjtThis on the left hand side of an
+expansion reference. For example:
+
+
+    ... ( jjtThis.my_foo = foo() ) #Baz ...
+
+Here jjtThis refers to a Baz node, which has a field called my_foo. The result
+of parsing the production foo() is assigned to that my_foo.
+
+The final user action in a node scope is different from all the others. When
+the code within it executes, the node's children have already been popped from
+the stack and added to the node, which has itself been pushed onto the
+stack. The children can now be accessed via the node's methods such as
+jjtGetChild().
+
+User actions other than the final one can only access the children on the
+stack. They have not yet been added to the node, so they aren't available via
+the node's methods.
+
+A conditional node that has a node descriptor expression that evaluates to
+false will not get added to the stack, nor have children added to it. The
+final user action within a conditional node scope can determine whether the
+node was created or not by calling the nodeCreated() method. This returns true
+if the node's condition was satisfied and the node was created and pushed on
+the node stack, and false otherwise.
+
+Exception handling
+
+An exception thrown by an expansion within a node scope that is not caught
+within the node scope is caught by JJTree itself. When this occurs, any nodes
+that have been pushed on to the node stack within the node scope are popped
+and thrown away. Then the exception is rethrown.
+
+The intention is to make it possible for parsers to implement error recovery
+and continue with the node stack in a known state.
+
+WARNING: JJTree currently cannot detect whether exceptions are thrown from
+user actions within a node scope. Such an exception will probably be handled
+incorrectly.
+
+Node Scope Hooks
+
+If the NODE_SCOPE_HOOK option is set to true, JJTree generates calls to two
+user-defined parser methods on the entry and exit of every node scope. The
+methods must have the following signatures:
+
+
+    void jjtreeOpenNodeScope(Node n)
+    void jjtreeCloseNodeScope(Node n)
+
+If the parser is STATIC then these methods will have to be declared as static
+as well. They are both called with the current node as a parameter.
+
+One use for these functions is to store the node's first and last tokens so
+that the input can be easily reproduced again. For example:
+
+
+    void jjtreeOpenNodeScope(Node n)
+    {
+      ((MySimpleNode)n).first_token = getToken(1);
+    }
+
+    void jjtreeCloseNodeScope(Node n)
+    {
+      ((MySimpleNode)n).last_token = getToken(0);
+    }
+
+where MySimpleNode is based on SimpleNode and has the following additional
+fields:
+
+
+    Token first_token, last_token;
+
+Another use might be to store the parser object itself in the node so that
+state that should be shared by all nodes produced by that parser can be
+provided. For example, the parser might maintain a symbol table.
+
+The Life Cycle of a Node
+
+A node goes through a well determined sequence of steps as it is built. The
+following
+is that sequence viewed from the perspective of the node itself:
+     1. the node's constructor is called with a unique integer parameter. This
+        parameter identifies the kind of node and is especially useful in
+        simple mode. JJTree automatically generates a file called
+        parserTreeConstants.java and declares Java constants for the node
+        identifiers. It also declares an array of Strings called jjtNodeName[]
+        which maps the identifier integers to the names of the nodes.
+     2. the node's jjtOpen() method is called.
+     3. if the option NODE_SCOPE_HOOK is set, the user-defined parser method
+        openNodeScope() is called and passed the node as its parameter. This
+        method can initialize fields in the node or call its methods. For
+        example, it might store the node's first token in the node.
+     4. if an unhandled exception is thrown while the node is being parsed
+        then the node is abandoned. JJTree will never refer to it again. It
+        will not be closed, and the user-defined node scope hook
+        closeNodeHook() will not be called with it as a parameter.
+     5. otherwise, if the node is conditional and its conditional expression
+        evaluates to false then the node is abandoned. It will not be closed,
+        although the user-defined node scope hook closeNodeHook() might be
+        called with it as a parameter.
+     6. otherwise, all of the children of the node as specified by the integer
+        expression of a definite node, or all the nodes that were pushed on
+        the stack within a conditional node scope are added to the node. The
+        order they are added is not specified.
+     7. the node's jjtClose() method is called.
+     8. the node is pushed on the stack.
+     9. if the option NODE_SCOPE_HOOK is set, the user-defined parser method
+        closenNodeScope() is called and passed the node as its parameter.
+    10. if the node is not the root node, it is added as a child of another
+        node and its jjtSetParent() method is called.
+
+Visitor Support
+
+JJTree provides some basic support for the visitor design pattern. If the
+VISITOR option is set to true, JJTree will insert an jjtAccept() method into
+all of the node classes it generates, and also generate a visitor interface
+that can be implemented and passed to the nodes to accept.
+
+The name of the visitor interface is constructed by appending Visitor to the
+name of the parser. The interface is regenerated every time that JJTree is
+run, so that it accurately represents the set of nodes used by the
+parser. This will cause compile time errors if the implementation class has
+not been updated for the new nodes. This is a feature.
+
+Options
+
+JJTree 0.3pre4 supports the following options on the command line and in the
+JavaCC options statement:
+
+    BUILD_NODE_FILES (default: true)
+      Generate sample implementations for SimpleNode and any other nodes used
+      in the grammar.
+
+    MULTI (default: false)
+      Generate a multi mode parse tree. The default for this is false,
+      generating a simple mode parse tree.
+
+    NODE_DEFAULT_VOID (default: false)
+      Instead of making each non-decorated production an indefinite node, make
+      it void instead.
+
+    NODE_CLASS (default: "")
+      If set defines the name of a user-supplied class that will extend
+      SimpleNode. Any tree nodes created will then be subclasses of NODE_CLASS.
+
+    NODE_FACTORY (default: "")
+      Specify a class containing a factory method with following signature
+      to construct nodes:
+        public static Node jjtCreate(int id)
+      For backwards compatibility, the value "false" may also be specified,
+      meaning that SimpleNode will be used as the factory class.
+
+    NODE_PACKAGE (default: "")
+      The package to generate the node classes into. The default for this is
+      the parser package.
+
+    NODE_EXTENDS (default: "") (DEPRECATED)
+      The superclass for the SimpleNode class.  By providing a custom
+      superclass you may be able to avoid the need to edit the generated
+      SimpleNode.java.  See the examples/Interpreter for an example usage.
+
+    NODE_PREFIX (default: "AST")
+      The prefix used to construct node class names from node identifiers in
+      multi mode. The default for this is AST.
+
+    NODE_SCOPE_HOOK (default: false)
+      Insert calls to user-defined parser methods on entry and exit of every
+      node scope. See Node Scope Hooks above.
+
+    NODE_USES_PARSER (default: false)
+      JJTree will use an alternate form of the node construction routines
+      where it passes the parser object in. For example,
+
+      public static Node MyNode.jjtCreate(MyParser p, int id);
+      MyNode(MyParser p, int id);
+
+    TRACK_TOKENS (default: false)
+      Insert jjtGetFirstToken(), jjtSetFirstToken(), jjtGetLastToken() and
+      jjtSetLastToken() methods in SimpleNode. The firstToken is automatically
+      set up on entry to a node scope; the endToken is automatically set
+      up on exit from a node scope.
+
+    STATIC (default: true)
+      Generate code for a static parser. The default for this is true. This
+      must be used consistently with the equivalent JavaCC options. The value
+      of this option is emitted in the JavaCC source.
+
+    VISITOR (default: false)
+      Insert a jjtAccept() method in the node classes, and generate a visitor
+      implementation with an entry for every node type used in the grammar.
+
+    VISITOR_DATA_TYPE (default: "Object")
+      If this option is set, it is used in the signature of the
+      generated jjtAccept() methods and the visit() methods as the type of the
+      "data" argument.
+
+    VISITOR_RETURN_TYPE (default: "Object")
+      If this option is set, it is used in the signature of the generated
+      jjtAccept() methods and the visit() methods as the return type of the
+      method.
+
+    VISITOR_EXCEPTION (default: "")
+      If this option is set, it is used in the signature of the generated
+      jjtAccept() methods and the visit() methods.
+
+JJTree state
+
+JJTree keeps its state in a parser class field called jjtree. You can use
+methods in this member to manipulate the node stack.
+
+
+    final class JJTreeState {
+      /* Call this to reinitialize the node stack.  */
+      void reset();
+
+      /* Return the root node of the AST. */
+      Node rootNode();
+
+      /* Determine whether the current node was actually closed and
+	 pushed */
+      boolean nodeCreated();
+
+      /* Return the number of nodes currently pushed on the node
+         stack in the current node scope. */
+      int arity();
+
+      /* Push a node on to the stack. */
+      void pushNode(Node n);
+
+      /* Return the node on the top of the stack, and remove it from the
+	 stack.  */
+      Node popNode();
+
+      /* Return the node currently on the top of the stack. */
+      Node peekNode();
+    }
+
+Node Objects
+
+
+    /* All AST nodes must implement this interface.  It provides basic
+       machinery for constructing the parent and child relationships
+       between nodes. */
+
+    public interface Node {
+      /** This method is called after the node has been made the current
+	node.  It indicates that child nodes can now be added to it. */
+      public void jjtOpen();
+
+      /** This method is called after all the child nodes have been
+	added. */
+      public void jjtClose();
+
+      /** This pair of methods are used to inform the node of its
+	parent. */
+      public void jjtSetParent(Node n);
+      public Node jjtGetParent();
+
+      /** This method tells the node to add its argument to the node's
+	list of children.  */
+      public void jjtAddChild(Node n, int i);
+
+      /** This method returns a child node.  The children are numbered
+	 from zero, left to right. */
+      public Node jjtGetChild(int i);
+
+      /** Return the number of children the node has. */
+      int jjtGetNumChildren();
+    }
+
+The class SimpleNode implements the Node interface, and is automatically
+generated by JJTree if it doesn't already exist. You can use this class as a
+template or superclass for your node implementations, or you can modify it to
+suit. SimpleNode additionally provides a rudimentary mechanism for recursively
+dumping the node and its children. You might use this is in action like this:
+
+
+    {
+        ((SimpleNode)jjtree.rootNode()).dump(">");
+    }
+
+The String parameter to dump() is used as padding to indicate the tree
+hierarchy.
+
+Another utility method is generated if the VISITOR options is set:
+
+
+    {
+        public void childrenAccept(MyParserVisitor visitor);
+    }
+
+This walks over the node's children in turn, asking them to accept the
+visitor. This can be useful when implementing preorder and postorder
+traversals.
+
+More Documentation
+
+Jocelyn Paine has contributed a very nice introduction to JJTree where he
+describes how he has used it to develop an extension to HTML for interactive
+web pages: http://users.ox.ac.uk/~popx/jjtree.html
+
+Examples
+
+JJTree 0.3pre3 is distributed with some simple examples containing a grammar
+that parses arithmetic expressions. See the file
+examples/JJTreeExamples/README for further details.
+
+There is also an interpreter for a simple language that uses JJTree to build
+the program representation. See the file examples/Interpreter/README for more
+information.
+
+A grammar for HTML 3.2 is also included in the distribution. See
+examples/HTMLGrammars/RobsHTML/README to find out more.
+
+Information about an example using the visitor support is in
+examples/VTransformer/README.
+</pre>
+
+</body>
+</html>

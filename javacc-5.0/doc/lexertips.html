@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Copyright (c) 2006, Sreenivasa Viswanadha <sreeni@viswanadha.net>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the Sun Microsystems, Inc. nor the names of its
+      contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+-->
+<head>
+  <title>Tips for writing a good JavaCC lexical specification</title>
+</head>
+
+<body bgcolor="#FFFFFF" >
+<h1> Tips for writing a good JavaCC lexical specification</h1>
+
+<p>
+There are many ways to write the lexical specification for a grammar. But
+the performance of the generated token manager varies significantly depending
+on how you do this.  Here are a few tips:
+</p>
+<ul>
+
+<li> Try to specify as many String literals as possible. These are recognized
+   by a Deterministic Finite Automata (DFA), which is much faster than the Nondeterministic Finite Automata (NFA) needed to recognize other kinds
+   of complex regular expressions. For example, to skip blanks/tabs/newlines,
+<pre>
+    SKIP : { " " | "\t" | "\n" }
+</pre>
+   is more efficient than doing
+<pre>
+    SKIP : { &lt; ([" ", "\t", "\n"])+ &gt; }
+</pre>
+
+   because in the first case you only have string literals, it will generate
+   a DFA whereas for the second case it will generate an NFA.
+
+</li>
+<li> Try to use the pattern ~[] just by itself as much as possible. For example,
+   doing a
+
+<pre>
+    MORE : { &lt; ~[] &gt; }
+</pre>
+
+   is better than doing
+
+<pre>      TOKEN : { &lt; (~[])+ &gt; }
+</pre>
+
+   of course, if your grammar dictates that one of these cannot be used, then
+   you don't have a choice, but try to use &lt; ~[] &gt; as much as possible.
+</li>
+<li> Specify all the String literals in the order of increasing length, i.e.,
+   all shorter string literals before longer ones. This will help optimizing
+   the bit vectors needed for string literals.
+</li>
+<li> Try to minimize the use of lexical states. When using these, try to move
+   all your complex regular expressions into a single lexical state, leaving
+   others to just recognize simple string literals.
+</li>
+<li> Try to use IGNORE_CASE judiciously. Best thing to do is to set this option
+   at the grammar level. If that is not possible, then try to have it set for
+   *all* regular expressions in a lexical state. There is heavy performance
+   penalty for setting IGNORE_CASE for some regular expressions and not for others in the
+   same lexical state.
+</li>
+<li> Try to SKIP as much possible, if you don't care about certain patterns.
+   Here, you have to be a bit careful about EOF. seeing an EOF after SKIP
+   is fine whereas, seeing an EOF after a MORE is a lexical error.
+</li>
+<li> Try to avoid specifying lexical actions with MORE specifications. Generally
+   every MORE should end up in a TOKEN (or SPECIAL_TOKEN) finally so you can
+   do the action there at the TOKEN level, if it is possible.
+</li>
+<li> Also try to avoid lexical actions and lexical state changes with SKIP
+   specifications (especially for single character SKIP's like " ", "\t",
+   "\n" etc.). For such cases, a simple loop is generated to eat up the
+   SKIP'ed single characters. So obviously, if there is a lexical action
+   or state change associated with this, it is not possible to it this way.
+</li>
+<li>Try to avoid having a choice of String literals for the same token, e.g.
+<pre>
+      &lt; NONE : "\"none\"" | "\'none\'" &gt;
+</pre>
+
+   Instead, have two different token kinds for this and use a nonterminal which
+   is a choice between those choices. The above example can be written as :
+
+<pre>
+        &lt; NONE1 : "\"none\"" &gt;
+      |
+        &lt; NONE2 : "\'none'\" &gt;
+</pre>
+
+   and define a nonterminal called None() as :
+
+<pre>
+      void None() : {} { &lt;NONE1&gt; | &lt;NONE2&gt; }
+</pre>
+
+   This will make recognition much faster. Note however, that if the choice is
+   between two complex regular expressions, it is OK to have the choice.
+</li>
+</ul>
+</body>
+</html>
