@@ -25,6 +25,7 @@ package net.sf.jsqlparser.statement.update;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -35,8 +36,8 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 public class Update implements Statement {
 	private Table table;
 	private Expression where;
-	private List columns;
-	private List expressions;
+	private List<Column> columns;
+	private List<Expression> expressions;
 
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
@@ -63,7 +64,7 @@ public class Update implements Statement {
 	 * 
 	 * @return a list of {@link net.sf.jsqlparser.schema.Column}s
 	 */
-	public List getColumns() {
+	public List<Column> getColumns() {
 		return columns;
 	}
 
@@ -72,15 +73,15 @@ public class Update implements Statement {
 	 * 
 	 * @return a list of {@link Expression}s
 	 */
-	public List getExpressions() {
+	public List<Expression> getExpressions() {
 		return expressions;
 	}
 
-	public void setColumns(List list) {
+	public void setColumns(List<Column> list) {
 		columns = list;
 	}
 
-	public void setExpressions(List list) {
+	public void setExpressions(List<Expression> list) {
 		expressions = list;
 	}
 

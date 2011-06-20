@@ -25,6 +25,7 @@ package net.sf.jsqlparser.statement.insert;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -35,7 +36,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  */
 public class Insert implements Statement {
 	private Table table;
-	private List columns;
+	private List<Column> columns;
 	private ItemsList itemsList;
 	private boolean useValues = true;
 
@@ -56,11 +57,11 @@ public class Insert implements Statement {
 	 * 
 	 * @return a list of {@link net.sf.jsqlparser.schema.Column}
 	 */
-	public List getColumns() {
+	public List<Column> getColumns() {
 		return columns;
 	}
 
-	public void setColumns(List list) {
+	public void setColumns(List<Column> list) {
 		columns = list;
 	}
 

@@ -38,7 +38,7 @@ public class PlainSelect implements SelectBody {
 	private List selectItems;
 	private Table into;
 	private FromItem fromItem;
-	private List joins;
+	private List<Join> joins;
 	private Expression where;
 	private List groupByColumnReferences;
 	private List orderByElements;
@@ -93,11 +93,11 @@ public class PlainSelect implements SelectBody {
 	 * 
 	 * @return the list of {@link Join}s
 	 */
-	public List getJoins() {
+	public List<Join> getJoins() {
 		return joins;
 	}
 
-	public void setJoins(List list) {
+	public void setJoins(List<Join> list) {
 		joins = list;
 	}
 

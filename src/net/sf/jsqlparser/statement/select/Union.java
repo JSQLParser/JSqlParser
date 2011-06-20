@@ -28,8 +28,8 @@ import java.util.List;
  */
 public class Union implements SelectBody {
 
-	private List plainSelects;
-	private List orderByElements;
+	private List<PlainSelect> plainSelects;
+	private List<OrderByElement> orderByElements;
 	private Limit limit;
 	private boolean distinct;
 	private boolean all;
@@ -38,7 +38,7 @@ public class Union implements SelectBody {
 		selectVisitor.visit(this);
 	}
 
-	public List getOrderByElements() {
+	public List<OrderByElement> getOrderByElements() {
 		return orderByElements;
 	}
 
@@ -47,15 +47,15 @@ public class Union implements SelectBody {
 	 * 
 	 * @return the list of {@link PlainSelect}s
 	 */
-	public List getPlainSelects() {
+	public List<PlainSelect> getPlainSelects() {
 		return plainSelects;
 	}
 
-	public void setOrderByElements(List orderByElements) {
+	public void setOrderByElements(List<OrderByElement> orderByElements) {
 		this.orderByElements = orderByElements;
 	}
 
-	public void setPlainSelects(List list) {
+	public void setPlainSelects(List<PlainSelect> list) {
 		plainSelects = list;
 	}
 

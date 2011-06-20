@@ -30,7 +30,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 
 public class Select implements Statement {
 	private SelectBody selectBody;
-	private List withItemsList;
+	private List<WithItem> withItemsList;
 
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
@@ -48,7 +48,7 @@ public class Select implements Statement {
 		StringBuffer retval = new StringBuffer();
 		if (withItemsList != null && !withItemsList.isEmpty()) {
 			retval.append("WITH ");
-			for (Iterator iter = withItemsList.iterator(); iter.hasNext();) {
+			for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
 				WithItem withItem = (WithItem) iter.next();
 				retval.append(withItem);
 				if (iter.hasNext())
@@ -60,11 +60,11 @@ public class Select implements Statement {
 		return retval.toString();
 	}
 
-	public List getWithItemsList() {
+	public List<WithItem> getWithItemsList() {
 		return withItemsList;
 	}
 
-	public void setWithItemsList(List withItemsList) {
+	public void setWithItemsList(List<WithItem> withItemsList) {
 		this.withItemsList = withItemsList;
 	}
 }
