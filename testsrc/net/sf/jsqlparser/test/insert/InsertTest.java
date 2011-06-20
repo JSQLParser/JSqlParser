@@ -49,6 +49,17 @@ public class InsertTest extends TestCase {
 
 	}
 
+	public void testInsertWithKeywordValue() throws JSQLParserException {
+		String statement = "INSERT INTO mytable (col1) VALUE ('val1')";
+		Insert insert = (Insert) parserManager.parse(new StringReader(statement));
+		assertEquals("mytable", insert.getTable().getName());
+		assertEquals(1, insert.getColumns().size());
+		assertEquals("col1", ((Column) insert.getColumns().get(0)).getColumnName());
+		assertEquals("val1",
+				((StringValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(0)).getValue());
+		assertEquals("INSERT INTO mytable (col1) VALUES ('val1')", insert.toString());
+	}
+
 	public void testInsertFromSelect() throws JSQLParserException {
 		String statement = "INSERT INTO mytable (col1, col2, col3) SELECT * FROM mytable2";
 		Insert insert = (Insert) parserManager.parse(new StringReader(statement));

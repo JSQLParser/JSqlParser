@@ -194,6 +194,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_OUTER:"OUTER">
 |   <K_ORDER:"ORDER">
 |   <K_RIGHT:"RIGHT">
+|   <K_VALUE:"VALUE">
 |   <K_DELETE:"DELETE">
 |   <K_CREATE:"CREATE">
 |   <K_SELECT:"SELECT">
@@ -326,7 +327,7 @@ Replace Replace():
 		     [LOOKAHEAD(2) "(" tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"  ]
 			
 			( 
-				<K_VALUES>  "(" exp=PrimaryExpression() { expList.add(exp); } 
+				[<K_VALUES> | <K_VALUE>]  "(" exp=PrimaryExpression() { expList.add(exp); } 
 						("," exp=PrimaryExpression()  { expList.add(exp); } )* ")" { itemsList = new ExpressionList(expList); }
 				
 				| 
@@ -365,7 +366,7 @@ Insert Insert():
      [LOOKAHEAD(2) "(" tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"  ]
 	
 	( 
-		<K_VALUES>  "(" exp=SimpleExpression() { primaryExpList.add(exp); } 
+		[<K_VALUES> | <K_VALUE>]  "(" exp=SimpleExpression() { primaryExpList.add(exp); } 
 				("," exp=SimpleExpression()  { primaryExpList.add(exp); } )* ")" { itemsList = new ExpressionList(primaryExpList); }
 		
 		| 
