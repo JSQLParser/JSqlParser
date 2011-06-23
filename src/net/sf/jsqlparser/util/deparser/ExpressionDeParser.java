@@ -55,7 +55,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
  */
 public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
-	protected StringBuffer buffer;
+	protected StringBuilder buffer;
 	protected SelectVisitor selectVisitor;
 	protected boolean useBracketsInExprList = true;
 
@@ -65,11 +65,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	/**
 	 * @param selectVisitor
 	 *            a SelectVisitor to de-parse SubSelects. It has to share the same<br>
-	 *            StringBuffer as this object in order to work, as:
+	 *            StringBuilder as this object in order to work, as:
 	 * 
 	 *            <pre>
 	 * <code>
-	 * StringBuffer myBuf = new StringBuffer();
+	 * StringBuilder myBuf = new StringBuilder();
 	 * MySelectDeparser selectDeparser = new  MySelectDeparser();
 	 * selectDeparser.setBuffer(myBuf);
 	 * ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeparser, myBuf);
@@ -78,16 +78,16 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	 * @param buffer
 	 *            the buffer that will be filled with the expression
 	 */
-	public ExpressionDeParser(SelectVisitor selectVisitor, StringBuffer buffer) {
+	public ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer) {
 		this.selectVisitor = selectVisitor;
 		this.buffer = buffer;
 	}
 
-	public StringBuffer getBuffer() {
+	public StringBuilder getBuffer() {
 		return buffer;
 	}
 
-	public void setBuffer(StringBuffer buffer) {
+	public void setBuffer(StringBuilder buffer) {
 		this.buffer = buffer;
 	}
 

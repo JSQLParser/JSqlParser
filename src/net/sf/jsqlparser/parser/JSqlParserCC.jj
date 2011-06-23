@@ -1670,7 +1670,7 @@ String CreateParameter():
 
 String AList():
 {
-	StringBuffer retval = new StringBuffer("(");
+	StringBuilder retval = new StringBuilder("(");
 	Token tk = null;
 }
 {

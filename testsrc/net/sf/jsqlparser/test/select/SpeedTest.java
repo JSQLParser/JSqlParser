@@ -54,7 +54,7 @@ public class SpeedTest extends TestCase {
 			if (!line.equals("#begin"))
 				break;
 			line = CCJSqlParserManagerTest.getLine(in);
-			StringBuffer buf = new StringBuffer(line);
+			StringBuilder buf = new StringBuilder(line);
 			while (true) {
 				line = CCJSqlParserManagerTest.getLine(in);
 				if (line.equals("#end")) {

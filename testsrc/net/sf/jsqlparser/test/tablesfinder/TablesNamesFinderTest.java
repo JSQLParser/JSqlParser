@@ -46,7 +46,7 @@ public class TablesNamesFinderTest extends TestCase {
 				if (!line.equals("#begin"))
 					break;
 				line = getLine(in);
-				StringBuffer buf = new StringBuffer(line);
+				StringBuilder buf = new StringBuilder(line);
 				while (true) {
 					line = getLine(in);
 					if (line.equals("#end")) {

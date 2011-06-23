@@ -280,7 +280,7 @@ public class SelectTest extends TestCase {
 		assertEquals(statement + whereToString, "" + plainSelect);
 
 		ExpressionDeParser expressionDeParser = new ExpressionDeParser();
-		StringBuffer stringBuffer = new StringBuffer();
+		StringBuilder stringBuffer = new StringBuilder();
 		expressionDeParser.setBuffer(stringBuffer);
 		plainSelect.getWhere().accept(expressionDeParser);
 		assertEquals(whereToString, stringBuffer.toString());
@@ -289,7 +289,7 @@ public class SelectTest extends TestCase {
 		plainSelect = (PlainSelect) ((Select) parserManager.parse(new StringReader(statement + whereToString)))
 				.getSelectBody();
 
-		stringBuffer = new StringBuffer();
+		stringBuffer = new StringBuilder();
 		expressionDeParser.setBuffer(stringBuffer);
 		plainSelect.getWhere().accept(expressionDeParser);
 
@@ -300,7 +300,7 @@ public class SelectTest extends TestCase {
 		plainSelect = (PlainSelect) ((Select) parserManager.parse(new StringReader(statement + whereToString)))
 				.getSelectBody();
 
-		stringBuffer = new StringBuffer();
+		stringBuffer = new StringBuilder();
 		expressionDeParser.setBuffer(stringBuffer);
 		plainSelect.getWhere().accept(expressionDeParser);
 
@@ -316,7 +316,7 @@ public class SelectTest extends TestCase {
 		plainSelect = (PlainSelect) ((Select) parserManager.parse(new StringReader(statement + whereToString)))
 				.getSelectBody();
 
-		stringBuffer = new StringBuffer();
+		stringBuffer = new StringBuilder();
 		expressionDeParser.setBuffer(stringBuffer);
 		plainSelect.getWhere().accept(expressionDeParser);
 
@@ -362,7 +362,7 @@ public class SelectTest extends TestCase {
 
 		PlainSelect plainSelect = (PlainSelect) ((Select) parsed).getSelectBody();
 		ExpressionDeParser expressionDeParser = new ExpressionDeParser();
-		StringBuffer stringBuffer = new StringBuffer();
+		StringBuilder stringBuffer = new StringBuilder();
 		expressionDeParser.setBuffer(stringBuffer);
 		SelectDeParser deParser = new SelectDeParser(expressionDeParser, stringBuffer);
 		expressionDeParser.setSelectVisitor(deParser);
@@ -388,7 +388,7 @@ public class SelectTest extends TestCase {
 		assertEquals(statementToString, "" + plainSelect);
 
 		ExpressionDeParser expressionDeParser = new ExpressionDeParser();
-		StringBuffer stringBuffer = new StringBuffer();
+		StringBuilder stringBuffer = new StringBuilder();
 		SelectDeParser deParser = new SelectDeParser(expressionDeParser, stringBuffer);
 		expressionDeParser.setSelectVisitor(deParser);
 		expressionDeParser.setBuffer(stringBuffer);
@@ -557,21 +557,21 @@ public class SelectTest extends TestCase {
 		String statement = "SELECT a.OWNERLASTNAME, a.OWNERFIRSTNAME " + "FROM ANTIQUEOWNERS AS a, ANTIQUES AS b "
 				+ "WHERE b.BUYERID = a.OWNERID AND b.ITEM = 'Chair'";
 		Statement parsed = parserManager.parse(new StringReader(statement));
-		StatementDeParser deParser = new StatementDeParser(new StringBuffer());
+		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
 		parsed.accept(deParser);
 
 		assertEquals(statement, deParser.getBuffer().toString());
 
 		statement = "SELECT count(DISTINCT f + 4) FROM a";
 		parsed = parserManager.parse(new StringReader(statement));
-		deParser = new StatementDeParser(new StringBuffer());
+		deParser = new StatementDeParser(new StringBuilder());
 		parsed.accept(deParser);
 		assertEquals(statement, parsed.toString());
 		assertEquals(statement, deParser.getBuffer().toString());
 
 		statement = "SELECT count(DISTINCT f, g, h) FROM a";
 		parsed = parserManager.parse(new StringReader(statement));
-		deParser = new StatementDeParser(new StringBuffer());
+		deParser = new StatementDeParser(new StringBuilder());
 		parsed.accept(deParser);
 		assertEquals(statement, parsed.toString());
 		assertEquals(statement, deParser.getBuffer().toString());
@@ -581,7 +581,7 @@ public class SelectTest extends TestCase {
 		String statement = "SELECT `a.OWNERLASTNAME`, `OWNERFIRSTNAME` " + "FROM `ANTIQUEOWNERS` AS a, ANTIQUES AS b "
 				+ "WHERE b.BUYERID = a.OWNERID AND b.ITEM = 'Chair'";
 		Statement parsed = parserManager.parse(new StringReader(statement));
-		StatementDeParser deParser = new StatementDeParser(new StringBuffer());
+		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
 		parsed.accept(deParser);
 
 		assertEquals(statement, parsed.toString());
@@ -591,7 +591,7 @@ public class SelectTest extends TestCase {
 	public void testConcat() throws JSQLParserException {
 		String statement = "SELECT a || b || c + 4 FROM t";
 		Statement parsed = parserManager.parse(new StringReader(statement));
-		StatementDeParser deParser = new StatementDeParser(new StringBuffer());
+		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
 		parsed.accept(deParser);
 
 		assertEquals(statement, parsed.toString());
@@ -601,7 +601,7 @@ public class SelectTest extends TestCase {
 	public void testMatches() throws JSQLParserException {
 		String statement = "SELECT * FROM team WHERE team.search_column @@ to_tsquery('new & york & yankees')";
 		Statement parsed = parserManager.parse(new StringReader(statement));
-		StatementDeParser deParser = new StatementDeParser(new StringBuffer());
+		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
 		parsed.accept(deParser);
 
 		assertEquals(statement, parsed.toString());
@@ -612,7 +612,7 @@ public class SelectTest extends TestCase {
 		String statement = "SELECT col1, col2, col1 + col2, sum(col8)" + " FROM table1 "
 				+ "GROUP BY col1, col2, col1 + col2";
 		Statement parsed = parserManager.parse(new StringReader(statement));
-		StatementDeParser deParser = new StatementDeParser(new StringBuffer());
+		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
 		parsed.accept(deParser);
 
 		assertEquals(statement, parsed.toString());
@@ -622,7 +622,7 @@ public class SelectTest extends TestCase {
 	public void testBitwise() throws JSQLParserException {
 		String statement = "SELECT col1 & 32, col2 ^ col1, col1 | col2" + " FROM table1";
 		Statement parsed = parserManager.parse(new StringReader(statement));
-		StatementDeParser deParser = new StatementDeParser(new StringBuffer());
+		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
 		parsed.accept(deParser);
 
 		assertEquals(statement, parsed.toString());

@@ -16,7 +16,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
  * {@link net.sf.jsqlparser.statement.replace.Replace}
  */
 public class ReplaceDeParser implements ItemsListVisitor {
-	protected StringBuffer buffer;
+	protected StringBuilder buffer;
 	protected ExpressionVisitor expressionVisitor;
 	protected SelectVisitor selectVisitor;
 
@@ -26,25 +26,25 @@ public class ReplaceDeParser implements ItemsListVisitor {
 	/**
 	 * @param expressionVisitor
 	 *            a {@link ExpressionVisitor} to de-parse expressions. It has to share the same<br>
-	 *            StringBuffer (buffer parameter) as this object in order to work
+	 *            StringBuilder (buffer parameter) as this object in order to work
 	 * @param selectVisitor
 	 *            a {@link SelectVisitor} to de-parse {@link net.sf.jsqlparser.statement.select.Select}s. It has to
 	 *            share the same<br>
-	 *            StringBuffer (buffer parameter) as this object in order to work
+	 *            StringBuilder (buffer parameter) as this object in order to work
 	 * @param buffer
 	 *            the buffer that will be filled with the select
 	 */
-	public ReplaceDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuffer buffer) {
+	public ReplaceDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
 		this.buffer = buffer;
 		this.expressionVisitor = expressionVisitor;
 		this.selectVisitor = selectVisitor;
 	}
 
-	public StringBuffer getBuffer() {
+	public StringBuilder getBuffer() {
 		return buffer;
 	}
 
-	public void setBuffer(StringBuffer buffer) {
+	public void setBuffer(StringBuilder buffer) {
 		this.buffer = buffer;
 	}
 

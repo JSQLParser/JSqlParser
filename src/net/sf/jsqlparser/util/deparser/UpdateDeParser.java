@@ -10,7 +10,7 @@ import net.sf.jsqlparser.statement.update.Update;
  * {@link net.sf.jsqlparser.statement.update.Update}
  */
 public class UpdateDeParser {
-	protected StringBuffer buffer;
+	protected StringBuilder buffer;
 	protected ExpressionVisitor expressionVisitor;
 
 	public UpdateDeParser() {
@@ -19,20 +19,20 @@ public class UpdateDeParser {
 	/**
 	 * @param expressionVisitor
 	 *            a {@link ExpressionVisitor} to de-parse expressions. It has to share the same<br>
-	 *            StringBuffer (buffer parameter) as this object in order to work
+	 *            StringBuilder (buffer parameter) as this object in order to work
 	 * @param buffer
 	 *            the buffer that will be filled with the select
 	 */
-	public UpdateDeParser(ExpressionVisitor expressionVisitor, StringBuffer buffer) {
+	public UpdateDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
 		this.buffer = buffer;
 		this.expressionVisitor = expressionVisitor;
 	}
 
-	public StringBuffer getBuffer() {
+	public StringBuilder getBuffer() {
 		return buffer;
 	}
 
-	public void setBuffer(StringBuffer buffer) {
+	public void setBuffer(StringBuilder buffer) {
 		this.buffer = buffer;
 	}
 

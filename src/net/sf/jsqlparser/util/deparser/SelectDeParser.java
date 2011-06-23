@@ -30,7 +30,7 @@ import net.sf.jsqlparser.statement.select.Union;
  * {@link net.sf.jsqlparser.statement.select.Select}
  */
 public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItemVisitor, FromItemVisitor {
-	protected StringBuffer buffer;
+	protected StringBuilder buffer;
 	protected ExpressionVisitor expressionVisitor;
 
 	public SelectDeParser() {
@@ -39,11 +39,11 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	/**
 	 * @param expressionVisitor
 	 *            a {@link ExpressionVisitor} to de-parse expressions. It has to share the same<br>
-	 *            StringBuffer (buffer parameter) as this object in order to work
+	 *            StringBuilder (buffer parameter) as this object in order to work
 	 * @param buffer
 	 *            the buffer that will be filled with the select
 	 */
-	public SelectDeParser(ExpressionVisitor expressionVisitor, StringBuffer buffer) {
+	public SelectDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
 		this.buffer = buffer;
 		this.expressionVisitor = expressionVisitor;
 	}
@@ -221,11 +221,11 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
 	}
 
-	public StringBuffer getBuffer() {
+	public StringBuilder getBuffer() {
 		return buffer;
 	}
 
-	public void setBuffer(StringBuffer buffer) {
+	public void setBuffer(StringBuilder buffer) {
 		this.buffer = buffer;
 	}
 

@@ -14,9 +14,9 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 
 public class StatementDeParser implements StatementVisitor {
-	protected StringBuffer buffer;
+	protected StringBuilder buffer;
 
-	public StatementDeParser(StringBuffer buffer) {
+	public StatementDeParser(StringBuilder buffer) {
 		this.buffer = buffer;
 	}
 
@@ -92,11 +92,11 @@ public class StatementDeParser implements StatementVisitor {
 
 	}
 
-	public StringBuffer getBuffer() {
+	public StringBuilder getBuffer() {
 		return buffer;
 	}
 
-	public void setBuffer(StringBuffer buffer) {
+	public void setBuffer(StringBuilder buffer) {
 		this.buffer = buffer;
 	}
 

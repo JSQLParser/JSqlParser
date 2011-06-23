@@ -38,7 +38,7 @@ public class StringValue implements Expression {
 	}
 
 	public String getNotExcapedValue() {
-		StringBuffer buffer = new StringBuffer(value);
+		StringBuilder buffer = new StringBuilder(value);
 		int index = 0;
 		int deletesNum = 0;
 		while ((index = value.indexOf("''", index)) != -1) {
