@@ -248,7 +248,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	}
 
 	public void visit(Column tableColumn) {
-		String tableName = tableColumn.getTable().getWholeTableName();
+		String tableName = tableColumn.getTable().getAlias();
+		if (tableName == null) {
+			tableName = tableColumn.getTable().getWholeTableName();
+		}
 		if (tableName != null) {
 			buffer.append(tableName + ".");
 		}
