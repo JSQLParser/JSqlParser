@@ -1,8 +1,7 @@
 package net.sf.jsqlparser.test.create;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,9 +37,7 @@ public class CreateTableTest extends TestCase {
 	}
 
 	public void testRUBiSCreateList() throws Exception {
-
-		BufferedReader in = new BufferedReader(new FileReader("testfiles" + File.separator
-				+ "RUBiS-create-requests.txt"));
+	    BufferedReader in = new BufferedReader( new InputStreamReader( CreateTableTest.class.getResourceAsStream( "/RUBiS-create-requests.txt" ) ) );
 		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
 
 		try {

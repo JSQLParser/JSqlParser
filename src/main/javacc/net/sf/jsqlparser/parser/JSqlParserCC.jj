@@ -170,6 +170,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_INTO:"INTO">
 |   <K_NULL:"NULL">
 |   <K_LIKE:"LIKE">
+|   <K_REGEXP:"REGEXP">
 |   <K_DROP:"DROP">
 |   <K_JOIN:"JOIN">
 |   <K_LEFT:"LEFT">
@@ -538,9 +539,9 @@ PlainSelect PlainSelect():
     
      // TODO
     [IntoClause()]
-    <K_FROM>
+    [<K_FROM>
     fromItem=FromItem()
-    joins=JoinsList()
+    joins=JoinsList()]
     [ where=WhereClause() { plainSelect.setWhere(where); }]
     [ groupByColumnReferences=GroupByColumnReferences() { plainSelect.setGroupByColumnReferences(groupByColumnReferences); }]
     [ having=Having() { plainSelect.setHaving(having); }]
@@ -550,7 +551,7 @@ PlainSelect PlainSelect():
 	{ 
 		plainSelect.setSelectItems(selectItems);
 		plainSelect.setFromItem(fromItem);
-		if (joins.size() > 0)
+		if (joins != null && joins.size() > 0)
 			plainSelect.setJoins(joins);
 		return plainSelect; 
 	}

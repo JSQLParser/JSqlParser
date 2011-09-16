@@ -3,6 +3,7 @@ package net.sf.jsqlparser.test.simpleparsing;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 
 import junit.framework.TestCase;
@@ -10,6 +11,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.test.TestException;
+import net.sf.jsqlparser.test.create.CreateTableTest;
 
 public class CCJSqlParserManagerTest extends TestCase {
 
@@ -23,7 +25,8 @@ public class CCJSqlParserManagerTest extends TestCase {
 
 	public void testParse() throws Exception {
 		CCJSqlParserManager parserManager = new CCJSqlParserManager();
-		BufferedReader in = new BufferedReader(new FileReader("testfiles" + File.separator + "simple_parsing.txt"));
+		BufferedReader in = new BufferedReader( new InputStreamReader( CreateTableTest.class.getResourceAsStream( "/simple_parsing.txt" ) ) );
+
 		String statement = "";
 		while (true) {
 			try {

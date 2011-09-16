@@ -628,6 +628,11 @@ public class SelectTest extends TestCase {
 		assertEquals(statement, parsed.toString());
 		assertEquals(statement, deParser.getBuffer().toString());
 	}
+	
+	public void testSelectFunction() throws JSQLParserException {
+	      String statement = "SELECT 1+2 AS sum";
+	      parserManager.parse( new StringReader( statement ) );
+	}
 
 	public static void main(String[] args) {
 		junit.swingui.TestRunner.run(SelectTest.class);

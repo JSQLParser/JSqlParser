@@ -1,8 +1,7 @@
 package net.sf.jsqlparser.test.select;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -16,6 +15,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.test.TestException;
+import net.sf.jsqlparser.test.create.CreateTableTest;
 import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.test.tablesfinder.TablesNamesFinder;
 
@@ -29,7 +29,7 @@ public class SpeedTest extends TestCase {
 
 	public void testSpeed() throws Exception {
 		// all the statements in testfiles/simple_parsing.txt
-		BufferedReader in = new BufferedReader(new FileReader("testfiles" + File.separator + "simple_parsing.txt"));
+        BufferedReader in = new BufferedReader( new InputStreamReader( SpeedTest.class.getResourceAsStream( "/simple_parsing.txt" ) ) );
 		CCJSqlParserManagerTest d;
 		ArrayList statementsList = new ArrayList();
 
@@ -40,7 +40,7 @@ public class SpeedTest extends TestCase {
 			statementsList.add(statement);
 		}
 		in.close();
-		in = new BufferedReader(new FileReader("testfiles" + File.separator + "RUBiS-select-requests.txt"));
+		in = new BufferedReader( new InputStreamReader( SpeedTest.class.getResourceAsStream( "/RUBiS-select-requests.txt" ) ) );
 
 		// all the statements in testfiles/RUBiS-select-requests.txt
 		while (true) {

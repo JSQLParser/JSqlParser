@@ -3,6 +3,7 @@ package net.sf.jsqlparser.test.tablesfinder;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,6 +14,7 @@ import junit.framework.TestCase;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.test.TestException;
+import net.sf.jsqlparser.test.create.CreateTableTest;
 import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
 
 public class TablesNamesFinderTest extends TestCase {
@@ -28,8 +30,7 @@ public class TablesNamesFinderTest extends TestCase {
 
 	public void testRUBiSTableList() throws Exception {
 
-		BufferedReader in = new BufferedReader(new FileReader("testfiles" + File.separator
-				+ "RUBiS-select-requests.txt"));
+	    BufferedReader in = new BufferedReader( new InputStreamReader( CreateTableTest.class.getResourceAsStream( "/RUBiS-select-requests.txt" ) ) );
 		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
 
 		try {
