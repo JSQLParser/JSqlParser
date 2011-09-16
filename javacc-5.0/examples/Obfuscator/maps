@@ -1,4 +1,0 @@
-// Mappings from original names to obfuscated names
-
-incr -> square_root;
-Incr -> MyMath;
