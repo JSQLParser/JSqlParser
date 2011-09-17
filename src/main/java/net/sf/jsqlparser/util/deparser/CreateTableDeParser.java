@@ -25,20 +25,20 @@ public class CreateTableDeParser {
 		buffer.append("CREATE TABLE " + createTable.getTable().getWholeTableName());
 		if (createTable.getColumnDefinitions() != null) {
 			buffer.append(" { ");
-			for (Iterator iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
+			for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
 				ColumnDefinition columnDefinition = (ColumnDefinition) iter.next();
 				buffer.append(columnDefinition.getColumnName());
 				buffer.append(" ");
 				buffer.append(columnDefinition.getColDataType().getDataType());
 				if (columnDefinition.getColDataType().getArgumentsStringList() != null) {
-					for (Iterator iterator = columnDefinition.getColDataType().getArgumentsStringList().iterator(); iterator
+					for (Iterator<String> iterator = columnDefinition.getColDataType().getArgumentsStringList().iterator(); iterator
 							.hasNext();) {
 						buffer.append(" ");
 						buffer.append((String) iterator.next());
 					}
 				}
 				if (columnDefinition.getColumnSpecStrings() != null) {
-					for (Iterator iterator = columnDefinition.getColumnSpecStrings().iterator(); iterator.hasNext();) {
+					for (Iterator<String> iterator = columnDefinition.getColumnSpecStrings().iterator(); iterator.hasNext();) {
 						buffer.append(" ");
 						buffer.append((String) iterator.next());
 					}
@@ -49,12 +49,12 @@ public class CreateTableDeParser {
 
 			}
 
-			for (Iterator iter = createTable.getIndexes().iterator(); iter.hasNext();) {
+			for (Iterator<Index> iter = createTable.getIndexes().iterator(); iter.hasNext();) {
 				buffer.append(",\n");
 				Index index = (Index) iter.next();
 				buffer.append(index.getType() + " " + index.getName());
 				buffer.append("(");
-				for (Iterator iterator = index.getColumnsNames().iterator(); iterator.hasNext();) {
+				for (Iterator<String> iterator = index.getColumnsNames().iterator(); iterator.hasNext();) {
 					buffer.append((String) iterator.next());
 					if (iterator.hasNext()) {
 						buffer.append(", ");

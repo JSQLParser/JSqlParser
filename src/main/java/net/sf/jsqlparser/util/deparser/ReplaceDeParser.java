@@ -84,8 +84,8 @@ public class ReplaceDeParser implements ItemsListVisitor {
 
 	public void visit(ExpressionList expressionList) {
 		buffer.append(" VALUES (");
-		for (Iterator iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
-			Expression expression = (Expression) iter.next();
+		for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
+			Expression expression = iter.next();
 			expression.accept(expressionVisitor);
 			if (iter.hasNext())
 				buffer.append(", ");

@@ -291,7 +291,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	public void visit(ExpressionList expressionList) {
 		if (useBracketsInExprList)
 			buffer.append("(");
-		for (Iterator iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
+		for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
 			Expression expression = (Expression) iter.next();
 			expression.accept(this);
 			if (iter.hasNext())
@@ -328,9 +328,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 			switchExp.accept(this);
 		}
 
-		List clauses = caseExpression.getWhenClauses();
-		for (Iterator iter = clauses.iterator(); iter.hasNext();) {
-			Expression exp = (Expression) iter.next();
+		List<Expression> clauses = caseExpression.getWhenClauses();
+		for (Iterator<Expression> iter = clauses.iterator(); iter.hasNext();) {
+			Expression exp = iter.next();
 			exp.accept(this);
 		}
 
