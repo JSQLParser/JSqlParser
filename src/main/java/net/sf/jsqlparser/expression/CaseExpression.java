@@ -60,7 +60,7 @@ public class CaseExpression implements Expression {
 
 	private Expression switchExpression;
 
-	private List whenClauses;
+	private List<Expression> whenClauses;
 
 	private Expression elseExpression;
 
@@ -106,7 +106,7 @@ public class CaseExpression implements Expression {
 	/**
 	 * @return Returns the whenClauses.
 	 */
-	public List getWhenClauses() {
+	public List<Expression> getWhenClauses() {
 		return whenClauses;
 	}
 
@@ -114,7 +114,7 @@ public class CaseExpression implements Expression {
 	 * @param whenClauses
 	 *            The whenClauses to set.
 	 */
-	public void setWhenClauses(List whenClauses) {
+	public void setWhenClauses(List<Expression> whenClauses) {
 		this.whenClauses = whenClauses;
 	}
 

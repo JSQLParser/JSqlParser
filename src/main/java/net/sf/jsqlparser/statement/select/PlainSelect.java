@@ -35,13 +35,13 @@ import net.sf.jsqlparser.schema.Table;
  */
 public class PlainSelect implements SelectBody {
 	private Distinct distinct = null;
-	private List selectItems;
+	private List<SelectItem> selectItems;
 	private Table into;
 	private FromItem fromItem;
 	private List<Join> joins;
 	private Expression where;
-	private List groupByColumnReferences;
-	private List orderByElements;
+	private List<Expression> groupByColumnReferences;
+	private List<OrderByElement> orderByElements;
 	private Expression having;
 	private Limit limit;
 	private Top top;
@@ -64,7 +64,7 @@ public class PlainSelect implements SelectBody {
 	 * 
 	 * @return a list of {@link SelectItem}s
 	 */
-	public List getSelectItems() {
+	public List<SelectItem> getSelectItems() {
 		return selectItems;
 	}
 
@@ -80,7 +80,7 @@ public class PlainSelect implements SelectBody {
 		into = table;
 	}
 
-	public void setSelectItems(List list) {
+	public void setSelectItems(List<SelectItem> list) {
 		selectItems = list;
 	}
 
@@ -105,11 +105,11 @@ public class PlainSelect implements SelectBody {
 		selectVisitor.visit(this);
 	}
 
-	public List getOrderByElements() {
+	public List<OrderByElement> getOrderByElements() {
 		return orderByElements;
 	}
 
-	public void setOrderByElements(List orderByElements) {
+	public void setOrderByElements(List<OrderByElement> orderByElements) {
 		this.orderByElements = orderByElements;
 	}
 
@@ -150,11 +150,11 @@ public class PlainSelect implements SelectBody {
 	 * 
 	 * @return a list of {@link Expression}s
 	 */
-	public List getGroupByColumnReferences() {
+	public List<Expression> getGroupByColumnReferences() {
 		return groupByColumnReferences;
 	}
 
-	public void setGroupByColumnReferences(List list) {
+	public void setGroupByColumnReferences(List<Expression> list) {
 		groupByColumnReferences = list;
 	}
 
@@ -167,9 +167,9 @@ public class PlainSelect implements SelectBody {
 		sql += getStringList(selectItems);
 		sql += " FROM " + fromItem;
 		if (joins != null) {
-			Iterator it = joins.iterator();
+			Iterator<Join> it = joins.iterator();
 			while (it.hasNext()) {
-				Join join = (Join) it.next();
+				Join join = it.next();
 				if (join.isSimple()) {
 					sql += ", " + join;
 				} else {
@@ -187,15 +187,15 @@ public class PlainSelect implements SelectBody {
 		return sql;
 	}
 
-	public static String orderByToString(List orderByElements) {
+	public static String orderByToString(List<OrderByElement> orderByElements) {
 		return getFormatedList(orderByElements, "ORDER BY");
 	}
 
-	public static String getFormatedList(List list, String expression) {
+	public static String getFormatedList(List<?> list, String expression) {
 		return getFormatedList(list, expression, true, false);
 	}
 
-	public static String getFormatedList(List list, String expression, boolean useComma, boolean useBrackets) {
+	public static String getFormatedList(List<?> list, String expression, boolean useComma, boolean useBrackets) {
 		String sql = getStringList(list, useComma, useBrackets);
 
 		if (sql.length() > 0) {
@@ -220,7 +220,7 @@ public class PlainSelect implements SelectBody {
 	 *            list of objects with toString methods
 	 * @return comma separated list of the elements in the list
 	 */
-	public static String getStringList(List list) {
+	public static String getStringList(List<?> list) {
 		return getStringList(list, true, false);
 	}
 
@@ -236,7 +236,7 @@ public class PlainSelect implements SelectBody {
 	 *            true if the list has to be enclosed in brackets
 	 * @return comma separated list of the elements in the list
 	 */
-	public static String getStringList(List list, boolean useComma, boolean useBrackets) {
+	public static String getStringList(List<?> list, boolean useComma, boolean useBrackets) {
 		String ans = "";
 		String comma = ",";
 		if (!useComma) {

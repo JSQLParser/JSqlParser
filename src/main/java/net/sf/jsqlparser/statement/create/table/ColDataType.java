@@ -7,9 +7,9 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class ColDataType {
 
 	private String dataType;
-	private List argumentsStringList;
+	private List<String> argumentsStringList;
 
-	public List getArgumentsStringList() {
+	public List<String> getArgumentsStringList() {
 		return argumentsStringList;
 	}
 
@@ -17,7 +17,7 @@ public class ColDataType {
 		return dataType;
 	}
 
-	public void setArgumentsStringList(List list) {
+	public void setArgumentsStringList(List<String> list) {
 		argumentsStringList = list;
 	}
 

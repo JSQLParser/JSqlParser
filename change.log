@@ -141,3 +141,9 @@ Arithmetic expressions in CASE expression
 Added matches (@@) operator
 Changed order by and group by to be Expressions
 Added bitwise operators (|, ^, &)
+
+0.7.1
+Changed project layout to maven project
+Added regexp (REGEXP) operator
+Added support for SELECT without FROM  (e.g. "SELECT 1+2")
+Moved parser from using StringBuffer to using StringBuilder

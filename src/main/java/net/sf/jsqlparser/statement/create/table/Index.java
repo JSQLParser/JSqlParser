@@ -10,13 +10,13 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Index {
 
 	private String type;
-	private List columnsNames;
+	private List<String> columnsNames;
 	private String name;
 
 	/**
 	 * A list of strings of all the columns regarding this index
 	 */
-	public List getColumnsNames() {
+	public List<String> getColumnsNames() {
 		return columnsNames;
 	}
 
@@ -31,7 +31,7 @@ public class Index {
 		return type;
 	}
 
-	public void setColumnsNames(List list) {
+	public void setColumnsNames(List<String> list) {
 		columnsNames = list;
 	}
 

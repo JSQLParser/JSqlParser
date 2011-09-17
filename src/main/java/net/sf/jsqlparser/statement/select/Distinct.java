@@ -6,18 +6,18 @@ import java.util.List;
  * A DISTINCT [ON (expression, ...)] clause
  */
 public class Distinct {
-	private List onSelectItems;
+	private List<SelectItem> onSelectItems;
 
 	/**
 	 * A list of {@link SelectItem}s expressions, as in "select DISTINCT ON (a,b,c) a,b FROM..."
 	 * 
 	 * @return a list of {@link SelectItem}s expressions
 	 */
-	public List getOnSelectItems() {
+	public List<SelectItem> getOnSelectItems() {
 		return onSelectItems;
 	}
 
-	public void setOnSelectItems(List list) {
+	public void setOnSelectItems(List<SelectItem> list) {
 		onSelectItems = list;
 	}
 

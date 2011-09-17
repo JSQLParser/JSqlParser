@@ -25,6 +25,7 @@ package net.sf.jsqlparser.statement.select;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.schema.Column;
 
 /**
  * A join clause
@@ -39,7 +40,7 @@ public class Join {
 	private boolean simple = false;
 	private FromItem rightItem;
 	private Expression onExpression;
-	private List usingColumns;
+	private List<Column> usingColumns;
 
 	/**
 	 * Whether is a tab1,tab2 join
@@ -157,11 +158,11 @@ public class Join {
 	/**
 	 * Returns the "USING" list of {@link net.sf.jsqlparser.schema.Column}s (if any)
 	 */
-	public List getUsingColumns() {
+	public List<Column> getUsingColumns() {
 		return usingColumns;
 	}
 
-	public void setUsingColumns(List list) {
+	public void setUsingColumns(List<Column> list) {
 		usingColumns = list;
 	}
 

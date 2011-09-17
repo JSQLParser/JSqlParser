@@ -26,7 +26,11 @@ package net.sf.jsqlparser;
  * An exception class with stack trace informations
  */
 public class JSQLParserException extends Exception {
-	private Throwable cause = null;
+    
+    /* The serial class version */
+    private static final long serialVersionUID = -1099039459759769980L;
+    
+    private Throwable cause = null;
 
 	public JSQLParserException() {
 		super();

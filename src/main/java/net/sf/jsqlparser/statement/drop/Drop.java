@@ -9,7 +9,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Drop implements Statement {
 	private String type;
 	private String name;
-	private List parameters;
+	private List<String> parameters;
 
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
@@ -19,7 +19,7 @@ public class Drop implements Statement {
 		return name;
 	}
 
-	public List getParameters() {
+	public List<String> getParameters() {
 		return parameters;
 	}
 
@@ -31,7 +31,7 @@ public class Drop implements Statement {
 		name = string;
 	}
 
-	public void setParameters(List list) {
+	public void setParameters(List<String> list) {
 		parameters = list;
 	}
 

@@ -7,7 +7,7 @@ import java.util.List;
  */
 public class WithItem {
 	private String name;
-	private List withItemList;
+	private List<SelectItem> withItemList;
 	private SelectBody selectBody;
 
 	/**
@@ -41,11 +41,11 @@ public class WithItem {
 	 * 
 	 * @return a list of {@link SelectItem}s
 	 */
-	public List getWithItemList() {
+	public List<SelectItem> getWithItemList() {
 		return withItemList;
 	}
 
-	public void setWithItemList(List withItemList) {
+	public void setWithItemList(List<SelectItem> withItemList) {
 		this.withItemList = withItemList;
 	}
 

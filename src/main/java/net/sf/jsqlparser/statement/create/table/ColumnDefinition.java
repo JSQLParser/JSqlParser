@@ -11,17 +11,17 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class ColumnDefinition {
 	private String columnName;
 	private ColDataType colDataType;
-	private List columnSpecStrings;
+	private List<String> columnSpecStrings;
 
 	/**
 	 * A list of strings of every word after the datatype of the column.<br>
 	 * Example ("NOT", "NULL")
 	 */
-	public List getColumnSpecStrings() {
+	public List<String> getColumnSpecStrings() {
 		return columnSpecStrings;
 	}
 
-	public void setColumnSpecStrings(List list) {
+	public void setColumnSpecStrings(List<String> list) {
 		columnSpecStrings = list;
 	}
 
