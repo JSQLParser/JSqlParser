@@ -52,7 +52,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		buffer.append("SELECT ");
 		Top top = plainSelect.getTop();
 		if (top != null)
-			top.toString();
+			buffer.append(top).append(" ");
 		if (plainSelect.getDistinct() != null) {
 			buffer.append("DISTINCT ");
 			if (plainSelect.getDistinct().getOnSelectItems() != null) {
@@ -130,6 +130,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 			buffer.append(")");
 			if (iter.hasNext()) {
 				buffer.append(" UNION ");
+                                if(union.isAll()){
+                                        buffer.append("ALL ");//should UNION be a BinaryExpression ?
+                                }
 			}
 
 		}
@@ -146,9 +149,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
 	public void visit(OrderByElement orderBy) {
 		orderBy.getExpression().accept(expressionVisitor);
-		if (orderBy.isAsc())
-			buffer.append(" ASC");
-		else
+		if (!orderBy.isAsc())
 			buffer.append(" DESC");
 	}
 
@@ -176,6 +177,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		buffer.append("(");
 		subSelect.getSelectBody().accept(this);
 		buffer.append(")");
+                String alias = subSelect.getAlias();
+                if(alias != null){
+                        buffer.append(" AS ").append(alias);
+                }
 	}
 
 	public void visit(Table tableName) {
@@ -199,18 +204,12 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
 	public void deparseLimit(Limit limit) {
 		// LIMIT n OFFSET skip
-		buffer.append(" LIMIT ");
 		if (limit.isRowCountJdbcParameter()) {
+                        buffer.append(" LIMIT ");
 			buffer.append("?");
 		} else if (limit.getRowCount() != 0) {
+                        buffer.append(" LIMIT ");
 			buffer.append(limit.getRowCount());
-		} else {
-			/*
-			 * from mysql docs: For compatibility with PostgreSQL, MySQL also supports the LIMIT row_count OFFSET offset
-			 * syntax. To retrieve all rows from a certain offset up to the end of the result set, you can use some
-			 * large number for the second parameter.
-			 */
-			buffer.append("18446744073709551615");
 		}
 
 		if (limit.isOffsetJdbcParameter()) {
@@ -240,7 +239,6 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	public void visit(SubJoin subjoin) {
 		buffer.append("(");
 		subjoin.getLeft().accept(this);
-		buffer.append(" ");
 		deparseJoin(subjoin.getJoin());
 		buffer.append(")");
 	}
@@ -251,20 +249,20 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		else {
 
 			if (join.isRight())
-				buffer.append("RIGHT ");
+				buffer.append(" RIGHT");
 			else if (join.isNatural())
-				buffer.append("NATURAL ");
+				buffer.append(" NATURAL");
 			else if (join.isFull())
-				buffer.append("FULL ");
+				buffer.append(" FULL");
 			else if (join.isLeft())
-				buffer.append("LEFT ");
+				buffer.append(" LEFT");
 
 			if (join.isOuter())
-				buffer.append("OUTER ");
+				buffer.append(" OUTER");
 			else if (join.isInner())
-				buffer.append("INNER ");
+				buffer.append(" INNER");
 
-			buffer.append("JOIN ");
+			buffer.append(" JOIN ");
 
 		}
 
@@ -275,12 +273,12 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 			join.getOnExpression().accept(expressionVisitor);
 		}
 		if (join.getUsingColumns() != null) {
-			buffer.append(" USING ( ");
+			buffer.append(" USING (");
 			for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator.hasNext();) {
 				Column column = iterator.next();
 				buffer.append(column.getWholeColumnName());
 				if (iterator.hasNext()) {
-					buffer.append(" ,");
+					buffer.append(", ");
 				}
 			}
 			buffer.append(")");

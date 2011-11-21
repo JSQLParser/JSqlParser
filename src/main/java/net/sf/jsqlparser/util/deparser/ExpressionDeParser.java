@@ -117,7 +117,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	}
 
 	public void visit(DoubleValue doubleValue) {
-		buffer.append(doubleValue.getValue());
+		buffer.append(doubleValue.toString());
 
 	}
 
@@ -165,7 +165,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	public void visit(LikeExpression likeExpression) {
 		visitBinaryExpression(likeExpression, " LIKE ");
-
+                String escape = likeExpression.getEscape();
+                if(escape!=null){
+                        buffer.append(" ESCAPE '").append(escape).append('\'');
+                }
 	}
 
 	public void visit(ExistsExpression existsExpression) {
@@ -324,29 +327,32 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	public void visit(CaseExpression caseExpression) {
 		buffer.append("CASE ");
 		Expression switchExp = caseExpression.getSwitchExpression();
-		if (switchExp != null) {
+		if( switchExp != null ) {
 			switchExp.accept(this);
+                        buffer.append(" ");
 		}
 
-		List<Expression> clauses = caseExpression.getWhenClauses();
-		for (Iterator<Expression> iter = clauses.iterator(); iter.hasNext();) {
-			Expression exp = iter.next();
+		for (Iterator<Expression> iter = caseExpression.getWhenClauses().iterator(); iter.hasNext();) {
+			Expression exp = (Expression) iter.next();
 			exp.accept(this);
 		}
 
 		Expression elseExp = caseExpression.getElseExpression();
-		if (elseExp != null) {
+		if( elseExp != null ) {
+			buffer.append("ELSE ");
 			elseExp.accept(this);
+                        buffer.append(" ");
 		}
 
-		buffer.append(" END");
+		buffer.append("END");
 	}
 
 	public void visit(WhenClause whenClause) {
-		buffer.append(" WHEN ");
+		buffer.append("WHEN ");
 		whenClause.getWhenExpression().accept(this);
 		buffer.append(" THEN ");
 		whenClause.getThenExpression().accept(this);
+                buffer.append(" ");
 	}
 
 	public void visit(AllComparisonExpression allComparisonExpression) {
