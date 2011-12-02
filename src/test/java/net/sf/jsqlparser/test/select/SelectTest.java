@@ -811,33 +811,6 @@ public class SelectTest extends TestCase {
 	      parserManager.parse( new StringReader( statement ) );
 	}
 
-	public void testSelectIfStatementWithComparisonArgument() throws JSQLParserException {
-		String statement = "SELECT IF(t1.col1 > 0, t1.col1, t1.col2) AS r FROM t1";
-		Statement parsed = parserManager.parse(new StringReader(statement));
-		assertEquals(statement, parsed.toString());
-                StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-                parsed.accept(deParser);
-                assertEquals(statement, deParser.getBuffer().toString());
-	}
-
-	public void testSelectIfStatementWithOrArgument() throws JSQLParserException {
-		String statement = "SELECT if(a > b OR b > c, 1, 0) AS firstRappro FROM my_table";
-		Statement parsed = parserManager.parse(new StringReader(statement));
-		assertEquals(statement, parsed.toString());
-                StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-                parsed.accept(deParser);
-                assertEquals(statement, deParser.getBuffer().toString());
-	}
-
-	public void testSelectIfStatementWithAndArgument() throws JSQLParserException {
-		String statement = "SELECT if(a > b AND b > c, 1, 0) AS firstRappro FROM my_table";
-		Statement parsed = parserManager.parse(new StringReader(statement));
-		assertEquals(statement, parsed.toString());
-                StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-                parsed.accept(deParser);
-                assertEquals(statement, deParser.getBuffer().toString());
-	}
-
 	public static void main(String[] args) {
 		junit.swingui.TestRunner.run(SelectTest.class);
 	}
