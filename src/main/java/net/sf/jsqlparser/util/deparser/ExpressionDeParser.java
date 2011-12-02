@@ -165,10 +165,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	public void visit(LikeExpression likeExpression) {
 		visitBinaryExpression(likeExpression, " LIKE ");
-                String escape = likeExpression.getEscape();
-                if(escape!=null){
-                        buffer.append(" ESCAPE '").append(escape).append('\'');
-                }
+		String escape = likeExpression.getEscape();
+		if (escape != null) {
+			buffer.append(" ESCAPE '").append(escape).append('\'');
+		}
 	}
 
 	public void visit(ExistsExpression existsExpression) {
@@ -327,9 +327,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	public void visit(CaseExpression caseExpression) {
 		buffer.append("CASE ");
 		Expression switchExp = caseExpression.getSwitchExpression();
-		if( switchExp != null ) {
+		if (switchExp != null) {
 			switchExp.accept(this);
-                        buffer.append(" ");
+			buffer.append(" ");
 		}
 
 		for (Iterator<Expression> iter = caseExpression.getWhenClauses().iterator(); iter.hasNext();) {
@@ -338,10 +338,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 		}
 
 		Expression elseExp = caseExpression.getElseExpression();
-		if( elseExp != null ) {
+		if (elseExp != null) {
 			buffer.append("ELSE ");
 			elseExp.accept(this);
-                        buffer.append(" ");
+			buffer.append(" ");
 		}
 
 		buffer.append("END");
@@ -352,7 +352,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 		whenClause.getWhenExpression().accept(this);
 		buffer.append(" THEN ");
 		whenClause.getThenExpression().accept(this);
-                buffer.append(" ");
+		buffer.append(" ");
 	}
 
 	public void visit(AllComparisonExpression allComparisonExpression) {

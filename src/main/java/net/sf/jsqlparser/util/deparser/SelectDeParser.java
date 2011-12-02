@@ -130,9 +130,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 			buffer.append(")");
 			if (iter.hasNext()) {
 				buffer.append(" UNION ");
-                                if(union.isAll()){
-                                        buffer.append("ALL ");//should UNION be a BinaryExpression ?
-                                }
+				if (union.isAll()) {
+					buffer.append("ALL ");// should UNION be a BinaryExpression ?
+				}
 			}
 
 		}
@@ -177,10 +177,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		buffer.append("(");
 		subSelect.getSelectBody().accept(this);
 		buffer.append(")");
-                String alias = subSelect.getAlias();
-                if(alias != null){
-                        buffer.append(" AS ").append(alias);
-                }
+		String alias = subSelect.getAlias();
+		if (alias != null) {
+			buffer.append(" AS ").append(alias);
+		}
 	}
 
 	public void visit(Table tableName) {
@@ -205,10 +205,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	public void deparseLimit(Limit limit) {
 		// LIMIT n OFFSET skip
 		if (limit.isRowCountJdbcParameter()) {
-                        buffer.append(" LIMIT ");
+			buffer.append(" LIMIT ");
 			buffer.append("?");
 		} else if (limit.getRowCount() != 0) {
-                        buffer.append(" LIMIT ");
+			buffer.append(" LIMIT ");
 			buffer.append(limit.getRowCount());
 		}
 

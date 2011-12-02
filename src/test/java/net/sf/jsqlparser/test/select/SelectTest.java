@@ -97,7 +97,7 @@ public class SelectTest extends TestCase {
 	public void testSelectItems() throws JSQLParserException {
 		String statement = "SELECT myid AS MYID, mycol, tab.*, schema.tab.*, mytab.mycol2, myschema.mytab.mycol, myschema.mytab.* FROM mytable WHERE mytable.col = 9";
 		Select select = (Select) parserManager.parse(new StringReader(statement));
-                PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
 
 		assertEquals("MYID", ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias());
 		assertEquals("mycol",
@@ -118,13 +118,13 @@ public class SelectTest extends TestCase {
 
 		statement = "SELECT myid AS MYID, (SELECT MAX(ID) AS myid2 FROM mytable2) AS myalias FROM mytable WHERE mytable.col = 9";
 		select = (Select) parserManager.parse(new StringReader(statement));
-                plainSelect = (PlainSelect) select.getSelectBody();
+		plainSelect = (PlainSelect) select.getSelectBody();
 		assertEquals("myalias", ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).getAlias());
 		assertStatementCanBeDeparsedAs(select, statement);
 
 		statement = "SELECT (myid + myid2) AS MYID FROM mytable WHERE mytable.col = 9";
 		select = (Select) parserManager.parse(new StringReader(statement));
-                plainSelect = (PlainSelect) select.getSelectBody();
+		plainSelect = (PlainSelect) select.getSelectBody();
 		assertEquals("MYID", ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias());
 		assertStatementCanBeDeparsedAs(select, statement);
 	}
@@ -133,7 +133,7 @@ public class SelectTest extends TestCase {
 		String statement = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
 				+ "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION " + "SELECT * FROM mytable2 LIMIT 3,4";
 
-                Select select = (Select) parserManager.parse(new StringReader(statement));
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 		Union union = (Union) select.getSelectBody();
 		assertEquals(3, union.getPlainSelects().size());
 		assertEquals("mytable", ((Table) ((PlainSelect) union.getPlainSelects().get(0)).getFromItem()).getName());
@@ -151,7 +151,7 @@ public class SelectTest extends TestCase {
 
 	public void testDistinct() throws JSQLParserException {
 		String statement = "SELECT DISTINCT ON (myid) myid, mycol FROM mytable WHERE mytable.col = 9";
-                Select select = (Select) parserManager.parse(new StringReader(statement));
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
 		assertEquals("myid",
 				((Column) ((SelectExpressionItem) plainSelect.getDistinct().getOnSelectItems().get(0)).getExpression())
@@ -562,8 +562,8 @@ public class SelectTest extends TestCase {
 	}
 	
 	public void testSelectFunction() throws JSQLParserException {
-	      String statement = "SELECT 1+2 AS sum";
-	      parserManager.parse( new StringReader( statement ) );
+		String statement = "SELECT 1+2 AS sum";
+		parserManager.parse(new StringReader(statement));
 	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
