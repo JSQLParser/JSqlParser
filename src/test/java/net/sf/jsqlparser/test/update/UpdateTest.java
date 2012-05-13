@@ -38,9 +38,4 @@ public class UpdateTest extends TestCase {
 		String statement = "UPDATE table1 A SET A.column = 'XXX' WHERE A.cod_table = 'YYY'";
 		Update update = (Update) parserManager.parse(new StringReader(statement));
 	}
-
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(UpdateTest.class);
-	}
-
 }

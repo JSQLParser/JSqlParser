@@ -18,11 +18,7 @@ public class CCJSqlParserManagerTest extends TestCase {
 	public CCJSqlParserManagerTest(String arg0) {
 		super(arg0);
 	}
-
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(CCJSqlParserManagerTest.class);
-	}
-
+	
 	public void testParse() throws Exception {
 		CCJSqlParserManager parserManager = new CCJSqlParserManager();
 		BufferedReader in = new BufferedReader( new InputStreamReader( CreateTableTest.class.getResourceAsStream( "/simple_parsing.txt" ) ) );

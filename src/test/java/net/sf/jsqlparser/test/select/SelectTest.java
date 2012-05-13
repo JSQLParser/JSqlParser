@@ -589,9 +589,4 @@ public class SelectTest extends TestCase {
 
 		assertEquals(expression, stringBuffer.toString());
 	}
-
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(SelectTest.class);
-	}
-
 }

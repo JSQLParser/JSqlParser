@@ -24,10 +24,6 @@ public class TablesNamesFinderTest extends TestCase {
 		super(arg0);
 	}
 
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(TablesNamesFinderTest.class);
-	}
-
 	public void testRUBiSTableList() throws Exception {
 
 	    BufferedReader in = new BufferedReader( new InputStreamReader( CreateTableTest.class.getResourceAsStream( "/RUBiS-select-requests.txt" ) ) );

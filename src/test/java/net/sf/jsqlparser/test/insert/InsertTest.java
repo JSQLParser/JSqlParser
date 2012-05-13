@@ -76,9 +76,4 @@ public class InsertTest extends TestCase {
 		String statementToString = "INSERT INTO mytable (col1, col2, col3) (SELECT * FROM mytable2)";
 		assertEquals(statementToString, "" + insert);
 	}
-
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(InsertTest.class);
-	}
-
 }

@@ -158,9 +158,4 @@ public class CreateTableTest extends TestCase {
 
 		return line;
 	}
-
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(CreateTableTest.class);
-	}
-
 }

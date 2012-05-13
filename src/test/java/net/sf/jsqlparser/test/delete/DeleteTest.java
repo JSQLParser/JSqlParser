@@ -21,9 +21,4 @@ public class DeleteTest extends TestCase {
 		assertEquals("mytable", delete.getTable().getName());
 		assertEquals(statement, "" + delete);
 	}
-
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(DeleteTest.class);
-	}
-
 }

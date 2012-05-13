@@ -26,9 +26,4 @@ public class TruncateTest extends TestCase {
 		assertEquals("mytab", truncate.getTable().getName());
 		assertEquals(toStringStatement.toUpperCase(), truncate.toString().toUpperCase());
 	}
-
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(TruncateTest.class);
-	}
-
 }

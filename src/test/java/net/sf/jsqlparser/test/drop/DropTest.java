@@ -28,9 +28,4 @@ public class DropTest extends TestCase {
 		assertEquals("CASCADE", drop.getParameters().get(0));
 		assertEquals(statement, "" + drop);
 	}
-
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(DropTest.class);
-	}
-
 }

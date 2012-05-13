@@ -61,9 +61,4 @@ public class ReplaceTest extends TestCase {
 		// TODO:
 		// assertEquals(statement, ""+replace);
 	}
-
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(ReplaceTest.class);
-	}
-
 }
