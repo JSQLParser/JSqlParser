@@ -128,9 +128,4 @@ public class SpeedTest extends TestCase {
 				+ df.format(1.0 / statementsPerSecond) + " seconds per select scans for table name)");
 
 	}
-
-	public static void main(String[] args) {
-		TestRunner.run(SpeedTest.class);
-	}
-
 }
