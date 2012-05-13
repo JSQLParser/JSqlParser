@@ -19,7 +19,6 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
 package net.sf.jsqlparser.statement.select;
 
 import java.util.Iterator;
@@ -34,6 +33,7 @@ import net.sf.jsqlparser.schema.Table;
  * The core of a "SELECT" statement (no UNION, no ORDER BY)
  */
 public class PlainSelect implements SelectBody {
+
 	private Distinct distinct = null;
 	private List<SelectItem> selectItems;
 	private Table into;
@@ -48,7 +48,7 @@ public class PlainSelect implements SelectBody {
 
 	/**
 	 * The {@link FromItem} in this query
-	 * 
+	 *
 	 * @return the {@link FromItem}
 	 */
 	public FromItem getFromItem() {
@@ -60,8 +60,9 @@ public class PlainSelect implements SelectBody {
 	}
 
 	/**
-	 * The {@link SelectItem}s in this query (for example the A,B,C in "SELECT A,B,C")
-	 * 
+	 * The {@link SelectItem}s in this query (for example the A,B,C in "SELECT
+	 * A,B,C")
+	 *
 	 * @return a list of {@link SelectItem}s
 	 */
 	public List<SelectItem> getSelectItems() {
@@ -90,7 +91,7 @@ public class PlainSelect implements SelectBody {
 
 	/**
 	 * The list of {@link Join}s
-	 * 
+	 *
 	 * @return the list of {@link Join}s
 	 */
 	public List<Join> getJoins() {
@@ -146,8 +147,9 @@ public class PlainSelect implements SelectBody {
 	}
 
 	/**
-	 * A list of {@link Expression}s of the GROUP BY clause. It is null in case there is no GROUP BY clause
-	 * 
+	 * A list of {@link Expression}s of the GROUP BY clause. It is null in case
+	 * there is no GROUP BY clause
+	 *
 	 * @return a list of {@link Expression}s
 	 */
 	public List<Expression> getGroupByColumnReferences() {
@@ -165,25 +167,26 @@ public class PlainSelect implements SelectBody {
 		sql += ((distinct != null) ? "" + distinct + " " : "");
 		sql += ((top != null) ? "" + top + " " : "");
 		sql += getStringList(selectItems);
-		sql += " FROM " + fromItem;
-		if (joins != null) {
-			Iterator<Join> it = joins.iterator();
-			while (it.hasNext()) {
-				Join join = it.next();
-				if (join.isSimple()) {
-					sql += ", " + join;
-				} else {
-					sql += " " + join;
+		if (fromItem != null) {
+			sql += " FROM " + fromItem;
+			if (joins != null) {
+				Iterator<Join> it = joins.iterator();
+				while (it.hasNext()) {
+					Join join = it.next();
+					if (join.isSimple()) {
+						sql += ", " + join;
+					} else {
+						sql += " " + join;
+					}
 				}
 			}
+			// sql += getFormatedList(joins, "", false, false);
+			sql += ((where != null) ? " WHERE " + where : "");
+			sql += getFormatedList(groupByColumnReferences, "GROUP BY");
+			sql += ((having != null) ? " HAVING " + having : "");
+			sql += orderByToString(orderByElements);
+			sql += ((limit != null) ? limit + "" : "");
 		}
-		// sql += getFormatedList(joins, "", false, false);
-		sql += ((where != null) ? " WHERE " + where : "");
-		sql += getFormatedList(groupByColumnReferences, "GROUP BY");
-		sql += ((having != null) ? " HAVING " + having : "");
-		sql += orderByToString(orderByElements);
-		sql += ((limit != null) ? limit + "" : "");
-
 		return sql;
 	}
 
@@ -210,14 +213,13 @@ public class PlainSelect implements SelectBody {
 	}
 
 	/**
-	 * List the toString out put of the objects in the List comma separated. If the List is null or empty an empty
-	 * string is returned.
-	 * 
+	 * List the toString out put of the objects in the List comma separated. If
+	 * the List is null or empty an empty string is returned.
+	 *
 	 * The same as getStringList(list, true, false)
-	 * 
+	 *
 	 * @see #getStringList(List, boolean, boolean)
-	 * @param list
-	 *            list of objects with toString methods
+	 * @param list list of objects with toString methods
 	 * @return comma separated list of the elements in the list
 	 */
 	public static String getStringList(List<?> list) {
@@ -225,15 +227,12 @@ public class PlainSelect implements SelectBody {
 	}
 
 	/**
-	 * List the toString out put of the objects in the List that can be comma separated. If the List is null or empty an
-	 * empty string is returned.
-	 * 
-	 * @param list
-	 *            list of objects with toString methods
-	 * @param useComma
-	 *            true if the list has to be comma separated
-	 * @param useBrackets
-	 *            true if the list has to be enclosed in brackets
+	 * List the toString out put of the objects in the List that can be comma
+	 * separated. If the List is null or empty an empty string is returned.
+	 *
+	 * @param list list of objects with toString methods
+	 * @param useComma true if the list has to be comma separated
+	 * @param useBrackets true if the list has to be enclosed in brackets
 	 * @return comma separated list of the elements in the list
 	 */
 	public static String getStringList(List<?> list, boolean useComma, boolean useBrackets) {

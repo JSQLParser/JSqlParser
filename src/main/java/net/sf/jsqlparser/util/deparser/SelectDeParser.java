@@ -77,10 +77,8 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 			}
 		}
 
-		buffer.append(" ");
-
 		if (plainSelect.getFromItem() != null) {
-			buffer.append("FROM ");
+			buffer.append(" FROM ");
 			plainSelect.getFromItem().accept(this);
 		}
 

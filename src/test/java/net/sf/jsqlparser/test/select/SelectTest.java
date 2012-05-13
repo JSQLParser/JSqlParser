@@ -562,7 +562,7 @@ public class SelectTest extends TestCase {
 	}
 	
 	public void testSelectFunction() throws JSQLParserException {
-		String statement = "SELECT 1+2 AS sum";
+		String statement = "SELECT 1 + 2 AS sum";
 		assertSqlCanBeParsedAndDeparsed(statement);
 	}
 	
