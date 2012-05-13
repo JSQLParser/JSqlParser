@@ -125,5 +125,6 @@ public interface ExpressionVisitor {
 	public void visit(BitwiseOr bitwiseOr);
 
 	public void visit(BitwiseXor bitwiseXor);
-
+	
+	public void visit(CastExpression cast);
 }

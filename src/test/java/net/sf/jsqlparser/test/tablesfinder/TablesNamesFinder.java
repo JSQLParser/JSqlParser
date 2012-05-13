@@ -8,6 +8,7 @@ import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
+import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
@@ -268,6 +269,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
 	public void visit(BitwiseXor bitwiseXor) {
 		visitBinaryExpression(bitwiseXor);
+	}
+
+	@Override
+	public void visit(CastExpression cast) {
+		cast.getLeftExpression().accept(this);
 	}
 
 }

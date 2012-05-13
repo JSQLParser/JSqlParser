@@ -563,7 +563,25 @@ public class SelectTest extends TestCase {
 	
 	public void testSelectFunction() throws JSQLParserException {
 		String statement = "SELECT 1+2 AS sum";
-		parserManager.parse(new StringReader(statement));
+		assertSqlCanBeParsedAndDeparsed(statement);
+	}
+	
+	public void testCast() throws JSQLParserException  {
+		String stmt = "SELECT CAST(a AS varchar) FROM tabelle1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+		stmt = "SELECT CAST(a AS varchar2) FROM tabelle1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testCastInCast() throws JSQLParserException {
+		String stmt = "SELECT CAST(CAST(a AS numeric) AS varchar) FROM tabelle1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+
+	public void testCastInCast2() throws JSQLParserException {
+		String stmt = "SELECT CAST('test' + CAST(assertEqual AS numeric) AS varchar) FROM tabelle1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {

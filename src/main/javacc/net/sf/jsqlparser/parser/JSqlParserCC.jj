@@ -71,6 +71,7 @@ import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.CaseExpression;
+import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.AllComparisonExpression;
@@ -213,6 +214,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TRUNCATE:"TRUNCATE">
 |   <K_DISTINCT:"DISTINCT">
 |   <K_INTERSECT:"INTERSECT">
+|   <K_CAST:"CAST">
 }
 
 
@@ -1374,6 +1376,8 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(2) [ "+" | "-" { isInverse = true; }]  "(" retval=PrimaryExpression() ")" {retval = new Parenthesis(retval); }
 
+	| LOOKAHEAD(2) [ "+" | "-" { isInverse = true; }] retval=CastExpression()
+
 	| token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 
 	| [ "+" | "-" { isInverse = true; }] "(" retval=SubSelect() ")"
@@ -1395,6 +1399,26 @@ Expression PrimaryExpression():
     }
 }
 
+CastExpression CastExpression():
+{
+	CastExpression retval = new CastExpression();
+	String typeName = null;
+	Expression expression = null;
+}
+{
+	<K_CAST>
+	"("
+	expression=SimpleExpression()
+	<K_AS>
+	typeName=RelObjectName()
+	")"
+
+    {
+	    retval.setLeftExpression(expression);
+	    retval.setTypeName(typeName);
+    	return retval;
+    }
+}
 
 Expression CaseWhenExpression():
 {

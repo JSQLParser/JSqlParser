@@ -7,6 +7,7 @@ import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
+import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
@@ -385,4 +386,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 		visitBinaryExpression(bitwiseXor, " ^ ");
 	}
 
+	@Override
+	public void visit(CastExpression cast) {
+		buffer.append("CAST(");
+		buffer.append(cast.getLeftExpression());
+		buffer.append(" AS ");
+		buffer.append(cast.getTypeName());
+		buffer.append(")");
+	}
 }
