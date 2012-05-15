@@ -1,7 +1,7 @@
 package net.sf.jsqlparser.expression;
 
 /**
- *
+ * 
  * @author tw
  */
 public class CastExpression implements Expression {
