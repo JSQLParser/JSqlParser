@@ -1432,11 +1432,11 @@ Expression CaseWhenExpression():
 	<K_CASE> 
 	(
     	    ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
-             [<K_ELSE> elseExp=PrimaryExpression()]
+             [<K_ELSE> elseExp=SimpleExpression()]
 		|
 		    switchExp=PrimaryExpression()
              ( clause=WhenThenValue() { whenClauses.add(clause); } )*
-             [<K_ELSE> elseExp=PrimaryExpression()]
+             [<K_ELSE> elseExp=SimpleExpression()]
 	)             
     <K_END>
     { 
