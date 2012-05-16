@@ -588,6 +588,16 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT CASE WHEN 1 + 3 > 20 THEN 0 ELSE 1000 + 1 END AS d FROM dual";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testBrackets() throws JSQLParserException {
+		String stmt = "SELECT tabellea.name AS [Test] FROM tabellea";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testBrackets2() throws JSQLParserException {
+		String stmt = "SELECT [a] FROM t";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));
