@@ -82,6 +82,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
+import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
@@ -1306,7 +1307,9 @@ Expression MultiplicativeExpression():
       { result = leftExpression; }
     (
     	LOOKAHEAD(2) ("*" { result = new Multiplication(); }
-    								| "/" { result = new Division(); } ) 
+    								| "/" { result = new Division(); }
+    								| "%" { result = new Modulo(); }
+    				) 
     								
 				(
 				LOOKAHEAD(BitwiseXor())

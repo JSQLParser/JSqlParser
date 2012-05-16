@@ -590,12 +590,27 @@ public class SelectTest extends TestCase {
 	}
 	
 	public void testBrackets() throws JSQLParserException {
-		String stmt = "SELECT tabellea.name AS [Test] FROM tabellea";
+		String stmt = "SELECT table_a.name AS [Test] FROM table_a";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 	
 	public void testBrackets2() throws JSQLParserException {
 		String stmt = "SELECT [a] FROM t";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testProblemSqlServer_Modulo_Proz() throws Exception {
+		String stmt = "SELECT 5 % 2 FROM A";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testProblemSqlServer_Modulo_mod() throws Exception {
+		String stmt = "SELECT mod(5, 2) FROM A";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testProblemSqlServer_Modulo() throws Exception {
+		String stmt = "SELECT convert(varchar(255), DATEDIFF(month, year1, abc_datum) / 12) + ' year, ' + convert(varchar(255), DATEDIFF(month, year2, abc_datum) % 12) + ' month' FROM test_table";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 

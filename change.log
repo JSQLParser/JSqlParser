@@ -150,3 +150,5 @@ Moved parser from using StringBuffer to using StringBuilder
 
 0.7.3-SNAPSHOT
 Added support for CAST expression
+Added support for modulo (a % b)
+Added support for brackets quotation
