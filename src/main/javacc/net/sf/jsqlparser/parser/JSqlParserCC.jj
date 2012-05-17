@@ -1419,7 +1419,12 @@ AnalyticExpression AnalyticExpression() :
 	Column column = null;
 }
 {
-	token=<S_IDENTIFIER> { retval.setName(token.image); } "(" ")" <K_OVER> "(" [<K_PARTITION> <K_BY> (column=Column() {plist.add(column);} )+ ] olist=OrderByElements() {retval.setOrderByElements(olist);} ")"
+	token=<S_IDENTIFIER> { retval.setName(token.image); } "(" ")" <K_OVER> "(" [<K_PARTITION> <K_BY> (column=Column() {plist.add(column);} )+ ] olist=OrderByElements() 
+	{
+		retval.setPartitionByColumns(plist);
+		retval.setOrderByElements(olist);
+	} 
+	")"
 	{
 		return retval;
 	}
