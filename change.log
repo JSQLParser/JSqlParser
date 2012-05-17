@@ -152,3 +152,4 @@ Moved parser from using StringBuffer to using StringBuilder
 Added support for CAST expression
 Added support for modulo (a % b)
 Added support for brackets quotation
+Added support for NOT expr IS (expr IS NOT was already supported)

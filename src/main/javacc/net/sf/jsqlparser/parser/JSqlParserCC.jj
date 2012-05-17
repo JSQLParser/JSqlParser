@@ -1104,8 +1104,11 @@ Expression IsNullExpression():
 	Expression leftExpression = null;
 }
 {
-	leftExpression=SimpleExpression()
-    <K_IS> [<K_NOT> { result.setNot(true); } ] <K_NULL>
+	(
+	<K_NOT> { result.setNot(true); } leftExpression=SimpleExpression() <K_IS> <K_NULL>
+	| 
+	leftExpression=SimpleExpression() <K_IS> [<K_NOT> { result.setNot(true); } ] <K_NULL>
+	)
 
 	{ 
 		result.setLeftExpression(leftExpression);

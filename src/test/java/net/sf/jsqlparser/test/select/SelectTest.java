@@ -613,6 +613,18 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT convert(varchar(255), DATEDIFF(month, year1, abc_datum) / 12) + ' year, ' + convert(varchar(255), DATEDIFF(month, year2, abc_datum) % 12) + ' month' FROM test_table";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testIsNot() throws JSQLParserException {
+		String stmt = "SELECT * FROM test WHERE a IS NOT NULL";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testIsNot2() throws JSQLParserException {
+		//the deparser delivers always a IS NOT NULL even for NOT a IS NULL
+		String stmt = "SELECT * FROM test WHERE NOT a IS NULL";
+		Statement parsed = parserManager.parse(new StringReader(stmt));
+		assertStatementCanBeDeparsedAs(parsed,"SELECT * FROM test WHERE a IS NOT NULL");
+	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));
