@@ -130,4 +130,6 @@ public interface ExpressionVisitor {
 	public void visit(CastExpression cast);
 	
 	public void visit(Modulo modulo);
+	
+	public void visit(AnalyticExpression aexpr);
 }

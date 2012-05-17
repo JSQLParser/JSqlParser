@@ -625,6 +625,21 @@ public class SelectTest extends TestCase {
 		Statement parsed = parserManager.parse(new StringReader(stmt));
 		assertStatementCanBeDeparsedAs(parsed,"SELECT * FROM test WHERE a IS NOT NULL");
 	}
+	
+	public void testProblemSqlAnalytic() throws JSQLParserException {
+		String stmt = "SELECT a, row_number() OVER (ORDER BY a) AS n FROM table1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testProblemSqlAnalytic2() throws JSQLParserException {
+		String stmt = "SELECT a, row_number() OVER (ORDER BY a, b) AS n FROM table1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testProblemSqlAnalytic3() throws JSQLParserException {
+		String stmt = "SELECT a, row_number() OVER (PARTITION BY c ORDER BY a, b) AS n FROM table1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));

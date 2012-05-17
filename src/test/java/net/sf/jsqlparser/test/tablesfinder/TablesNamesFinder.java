@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.AllComparisonExpression;
+import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
@@ -279,5 +280,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	
 	public void visit(Modulo modulo) {
 		visitBinaryExpression(modulo);
+	}
+	
+	public void visit(AnalyticExpression analytic) {
+		
 	}
 }

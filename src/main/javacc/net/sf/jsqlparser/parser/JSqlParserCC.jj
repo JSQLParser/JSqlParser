@@ -72,6 +72,7 @@ import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
+import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.AllComparisonExpression;
@@ -216,6 +217,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DISTINCT:"DISTINCT">
 |   <K_INTERSECT:"INTERSECT">
 |   <K_CAST:"CAST">
+|   <K_OVER:"OVER">
+|   <K_PARTITION:"PARTITION">
 }
 
 
@@ -1371,8 +1374,10 @@ Expression PrimaryExpression():
 	|	retval=CaseWhenExpression()
 	
 	| "?" { retval = new JdbcParameter(); }
+
+	| LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
 	
-	|    LOOKAHEAD([ "+" | "-"] Function()) [ "+" | "-" { isInverse = true; }] retval=Function() 
+	| LOOKAHEAD([ "+" | "-"] Function()) [ "+" | "-" { isInverse = true; }] retval=Function() 
 	
 	| LOOKAHEAD([	"+" | "-"] <S_DOUBLE>) 	[	"+" | "-" { tmp = "-"; }]  token=<S_DOUBLE> { retval = new DoubleValue(tmp+token.image); }
 	
@@ -1403,6 +1408,21 @@ Expression PrimaryExpression():
 		}
     	return retval; 
     }
+}
+
+AnalyticExpression AnalyticExpression() :
+{
+	AnalyticExpression retval = new AnalyticExpression();
+	List plist = new ArrayList();
+	List olist = null;
+	Token token = null;
+	Column column = null;
+}
+{
+	token=<S_IDENTIFIER> { retval.setName(token.image); } "(" ")" <K_OVER> "(" [<K_PARTITION> <K_BY> (column=Column() {plist.add(column);} )+ ] olist=OrderByElements() {retval.setOrderByElements(olist);} ")"
+	{
+		return retval;
+	}
 }
 
 CastExpression CastExpression():
