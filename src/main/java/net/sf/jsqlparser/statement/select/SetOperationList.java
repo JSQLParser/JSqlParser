@@ -21,43 +21,55 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A UNION statement
+ * Eine Set Operation. Diese besteht aus einer Liste von plainSelects verknüpft
+ * mit Set-Operationen (UNION,INTERSECT,MINUS,EXCEPT). Diese Operationen haben
+ * die gleiche Priorität, s.d. die Datenbanken dies von Links nach rechts
+ * abarbeiten.
+ *
  */
-@Deprecated
-public class Union implements SelectBody {
+public class SetOperationList implements SelectBody {
 
-	private List<PlainSelect> plainSelects;
-	private List<OrderByElement> orderByElements;
+	private List plainSelects;
+	private List operations;
+	private List orderByElements;
 	private Limit limit;
-	private boolean distinct;
-	private boolean all;
 
+	@Override
 	public void accept(SelectVisitor selectVisitor) {
 		selectVisitor.visit(this);
 	}
 
-	public List<OrderByElement> getOrderByElements() {
+	public List getOrderByElements() {
 		return orderByElements;
 	}
 
 	/**
-	 * the list of {@link PlainSelect}s in this UNION
-	 * 
+	 * the list of {@link PlainSelect}s in this SetOperationList
+	 *
 	 * @return the list of {@link PlainSelect}s
 	 */
-	public List<PlainSelect> getPlainSelects() {
+	public List getPlainSelects() {
 		return plainSelects;
 	}
+	
+	public List getOperations() {
+		return operations;
+	}
 
-	public void setOrderByElements(List<OrderByElement> orderByElements) {
+	public void setOrderByElements(List orderByElements) {
 		this.orderByElements = orderByElements;
 	}
 
-	public void setPlainSelects(List<PlainSelect> list) {
-		plainSelects = list;
+	public void setOpsAndSelects(List select,List ops) {
+		plainSelects = select;
+		operations=ops;
+		
+		if (select.size()-1!=ops.size())
+			throw new IllegalArgumentException("list sizes are not valid");
 	}
 
 	public Limit getLimit() {
@@ -68,44 +80,31 @@ public class Union implements SelectBody {
 		this.limit = limit;
 	}
 
-	/**
-	 * This is not 100% right; every UNION should have their own All/Distinct clause...
-	 */
-	public boolean isAll() {
-		return all;
-	}
-
-	public void setAll(boolean all) {
-		this.all = all;
-	}
-
-	/**
-	 * This is not 100% right; every UNION should have their own All/Distinct clause...
-	 */
-	public boolean isDistinct() {
-		return distinct;
-	}
-
-	public void setDistinct(boolean distinct) {
-		this.distinct = distinct;
-	}
-
+	@Override
 	public String toString() {
-
-		String selects = "";
-		String allDistinct = "";
-		if (isAll()) {
-			allDistinct = "ALL ";
-		} else if (isDistinct()) {
-			allDistinct = "DISTINCT ";
-		}
-
+		StringBuilder buffer = new StringBuilder();
+		
 		for (int i = 0; i < plainSelects.size(); i++) {
-			selects += "(" + plainSelects.get(i) + ((i < plainSelects.size() - 1) ? ") UNION " + allDistinct : ")");
+			if (i!=0)
+				buffer.append(" ").append(operations.get(i-1).toString()).append(" ");
+			buffer.append("(").append(plainSelects.get(i).toString()).append(")");
 		}
 
-		return selects + ((orderByElements != null) ? PlainSelect.orderByToString(orderByElements) : "")
-				+ ((limit != null) ? limit + "" : "");
+		if (orderByElements!=null)
+			buffer.append(PlainSelect.orderByToString(orderByElements));
+		if (limit!=null)
+			buffer.append(limit.toString());
+		return buffer.toString();
 	}
 
+	/**
+	 * Unterstützte Set-Operationen.
+	 */
+	public enum SetOperationType {
+
+		INTERSECT,
+		EXCEPT,
+		MINUS,
+		UNION
+	}
 }

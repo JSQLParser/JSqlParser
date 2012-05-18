@@ -650,6 +650,49 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) = tabelle2.b";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testProblemSqlIntersect() throws Exception {
+		String stmt = "(SELECT * FROM a) INTERSECT (SELECT * FROM b)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+		
+		stmt = "SELECT * FROM a INTERSECT SELECT * FROM b";
+		Statement parsed = parserManager.parse(new StringReader(stmt));
+		assertStatementCanBeDeparsedAs(parsed,"(SELECT * FROM a) INTERSECT (SELECT * FROM b)");
+	}
+	
+	@Test
+	public void testProblemSqlExcept() throws Exception {
+		String stmt = "(SELECT * FROM a) EXCEPT (SELECT * FROM b)";
+		Statement parsed = parserManager.parse(new StringReader(stmt));
+		assertStatementCanBeDeparsedAs(parsed,"(SELECT * FROM a) INTERSECT (SELECT * FROM b)");
+		
+		stmt = "SELECT * FROM a INTERSECT SELECT * FROM b";
+		parsed = parserManager.parse(new StringReader(stmt));
+		assertStatementCanBeDeparsedAs(parsed,"(SELECT * FROM a) INTERSECT (SELECT * FROM b)");
+		//Left ist ein Schlüsselwort und darf so nicht verwendet werden.
+		//Fehler SQLServer, OK Oracle, OK Postgresql
+		Statement stmt = JSqlParserUtils.parseSqlStatement("select * from a except select * from b");
+		System.out.println(stmt.toString());
+		assertEquals("(SELECT * FROM a) EXCEPT (SELECT * FROM b)", stmt.toString());
+	}
+	
+	@Test
+	public void testProblemSqlMinus() throws Exception {
+		//Left ist ein Schlüsselwort und darf so nicht verwendet werden.
+		//Fehler SQLServer, OK Oracle, OK Postgresql
+		Statement stmt = JSqlParserUtils.parseSqlStatement("select * from a minus select * from b");
+		System.out.println(stmt.toString());
+		assertEquals("(SELECT * FROM a) MINUS (SELECT * FROM b)", stmt.toString());
+	}
+	
+	@Test
+	public void testProblemSqlCombinedSets() throws Exception {
+		//Left ist ein Schlüsselwort und darf so nicht verwendet werden.
+		//Fehler SQLServer, OK Oracle, OK Postgresql
+		Statement stmt = JSqlParserUtils.parseSqlStatement("select * from a intersect select * from b union select * from c");
+		System.out.println(stmt.toString());
+		assertEquals("(SELECT * FROM a) INTERSECT (SELECT * FROM b) UNION (SELECT * FROM c)", stmt.toString());
+	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));

@@ -128,6 +128,11 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.Union;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.UnionOp;
+import net.sf.jsqlparser.statement.select.MinusOp;
+import net.sf.jsqlparser.statement.select.ExceptOp;
+import net.sf.jsqlparser.statement.select.IntersectOp;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
@@ -217,6 +222,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DISTINCT:"DISTINCT">
 |   <K_INTERSECT:"INTERSECT">
 |   <K_CAST:"CAST">
+|   <K_EXCEPT:"EXCEPT">
+|   <K_MINUS:"MINUS">
 |   <K_OVER:"OVER">
 |   <K_PARTITION:"PARTITION">
 }
@@ -503,8 +510,8 @@ SelectBody SelectBody():
 { SelectBody selectBody = null; }
 {
 	(
-		LOOKAHEAD(Union())
-		    selectBody = Union() 
+		LOOKAHEAD(SetOperationList())
+		    selectBody = SetOperationList() 
     	|
 	    selectBody = PlainSelect()
 	)
@@ -563,8 +570,42 @@ PlainSelect PlainSelect():
 	}
 }
 
+SetOperationList SetOperationList():
+{
+	SetOperationList list = new SetOperationList();
+	List orderByElements = null;
+	Limit limit = null;
+	PlainSelect select = null;
+	ArrayList selects = new ArrayList();
+	ArrayList operations = new ArrayList();
+}
+{
+	(
+	
+		(
+			(("(" select=PlainSelect() ")") | (select=PlainSelect() )) {selects.add(select);}
+			(
+				((<K_UNION> { UnionOp union = new UnionOp();operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
+				| <K_INTERSECT> { operations.add(new IntersectOp()); }
+				| <K_MINUS> { operations.add(new MinusOp()); }
+				| <K_EXCEPT> { operations.add(new ExceptOp()); }
+				)
 
+				(("(" select=PlainSelect() ")") | (select=PlainSelect() )) {selects.add(select);} 
+			)+
+		)
 
+		[orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
+		[limit=Limit() {list.setLimit(limit);} ]
+	)
+
+	{ 
+		list.setOpsAndSelects(selects,operations);
+		return list; 
+	}
+}
+
+/*
 Union Union():
 { 
 	Union union = new Union(); 
@@ -572,9 +613,9 @@ Union Union():
 	Limit limit = null;
 	PlainSelect select = null;
 	ArrayList selects = new ArrayList();
-/*
+
 this is not 100% right, since multiple UNION could have different ALL/DISTINCT clauses...
-*/
+
 }
 {
 	(
@@ -602,6 +643,7 @@ this is not 100% right, since multiple UNION could have different ALL/DISTINCT c
 		return union; 
 	}
 }
+*/
 
 List WithList():
 {
