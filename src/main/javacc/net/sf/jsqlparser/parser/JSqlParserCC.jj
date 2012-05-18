@@ -1005,11 +1005,14 @@ Expression RegularCondition():
 	Expression leftExpression;
 	Expression rightExpression;
 	boolean not = false;
+	int oracleJoin=EqualsTo.NO_ORACLE_JOIN;
 }
 {
 
 	[ <K_NOT> { not = true; } ] 
 	leftExpression=ComparisonItem() { result = leftExpression; }
+
+	[ "(+)" { oracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
 
 	(
 	">" { result = new GreaterThan(); }
@@ -1021,12 +1024,18 @@ Expression RegularCondition():
 	| "@@" { result = new Matches(); }
 	)
 	rightExpression=ComparisonItem()
+
+	[ "(+)" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
+
 	{
 		BinaryExpression regCond = (BinaryExpression) result;
 		regCond.setLeftExpression(leftExpression);
 		regCond.setRightExpression(rightExpression);
 		if (not)
 			regCond.setNot();
+
+		if (oracleJoin>0)
+			((EqualsTo)result).setOldOracleJoinSyntax(oracleJoin);
 	}		
 	
 	{ return result; }

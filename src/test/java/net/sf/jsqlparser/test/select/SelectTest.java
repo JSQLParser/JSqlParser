@@ -640,6 +640,16 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT a, row_number() OVER (PARTITION BY c ORDER BY a, b) AS n FROM table1";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testOracleJoin() throws JSQLParserException {
+		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testOracleJoin2() throws JSQLParserException {
+		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) = tabelle2.b";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));

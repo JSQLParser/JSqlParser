@@ -53,8 +53,8 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) an
- * {@link net.sf.jsqlparser.expression.Expression}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
+ * string) an {@link net.sf.jsqlparser.expression.Expression}
  */
 public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
@@ -66,11 +66,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	}
 
 	/**
-	 * @param selectVisitor
-	 *            a SelectVisitor to de-parse SubSelects. It has to share the same<br>
-	 *            StringBuilder as this object in order to work, as:
-	 * 
-	 *            <pre>
+	 * @param selectVisitor a SelectVisitor to de-parse SubSelects. It has to
+	 * share the same<br> StringBuilder as this object in order to work, as:
+	 *
+	 * <pre>
 	 * <code>
 	 * StringBuilder myBuf = new StringBuilder();
 	 * MySelectDeparser selectDeparser = new  MySelectDeparser();
@@ -78,8 +77,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	 * ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeparser, myBuf);
 	 * </code>
 	 * </pre>
-	 * @param buffer
-	 *            the buffer that will be filled with the expression
+	 * @param buffer the buffer that will be filled with the expression
 	 */
 	public ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer) {
 		this.selectVisitor = selectVisitor;
@@ -104,8 +102,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	public void visit(Between between) {
 		between.getLeftExpression().accept(this);
-		if (between.isNot())
+		if (between.isNot()) {
 			buffer.append(" NOT");
+		}
 
 		buffer.append(" BETWEEN ");
 		between.getBetweenExpressionStart().accept(this);
@@ -125,7 +124,18 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	}
 
 	public void visit(EqualsTo equalsTo) {
-		visitBinaryExpression(equalsTo, " = ");
+		if (equalsTo.isNot()) {
+			buffer.append(" NOT ");
+		}
+		equalsTo.getLeftExpression().accept(this);
+		if (equalsTo.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_RIGHT) {
+			buffer.append("(+)");
+		}
+		buffer.append(" = ");
+		equalsTo.getRightExpression().accept(this);
+		if (equalsTo.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_LEFT) {
+			buffer.append("(+)");
+		}
 	}
 
 	public void visit(GreaterThan greaterThan) {
@@ -140,8 +150,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	public void visit(InExpression inExpression) {
 
 		inExpression.getLeftExpression().accept(this);
-		if (inExpression.isNot())
+		if (inExpression.isNot()) {
 			buffer.append(" NOT");
+		}
 		buffer.append(" IN ");
 
 		inExpression.getItemsList().accept(this);
@@ -219,8 +230,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	}
 
 	public void visit(Parenthesis parenthesis) {
-		if (parenthesis.isNot())
+		if (parenthesis.isNot()) {
 			buffer.append(" NOT ");
+		}
 
 		buffer.append("(");
 		parenthesis.getExpression().accept(this);
@@ -239,8 +251,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	}
 
 	private void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
-		if (binaryExpression.isNot())
+		if (binaryExpression.isNot()) {
 			buffer.append(" NOT ");
+		}
 		binaryExpression.getLeftExpression().accept(this);
 		buffer.append(operator);
 		binaryExpression.getRightExpression().accept(this);
@@ -295,16 +308,19 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	}
 
 	public void visit(ExpressionList expressionList) {
-		if (useBracketsInExprList)
+		if (useBracketsInExprList) {
 			buffer.append("(");
+		}
 		for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
 			Expression expression = (Expression) iter.next();
 			expression.accept(this);
-			if (iter.hasNext())
+			if (iter.hasNext()) {
 				buffer.append(", ");
+			}
 		}
-		if (useBracketsInExprList)
+		if (useBracketsInExprList) {
 			buffer.append(")");
+		}
 	}
 
 	public SelectVisitor getSelectVisitor() {
@@ -396,12 +412,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 		buffer.append(cast.getTypeName());
 		buffer.append(")");
 	}
-	
+
 	@Override
 	public void visit(Modulo modulo) {
 		visitBinaryExpression(modulo, " % ");
 	}
-	
+
 	@Override
 	public void visit(AnalyticExpression aexpr) {
 		buffer.append(aexpr.toString());

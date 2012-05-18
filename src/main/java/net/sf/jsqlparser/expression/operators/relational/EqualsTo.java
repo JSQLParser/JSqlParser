@@ -33,5 +33,25 @@ public class EqualsTo extends BinaryExpression {
 	public String getStringExpression() {
 		return "=";
 	}
+	
+	public static final int NO_ORACLE_JOIN = 0;
+	public static final int ORACLE_JOIN_RIGHT = 1;
+	public static final int ORACLE_JOIN_LEFT = 2;
 
+	private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
+
+	public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
+		this.oldOracleJoinSyntax = oldOracleJoinSyntax;
+		if (oldOracleJoinSyntax<0 || oldOracleJoinSyntax>2)
+			throw new IllegalArgumentException("unknown join type for oracle found (type=" + oldOracleJoinSyntax + ")");
+	}
+	
+	@Override
+	public String toString() {
+		return (isNot()? "NOT ":"") + getLeftExpression()+ (oldOracleJoinSyntax==ORACLE_JOIN_RIGHT?"(+)":"") + " "+getStringExpression()+" "+getRightExpression() +(oldOracleJoinSyntax==ORACLE_JOIN_LEFT?"(+)":"");
+	}
+	
+	public int getOldOracleJoinSyntax() {
+		return oldOracleJoinSyntax;
+	}
 }
