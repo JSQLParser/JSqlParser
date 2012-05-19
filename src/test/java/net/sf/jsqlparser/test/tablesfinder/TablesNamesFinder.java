@@ -86,7 +86,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	public void visit(Table tableName) {
 		String tableWholeName = tableName.getWholeTableName();
 		tables.add(tableWholeName);
-	}
+	} 
 
 	public void visit(SubSelect subSelect) {
 		subSelect.getSelectBody().accept(this);
