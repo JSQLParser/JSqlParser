@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;

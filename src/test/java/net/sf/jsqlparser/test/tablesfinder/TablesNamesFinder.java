@@ -59,7 +59,6 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
-import net.sf.jsqlparser.statement.select.Union;
 
 public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor {
 	private List tables;
@@ -82,13 +81,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 		if (plainSelect.getWhere() != null)
 			plainSelect.getWhere().accept(this);
 
-	}
-
-	public void visit(Union union) {
-		for (Iterator iter = union.getPlainSelects().iterator(); iter.hasNext();) {
-			PlainSelect plainSelect = (PlainSelect) iter.next();
-			visit(plainSelect);
-		}
 	}
 
 	public void visit(Table tableName) {

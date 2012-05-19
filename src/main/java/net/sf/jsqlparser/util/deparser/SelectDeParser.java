@@ -24,7 +24,6 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.Top;
-import net.sf.jsqlparser.statement.select.Union;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
@@ -117,31 +116,6 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
 		if (plainSelect.getLimit() != null) {
 			deparseLimit(plainSelect.getLimit());
-		}
-
-	}
-
-	public void visit(Union union) {
-		for (Iterator<PlainSelect> iter = union.getPlainSelects().iterator(); iter.hasNext();) {
-			buffer.append("(");
-			PlainSelect plainSelect = iter.next();
-			plainSelect.accept(this);
-			buffer.append(")");
-			if (iter.hasNext()) {
-				buffer.append(" UNION ");
-				if (union.isAll()) {
-					buffer.append("ALL ");// should UNION be a BinaryExpression ?
-				}
-			}
-
-		}
-
-		if (union.getOrderByElements() != null) {
-			deparseOrderBy(union.getOrderByElements());
-		}
-
-		if (union.getLimit() != null) {
-			deparseLimit(union.getLimit());
 		}
 
 	}

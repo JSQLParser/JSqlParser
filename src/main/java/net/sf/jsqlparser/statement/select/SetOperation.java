@@ -3,8 +3,8 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
 
 /**
- * Einzelne Set-Operation. Diese geben nur noch den einzelnen Operationsnamen aus.
- * Durch die SetOperationList wird alles zusammengehalten.
+ * Single Set-Operation (name). Placeholder for one specific set operation, e.g. 
+ * union, intersect.
  * @author tw
  */
 public abstract class SetOperation {

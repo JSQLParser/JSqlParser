@@ -127,7 +127,6 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.Top;
-import net.sf.jsqlparser.statement.select.Union;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.UnionOp;
 import net.sf.jsqlparser.statement.select.MinusOp;
