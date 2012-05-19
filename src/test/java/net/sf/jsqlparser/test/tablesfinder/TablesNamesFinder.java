@@ -56,6 +56,7 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.Union;
@@ -284,5 +285,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	
 	public void visit(AnalyticExpression analytic) {
 		
+	}
+
+	public void visit(SetOperationList list) {
+		for (Iterator iter = list.getPlainSelects().iterator(); iter.hasNext();) {
+			PlainSelect plainSelect = (PlainSelect) iter.next();
+			visit(plainSelect);
+		}
 	}
 }

@@ -20,6 +20,7 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.Top;
@@ -284,4 +285,22 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
 	}
 
+	@Override
+	public void visit(SetOperationList list) {
+		for (int i=0;i<list.getPlainSelects().size();i++) {
+			if (i!=0)
+				buffer.append(' ').append(list.getOperations().get(i-1)).append(' ');
+			buffer.append("(");
+			PlainSelect plainSelect = (PlainSelect) list.getPlainSelects().get(i);
+			plainSelect.accept(this);
+			buffer.append(")");
+		}
+		if (list.getOrderByElements() != null) {
+			deparseOrderBy(list.getOrderByElements());
+		}
+
+		if (list.getLimit() != null) {
+			deparseLimit(list.getLimit());
+		}
+	}
 }

@@ -27,6 +27,7 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.Union;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
@@ -64,9 +65,9 @@ public class SelectTest extends TestCase {
 		statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
 				+ "(SELECT * FROM mytable2 WHERE mytable2.col = 9 OFFSET ?) LIMIT 3, 4";
 		select = (Select) parserManager.parse(new StringReader(statement));
-		Union union = (Union) select.getSelectBody();
-		assertEquals(3, union.getLimit().getOffset());
-		assertEquals(4, union.getLimit().getRowCount());
+		SetOperationList setList = (SetOperationList) select.getSelectBody();
+		assertEquals(3, setList.getLimit().getOffset());
+		assertEquals(4, setList.getLimit().getRowCount());
 
 		// toString uses standard syntax
 		statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
@@ -134,12 +135,12 @@ public class SelectTest extends TestCase {
 				+ "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION " + "SELECT * FROM mytable2 LIMIT 3,4";
 
 		Select select = (Select) parserManager.parse(new StringReader(statement));
-		Union union = (Union) select.getSelectBody();
-		assertEquals(3, union.getPlainSelects().size());
-		assertEquals("mytable", ((Table) ((PlainSelect) union.getPlainSelects().get(0)).getFromItem()).getName());
-		assertEquals("mytable3", ((Table) ((PlainSelect) union.getPlainSelects().get(1)).getFromItem()).getName());
-		assertEquals("mytable2", ((Table) ((PlainSelect) union.getPlainSelects().get(2)).getFromItem()).getName());
-		assertEquals(3, ((PlainSelect) union.getPlainSelects().get(2)).getLimit().getOffset());
+		SetOperationList setList = (SetOperationList) select.getSelectBody();
+		assertEquals(3, setList.getPlainSelects().size());
+		assertEquals("mytable", ((Table) ((PlainSelect) setList.getPlainSelects().get(0)).getFromItem()).getName());
+		assertEquals("mytable3", ((Table) ((PlainSelect) setList.getPlainSelects().get(1)).getFromItem()).getName());
+		assertEquals("mytable2", ((Table) ((PlainSelect) setList.getPlainSelects().get(2)).getFromItem()).getName());
+		assertEquals(3, ((PlainSelect) setList.getPlainSelects().get(2)).getLimit().getOffset());
 
 		// use brakets for toString
 		// use standard limit syntax
@@ -660,38 +661,27 @@ public class SelectTest extends TestCase {
 		assertStatementCanBeDeparsedAs(parsed,"(SELECT * FROM a) INTERSECT (SELECT * FROM b)");
 	}
 	
-	@Test
 	public void testProblemSqlExcept() throws Exception {
 		String stmt = "(SELECT * FROM a) EXCEPT (SELECT * FROM b)";
-		Statement parsed = parserManager.parse(new StringReader(stmt));
-		assertStatementCanBeDeparsedAs(parsed,"(SELECT * FROM a) INTERSECT (SELECT * FROM b)");
+		assertSqlCanBeParsedAndDeparsed(stmt);
 		
-		stmt = "SELECT * FROM a INTERSECT SELECT * FROM b";
-		parsed = parserManager.parse(new StringReader(stmt));
-		assertStatementCanBeDeparsedAs(parsed,"(SELECT * FROM a) INTERSECT (SELECT * FROM b)");
-		//Left ist ein Schlüsselwort und darf so nicht verwendet werden.
-		//Fehler SQLServer, OK Oracle, OK Postgresql
-		Statement stmt = JSqlParserUtils.parseSqlStatement("select * from a except select * from b");
-		System.out.println(stmt.toString());
-		assertEquals("(SELECT * FROM a) EXCEPT (SELECT * FROM b)", stmt.toString());
+		stmt = "SELECT * FROM a EXCEPT SELECT * FROM b";
+		Statement parsed = parserManager.parse(new StringReader(stmt));
+		assertStatementCanBeDeparsedAs(parsed,"(SELECT * FROM a) EXCEPT (SELECT * FROM b)");
 	}
 	
-	@Test
 	public void testProblemSqlMinus() throws Exception {
-		//Left ist ein Schlüsselwort und darf so nicht verwendet werden.
-		//Fehler SQLServer, OK Oracle, OK Postgresql
-		Statement stmt = JSqlParserUtils.parseSqlStatement("select * from a minus select * from b");
-		System.out.println(stmt.toString());
-		assertEquals("(SELECT * FROM a) MINUS (SELECT * FROM b)", stmt.toString());
+		String stmt = "(SELECT * FROM a) MINUS (SELECT * FROM b)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+		
+		stmt = "SELECT * FROM a MINUS SELECT * FROM b";
+		Statement parsed = parserManager.parse(new StringReader(stmt));
+		assertStatementCanBeDeparsedAs(parsed,"(SELECT * FROM a) MINUS (SELECT * FROM b)");
 	}
 	
-	@Test
 	public void testProblemSqlCombinedSets() throws Exception {
-		//Left ist ein Schlüsselwort und darf so nicht verwendet werden.
-		//Fehler SQLServer, OK Oracle, OK Postgresql
-		Statement stmt = JSqlParserUtils.parseSqlStatement("select * from a intersect select * from b union select * from c");
-		System.out.println(stmt.toString());
-		assertEquals("(SELECT * FROM a) INTERSECT (SELECT * FROM b) UNION (SELECT * FROM c)", stmt.toString());
+		String stmt = "(SELECT * FROM a) INTERSECT (SELECT * FROM b) UNION (SELECT * FROM c)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {

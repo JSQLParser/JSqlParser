@@ -55,7 +55,7 @@ public class SetOperationList implements SelectBody {
 	public List getPlainSelects() {
 		return plainSelects;
 	}
-	
+
 	public List getOperations() {
 		return operations;
 	}
@@ -64,12 +64,13 @@ public class SetOperationList implements SelectBody {
 		this.orderByElements = orderByElements;
 	}
 
-	public void setOpsAndSelects(List select,List ops) {
+	public void setOpsAndSelects(List select, List ops) {
 		plainSelects = select;
-		operations=ops;
-		
-		if (select.size()-1!=ops.size())
+		operations = ops;
+
+		if (select.size() - 1 != ops.size()) {
 			throw new IllegalArgumentException("list sizes are not valid");
+		}
 	}
 
 	public Limit getLimit() {
@@ -83,17 +84,20 @@ public class SetOperationList implements SelectBody {
 	@Override
 	public String toString() {
 		StringBuilder buffer = new StringBuilder();
-		
+
 		for (int i = 0; i < plainSelects.size(); i++) {
-			if (i!=0)
-				buffer.append(" ").append(operations.get(i-1).toString()).append(" ");
+			if (i != 0) {
+				buffer.append(" ").append(operations.get(i - 1).toString()).append(" ");
+			}
 			buffer.append("(").append(plainSelects.get(i).toString()).append(")");
 		}
 
-		if (orderByElements!=null)
+		if (orderByElements != null) {
 			buffer.append(PlainSelect.orderByToString(orderByElements));
-		if (limit!=null)
+		}
+		if (limit != null) {
 			buffer.append(limit.toString());
+		}
 		return buffer.toString();
 	}
 
