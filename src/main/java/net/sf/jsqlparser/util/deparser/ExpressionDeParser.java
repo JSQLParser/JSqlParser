@@ -187,9 +187,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	public void visit(ExistsExpression existsExpression) {
 		if (existsExpression.isNot()) {
-			buffer.append(" NOT EXISTS ");
+			buffer.append("NOT EXISTS ");
 		} else {
-			buffer.append(" EXISTS ");
+			buffer.append("EXISTS ");
 		}
 		existsExpression.getRightExpression().accept(this);
 	}
