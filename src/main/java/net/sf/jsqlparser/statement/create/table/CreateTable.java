@@ -44,7 +44,8 @@ public class CreateTable implements Statement {
 	}
 
 	/**
-	 * A list of options (as simple strings) of this table definition, as ("TYPE", "=", "MYISAM")
+	 * A list of options (as simple strings) of this table definition, as
+	 * ("TYPE", "=", "MYISAM")
 	 */
 	public List<?> getTableOptionsStrings() {
 		return tableOptionsStrings;
@@ -56,7 +57,8 @@ public class CreateTable implements Statement {
 
 	/**
 	 * A list of {@link Index}es (for example "PRIMARY KEY") of this table.<br>
-	 * Indexes created with column definitions (as in mycol INT PRIMARY KEY) are not inserted into this list.
+	 * Indexes created with column definitions (as in mycol INT PRIMARY KEY) are
+	 * not inserted into this list.
 	 */
 	public List<Index> getIndexes() {
 		return indexes;
@@ -76,8 +78,11 @@ public class CreateTable implements Statement {
 			sql += ", ";
 			sql += PlainSelect.getStringList(indexes);
 		}
-		sql += ") ";
-		sql += PlainSelect.getStringList(tableOptionsStrings, false, false);
+		sql += ")";
+		String options = PlainSelect.getStringList(tableOptionsStrings, false, false);
+		if (options != null && options.length() > 0) {
+			sql += " " + options;
+		}
 
 		return sql;
 	}

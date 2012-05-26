@@ -7,15 +7,15 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
- * {@link net.sf.jsqlparser.statement.create.table.CreateTable}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
+ * string) a {@link net.sf.jsqlparser.statement.create.table.CreateTable}
  */
 public class CreateTableDeParser {
+
 	protected StringBuilder buffer;
 
 	/**
-	 * @param buffer
-	 *            the buffer that will be filled with the select
+	 * @param buffer the buffer that will be filled with the select
 	 */
 	public CreateTableDeParser(StringBuilder buffer) {
 		this.buffer = buffer;
@@ -24,19 +24,12 @@ public class CreateTableDeParser {
 	public void deParse(CreateTable createTable) {
 		buffer.append("CREATE TABLE " + createTable.getTable().getWholeTableName());
 		if (createTable.getColumnDefinitions() != null) {
-			buffer.append(" { ");
+			buffer.append(" (");
 			for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
 				ColumnDefinition columnDefinition = (ColumnDefinition) iter.next();
 				buffer.append(columnDefinition.getColumnName());
 				buffer.append(" ");
-				buffer.append(columnDefinition.getColDataType().getDataType());
-				if (columnDefinition.getColDataType().getArgumentsStringList() != null) {
-					for (Iterator<String> iterator = columnDefinition.getColDataType().getArgumentsStringList().iterator(); iterator
-							.hasNext();) {
-						buffer.append(" ");
-						buffer.append((String) iterator.next());
-					}
-				}
+				buffer.append(columnDefinition.getColDataType().toString());
 				if (columnDefinition.getColumnSpecStrings() != null) {
 					for (Iterator<String> iterator = columnDefinition.getColumnSpecStrings().iterator(); iterator.hasNext();) {
 						buffer.append(" ");
@@ -44,29 +37,33 @@ public class CreateTableDeParser {
 					}
 				}
 
-				if (iter.hasNext())
-					buffer.append(",\n");
+				if (iter.hasNext()) {
+					buffer.append(" , ");
+				}
 
 			}
 
-			for (Iterator<Index> iter = createTable.getIndexes().iterator(); iter.hasNext();) {
-				buffer.append(",\n");
-				Index index = (Index) iter.next();
-				buffer.append(index.getType() + " " + index.getName());
-				buffer.append("(");
-				for (Iterator<String> iterator = index.getColumnsNames().iterator(); iterator.hasNext();) {
-					buffer.append((String) iterator.next());
-					if (iterator.hasNext()) {
-						buffer.append(", ");
+			if (createTable.getIndexes() != null) {
+				for (Iterator<Index> iter = createTable.getIndexes().iterator(); iter.hasNext();) {
+					buffer.append(",");
+					Index index = (Index) iter.next();
+					buffer.append(index.getType() + " " + index.getName());
+					buffer.append("(");
+					for (Iterator<String> iterator = index.getColumnsNames().iterator(); iterator.hasNext();) {
+						buffer.append((String) iterator.next());
+						if (iterator.hasNext()) {
+							buffer.append(", ");
+						}
+					}
+					buffer.append(")");
+
+					if (iter.hasNext()) {
+						buffer.append(",");
 					}
 				}
-				buffer.append(")");
-
-				if (iter.hasNext())
-					buffer.append(",\n");
 			}
 
-			buffer.append(" \n} ");
+			buffer.append(" )");
 		}
 	}
 
@@ -77,5 +74,4 @@ public class CreateTableDeParser {
 	public void setBuffer(StringBuilder buffer) {
 		this.buffer = buffer;
 	}
-
 }

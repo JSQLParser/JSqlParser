@@ -1627,8 +1627,10 @@ CreateTable CreateTable():
 	<K_TABLE> table=Table() 
 	[
 		"("
-		
-		columnName=<S_IDENTIFIER>
+		(columnName=<S_IDENTIFIER>
+		|
+		columnName=<S_QUOTED_IDENTIFIER>)
+
 		colDataType = ColDataType()
 		{
 			columnSpecs = new ArrayList();
@@ -1687,7 +1689,9 @@ CreateTable CreateTable():
 				)
 				|
 				(
-					columnName=<S_IDENTIFIER> 
+					(columnName=<S_IDENTIFIER>
+					|
+					columnName=<S_QUOTED_IDENTIFIER>)
 					colDataType = ColDataType()
 					{
 						columnSpecs = new ArrayList();

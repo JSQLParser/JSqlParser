@@ -11,11 +11,13 @@ import java.util.StringTokenizer;
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.tablesfinder.TablesNamesFinder;
+import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
 public class CreateTableTest extends TestCase {
 	CCJSqlParserManager parserManager = new CCJSqlParserManager();
@@ -24,6 +26,16 @@ public class CreateTableTest extends TestCase {
 		super(arg0);
 	}
 
+	public void testCreateTable2() throws JSQLParserException {
+		String statement = "CREATE TABLE testtab (\"test\" varchar (255) )";
+		assertSqlCanBeParsedAndDeparsed(statement);
+	}
+	
+	public void testCreateTable3() throws JSQLParserException {
+		String statement = "CREATE TABLE testtab (\"test\" varchar (255) , \"test\" varchar (255) )";
+		assertSqlCanBeParsedAndDeparsed(statement);
+	}
+	
 	public void testCreateTable() throws JSQLParserException {
 		String statement = "CREATE TABLE mytab (mycol a (10, 20) c nm g, mycol2 mypar1 mypar2 (23,323,3) asdf ('23','123') dasd, "
 				+ "PRIMARY KEY (mycol2, mycol)) type = myisam";
@@ -157,5 +169,18 @@ public class CreateTableTest extends TestCase {
 		}
 
 		return line;
+	}
+	
+	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
+		Statement parsed = parserManager.parse(new StringReader(statement));
+		assertStatementCanBeDeparsedAs(parsed, statement);
+	}
+
+	private void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
+		assertEquals(statement, parsed.toString());
+
+		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
+		parsed.accept(deParser);
+		assertEquals(statement, deParser.getBuffer().toString());
 	}
 }
