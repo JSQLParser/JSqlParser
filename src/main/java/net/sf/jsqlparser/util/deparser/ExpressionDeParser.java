@@ -1,7 +1,6 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
-import java.util.List;
 
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;

@@ -1,15 +1,13 @@
 package net.sf.jsqlparser.test.simpleparsing;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 
 import junit.framework.TestCase;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.create.CreateTableTest;
 
@@ -30,8 +28,7 @@ public class CCJSqlParserManagerTest extends TestCase {
 				if (statement == null)
 					break;
 
-				Statement parsedStm = parserManager.parse(new StringReader(statement));
-				// System.out.println(statement);
+				parserManager.parse(new StringReader(statement));
 			} catch (JSQLParserException e) {
 				throw new TestException("impossible to parse statement: " + statement, e);
 			}

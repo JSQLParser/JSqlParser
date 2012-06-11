@@ -1,6 +1,5 @@
 package net.sf.jsqlparser.statement.select;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,9 +10,9 @@ import java.util.List;
  */
 public class SetOperationList implements SelectBody {
 
-	private List plainSelects;
-	private List operations;
-	private List orderByElements;
+	private List<PlainSelect> plainSelects;
+	private List<SetOperation> operations;
+	private List<OrderByElement> orderByElements;
 	private Limit limit;
 
 	@Override
@@ -21,23 +20,23 @@ public class SetOperationList implements SelectBody {
 		selectVisitor.visit(this);
 	}
 
-	public List getOrderByElements() {
+	public List<OrderByElement> getOrderByElements() {
 		return orderByElements;
 	}
 
-	public List getPlainSelects() {
+	public List<PlainSelect> getPlainSelects() {
 		return plainSelects;
 	}
 
-	public List getOperations() {
+	public List<SetOperation> getOperations() {
 		return operations;
 	}
 
-	public void setOrderByElements(List orderByElements) {
+	public void setOrderByElements(List<OrderByElement> orderByElements) {
 		this.orderByElements = orderByElements;
 	}
 
-	public void setOpsAndSelects(List select, List ops) {
+	public void setOpsAndSelects(List<PlainSelect> select, List<SetOperation> ops) {
 		plainSelects = select;
 		operations = ops;
 
@@ -78,10 +77,10 @@ public class SetOperationList implements SelectBody {
 	 * list of set operations.
 	 */
 	public enum SetOperationType {
-
 		INTERSECT,
 		EXCEPT,
 		MINUS,
 		UNION
 	}
+
 }
