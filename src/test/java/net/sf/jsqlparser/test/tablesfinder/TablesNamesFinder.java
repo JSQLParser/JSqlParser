@@ -3,7 +3,6 @@ package net.sf.jsqlparser.test.tablesfinder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
