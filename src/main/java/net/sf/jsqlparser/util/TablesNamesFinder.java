@@ -1,4 +1,4 @@
-package net.sf.jsqlparser.test.tablesfinder;
+package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -59,6 +59,9 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
+/**
+ * Find all used tables within an select statement. 
+ */
 public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor {
 	private List tables;
 

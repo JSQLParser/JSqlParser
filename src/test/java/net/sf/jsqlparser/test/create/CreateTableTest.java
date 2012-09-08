@@ -16,7 +16,7 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.test.TestException;
-import net.sf.jsqlparser.test.tablesfinder.TablesNamesFinder;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
 public class CreateTableTest extends TestCase {

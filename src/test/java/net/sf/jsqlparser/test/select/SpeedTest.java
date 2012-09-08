@@ -17,7 +17,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.create.CreateTableTest;
 import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
-import net.sf.jsqlparser.test.tablesfinder.TablesNamesFinder;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 
 public class SpeedTest extends TestCase {
 	private final static int NUM_REPS = 500;
