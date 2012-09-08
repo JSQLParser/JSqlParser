@@ -31,7 +31,7 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
 	}
 	
 	/**
-	 * Create instances of this binary expression that connects all selected columns.
+	 * Create instances of this binary expression that connects all selected expressions.
 	 * @return 
 	 */
 	protected abstract BinaryExpression createBinaryExpression();
