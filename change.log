@@ -154,3 +154,9 @@ Added support for modulo (a % b)
 Added support for brackets quotation
 Added support for NOT expr IS (expr IS NOT was already supported)
 Added support for Oracles (+) Join Syntax
+
+0.8.0-SNAPSHOT
+Added alias visitor
+Added connect visitor
+TableNamesFinder included in source 
+Added proper support for sets (union, intersect) 
