@@ -225,6 +225,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MINUS:"MINUS">
 |   <K_OVER:"OVER">
 |   <K_PARTITION:"PARTITION">
+|   <K_EXTRACT:"EXTRACT">
 }
 
 
@@ -1426,6 +1427,8 @@ Expression PrimaryExpression():
 	| "?" { retval = new JdbcParameter(); }
 
 	| LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
+
+	| LOOKAHEAD(ExtractExpression()) retval=ExtractExpression()
 	
 	| LOOKAHEAD([ "+" | "-"] Function()) [ "+" | "-" { isInverse = true; }] retval=Function() 
 	
@@ -1475,6 +1478,19 @@ AnalyticExpression AnalyticExpression() :
 		retval.setOrderByElements(olist);
 	} 
 	")"
+	{
+		return retval;
+	}
+}
+
+ExtractExpression ExtractExpression() :
+{
+	ExtractExpression retval = new ExtractExpression();
+	Token token = null;
+	Expression expr = null;
+}
+{
+	<K_EXTRACT> "(" token=<S_IDENTIFIER> { retval.setName(token.image); } <K_FROM> expr=PrimaryExpression() ")"
 	{
 		return retval;
 	}
