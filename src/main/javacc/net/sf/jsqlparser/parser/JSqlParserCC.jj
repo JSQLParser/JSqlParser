@@ -557,8 +557,8 @@ PlainSelect PlainSelect():
     [ where=WhereClause() { plainSelect.setWhere(where); }]
     [ groupByColumnReferences=GroupByColumnReferences() { plainSelect.setGroupByColumnReferences(groupByColumnReferences); }]
     [ having=Having() { plainSelect.setHaving(having); }]
-	[ 	orderByElements = OrderByElements()	{ 		 plainSelect.setOrderByElements(orderByElements);	}   ]
-    [ 	limit = Limit() { plainSelect.setLimit(limit);	} ]
+	[LOOKAHEAD(2) orderByElements = OrderByElements()	{ 		 plainSelect.setOrderByElements(orderByElements);	}   ]
+    [LOOKAHEAD(2) limit = Limit() { plainSelect.setLimit(limit);	} ]
 	
 	{ 
 		plainSelect.setSelectItems(selectItems);
@@ -926,7 +926,7 @@ Limit Limit():
 				 	<K_ALL> { limit.setLimitAll(true);}  
 				 )
 				 
-				 [<K_OFFSET>
+				 [LOOKAHEAD(2) <K_OFFSET>
 					 (token=<S_INTEGER> { limit.setOffset(Long.parseLong(token.image)); } | "?" { limit.setOffsetJdbcParameter(true);} )  ]
 
 		)
