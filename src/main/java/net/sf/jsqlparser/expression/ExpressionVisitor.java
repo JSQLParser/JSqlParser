@@ -132,4 +132,6 @@ public interface ExpressionVisitor {
 	public void visit(Modulo modulo);
 	
 	public void visit(AnalyticExpression aexpr);
+	
+	public void visit(ExtractExpression eexpr);
 }

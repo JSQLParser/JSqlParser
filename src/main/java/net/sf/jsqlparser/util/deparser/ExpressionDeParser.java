@@ -12,6 +12,7 @@ import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.InverseExpression;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -420,5 +421,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	@Override
 	public void visit(AnalyticExpression aexpr) {
 		buffer.append(aexpr.toString());
+	}
+
+	@Override
+	public void visit(ExtractExpression eexpr) {
+		buffer.append(eexpr.toString());
 	}
 }

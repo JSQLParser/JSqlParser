@@ -73,6 +73,7 @@ import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
+import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.AllComparisonExpression;
@@ -1490,7 +1491,12 @@ ExtractExpression ExtractExpression() :
 	Expression expr = null;
 }
 {
-	<K_EXTRACT> "(" token=<S_IDENTIFIER> { retval.setName(token.image); } <K_FROM> expr=PrimaryExpression() ")"
+	<K_EXTRACT> 
+	"(" 
+		token=<S_IDENTIFIER> { retval.setName(token.image); } 
+		<K_FROM> 
+		expr=PrimaryExpression() { retval.setExpression(expr); }
+	")"
 	{
 		return retval;
 	}

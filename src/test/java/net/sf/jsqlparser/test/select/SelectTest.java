@@ -712,6 +712,21 @@ public class SelectTest extends TestCase {
 		String stmt = "WITH hist AS ((SELECT gl.mslink, ba.gl_name AS txt, ba.gl_nummer AS nr, 0 AS level, CAST(gl.mslink AS VARCHAR) AS path, ae.feature FROM tablea AS gl INNER JOIN tableb AS ba ON gl.mslink = ba.gl_mslink INNER JOIN tablec AS ae ON gl.mslink = ae.mslink AND ae.deleted = 0 WHERE gl.parent IS NULL AND gl.mslink <> 0) UNION ALL (SELECT gl.mslink, ba.gl_name AS txt, ba.gl_nummer AS nr, hist.level + 1 AS level, CAST(hist.path + '.' + CAST(gl.mslink AS VARCHAR) AS VARCHAR) AS path, 5 AS feature FROM tablea AS gl INNER JOIN tableb AS ba ON gl.mslink = ba.gl_mslink INNER JOIN tablec AS ae ON gl.mslink = ae.mslink AND ae.deleted = 0 INNER JOIN hist ON gl.parent = hist.mslink WHERE gl.mslink <> 0)) SELECT * FROM hist";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testExtractFrom1() throws JSQLParserException {
+		String stmt = "SELECT EXTRACT(month FROM datecolumn) FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testExtractFrom2() throws JSQLParserException {
+		String stmt = "SELECT EXTRACT(year FROM now()) FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testProblemFunction() throws JSQLParserException {
+		String stmt = "SELECT test() FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));
