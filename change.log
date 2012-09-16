@@ -160,3 +160,4 @@ Added alias visitor
 Added connect visitor
 TableNamesFinder included in source 
 Added proper support for sets (union, intersect) 
+Added support for extract(year from datetime-expr)
