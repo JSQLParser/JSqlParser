@@ -19,7 +19,6 @@
  * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -41,7 +40,7 @@ public class Function implements Expression {
 
 	/**
 	 * The name of he function, i.e. "MAX"
-	 * 
+	 *
 	 * @return the name of he function
 	 */
 	public String getName() {
@@ -54,7 +53,7 @@ public class Function implements Expression {
 
 	/**
 	 * true if the parameter to the function is "*"
-	 * 
+	 *
 	 * @return true if the parameter to the function is "*"
 	 */
 	public boolean isAllColumns() {
@@ -67,7 +66,7 @@ public class Function implements Expression {
 
 	/**
 	 * true if the function is "distinct"
-	 * 
+	 *
 	 * @return true if the function is "distinct"
 	 */
 	public boolean isDistinct() {
@@ -79,8 +78,9 @@ public class Function implements Expression {
 	}
 
 	/**
-	 * The list of parameters of the function (if any, else null) If the parameter is "*", allColumns is set to true
-	 * 
+	 * The list of parameters of the function (if any, else null) If the
+	 * parameter is "*", allColumns is set to true
+	 *
 	 * @return the list of parameters of the function (if any, else null)
 	 */
 	public ExpressionList getParameters() {
@@ -93,7 +93,7 @@ public class Function implements Expression {
 
 	/**
 	 * Return true if it's in the form "{fn function_body() }"
-	 * 
+	 *
 	 * @return true if it's java-escaped
 	 */
 	public boolean isEscaped() {
@@ -105,7 +105,7 @@ public class Function implements Expression {
 	}
 
 	public String toString() {
-		String params = "";
+		String params;
 
 		if (allColumns) {
 			params = "(*)";
@@ -114,6 +114,8 @@ public class Function implements Expression {
 			if (isDistinct()) {
 				params = params.replaceFirst("\\(", "(DISTINCT ");
 			}
+		} else {
+			params = "()";
 		}
 
 		String ans = name + "" + params + "";
