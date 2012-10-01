@@ -633,6 +633,12 @@ public class SelectTest extends TestCase {
 	      String statement = "SELECT 1+2 AS sum";
 	      parserManager.parse( new StringReader( statement ) );
 	}
+	
+	
+	public void testWeirdSelect() throws JSQLParserException {
+	    String sql = "select r.reviews_id, substring(rd.reviews_text, 100) as reviews_text, r.reviews_rating, r.date_added, r.customers_name from reviews r, reviews_description rd where r.products_id = '19' and r.reviews_id = rd.reviews_id and rd.languages_id = '1' and r.reviews_status = 1 order by r.reviews_id desc limit 0, 6";
+	    parserManager.parse( new StringReader( sql ) );
+	}
 
 	public static void main(String[] args) {
 		junit.swingui.TestRunner.run(SelectTest.class);
