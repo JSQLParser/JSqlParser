@@ -129,6 +129,7 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.SetOperation;
 import net.sf.jsqlparser.statement.select.UnionOp;
 import net.sf.jsqlparser.statement.select.MinusOp;
 import net.sf.jsqlparser.statement.select.ExceptOp;
@@ -340,7 +341,7 @@ Replace Replace():
 		     [LOOKAHEAD(2) "(" tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"  ]
 			
 			( 
-				[<K_VALUES> | <K_VALUE>]  "(" exp=PrimaryExpression() { expList.add(exp); } 
+				LOOKAHEAD(2) [<K_VALUES> | <K_VALUE>] "(" exp=PrimaryExpression() { expList.add(exp); } 
 						("," exp=PrimaryExpression()  { expList.add(exp); } )* ")" { itemsList = new ExpressionList(expList); }
 				
 				| 
@@ -379,7 +380,7 @@ Insert Insert():
      [LOOKAHEAD(2) "(" tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"  ]
 	
 	( 
-		[<K_VALUES> | <K_VALUE>]  "(" exp=SimpleExpression() { primaryExpList.add(exp); } 
+		LOOKAHEAD(2) [<K_VALUES> | <K_VALUE>]  "(" exp=SimpleExpression() { primaryExpList.add(exp); } 
 				("," exp=SimpleExpression()  { primaryExpList.add(exp); } )* ")" { itemsList = new ExpressionList(primaryExpList); }
 		
 		| 
@@ -520,13 +521,13 @@ SelectBody SelectBody():
 PlainSelect PlainSelect():
 { 
 	PlainSelect plainSelect = new PlainSelect(); 
-	List selectItems = null;
+	List<SelectItem> selectItems = null;
 	FromItem fromItem = null;
 	List<Join> joins = null;
-	List distinctOn = null;
+	List<SelectItem> distinctOn = null;
 	Expression where = null;
 	List<OrderByElement> orderByElements;
-	List groupByColumnReferences = null;
+	List<Expression> groupByColumnReferences = null;
 	Expression having = null;
 	Limit limit = null;
 	Top top = null;
@@ -572,11 +573,11 @@ PlainSelect PlainSelect():
 SetOperationList SetOperationList():
 {
 	SetOperationList list = new SetOperationList();
-	List orderByElements = null;
+	List<OrderByElement> orderByElements = null;
 	Limit limit = null;
 	PlainSelect select = null;
-	ArrayList selects = new ArrayList();
-	ArrayList operations = new ArrayList();
+	List<PlainSelect> selects = new ArrayList<PlainSelect>();
+	List<SetOperation> operations = new ArrayList<SetOperation>();
 }
 {
 	(
@@ -644,9 +645,9 @@ this is not 100% right, since multiple UNION could have different ALL/DISTINCT c
 }
 */
 
-List WithList():
+List<WithItem> WithList():
 {
-	ArrayList<WithItem> withItemsList = new ArrayList<WithItem>();
+	List<WithItem> withItemsList = new ArrayList<WithItem>();
 	WithItem with = null;
 }
 {
@@ -670,9 +671,9 @@ WithItem WithItem():
 	 { return with; }
 }
 
-List SelectItemsList():
+List<SelectItem> SelectItemsList():
 { 
-	ArrayList<SelectItem> selectItemsList = new ArrayList<SelectItem>();
+	List<SelectItem> selectItemsList = new ArrayList<SelectItem>();
 	SelectItem selectItem = null; 
 }
 { 
@@ -777,7 +778,7 @@ FromItem SubJoin():
 
 List JoinsList():
 {
-	ArrayList<Join> joinsList = new ArrayList<Join>();
+	List<Join> joinsList = new ArrayList<Join>();
 	Join join = null; 
 }
 {
@@ -839,10 +840,10 @@ Expression WhereClause():
 }
 
 
-List GroupByColumnReferences():
+List<Expression> GroupByColumnReferences():
 {
 	Expression columnReference = null;
-	List columnReferences = new ArrayList();
+	List<Expression> columnReferences = new ArrayList<Expression>();
 }
 {
     <K_GROUP> <K_BY> columnReference=SimpleExpression() {columnReferences.add(columnReference); }
@@ -863,9 +864,9 @@ Expression Having():
 	}
 }
 
-List OrderByElements():
+List<OrderByElement> OrderByElements():
 { 
-	List orderByList = new ArrayList();
+	List<OrderByElement> orderByList = new ArrayList<OrderByElement>();
 	OrderByElement orderByElement = null;
 }
 {
@@ -879,7 +880,6 @@ List OrderByElements():
 OrderByElement OrderByElement():
 {
 	OrderByElement orderByElement = new OrderByElement(); 
-	List retval = new ArrayList();
 	Expression columnReference = null;
 }
 {
@@ -1187,7 +1187,7 @@ Expression ExistsExpression():
 ExpressionList SQLExpressionList():
 {
 	ExpressionList retval = new ExpressionList();
-	List expressions = new ArrayList();
+	List<Expression> expressions = new ArrayList<Expression>();
 	Expression expr = null;
 }
 {
@@ -1201,7 +1201,7 @@ ExpressionList SQLExpressionList():
 ExpressionList SimpleExpressionList():
 {
 	ExpressionList retval = new ExpressionList();
-	List expressions = new ArrayList();
+	List<Expression> expressions = new ArrayList<Expression>();
 	Expression expr = null;
 }
 {
@@ -1465,8 +1465,8 @@ Expression PrimaryExpression():
 AnalyticExpression AnalyticExpression() :
 {
 	AnalyticExpression retval = new AnalyticExpression();
-	List plist = new ArrayList();
-	List olist = null;
+	List<Column> plist = new ArrayList<Column>();
+	List<OrderByElement> olist = null;
 	Token token = null;
 	Column column = null;
 }
@@ -1623,7 +1623,7 @@ CreateTable CreateTable():
 {
 	CreateTable createTable = new CreateTable();
 	Table table = null;
-	ArrayList columnDefinitions = new ArrayList();
+	List columnDefinitions = new ArrayList();
 	List columnSpecs = null;
 	List tableOptions = new ArrayList();
 	Token columnName;
@@ -1815,9 +1815,9 @@ String AList():
 	}
 }
 
-List ColumnsNamesList():
+List<String> ColumnsNamesList():
 {
-	List retval = new ArrayList();
+	List<String> retval = new ArrayList<String>();
 	Token tk = null;
 }
 {
@@ -1837,7 +1837,7 @@ Drop Drop():
 {
 	Drop drop = new Drop();
 	Token tk = null;
-	List dropArgs = new ArrayList();
+	List<String> dropArgs = new ArrayList<String>();
 }
 {
 	<K_DROP>
