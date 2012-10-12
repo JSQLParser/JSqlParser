@@ -292,8 +292,8 @@ Update Update():
 	Table table = null;
 	Expression where = null;
 	Column tableColumn = null;
-	List expList = new ArrayList(); 
-	List columns = new ArrayList(); 
+	List<Expression> expList = new ArrayList<Expression>();
+	List<Column> columns = new ArrayList<Column>(); 
 	Expression value = null;
 	
 }
@@ -318,12 +318,10 @@ Replace Replace():
 	Column tableColumn = null;
 	Expression value = null;
 	
-	List columns = new ArrayList(); 
-	List expList = new ArrayList(); 
+	List<Column> columns = new ArrayList<Column>(); 
+	List<Expression> expList = new ArrayList<Expression>(); 
 	ItemsList itemsList = null;
 	Expression exp = null;
-	
-	
 }
 {
     <K_REPLACE> [<K_INTO>] table=Table()
@@ -369,8 +367,8 @@ Insert Insert():
 	Insert insert = new Insert(); 
 	Table table = null;
 	Column tableColumn = null;
-	List columns = new ArrayList(); 
-	List primaryExpList = new ArrayList(); 
+ 	List<Column> columns = new ArrayList<Column>(); 
+	List<Expression> primaryExpList = new ArrayList<Expression>(); 
 	ItemsList itemsList = null;
 	Expression exp = null;
 }
@@ -496,7 +494,7 @@ Select Select():
 { 
 	Select select = new Select();
 	SelectBody selectBody = null;
-	List with = null; 
+	List<WithItem> with = null; 
 }
 {
 	[ with=WithList() { select.setWithItemsList(with); } ]
@@ -524,10 +522,10 @@ PlainSelect PlainSelect():
 	PlainSelect plainSelect = new PlainSelect(); 
 	List selectItems = null;
 	FromItem fromItem = null;
-	List joins = null;
+	List<Join> joins = null;
 	List distinctOn = null;
 	Expression where = null;
-	List orderByElements;
+	List<OrderByElement> orderByElements;
 	List groupByColumnReferences = null;
 	Expression having = null;
 	Limit limit = null;
@@ -648,7 +646,7 @@ this is not 100% right, since multiple UNION could have different ALL/DISTINCT c
 
 List WithList():
 {
-	ArrayList withItemsList = new ArrayList();
+	ArrayList<WithItem> withItemsList = new ArrayList<WithItem>();
 	WithItem with = null;
 }
 {
@@ -661,7 +659,7 @@ WithItem WithItem():
 {
 	WithItem with = new WithItem();
 	String name = null;
-	List selectItems = null;
+	List<SelectItem> selectItems = null;
 	SelectBody selectBody = null;
 }
 {
@@ -674,7 +672,7 @@ WithItem WithItem():
 
 List SelectItemsList():
 { 
-	ArrayList selectItemsList = new ArrayList();
+	ArrayList<SelectItem> selectItemsList = new ArrayList<SelectItem>();
 	SelectItem selectItem = null; 
 }
 { 
@@ -779,7 +777,7 @@ FromItem SubJoin():
 
 List JoinsList():
 {
-	ArrayList joinsList = new ArrayList();
+	ArrayList<Join> joinsList = new ArrayList<Join>();
 	Join join = null; 
 }
 {
@@ -795,7 +793,7 @@ Join JoinerExpression():
 	FromItem right = null;
 	Expression onExpression = null;
 	Column tableColumn;
-	List columns = null;
+	List<Column> columns = null;
 }
 {
 
