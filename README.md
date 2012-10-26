@@ -7,7 +7,7 @@ Original project websites:
 * http://jsqlparser.sourceforge.net
 * http://sourceforge.net/projects/jsqlparser/
 
-## Extensions to the original
+## Extensions
 
  * Changed project tests to junit 4
  * Changed project layout to maven project
