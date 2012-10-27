@@ -16,19 +16,24 @@ Original project websites:
  * Moved parser from using StringBuffer to using StringBuilder
 
  * Added support for CAST expression
+
 	select cast(col as varchar) from table
+
  * Added support for modulo (a % b)
  * Added support for brackets quotation
  * Added support for NOT expr IS (expr IS NOT was already supported)
  * Added support for Oracles (+) Join Syntax
+
 	select * from taba, tabb where taba.a=tabb.a(+)
 
  * Added alias visitor to add aliases to selections
  * Added connect visitor
  * TableNamesFinder moved from tests to main source 
  * Added proper support for sets (union, intersect) 
+
 	select a from taba union select b from tabb
 	select a from taba intersect select b from tabb
+
  * Added support for extract(year from datetime-expr)
  * Start implementation of analytical expressions
 
