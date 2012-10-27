@@ -29,7 +29,8 @@ Original project websites:
 * Added alias visitor to add aliases to selections
 * Added connect visitor
 * TableNamesFinder moved from tests to main source 
-* Added proper support for sets (union, intersect) 
+
+Added proper support for sets (union, intersect) 
 
 	select a from taba union select b from tabb
 	select a from taba intersect select b from tabb
