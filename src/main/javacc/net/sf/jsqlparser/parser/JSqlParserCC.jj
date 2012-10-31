@@ -26,6 +26,7 @@ options{
 //  DEBUG_LOOKAHEAD= true ;
 //  FORCE_LA_CHECK=true;
 //  DEBUG_TOKEN_MANAGER=true;
+//  UNICODE_INPUT=true;
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -253,11 +254,21 @@ SPECIAL_TOKEN:
 
 TOKEN:
 {
-	< S_IDENTIFIER: ( <LETTER> )+ ( <DIGIT> | <LETTER> |<SPECIAL_CHARS>)* >
+	< S_IDENTIFIER: ( <LETTER> | <ADDITIONAL_LETTERS> )+ ( <DIGIT> | <LETTER> | <ADDITIONAL_LETTERS> | <SPECIAL_CHARS>)* >
 | 	< #LETTER: ["a"-"z", "A"-"Z", "_"] >
 |   < #SPECIAL_CHARS: "$" | "_">
 |   < S_CHAR_LITERAL: "'" (~["'"])* "'" ("'" (~["'"])* "'")*>
 |   < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" | ("`" (~["\n","\r","`"])* "`") | ("[" (~["\n","\r","]"])* "]") >
+
+/*
+To deal with database names (columns, tables) using not only latin base characters, one
+can expand the following rule to accept additional letters. Here is the
+addition of german umlauts.
+
+There seems to be no way to recognize letters by an external function to allow
+a configurable addition. One must rebuild JSqlParser with this new "Letterset".
+*/
+|   < #ADDITIONAL_LETTERS: ["ä","ö","ü","Ä","Ö","Ü","ß"] >
 }
 
 

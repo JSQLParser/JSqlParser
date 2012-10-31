@@ -737,6 +737,17 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT sysdate FROM testtable";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testAdditionalLettersGerman() throws JSQLParserException {
+		String stmt = "SELECT colä, colü, colö FROM testtableöäü";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+		
+		stmt = "SELECT colÄ, colÜ, colÖ FROM testtableÖÜÄ";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+		
+		stmt = "SELECT Äcol FROM testtableÖÜÄ";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));

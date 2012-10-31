@@ -162,3 +162,6 @@ TableNamesFinder included in source
 Added proper support for sets (union, intersect) 
 Added support for extract(year from datetime-expr)
 Start implementation of analytical expressions
+
+0.8.1-SNAPSHOT
+Expansionpoint for additional letters included
