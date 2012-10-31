@@ -1,7 +1,6 @@
 package net.sf.jsqlparser.test.select;
 
 import java.io.StringReader;
-
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.BinaryExpression;
@@ -737,14 +736,14 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT sysdate FROM testtable";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testAdditionalLettersGerman() throws JSQLParserException {
 		String stmt = "SELECT colä, colü, colö FROM testtableöäü";
 		assertSqlCanBeParsedAndDeparsed(stmt);
-		
+
 		stmt = "SELECT colÄ, colÜ, colÖ FROM testtableÖÜÄ";
 		assertSqlCanBeParsedAndDeparsed(stmt);
-		
+
 		stmt = "SELECT Äcol FROM testtableÖÜÄ";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
