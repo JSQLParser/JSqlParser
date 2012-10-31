@@ -738,13 +738,13 @@ public class SelectTest extends TestCase {
 	}
 
 	public void testAdditionalLettersGerman() throws JSQLParserException {
-		String stmt = "SELECT colä, colü, colö FROM testtableöäü";
+		String stmt = "SELECT colÃ¤, colÃ¶, colÃ¼ FROM testtableÃ¤Ã¶Ã¼";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 
-		stmt = "SELECT colÄ, colÜ, colÖ FROM testtableÖÜÄ";
+		stmt = "SELECT colA, colÃ–, colÃœ FROM testtableÃ„Ã–Ãœ";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 
-		stmt = "SELECT Äcol FROM testtableÖÜÄ";
+		stmt = "SELECT Ã„col FROM testtableÃ„Ã–Ãœ";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 

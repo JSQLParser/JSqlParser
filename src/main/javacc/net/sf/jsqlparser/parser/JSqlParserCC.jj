@@ -201,7 +201,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_BEGIN:"BEGIN">
 |   <K_INDEX: "INDEX">
 |   <K_INNER:"INNER">
-|   <K_LIMIT:"LIMIT">
+|   <K_LIMIT:"LIMIT"> 
 |   <K_OUTER:"OUTER">
 |   <K_ORDER:"ORDER">
 |   <K_RIGHT:"RIGHT">
@@ -267,8 +267,8 @@ addition of german umlauts.
 
 There seems to be no way to recognize letters by an external function to allow
 a configurable addition. One must rebuild JSqlParser with this new "Letterset".
-*/
-|   < #ADDITIONAL_LETTERS: ["ä","ö","ü","Ä","Ö","Ü","ß"] >
+*/ 
+|   < #ADDITIONAL_LETTERS: ["Ã¤","Ã¶","Ã¼","Ã„","Ã–","Ãœ","ÃŸ"] >
 }
 
 
