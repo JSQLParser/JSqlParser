@@ -264,7 +264,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	@Override
 	public void visit(StringValue stringValue) {
-		buffer.append("'" + stringValue.getValue() + "'");
+		buffer.append("'").append(stringValue.getValue()).append("'");
 
 	}
 
@@ -298,7 +298,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 			tableName = tableColumn.getTable().getWholeTableName();
 		}
 		if (tableName != null) {
-			buffer.append(tableName + ".");
+			buffer.append(tableName).append(".");
 		}
 
 		buffer.append(tableColumn.getColumnName());
@@ -361,17 +361,17 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	@Override
 	public void visit(DateValue dateValue) {
-		buffer.append("{d '" + dateValue.getValue().toString() + "'}");
+		buffer.append("{d '").append(dateValue.getValue().toString()).append("'}");
 	}
 
 	@Override
 	public void visit(TimestampValue timestampValue) {
-		buffer.append("{ts '" + timestampValue.getValue().toString() + "'}");
+		buffer.append("{ts '").append(timestampValue.getValue().toString()).append("'}");
 	}
 
 	@Override
 	public void visit(TimeValue timeValue) {
-		buffer.append("{t '" + timeValue.getValue().toString() + "'}");
+		buffer.append("{t '").append(timeValue.getValue().toString()).append("'}");
 	}
 
 	@Override

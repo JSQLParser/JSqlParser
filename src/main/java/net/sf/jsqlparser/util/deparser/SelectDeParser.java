@@ -141,14 +141,14 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
 	@Override
 	public void visit(AllTableColumns allTableColumns) {
-		buffer.append(allTableColumns.getTable().getWholeTableName() + ".*");
+		buffer.append(allTableColumns.getTable().getWholeTableName()).append(".*");
 	}
 
 	@Override
 	public void visit(SelectExpressionItem selectExpressionItem) {
 		selectExpressionItem.getExpression().accept(expressionVisitor);
 		if (selectExpressionItem.getAlias() != null) {
-			buffer.append(" AS " + selectExpressionItem.getAlias());
+			buffer.append(" AS ").append(selectExpressionItem.getAlias());
 		}
 
 	}
@@ -169,7 +169,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		buffer.append(tableName.getWholeTableName());
 		String alias = tableName.getAlias();
 		if (alias != null && !alias.isEmpty()) {
-			buffer.append(" AS " + alias);
+			buffer.append(" AS ").append(alias);
 		}
 	}
 
@@ -197,7 +197,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		if (limit.isOffsetJdbcParameter()) {
 			buffer.append(" OFFSET ?");
 		} else if (limit.getOffset() != 0) {
-			buffer.append(" OFFSET " + limit.getOffset());
+			buffer.append(" OFFSET ").append(limit.getOffset());
 		}
 
 	}

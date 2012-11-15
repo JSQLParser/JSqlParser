@@ -49,7 +49,7 @@ public class ReplaceDeParser implements ItemsListVisitor {
 	}
 
 	public void deParse(Replace replace) {
-		buffer.append("REPLACE " + replace.getTable().getWholeTableName());
+		buffer.append("REPLACE ").append(replace.getTable().getWholeTableName());
 		if (replace.getItemsList() != null) {
 			if (replace.getColumns() != null) {
 				buffer.append(" (");
@@ -69,7 +69,7 @@ public class ReplaceDeParser implements ItemsListVisitor {
 			buffer.append(" SET ");
 			for (int i = 0; i < replace.getColumns().size(); i++) {
 				Column column = (Column) replace.getColumns().get(i);
-				buffer.append(column.getWholeColumnName() + "=");
+				buffer.append(column.getWholeColumnName()).append("=");
 
 				Expression expression = (Expression) replace.getExpressions().get(i);
 				expression.accept(expressionVisitor);

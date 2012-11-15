@@ -22,7 +22,7 @@ public class CreateTableDeParser {
 	}
 
 	public void deParse(CreateTable createTable) {
-		buffer.append("CREATE TABLE " + createTable.getTable().getWholeTableName());
+		buffer.append("CREATE TABLE ").append(createTable.getTable().getWholeTableName());
 		if (createTable.getColumnDefinitions() != null) {
 			buffer.append(" (");
 			for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
@@ -47,7 +47,7 @@ public class CreateTableDeParser {
 				for (Iterator<Index> iter = createTable.getIndexes().iterator(); iter.hasNext();) {
 					buffer.append(",");
 					Index index = (Index) iter.next();
-					buffer.append(index.getType() + " " + index.getName());
+					buffer.append(index.getType()).append(" ").append(index.getName());
 					buffer.append("(");
 					for (Iterator<String> iterator = index.getColumnsNames().iterator(); iterator.hasNext();) {
 						buffer.append((String) iterator.next());
