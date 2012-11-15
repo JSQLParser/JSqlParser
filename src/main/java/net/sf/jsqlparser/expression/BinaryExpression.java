@@ -58,6 +58,7 @@ public abstract class BinaryExpression implements Expression {
 		return not;
 	}
 
+	@Override
 	public String toString() {
 		return (not ? "NOT " : "") + getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
 	}

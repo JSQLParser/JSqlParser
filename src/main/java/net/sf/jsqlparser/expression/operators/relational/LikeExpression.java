@@ -29,6 +29,7 @@ public class LikeExpression extends BinaryExpression {
 	private boolean not = false;
 	private String escape = null;
 
+	@Override
 	public boolean isNot() {
 		return not;
 	}
@@ -37,14 +38,17 @@ public class LikeExpression extends BinaryExpression {
 		not = b;
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
 
+	@Override
 	public String getStringExpression() {
 		return ((not) ? "NOT " : "") + "LIKE";
 	}
 
+	@Override
 	public String toString() {
 		String retval = super.toString();
 		if (escape != null) {

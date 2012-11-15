@@ -43,6 +43,7 @@ public class Index {
 		type = string;
 	}
 
+	@Override
 	public String toString() {
 		return type + " " + PlainSelect.getStringList(columnsNames, true, true) + (name != null ? " " + name : "");
 	}

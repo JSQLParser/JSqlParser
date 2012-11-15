@@ -26,10 +26,12 @@ package net.sf.jsqlparser.expression;
  * A "NULL" in a sql statement
  */
 public class NullValue implements Expression {
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
 
+	@Override
 	public String toString() {
 		return "NULL";
 	}

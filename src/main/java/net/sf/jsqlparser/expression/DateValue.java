@@ -33,6 +33,7 @@ public class DateValue implements Expression {
 		this.value = Date.valueOf(value.substring(1, value.length() - 1));
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}

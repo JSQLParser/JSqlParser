@@ -49,6 +49,7 @@ public class WithItem {
 		this.withItemList = withItemList;
 	}
 
+	@Override
 	public String toString() {
 		return name + ((withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "")
 				+ " AS (" + selectBody + ")";

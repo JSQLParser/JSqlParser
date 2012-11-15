@@ -45,14 +45,17 @@ public class TestException extends Exception {
 		this.cause = arg1;
 	}
 
+	@Override
 	public Throwable getCause() {
 		return cause;
 	}
 
+	@Override
 	public void printStackTrace() {
 		printStackTrace(System.err);
 	}
 
+	@Override
 	public void printStackTrace(java.io.PrintWriter pw) {
 		super.printStackTrace(pw);
 		if (cause != null) {
@@ -61,6 +64,7 @@ public class TestException extends Exception {
 		}
 	}
 
+	@Override
 	public void printStackTrace(java.io.PrintStream ps) {
 		super.printStackTrace(ps);
 		if (cause != null) {

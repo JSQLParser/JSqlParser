@@ -34,6 +34,7 @@ public class Function implements Expression {
 	private boolean distinct = false;
 	private boolean isEscaped = false;
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
@@ -104,6 +105,7 @@ public class Function implements Expression {
 		this.isEscaped = isEscaped;
 	}
 
+	@Override
 	public String toString() {
 		String params;
 

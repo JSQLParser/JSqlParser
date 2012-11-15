@@ -43,6 +43,7 @@ public class AnalyticExpression implements Expression {
 		this.name = name;
 	}
 	
+	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
 		

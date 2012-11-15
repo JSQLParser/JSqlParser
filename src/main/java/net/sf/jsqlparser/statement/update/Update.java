@@ -39,6 +39,7 @@ public class Update implements Statement {
 	private List<Column> columns;
 	private List<Expression> expressions;
 
+	@Override
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}

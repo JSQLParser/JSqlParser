@@ -24,10 +24,12 @@ public class CastExpression implements Expression {
 		leftExpression = expression;
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
 
+	@Override
 	public String toString() {
         return "CAST(" + leftExpression + " AS " + typeName + ")";
     }

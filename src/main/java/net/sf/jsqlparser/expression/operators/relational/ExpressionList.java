@@ -48,10 +48,12 @@ public class ExpressionList implements ItemsList {
 		expressions = list;
 	}
 
+	@Override
 	public void accept(ItemsListVisitor itemsListVisitor) {
 		itemsListVisitor.visit(this);
 	}
 
+	@Override
 	public String toString() {
 		return PlainSelect.getStringList(expressions, true, true);
 	}

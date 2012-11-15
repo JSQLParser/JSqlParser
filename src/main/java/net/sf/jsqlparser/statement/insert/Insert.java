@@ -40,6 +40,7 @@ public class Insert implements Statement {
 	private ItemsList itemsList;
 	private boolean useValues = true;
 
+	@Override
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}
@@ -86,6 +87,7 @@ public class Insert implements Statement {
 		this.useValues = useValues;
 	}
 
+	@Override
 	public String toString() {
 		String sql = "";
 

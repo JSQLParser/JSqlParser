@@ -25,6 +25,7 @@ public class ColDataType {
 		dataType = string;
 	}
 
+	@Override
 	public String toString() {
 		return dataType
 				+ (argumentsStringList != null ? " " + PlainSelect.getStringList(argumentsStringList, true, true) : "");

@@ -36,6 +36,7 @@ public class DoubleValue implements Expression {
 		this.stringValue = value;
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
@@ -48,6 +49,7 @@ public class DoubleValue implements Expression {
 		value = d;
 	}
 
+	@Override
 	public String toString() {
 		return stringValue;
 	}

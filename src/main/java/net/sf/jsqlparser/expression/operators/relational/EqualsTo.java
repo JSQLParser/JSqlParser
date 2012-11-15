@@ -26,10 +26,12 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class EqualsTo extends BinaryExpression {
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
 
+	@Override
 	public String getStringExpression() {
 		return "=";
 	}

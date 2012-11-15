@@ -32,6 +32,7 @@ public class Select implements Statement {
 	private SelectBody selectBody;
 	private List<WithItem> withItemsList;
 
+	@Override
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}
@@ -44,6 +45,7 @@ public class Select implements Statement {
 		selectBody = body;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder retval = new StringBuilder();
 		if (withItemsList != null && !withItemsList.isEmpty()) {

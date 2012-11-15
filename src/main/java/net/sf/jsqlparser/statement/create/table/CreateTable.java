@@ -17,6 +17,7 @@ public class CreateTable implements Statement {
 	private List<ColumnDefinition> columnDefinitions;
 	private List<Index> indexes;
 
+	@Override
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}
@@ -68,6 +69,7 @@ public class CreateTable implements Statement {
 		indexes = list;
 	}
 
+	@Override
 	public String toString() {
 		String sql = "";
 

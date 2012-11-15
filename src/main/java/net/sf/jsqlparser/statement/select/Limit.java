@@ -53,6 +53,7 @@ public class Limit {
 		limitAll = b;
 	}
 
+	@Override
 	public String toString() {
 		String retVal = "";
 		if (rowCount > 0 || rowCountJdbcParameter) {

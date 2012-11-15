@@ -21,6 +21,7 @@ public class Distinct {
 		onSelectItems = list;
 	}
 
+	@Override
 	public String toString() {
 		String sql = "DISTINCT";
 

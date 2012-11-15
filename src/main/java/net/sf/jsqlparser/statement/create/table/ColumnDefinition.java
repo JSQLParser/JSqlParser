@@ -44,6 +44,7 @@ public class ColumnDefinition {
 		columnName = string;
 	}
 
+	@Override
 	public String toString() {
 		return columnName + " " + colDataType + " " + PlainSelect.getStringList(columnSpecStrings, false, false);
 	}

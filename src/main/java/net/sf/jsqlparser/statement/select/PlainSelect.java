@@ -102,6 +102,7 @@ public class PlainSelect implements SelectBody {
 		joins = list;
 	}
 
+	@Override
 	public void accept(SelectVisitor selectVisitor) {
 		selectVisitor.visit(this);
 	}
@@ -160,6 +161,7 @@ public class PlainSelect implements SelectBody {
 		groupByColumnReferences = list;
 	}
 
+	@Override
 	public String toString() {
 		String sql = "";
 

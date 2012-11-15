@@ -47,10 +47,12 @@ public class SelectExpressionItem implements SelectItem {
 		this.expression = expression;
 	}
 
+	@Override
 	public void accept(SelectItemVisitor selectItemVisitor) {
 		selectItemVisitor.visit(this);
 	}
 
+	@Override
 	public String toString() {
 		return expression + ((alias != null) ? " AS " + alias : "");
 	}

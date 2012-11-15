@@ -66,10 +66,12 @@ public class Between implements Expression {
 		not = b;
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
 
+	@Override
 	public String toString() {
 		return leftExpression + " " + (not ? "NOT " : "") + "BETWEEN " + betweenExpressionStart + " AND "
 				+ betweenExpressionEnd;

@@ -45,6 +45,7 @@ public class ExistsExpression implements Expression {
 		not = b;
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
@@ -53,6 +54,7 @@ public class ExistsExpression implements Expression {
 		return ((not) ? "NOT " : "") + "EXISTS";
 	}
 
+	@Override
 	public String toString() {
 		return getStringExpression() + " " + rightExpression.toString();
 	}

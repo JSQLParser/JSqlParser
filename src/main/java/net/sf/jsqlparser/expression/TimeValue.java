@@ -33,6 +33,7 @@ public class TimeValue implements Expression {
 		this.value = Time.valueOf(value.substring(1, value.length() - 1));
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
@@ -45,6 +46,7 @@ public class TimeValue implements Expression {
 		value = d;
 	}
 
+	@Override
 	public String toString() {
 		return "{t '" + value + "'}";
 	}

@@ -23,6 +23,7 @@ public class Top {
 		rowCountJdbcParameter = b;
 	}
 
+	@Override
 	public String toString() {
 		return "TOP " + (rowCountJdbcParameter ? "?" : rowCount + "");
 	}

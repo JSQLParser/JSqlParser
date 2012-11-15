@@ -27,10 +27,12 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class BitwiseOr extends BinaryExpression {
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
 
+	@Override
 	public String getStringExpression() {
 		return "|";
 	}

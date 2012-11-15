@@ -32,10 +32,12 @@ public class AndExpression extends BinaryExpression {
 		setRightExpression(rightExpression);
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
 
+	@Override
 	public String getStringExpression() {
 		return "AND";
 	}

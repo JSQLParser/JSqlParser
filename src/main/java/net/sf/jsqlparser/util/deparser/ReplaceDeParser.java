@@ -82,6 +82,7 @@ public class ReplaceDeParser implements ItemsListVisitor {
 
 	}
 
+	@Override
 	public void visit(ExpressionList expressionList) {
 		buffer.append(" VALUES (");
 		for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
@@ -93,6 +94,7 @@ public class ReplaceDeParser implements ItemsListVisitor {
 		buffer.append(")");
 	}
 
+	@Override
 	public void visit(SubSelect subSelect) {
 		subSelect.getSelectBody().accept(selectVisitor);
 	}

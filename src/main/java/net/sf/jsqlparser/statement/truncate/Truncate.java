@@ -10,6 +10,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 public class Truncate implements Statement {
 	private Table table;
 
+	@Override
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}
@@ -22,6 +23,7 @@ public class Truncate implements Statement {
 		this.table = table;
 	}
 
+	@Override
 	public String toString() {
 		return "TRUNCATE TABLE " + table;
 	}

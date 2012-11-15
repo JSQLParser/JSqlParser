@@ -42,6 +42,7 @@ public class Replace implements Statement {
 	private List<Expression> expressions;
 	private boolean useValues = true;
 
+	@Override
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}
@@ -100,6 +101,7 @@ public class Replace implements Statement {
 		this.useValues = useValues;
 	}
 
+	@Override
 	public String toString() {
 		String sql = "REPLACE " + table;
 

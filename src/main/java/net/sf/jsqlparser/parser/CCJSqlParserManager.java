@@ -32,6 +32,7 @@ import net.sf.jsqlparser.statement.Statement;
  */
 public class CCJSqlParserManager implements JSqlParser {
 
+	@Override
 	public Statement parse(Reader statementReader) throws JSQLParserException {
 		CCJSqlParser parser = new CCJSqlParser(statementReader);
 		try {

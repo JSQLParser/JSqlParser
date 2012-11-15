@@ -45,10 +45,12 @@ public class AllTableColumns implements SelectItem {
 		this.table = table;
 	}
 
+	@Override
 	public void accept(SelectItemVisitor selectItemVisitor) {
 		selectItemVisitor.visit(this);
 	}
 
+	@Override
 	public String toString() {
 		return table + ".*";
 	}

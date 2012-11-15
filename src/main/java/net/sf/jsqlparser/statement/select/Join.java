@@ -166,6 +166,7 @@ public class Join {
 		usingColumns = list;
 	}
 
+	@Override
 	public String toString() {
 		if (isSimple())
 			return "" + rightItem;

@@ -37,6 +37,7 @@ public class LongValue implements Expression {
 		setStringValue(value);
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
@@ -57,6 +58,7 @@ public class LongValue implements Expression {
 		stringValue = string;
 	}
 
+	@Override
 	public String toString() {
 		return getStringValue();
 	}

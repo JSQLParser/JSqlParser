@@ -43,6 +43,7 @@ public class InverseExpression implements Expression {
 		this.expression = expression;
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}

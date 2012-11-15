@@ -69,6 +69,7 @@ public class CaseExpression implements Expression {
 	 * 
 	 * @see net.sf.jsqlparser.expression.Expression#accept(net.sf.jsqlparser.expression.ExpressionVisitor)
 	 */
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
@@ -118,6 +119,7 @@ public class CaseExpression implements Expression {
 		this.whenClauses = whenClauses;
 	}
 
+	@Override
 	public String toString() {
 		return "CASE " + ((switchExpression != null) ? switchExpression + " " : "")
 				+ PlainSelect.getStringList(whenClauses, false, false) + " "

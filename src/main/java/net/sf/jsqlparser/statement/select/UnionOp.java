@@ -31,6 +31,7 @@ public class UnionOp extends SetOperation {
 	}
 	
 	
+	@Override
 	public String toString() {
 		String allDistinct = "";
 		if (isAll()) {

@@ -74,10 +74,12 @@ public class Column implements Expression {
 
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
 
+	@Override
 	public String toString() {
 		return getWholeColumnName();
 	}

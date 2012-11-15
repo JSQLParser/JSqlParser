@@ -11,6 +11,7 @@ public class Drop implements Statement {
 	private String name;
 	private List<String> parameters;
 
+	@Override
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}
@@ -39,6 +40,7 @@ public class Drop implements Statement {
 		type = string;
 	}
 
+	@Override
 	public String toString() {
 		String sql = "DROP " + type + " " + name;
 

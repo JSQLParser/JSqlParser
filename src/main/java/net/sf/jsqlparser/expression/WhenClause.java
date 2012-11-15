@@ -37,6 +37,7 @@ public class WhenClause implements Expression {
 	 * 
 	 * @see net.sf.jsqlparser.expression.Expression#accept(net.sf.jsqlparser.expression.ExpressionVisitor)
 	 */
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
@@ -71,6 +72,7 @@ public class WhenClause implements Expression {
 		this.whenExpression = whenExpression;
 	}
 
+	@Override
 	public String toString() {
 		return "WHEN " + whenExpression + " THEN " + thenExpression;
 	}

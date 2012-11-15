@@ -31,6 +31,7 @@ public class Delete implements Statement {
 	private Table table;
 	private Expression where;
 
+	@Override
 	public void accept(StatementVisitor statementVisitor) {
 		statementVisitor.visit(this);
 	}
@@ -51,6 +52,7 @@ public class Delete implements Statement {
 		where = expression;
 	}
 
+	@Override
 	public String toString() {
 		return "DELETE FROM " + table + ((where != null) ? " WHERE " + where : "");
 	}

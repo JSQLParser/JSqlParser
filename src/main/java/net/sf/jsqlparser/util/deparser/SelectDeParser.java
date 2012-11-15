@@ -48,6 +48,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		this.expressionVisitor = expressionVisitor;
 	}
 
+	@Override
 	public void visit(PlainSelect plainSelect) {
 		buffer.append("SELECT ");
 		Top top = plainSelect.getTop();
@@ -120,6 +121,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
 	}
 
+	@Override
 	public void visit(OrderByElement orderBy) {
 		orderBy.getExpression().accept(expressionVisitor);
 		if (!orderBy.isAsc())
@@ -130,14 +132,17 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		buffer.append(column.getWholeColumnName());
 	}
 
+	@Override
 	public void visit(AllColumns allColumns) {
 		buffer.append("*");
 	}
 
+	@Override
 	public void visit(AllTableColumns allTableColumns) {
 		buffer.append(allTableColumns.getTable().getWholeTableName() + ".*");
 	}
 
+	@Override
 	public void visit(SelectExpressionItem selectExpressionItem) {
 		selectExpressionItem.getExpression().accept(expressionVisitor);
 		if (selectExpressionItem.getAlias() != null) {
@@ -146,6 +151,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
 	}
 
+	@Override
 	public void visit(SubSelect subSelect) {
 		buffer.append("(");
 		subSelect.getSelectBody().accept(this);
@@ -156,6 +162,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		}
 	}
 
+	@Override
 	public void visit(Table tableName) {
 		buffer.append(tableName.getWholeTableName());
 		String alias = tableName.getAlias();
@@ -209,6 +216,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		expressionVisitor = visitor;
 	}
 
+	@Override
 	public void visit(SubJoin subjoin) {
 		buffer.append("(");
 		subjoin.getLeft().accept(this);

@@ -30,6 +30,7 @@ public class SubJoin implements FromItem {
 	private Join join;
 	private String alias;
 
+	@Override
 	public void accept(FromItemVisitor fromItemVisitor) {
 		fromItemVisitor.visit(this);
 	}
@@ -50,14 +51,17 @@ public class SubJoin implements FromItem {
 		join = j;
 	}
 
+	@Override
 	public String getAlias() {
 		return alias;
 	}
 
+	@Override
 	public void setAlias(String string) {
 		alias = string;
 	}
 
+	@Override
 	public String toString() {
 		return "(" + left + " " + join + ")" + ((alias != null) ? " AS " + alias : "");
 	}

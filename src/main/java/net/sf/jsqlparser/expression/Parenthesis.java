@@ -44,6 +44,7 @@ public class Parenthesis implements Expression {
 		this.expression = expression;
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
@@ -56,6 +57,7 @@ public class Parenthesis implements Expression {
 		return not;
 	}
 
+	@Override
 	public String toString() {
 		return (not ? "NOT " : "") + "(" + expression + ")";
 	}

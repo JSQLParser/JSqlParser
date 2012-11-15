@@ -53,10 +53,12 @@ public class StringValue implements Expression {
 		value = string;
 	}
 
+	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
 
+	@Override
 	public String toString() {
 		return "'" + value + "'";
 	}
