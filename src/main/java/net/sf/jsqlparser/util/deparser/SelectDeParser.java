@@ -52,8 +52,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	public void visit(PlainSelect plainSelect) {
 		buffer.append("SELECT ");
 		Top top = plainSelect.getTop();
-		if (top != null)
+		if (top != null) {
 			buffer.append(top).append(" ");
+		}
 		if (plainSelect.getDistinct() != null) {
 			buffer.append("DISTINCT ");
 			if (plainSelect.getDistinct().getOnSelectItems() != null) {
@@ -124,8 +125,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	@Override
 	public void visit(OrderByElement orderBy) {
 		orderBy.getExpression().accept(expressionVisitor);
-		if (!orderBy.isAsc())
+		if (!orderBy.isAsc()) {
 			buffer.append(" DESC");
+		}
 	}
 
 	public void visit(Column column) {
@@ -225,23 +227,30 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	}
 
 	public void deparseJoin(Join join) {
-		if (join.isSimple())
+		if (join.isSimple()) {
 			buffer.append(", ");
+		}
 		else {
 
-			if (join.isRight())
+			if (join.isRight()) {
 				buffer.append(" RIGHT");
-			else if (join.isNatural())
+			}
+			else if (join.isNatural()) {
 				buffer.append(" NATURAL");
-			else if (join.isFull())
+			}
+			else if (join.isFull()) {
 				buffer.append(" FULL");
-			else if (join.isLeft())
+			}
+			else if (join.isLeft()) {
 				buffer.append(" LEFT");
+			}
 
-			if (join.isOuter())
+			if (join.isOuter()) {
 				buffer.append(" OUTER");
-			else if (join.isInner())
+			}
+			else if (join.isInner()) {
 				buffer.append(" INNER");
+			}
 
 			buffer.append(" JOIN ");
 
@@ -270,8 +279,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	@Override
 	public void visit(SetOperationList list) {
 		for (int i=0;i<list.getPlainSelects().size();i++) {
-			if (i!=0)
+			if (i!=0) {
 				buffer.append(' ').append(list.getOperations().get(i-1)).append(' ');
+			}
 			buffer.append("(");
 			PlainSelect plainSelect = (PlainSelect) list.getPlainSelects().get(i);
 			plainSelect.accept(this);

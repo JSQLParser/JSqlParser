@@ -53,8 +53,9 @@ public class Select implements Statement {
 			for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
 				WithItem withItem = (WithItem) iter.next();
 				retval.append(withItem);
-				if (iter.hasNext())
+				if (iter.hasNext()) {
 					retval.append(",");
+				}
 				retval.append(" ");
 			}
 		}

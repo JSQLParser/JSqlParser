@@ -74,8 +74,9 @@ public class StatementDeParser implements StatementVisitor {
 			for (Iterator<WithItem> iter = select.getWithItemsList().iterator(); iter.hasNext();) {
 				WithItem withItem = iter.next();
 				buffer.append(withItem);
-				if (iter.hasNext())
+				if (iter.hasNext()) {
 					buffer.append(",");
+				}
 				buffer.append(" ");
 			}
 		}

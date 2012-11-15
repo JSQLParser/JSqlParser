@@ -60,8 +60,9 @@ public class CreateTableTest extends TestCase {
 					break;
 				}
 
-				if (!line.equals("#begin"))
+				if (!line.equals("#begin")) {
 					break;
+				}
 				line = getLine(in);
 				StringBuilder buf = new StringBuilder(line);
 				while (true) {
@@ -147,8 +148,9 @@ public class CreateTableTest extends TestCase {
 
 			}
 		} finally {
-			if (in != null)
+			if (in != null) {
 				in.close();
+			}
 		}
 	}
 
@@ -160,8 +162,9 @@ public class CreateTableTest extends TestCase {
 				line.trim();
 				if ((line.length() != 0)
 						&& ((line.length() < 2) || (line.length() >= 2)
-								&& !(line.charAt(0) == '/' && line.charAt(1) == '/')))
+								&& !(line.charAt(0) == '/' && line.charAt(1) == '/'))) {
 					break;
+				}
 			} else {
 				break;
 			}

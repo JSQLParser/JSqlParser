@@ -168,24 +168,31 @@ public class Join {
 
 	@Override
 	public String toString() {
-		if (isSimple())
+		if (isSimple()) {
 			return "" + rightItem;
+		}
 		else {
 			String type = "";
 
-			if (isRight())
+			if (isRight()) {
 				type += "RIGHT ";
-			else if (isNatural())
+			}
+			else if (isNatural()) {
 				type += "NATURAL ";
-			else if (isFull())
+			}
+			else if (isFull()) {
 				type += "FULL ";
-			else if (isLeft())
+			}
+			else if (isLeft()) {
 				type += "LEFT ";
+			}
 
-			if (isOuter())
+			if (isOuter()) {
 				type += "OUTER ";
-			else if (isInner())
+			}
+			else if (isInner()) {
 				type += "INNER ";
+			}
 
 			return type + "JOIN " + rightItem + ((onExpression != null) ? " ON " + onExpression + "" : "")
 					+ PlainSelect.getFormatedList(usingColumns, "USING", true, true);

@@ -25,8 +25,9 @@ public class CCJSqlParserManagerTest extends TestCase {
 		while (true) {
 			try {
 				statement = CCJSqlParserManagerTest.getStatement(in);
-				if (statement == null)
+				if (statement == null) {
 					break;
+				}
 
 				parserManager.parse(new StringReader(statement));
 			} catch (JSQLParserException e) {
@@ -40,8 +41,9 @@ public class CCJSqlParserManagerTest extends TestCase {
 		String line = null;
 		while ((line = CCJSqlParserManagerTest.getLine(in)) != null) {
 
-			if (line.length() == 0)
+			if (line.length() == 0) {
 				break;
+			}
 
 			buf.append(line);
 			buf.append("\n");
@@ -64,8 +66,9 @@ public class CCJSqlParserManagerTest extends TestCase {
 				line.trim();
 				// if ((line.length() != 0) && ((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/'
 				// && line.charAt(1) == '/')))
-				if (((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/' && line.charAt(1) == '/')))
+				if (((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/' && line.charAt(1) == '/'))) {
 					break;
+				}
 			} else {
 				break;
 			}

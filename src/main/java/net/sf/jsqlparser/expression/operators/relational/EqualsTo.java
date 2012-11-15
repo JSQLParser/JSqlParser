@@ -44,8 +44,9 @@ public class EqualsTo extends BinaryExpression {
 
 	public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
 		this.oldOracleJoinSyntax = oldOracleJoinSyntax;
-		if (oldOracleJoinSyntax<0 || oldOracleJoinSyntax>2)
+		if (oldOracleJoinSyntax<0 || oldOracleJoinSyntax>2) {
 			throw new IllegalArgumentException("unknown join type for oracle found (type=" + oldOracleJoinSyntax + ")");
+		}
 	}
 	
 	@Override

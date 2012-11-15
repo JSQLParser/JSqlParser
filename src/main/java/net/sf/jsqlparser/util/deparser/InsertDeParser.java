@@ -74,8 +74,9 @@ public class InsertDeParser implements ItemsListVisitor {
 		for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
 			Expression expression = iter.next();
 			expression.accept(expressionVisitor);
-			if (iter.hasNext())
+			if (iter.hasNext()) {
 				buffer.append(", ");
+			}
 		}
 		buffer.append(")");
 	}

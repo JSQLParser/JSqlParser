@@ -82,8 +82,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 				join.getRightItem().accept(this);
 			}
 		}
-		if (plainSelect.getWhere() != null)
+		if (plainSelect.getWhere() != null) {
 			plainSelect.getWhere().accept(this);
+		}
 
 	}
 

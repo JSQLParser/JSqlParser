@@ -35,8 +35,9 @@ public class SpeedTest extends TestCase {
 
 		while (true) {
 			String statement = CCJSqlParserManagerTest.getStatement(in);
-			if (statement == null)
+			if (statement == null) {
 				break;
+			}
 			statementsList.add(statement);
 		}
 		in.close();
@@ -48,11 +49,13 @@ public class SpeedTest extends TestCase {
 			if (line == null) {
 				break;
 			}
-			if (line.length() == 0)
+			if (line.length() == 0) {
 				continue;
+			}
 
-			if (!line.equals("#begin"))
+			if (!line.equals("#begin")) {
 				break;
+			}
 			line = CCJSqlParserManagerTest.getLine(in);
 			StringBuilder buf = new StringBuilder(line);
 			while (true) {
