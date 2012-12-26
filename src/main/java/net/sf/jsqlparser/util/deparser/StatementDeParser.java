@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -23,6 +24,11 @@ public class StatementDeParser implements StatementVisitor {
 	public void visit(CreateTable createTable) {
 		CreateTableDeParser createTableDeParser = new CreateTableDeParser(buffer);
 		createTableDeParser.deParse(createTable);
+	}
+
+	@Override
+	public void visit(CreateView createView) {
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 	public void visit(Delete delete) {

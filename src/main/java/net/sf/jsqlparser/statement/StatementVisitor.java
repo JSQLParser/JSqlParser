@@ -23,6 +23,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -48,4 +49,5 @@ public interface StatementVisitor {
 
 	public void visit(CreateTable createTable);
 
+	public void visit(CreateView createView);
 }

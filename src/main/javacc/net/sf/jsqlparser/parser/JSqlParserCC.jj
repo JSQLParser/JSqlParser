@@ -104,6 +104,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
@@ -184,6 +185,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_FULL:"FULL">
 |   <K_WITH:"WITH">
 |   <K_TABLE:"TABLE">
+|   <K_VIEW:"VIEW">
 |   <K_WHERE:"WHERE">
 |   <K_USING:"USING">
 |   <K_UNION:"UNION">
@@ -260,7 +262,11 @@ Statement Statement() :
     |
     stm =  Replace()
     |
+    LOOKAHEAD(2)
     stm = CreateTable()
+    |
+    LOOKAHEAD(2)
+    stm = CreateView()
     |
     stm = Drop()
     |
@@ -1637,6 +1643,23 @@ ColDataType ColDataType():
 			colDataType.setArgumentsStringList(argumentsStringList);
 		return colDataType;
 	}
+}
+
+CreateView CreateView():
+{
+	CreateView createView = new CreateView();
+	Table view = null;
+	SelectBody select = null;
+}
+{
+	<K_CREATE>
+	[ <K_OR> <K_REPLACE> { createView.setOrReplace(true);} ]
+	// TODO:
+	// [ { TEMPORARY | TEMP } ]
+	<K_VIEW> view=Table() { createView.setView(view); }
+	<K_AS>
+	select=SelectBody() { createView.setSelectBody(select); }
+	{ return createView; }
 }
 
 String CreateParameter():
