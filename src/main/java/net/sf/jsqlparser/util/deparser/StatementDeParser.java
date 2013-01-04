@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -14,6 +15,7 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 
 public class StatementDeParser implements StatementVisitor {
+
 	protected StringBuilder buffer;
 
 	public StatementDeParser(StringBuilder buffer) {
@@ -24,6 +26,12 @@ public class StatementDeParser implements StatementVisitor {
 	public void visit(CreateTable createTable) {
 		CreateTableDeParser createTableDeParser = new CreateTableDeParser(buffer);
 		createTableDeParser.deParse(createTable);
+	}
+
+	@Override
+	public void visit(CreateView createView) {
+		CreateViewDeParser createViewDeParser = new CreateViewDeParser(buffer);
+		createViewDeParser.deParse(createView);
 	}
 
 	@Override
@@ -39,7 +47,6 @@ public class StatementDeParser implements StatementVisitor {
 	@Override
 	public void visit(Drop drop) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -87,7 +94,6 @@ public class StatementDeParser implements StatementVisitor {
 	@Override
 	public void visit(Truncate truncate) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -108,5 +114,4 @@ public class StatementDeParser implements StatementVisitor {
 	public void setBuffer(StringBuilder buffer) {
 		this.buffer = buffer;
 	}
-
 }

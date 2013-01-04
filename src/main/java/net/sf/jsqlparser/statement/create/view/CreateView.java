@@ -1,6 +1,5 @@
 package net.sf.jsqlparser.statement.create.view;
 
-
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -22,6 +21,7 @@ public class CreateView implements Statement {
 
 	/**
 	 * In the syntax tree, a view looks and acts just like a Table.
+	 *
 	 * @return The name of the view to be created.
 	 */
 	public Table getView() {
@@ -57,8 +57,13 @@ public class CreateView implements Statement {
 		this.selectBody = selectBody;
 	}
 
+	@Override
 	public String toString() {
-		String sql = "CREATE VIEW " + view + " AS " + selectBody;
+		String sql = "CREATE ";
+		if (isOrReplace()) {
+			sql += "OR REPLACE ";
+		}
+		sql += "VIEW " + view + " AS " + selectBody;
 		return sql;
 	}
 }
