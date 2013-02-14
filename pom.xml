@@ -16,10 +16,13 @@
 	<distributionManagement>
 		<!-- use the following if you're not using a snapshot version. -->
 		<repository>
-			<id>jwall</id>
-			<name>jwall.org Maven Repository</name>
-			<url>https://secure.jwall.org/maven/repository/jwall</url>
+			<id>wumpz-releases</id>
+			<url>${wumpz.releases.repo.url}</url>
 		</repository>
+                <snapshotRepository>
+			<id>wumpz-snapshots</id>
+			<url>${wumpz.snapshots.repo.url}</url>
+		</snapshotRepository>
 	</distributionManagement>
 
 	<build>
