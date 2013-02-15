@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sf.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>0.8.1</version>
+	<version>0.8.2-SNAPSHOT</version>
 	<name>clone of the jsqlparser library</name>
 	<dependencies>
 		<dependency>
