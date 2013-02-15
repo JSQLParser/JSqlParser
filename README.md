@@ -48,3 +48,28 @@ As the project is a Maven project, building is rather simple by running:
 
 This will produce the jsqlparser-VERSION.jar file in the target/ directory.
 
+## Maven Repository
+
+At the moment I created a github maven repository. Starting from now I will deploy there. 
+To use it this is the repository configuration:
+
+```xml
+<repositories>
+     <repository>
+         <id>jsqlparser-snapshots</id>
+         <snapshots>
+             <enabled>true</enabled>
+         </snapshots>
+         <url>https://raw.github.com/wumpz/maven_repo/master/snapshots</url>
+     </repository>
+</repositories>
+```
+
+And this is the dependency declaration in your pom:
+```xml
+<dependency>
+	<groupId>net.sf.jsqlparser</groupId>
+	<artifactId>jsqlparser</artifactId>
+	<version>0.8.1-SNAPSHOT</version>
+</dependency>
+```
