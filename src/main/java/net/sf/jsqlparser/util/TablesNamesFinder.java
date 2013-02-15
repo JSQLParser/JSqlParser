@@ -59,16 +59,32 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
- * Find all used tables within an select statement. 
+ * Find all used tables within an select statement.
  */
 public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor {
-	private List tables;
 
-	public List getTableList(Select select) {
-		tables = new ArrayList();
+	private List<String> tables;
+	/**
+	 * There are special names, that are not table names but are parsed as
+	 * tables. These names are collected here and are not included in the tables
+	 * - names anymore.
+	 */
+	private List<String> otherItemNames;
+
+	public List<String> getTableList(Select select) {
+		otherItemNames = new ArrayList<String>();
+		tables = new ArrayList<String>();
+		if (select.getWithItemsList() != null) {
+			for (WithItem withItem : select.getWithItemsList()) {
+				otherItemNames.add(withItem.getName().toLowerCase());
+				withItem.getSelectBody().accept(this);
+			}
+		}
 		select.getSelectBody().accept(this);
+
 		return tables;
 	}
 
@@ -91,8 +107,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	@Override
 	public void visit(Table tableName) {
 		String tableWholeName = tableName.getWholeTableName();
-		tables.add(tableWholeName);
-	} 
+		if (!otherItemNames.contains(tableWholeName.toLowerCase())) {
+			tables.add(tableWholeName);
+		}
+	}
 
 	@Override
 	public void visit(SubSelect subSelect) {
@@ -258,7 +276,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	@Override
 	public void visit(CaseExpression caseExpression) {
 		// TODO Auto-generated method stub
-
 	}
 
 	/*
@@ -269,7 +286,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	@Override
 	public void visit(WhenClause whenClause) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -317,15 +333,14 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	public void visit(CastExpression cast) {
 		cast.getLeftExpression().accept(this);
 	}
-	
+
 	@Override
 	public void visit(Modulo modulo) {
 		visitBinaryExpression(modulo);
 	}
-	
+
 	@Override
 	public void visit(AnalyticExpression analytic) {
-		
 	}
 
 	@Override
@@ -338,6 +353,5 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
 	@Override
 	public void visit(ExtractExpression eexpr) {
-		
 	}
 }

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import static junit.framework.Assert.assertEquals;
 
 import junit.framework.TestCase;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
@@ -19,6 +20,7 @@ import net.sf.jsqlparser.test.create.CreateTableTest;
 import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
 
 public class TablesNamesFinderTest extends TestCase {
+
 	CCJSqlParserManager pm = new CCJSqlParserManager();
 
 	public TablesNamesFinderTest(String arg0) {
@@ -26,8 +28,15 @@ public class TablesNamesFinderTest extends TestCase {
 	}
 
 	public void testRUBiSTableList() throws Exception {
+		runTestOnResource("/RUBiS-select-requests.txt");
+	}
+	
+	public void testMoreComplexExamples() throws Exception {
+		runTestOnResource("complex-select-requests.txt");
+	}
 
-	    BufferedReader in = new BufferedReader( new InputStreamReader( CreateTableTest.class.getResourceAsStream( "/RUBiS-select-requests.txt" ) ) );
+	private void runTestOnResource(String resPath) throws Exception {
+		BufferedReader in = new BufferedReader(new InputStreamReader(TablesNamesFinderTest.class.getResourceAsStream(resPath)));
 		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
 
 		try {
@@ -75,18 +84,16 @@ public class TablesNamesFinderTest extends TestCase {
 
 					String[] tablesArray = (String[]) tablesList.toArray(new String[tablesList.size()]);
 
-					List tableListRetr = tablesNamesFinder.getTableList(select);
+					List<String> tableListRetr = tablesNamesFinder.getTableList(select);
 					assertEquals("stm num:" + numSt, tablesArray.length, tableListRetr.size());
 
 					for (int i = 0; i < tablesArray.length; i++) {
 						assertEquals("stm num:" + numSt, tablesArray[i], tableListRetr.get(i));
-
 					}
 				} catch (Exception e) {
 					throw new TestException("error at stm num: " + numSt, e);
 				}
 				numSt++;
-
 			}
 		} finally {
 			if (in != null) {
@@ -108,7 +115,7 @@ public class TablesNamesFinderTest extends TestCase {
 		if (statement instanceof Select) {
 			Select selectStatement = (Select) statement;
 			TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-			List tableList = tablesNamesFinder.getTableList(selectStatement);
+			List<String> tableList = tablesNamesFinder.getTableList(selectStatement);
 			assertEquals(6, tableList.size());
 			int i = 1;
 			for (Iterator iter = tableList.iterator(); iter.hasNext(); i++) {
@@ -119,8 +126,29 @@ public class TablesNamesFinderTest extends TestCase {
 
 	}
 
+	public void testGetTableListWithAlias() throws Exception {
+		String sql = "SELECT * FROM MY_TABLE1 as ALIAS_TABLE1";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Select selectStatement = (Select) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(selectStatement);
+		assertEquals(1, tableList.size());
+		assertEquals("MY_TABLE1", (String) tableList.get(0));
+	}
+
+	public void testGetTableListWithStmt() throws Exception {
+		String sql = "WITH TESTSTMT as (SELECT * FROM MY_TABLE1 as ALIAS_TABLE1) SELECT * FROM TESTSTMT";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Select selectStatement = (Select) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(selectStatement);
+		assertEquals(1, tableList.size());
+		assertEquals("MY_TABLE1", (String) tableList.get(0));
+	}
+
 	private String getLine(BufferedReader in) throws Exception {
 		return CCJSqlParserManagerTest.getLine(in);
 	}
-
 }
