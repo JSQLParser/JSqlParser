@@ -28,8 +28,6 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 
 /**
- */
-/**
  * The core of a "SELECT" statement (no UNION, no ORDER BY)
  */
 public class PlainSelect implements SelectBody {
@@ -163,9 +161,7 @@ public class PlainSelect implements SelectBody {
 
 	@Override
 	public String toString() {
-		String sql = "";
-
-		sql = "SELECT ";
+		String sql = "SELECT ";
 		sql += ((distinct != null) ? "" + distinct + " " : "");
 		sql += ((top != null) ? "" + top + " " : "");
 		sql += getStringList(selectItems);

@@ -93,8 +93,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 		plainSelect.getFromItem().accept(this);
 
 		if (plainSelect.getJoins() != null) {
-			for (Iterator joinsIt = plainSelect.getJoins().iterator(); joinsIt.hasNext();) {
-				Join join = (Join) joinsIt.next();
+			for (Join join : plainSelect.getJoins()) {
 				join.getRightItem().accept(this);
 			}
 		}
@@ -249,8 +248,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
 	@Override
 	public void visit(ExpressionList expressionList) {
-		for (Iterator iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
-			Expression expression = (Expression) iter.next();
+		for (Expression expression : expressionList.getExpressions()) {
 			expression.accept(this);
 		}
 
@@ -345,8 +343,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
 	@Override
 	public void visit(SetOperationList list) {
-		for (Iterator iter = list.getPlainSelects().iterator(); iter.hasNext();) {
-			PlainSelect plainSelect = (PlainSelect) iter.next();
+		for (PlainSelect plainSelect : list.getPlainSelects()) {
 			visit(plainSelect);
 		}
 	}
