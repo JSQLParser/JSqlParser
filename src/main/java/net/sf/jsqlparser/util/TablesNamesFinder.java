@@ -74,18 +74,28 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	 */
 	private List<String> otherItemNames;
 
+	/**
+	 * Main entry for this Tool class. A list of found tables is returned.
+	 * @param select
+	 * @return 
+	 */
 	public List<String> getTableList(Select select) {
 		otherItemNames = new ArrayList<String>();
 		tables = new ArrayList<String>();
 		if (select.getWithItemsList() != null) {
 			for (WithItem withItem : select.getWithItemsList()) {
-				otherItemNames.add(withItem.getName().toLowerCase());
-				withItem.getSelectBody().accept(this);
+				withItem.accept(this);
 			}
 		}
 		select.getSelectBody().accept(this);
 
 		return tables;
+	}
+	
+	@Override
+	public void visit(WithItem withItem) {
+		otherItemNames.add(withItem.getName().toLowerCase());
+		withItem.getSelectBody().accept(this);
 	}
 
 	@Override

@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * One of the parts of a "WITH" clause of a "SELECT" statement
  */
-public class WithItem {
+public class WithItem implements SelectBody {
 	private String name;
 	private List<SelectItem> withItemList;
 	private SelectBody selectBody;
@@ -54,5 +54,8 @@ public class WithItem {
 		return name + ((withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "")
 				+ " AS (" + selectBody + ")";
 	}
-
+	
+	public void accept(SelectVisitor visitor) {
+		visitor.visit(this);
+	}
 }

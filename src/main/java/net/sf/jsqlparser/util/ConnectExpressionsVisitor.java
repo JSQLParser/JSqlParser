@@ -11,6 +11,7 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
  * Connect all selected expressions with a binary expression. Out of select a,b from table 
@@ -68,6 +69,10 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
 		for (PlainSelect select : setOpList.getPlainSelects()) {
 			select.accept(this);
 		}
+	}
+	
+	@Override
+	public void visit(WithItem withItem) {
 	}
 
 	@Override

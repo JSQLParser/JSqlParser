@@ -24,6 +24,7 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.Top;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
@@ -294,5 +295,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		if (list.getLimit() != null) {
 			deparseLimit(list.getLimit());
 		}
+	}
+
+	@Override
+	public void visit(WithItem withItem) {
 	}
 }
