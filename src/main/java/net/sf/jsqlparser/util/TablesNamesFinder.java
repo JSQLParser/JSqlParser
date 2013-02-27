@@ -53,6 +53,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -360,5 +361,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
 	@Override
 	public void visit(ExtractExpression eexpr) {
+	}
+
+	@Override
+	public void visit(LateralSubSelect lateralSubSelect) {
+		lateralSubSelect.getSubSelect().getSelectBody().accept(this);
 	}
 }

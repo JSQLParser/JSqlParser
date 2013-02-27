@@ -12,6 +12,7 @@ import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.OrderByVisitor;
@@ -299,5 +300,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
 	@Override
 	public void visit(WithItem withItem) {
+	}
+
+	@Override
+	public void visit(LateralSubSelect lateralSubSelect) {
+		buffer.append(lateralSubSelect.toString());
 	}
 }

@@ -1,5 +1,6 @@
 package net.sf.jsqlparser.test.select;
 
+import java.io.IOException;
 import java.io.StringReader;
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
@@ -30,6 +31,7 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import org.apache.commons.io.IOUtils;
 
 public class SelectTest extends TestCase {
 
@@ -746,6 +748,22 @@ public class SelectTest extends TestCase {
 
 		stmt = "SELECT Äcol FROM testtableÄÖÜ";
 		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testMultiTableJoin() throws JSQLParserException {
+		String stmt = "SELECT * FROM taba INNER JOIN tabb ON taba.a = tabb.a, tabc LEFT JOIN tabd ON tabc.c = tabd.c";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+        
+	public void testLateral1() throws JSQLParserException {
+		String stmt = "SELECT O.ORDERID, O.CUSTNAME, OL.LINETOTAL FROM ORDERS AS O, LATERAL(SELECT SUM(NETAMT) AS LINETOTAL FROM ORDERLINES AS LINES WHERE LINES.ORDERID = O.ORDERID) AS OL";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testLateralComplex1() throws IOException, JSQLParserException {
+		String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("complex-lateral-select-request.txt"));
+		Select select = (Select) parserManager.parse(new StringReader(stmt));
+		assertEquals("SELECT O.ORDERID, O.CUSTNAME, OL.LINETOTAL, OC.ORDCHGTOTAL, OT.TAXTOTAL FROM ORDERS AS O, LATERAL(SELECT SUM(NETAMT) AS LINETOTAL FROM ORDERLINES AS LINES WHERE LINES.ORDERID = O.ORDERID) AS OL, LATERAL(SELECT SUM(CHGAMT) AS ORDCHGTOTAL FROM ORDERCHARGES AS CHARGES WHERE LINES.ORDERID = O.ORDERID) AS OC, LATERAL(SELECT SUM(TAXAMT) AS TAXTOTAL FROM ORDERTAXES AS TAXES WHERE TAXES.ORDERID = O.ORDERID) AS OT", select.toString());
 	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {

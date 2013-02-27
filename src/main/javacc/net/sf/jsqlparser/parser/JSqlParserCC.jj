@@ -23,7 +23,8 @@
 options{
     IGNORE_CASE=true ;
     STATIC=false;
-//  DEBUG_LOOKAHEAD= true ;
+//	DEBUG_PARSER=true;
+//  DEBUG_LOOKAHEAD=true ;
 //  FORCE_LA_CHECK=true;
 //  DEBUG_TOKEN_MANAGER=true;
 //  UNICODE_INPUT=true;
@@ -129,6 +130,7 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SetOperation;
@@ -231,6 +233,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_OVER:"OVER">
 |   <K_PARTITION:"PARTITION">
 |   <K_EXTRACT:"EXTRACT">
+|	<K_LATERAL:"LATERAL">
 }
 
 
@@ -561,7 +564,7 @@ PlainSelect PlainSelect():
     		)
     ] 
     
-    [ 	top = Top() { plainSelect.setTop(top);	} ]
+    [top = Top() { plainSelect.setTop(top);	} ]
 
     
     selectItems=SelectItemsList()
@@ -569,9 +572,10 @@ PlainSelect PlainSelect():
     
      // TODO
     [IntoClause()]
-    [<K_FROM>
-    fromItem=FromItem()
-    joins=JoinsList()]
+    [ <K_FROM>
+      fromItem=FromItem()
+      joins=JoinsList() ]
+
     [ where=WhereClause() { plainSelect.setWhere(where); }]
     [ groupByColumnReferences=GroupByColumnReferences() { plainSelect.setGroupByColumnReferences(groupByColumnReferences); }]
     [ having=Having() { plainSelect.setHaving(having); }]
@@ -769,12 +773,28 @@ FromItem FromItem():
 			")"
 		)
 		|
-		fromItem=Table() 
+		fromItem=Table()
+		|
+		fromItem=LateralSubSelect()
 	)
 	
-	[alias=Alias() { fromItem.setAlias(alias);  } ]
+	[alias=Alias() { fromItem.setAlias(alias); } ]
 	{
 		return fromItem;
+	}
+}
+
+LateralSubSelect LateralSubSelect():
+{
+	LateralSubSelect lateralSubSelect = new LateralSubSelect();
+	SubSelect subSelect = null;
+}
+{
+	<K_LATERAL>
+	 "(" subSelect=SubSelect() ")"
+	{
+		lateralSubSelect.setSubSelect(subSelect);
+		return lateralSubSelect;
 	}
 }
 
