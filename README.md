@@ -36,6 +36,7 @@ select * from taba, tabb where taba.a=tabb.a(+)
 select a from taba union select b from tabb
 select a from taba intersect select b from tabb
 select a from taba except select b from tabb
+select a from taba minus select b from tabb
 ```
 * Added support for `extract(year from datetime-expr)`
 * Start implementation of analytical expressions

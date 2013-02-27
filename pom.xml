@@ -5,6 +5,7 @@
 	<artifactId>jsqlparser</artifactId>
 	<version>0.8.2-SNAPSHOT</version>
 	<name>clone of the jsqlparser library</name>
+	<inceptionYear>2004</inceptionYear>
 	<licenses>
 		<license>
 			<name>GNU Library or Lesser General Public License (LGPL) V2.1</name>
