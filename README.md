@@ -39,6 +39,7 @@ select a from taba intersect select b from tabb
 * Added support for `extract(year from datetime-expr)`
 * Start implementation of analytical expressions
 * merged support for CREATE VIEW 
+* Added lateral subquery support
 
 ## BUILDING
 
