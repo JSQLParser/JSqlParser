@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 import junit.framework.TestCase;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
@@ -146,6 +147,18 @@ public class TablesNamesFinderTest extends TestCase {
 		List<String> tableList = tablesNamesFinder.getTableList(selectStatement);
 		assertEquals(1, tableList.size());
 		assertEquals("MY_TABLE1", (String) tableList.get(0));
+	}
+	
+	public void testGetTableListWithLateral() throws Exception {
+		String sql = "SELECT * FROM MY_TABLE1, LATERAL(select a from MY_TABLE2) as AL";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Select selectStatement = (Select) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(selectStatement);
+		assertEquals(2, tableList.size());
+		assertTrue(tableList.contains("MY_TABLE1"));
+		assertTrue(tableList.contains("MY_TABLE2"));
 	}
 
 	private String getLine(BufferedReader in) throws Exception {
