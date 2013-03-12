@@ -1,6 +1,7 @@
 package net.sf.jsqlparser.test.insert;
 
 import java.io.StringReader;
+import static junit.framework.Assert.assertEquals;
 
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
@@ -12,9 +13,11 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
 public class InsertTest extends TestCase {
 	CCJSqlParserManager parserManager = new CCJSqlParserManager();
@@ -75,5 +78,22 @@ public class InsertTest extends TestCase {
 		// toString uses brakets
 		String statementToString = "INSERT INTO mytable (col1, col2, col3) (SELECT * FROM mytable2)";
 		assertEquals(statementToString, "" + insert);
+	}
+	
+	public void testInsertMultiRowValue() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2) VALUES (a, b)");
+	}
+	
+	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
+		Statement parsed = parserManager.parse(new StringReader(statement));
+		assertStatementCanBeDeparsedAs(parsed, statement);
+	}
+
+	private void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
+		assertEquals(statement, parsed.toString());
+
+		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
+		parsed.accept(deParser);
+		assertEquals(statement, deParser.getBuffer().toString());
 	}
 }

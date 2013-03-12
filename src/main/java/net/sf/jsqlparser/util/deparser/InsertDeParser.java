@@ -53,7 +53,7 @@ public class InsertDeParser implements ItemsListVisitor {
 		buffer.append("INSERT INTO ");
 		buffer.append(insert.getTable().getWholeTableName());
 		if (insert.getColumns() != null) {
-			buffer.append("(");
+			buffer.append(" (");
 			for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext();) {
 				Column column = iter.next();
 				buffer.append(column.getColumnName());
