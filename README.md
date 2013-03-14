@@ -42,6 +42,10 @@ select a from taba minus select b from tabb
 * Start implementation of analytical expressions
 * merged support for CREATE VIEW 
 * Added lateral subquery support
+* Added support for multi values insert statements
+```sql
+insert taba (col1,col2) values (1,2), (2,5), (3,20)
+```
 
 ## BUILDING
 
