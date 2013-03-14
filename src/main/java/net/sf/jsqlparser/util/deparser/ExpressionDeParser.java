@@ -47,6 +47,7 @@ import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -340,7 +341,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 			buffer.append("(");
 		}
 		for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
-			Expression expression = (Expression) iter.next();
+			Expression expression = iter.next();
 			expression.accept(this);
 			if (iter.hasNext()) {
 				buffer.append(", ");
@@ -466,5 +467,15 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	@Override
 	public void visit(ExtractExpression eexpr) {
 		buffer.append(eexpr.toString());
+	}
+
+	@Override
+	public void visit(MultiExpressionList multiExprList) {
+		for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
+			it.next().accept(this);
+			if (it.hasNext()) {
+				buffer.append(", ");
+			}
+		}
 	}
 }

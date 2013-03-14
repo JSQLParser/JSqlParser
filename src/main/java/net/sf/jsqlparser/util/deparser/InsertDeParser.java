@@ -6,16 +6,18 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) an
- * {@link net.sf.jsqlparser.statement.insert.Insert}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
+ * string) an {@link net.sf.jsqlparser.statement.insert.Insert}
  */
 public class InsertDeParser implements ItemsListVisitor {
+
 	protected StringBuilder buffer;
 	protected ExpressionVisitor expressionVisitor;
 	protected SelectVisitor selectVisitor;
@@ -24,16 +26,15 @@ public class InsertDeParser implements ItemsListVisitor {
 	}
 
 	/**
-	 * @param expressionVisitor
-	 *            a {@link ExpressionVisitor} to de-parse {@link net.sf.jsqlparser.expression.Expression}s. It has to
-	 *            share the same<br>
-	 *            StringBuilder (buffer parameter) as this object in order to work
-	 * @param selectVisitor
-	 *            a {@link SelectVisitor} to de-parse {@link net.sf.jsqlparser.statement.select.Select}s. It has to
-	 *            share the same<br>
-	 *            StringBuilder (buffer parameter) as this object in order to work
-	 * @param buffer
-	 *            the buffer that will be filled with the insert
+	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
+	 * {@link net.sf.jsqlparser.expression.Expression}s. It has to share the
+	 * same<br>
+	 * StringBuilder (buffer parameter) as this object in order to work
+	 * @param selectVisitor a {@link SelectVisitor} to de-parse
+	 * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the
+	 * same<br>
+	 * StringBuilder (buffer parameter) as this object in order to work
+	 * @param buffer the buffer that will be filled with the insert
 	 */
 	public InsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
 		this.buffer = buffer;
@@ -82,6 +83,25 @@ public class InsertDeParser implements ItemsListVisitor {
 	}
 
 	@Override
+	public void visit(MultiExpressionList multiExprList) {
+		buffer.append(" VALUES ");
+		for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
+			buffer.append("(");
+			for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter.hasNext();) {
+				Expression expression = iter.next();
+				expression.accept(expressionVisitor);
+				if (iter.hasNext()) {
+					buffer.append(", ");
+				}
+			}
+			buffer.append(")");
+			if (it.hasNext()) {
+				buffer.append(", ");
+			}
+		}
+	}
+
+	@Override
 	public void visit(SubSelect subSelect) {
 		subSelect.getSelectBody().accept(selectVisitor);
 	}
@@ -101,5 +121,4 @@ public class InsertDeParser implements ItemsListVisitor {
 	public void setSelectVisitor(SelectVisitor visitor) {
 		selectVisitor = visitor;
 	}
-
 }

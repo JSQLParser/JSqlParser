@@ -104,6 +104,7 @@ import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -392,6 +393,7 @@ Insert Insert():
 	List<Expression> primaryExpList = new ArrayList<Expression>(); 
 	ItemsList itemsList = null;
 	Expression exp = null;
+	MultiExpressionList multiExpr = null;
 }
 {
     <K_INSERT> [<K_INTO>] table=Table()
@@ -402,6 +404,16 @@ Insert Insert():
 	( 
 		LOOKAHEAD(2) [<K_VALUES> | <K_VALUE>]  "(" exp=SimpleExpression() { primaryExpList.add(exp); } 
 				("," exp=SimpleExpression()  { primaryExpList.add(exp); } )* ")" { itemsList = new ExpressionList(primaryExpList); }
+
+			("," "(" exp=SimpleExpression() { 
+					if (multiExpr==null) {
+						multiExpr=new MultiExpressionList(); 
+						multiExpr.addExpressionList((ExpressionList)itemsList); 
+						itemsList = multiExpr;
+					}
+					primaryExpList = new ArrayList<Expression>(); 
+					primaryExpList.add(exp); } 
+				("," exp=SimpleExpression() { primaryExpList.add(exp); } )* ")" { multiExpr.addExpressionList(new ExpressionList(primaryExpList)); } )*
 		
 		| 
 		

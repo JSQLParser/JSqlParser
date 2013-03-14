@@ -20,6 +20,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
 public class InsertTest extends TestCase {
+
 	CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	public InsertTest(String arg0) {
@@ -79,11 +80,21 @@ public class InsertTest extends TestCase {
 		String statementToString = "INSERT INTO mytable (col1, col2, col3) (SELECT * FROM mytable2)";
 		assertEquals(statementToString, "" + insert);
 	}
-	
+
 	public void testInsertMultiRowValue() throws JSQLParserException {
-		assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2) VALUES (a, b)");
+		assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e)");
 	}
-	
+
+	public void testInsertMultiRowValueDifferent() throws JSQLParserException {
+		try {
+			assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e, c)");
+		} catch (Exception e) {
+			return;
+		}
+
+		fail("should not work");
+	}
+
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));
 		assertStatementCanBeDeparsedAs(parsed, statement);

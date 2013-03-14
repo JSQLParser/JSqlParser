@@ -6,6 +6,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -114,6 +115,11 @@ public class ReplaceDeParser implements ItemsListVisitor {
 
 	public void setSelectVisitor(SelectVisitor visitor) {
 		selectVisitor = visitor;
+	}
+
+	@Override
+	public void visit(MultiExpressionList multiExprList) {
+		throw new UnsupportedOperationException("Not supported yet."); 
 	}
 
 }

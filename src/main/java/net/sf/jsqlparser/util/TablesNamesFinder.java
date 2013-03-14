@@ -48,6 +48,7 @@ import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -366,5 +367,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	@Override
 	public void visit(LateralSubSelect lateralSubSelect) {
 		lateralSubSelect.getSubSelect().getSelectBody().accept(this);
+	}
+
+	@Override
+	public void visit(MultiExpressionList multiExprList) {
+		for (ExpressionList exprList : multiExprList.getExprList()) {
+			exprList.accept(this);
+		}
 	}
 }

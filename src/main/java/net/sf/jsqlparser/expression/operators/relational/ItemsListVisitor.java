@@ -28,4 +28,6 @@ public interface ItemsListVisitor {
 	public void visit(SubSelect subSelect);
 
 	public void visit(ExpressionList expressionList);
+	
+	public void visit(MultiExpressionList multiExprList);
 }
