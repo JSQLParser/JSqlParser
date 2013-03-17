@@ -765,6 +765,26 @@ public class SelectTest extends TestCase {
 		Select select = (Select) parserManager.parse(new StringReader(stmt));
 		assertEquals("SELECT O.ORDERID, O.CUSTNAME, OL.LINETOTAL, OC.ORDCHGTOTAL, OT.TAXTOTAL FROM ORDERS AS O, LATERAL(SELECT SUM(NETAMT) AS LINETOTAL FROM ORDERLINES AS LINES WHERE LINES.ORDERID = O.ORDERID) AS OL, LATERAL(SELECT SUM(CHGAMT) AS ORDCHGTOTAL FROM ORDERCHARGES AS CHARGES WHERE LINES.ORDERID = O.ORDERID) AS OC, LATERAL(SELECT SUM(TAXAMT) AS TAXTOTAL FROM ORDERTAXES AS TAXES WHERE TAXES.ORDERID = O.ORDERID) AS OT", select.toString());
 	}
+	
+	public void testValues() throws JSQLParserException {
+		String stmt = "SELECT * FROM (VALUES (1, 2), (3, 4)) AS test";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testValues2() throws JSQLParserException {
+		String stmt = "SELECT * FROM (VALUES 1, 2, 3, 4) AS test";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testValues3() throws JSQLParserException {
+		String stmt = "SELECT * FROM (VALUES 1, 2, 3, 4) AS test(a)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testValues4() throws JSQLParserException {
+		String stmt = "SELECT * FROM (VALUES (1, 2), (3, 4)) AS test(a, b)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));

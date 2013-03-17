@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -25,6 +26,7 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.Top;
+import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
@@ -305,5 +307,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	@Override
 	public void visit(LateralSubSelect lateralSubSelect) {
 		buffer.append(lateralSubSelect.toString());
+	}
+
+	@Override
+	public void visit(ValuesList valuesList) {
+		buffer.append(valuesList.toString());
 	}
 }

@@ -61,6 +61,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
@@ -285,7 +286,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	 */
 	@Override
 	public void visit(CaseExpression caseExpression) {
-		// TODO Auto-generated method stub
 	}
 
 	/*
@@ -295,7 +295,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	 */
 	@Override
 	public void visit(WhenClause whenClause) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -374,5 +373,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 		for (ExpressionList exprList : multiExprList.getExprList()) {
 			exprList.accept(this);
 		}
+	}
+
+	@Override
+	public void visit(ValuesList valuesList) {
 	}
 }

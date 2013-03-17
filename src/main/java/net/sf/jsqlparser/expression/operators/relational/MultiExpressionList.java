@@ -19,8 +19,12 @@
 package net.sf.jsqlparser.expression.operators.relational;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.FromItemVisitor;
 
 /**
  * A list of ExpressionList items. e.g. multi values of insert statements. This one allows
@@ -28,7 +32,6 @@ import java.util.List;
  * @author toben
  */
 public class MultiExpressionList implements ItemsList {
-
 	List<ExpressionList> exprList;
 
 	public MultiExpressionList() {
@@ -51,6 +54,14 @@ public class MultiExpressionList implements ItemsList {
 			}
 		}
 		exprList.add(el);
+	}
+	
+	public void addExpressionList(List<Expression> list) {
+		addExpressionList(new ExpressionList(list));
+	}
+	
+	public void addExpressionList(Expression expr) {
+		addExpressionList(new ExpressionList(Arrays.asList(expr)));
 	}
 	
 	@Override

@@ -140,6 +140,7 @@ import net.sf.jsqlparser.statement.select.MinusOp;
 import net.sf.jsqlparser.statement.select.ExceptOp;
 import net.sf.jsqlparser.statement.select.IntersectOp;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 
@@ -413,7 +414,7 @@ Insert Insert():
 					}
 					primaryExpList = new ArrayList<Expression>(); 
 					primaryExpList.add(exp); } 
-				("," exp=SimpleExpression() { primaryExpList.add(exp); } )* ")" { multiExpr.addExpressionList(new ExpressionList(primaryExpList)); } )*
+				("," exp=SimpleExpression() { primaryExpList.add(exp); } )* ")" { multiExpr.addExpressionList(primaryExpList); } )*
 		
 		| 
 		
@@ -774,25 +775,72 @@ FromItem FromItem():
 }
 {
 	(
-		(	
-			"(" 	
-				(
-				LOOKAHEAD(SubJoin())
-				fromItem=SubJoin()  
-				|  
-				fromItem=SubSelect()
+		LOOKAHEAD(ValuesList()) fromItem=ValuesList()
+		|
+		(
+			(
+				(	
+					"(" 	
+						(
+						LOOKAHEAD(SubJoin())
+						fromItem=SubJoin()  
+						|  
+						fromItem=SubSelect()
+						)
+					")"
 				)
-			")"
+				|
+				fromItem=Table()
+				|
+				fromItem=LateralSubSelect()
+			)
+
+			[alias=Alias() { fromItem.setAlias(alias); } ]
 		)
-		|
-		fromItem=Table()
-		|
-		fromItem=LateralSubSelect()
 	)
-	
-	[alias=Alias() { fromItem.setAlias(alias); } ]
 	{
 		return fromItem;
+	}
+}
+
+FromItem ValuesList(): 
+{
+	MultiExpressionList exprList = new MultiExpressionList();
+	List<Expression> primaryExpList = new ArrayList<Expression>();
+	ValuesList valuesList = new ValuesList();
+	Expression exp = null;
+	List<String> colNames = null;
+	String colName;
+	String alias;
+}
+{
+	"("
+	<K_VALUES>
+	(LOOKAHEAD(3) ("(" exp=SimpleExpression() { primaryExpList.add(exp); } 
+			("," exp=SimpleExpression()  { primaryExpList.add(exp); } )* ")" { exprList.addExpressionList(primaryExpList); }
+
+			("," "(" exp=SimpleExpression() { 
+					primaryExpList = new ArrayList<Expression>(); 
+					primaryExpList.add(exp); } 
+				("," exp=SimpleExpression() { primaryExpList.add(exp); } )* ")" { exprList.addExpressionList(primaryExpList); } )*)
+	|
+	( exp=SimpleExpression() { exprList.addExpressionList(exp); valuesList.setNoBrackets(true); } 
+		("," exp=SimpleExpression()  { exprList.addExpressionList(exp);} )*
+	))
+	")"
+
+	[alias=Alias() { valuesList.setAlias(alias); } 
+
+		[ "("
+			colName = RelObjectName() { colNames = new ArrayList<String>(); colNames.add(colName); }
+			( "," colName = RelObjectName() { colNames.add(colName); } )*
+			")" { valuesList.setColumnNames(colNames); } ]
+
+	]
+
+	{
+		valuesList.setMultiExpressionList(exprList);
+		return valuesList;
 	}
 }
 

@@ -31,4 +31,6 @@ public interface FromItemVisitor {
 	public void visit(SubJoin subjoin);
 	
 	public void visit(LateralSubSelect lateralSubSelect);
+	
+	public void visit(ValuesList valuesList);
 }
