@@ -47,6 +47,10 @@ select a from taba minus select b from tabb
 ```sql
 insert taba (col1,col2) values (1,2), (2,5), (3,20)
 ```
+* Added support for multi values in select statement
+```sql
+SELECT col FROM (VALUES 1,2) AS MY_TABLE(col)
+```
 
 ## BUILDING
 

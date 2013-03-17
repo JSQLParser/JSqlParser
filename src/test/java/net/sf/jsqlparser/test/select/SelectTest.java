@@ -785,6 +785,11 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT * FROM (VALUES (1, 2), (3, 4)) AS test(a, b)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testValues5() throws JSQLParserException {
+		String stmt = "SELECT X, Y FROM (VALUES (0, 'a'), (1, 'b')) AS MY_TEMP_TABLE(X, Y)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));
