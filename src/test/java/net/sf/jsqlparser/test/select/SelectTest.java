@@ -646,6 +646,16 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT a, row_number() OVER (PARTITION BY c ORDER BY a, b) AS n FROM table1";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testProblemSqlAnalytic4EmptyOver() throws JSQLParserException {
+		String stmt = "SELECT a, row_number() OVER () AS n FROM table1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testProblemSqlAnalytic5AggregateColumnValue() throws JSQLParserException {
+		String stmt = "SELECT a, sum(b) OVER () AS n FROM table1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	public void testOracleJoin() throws JSQLParserException {
 		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
@@ -788,6 +798,11 @@ public class SelectTest extends TestCase {
 	
 	public void testValues5() throws JSQLParserException {
 		String stmt = "SELECT X, Y FROM (VALUES (0, 'a'), (1, 'b')) AS MY_TEMP_TABLE(X, Y)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testValues6BothVariants() throws JSQLParserException {
+		String stmt = "SELECT I FROM (VALUES 1, 2, 3) AS MY_TEMP_TABLE(I) WHERE I IN (SELECT * FROM (VALUES 1, 2) AS TEST)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
