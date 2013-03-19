@@ -1,25 +1,24 @@
-/* ================================================================
- * JSQLParser : java based sql parser 
- * ================================================================
- *
- * Project Info:  http://jsqlparser.sourceforge.net
- * Project Lead:  Leonardo Francalanci (leoonardoo@yahoo.it);
- *
- * (C) Copyright 2004, by Leonardo Francalanci
- *
- * This library is free software; you can redistribute it and/or modify it under the terms
- * of the GNU Lesser General Public License as published by the Free Software Foundation;
- * either version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License along with this
- * library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307, USA.
+/*
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2013 JSQLParser
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
  */
-
 package net.sf.jsqlparser.statement.select;
 
 import java.util.List;
@@ -31,6 +30,7 @@ import net.sf.jsqlparser.schema.Column;
  * A join clause
  */
 public class Join {
+
 	private boolean outer = false;
 	private boolean right = false;
 	private boolean left = false;
@@ -44,7 +44,7 @@ public class Join {
 
 	/**
 	 * Whether is a tab1,tab2 join
-	 * 
+	 *
 	 * @return true if is a "tab1,tab2" join
 	 */
 	public boolean isSimple() {
@@ -57,7 +57,7 @@ public class Join {
 
 	/**
 	 * Whether is a "INNER" join
-	 * 
+	 *
 	 * @return true if is a "INNER" join
 	 */
 	public boolean isInner() {
@@ -70,7 +70,7 @@ public class Join {
 
 	/**
 	 * Whether is a "OUTER" join
-	 * 
+	 *
 	 * @return true if is a "OUTER" join
 	 */
 	public boolean isOuter() {
@@ -83,7 +83,7 @@ public class Join {
 
 	/**
 	 * Whether is a "LEFT" join
-	 * 
+	 *
 	 * @return true if is a "LEFT" join
 	 */
 	public boolean isLeft() {
@@ -96,7 +96,7 @@ public class Join {
 
 	/**
 	 * Whether is a "RIGHT" join
-	 * 
+	 *
 	 * @return true if is a "RIGHT" join
 	 */
 	public boolean isRight() {
@@ -109,7 +109,7 @@ public class Join {
 
 	/**
 	 * Whether is a "NATURAL" join
-	 * 
+	 *
 	 * @return true if is a "NATURAL" join
 	 */
 	public boolean isNatural() {
@@ -122,7 +122,7 @@ public class Join {
 
 	/**
 	 * Whether is a "FULL" join
-	 * 
+	 *
 	 * @return true if is a "FULL" join
 	 */
 	public boolean isFull() {
@@ -156,7 +156,8 @@ public class Join {
 	}
 
 	/**
-	 * Returns the "USING" list of {@link net.sf.jsqlparser.schema.Column}s (if any)
+	 * Returns the "USING" list of {@link net.sf.jsqlparser.schema.Column}s (if
+	 * any)
 	 */
 	public List<Column> getUsingColumns() {
 		return usingColumns;
@@ -170,27 +171,22 @@ public class Join {
 	public String toString() {
 		if (isSimple()) {
 			return "" + rightItem;
-		}
-		else {
+		} else {
 			String type = "";
 
 			if (isRight()) {
 				type += "RIGHT ";
-			}
-			else if (isNatural()) {
+			} else if (isNatural()) {
 				type += "NATURAL ";
-			}
-			else if (isFull()) {
+			} else if (isFull()) {
 				type += "FULL ";
-			}
-			else if (isLeft()) {
+			} else if (isLeft()) {
 				type += "LEFT ";
 			}
 
 			if (isOuter()) {
 				type += "OUTER ";
-			}
-			else if (isInner()) {
+			} else if (isInner()) {
 				type += "INNER ";
 			}
 

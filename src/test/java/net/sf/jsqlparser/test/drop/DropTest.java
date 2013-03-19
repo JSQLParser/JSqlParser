@@ -8,6 +8,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.drop.Drop;
 
 public class DropTest extends TestCase {
+
 	CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	public DropTest(String arg0) {

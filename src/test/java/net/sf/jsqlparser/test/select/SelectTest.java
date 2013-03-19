@@ -646,27 +646,27 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT a, row_number() OVER (PARTITION BY c ORDER BY a, b) AS n FROM table1";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testProblemSqlAnalytic4EmptyOver() throws JSQLParserException {
 		String stmt = "SELECT a, row_number() OVER () AS n FROM table1";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testProblemSqlAnalytic5AggregateColumnValue() throws JSQLParserException {
 		String stmt = "SELECT a, sum(b) OVER () AS n FROM table1";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testProblemSqlAnalytic6AggregateColumnValue() throws JSQLParserException {
 		String stmt = "SELECT a, sum(b + 5) OVER (ORDER BY a) AS n FROM table1";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testProblemSqlAnalytic7Count() throws JSQLParserException {
 		String stmt = "SELECT count(*) OVER () AS n FROM table1";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testProblemSqlAnalytic8Complex() throws JSQLParserException {
 		String stmt = "SELECT ID, NAME, SALARY, SUM(SALARY) OVER () AS SUM_SAL, AVG(SALARY) OVER () AS AVG_SAL, MIN(SALARY) OVER () AS MIN_SAL, MAX(SALARY) OVER () AS MAX_SAL, COUNT(*) OVER () AS ROWS FROM STAFF WHERE ID < 60 ORDER BY ID";
 		assertSqlCanBeParsedAndDeparsed(stmt);
@@ -774,48 +774,48 @@ public class SelectTest extends TestCase {
 		stmt = "SELECT Äcol FROM testtableÄÖÜ";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testMultiTableJoin() throws JSQLParserException {
 		String stmt = "SELECT * FROM taba INNER JOIN tabb ON taba.a = tabb.a, tabc LEFT JOIN tabd ON tabc.c = tabd.c";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-        
+
 	public void testLateral1() throws JSQLParserException {
 		String stmt = "SELECT O.ORDERID, O.CUSTNAME, OL.LINETOTAL FROM ORDERS AS O, LATERAL(SELECT SUM(NETAMT) AS LINETOTAL FROM ORDERLINES AS LINES WHERE LINES.ORDERID = O.ORDERID) AS OL";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testLateralComplex1() throws IOException, JSQLParserException {
 		String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("complex-lateral-select-request.txt"));
 		Select select = (Select) parserManager.parse(new StringReader(stmt));
 		assertEquals("SELECT O.ORDERID, O.CUSTNAME, OL.LINETOTAL, OC.ORDCHGTOTAL, OT.TAXTOTAL FROM ORDERS AS O, LATERAL(SELECT SUM(NETAMT) AS LINETOTAL FROM ORDERLINES AS LINES WHERE LINES.ORDERID = O.ORDERID) AS OL, LATERAL(SELECT SUM(CHGAMT) AS ORDCHGTOTAL FROM ORDERCHARGES AS CHARGES WHERE LINES.ORDERID = O.ORDERID) AS OC, LATERAL(SELECT SUM(TAXAMT) AS TAXTOTAL FROM ORDERTAXES AS TAXES WHERE TAXES.ORDERID = O.ORDERID) AS OT", select.toString());
 	}
-	
+
 	public void testValues() throws JSQLParserException {
 		String stmt = "SELECT * FROM (VALUES (1, 2), (3, 4)) AS test";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testValues2() throws JSQLParserException {
 		String stmt = "SELECT * FROM (VALUES 1, 2, 3, 4) AS test";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testValues3() throws JSQLParserException {
 		String stmt = "SELECT * FROM (VALUES 1, 2, 3, 4) AS test(a)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testValues4() throws JSQLParserException {
 		String stmt = "SELECT * FROM (VALUES (1, 2), (3, 4)) AS test(a, b)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testValues5() throws JSQLParserException {
 		String stmt = "SELECT X, Y FROM (VALUES (0, 'a'), (1, 'b')) AS MY_TEMP_TABLE(X, Y)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testValues6BothVariants() throws JSQLParserException {
 		String stmt = "SELECT I FROM (VALUES 1, 2, 3) AS MY_TEMP_TABLE(I) WHERE I IN (SELECT * FROM (VALUES 1, 2) AS TEST)";
 		assertSqlCanBeParsedAndDeparsed(stmt);

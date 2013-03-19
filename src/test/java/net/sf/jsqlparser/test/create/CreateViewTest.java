@@ -12,6 +12,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
 public class CreateViewTest extends TestCase {
+
 	CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	public CreateViewTest(String arg0) {
@@ -23,25 +24,25 @@ public class CreateViewTest extends TestCase {
 		CreateView createView = (CreateView) parserManager.parse(new StringReader(statement));
 		assertFalse(createView.isOrReplace());
 		assertEquals("myview", createView.getView().getName());
-		assertEquals("mytab", ((Table)((PlainSelect)createView.getSelectBody()).getFromItem()).getName());
+		assertEquals("mytab", ((Table) ((PlainSelect) createView.getSelectBody()).getFromItem()).getName());
 		assertEquals(statement, createView.toString());
 	}
-	
+
 	public void testCreateView2() throws JSQLParserException {
 		String stmt = "CREATE VIEW myview AS SELECT * FROM mytab";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testCreateView3() throws JSQLParserException {
 		String stmt = "CREATE OR REPLACE VIEW myview AS SELECT * FROM mytab";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	public void testCreateView4() throws JSQLParserException {
 		String stmt = "CREATE OR REPLACE VIEW view2 AS SELECT a, b, c FROM testtab INNER JOIN testtab2 ON testtab.col1 = testtab2.col2";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-	
+
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));
 		assertStatementCanBeDeparsedAs(parsed, statement);

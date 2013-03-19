@@ -20,6 +20,7 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
 public class CreateTableTest extends TestCase {
+
 	CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	public CreateTableTest(String arg0) {
@@ -30,12 +31,12 @@ public class CreateTableTest extends TestCase {
 		String statement = "CREATE TABLE testtab (\"test\" varchar (255) )";
 		assertSqlCanBeParsedAndDeparsed(statement);
 	}
-	
+
 	public void testCreateTable3() throws JSQLParserException {
 		String statement = "CREATE TABLE testtab (\"test\" varchar (255) , \"test\" varchar (255) )";
 		assertSqlCanBeParsedAndDeparsed(statement);
 	}
-	
+
 	public void testCreateTable() throws JSQLParserException {
 		String statement = "CREATE TABLE mytab (mycol a (10, 20) c nm g, mycol2 mypar1 mypar2 (23,323,3) asdf ('23','123') dasd, "
 				+ "PRIMARY KEY (mycol2, mycol)) type = myisam";
@@ -49,7 +50,7 @@ public class CreateTableTest extends TestCase {
 	}
 
 	public void testRUBiSCreateList() throws Exception {
-	    BufferedReader in = new BufferedReader( new InputStreamReader( CreateTableTest.class.getResourceAsStream( "/RUBiS-create-requests.txt" ) ) );
+		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
 		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
 
 		try {
@@ -162,7 +163,7 @@ public class CreateTableTest extends TestCase {
 				line.trim();
 				if ((line.length() != 0)
 						&& ((line.length() < 2) || (line.length() >= 2)
-								&& !(line.charAt(0) == '/' && line.charAt(1) == '/'))) {
+						&& !(line.charAt(0) == '/' && line.charAt(1) == '/'))) {
 					break;
 				}
 			} else {
@@ -173,7 +174,7 @@ public class CreateTableTest extends TestCase {
 
 		return line;
 	}
-	
+
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));
 		assertStatementCanBeDeparsedAs(parsed, statement);

@@ -20,6 +20,7 @@ import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 
 public class SpeedTest extends TestCase {
+
 	private final static int NUM_REPS = 500;
 	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
@@ -29,7 +30,7 @@ public class SpeedTest extends TestCase {
 
 	public void testSpeed() throws Exception {
 		// all the statements in testfiles/simple_parsing.txt
-        BufferedReader in = new BufferedReader( new InputStreamReader( SpeedTest.class.getResourceAsStream( "/simple_parsing.txt" ) ) );
+		BufferedReader in = new BufferedReader(new InputStreamReader(SpeedTest.class.getResourceAsStream("/simple_parsing.txt")));
 		CCJSqlParserManagerTest d;
 		ArrayList statementsList = new ArrayList();
 
@@ -41,7 +42,7 @@ public class SpeedTest extends TestCase {
 			statementsList.add(statement);
 		}
 		in.close();
-		in = new BufferedReader( new InputStreamReader( SpeedTest.class.getResourceAsStream( "/RUBiS-select-requests.txt" ) ) );
+		in = new BufferedReader(new InputStreamReader(SpeedTest.class.getResourceAsStream("/RUBiS-select-requests.txt")));
 
 		// all the statements in testfiles/RUBiS-select-requests.txt
 		while (true) {

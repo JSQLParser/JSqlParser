@@ -1,3 +1,24 @@
+/*
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2013 JSQLParser
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 package net.sf.jsqlparser.util;
 
 import java.util.LinkedList;
@@ -14,9 +35,11 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
- * Connect all selected expressions with a binary expression. Out of select a,b from table 
- * one gets select a || b as expr from table. The type of binary expression is set by 
- * overwriting this class abstract method createBinaryExpression.
+ * Connect all selected expressions with a binary expression. Out of select a,b
+ * from table one gets select a || b as expr from table. The type of binary
+ * expression is set by overwriting this class abstract method
+ * createBinaryExpression.
+ *
  * @author tw
  */
 public abstract class ConnectExpressionsVisitor implements SelectVisitor, SelectItemVisitor {
@@ -30,13 +53,15 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
 	public ConnectExpressionsVisitor(String alias) {
 		this.alias = alias;
 	}
-	
+
 	/**
-	 * Create instances of this binary expression that connects all selected expressions.
-	 * @return 
+	 * Create instances of this binary expression that connects all selected
+	 * expressions.
+	 *
+	 * @return
 	 */
 	protected abstract BinaryExpression createBinaryExpression();
-	
+
 	@Override
 	public void visit(PlainSelect plainSelect) {
 		for (SelectItem item : plainSelect.getSelectItems()) {
@@ -53,15 +78,15 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
 				binExpr = binExpr2;
 			}
 			binExpr.setRightExpression(itemsExpr.get(itemsExpr.size() - 1).getExpression());
-			
+
 			SelectExpressionItem sei = new SelectExpressionItem();
 			sei.setExpression(binExpr);
-			
+
 			plainSelect.getSelectItems().clear();
 			plainSelect.getSelectItems().add(sei);
 		}
-		
-		((SelectExpressionItem)plainSelect.getSelectItems().get(0)).setAlias(alias);
+
+		((SelectExpressionItem) plainSelect.getSelectItems().get(0)).setAlias(alias);
 	}
 
 	@Override
@@ -70,7 +95,7 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
 			select.accept(this);
 		}
 	}
-	
+
 	@Override
 	public void visit(WithItem withItem) {
 	}

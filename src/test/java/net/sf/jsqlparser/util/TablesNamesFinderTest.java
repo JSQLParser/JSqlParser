@@ -31,7 +31,7 @@ public class TablesNamesFinderTest extends TestCase {
 	public void testRUBiSTableList() throws Exception {
 		runTestOnResource("/RUBiS-select-requests.txt");
 	}
-	
+
 	public void testMoreComplexExamples() throws Exception {
 		runTestOnResource("complex-select-requests.txt");
 	}
@@ -148,7 +148,7 @@ public class TablesNamesFinderTest extends TestCase {
 		assertEquals(1, tableList.size());
 		assertEquals("MY_TABLE1", (String) tableList.get(0));
 	}
-	
+
 	public void testGetTableListWithLateral() throws Exception {
 		String sql = "SELECT * FROM MY_TABLE1, LATERAL(select a from MY_TABLE2) as AL";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));

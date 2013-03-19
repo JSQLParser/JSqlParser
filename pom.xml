@@ -4,7 +4,7 @@
 	<groupId>net.sf.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
 	<version>0.8.2-SNAPSHOT</version>
-	<name>clone of the jsqlparser library</name>
+	<name>JSQLParser library</name>
 	<inceptionYear>2004</inceptionYear>
 	<organization>
 		<name>JSQLParser</name>
@@ -91,6 +91,7 @@
 				<configuration>
 					<verbose>false</verbose>
 					<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+					<canUpdateDescription>false</canUpdateDescription>
 				</configuration>
 				<executions>
 					<execution>
@@ -113,4 +114,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	<description>This is a fork of 
+		Project Info:  http://jsqlparser.sourceforge.net
+		Project Lead:  Leonardo Francalanci (leoonardoo@yahoo.it);
+</description>
 </project>

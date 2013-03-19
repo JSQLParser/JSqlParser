@@ -7,6 +7,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 
 public class TruncateTest extends TestCase {
+
 	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	public TruncateTest(String arg0) {

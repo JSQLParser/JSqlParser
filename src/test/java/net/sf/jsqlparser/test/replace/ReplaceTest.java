@@ -14,6 +14,7 @@ import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 public class ReplaceTest extends TestCase {
+
 	CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	public ReplaceTest(String arg0) {

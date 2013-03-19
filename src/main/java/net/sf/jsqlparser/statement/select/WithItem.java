@@ -1,3 +1,24 @@
+/*
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2013 JSQLParser
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 package net.sf.jsqlparser.statement.select;
 
 import java.util.List;
@@ -6,13 +27,15 @@ import java.util.List;
  * One of the parts of a "WITH" clause of a "SELECT" statement
  */
 public class WithItem implements SelectBody {
+
 	private String name;
 	private List<SelectItem> withItemList;
 	private SelectBody selectBody;
 
 	/**
-	 * The name of this WITH item (for example, "myWITH" in "WITH myWITH AS (SELECT A,B,C))"
-	 * 
+	 * The name of this WITH item (for example, "myWITH" in "WITH myWITH AS
+	 * (SELECT A,B,C))"
+	 *
 	 * @return the name of this WITH
 	 */
 	public String getName() {
@@ -24,8 +47,9 @@ public class WithItem implements SelectBody {
 	}
 
 	/**
-	 * The {@link SelectBody} of this WITH item is the part after the "AS" keyword
-	 * 
+	 * The {@link SelectBody} of this WITH item is the part after the "AS"
+	 * keyword
+	 *
 	 * @return {@link SelectBody} of this WITH item
 	 */
 	public SelectBody getSelectBody() {
@@ -37,8 +61,9 @@ public class WithItem implements SelectBody {
 	}
 
 	/**
-	 * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH mywith (A,B,C) AS ...")
-	 * 
+	 * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH
+	 * mywith (A,B,C) AS ...")
+	 *
 	 * @return a list of {@link SelectItem}s
 	 */
 	public List<SelectItem> getWithItemList() {
@@ -54,7 +79,7 @@ public class WithItem implements SelectBody {
 		return name + ((withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "")
 				+ " AS (" + selectBody + ")";
 	}
-	
+
 	public void accept(SelectVisitor visitor) {
 		visitor.visit(this);
 	}
