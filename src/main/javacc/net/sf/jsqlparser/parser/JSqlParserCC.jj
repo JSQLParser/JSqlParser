@@ -1566,10 +1566,14 @@ AnalyticExpression AnalyticExpression() :
 	List<OrderByElement> olist = null;
 	Token token = null;
 	Column column = null;
+	Expression expr = null;
 }
 {
-	token=<S_IDENTIFIER> { retval.setName(token.image); } "(" ")" <K_OVER> "(" [<K_PARTITION> <K_BY> (column=Column() {plist.add(column);} )+ ] olist=OrderByElements() 
+	token=<S_IDENTIFIER> { retval.setName(token.image); } "(" [ expr=SimpleExpression() ] ")" <K_OVER> "(" 
+        [<K_PARTITION> <K_BY> (column=Column() {plist.add(column);} )+ ] 
+        [olist=OrderByElements() ]
 	{
+		retval.setExpression(expr);
 		retval.setPartitionByColumns(plist);
 		retval.setOrderByElements(olist);
 	} 

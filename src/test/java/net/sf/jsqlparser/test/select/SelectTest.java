@@ -656,6 +656,11 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT a, sum(b) OVER () AS n FROM table1";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testProblemSqlAnalytic6AggregateColumnValue() throws JSQLParserException {
+		String stmt = "SELECT a, sum(b + 5) OVER (ORDER BY a) AS n FROM table1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	public void testOracleJoin() throws JSQLParserException {
 		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
