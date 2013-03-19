@@ -88,6 +88,5 @@
 	</build>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<license.licenseName>lgpl_v2_1</license.licenseName>
 	</properties>
 </project>
