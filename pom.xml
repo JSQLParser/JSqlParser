@@ -6,6 +6,9 @@
 	<version>0.8.2-SNAPSHOT</version>
 	<name>clone of the jsqlparser library</name>
 	<inceptionYear>2004</inceptionYear>
+	<organization>
+		<name>JSQLParser</name>
+	</organization>
 	<licenses>
 		<license>
 			<name>GNU Library or Lesser General Public License (LGPL) V2.1</name>
@@ -85,5 +88,6 @@
 	</build>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<license.licenseName>lgpl_v2_1</license.licenseName>
 	</properties>
 </project>
