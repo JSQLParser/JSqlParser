@@ -639,45 +639,6 @@ SetOperationList SetOperationList():
 	}
 }
 
-/*
-Union Union():
-{ 
-	Union union = new Union(); 
-	List orderByElements = null;
-	Limit limit = null;
-	PlainSelect select = null;
-	ArrayList selects = new ArrayList();
-
-this is not 100% right, since multiple UNION could have different ALL/DISTINCT clauses...
-
-}
-{
-	(
-	
-		(
-			"(" select=PlainSelect() {selects.add(select);} ")"
-				<K_UNION> [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> 	{ union.setDistinct(true); } ]
-			"(" select=PlainSelect() {selects.add(select);} ")"
-			(	<K_UNION> [ <K_ALL> | <K_DISTINCT> ] "(" select=PlainSelect() {selects.add(select);} ")" )*
-			[orderByElements=OrderByElements() {union.setOrderByElements(orderByElements);} ]
-			[limit=Limit() {union.setLimit(limit);} ]
-		)
-		| 	
-		(
-			select=PlainSelect() {selects.add(select);} 
-				<K_UNION> [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> 	{ union.setDistinct(true); } ]
-			select=PlainSelect() {selects.add(select);}
-			(	<K_UNION> [ <K_ALL> | <K_DISTINCT> ] select=PlainSelect() {selects.add(select);} )*
-			
-		)
-	)
-
-	{ 
-		union.setPlainSelects(selects);
-		return union; 
-	}
-}
-*/
 
 List<WithItem> WithList():
 {
@@ -1569,7 +1530,7 @@ AnalyticExpression AnalyticExpression() :
 	Expression expr = null;
 }
 {
-	token=<S_IDENTIFIER> { retval.setName(token.image); } "(" [ expr=SimpleExpression() ] ")" <K_OVER> "(" 
+	token=<S_IDENTIFIER> { retval.setName(token.image); } "(" [ expr=SimpleExpression() | "*" { retval.setAllColumns(true); } ] ")" <K_OVER> "(" 
         [<K_PARTITION> <K_BY> (column=Column() {plist.add(column);} )+ ] 
         [olist=OrderByElements() ]
 	{

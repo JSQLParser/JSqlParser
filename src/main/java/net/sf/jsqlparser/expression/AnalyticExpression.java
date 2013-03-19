@@ -7,7 +7,8 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 /**
  * Analytic function. The name of the function is variable but the parameters
  * following the special analytic function path. e.g. row_number() over (order
- * by test)
+ * by test). Additional there can be an expression for an analytical aggregate
+ * like sum(col) or the "all collumns" wildcard like count(*).
  *
  * @author tw
  */
@@ -17,6 +18,7 @@ public class AnalyticExpression implements Expression {
 	private List<OrderByElement> orderByElements;
 	private String name;
 	private Expression expression;
+	private boolean allColumns = false;
 
 	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
@@ -62,6 +64,8 @@ public class AnalyticExpression implements Expression {
 		b.append(name).append("(");
 		if (expression != null) {
 			b.append(expression.toString());
+		} else if (isAllColumns()) {
+			b.append("*");
 		}
 		b.append(") OVER (");
 		if (partitionByColumns != null && !partitionByColumns.isEmpty()) {
@@ -88,5 +92,13 @@ public class AnalyticExpression implements Expression {
 		b.append(")");
 
 		return b.toString();
+	}
+
+	public boolean isAllColumns() {
+		return allColumns;
+	}
+
+	public void setAllColumns(boolean allColumns) {
+		this.allColumns = allColumns;
 	}
 }

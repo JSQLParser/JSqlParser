@@ -661,6 +661,16 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT a, sum(b + 5) OVER (ORDER BY a) AS n FROM table1";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testProblemSqlAnalytic7Count() throws JSQLParserException {
+		String stmt = "SELECT count(*) OVER () AS n FROM table1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testProblemSqlAnalytic8Complex() throws JSQLParserException {
+		String stmt = "SELECT ID, NAME, SALARY, SUM(SALARY) OVER () AS SUM_SAL, AVG(SALARY) OVER () AS AVG_SAL, MIN(SALARY) OVER () AS MIN_SAL, MAX(SALARY) OVER () AS MAX_SAL, COUNT(*) OVER () AS ROWS FROM STAFF WHERE ID < 60 ORDER BY ID";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	public void testOracleJoin() throws JSQLParserException {
 		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
