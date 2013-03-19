@@ -52,6 +52,11 @@ insert taba (col1,col2) values (1,2), (2,5), (3,20)
 ```sql
 SELECT col FROM (VALUES 1,2) AS MY_TABLE(col)
 ```
+* Added extended support for analytic expressions (empty over clause, parameter within aggregat function)
+
+```sql
+SELECT sum(a) over () FROM taba
+```
 
 ## BUILDING
 
