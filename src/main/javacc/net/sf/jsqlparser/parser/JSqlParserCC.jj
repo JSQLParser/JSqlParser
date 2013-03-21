@@ -27,7 +27,7 @@ options{
 //  DEBUG_LOOKAHEAD=true ;
 //  FORCE_LA_CHECK=true;
 //  DEBUG_TOKEN_MANAGER=true;
-//  UNICODE_INPUT=true;
+    UNICODE_INPUT=true;
 }
 
 PARSER_BEGIN(CCJSqlParser)
