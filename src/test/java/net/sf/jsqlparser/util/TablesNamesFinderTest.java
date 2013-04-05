@@ -15,7 +15,11 @@ import static junit.framework.Assert.assertTrue;
 
 import junit.framework.TestCase;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.create.CreateTableTest;
 import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
@@ -156,6 +160,54 @@ public class TablesNamesFinderTest extends TestCase {
 		Select selectStatement = (Select) statement;
 		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
 		List<String> tableList = tablesNamesFinder.getTableList(selectStatement);
+		assertEquals(2, tableList.size());
+		assertTrue(tableList.contains("MY_TABLE1"));
+		assertTrue(tableList.contains("MY_TABLE2"));
+	}
+
+	public void testGetTableListFromDelete() throws Exception {
+		String sql = "DELETE FROM MY_TABLE1 as AL WHERE a = (SELECT a from MY_TABLE2)";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Delete deleteStatement = (Delete) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(deleteStatement);
+		assertEquals(2, tableList.size());
+		assertTrue(tableList.contains("MY_TABLE1"));
+		assertTrue(tableList.contains("MY_TABLE2"));
+	}
+
+	public void testGetTableListFromInsert() throws Exception {
+		String sql = "INSERT INTO MY_TABLE1 (a) VALUES ((SELECT a from MY_TABLE2 WHERE a = 1))";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Insert insertStatement = (Insert) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(insertStatement);
+		assertEquals(2, tableList.size());
+		assertTrue(tableList.contains("MY_TABLE1"));
+		assertTrue(tableList.contains("MY_TABLE2"));
+	}
+
+	public void testGetTableListFromReplace() throws Exception {
+		String sql = "REPLACE INTO MY_TABLE1 (a) VALUES ((SELECT a from MY_TABLE2 WHERE a = 1))";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Replace replaceStatement = (Replace) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(replaceStatement);
+		assertEquals(2, tableList.size());
+		assertTrue(tableList.contains("MY_TABLE1"));
+		assertTrue(tableList.contains("MY_TABLE2"));
+	}
+
+	public void testGetTableListFromUpdate() throws Exception {
+		String sql = "UPDATE MY_TABLE1 SET a = (SELECT a from MY_TABLE2 WHERE a = 1)";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Update updateStatement = (Update) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(updateStatement);
 		assertEquals(2, tableList.size());
 		assertTrue(tableList.contains("MY_TABLE1"));
 		assertTrue(tableList.contains("MY_TABLE2"));

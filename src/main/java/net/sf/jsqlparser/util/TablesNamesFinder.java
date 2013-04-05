@@ -73,6 +73,9 @@ import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
@@ -84,6 +87,7 @@ import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.update.Update;
 
 /**
  * Find all used tables within an select statement.
@@ -101,18 +105,89 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	/**
 	 * Main entry for this Tool class. A list of found tables is returned.
 	 *
+	 * @param delete
+	 * @return
+	 */
+	public List<String> getTableList(Delete delete) {
+		init();
+		tables.add(delete.getTable().getName());
+		delete.getWhere().accept(this);
+
+		return tables;
+	}
+
+	/**
+	 * Main entry for this Tool class. A list of found tables is returned.
+	 *
+	 * @param insert
+	 * @return
+	 */
+	public List<String> getTableList(Insert insert) {
+		init();
+		tables.add(insert.getTable().getName());
+		if (insert.getItemsList() != null) {
+			insert.getItemsList().accept(this);
+		}
+
+		return tables;
+	}
+
+	/**
+	 * Main entry for this Tool class. A list of found tables is returned.
+	 *
+	 * @param replace
+	 * @return
+	 */
+	public List<String> getTableList(Replace replace) {
+		init();
+		tables.add(replace.getTable().getName());
+		if (replace.getExpressions() != null) {
+			for (Expression expression : replace.getExpressions()) {
+				expression.accept(this);
+			}
+		}
+		if (replace.getItemsList() != null) {
+			replace.getItemsList().accept(this);
+		}
+
+		return tables;
+	}
+
+	/**
+	 * Main entry for this Tool class. A list of found tables is returned.
+	 *
 	 * @param select
 	 * @return
 	 */
 	public List<String> getTableList(Select select) {
-		otherItemNames = new ArrayList<String>();
-		tables = new ArrayList<String>();
+		init();
 		if (select.getWithItemsList() != null) {
 			for (WithItem withItem : select.getWithItemsList()) {
 				withItem.accept(this);
 			}
 		}
 		select.getSelectBody().accept(this);
+
+		return tables;
+	}
+
+	/**
+	 * Main entry for this Tool class. A list of found tables is returned.
+	 *
+	 * @param update
+	 * @return
+	 */
+	public List<String> getTableList(Update update) {
+		init();
+		tables.add(update.getTable().getName());
+		if (update.getExpressions() != null) {
+			for (Expression expression : update.getExpressions()) {
+				expression.accept(this);
+			}
+		}
+		if (update.getWhere() != null) {
+			update.getWhere().accept(this);
+		}
 
 		return tables;
 	}
@@ -399,5 +474,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
 	@Override
 	public void visit(ValuesList valuesList) {
+	}
+
+	private void init() {
+		otherItemNames = new ArrayList<String>();
+		tables = new ArrayList<String>();
 	}
 }
