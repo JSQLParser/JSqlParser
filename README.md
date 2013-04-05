@@ -91,3 +91,4 @@ And this is the dependency declaration in your pom:
 	<version>0.8.1-SNAPSHOT</version>
 </dependency>
 ```
+
