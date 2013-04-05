@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -46,6 +47,8 @@ public interface StatementVisitor {
 	public void visit(Drop drop);
 
 	public void visit(Truncate truncate);
+
+	public void visit(CreateIndex createIndex);
 
 	public void visit(CreateTable createTable);
 
