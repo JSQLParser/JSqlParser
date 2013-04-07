@@ -820,7 +820,7 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT I FROM (VALUES 1, 2, 3) AS MY_TEMP_TABLE(I) WHERE I IN (SELECT * FROM (VALUES 1, 2) AS TEST)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-
+	
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));
 		assertStatementCanBeDeparsedAs(parsed, statement);

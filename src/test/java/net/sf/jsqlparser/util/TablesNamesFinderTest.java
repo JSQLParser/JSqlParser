@@ -188,6 +188,17 @@ public class TablesNamesFinderTest extends TestCase {
 		assertTrue(tableList.contains("MY_TABLE1"));
 		assertTrue(tableList.contains("MY_TABLE2"));
 	}
+	
+	public void testGetTableListFromInsertValues() throws Exception {
+		String sql = "INSERT INTO MY_TABLE1 (a) VALUES (5)";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Insert insertStatement = (Insert) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(insertStatement);
+		assertEquals(1, tableList.size());
+		assertTrue(tableList.contains("MY_TABLE1"));
+	}
 
 	public void testGetTableListFromReplace() throws Exception {
 		String sql = "REPLACE INTO MY_TABLE1 (a) VALUES ((SELECT a from MY_TABLE2 WHERE a = 1))";
@@ -211,6 +222,18 @@ public class TablesNamesFinderTest extends TestCase {
 		assertEquals(2, tableList.size());
 		assertTrue(tableList.contains("MY_TABLE1"));
 		assertTrue(tableList.contains("MY_TABLE2"));
+	}
+	
+	public void testGetTableListFromUpdate2() throws Exception {
+		String sql = "UPDATE MY_TABLE1 SET a = 5 WHERE 0 < (SELECT COUNT(b) FROM MY_TABLE3)";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Update updateStatement = (Update) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(updateStatement);
+		assertEquals(2, tableList.size());
+		assertTrue(tableList.contains("MY_TABLE1"));
+		assertTrue(tableList.contains("MY_TABLE3"));
 	}
 
 	private String getLine(BufferedReader in) throws Exception {
