@@ -42,6 +42,11 @@ public class CreateViewTest extends TestCase {
 		String stmt = "CREATE OR REPLACE VIEW view2 AS SELECT a, b, c FROM testtab INNER JOIN testtab2 ON testtab.col1 = testtab2.col2";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testCreateViewWithColumnNames1() throws JSQLParserException {
+		String stmt = "CREATE OR REPLACE VIEW view1(col1, col2) AS SELECT a, b FROM testtab";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));

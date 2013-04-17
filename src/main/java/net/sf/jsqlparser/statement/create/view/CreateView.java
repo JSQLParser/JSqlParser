@@ -21,9 +21,11 @@
  */
 package net.sf.jsqlparser.statement.create.view;
 
+import java.util.List;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectBody;
 
 /**
@@ -34,6 +36,7 @@ public class CreateView implements Statement {
 	private Table view;
 	private SelectBody selectBody;
 	private boolean orReplace = false;
+	private List<String> columnNames = null;
 
 	@Override
 	public void accept(StatementVisitor statementVisitor) {
@@ -78,13 +81,26 @@ public class CreateView implements Statement {
 		this.selectBody = selectBody;
 	}
 
+	public List<String> getColumnNames() {
+		return columnNames;
+	}
+
+	public void setColumnNames(List<String> columnNames) {
+		this.columnNames = columnNames;
+	}
+
 	@Override
 	public String toString() {
-		String sql = "CREATE ";
+		StringBuilder sql = new StringBuilder("CREATE ");
 		if (isOrReplace()) {
-			sql += "OR REPLACE ";
+			sql.append("OR REPLACE ");
 		}
-		sql += "VIEW " + view + " AS " + selectBody;
-		return sql;
+		sql.append("VIEW ");
+		sql.append(view);
+		if (columnNames != null) {
+			sql.append(PlainSelect.getStringList(columnNames, true, true));
+		}
+		sql.append(" AS ").append(selectBody);
+		return sql.toString();
 	}
 }

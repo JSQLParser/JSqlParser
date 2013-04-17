@@ -22,6 +22,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
@@ -44,6 +45,9 @@ public class CreateViewDeParser {
 			buffer.append("OR REPLACE ");
 		}
 		buffer.append("VIEW ").append(createView.getView().getWholeTableName());
+		if (createView.getColumnNames() != null) {
+			buffer.append(PlainSelect.getStringList(createView.getColumnNames(), true, true));
+		}
 		buffer.append(" AS ");
 		buffer.append(createView.getSelectBody().toString());
 	}
