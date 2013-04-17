@@ -7,7 +7,15 @@ Original project websites:
 * http://jsqlparser.sourceforge.net
 * http://sourceforge.net/projects/jsqlparser/
 
-## Extensions
+## Extensions Version 0.8.3
+
+* Added support for columns names in create view statements
+
+```sql
+create view testView (col1,col2) as select a, b from table
+```
+
+## Extensions til Version 0.8.2
 
 * Changed project tests to junit 4
 * Changed project layout to maven project
