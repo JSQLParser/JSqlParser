@@ -589,6 +589,11 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT CAST('test' + CAST(assertEqual AS numeric) AS varchar) FROM tabelle1";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testCastTypeProblem() throws JSQLParserException {
+		String stmt = "SELECT CAST(col1 AS varchar (256)) FROM tabelle1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	public void testCaseElseAddition() throws JSQLParserException {
 		String stmt = "SELECT CASE WHEN 1 + 3 > 20 THEN 0 ELSE 1000 + 1 END AS d FROM dual";

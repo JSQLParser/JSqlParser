@@ -1565,7 +1565,7 @@ ExtractExpression ExtractExpression() :
 CastExpression CastExpression():
 {
 	CastExpression retval = new CastExpression();
-	String typeName = null;
+	ColDataType type = null;
 	Expression expression = null;
 }
 {
@@ -1573,12 +1573,12 @@ CastExpression CastExpression():
 	"("
 	expression=SimpleExpression()
 	<K_AS>
-	typeName=RelObjectName()
+	type=ColDataType()
 	")"
 
     {
 	    retval.setLeftExpression(expression);
-	    retval.setTypeName(typeName);
+	    retval.setType(type);
     	return retval;
     }
 }
