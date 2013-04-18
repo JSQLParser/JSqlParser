@@ -9,6 +9,7 @@ Original project websites:
 
 ## Extensions Version 0.8.3
 
+* Allowed complex expressions in extract from
 * Corrected cast expression to make type parameters usable (e.g. cast(col1 as varchar(255))
 * Added support for column comma list in partition by statements
 * Added support for columns names in create view statements
