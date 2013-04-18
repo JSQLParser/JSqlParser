@@ -1843,7 +1843,12 @@ CreateView CreateView():
 	<K_VIEW> view=Table() { createView.setView(view); }
 	[ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
 	<K_AS>
-	select=SelectBody() { createView.setSelectBody(select); }
+	(
+	  LOOKAHEAD(3)
+	  "(" select=SelectBody() ")" { createView.setSelectBody(select); }
+	  |
+      select=SelectBody() { createView.setSelectBody(select); }
+    )
 	{ return createView; }
 }
 

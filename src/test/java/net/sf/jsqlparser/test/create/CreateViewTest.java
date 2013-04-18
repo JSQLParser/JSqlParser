@@ -1,6 +1,8 @@
 package net.sf.jsqlparser.test.create;
 
 import java.io.StringReader;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
@@ -46,6 +48,16 @@ public class CreateViewTest extends TestCase {
 	public void testCreateViewWithColumnNames1() throws JSQLParserException {
 		String stmt = "CREATE OR REPLACE VIEW view1(col1, col2) AS SELECT a, b FROM testtab";
 		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testCreateView5() throws JSQLParserException {
+		String statement = "CREATE VIEW myview AS (SELECT * FROM mytab)";
+		String statement2 = "CREATE VIEW myview AS SELECT * FROM mytab";
+		CreateView createView = (CreateView) parserManager.parse(new StringReader(statement));
+		assertFalse(createView.isOrReplace());
+		assertEquals("myview", createView.getView().getName());
+		assertEquals("mytab", ((Table) ((PlainSelect) createView.getSelectBody()).getFromItem()).getName());
+		assertEquals(statement2, createView.toString());
 	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
