@@ -1531,7 +1531,7 @@ AnalyticExpression AnalyticExpression() :
 }
 {
 	token=<S_IDENTIFIER> { retval.setName(token.image); } "(" [ expr=SimpleExpression() | "*" { retval.setAllColumns(true); } ] ")" <K_OVER> "(" 
-        [<K_PARTITION> <K_BY> (column=Column() {plist.add(column);} )+ ] 
+        [<K_PARTITION> <K_BY> column=Column() {plist.add(column);}  ("," column=Column() {plist.add(column);} )* ] 
         [olist=OrderByElements() ]
 	{
 		retval.setExpression(expr);
