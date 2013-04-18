@@ -9,6 +9,7 @@ Original project websites:
 
 ## Extensions Version 0.8.3
 
+* Added support for column comma list in partition by statements
 * Added support for columns names in create view statements
 
 ```sql
