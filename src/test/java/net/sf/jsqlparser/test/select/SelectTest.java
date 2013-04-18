@@ -763,6 +763,16 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT EXTRACT(year FROM now()) FROM testtable";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testExtractFrom3() throws JSQLParserException {
+		String stmt = "SELECT EXTRACT(year FROM (now() - 2)) FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testExtractFrom4() throws JSQLParserException {
+		String stmt = "SELECT EXTRACT(minutes FROM now() - '01:22:00') FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	public void testProblemFunction() throws JSQLParserException {
 		String stmt = "SELECT test() FROM testtable";

@@ -1555,7 +1555,7 @@ ExtractExpression ExtractExpression() :
 	"(" 
 		token=<S_IDENTIFIER> { retval.setName(token.image); } 
 		<K_FROM> 
-		expr=PrimaryExpression() { retval.setExpression(expr); }
+		expr=SimpleExpression() { retval.setExpression(expr); }
 	")"
 	{
 		return retval;
