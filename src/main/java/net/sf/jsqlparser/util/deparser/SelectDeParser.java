@@ -264,6 +264,8 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 				buffer.append(" FULL");
 			} else if (join.isLeft()) {
 				buffer.append(" LEFT");
+			} else if (join.isCross()) {
+				buffer.append(" CROSS");
 			}
 
 			if (join.isOuter()) {

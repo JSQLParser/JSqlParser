@@ -38,6 +38,7 @@ public class Join {
 	private boolean full = false;
 	private boolean inner = false;
 	private boolean simple = false;
+	private boolean cross = false;
 	private FromItem rightItem;
 	private Expression onExpression;
 	private List<Column> usingColumns;
@@ -133,6 +134,14 @@ public class Join {
 		full = b;
 	}
 
+	public boolean isCross() {
+		return cross;
+	}
+
+	public void setCross(boolean cross) {
+		this.cross = cross;
+	}
+
 	/**
 	 * Returns the right item of the join
 	 */
@@ -182,6 +191,8 @@ public class Join {
 				type += "FULL ";
 			} else if (isLeft()) {
 				type += "LEFT ";
+			} else if (isCross()) {
+				type += "CROSS ";
 			}
 
 			if (isOuter()) {

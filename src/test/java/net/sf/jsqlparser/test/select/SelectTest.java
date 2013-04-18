@@ -799,6 +799,11 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT * FROM taba INNER JOIN tabb ON taba.a = tabb.a, tabc LEFT JOIN tabd ON tabc.c = tabd.c";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testTableCrossJoin() throws JSQLParserException {
+		String stmt = "SELECT * FROM taba CROSS JOIN tabb";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	public void testLateral1() throws JSQLParserException {
 		String stmt = "SELECT O.ORDERID, O.CUSTNAME, OL.LINETOTAL FROM ORDERS AS O, LATERAL(SELECT SUM(NETAMT) AS LINETOTAL FROM ORDERLINES AS LINES WHERE LINES.ORDERID = O.ORDERID) AS OL";
