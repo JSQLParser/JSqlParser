@@ -15,6 +15,7 @@ Original project websites:
 * Added support for column comma list in partition by statements
 * Added support for columns names in create view statements
 * Added support for column cast using ::
+* Added support for from clause in update statments
 
 ```sql
 create view testView (col1,col2) as select a, b from table
