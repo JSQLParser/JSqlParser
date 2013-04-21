@@ -24,6 +24,7 @@ package net.sf.jsqlparser.util.deparser;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.update.Update;
 
 /**
@@ -68,7 +69,19 @@ public class UpdateDeParser {
 			if (i < update.getColumns().size() - 1) {
 				buffer.append(", ");
 			}
-
+		}
+		
+		if (update.getFromItem() != null) {
+			buffer.append(" FROM ").append(update.getFromItem());
+			if (update.getJoins() != null) {
+				for (Join join : update.getJoins()) {
+					if (join.isSimple()) {
+						buffer.append(", ").append(join);
+					} else {
+						buffer.append(" ").append(join);
+					}
+				}
+			}
 		}
 
 		if (update.getWhere() != null) {

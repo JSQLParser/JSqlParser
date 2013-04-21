@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.update;
 
+import java.util.Iterator;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
@@ -113,11 +114,24 @@ public class Update implements Statement {
 		StringBuilder b = new StringBuilder("UPDATE ");
 		b.append(getTable()).append(" SET ");
 		for (int i = 0; i < getColumns().size(); i++) {
-			if (i !=0 ) {
+			if (i != 0) {
 				b.append(", ");
 			}
 			b.append(columns.get(i)).append(" = ");
 			b.append(expressions.get(i));
+		}
+
+		if (fromItem != null) {
+			b.append(" FROM ").append(fromItem);
+			if (joins != null) {
+				for (Join join : joins) {
+					if (join.isSimple()) {
+						b.append(", ").append(join);
+					} else {
+						b.append(" ").append(join);
+					}
+				}
+			}
 		}
 
 		if (where != null) {

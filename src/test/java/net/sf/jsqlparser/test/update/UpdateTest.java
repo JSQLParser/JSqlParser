@@ -47,6 +47,10 @@ public class UpdateTest extends TestCase {
 		assertSqlCanBeParsedAndDeparsed("UPDATE table1 AS A SET A.column = 'XXX' WHERE A.cod_table = 'YYY'");
 	}
 	
+	public void testUpdateWithFrom() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("UPDATE table1 SET column = 5 FROM table1 LEFT JOIN table2 ON col1 = col2");
+	}
+	
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));
 		assertStatementCanBeDeparsedAs(parsed, statement);
