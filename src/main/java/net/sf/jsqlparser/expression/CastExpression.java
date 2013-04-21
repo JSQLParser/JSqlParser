@@ -31,6 +31,7 @@ public class CastExpression implements Expression {
 
 	private Expression leftExpression;
 	private ColDataType type;
+	boolean useCastKeyword;
 
 	public ColDataType getType() {
 		return type;
@@ -53,8 +54,20 @@ public class CastExpression implements Expression {
 		expressionVisitor.visit(this);
 	}
 
+	public boolean isUseCastKeyword() {
+		return useCastKeyword;
+	}
+
+	public void setUseCastKeyword(boolean useCastKeyword) {
+		this.useCastKeyword = useCastKeyword;
+	}
+
 	@Override
 	public String toString() {
-		return "CAST(" + leftExpression + " AS " + type.toString() + ")";
+		if (useCastKeyword) {
+			return "CAST(" + leftExpression + " AS " + type.toString() + ")";
+		} else {
+			return leftExpression + "::" + type.toString();
+		}
 	}
 }

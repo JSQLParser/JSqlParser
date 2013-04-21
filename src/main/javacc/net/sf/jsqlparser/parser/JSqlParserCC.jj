@@ -1503,11 +1503,11 @@ Expression PrimaryExpression():
 	
 	| LOOKAHEAD([	"+" | "-"] <S_INTEGER>)  	[	"+" | "-" { tmp = "-"; }]  token=<S_INTEGER> { retval = new LongValue(tmp+token.image); }
 
-	| LOOKAHEAD(2) 	[ "+" | "-" { isInverse = true; }] retval=Column() 
+	| LOOKAHEAD(CastExpression()) [ "+" | "-" { isInverse = true; }] retval=CastExpression()
+	
+	| LOOKAHEAD(Column()) 	[ "+" | "-" { isInverse = true; }] retval=Column() 
 
 	| LOOKAHEAD(2) [ "+" | "-" { isInverse = true; }]  "(" retval=PrimaryExpression() ")" {retval = new Parenthesis(retval); }
-
-	| LOOKAHEAD(2) [ "+" | "-" { isInverse = true; }] retval=CastExpression()
 
 	| token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 
@@ -1577,14 +1577,14 @@ CastExpression CastExpression():
 	CastExpression retval = new CastExpression();
 	ColDataType type = null;
 	Expression expression = null;
+	boolean	useCastKeyword;
 }
 {
-	<K_CAST>
-	"("
-	expression=SimpleExpression()
-	<K_AS>
-	type=ColDataType()
-	")"
+	(
+	<K_CAST> "(" expression=SimpleExpression() <K_AS> type=ColDataType() ")" { retval.setUseCastKeyword(true); }
+	|
+	expression=Column() "::" type=ColDataType() { retval.setUseCastKeyword(false); }
+	)
 
     {
 	    retval.setLeftExpression(expression);
