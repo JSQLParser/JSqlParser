@@ -14,6 +14,7 @@ Original project websites:
 * Corrected cast expression to make type parameters usable (e.g. cast(col1 as varchar(255))
 * Added support for column comma list in partition by statements
 * Added support for columns names in create view statements
+* Added support for column cast using ::
 
 ```sql
 create view testView (col1,col2) as select a, b from table
