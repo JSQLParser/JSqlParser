@@ -319,18 +319,25 @@ Update Update():
 	List<Expression> expList = new ArrayList<Expression>();
 	List<Column> columns = new ArrayList<Column>(); 
 	Expression value = null;
-	
+	FromItem fromItem = null;
+	List<Join> joins = null;
 }
 {
     <K_UPDATE> table=TableWithAlias()
     <K_SET> tableColumn=Column() "=" value=SimpleExpression() { columns.add(tableColumn); expList.add(value); }
 		  ("," tableColumn=Column() "=" value=SimpleExpression()  { columns.add(tableColumn); expList.add(value); } )*
 
+   [ <K_FROM>
+      fromItem=FromItem()
+      joins=JoinsList() ]
+
    [ where=WhereClause() { update.setWhere(where); } ]
    { 
    		update.setColumns(columns);
    		update.setExpressions(expList);
    		update.setTable(table);
+		update.setFromItem(fromItem);
+		update.setJoins(joins);
 		return update;
    }
 }

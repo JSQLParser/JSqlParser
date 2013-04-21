@@ -1,6 +1,7 @@
 package net.sf.jsqlparser.test.update;
 
 import java.io.StringReader;
+import static junit.framework.Assert.assertEquals;
 
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
@@ -10,7 +11,9 @@ import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
 public class UpdateTest extends TestCase {
 
@@ -38,5 +41,22 @@ public class UpdateTest extends TestCase {
 	public void testUpdateWAlias() throws JSQLParserException {
 		String statement = "UPDATE table1 A SET A.column = 'XXX' WHERE A.cod_table = 'YYY'";
 		Update update = (Update) parserManager.parse(new StringReader(statement));
+	}
+	
+	public void testUpdateWithDeparser() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("UPDATE table1 AS A SET A.column = 'XXX' WHERE A.cod_table = 'YYY'");
+	}
+	
+	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
+		Statement parsed = parserManager.parse(new StringReader(statement));
+		assertStatementCanBeDeparsedAs(parsed, statement);
+	}
+
+	private void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
+		assertEquals(statement, parsed.toString());
+
+		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
+		parsed.accept(deParser);
+		assertEquals(statement, deParser.getBuffer().toString());
 	}
 }

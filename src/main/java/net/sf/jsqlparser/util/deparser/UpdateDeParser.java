@@ -58,10 +58,10 @@ public class UpdateDeParser {
 	}
 
 	public void deParse(Update update) {
-		buffer.append("UPDATE ").append(update.getTable().getWholeTableName()).append(" SET ");
+		buffer.append("UPDATE ").append(update.getTable()).append(" SET ");
 		for (int i = 0; i < update.getColumns().size(); i++) {
 			Column column = (Column) update.getColumns().get(i);
-			buffer.append(column.getWholeColumnName()).append("=");
+			buffer.append(column.getWholeColumnName()).append(" = ");
 
 			Expression expression = (Expression) update.getExpressions().get(i);
 			expression.accept(expressionVisitor);

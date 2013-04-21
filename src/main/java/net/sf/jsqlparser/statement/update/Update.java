@@ -28,6 +28,8 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.Join;
 
 /**
  * The update statement.
@@ -38,6 +40,8 @@ public class Update implements Statement {
 	private Expression where;
 	private List<Column> columns;
 	private List<Expression> expressions;
+	private FromItem fromItem;
+	private List<Join> joins;
 
 	@Override
 	public void accept(StatementVisitor statementVisitor) {
@@ -86,5 +90,40 @@ public class Update implements Statement {
 
 	public void setExpressions(List<Expression> list) {
 		expressions = list;
+	}
+
+	public FromItem getFromItem() {
+		return fromItem;
+	}
+
+	public void setFromItem(FromItem fromItem) {
+		this.fromItem = fromItem;
+	}
+
+	public List<Join> getJoins() {
+		return joins;
+	}
+
+	public void setJoins(List<Join> joins) {
+		this.joins = joins;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder("UPDATE ");
+		b.append(getTable()).append(" SET ");
+		for (int i = 0; i < getColumns().size(); i++) {
+			if (i !=0 ) {
+				b.append(", ");
+			}
+			b.append(columns.get(i)).append(" = ");
+			b.append(expressions.get(i));
+		}
+
+		if (where != null) {
+			b.append(" WHERE ");
+			b.append(where);
+		}
+		return b.toString();
 	}
 }
