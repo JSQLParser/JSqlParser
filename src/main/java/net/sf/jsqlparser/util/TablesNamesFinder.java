@@ -185,6 +185,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 				expression.accept(this);
 			}
 		}
+
+		if (update.getFromItem() != null) {
+			update.getFromItem().accept(this);
+		}
+
+		if (update.getJoins() != null) {
+			for (Join join : update.getJoins()) {
+				join.getRightItem().accept(this);
+			}
+		}
+
 		if (update.getWhere() != null) {
 			update.getWhere().accept(this);
 		}
@@ -217,7 +228,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	public void visit(Table tableName) {
 		String tableWholeName = tableName.getWholeTableName();
 		if (!otherItemNames.contains(tableWholeName.toLowerCase())) {
-			tables.add(tableWholeName);
+			if (!tables.contains(tableWholeName)) {
+				tables.add(tableWholeName);
+			}
 		}
 	}
 

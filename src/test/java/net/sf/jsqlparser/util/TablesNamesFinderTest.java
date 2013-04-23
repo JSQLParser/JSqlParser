@@ -235,6 +235,19 @@ public class TablesNamesFinderTest extends TestCase {
 		assertTrue(tableList.contains("MY_TABLE1"));
 		assertTrue(tableList.contains("MY_TABLE3"));
 	}
+	
+	public void testGetTableListFromUpdate3() throws Exception {
+		String sql = "UPDATE MY_TABLE1 SET a = 5 FROM MY_TABLE1 INNER JOIN MY_TABLE2 on MY_TABLE1.C = MY_TABLE2.D WHERE 0 < (SELECT COUNT(b) FROM MY_TABLE3)";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Update updateStatement = (Update) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(updateStatement);
+		assertEquals(3, tableList.size());
+		assertTrue(tableList.contains("MY_TABLE1"));
+		assertTrue(tableList.contains("MY_TABLE2"));
+		assertTrue(tableList.contains("MY_TABLE3"));
+	}
 
 	private String getLine(BufferedReader in) throws Exception {
 		return CCJSqlParserManagerTest.getLine(in);
