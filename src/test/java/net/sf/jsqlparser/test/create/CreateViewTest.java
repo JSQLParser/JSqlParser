@@ -59,6 +59,11 @@ public class CreateViewTest extends TestCase {
 		assertEquals("mytab", ((Table) ((PlainSelect) createView.getSelectBody()).getFromItem()).getName());
 		assertEquals(statement2, createView.toString());
 	}
+	
+	public void testCreateViewUnion() throws JSQLParserException {
+		String stmt = "CREATE VIEW view1 AS (SELECT a, b FROM testtab) UNION (SELECT b, c FROM testtab2)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));

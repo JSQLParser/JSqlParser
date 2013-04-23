@@ -1861,10 +1861,9 @@ CreateView CreateView():
 	[ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
 	<K_AS>
 	(
-	  LOOKAHEAD(3)
-	  "(" select=SelectBody() ")" { createView.setSelectBody(select); }
+      LOOKAHEAD(SelectBody()) select=SelectBody() { createView.setSelectBody(select); }
 	  |
-      select=SelectBody() { createView.setSelectBody(select); }
+	  "(" select=SelectBody() ")" { createView.setSelectBody(select); }
     )
 	{ return createView; }
 }
