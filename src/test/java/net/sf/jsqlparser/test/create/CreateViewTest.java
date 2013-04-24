@@ -64,6 +64,11 @@ public class CreateViewTest extends TestCase {
 		String stmt = "CREATE VIEW view1 AS (SELECT a, b FROM testtab) UNION (SELECT b, c FROM testtab2)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testCreateMaterializedView() throws JSQLParserException {
+		String stmt = "CREATE MATERIALIZED VIEW view1 AS SELECT a, b FROM testtab";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
 		Statement parsed = parserManager.parse(new StringReader(statement));

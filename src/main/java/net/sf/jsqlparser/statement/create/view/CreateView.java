@@ -37,6 +37,7 @@ public class CreateView implements Statement {
 	private SelectBody selectBody;
 	private boolean orReplace = false;
 	private List<String> columnNames = null;
+	private boolean materialized = false;
 
 	@Override
 	public void accept(StatementVisitor statementVisitor) {
@@ -89,11 +90,22 @@ public class CreateView implements Statement {
 		this.columnNames = columnNames;
 	}
 
+	public boolean isMaterialized() {
+		return materialized;
+	}
+
+	public void setMaterialized(boolean materialized) {
+		this.materialized = materialized;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sql = new StringBuilder("CREATE ");
 		if (isOrReplace()) {
 			sql.append("OR REPLACE ");
+		}
+		if (isMaterialized()) {
+			sql.append("MATERIALIZED ");
 		}
 		sql.append("VIEW ");
 		sql.append(view);

@@ -44,6 +44,9 @@ public class CreateViewDeParser {
 		if (createView.isOrReplace()) {
 			buffer.append("OR REPLACE ");
 		}
+		if (createView.isMaterialized()) {
+			buffer.append("MATERIALIZED ");
+		}
 		buffer.append("VIEW ").append(createView.getView().getWholeTableName());
 		if (createView.getColumnNames() != null) {
 			buffer.append(PlainSelect.getStringList(createView.getColumnNames(), true, true));
