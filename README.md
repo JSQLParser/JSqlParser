@@ -21,6 +21,10 @@ create view testView (col1,col2) as select a, b from table
 ```
 * Added support for column cast using ::
 * Added support for from clause in update statements
+
+```sql
+update tab1 set c=5 from tab1 inner join tab2 on tab1.col1=tab2.col2
+``` 
 * Corrected TableNamesFinder to work with update statements additions.
 
 ## Extensions til Version 0.8.2
