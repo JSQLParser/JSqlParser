@@ -15,7 +15,6 @@ Original project websites:
 * Added support for column comma list in partition by statements
 * Added support for columns names in create view statements
 
-
 ```sql
 create view testView (col1,col2) as select a, b from table
 ```
@@ -26,6 +25,11 @@ create view testView (col1,col2) as select a, b from table
 update tab1 set c=5 from tab1 inner join tab2 on tab1.col1=tab2.col2
 ``` 
 * Corrected TableNamesFinder to work with update statements additions.
+* Added support for simple create materialized view statements without additional parameters.
+
+```sql
+create materialized view testView as select a, b from table
+```
 
 ## Extensions til Version 0.8.2
 
