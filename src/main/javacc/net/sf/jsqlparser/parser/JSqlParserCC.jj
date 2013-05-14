@@ -1487,9 +1487,11 @@ Expression BitwiseXor():
 Expression PrimaryExpression():
 { 
 	Expression retval = null;
+    CastExpression castExpr = null;
 	Token token = null;
 	boolean isInverse = false;
 	String tmp = "";
+	ColDataType type = null;
 }
 {
 
@@ -1529,6 +1531,14 @@ Expression PrimaryExpression():
 	
 	
 )
+
+[ "::" type=ColDataType() { 
+		castExpr = new CastExpression(); 
+		castExpr.setUseCastKeyword(false); 
+		castExpr.setLeftExpression(retval);
+		castExpr.setType(type);
+		retval=castExpr;
+} ]
 
     { 
 		if (isInverse) { 
@@ -1588,11 +1598,7 @@ CastExpression CastExpression():
 	boolean	useCastKeyword;
 }
 {
-	(
 	<K_CAST> "(" expression=SimpleExpression() <K_AS> type=ColDataType() ")" { retval.setUseCastKeyword(true); }
-	|
-	expression=Column() "::" type=ColDataType() { retval.setUseCastKeyword(false); }
-	)
 
     {
 	    retval.setLeftExpression(expression);

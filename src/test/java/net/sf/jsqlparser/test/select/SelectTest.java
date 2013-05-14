@@ -604,6 +604,16 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT col1::varchar (256) FROM tabelle1";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testCastTypeProblem4() throws JSQLParserException {
+		String stmt = "SELECT 5::varchar (256) FROM tabelle1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testCastTypeProblem5() throws JSQLParserException {
+		String stmt = "SELECT 5.67::varchar (256) FROM tabelle1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	public void testCaseElseAddition() throws JSQLParserException {
 		String stmt = "SELECT CASE WHEN 1 + 3 > 20 THEN 0 ELSE 1000 + 1 END AS d FROM dual";
