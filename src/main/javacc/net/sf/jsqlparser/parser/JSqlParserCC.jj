@@ -245,7 +245,9 @@ TOKEN : /* Numeric Constants */
 {
 	< S_DOUBLE: ((<S_INTEGER>)? "." <S_INTEGER> ( ["e","E"] ([ "-","+"])? <S_INTEGER> )? 
 				|
-				(<S_INTEGER>)+ (".")? ["e","E"] ([ "-","+"])? (<S_INTEGER>)+
+				<S_INTEGER> "." (["e","E"] ([ "-","+"])? <S_INTEGER>)?
+				|
+				<S_INTEGER> ["e","E"] ([ "-","+"])? <S_INTEGER>
 				)>
   | 	< S_INTEGER: ( <DIGIT> )+ >
   | 	< #DIGIT: ["0" - "9"] >

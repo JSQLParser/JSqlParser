@@ -2,6 +2,7 @@ package net.sf.jsqlparser.test.select;
 
 import java.io.IOException;
 import java.io.StringReader;
+import static junit.framework.Assert.assertEquals;
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.BinaryExpression;
@@ -501,6 +502,30 @@ public class SelectTest extends TestCase {
 				((DoubleValue) ((BinaryExpression) ((PlainSelect) select.getSelectBody()).getWhere())
 				.getRightExpression()).getValue(), 0);
 		assertStatementCanBeDeparsedAs(select, statement);
+	}
+	
+	public void testDouble2() throws JSQLParserException {
+		String statement = "SELECT 1.e22 FROM mytable";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
+
+		assertEquals(1e22, ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select.getSelectBody())
+				.getSelectItems().get(0)).getExpression()).getValue(), 0);
+	}
+	
+	public void testDouble3() throws JSQLParserException {
+		String statement = "SELECT 1. FROM mytable";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
+
+		assertEquals(1.0, ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select.getSelectBody())
+				.getSelectItems().get(0)).getExpression()).getValue(), 0);
+	}
+	
+	public void testDouble4() throws JSQLParserException {
+		String statement = "SELECT 1.2e22 FROM mytable";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
+
+		assertEquals(1.2e22, ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select.getSelectBody())
+				.getSelectItems().get(0)).getExpression()).getValue(), 0);
 	}
 
 	public void testWith() throws JSQLParserException {
