@@ -1434,7 +1434,7 @@ Expression MultiplicativeExpression():
 	LOOKAHEAD(BitwiseXor())
 	    leftExpression=BitwiseXor()
 	    |
-	    "(" leftExpression=AdditiveExpression() ")" {leftExpression = new Parenthesis(leftExpression); }
+	    "(" leftExpression=ConcatExpression() ")" {leftExpression = new Parenthesis(leftExpression); }
 	)
       { result = leftExpression; }
     (
@@ -1447,7 +1447,7 @@ Expression MultiplicativeExpression():
 				LOOKAHEAD(BitwiseXor())
     						rightExpression=BitwiseXor()
 						    |
-						    "(" rightExpression=AdditiveExpression() ")" {rightExpression = new Parenthesis(rightExpression); }
+						    "(" rightExpression=ConcatExpression() ")" {rightExpression = new Parenthesis(rightExpression); }
 				)
     						
 		{

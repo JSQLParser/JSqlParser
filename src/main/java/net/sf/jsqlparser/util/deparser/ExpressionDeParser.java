@@ -292,7 +292,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	@Override
 	public void visit(Subtraction subtraction) {
-		visitBinaryExpression(subtraction, "-");
+		visitBinaryExpression(subtraction, " - ");
 
 	}
 

@@ -547,6 +547,55 @@ public class SelectTest extends TestCase {
 		assertSqlCanBeParsedAndDeparsed(statement);
 	}
 
+	public void testConcatProblem2() throws JSQLParserException {
+		String stmt = "SELECT MAX(((((" +
+			"(SPA.SOORTAANLEVERPERIODE)::VARCHAR (2) || (VARCHAR(SPA.AANLEVERPERIODEJAAR))::VARCHAR (4)" +
+			") || TO_CHAR(SPA.AANLEVERPERIODEVOLGNR, 'FM09'::VARCHAR)" +
+			") || TO_CHAR((10000 - SPA.VERSCHIJNINGSVOLGNR), 'FM0999'::VARCHAR)" +
+			") || (SPA.GESLACHT)::VARCHAR (1))) AS GESLACHT_TMP FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testConcatProblem2_1() throws JSQLParserException {
+		String stmt = "SELECT TO_CHAR(SPA.AANLEVERPERIODEVOLGNR, 'FM09'::VARCHAR) FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testConcatProblem2_2() throws JSQLParserException {
+		String stmt = "SELECT MAX((SPA.SOORTAANLEVERPERIODE)::VARCHAR (2) || (VARCHAR(SPA.AANLEVERPERIODEJAAR))::VARCHAR (4)) AS GESLACHT_TMP FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testConcatProblem2_3() throws JSQLParserException {
+		String stmt = "SELECT TO_CHAR((10000 - SPA.VERSCHIJNINGSVOLGNR), 'FM0999'::VARCHAR) FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testConcatProblem2_4() throws JSQLParserException {
+		String stmt = "SELECT (SPA.GESLACHT)::VARCHAR (1) FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testConcatProblem2_5() throws JSQLParserException {
+		String stmt = "SELECT max((a || b) || c) FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testConcatProblem2_5_1() throws JSQLParserException {
+		String stmt = "SELECT (a || b) || c FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testConcatProblem2_5_2() throws JSQLParserException {
+		String stmt = "SELECT (a + b) + c FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testConcatProblem2_6() throws JSQLParserException {
+		String stmt = "SELECT max(a || b || c) FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
 	public void testMatches() throws JSQLParserException {
 		String statement = "SELECT * FROM team WHERE team.search_column @@ to_tsquery('new & york & yankees')";
 		assertSqlCanBeParsedAndDeparsed(statement);
