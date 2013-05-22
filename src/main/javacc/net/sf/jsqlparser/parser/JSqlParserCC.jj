@@ -108,6 +108,7 @@ import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -296,6 +297,9 @@ Statement Statement() :
     stm = Delete()
     |
     stm =  Replace()
+    |
+    LOOKAHEAD(3)
+    stm = CreateIndex()
     |
 	LOOKAHEAD(2)
     stm = CreateTable()
@@ -1705,6 +1709,62 @@ SubSelect SubSelect():
     	subSelect.setSelectBody(selectBody);
     	return subSelect;
     }
+}
+
+CreateIndex CreateIndex():
+{
+	CreateIndex createIndex = new CreateIndex();
+	Table table = null;
+	List colNames = new ArrayList();
+	Token columnName;
+	Index index = null;
+	String name = null;
+	String parameter = null;
+}
+{
+	<K_CREATE>
+	( parameter=CreateParameter() )*
+
+	<K_INDEX> name=RelObjectName()
+	{
+		index = new Index();
+		index.setName(name);
+		index.setType(parameter);
+	}
+
+	<K_ON> table=Table()
+
+	"("
+	(columnName=<S_IDENTIFIER>
+	|
+	columnName=<S_QUOTED_IDENTIFIER>)
+
+	(CreateParameter() | <K_ASC> | <K_DESC>)*
+	{
+		colNames.add(columnName.image);
+	}
+
+	(
+		","
+		(columnName=<S_IDENTIFIER>
+		|
+		columnName=<S_QUOTED_IDENTIFIER>)
+
+		(CreateParameter() | <K_ASC> | <K_DESC>)*
+		{
+			colNames.add(columnName.image);
+		}
+	)*
+
+	")"
+	(CreateParameter() {})*
+
+	{
+		index.setColumnsNames(colNames);
+		createIndex.setIndex(index);
+		createIndex.setTable(table);
+		return createIndex;
+	}
 }
 
 CreateTable CreateTable():
