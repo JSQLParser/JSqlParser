@@ -19,6 +19,7 @@ import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -447,6 +448,17 @@ public class SelectTest extends TestCase {
 	public void testReplaceAsFunction() throws JSQLParserException {
 		String statement = "SELECT REPLACE(a, 'b', c) FROM tab1";
 		assertSqlCanBeParsedAndDeparsed(statement);
+		
+		Statement stmt = CCJSqlParserUtil.parse(statement);
+		Select select = (Select) stmt;
+		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+		
+		assertEquals(1,plainSelect.getSelectItems().size());
+		Expression expression = ((SelectExpressionItem)plainSelect.getSelectItems().get(0)).getExpression();
+		assertTrue(expression instanceof Function);
+		Function func = (Function)expression;
+		assertEquals("REPLACE", func.getName());
+		assertEquals(3, func.getParameters().getExpressions().size());
 	}
 
 	public void testLike() throws JSQLParserException {
