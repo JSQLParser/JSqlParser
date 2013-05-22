@@ -34,6 +34,7 @@ import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.apache.commons.io.IOUtils;
+import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class SelectTest extends TestCase {
 
@@ -950,29 +951,5 @@ public class SelectTest extends TestCase {
 	public void testValues6BothVariants() throws JSQLParserException {
 		String stmt = "SELECT I FROM (VALUES 1, 2, 3) AS MY_TEMP_TABLE(I) WHERE I IN (SELECT * FROM (VALUES 1, 2) AS TEST)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
-	}
-	
-	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
-		Statement parsed = parserManager.parse(new StringReader(statement));
-		assertStatementCanBeDeparsedAs(parsed, statement);
-	}
-
-	private void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
-		assertEquals(statement, parsed.toString());
-
-		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-		parsed.accept(deParser);
-		assertEquals(statement, deParser.getBuffer().toString());
-	}
-
-	private void assertExpressionCanBeDeparsedAs(final Expression parsed, String expression) {
-		ExpressionDeParser expressionDeParser = new ExpressionDeParser();
-		StringBuilder stringBuffer = new StringBuilder();
-		expressionDeParser.setBuffer(stringBuffer);
-		SelectDeParser selectDeParser = new SelectDeParser(expressionDeParser, stringBuffer);
-		expressionDeParser.setSelectVisitor(selectDeParser);
-		parsed.accept(expressionDeParser);
-
-		assertEquals(expression, stringBuffer.toString());
 	}
 }

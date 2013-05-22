@@ -12,6 +12,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class CreateViewTest extends TestCase {
 
@@ -68,18 +69,5 @@ public class CreateViewTest extends TestCase {
 	public void testCreateMaterializedView() throws JSQLParserException {
 		String stmt = "CREATE MATERIALIZED VIEW view1 AS SELECT a, b FROM testtab";
 		assertSqlCanBeParsedAndDeparsed(stmt);
-	}
-
-	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
-		Statement parsed = parserManager.parse(new StringReader(statement));
-		assertStatementCanBeDeparsedAs(parsed, statement);
-	}
-
-	private void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
-		assertEquals(statement, parsed.toString());
-
-		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-		parsed.accept(deParser);
-		assertEquals(statement, deParser.getBuffer().toString());
 	}
 }

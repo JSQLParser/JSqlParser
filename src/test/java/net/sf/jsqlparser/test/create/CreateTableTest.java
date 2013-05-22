@@ -18,6 +18,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class CreateTableTest extends TestCase {
 
@@ -173,18 +174,5 @@ public class CreateTableTest extends TestCase {
 		}
 
 		return line;
-	}
-
-	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
-		Statement parsed = parserManager.parse(new StringReader(statement));
-		assertStatementCanBeDeparsedAs(parsed, statement);
-	}
-
-	private void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
-		assertEquals(statement, parsed.toString());
-
-		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-		parsed.accept(deParser);
-		assertEquals(statement, deParser.getBuffer().toString());
 	}
 }

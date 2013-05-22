@@ -18,6 +18,7 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class InsertTest extends TestCase {
 
@@ -93,18 +94,5 @@ public class InsertTest extends TestCase {
 		}
 
 		fail("should not work");
-	}
-
-	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
-		Statement parsed = parserManager.parse(new StringReader(statement));
-		assertStatementCanBeDeparsedAs(parsed, statement);
-	}
-
-	private void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
-		assertEquals(statement, parsed.toString());
-
-		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-		parsed.accept(deParser);
-		assertEquals(statement, deParser.getBuffer().toString());
 	}
 }

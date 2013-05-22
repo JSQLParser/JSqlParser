@@ -14,6 +14,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class UpdateTest extends TestCase {
 
@@ -49,18 +50,5 @@ public class UpdateTest extends TestCase {
 	
 	public void testUpdateWithFrom() throws JSQLParserException {
 		assertSqlCanBeParsedAndDeparsed("UPDATE table1 SET column = 5 FROM table1 LEFT JOIN table2 ON col1 = col2");
-	}
-	
-	private void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
-		Statement parsed = parserManager.parse(new StringReader(statement));
-		assertStatementCanBeDeparsedAs(parsed, statement);
-	}
-
-	private void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
-		assertEquals(statement, parsed.toString());
-
-		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-		parsed.accept(deParser);
-		assertEquals(statement, deParser.getBuffer().toString());
 	}
 }

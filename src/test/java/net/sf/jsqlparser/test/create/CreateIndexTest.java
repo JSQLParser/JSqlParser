@@ -6,7 +6,7 @@ import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
-
+import static net.sf.jsqlparser.test.TestUtils.*;
 
 /**
  * @author Raymond Augé
@@ -76,4 +76,8 @@ public class CreateIndexTest extends TestCase {
 		assertEquals("mycol3", createIndex.getIndex().getColumnsNames().get(2));
 	}
 
+	public void testCreateIndex6() throws JSQLParserException {
+		String stmt= "CREATE INDEX myindex ON mytab (mycol, mycol2)";
+		assertSqlCanBeParsedAndDeparsed(stmt);		
+	}
 }
