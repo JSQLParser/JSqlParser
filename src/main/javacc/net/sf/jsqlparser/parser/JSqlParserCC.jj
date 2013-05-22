@@ -1715,7 +1715,7 @@ CreateIndex CreateIndex():
 {
 	CreateIndex createIndex = new CreateIndex();
 	Table table = null;
-	List colNames = new ArrayList();
+	List<String> colNames = new ArrayList<String>();
 	Token columnName;
 	Index index = null;
 	String name = null;
