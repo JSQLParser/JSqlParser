@@ -30,6 +30,11 @@ update tab1 set c=5 from tab1 inner join tab2 on tab1.col1=tab2.col2
 ```sql
 create materialized view testView as select a, b from table
 ```
+* Added support for simple create index statements
+
+```sql
+create index myindex on mytab (mycol, mycol2)
+```
 
 ## Extensions til Version 0.8.2
 
