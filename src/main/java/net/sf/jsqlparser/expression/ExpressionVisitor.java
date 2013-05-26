@@ -134,4 +134,6 @@ public interface ExpressionVisitor {
 	public void visit(AnalyticExpression aexpr);
 
 	public void visit(ExtractExpression eexpr);
+	
+	public void visit(IntervalExpression iexpr);
 }

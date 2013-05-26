@@ -7,6 +7,14 @@ Original project websites:
 * http://jsqlparser.sourceforge.net
 * http://sourceforge.net/projects/jsqlparser/
 
+## Extensions Version 0.8.4
+
+* Added support for simple intervals
+
+```sql
+select 5 - INTERVAL '45 MINUTE' from mytable
+```
+
 ## Extensions Version 0.8.3
 
 * Added support for cross join 

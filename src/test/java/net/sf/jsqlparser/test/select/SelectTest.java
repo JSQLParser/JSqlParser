@@ -9,11 +9,13 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
+import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
@@ -30,9 +32,6 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
-import net.sf.jsqlparser.util.deparser.SelectDeParser;
-import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.apache.commons.io.IOUtils;
 import static net.sf.jsqlparser.test.TestUtils.*;
 
@@ -951,5 +950,38 @@ public class SelectTest extends TestCase {
 	public void testValues6BothVariants() throws JSQLParserException {
 		String stmt = "SELECT I FROM (VALUES 1, 2, 3) AS MY_TEMP_TABLE(I) WHERE I IN (SELECT * FROM (VALUES 1, 2) AS TEST)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testInterval1() throws JSQLParserException {
+		String stmt = "SELECT 5 + INTERVAL '3 days'";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testInterval2() throws JSQLParserException {
+		String stmt = "SELECT to_timestamp(to_char(now() - INTERVAL '45 MINUTE', 'YYYY-MM-DD-HH24:')) AS START_TIME FROM tab1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+		
+		Statement st = CCJSqlParserUtil.parse(stmt);
+		Select select = (Select) st;
+		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+		
+		assertEquals(1, plainSelect.getSelectItems().size());
+		SelectExpressionItem item = (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+		Function function = (Function)item.getExpression();
+		
+		assertEquals("to_timestamp", function.getName());
+		
+		assertEquals(1, function.getParameters().getExpressions().size());
+		
+		Function func2 = (Function) function.getParameters().getExpressions().get(0);
+		
+		assertEquals("to_char", func2.getName());
+		
+		assertEquals(2, func2.getParameters().getExpressions().size());
+		Subtraction sub = (Subtraction) func2.getParameters().getExpressions().get(0);
+		assertTrue(sub.getRightExpression() instanceof IntervalExpression);
+		IntervalExpression iexpr = (IntervalExpression) sub.getRightExpression();
+		
+		assertEquals("'45 MINUTE'", iexpr.getParameter());
 	}
 }

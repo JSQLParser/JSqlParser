@@ -35,6 +35,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.InverseExpression;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
@@ -504,5 +505,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 				buffer.append(", ");
 			}
 		}
+	}
+
+	@Override
+	public void visit(IntervalExpression iexpr) {
+		buffer.append(iexpr.toString());
 	}
 }

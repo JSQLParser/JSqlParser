@@ -64,6 +64,7 @@ import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.InverseExpression;
+import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.DateValue;
@@ -239,6 +240,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXTRACT:"EXTRACT">
 |	<K_LATERAL:"LATERAL">
 |	<K_MATERIALIZED:"MATERIALIZED">
+|   <K_INTERVAL:"INTERVAL">
 }
 
 
@@ -1534,8 +1536,8 @@ Expression PrimaryExpression():
 	| 	"{t" token=<S_CHAR_LITERAL> "}" { retval = new TimeValue(token.image); }
 
 	| 	"{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
-	
-	
+
+	| retval = IntervalExpression()
 )
 
 [ "::" type=ColDataType() { 
@@ -1552,6 +1554,17 @@ Expression PrimaryExpression():
 		}
     	return retval; 
     }
+}
+
+IntervalExpression IntervalExpression() : {
+	IntervalExpression interval = new IntervalExpression();
+	Token token;
+}
+{
+	<K_INTERVAL> token=<S_CHAR_LITERAL> { interval.setParameter(token.image); }
+	{
+		return interval;
+	}
 }
 
 AnalyticExpression AnalyticExpression() :
