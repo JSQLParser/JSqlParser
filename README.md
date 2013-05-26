@@ -14,6 +14,11 @@ Original project websites:
 ```sql
 select 5 - INTERVAL '45 MINUTE' from mytable
 ```
+* Added support for multi values IN expression
+
+```sql
+select * from mytable where (a,b,c) in (select a,b,c from mytable2)
+```
 
 ## Extensions Version 0.8.3
 
