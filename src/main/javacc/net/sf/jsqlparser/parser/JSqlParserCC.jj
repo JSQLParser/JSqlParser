@@ -1185,15 +1185,18 @@ Expression SQLCondition():
 Expression InExpression() :
 {
 	InExpression result = new InExpression();
-	ItemsList itemsList = null;
+	ItemsList leftItemsList = null;
+	ItemsList rightItemsList = null;
 	Expression leftExpression = null;
+	
 }
 {
-	leftExpression=SimpleExpression()
-    [<K_NOT> { result.setNot(true); } ] <K_IN> "(" (LOOKAHEAD(SubSelect()) itemsList=SubSelect() | itemsList=SimpleExpressionList() ) ")"
+	( LOOKAHEAD(3) leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
+		| "(" leftItemsList = SimpleExpressionList() { result.setLeftItemsList(leftItemsList); } ")"
+	)	
+    [<K_NOT> { result.setNot(true); } ] <K_IN> "(" (LOOKAHEAD(SubSelect()) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")"
 	{ 
-		result.setLeftExpression(leftExpression);
-		result.setItemsList(itemsList);
+		result.setRightItemsList(rightItemsList);
 		return result; 
 	}
 }

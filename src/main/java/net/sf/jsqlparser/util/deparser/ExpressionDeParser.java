@@ -180,14 +180,17 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	@Override
 	public void visit(InExpression inExpression) {
-
-		inExpression.getLeftExpression().accept(this);
+		if (inExpression.getLeftExpression() == null) {
+			inExpression.getLeftItemsList().accept(this);
+		} else {
+			inExpression.getLeftExpression().accept(this);
+		}
 		if (inExpression.isNot()) {
 			buffer.append(" NOT");
 		}
 		buffer.append(" IN ");
 
-		inExpression.getItemsList().accept(this);
+		inExpression.getRightItemsList().accept(this);
 	}
 
 	@Override

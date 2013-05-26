@@ -984,4 +984,9 @@ public class SelectTest extends TestCase {
 		
 		assertEquals("'45 MINUTE'", iexpr.getParameter());
 	}
+	
+	public void testMultiValueIn() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable WHERE (a, b, c) IN (SELECT a, b, c FROM mytable2)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 }

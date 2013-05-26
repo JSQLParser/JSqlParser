@@ -27,7 +27,8 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 public class InExpression implements Expression {
 
 	private Expression leftExpression;
-	private ItemsList itemsList;
+	private ItemsList leftItemsList;
+	private ItemsList rightItemsList;
 	private boolean not = false;
 
 	public InExpression() {
@@ -35,19 +36,19 @@ public class InExpression implements Expression {
 
 	public InExpression(Expression leftExpression, ItemsList itemsList) {
 		setLeftExpression(leftExpression);
-		setItemsList(itemsList);
+		setRightItemsList(itemsList);
 	}
 
-	public ItemsList getItemsList() {
-		return itemsList;
+	public ItemsList getRightItemsList() {
+		return rightItemsList;
 	}
 
 	public Expression getLeftExpression() {
 		return leftExpression;
 	}
 
-	public void setItemsList(ItemsList list) {
-		itemsList = list;
+	public void setRightItemsList(ItemsList list) {
+		rightItemsList = list;
 	}
 
 	public void setLeftExpression(Expression expression) {
@@ -62,6 +63,14 @@ public class InExpression implements Expression {
 		not = b;
 	}
 
+	public ItemsList getLeftItemsList() {
+		return leftItemsList;
+	}
+
+	public void setLeftItemsList(ItemsList leftItemsList) {
+		this.leftItemsList = leftItemsList;
+	}
+
 	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
@@ -69,6 +78,6 @@ public class InExpression implements Expression {
 
 	@Override
 	public String toString() {
-		return leftExpression + " " + ((not) ? "NOT " : "") + "IN " + itemsList + "";
+		return (leftExpression == null ? leftItemsList : leftExpression) + " " + ((not) ? "NOT " : "") + "IN " + rightItemsList + "";
 	}
 }
