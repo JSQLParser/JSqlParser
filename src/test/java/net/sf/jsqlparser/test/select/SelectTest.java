@@ -989,4 +989,9 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT * FROM mytable WHERE (a, b, c) IN (SELECT a, b, c FROM mytable2)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testMultiValueIn2() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable WHERE (trim(a), trim(b)) IN (SELECT a, b FROM mytable2)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 }

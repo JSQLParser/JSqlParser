@@ -1191,8 +1191,14 @@ Expression InExpression() :
 	
 }
 {
-	( LOOKAHEAD(3) leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
-		| "(" leftItemsList = SimpleExpressionList() { result.setLeftItemsList(leftItemsList); } ")"
+	( LOOKAHEAD(1) "(" ( 
+			LOOKAHEAD(SimpleExpressionList()) leftItemsList = SimpleExpressionList() { result.setLeftItemsList(leftItemsList); } 
+			|
+			leftExpression=SimpleExpression()
+		  )
+	  ")"
+	|
+		leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
 	)	
     [<K_NOT> { result.setNot(true); } ] <K_IN> "(" (LOOKAHEAD(SubSelect()) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")"
 	{ 
