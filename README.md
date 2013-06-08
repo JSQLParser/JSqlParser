@@ -1,6 +1,7 @@
 # JSqlParser Organisation created and started
 
-
+Some issues of wumpz repository JSQLParser are lost. Sorry about that. That repository is replaced by 
+this new JSqlParser - place.
 
 
 ## JSqlParser
