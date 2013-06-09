@@ -105,19 +105,20 @@ public class Replace implements Statement {
 
 	@Override
 	public String toString() {
-		String sql = "REPLACE " + table;
+		StringBuilder sql = new StringBuilder();
+		sql.append("REPLACE ").append(table);
 
 		if (expressions != null && columns != null) {
 			// the SET col1=exp1, col2=exp2 case
-			sql += " SET ";
+			sql.append(" SET ");
 			// each element from expressions match up with a column from columns.
 			for (int i = 0, s = columns.size(); i < s; i++) {
-				sql += "" + columns.get(i) + "=" + expressions.get(i);
-				sql += (i < s - 1) ? ", " : "";
+				sql.append(columns.get(i)).append("=").append(expressions.get(i));
+				sql.append((i < s - 1) ? ", " : "");
 			}
 		} else if (columns != null) {
 			// the REPLACE mytab (col1, col2) [...] case
-			sql += " " + PlainSelect.getStringList(columns, true, true);
+			sql.append(" ").append(PlainSelect.getStringList(columns, true, true));
 		}
 
 		if (itemsList != null) {
@@ -125,12 +126,12 @@ public class Replace implements Statement {
 			// or VALUES ('as', ?, 565)
 
 			if (useValues) {
-				sql += " VALUES";
+				sql.append(" VALUES");
 			}
 
-			sql += " " + itemsList;
+			sql.append(" ").append(itemsList);
 		}
 
-		return sql;
+		return sql.toString();
 	}
 }

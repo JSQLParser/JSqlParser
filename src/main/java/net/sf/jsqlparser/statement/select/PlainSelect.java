@@ -161,31 +161,41 @@ public class PlainSelect implements SelectBody {
 
 	@Override
 	public String toString() {
-		String sql = "SELECT ";
-		sql += ((distinct != null) ? "" + distinct + " " : "");
-		sql += ((top != null) ? "" + top + " " : "");
-		sql += getStringList(selectItems);
+		StringBuilder sql = new StringBuilder("SELECT ");
+		if (distinct != null) {
+			sql.append(distinct).append(" ");
+		}
+		if (top != null) {
+			sql.append(top).append(" ");
+		}
+		sql.append(getStringList(selectItems));
 		if (fromItem != null) {
-			sql += " FROM " + fromItem;
+			sql.append(" FROM ").append(fromItem);
 			if (joins != null) {
 				Iterator<Join> it = joins.iterator();
 				while (it.hasNext()) {
 					Join join = it.next();
 					if (join.isSimple()) {
-						sql += ", " + join;
+						sql.append(", ").append(join);
 					} else {
-						sql += " " + join;
+						sql.append(" ").append(join);
 					}
 				}
 			}
 			// sql += getFormatedList(joins, "", false, false);
-			sql += ((where != null) ? " WHERE " + where : "");
-			sql += getFormatedList(groupByColumnReferences, "GROUP BY");
-			sql += ((having != null) ? " HAVING " + having : "");
-			sql += orderByToString(orderByElements);
-			sql += ((limit != null) ? limit + "" : "");
+			if (where != null) {
+				sql.append(" WHERE ").append(where);
+			}
+			sql.append(getFormatedList(groupByColumnReferences, "GROUP BY"));
+			if (having != null) {
+				sql.append(" HAVING ").append(having);
+			}
+			sql.append(orderByToString(orderByElements));
+			if (limit != null) {
+				sql.append(limit);
+			}
 		}
-		return sql;
+		return sql.toString();
 	}
 
 	public static String orderByToString(List<OrderByElement> orderByElements) {
