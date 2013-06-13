@@ -47,11 +47,11 @@ public class InExpression implements Expression {
 		return leftExpression;
 	}
 
-	public void setRightItemsList(ItemsList list) {
+	public final void setRightItemsList(ItemsList list) {
 		rightItemsList = list;
 	}
 
-	public void setLeftExpression(Expression expression) {
+	public final void setLeftExpression(Expression expression) {
 		leftExpression = expression;
 	}
 

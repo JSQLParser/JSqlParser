@@ -40,7 +40,7 @@ public class Parenthesis implements Expression {
 		return expression;
 	}
 
-	public void setExpression(Expression expression) {
+	public final void setExpression(Expression expression) {
 		this.expression = expression;
 	}
 

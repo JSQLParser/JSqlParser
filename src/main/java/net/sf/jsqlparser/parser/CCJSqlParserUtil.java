@@ -69,4 +69,7 @@ public class CCJSqlParserUtil {
 			throw new JSQLParserException(ex);
 		} 
 	}
+
+	private CCJSqlParserUtil() {
+	}
 }
