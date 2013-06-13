@@ -38,8 +38,8 @@ public class CCJSqlParserManager implements JSqlParser {
 		CCJSqlParser parser = new CCJSqlParser(statementReader);
 		try {
 			return parser.Statement();
-		} catch (Throwable e) {
-			throw new JSQLParserException(e);
-		}
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
 	}
 }

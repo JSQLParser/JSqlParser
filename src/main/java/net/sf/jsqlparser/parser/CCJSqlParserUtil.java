@@ -24,6 +24,8 @@ package net.sf.jsqlparser.parser;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.statement.Statement;
 
@@ -36,35 +38,35 @@ public class CCJSqlParserUtil {
 		CCJSqlParser parser = new CCJSqlParser(statementReader);
 		try {
 			return parser.Statement();
-		} catch (Throwable e) {
-			throw new JSQLParserException(e);
-		}
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
 	}
 	
 	public static Statement parse(String sql) throws JSQLParserException {
 		CCJSqlParser parser = new CCJSqlParser(new StringReader(sql));
 		try {
 			return parser.Statement();
-		} catch (Throwable e) {
-			throw new JSQLParserException(e);
-		}
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
 	}
 	
 	public static Statement parse(InputStream is) throws JSQLParserException {
 		CCJSqlParser parser = new CCJSqlParser(is);
 		try {
 			return parser.Statement();
-		} catch (Throwable e) {
-			throw new JSQLParserException(e);
-		}
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
 	}
 	
 	public static Statement parse(InputStream is, String encoding) throws JSQLParserException {
 		CCJSqlParser parser = new CCJSqlParser(is,encoding);
 		try {
 			return parser.Statement();
-		} catch (Throwable e) {
-			throw new JSQLParserException(e);
-		}
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
 	}
 }
