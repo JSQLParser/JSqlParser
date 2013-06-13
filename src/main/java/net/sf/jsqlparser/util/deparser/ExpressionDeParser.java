@@ -436,13 +436,13 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	@Override
 	public void visit(AllComparisonExpression allComparisonExpression) {
 		buffer.append(" ALL ");
-		allComparisonExpression.GetSubSelect().accept((ExpressionVisitor) this);
+		allComparisonExpression.getSubSelect().accept((ExpressionVisitor) this);
 	}
 
 	@Override
 	public void visit(AnyComparisonExpression anyComparisonExpression) {
 		buffer.append(" ANY ");
-		anyComparisonExpression.GetSubSelect().accept((ExpressionVisitor) this);
+		anyComparisonExpression.getSubSelect().accept((ExpressionVisitor) this);
 	}
 
 	@Override

@@ -410,12 +410,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
 	@Override
 	public void visit(AllComparisonExpression allComparisonExpression) {
-		allComparisonExpression.GetSubSelect().getSelectBody().accept(this);
+		allComparisonExpression.getSubSelect().getSelectBody().accept(this);
 	}
 
 	@Override
 	public void visit(AnyComparisonExpression anyComparisonExpression) {
-		anyComparisonExpression.GetSubSelect().getSelectBody().accept(this);
+		anyComparisonExpression.getSubSelect().getSelectBody().accept(this);
 	}
 
 	@Override
