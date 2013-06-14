@@ -23,5 +23,5 @@ package net.sf.jsqlparser.statement.select;
 
 public interface SelectBody {
 
-	public void accept(SelectVisitor selectVisitor);
+	void accept(SelectVisitor selectVisitor);
 }

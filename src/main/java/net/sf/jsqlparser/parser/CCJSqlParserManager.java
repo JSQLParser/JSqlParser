@@ -21,9 +21,7 @@
  */
 package net.sf.jsqlparser.parser;
 
-import java.io.InputStream;
 import java.io.Reader;
-import java.io.StringReader;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.statement.Statement;

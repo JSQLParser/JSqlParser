@@ -23,9 +23,9 @@ package net.sf.jsqlparser.statement.select;
 
 public interface SelectVisitor {
 
-	public void visit(PlainSelect plainSelect);
+	void visit(PlainSelect plainSelect);
 
-	public void visit(SetOperationList setOpList);
+	void visit(SetOperationList setOpList);
 
-	public void visit(WithItem withItem);
+	void visit(WithItem withItem);
 }

@@ -34,7 +34,7 @@ public class LongValue implements Expression {
 			value = value.substring(1);
 		}
 		this.value = Long.parseLong(value);
-		setStringValue(value);
+        this.stringValue = value;
 	}
 
 	@Override

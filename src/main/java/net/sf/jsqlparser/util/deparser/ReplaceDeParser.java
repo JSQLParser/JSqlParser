@@ -39,9 +39,9 @@ import net.sf.jsqlparser.statement.select.SubSelect;
  */
 public class ReplaceDeParser implements ItemsListVisitor {
 
-	protected StringBuilder buffer;
-	protected ExpressionVisitor expressionVisitor;
-	protected SelectVisitor selectVisitor;
+	private StringBuilder buffer;
+    private ExpressionVisitor expressionVisitor;
+    private SelectVisitor selectVisitor;
 
 	public ReplaceDeParser() {
 	}
@@ -76,7 +76,7 @@ public class ReplaceDeParser implements ItemsListVisitor {
 			if (replace.getColumns() != null) {
 				buffer.append(" (");
 				for (int i = 0; i < replace.getColumns().size(); i++) {
-					Column column = (Column) replace.getColumns().get(i);
+					Column column = replace.getColumns().get(i);
 					buffer.append(column.getWholeColumnName());
 					if (i < replace.getColumns().size() - 1) {
 						buffer.append(", ");
@@ -90,10 +90,10 @@ public class ReplaceDeParser implements ItemsListVisitor {
 		} else {
 			buffer.append(" SET ");
 			for (int i = 0; i < replace.getColumns().size(); i++) {
-				Column column = (Column) replace.getColumns().get(i);
+				Column column = replace.getColumns().get(i);
 				buffer.append(column.getWholeColumnName()).append("=");
 
-				Expression expression = (Expression) replace.getExpressions().get(i);
+				Expression expression = replace.getExpressions().get(i);
 				expression.accept(expressionVisitor);
 				if (i < replace.getColumns().size() - 1) {
 					buffer.append(", ");

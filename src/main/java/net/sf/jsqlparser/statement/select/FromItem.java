@@ -27,9 +27,9 @@ package net.sf.jsqlparser.statement.select;
  */
 public interface FromItem {
 
-	public void accept(FromItemVisitor fromItemVisitor);
+	void accept(FromItemVisitor fromItemVisitor);
 
-	public String getAlias();
+	String getAlias();
 
-	public void setAlias(String alias);
+	void setAlias(String alias);
 }
