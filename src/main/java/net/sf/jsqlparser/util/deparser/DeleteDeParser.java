@@ -30,11 +30,8 @@ import net.sf.jsqlparser.statement.delete.Delete;
  */
 public class DeleteDeParser {
 
-	protected StringBuilder buffer;
-	protected ExpressionVisitor expressionVisitor;
-
-	public DeleteDeParser() {
-	}
+	private StringBuilder buffer;
+    private ExpressionVisitor expressionVisitor;
 
 	/**
 	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse

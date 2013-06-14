@@ -33,11 +33,8 @@ import net.sf.jsqlparser.statement.update.Update;
  */
 public class UpdateDeParser {
 
-	protected StringBuilder buffer;
-	protected ExpressionVisitor expressionVisitor;
-
-	public UpdateDeParser() {
-	}
+	private StringBuilder buffer;
+	private ExpressionVisitor expressionVisitor;
 
 	/**
 	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
@@ -61,10 +58,10 @@ public class UpdateDeParser {
 	public void deParse(Update update) {
 		buffer.append("UPDATE ").append(update.getTable()).append(" SET ");
 		for (int i = 0; i < update.getColumns().size(); i++) {
-			Column column = (Column) update.getColumns().get(i);
+			Column column = update.getColumns().get(i);
 			buffer.append(column.getWholeColumnName()).append(" = ");
 
-			Expression expression = (Expression) update.getExpressions().get(i);
+			Expression expression = update.getExpressions().get(i);
 			expression.accept(expressionVisitor);
 			if (i < update.getColumns().size() - 1) {
 				buffer.append(", ");

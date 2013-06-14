@@ -33,7 +33,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
  */
 public class CreateTableDeParser {
 
-	protected StringBuilder buffer;
+	private StringBuilder buffer;
 
 	/**
 	 * @param buffer the buffer that will be filled with the select
@@ -47,15 +47,15 @@ public class CreateTableDeParser {
 		if (createTable.getColumnDefinitions() != null) {
 			buffer.append(" (");
 			for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
-				ColumnDefinition columnDefinition = (ColumnDefinition) iter.next();
+				ColumnDefinition columnDefinition = iter.next();
 				buffer.append(columnDefinition.getColumnName());
 				buffer.append(" ");
 				buffer.append(columnDefinition.getColDataType().toString());
 				if (columnDefinition.getColumnSpecStrings() != null) {
-					for (Iterator<String> iterator = columnDefinition.getColumnSpecStrings().iterator(); iterator.hasNext();) {
-						buffer.append(" ");
-						buffer.append((String) iterator.next());
-					}
+                    for (String s : columnDefinition.getColumnSpecStrings()) {
+                        buffer.append(" ");
+                        buffer.append(s);
+                    }
 				}
 
 				if (iter.hasNext()) {
@@ -67,11 +67,11 @@ public class CreateTableDeParser {
 			if (createTable.getIndexes() != null) {
 				for (Iterator<Index> iter = createTable.getIndexes().iterator(); iter.hasNext();) {
 					buffer.append(",");
-					Index index = (Index) iter.next();
+					Index index = iter.next();
 					buffer.append(index.getType()).append(" ").append(index.getName());
 					buffer.append("(");
 					for (Iterator<String> iterator = index.getColumnsNames().iterator(); iterator.hasNext();) {
-						buffer.append((String) iterator.next());
+						buffer.append(iterator.next());
 						if (iterator.hasNext()) {
 							buffer.append(", ");
 						}

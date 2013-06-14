@@ -38,7 +38,7 @@ import net.sf.jsqlparser.statement.update.Update;
 
 public class StatementDeParser implements StatementVisitor {
 
-	protected StringBuilder buffer;
+	private StringBuilder buffer;
 
 	public StatementDeParser(StringBuilder buffer) {
 		this.buffer = buffer;

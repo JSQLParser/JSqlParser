@@ -39,9 +39,9 @@ import net.sf.jsqlparser.statement.select.SubSelect;
  */
 public class InsertDeParser implements ItemsListVisitor {
 
-	protected StringBuilder buffer;
-	protected ExpressionVisitor expressionVisitor;
-	protected SelectVisitor selectVisitor;
+	private StringBuilder buffer;
+    private ExpressionVisitor expressionVisitor;
+    private SelectVisitor selectVisitor;
 
 	public InsertDeParser() {
 	}

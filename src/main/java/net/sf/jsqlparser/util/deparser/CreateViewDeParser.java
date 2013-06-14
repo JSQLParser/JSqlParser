@@ -30,7 +30,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  */
 public class CreateViewDeParser {
 
-	protected StringBuilder buffer;
+	private StringBuilder buffer;
 
 	/**
 	 * @param buffer the buffer that will be filled with the select

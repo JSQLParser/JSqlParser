@@ -21,7 +21,6 @@
  */
 package net.sf.jsqlparser.statement.update;
 
-import java.util.Iterator;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
