@@ -27,5 +27,5 @@ package net.sf.jsqlparser.statement.select;
  */
 public interface SelectItem {
 
-	public void accept(SelectItemVisitor selectItemVisitor);
+	void accept(SelectItemVisitor selectItemVisitor);
 }

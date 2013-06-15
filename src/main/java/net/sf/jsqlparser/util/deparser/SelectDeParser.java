@@ -26,7 +26,6 @@ import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -56,8 +55,8 @@ import net.sf.jsqlparser.statement.select.WithItem;
  */
 public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItemVisitor, FromItemVisitor {
 
-	protected StringBuilder buffer;
-	protected ExpressionVisitor expressionVisitor;
+	private StringBuilder buffer;
+    private ExpressionVisitor expressionVisitor;
 
 	public SelectDeParser() {
 	}
@@ -110,10 +109,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		}
 
 		if (plainSelect.getJoins() != null) {
-			for (Iterator<Join> iter = plainSelect.getJoins().iterator(); iter.hasNext();) {
-				Join join = iter.next();
-				deparseJoin(join);
-			}
+            for (Join join : plainSelect.getJoins()) {
+                deparseJoin(join);
+            }
 		}
 
 		if (plainSelect.getWhere() != null) {
@@ -305,7 +303,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 				buffer.append(' ').append(list.getOperations().get(i - 1)).append(' ');
 			}
 			buffer.append("(");
-			PlainSelect plainSelect = (PlainSelect) list.getPlainSelects().get(i);
+			PlainSelect plainSelect = list.getPlainSelects().get(i);
 			plainSelect.accept(this);
 			buffer.append(")");
 		}

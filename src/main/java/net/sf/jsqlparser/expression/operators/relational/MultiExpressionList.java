@@ -44,8 +44,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.FromItemVisitor;
 
 /**
  * A list of ExpressionList items. e.g. multi values of insert statements. This
@@ -55,7 +53,7 @@ import net.sf.jsqlparser.statement.select.FromItemVisitor;
  */
 public class MultiExpressionList implements ItemsList {
 
-	List<ExpressionList> exprList;
+	private List<ExpressionList> exprList;
 
 	public MultiExpressionList() {
 		this.exprList = new ArrayList<ExpressionList>();

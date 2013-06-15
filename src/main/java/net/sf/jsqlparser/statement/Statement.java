@@ -26,5 +26,5 @@ package net.sf.jsqlparser.statement;
  */
 public interface Statement {
 
-	public void accept(StatementVisitor statementVisitor);
+	void accept(StatementVisitor statementVisitor);
 }

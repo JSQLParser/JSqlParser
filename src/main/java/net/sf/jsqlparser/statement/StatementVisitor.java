@@ -34,23 +34,23 @@ import net.sf.jsqlparser.statement.update.Update;
 
 public interface StatementVisitor {
 
-	public void visit(Select select);
+	void visit(Select select);
 
-	public void visit(Delete delete);
+	void visit(Delete delete);
 
-	public void visit(Update update);
+	void visit(Update update);
 
-	public void visit(Insert insert);
+	void visit(Insert insert);
 
-	public void visit(Replace replace);
+	void visit(Replace replace);
 
-	public void visit(Drop drop);
+	void visit(Drop drop);
 
-	public void visit(Truncate truncate);
+	void visit(Truncate truncate);
 
-	public void visit(CreateIndex createIndex);
+	void visit(CreateIndex createIndex);
 
-	public void visit(CreateTable createTable);
+	void visit(CreateTable createTable);
 
-	public void visit(CreateView createView);
+	void visit(CreateView createView);
 }

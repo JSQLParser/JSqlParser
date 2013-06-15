@@ -81,9 +81,9 @@ import net.sf.jsqlparser.statement.select.SubSelect;
  */
 public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
-	protected StringBuilder buffer;
-	protected SelectVisitor selectVisitor;
-	protected boolean useBracketsInExprList = true;
+	private StringBuilder buffer;
+	private SelectVisitor selectVisitor;
+	private boolean useBracketsInExprList = true;
 
 	public ExpressionDeParser() {
 	}
@@ -409,10 +409,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 			buffer.append(" ");
 		}
 
-		for (Iterator<Expression> iter = caseExpression.getWhenClauses().iterator(); iter.hasNext();) {
-			Expression exp = (Expression) iter.next();
-			exp.accept(this);
-		}
+        for (Expression exp : caseExpression.getWhenClauses()) {
+            exp.accept(this);
+        }
 
 		Expression elseExp = caseExpression.getElseExpression();
 		if (elseExp != null) {

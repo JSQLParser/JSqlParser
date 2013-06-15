@@ -31,7 +31,7 @@ public class CastExpression implements Expression {
 
 	private Expression leftExpression;
 	private ColDataType type;
-	boolean useCastKeyword;
+	private boolean useCastKeyword;
 
 	public ColDataType getType() {
 		return type;

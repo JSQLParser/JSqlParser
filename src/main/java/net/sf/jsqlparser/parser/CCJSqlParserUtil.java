@@ -24,8 +24,6 @@ package net.sf.jsqlparser.parser;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.statement.Statement;
 
@@ -33,7 +31,7 @@ import net.sf.jsqlparser.statement.Statement;
  * Toolfunctions to start and use JSqlParser.
  * @author toben
  */
-public class CCJSqlParserUtil {
+public final class CCJSqlParserUtil {
 	public static Statement parse(Reader statementReader) throws JSQLParserException {
 		CCJSqlParser parser = new CCJSqlParser(statementReader);
 		try {

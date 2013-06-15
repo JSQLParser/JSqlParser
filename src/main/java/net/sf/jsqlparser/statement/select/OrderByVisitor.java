@@ -23,5 +23,5 @@ package net.sf.jsqlparser.statement.select;
 
 public interface OrderByVisitor {
 
-	public void visit(OrderByElement orderBy);
+	void visit(OrderByElement orderBy);
 }
