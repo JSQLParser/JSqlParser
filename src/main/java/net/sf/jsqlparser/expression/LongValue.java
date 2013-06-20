@@ -29,12 +29,13 @@ public class LongValue implements Expression {
 	private long value;
 	private String stringValue;
 
-	public LongValue(String value) {
-		if (value.charAt(0) == '+') {
-			value = value.substring(1);
+	public LongValue(final String value) {
+		String val = value;
+		if (val.charAt(0) == '+') {
+			val = val.substring(1);
 		}
-		this.value = Long.parseLong(value);
-        this.stringValue = value;
+		this.value = Long.parseLong(val);
+        this.stringValue = val;
 	}
 
 	@Override
