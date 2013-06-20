@@ -11,9 +11,7 @@ import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.update.Update;
-import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class UpdateTest extends TestCase {

@@ -4,7 +4,6 @@ import java.io.StringReader;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SetOperationList;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

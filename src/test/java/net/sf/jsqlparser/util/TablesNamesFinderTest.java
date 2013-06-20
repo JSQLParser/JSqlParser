@@ -2,8 +2,6 @@ package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -21,7 +19,6 @@ import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.test.TestException;
-import net.sf.jsqlparser.test.create.CreateTableTest;
 import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
 
 public class TablesNamesFinderTest extends TestCase {

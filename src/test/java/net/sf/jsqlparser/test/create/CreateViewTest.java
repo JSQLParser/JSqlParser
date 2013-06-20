@@ -8,10 +8,8 @@ import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class CreateViewTest extends TestCase {
