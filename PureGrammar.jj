@@ -1,0 +1,1300 @@
+/*
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2013 JSQLParser
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ *
+ * You should have received a copy of the GNU General Lesser Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
+/*
+ * This is a pure grammar rule file of JSqlParser
+ */
+
+
+options{
+    IGNORE_CASE=true ;
+    STATIC=false;
+    //  DEBUG_PARSER=true;
+    //  DEBUG_LOOKAHEAD=true ;
+    //  FORCE_LA_CHECK=true;
+    //  DEBUG_TOKEN_MANAGER=true;
+    UNICODE_INPUT=true;
+}
+
+PARSER_BEGIN(CCJSqlParser)
+
+
+    public class CCJSqlParser {
+    }
+
+
+PARSER_END(CCJSqlParser)
+
+
+SKIP:
+{
+    " "
+        |   "\t"
+        |   "\r"
+        |   "\n"
+}
+
+
+TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
+{
+    <K_AS: "AS">
+    |   <K_BY:"BY">
+    |   <K_DO:"DO">
+    |   <K_IS:"IS">
+    |   <K_IN:"IN">
+    |   <K_OR:"OR">
+    |   <K_ON:"ON">
+    |   <K_ALL:"ALL">
+    |   <K_AND:"AND">
+    |   <K_ANY:"ANY">
+    |   <K_KEY:"KEY">
+    |   <K_NOT:"NOT">
+    |   <K_SET:"SET">
+    |   <K_ASC:"ASC">
+    |   <K_TOP:"TOP">
+    |   <K_END:"END">
+    |   <K_DESC:"DESC">
+    |   <K_INTO:"INTO">
+    |   <K_NULL:"NULL">
+    |   <K_LIKE:"LIKE">
+    |   <K_REGEXP:"REGEXP">
+    |   <K_DROP:"DROP">
+    |   <K_JOIN:"JOIN">
+    |   <K_LEFT:"LEFT">
+    |   <K_CROSS:"CROSS">
+    |   <K_FROM:"FROM">
+    |   <K_OPEN:"OPEN">
+    |   <K_CASE:"CASE">
+    |   <K_WHEN:"WHEN">
+    |   <K_THEN:"THEN">
+    |   <K_ELSE:"ELSE">
+    |   <K_SOME:"SOME">
+    |   <K_FULL:"FULL">
+    |   <K_WITH:"WITH">
+    |   <K_TABLE:"TABLE">
+    |   <K_VIEW:"VIEW">
+    |   <K_WHERE:"WHERE">
+    |   <K_USING:"USING">
+    |   <K_UNION:"UNION">
+    |   <K_GROUP:"GROUP">
+    |   <K_BEGIN:"BEGIN">
+    |   <K_INDEX:"INDEX">
+    |   <K_INNER:"INNER">
+    |   <K_LIMIT:"LIMIT">
+    |   <K_OUTER:"OUTER">
+    |   <K_ORDER:"ORDER">
+    |   <K_RIGHT:"RIGHT">
+    |   <K_VALUE:"VALUE">
+    |   <K_DELETE:"DELETE">
+    |   <K_CREATE:"CREATE">
+    |   <K_SELECT:"SELECT">
+    |   <K_OFFSET:"OFFSET">
+    |   <K_EXISTS:"EXISTS">
+    |   <K_HAVING:"HAVING">
+    |   <K_INSERT:"INSERT">
+    |   <K_UPDATE:"UPDATE">
+    |   <K_VALUES:"VALUES">
+    |   <K_ESCAPE:"ESCAPE">
+    |   <K_PRIMARY:"PRIMARY">
+    |   <K_NATURAL:"NATURAL">
+    |   <K_REPLACE:"REPLACE">
+    |   <K_BETWEEN:"BETWEEN">
+    |   <K_TRUNCATE:"TRUNCATE">
+    |   <K_DISTINCT:"DISTINCT">
+    |   <K_INTERSECT:"INTERSECT">
+    |   <K_CAST:"CAST">
+    |   <K_EXCEPT:"EXCEPT">
+    |   <K_MINUS:"MINUS">
+    |   <K_OVER:"OVER">
+    |   <K_PARTITION:"PARTITION">
+    |   <K_EXTRACT:"EXTRACT">
+    |   <K_LATERAL:"LATERAL">
+    |   <K_MATERIALIZED:"MATERIALIZED">
+    |   <K_INTERVAL:"INTERVAL">
+
+    //TODO
+    //  mysql --> Statement :
+    //                  ALTER ANALYZE 
+    //                  BEGIN BINLOG 
+    //                  CACHE CALL CASE CHANGE_MASTER_TO CHECK_TABLE CHECKSUM CLOSE COMMIT 
+    //                  DEALLOCATE_PREPARE DECLARE DESCRIBE DO
+    //                  EXECUTE EXPLAIN
+    //                  FETCH FLUSH
+    //                  GET GRANT 
+    //                  HANDLER HELP
+    //                  IF INSTALL ITERATE
+    //                  KILL
+    //                  LEAVE LOAD LOCK LOOP
+    //                  OPEN OPTIMIZE
+    //                  PREPARE PURGE
+    //                  RELEASE RENAME REPAIRE REPEAT RESET RESIGNAL RETURN REVOKE ROLLBACK
+    //                  SAVEPOINT SET SHOW SIGNAL START STOP
+    //                  TRUNCATE
+    //                  UNINSTALL UNION UNLOCK USE
+    //                  WHILE
+    //                  XA 
+    //
+    //  mysql --> Alter create drop
+    //              Alter    Create    Drop
+    //  datebase    [x]      [x]       [x]
+    //  event       [x]      [x]       [x]
+    //  function    [x]      [x]       [x]
+    //  procedure   [x]      [x]       [x]
+    //  server      [x]      [x]       [x]
+    //  table       [x]      [x]       [x]
+    //  view        [x]      [x]       [x]
+    //
+    //  index       [ ]      [x]       [x]
+    //  trigger     [ ]      [x]       [x]
+    //
+    //  mysql --> Function:
+    //  
+    //  
+    //
+}
+
+
+TOKEN : /* Numeric Constants */
+{
+    <S_DOUBLE:(
+        (<S_INTEGER>)? "." <S_INTEGER> ( ["e","E"] ([ "-","+"])? <S_INTEGER> )?
+        |
+        <S_INTEGER> "." (["e","E"] ([ "-","+"])? <S_INTEGER>)?
+        |
+        <S_INTEGER> ["e","E"] ([ "-","+"])? <S_INTEGER>
+        )
+    >
+    |
+    <S_INTEGER: ( <DIGIT> )+ >
+    |
+    <#DIGIT: ["0" - "9"] >
+}
+
+
+SPECIAL_TOKEN:
+{
+    <LINE_COMMENT: "--" (~["\r","\n"])* | "#" (~["\r","\n"])* >
+    | 
+    <MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+}
+
+
+TOKEN:
+{
+    < S_IDENTIFIER: ( <LETTER> | <ADDITIONAL_LETTERS> )+ ( <DIGIT> | <LETTER> | <ADDITIONAL_LETTERS> | <SPECIAL_CHARS>)* >
+    |    
+    < #LETTER: ["a"-"z", "A"-"Z", "_"] >
+    |   
+    < #SPECIAL_CHARS: "$" | "_">
+    |   
+    < S_CHAR_LITERAL: "'" (~["'"])* "'" ("'" (~["'"])* "'")*>
+    |   
+    < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" | ("`" (~["\n","\r","`"])* "`") | ("[" (~["\n","\r","]"])* "]") >
+
+    /*
+       To deal with database names (columns, tables) using not only latin base characters, one
+       can expand the following rule to accept additional letters. Here is the
+       addition of german umlauts.
+
+       There seems to be no way to recognize letters by an external function to allow
+       a configurable addition. One must rebuild JSqlParser with this new "Letterset".
+     */
+    |   
+    < #ADDITIONAL_LETTERS: ["ä","ö","ü","Ä","Ö","Ü","ß"] >
+}
+
+/**
+ * Statement
+ */
+
+Statement Statement() :
+{
+    (
+     Select()
+     |
+     Update()
+     |
+     Insert()
+     |
+     Delete()
+     |
+     Replace()
+     |
+     LOOKAHEAD(3)
+     CreateIndex()
+     |
+     LOOKAHEAD(2)
+     CreateTable()
+     |
+     LOOKAHEAD(2)
+     CreateView()
+     |
+     Drop()
+     |
+     Truncate()
+     // mysql --> statements
+     //|
+     //Alter
+     // ...
+     )
+     [";"]
+     <EOF>
+}
+
+Select Select():
+{
+    //TODO mysql
+    //Mysql don't support withlist
+    [WithList()]
+    SelectBody()
+}
+
+Update Update():
+{
+    <K_UPDATE> 
+    //TODO mysql -->
+    //[LOW_PRIORITY] [IGNORE]
+    
+    TableWithAlias()  ("," TableWithAlias())*
+    <K_SET> Column() "=" 
+        //TODO mysql -->
+        //col_name = {expr1 | DEFAULT}
+        SimpleExpression() ("," Column() "=" SimpleExpression())*
+    
+    //TODO mysql -->
+    // [WHERE where_condition] [ORDER BY ...] [LIMIT row_count] 
+    // no K_FROM
+    [ <K_FROM>
+    FromItem()
+    JoinsList() ]
+    [ WhereClause() ]
+}
+
+Insert Insert():
+{
+    <K_INSERT> 
+    
+    //TODO mysql
+    //[LOW_PRIORITY | DELAYED | HIGH_PRIORITY] [IGNORE]
+
+    [<K_INTO>] Table()
+
+    //TODO mysql 
+    //Change struct
+    (   
+        (<K_SET> 
+            Column() "=" SimpleExpression() ("," Column() "=" SimpleExpression())*
+        )
+        |
+        (
+            //TODO mysql
+            // ColumnsNamseList
+            [LOOKAHEAD(2) "(" Column() ("," Column()  )* ")"  ]
+            (
+                LOOKAHEAD(2) 
+                    [<K_VALUES> | <K_VALUE>] 
+                    
+                    //TODO
+                    //{expr | DEFAULT}
+                    "(" PrimaryExpression() ("," PrimaryExpression())* ")"
+                |
+                SubSelect()
+            )
+        )
+    )
+
+    //TODO mysql
+    //[ ON DUPLICATE KEY UPDATE
+    //  col_name=expr
+    //  [, col_name=expr] ... ]
+}
+
+Delete Delete():
+{
+    <K_DELETE> 
+    
+    //TODO mysql
+    //[LOW_PRIORITY] [QUICK] [IGNORE]
+
+    //TODO mysql
+    // So Complex
+    // Wait for later
+
+    [<K_FROM>] TableWithAlias()
+
+    //TODO mysql
+    //[USING table_references]
+
+    [WhereClause()]
+
+    //TODO mysql 
+    //[ORDER BY ...]
+    //[LIMIT row_count]
+}
+
+Replace Replace():
+{
+    <K_REPLACE> 
+    
+    //TODO mysql
+    //[LOW_PRIORITY|DELAYED]
+
+    [<K_INTO>] Table()
+
+    (   
+        (<K_SET> 
+            Column() "=" SimpleExpression() ("," Column() "=" SimpleExpression())*
+        )
+        |
+        (
+            //TODO mysql
+            //why not use ColumnsNamesList
+            [LOOKAHEAD(2) "(" Column() ("," Column()  )* ")"  ]
+            (
+                LOOKAHEAD(2) 
+                    [<K_VALUES> | <K_VALUE>] 
+                    
+                    //TODO mysql
+                    //{expr | DEFAULT}
+                    "(" PrimaryExpression() ("," PrimaryExpression())* ")"
+                |
+                SubSelect()
+            )
+        )
+    )
+}
+
+CreateIndex CreateIndex():
+{
+    <K_CREATE>
+    ( CreateParameter() )*
+
+    <K_INDEX> RelObjectName()
+
+    <K_ON> Table()
+
+    "("
+    (
+        <S_IDENTIFIER>
+        |
+        <S_QUOTED_IDENTIFIER>
+    )
+
+    (CreateParameter() | <K_ASC> | <K_DESC>)*
+
+    (
+         ","
+         (<S_IDENTIFIER>
+          |
+          <S_QUOTED_IDENTIFIER>)
+
+         (CreateParameter() | <K_ASC> | <K_DESC>)*
+    )*
+
+    ")"
+    (CreateParameter() )*
+
+}
+
+CreateTable CreateTable():
+{
+    <K_CREATE>
+    // TODO:
+    //    [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } ]
+    (CreateParameter())*
+
+    <K_TABLE> Table()
+
+    [
+    "("
+
+    (
+        <S_IDENTIFIER>
+        |
+        <S_QUOTED_IDENTIFIER>
+    )
+    ColDataType()
+    ( CreateParameter()  )*
+    (
+           ","
+           (
+              (
+                   <K_INDEX>
+                   <S_IDENTIFIER>
+                   ColumnsNamesList()
+              )
+              |
+              (
+                   <K_PRIMARY> <K_KEY>
+                   ColumnsNamesList()
+              )
+              |
+              (
+                   <K_KEY>
+                   <S_IDENTIFIER>
+                   ColumnsNamesList()
+              )
+              |
+              (
+                   (
+                        <S_IDENTIFIER>
+                        |
+                        <S_QUOTED_IDENTIFIER>
+                    )
+                   ColDataType()
+                   (CreateParameter())*
+              )
+          )
+     )*
+     ")"
+     (CreateParameter())*
+     ]
+}
+
+CreateView CreateView():
+{
+    <K_CREATE>
+    [ <K_OR> <K_REPLACE>  ]
+    [ <K_MATERIALIZED>  ]
+    <K_VIEW> Table()
+    [  ColumnsNamesList()  ]
+    <K_AS>
+    (
+         LOOKAHEAD(SelectBody()) SelectBody()
+         |
+         "(" SelectBody() ")"
+    )
+}
+
+Drop Drop():
+{
+    <K_DROP>
+    (
+         <S_IDENTIFIER>
+         |
+         <K_TABLE>
+         |
+         <K_INDEX>
+    )
+    <S_IDENTIFIER>
+    (<S_IDENTIFIER>)*
+}
+
+Truncate Truncate():
+{
+    //mysql -->  [ <K_TABLE> ]
+    <K_TRUNCATE> <K_TABLE>
+    Table()
+}
+
+/**
+ * column
+ */
+
+Column Column():
+{
+    // [schema.][tabella.]colonna
+    RelObjectName() [ "." RelObjectName() ["." RelObjectName()]]
+}
+
+List<String> ColumnsNamesList():
+{
+    "("
+    <S_IDENTIFIER>
+    ( "," <S_IDENTIFIER>  )*
+    ")"
+}
+
+/**
+ * RelObjectName
+ */
+
+String RelObjectName():
+{
+    (
+        <S_IDENTIFIER>
+        |
+        <S_QUOTED_IDENTIFIER>
+    )
+}
+
+
+/**
+ * table
+ */
+
+Table TableWithAlias():
+{
+    Table() [Alias()]
+}
+
+Table Table():
+{
+    (
+        LOOKAHEAD(3)
+        RelObjectName() "." RelObjectName()
+        |
+        RelObjectName()
+    )
+}
+
+String Alias():
+{
+    [<K_AS>] RelObjectName()
+}
+
+AllTableColumns AllTableColumns():
+{
+    Table() "." "*"
+}
+
+/**
+ *  with
+ */
+
+List<WithItem> WithList():
+{
+    <K_WITH> WithItem()  ("," WithItem())*
+}
+
+WithItem WithItem():
+{
+    RelObjectName()
+    [ "(" SelectItemsList() ")"]
+    <K_AS>
+    "(" SelectBody()  ")"
+}
+
+/**
+ * select
+ */
+
+SelectBody SelectBody():
+
+{
+    (
+        LOOKAHEAD(SetOperationList())
+        SetOperationList()
+        |
+        PlainSelect()
+    )
+}
+
+PlainSelect PlainSelect():
+{
+    <K_SELECT>
+    [
+    <K_ALL>
+    |
+    (
+        <K_DISTINCT>
+        [ "ON" "(" SelectItemsList()   ")" ]
+    )
+
+    //TODO mysql --> Keyword
+    //   | <K_DISTICTROW>
+    ]
+
+
+    //TODO mysql
+    // what's this? Function?
+    [Top()]
+
+    //TODO mysql --> keyword
+    // [<K_HIGH_PRIORITY>]
+    // [<K_STRAIGHT_JOIN>]
+    // [<K_SQL_SMALL_RESULT>] [<K_SQL_BIG_RESULT>] [<K_SQL_BUFFER_RESULT>]
+    // [( <K_SQL_CACHE | <K_SQL_NO_CACHE>>)] [<K_SQL_CALC_FOUND_ROWS>]
+
+    SelectItemsList()
+
+    // TODO mysql
+    // move this to the end of statement
+    [IntoClause()]
+
+
+    [ <K_FROM>
+    FromItem()
+    JoinsList() ]
+
+    [ WhereClause() ]
+    [ GroupByColumnReferences() ]
+    [ Having() ]
+    [LOOKAHEAD(2) OrderByElements()]
+    [LOOKAHEAD(2) Limit()  ]
+
+    //TODO mysql
+    // [PROCEDURE procedure_name (argument_list)]
+    // [IntoClause()]
+    // [<K_FOR> <K_UPDATE> | <K_LOCK> <K_IN> <K_SHARE> <K_MODE>]
+}
+
+/**
+ * union intersect minus except
+ */
+
+SetOperationList SetOperationList():
+{
+    (
+        (
+            (
+                ("(" PlainSelect() ")") 
+                | 
+                (PlainSelect() )
+            )
+            (
+                (
+                    (<K_UNION>  [ <K_ALL>  | <K_DISTINCT>  ])
+                    | 
+                    <K_INTERSECT>
+                    | 
+                    <K_MINUS>
+                    | 
+                    <K_EXCEPT>
+                )
+                (
+                    ("(" PlainSelect() ")") 
+                    | 
+                    (PlainSelect() )
+                )
+            )+
+        )
+        [OrderByElements()  ]
+        [Limit()  ]
+    )
+}
+
+/**
+ * select item
+ */
+
+List<SelectItem> SelectItemsList():
+{
+    SelectItem() ("," SelectItem())*
+}
+
+SelectItem SelectItem():
+{
+    ("*"
+    |
+    LOOKAHEAD(AllTableColumns()) AllTableColumns()
+    |
+    SimpleExpression()
+    [Alias()]
+    )
+}
+
+/**
+ * into
+ */
+ void IntoClause():
+{
+    //TODO mysql
+    // INTO
+    // (
+    //      OUTFILE 'filename'
+    //      [CHARACTER SET charset_name]
+    //      export_options
+    //      |
+    //      DUMPFILE 'filename'
+    //      |
+    //      var_name [("," var_name)*]
+    // )
+    <K_INTO> Table() ("," Table())*
+}
+
+FromItem FromItem():
+{
+    (
+        LOOKAHEAD(ValuesList()) 
+        ValuesList()
+        |
+        (
+            (
+                (
+                    "(" (
+                        LOOKAHEAD(SubJoin()) SubJoin()
+                        |
+                        SubSelect()
+                        ) ")"
+                )
+                |
+                Table()
+                |
+                LateralSubSelect()
+            )
+            [Alias()]
+        )
+    )
+}
+
+FromItem ValuesList(): 
+{
+    "("
+        <K_VALUES>
+        (
+            LOOKAHEAD(3) 
+            (
+                "(" SimpleExpression()
+                    ("," SimpleExpression()   )* ")"
+
+               ("," "(" SimpleExpression()
+                        ("," SimpleExpression())* ")" )*
+            )
+            |
+            ( SimpleExpression()
+              ("," SimpleExpression()   )*
+            )
+        )
+    ")"
+
+    [Alias()
+    [ "("
+    RelObjectName()
+    ( "," RelObjectName()  )*
+    ")"  ]
+    ]
+}
+
+LateralSubSelect LateralSubSelect():
+{
+    <K_LATERAL>
+    "(" SubSelect() ")"
+}
+
+FromItem SubJoin():
+{
+    FromItem()
+    JoinerExpression()
+}
+
+List JoinsList():
+{
+    (JoinerExpression())*
+}
+
+Join JoinerExpression():
+{
+    /*
+       Refactor to be more restrictive.
+       left [outer] join
+       right [outer] join
+       full [outer] join
+       [inner] join
+       cross join
+       natural join
+     */
+    [(
+        <K_LEFT>
+        |
+        <K_RIGHT>
+        |
+        <K_FULL>
+        |
+        <K_NATURAL>
+        |
+        <K_CROSS>
+     )]
+
+     [(
+         <K_OUTER>
+         |
+         <K_INNER>
+     )]
+
+    (<K_JOIN> | ",")
+    
+    FromItem()
+
+    [(
+        <K_ON> Expression())
+        |
+        (<K_USING> "(" Column() ("," Column())* ")"
+    )]
+}
+
+
+Expression WhereClause():
+{
+    <K_WHERE> Expression()
+}
+
+
+List<Expression> GroupByColumnReferences():
+{
+    <K_GROUP> <K_BY> 
+    SimpleExpression()
+    ("," SimpleExpression()   )*
+}
+
+Expression Having():
+{
+    <K_HAVING> Expression()
+}
+
+List<OrderByElement> OrderByElements():
+{
+    <K_ORDER> <K_BY> 
+    OrderByElement()
+    ("," OrderByElement()  )*
+}
+
+OrderByElement OrderByElement():
+{
+    SimpleExpression()
+    [<K_ASC> | (<K_DESC>)]
+}
+
+Limit Limit():
+{
+    (
+        LOOKAHEAD(3)
+        // mysql-> LIMIT offset,row_count
+        <K_LIMIT>
+        ( <S_INTEGER> | "?")
+        ","
+        ( <S_INTEGER>  | "?")
+        |
+        // postgresql-> OFFSET offset
+        <K_OFFSET>
+        (<S_INTEGER>  | "?"  )
+        |
+        // mysql-postgresql-> LIMIT (row_count | ALL) [OFFSET offset]
+        <K_LIMIT>
+        (
+            <S_INTEGER>
+            |
+            "?"
+            |
+            <K_ALL>
+        )
+        [LOOKAHEAD(2) <K_OFFSET>
+        (<S_INTEGER>  | "?"  )  ]
+    )
+}
+
+Top Top():
+{
+    <K_TOP>
+    (
+        <S_INTEGER>
+        |
+        "?"
+    )
+}
+
+
+
+Expression Expression():
+{
+    (
+     LOOKAHEAD(OrExpression())
+     OrExpression()
+     |
+     "(" Expression() ")"
+    )
+}
+
+Expression OrExpression()  :
+{
+    AndExpression()
+    (
+         LOOKAHEAD(<K_OR>)
+         <K_OR>
+         AndExpression()
+    )*
+}
+
+
+
+Expression AndExpression() :
+{
+    (
+         LOOKAHEAD(Condition())
+         Condition()
+         |
+         [ <K_NOT>  ]
+         "(" OrExpression() ")"
+    )
+    (
+         LOOKAHEAD(<K_AND>)
+         <K_AND>
+         (
+              LOOKAHEAD(Condition())
+              Condition()
+              |
+              [ <K_NOT>  ]
+              "(" OrExpression() ")"
+         )
+    )*
+}
+
+Expression Condition():
+{
+    (
+        LOOKAHEAD(SQLCondition()) SQLCondition()
+        |
+        RegularCondition()
+    )
+}
+
+Expression RegularCondition():
+{
+
+    [<K_NOT>]
+    ComparisonItem()
+    [ "(+)"  ]
+    (
+        ">"
+        | "<"
+        | "="
+        | ">="
+        | "<="
+        | ("<>" | "!=")
+        | "@@"
+    )
+    ComparisonItem()
+    ["(+)"]
+}
+
+
+Expression SQLCondition():
+{
+    (
+         LOOKAHEAD(InExpression()) InExpression()
+         | 
+         LOOKAHEAD(Between()) Between()
+         | 
+         LOOKAHEAD(IsNullExpression()) IsNullExpression()
+         | 
+         LOOKAHEAD(ExistsExpression()) ExistsExpression()
+         |  
+         LikeExpression()
+    )
+}
+
+Expression InExpression() :
+{
+    ( 
+        LOOKAHEAD(3) SimpleExpression()
+        | 
+        "(" SimpleExpressionList() ")"
+    )
+    [<K_NOT>] <K_IN> 
+    "(" 
+    (
+        LOOKAHEAD(SubSelect()) SubSelect() 
+        | 
+        SimpleExpressionList() 
+    ) 
+    ")"
+}
+
+Expression Between() :
+{
+    SimpleExpression()
+    [<K_NOT>]
+    <K_BETWEEN> SimpleExpression() <K_AND> SimpleExpression()
+}
+
+Expression LikeExpression() :
+{
+    SimpleExpression()
+    [<K_NOT>  ] <K_LIKE> SimpleExpression()
+    [<K_ESCAPE> <S_CHAR_LITERAL> ]
+}
+
+Expression IsNullExpression():
+{
+    (
+        <K_NOT>  SimpleExpression() <K_IS> <K_NULL>
+        |
+        SimpleExpression() <K_IS> [<K_NOT>  ] <K_NULL>
+    )
+}
+
+
+Expression ExistsExpression():
+{
+    [<K_NOT>] <K_EXISTS> SimpleExpression()
+}
+
+
+ExpressionList SQLExpressionList():
+{
+    Expression()  ("," Expression() )*
+}
+
+ExpressionList SimpleExpressionList():
+{
+    SimpleExpression()  ("," SimpleExpression() )*
+}
+
+Expression ComparisonItem() :
+{
+    (
+         AllComparisonExpression()
+         | 
+         AnyComparisonExpression()
+         | 
+         SimpleExpression()
+    )
+
+}
+
+Expression AllComparisonExpression() :
+{
+    <K_ALL> "(" SubSelect() ")"
+}
+
+Expression AnyComparisonExpression() :
+{
+    (<K_ANY> | <K_SOME>) "(" SubSelect() ")"
+}
+
+Expression SimpleExpression():
+{
+    (
+        LOOKAHEAD(BitwiseAndOr())
+        BitwiseAndOr()
+        |
+        "(" BitwiseAndOr() ")"
+    )
+}
+
+Expression ConcatExpression():
+{
+    AdditiveExpression()
+    (
+        "||"
+        AdditiveExpression()
+    )*
+}
+
+Expression BitwiseAndOr():
+{
+    ConcatExpression()
+    (
+        LOOKAHEAD(2) 
+        ( "|" | "&")
+        ConcatExpression()
+    )*
+}
+
+Expression AdditiveExpression():
+{
+    MultiplicativeExpression()
+        (
+         LOOKAHEAD(2) ("+" | "-")
+
+         MultiplicativeExpression()
+        )*
+}
+
+
+Expression MultiplicativeExpression():
+{
+    (
+         LOOKAHEAD(BitwiseXor())
+         BitwiseXor()
+         |
+         "(" ConcatExpression() ")"
+    )
+
+    (
+         LOOKAHEAD(2) ("*" | "/" | "%")
+         (
+              LOOKAHEAD(BitwiseXor())
+              BitwiseXor()
+              |
+              "(" ConcatExpression() ")"
+         )
+    )*
+
+}
+
+Expression BitwiseXor():
+{
+    PrimaryExpression()
+    (
+         "^"
+         PrimaryExpression()
+    )*
+}
+
+
+Expression PrimaryExpression():
+{
+    (
+         <K_NULL> 
+         |    
+         CaseWhenExpression() 
+         | 
+         "?" 
+         | 
+         LOOKAHEAD(AnalyticExpression()) AnalyticExpression() 
+         | 
+         LOOKAHEAD(ExtractExpression()) ExtractExpression() 
+         | 
+         LOOKAHEAD([ "+" | "-"] Function()) [ "+" | "-" ] Function() 
+         | 
+         LOOKAHEAD([ "+" | "-"] <S_DOUBLE>) [ "+" | "-" ]  <S_DOUBLE> 
+         | 
+         LOOKAHEAD([ "+" | "-"] <S_INTEGER>) [ "+" | "-" ]  <S_INTEGER> 
+         | 
+         LOOKAHEAD(CastExpression()) [ "+" | "-" ] CastExpression() 
+         | 
+         LOOKAHEAD(Column())      Column() 
+         | 
+         LOOKAHEAD(2) [ "+" | "-" ]  "(" PrimaryExpression() ")" 
+         | 
+         <S_CHAR_LITERAL> 
+         | 
+         [ "+" | "-" ] "(" SubSelect() ")" 
+         |     
+         "{d" <S_CHAR_LITERAL> "}" 
+         |     
+         "{t" <S_CHAR_LITERAL> "}" 
+         |     
+         "{ts" <S_CHAR_LITERAL> "}" 
+         |  
+         IntervalExpression()
+     )
+
+     [ "::" ColDataType()  ]
+
+}
+
+IntervalExpression IntervalExpression() : 
+{
+    <K_INTERVAL> <S_CHAR_LITERAL>
+}
+
+AnalyticExpression AnalyticExpression() :
+{
+    <S_IDENTIFIER>  "(" [ SimpleExpression() | "*"  ] ")" <K_OVER> 
+    "("
+    [<K_PARTITION> <K_BY> Column()   ("," Column()  )* ]
+    [OrderByElements() ]
+    ")"
+}
+
+ExtractExpression ExtractExpression() :
+{
+    <K_EXTRACT>
+    "("
+    <S_IDENTIFIER>
+    <K_FROM>
+    SimpleExpression()
+    ")"
+}
+
+CastExpression CastExpression():
+{
+    <K_CAST> "(" SimpleExpression() <K_AS> ColDataType() ")"
+}
+
+Expression CaseWhenExpression():
+{
+    <K_CASE>
+    (
+        ( WhenThenSearchCondition()  )+
+        [<K_ELSE> SimpleExpression()]
+        |
+        PrimaryExpression()
+        ( WhenThenValue()  )*
+        [<K_ELSE> SimpleExpression()]
+    )
+    <K_END>
+}
+
+WhenClause WhenThenSearchCondition():
+{
+    <K_WHEN> Expression() <K_THEN> SimpleExpression()
+}
+
+WhenClause WhenThenValue():
+{
+    <K_WHEN> PrimaryExpression() <K_THEN> SimpleExpression()
+}
+
+
+Function Function():
+{
+    ["{fn"  ]
+    (
+         RelObjectName()
+         |
+         // workaround for replace(string) function (name clash with mysql REPLACE expression)
+         <K_REPLACE>
+    ) 
+    [ "." RelObjectName()  ["." RelObjectName() ]]
+    "(" [ [<K_DISTINCT>  | <K_ALL> ] (SimpleExpressionList() | "*" ) ] ")"
+    ["}"]
+}
+
+
+
+SubSelect SubSelect():
+{
+    SelectBody()
+}
+
+
+ColDataType ColDataType():
+{
+    ( <S_IDENTIFIER>  )
+    [LOOKAHEAD(2) "(" ( (<S_INTEGER> | <S_CHAR_LITERAL>)  ["," ] )* ")"]
+}
+
+
+String CreateParameter():
+{
+    (
+         <S_IDENTIFIER>
+         |
+         <K_NULL>
+         |
+         <K_NOT>
+         |
+         <K_PRIMARY>
+         |
+         <K_KEY>
+         |
+         <S_CHAR_LITERAL>
+         |
+         <S_INTEGER>
+         |
+         <S_DOUBLE>
+         |
+         "="
+         |
+         AList()
+    )
+}
+
+String AList():
+{
+    "("
+    ( (<S_INTEGER> | <S_DOUBLE> | <S_CHAR_LITERAL> | <S_IDENTIFIER>)  ["," ] )*
+    ")"
+}
