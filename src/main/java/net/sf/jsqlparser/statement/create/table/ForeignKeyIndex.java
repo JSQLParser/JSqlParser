@@ -22,52 +22,37 @@
 package net.sf.jsqlparser.statement.create.table;
 
 import java.util.List;
-
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
- * A column definition in a CREATE TABLE statement.<br>
- * Example: mycol VARCHAR(30) NOT NULL
+ * Foreign Key Index
+ * @author toben
  */
-public class ColumnDefinition {
+public class ForeignKeyIndex extends Index {
+	private Table table;
+	private List<String> referencedColumnNames;
 
-	private String columnName;
-	private ColDataType colDataType;
-	private List<String> columnSpecStrings;
-
-	/**
-	 * A list of strings of every word after the datatype of the column.<br>
-	 * Example ("NOT", "NULL")
-	 */
-	public List<String> getColumnSpecStrings() {
-		return columnSpecStrings;
+	public Table getTable() {
+		return table;
 	}
 
-	public void setColumnSpecStrings(List<String> list) {
-		columnSpecStrings = list;
+	public void setTable(Table table) {
+		this.table = table;
 	}
 
-	/**
-	 * The {@link ColDataType} of this column definition
-	 */
-	public ColDataType getColDataType() {
-		return colDataType;
+	public List<String> getReferencedColumnNames() {
+		return referencedColumnNames;
 	}
 
-	public void setColDataType(ColDataType type) {
-		colDataType = type;
-	}
-
-	public String getColumnName() {
-		return columnName;
-	}
-
-	public void setColumnName(String string) {
-		columnName = string;
+	public void setReferencedColumnNames(List<String> referencedColumnNames) {
+		this.referencedColumnNames = referencedColumnNames;
 	}
 
 	@Override
 	public String toString() {
-		return columnName + " " + colDataType + (columnSpecStrings != null ? " " + PlainSelect.getStringList(columnSpecStrings, false, false) : "");
+		return (getName()!=null?"CONSTRAINT " + getName() + " ":"") 
+				+  getType() + " " + PlainSelect.getStringList(getColumnsNames(), true, true) 
+				+ " REFERENCES " + table + PlainSelect.getStringList(getReferencedColumnNames(), true, true);
 	}
 }

@@ -15,6 +15,12 @@ Original project websites:
 
 ## Extensions Version 0.8.4
 
+* Added support for foreign keys in create table statements
+
+```sql
+create table testTable1 (a varchar(10), b varchar(20), foreign key a references testTable2(a))
+create table testTable1 (a varchar(10), b varchar(20), constraint fkIdx foreign key a references testTable2(a))
+```
 * Added support for simple intervals
 
 ```sql

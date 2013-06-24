@@ -59,32 +59,19 @@ public class CreateTableDeParser {
 				}
 
 				if (iter.hasNext()) {
-					buffer.append(" , ");
+					buffer.append(", ");
 				}
-
 			}
 
 			if (createTable.getIndexes() != null) {
 				for (Iterator<Index> iter = createTable.getIndexes().iterator(); iter.hasNext();) {
-					buffer.append(",");
+					buffer.append(", ");
 					Index index = iter.next();
-					buffer.append(index.getType()).append(" ").append(index.getName());
-					buffer.append("(");
-					for (Iterator<String> iterator = index.getColumnsNames().iterator(); iterator.hasNext();) {
-						buffer.append(iterator.next());
-						if (iterator.hasNext()) {
-							buffer.append(", ");
-						}
-					}
-					buffer.append(")");
-
-					if (iter.hasNext()) {
-						buffer.append(",");
-					}
+					buffer.append(index.toString());
 				}
 			}
 
-			buffer.append(" )");
+			buffer.append(")");
 		}
 	}
 

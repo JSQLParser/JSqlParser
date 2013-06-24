@@ -27,12 +27,12 @@ public class CreateTableTest extends TestCase {
 	}
 
 	public void testCreateTable2() throws JSQLParserException {
-		String statement = "CREATE TABLE testtab (\"test\" varchar (255) )";
+		String statement = "CREATE TABLE testtab (\"test\" varchar (255))";
 		assertSqlCanBeParsedAndDeparsed(statement);
 	}
 
 	public void testCreateTable3() throws JSQLParserException {
-		String statement = "CREATE TABLE testtab (\"test\" varchar (255) , \"test\" varchar (255) )";
+		String statement = "CREATE TABLE testtab (\"test\" varchar (255), \"test2\" varchar (255))";
 		assertSqlCanBeParsedAndDeparsed(statement);
 	}
 
@@ -46,6 +46,16 @@ public class CreateTableTest extends TestCase {
 		assertEquals("PRIMARY KEY", ((Index) createTable.getIndexes().get(0)).getType());
 		assertEquals("mycol", ((Index) createTable.getIndexes().get(0)).getColumnsNames().get(1));
 		assertEquals(statement, "" + createTable);
+	}
+	
+	public void testCreateTableForeignKey() throws JSQLParserException {
+		String statement = "CREATE TABLE test (id INT UNSIGNED NOT NULL AUTO_INCREMENT, string VARCHAR (20), user_id INT UNSIGNED, PRIMARY KEY (id), FOREIGN KEY (user_id) REFERENCES ra_user(id))";
+		assertSqlCanBeParsedAndDeparsed(statement);
+	}
+	
+	public void testCreateTableForeignKey2() throws JSQLParserException {
+		String statement = "CREATE TABLE test (id INT UNSIGNED NOT NULL AUTO_INCREMENT, string VARCHAR (20), user_id INT UNSIGNED, PRIMARY KEY (id), CONSTRAINT fkIdx FOREIGN KEY (user_id) REFERENCES ra_user(id))";
+		assertSqlCanBeParsedAndDeparsed(statement);
 	}
 
 	public void testRUBiSCreateList() throws Exception {

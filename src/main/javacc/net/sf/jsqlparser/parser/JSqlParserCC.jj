@@ -115,6 +115,7 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -241,6 +242,9 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_LATERAL:"LATERAL">
 |	<K_MATERIALIZED:"MATERIALIZED">
 |   <K_INTERVAL:"INTERVAL">
+|	<K_FOREIGN:"FOREIGN">
+|	<K_CONSTRAINT:"CONSTRAINT">
+|	<K_REFERENCES:"REFERENCES">
 }
 
 
@@ -1806,7 +1810,9 @@ CreateTable CreateTable():
 	List indexes = new ArrayList();
 	List colNames = null;
 	Index index = null;
+	ForeignKeyIndex fkIndex = null;
 	String parameter = null;
+	Table fkTable = null;
 }
 {
 	<K_CREATE> 
@@ -1875,6 +1881,25 @@ CreateTable CreateTable():
 							index.setName(tk3.image);
 							index.setColumnsNames(colNames);
 							indexes.add(index);
+						}
+				)
+				|
+				(	
+					{ 
+						fkIndex = new ForeignKeyIndex(); 
+					}
+					[<K_CONSTRAINT> tk3=<S_IDENTIFIER> {fkIndex.setName(tk3.image);} ]
+					tk=<K_FOREIGN> tk2=<K_KEY>		
+						colNames=ColumnsNamesList()
+						{ 
+							fkIndex.setType(tk.image + " " + tk2.image);
+							fkIndex.setColumnsNames(colNames);
+						}
+						<K_REFERENCES> fkTable=Table() colNames=ColumnsNamesList()
+						{
+							fkIndex.setTable(fkTable);
+							fkIndex.setReferencedColumnNames(colNames);
+							indexes.add(fkIndex);
 						}
 				)
 				|
