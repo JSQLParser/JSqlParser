@@ -51,10 +51,9 @@ public class MultiExpressionList implements ItemsList {
 	}
 
 	public void addExpressionList(ExpressionList el) {
-		if (!exprList.isEmpty()) {
-			if (exprList.get(0).getExpressions().size() != el.getExpressions().size()) {
-				throw new IllegalArgumentException("different count of parameters");
-			}
+		if (!exprList.isEmpty()
+				&& exprList.get(0).getExpressions().size() != el.getExpressions().size()) {
+			throw new IllegalArgumentException("different count of parameters");
 		}
 		exprList.add(el);
 	}
