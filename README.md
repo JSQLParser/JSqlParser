@@ -1,17 +1,9 @@
 # JSqlParser Organisation created and started
 
-Some issues of wumpz repository JSQLParser are lost. Sorry about that. That repository is replaced by 
-this new JSqlParser - place.
-
 
 ## JSqlParser
 
-This is a fork of the jsqlparser originally developed by ultimoamore.
 
-Original project websites:
-
-* http://jsqlparser.sourceforge.net
-* http://sourceforge.net/projects/jsqlparser/
 
 ## Extensions Version 0.8.4
 
@@ -146,3 +138,11 @@ And this is the dependency declaration in your pom:
 </dependency>
 ```
 
+## Original project
+
+This is a fork of the jsqlparser originally developed by ultimoamore.
+
+Original project websites:
+
+* http://jsqlparser.sourceforge.net
+* http://sourceforge.net/projects/jsqlparser/
