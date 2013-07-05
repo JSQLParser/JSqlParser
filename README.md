@@ -3,7 +3,8 @@
 
 ## JSqlParser
 
-
+JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes. 
+The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.8.4
 
