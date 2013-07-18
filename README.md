@@ -1,5 +1,4 @@
-# JSqlParser Organisation created and started
-
+# JSqlParser Organisation
 
 ## JSqlParser
 
