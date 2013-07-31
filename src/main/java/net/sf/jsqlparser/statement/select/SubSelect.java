@@ -34,6 +34,8 @@ public class SubSelect implements FromItem, Expression, ItemsList {
 	private SelectBody selectBody;
 	private String alias;
 
+    private Pivot pivot;
+
 	@Override
 	public void accept(FromItemVisitor fromItemVisitor) {
 		fromItemVisitor.visit(this);
@@ -61,6 +63,14 @@ public class SubSelect implements FromItem, Expression, ItemsList {
 	public void setAlias(String string) {
 		alias = string;
 	}
+
+    public Pivot getPivot() {
+        return pivot;
+    }
+
+    public void setPivot(Pivot pivot) {
+        this.pivot = pivot;
+    }
 
 	@Override
 	public void accept(ItemsListVisitor itemsListVisitor) {

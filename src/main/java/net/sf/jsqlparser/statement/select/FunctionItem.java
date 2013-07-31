@@ -21,20 +21,31 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-/**
- * An item in a "SELECT [...] FROM item1" statement. (for example a table or a
- * sub-select)
- */
-public interface FromItem {
+import net.sf.jsqlparser.expression.Function;
 
-	void accept(FromItemVisitor fromItemVisitor);
+public class FunctionItem {
 
-	String getAlias();
+    private Function function;
+    private String alias;
 
-	void setAlias(String alias);
+    public String getAlias() {
+        return alias;
+    }
 
-    Pivot getPivot();
+    public void setAlias(String string) {
+        alias = string;
+    }
 
-    void setPivot(Pivot pivot);
+    public Function getFunction() {
+        return function;
+    }
 
+    public void setFunction(Function function) {
+        this.function = function;
+    }
+
+    @Override
+    public String toString() {
+        return function + ((alias != null) ? " AS " + alias : "");
+    }
 }

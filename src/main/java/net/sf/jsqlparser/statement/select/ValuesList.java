@@ -21,10 +21,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import java.util.Iterator;
-import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This is a container for a values item within a select statement. It holds
@@ -61,7 +62,16 @@ public class ValuesList implements FromItem {
 		this.alias = alias;
 	}
 
-	public MultiExpressionList getMultiExpressionList() {
+    @Override
+    public Pivot getPivot() {
+        return null;
+    }
+
+    @Override
+    public void setPivot(Pivot pivot) {
+    }
+
+    public MultiExpressionList getMultiExpressionList() {
 		return multiExpressionList;
 	}
 

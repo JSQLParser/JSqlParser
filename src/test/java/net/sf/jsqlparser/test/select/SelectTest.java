@@ -1,19 +1,8 @@
 package net.sf.jsqlparser.test.select;
 
-import java.io.IOException;
-import java.io.StringReader;
-import static junit.framework.Assert.assertEquals;
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.BinaryExpression;
-import net.sf.jsqlparser.expression.DoubleValue;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.IntervalExpression;
-import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.expression.TimeValue;
-import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
@@ -25,14 +14,12 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.io.IOUtils;
+
+import java.io.IOException;
+import java.io.StringReader;
+
 import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class SelectTest extends TestCase {
@@ -994,4 +981,10 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT * FROM mytable WHERE (trim(a), trim(b)) IN (SELECT a, b FROM mytable2)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+
+    public void testPivot1() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN ('col1', 'col2'))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
 }

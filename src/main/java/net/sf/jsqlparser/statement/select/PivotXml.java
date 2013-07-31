@@ -21,20 +21,6 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-/**
- * An item in a "SELECT [...] FROM item1" statement. (for example a table or a
- * sub-select)
- */
-public interface FromItem {
-
-	void accept(FromItemVisitor fromItemVisitor);
-
-	String getAlias();
-
-	void setAlias(String alias);
-
-    Pivot getPivot();
-
-    void setPivot(Pivot pivot);
+public class PivotXml extends Pivot {
 
 }
