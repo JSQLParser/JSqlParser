@@ -10,5 +10,9 @@
 /.settings
 /.classpath
 
+#IntelliJ
+/.idea
+*.iml
+
 *.jj~
 *.*~
