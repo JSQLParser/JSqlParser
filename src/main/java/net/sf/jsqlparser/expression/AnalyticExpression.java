@@ -21,9 +21,10 @@
  */
 package net.sf.jsqlparser.expression;
 
-import java.util.List;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
+
+import java.util.List;
 
 /**
  * Analytic function. The name of the function is variable but the parameters
@@ -39,6 +40,8 @@ public class AnalyticExpression implements Expression {
 	private List<OrderByElement> orderByElements;
 	private String name;
 	private Expression expression;
+    private Expression offset;
+    private Expression defaultValue;
 	private boolean allColumns = false;
 
 	@Override
@@ -78,13 +81,35 @@ public class AnalyticExpression implements Expression {
 		this.expression = expression;
 	}
 
-	@Override
+    public Expression getOffset() {
+        return offset;
+    }
+
+    public void setOffset(Expression offset) {
+        this.offset = offset;
+    }
+
+    public Expression getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(Expression defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    @Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
 
 		b.append(name).append("(");
 		if (expression != null) {
 			b.append(expression.toString());
+            if (offset != null) {
+                b.append(", ").append(offset.toString());
+                if (defaultValue != null) {
+                    b.append(", ").append(defaultValue.toString());
+                }
+            }
 		} else if (isAllColumns()) {
 			b.append("*");
 		}

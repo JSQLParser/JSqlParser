@@ -1765,13 +1765,18 @@ AnalyticExpression AnalyticExpression() :
 	Token token = null;
 	Column column = null;
 	Expression expr = null;
+	Expression offset = null;
+	Expression defaultValue = null;
 }
 {
-	token=<S_IDENTIFIER> { retval.setName(token.image); } "(" [ expr=SimpleExpression() | "*" { retval.setAllColumns(true); } ] ")" <K_OVER> "(" 
+	token=<S_IDENTIFIER> { retval.setName(token.image); }
+	    "(" [ expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } ] ")" <K_OVER> "("
         [<K_PARTITION> <K_BY> column=Column() {plist.add(column);}  ("," column=Column() {plist.add(column);} )* ] 
         [olist=OrderByElements() ]
 	{
 		retval.setExpression(expr);
+		retval.setOffset(offset);
+		retval.setDefaultValue(defaultValue);
 		retval.setPartitionByColumns(plist);
 		retval.setOrderByElements(olist);
 	} 

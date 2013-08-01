@@ -775,6 +775,16 @@ public class SelectTest extends TestCase {
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
+    public void testProblemSqlAnalytic10Lag() throws JSQLParserException {
+        String stmt = "SELECT a, lag(a, 1) OVER (PARTITION BY c ORDER BY a, b) AS n FROM table1";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testProblemSqlAnalytic11Lag() throws JSQLParserException {
+        String stmt = "SELECT a, lag(a, 1, 0) OVER (PARTITION BY c ORDER BY a, b) AS n FROM table1";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
 	public void testOracleJoin() throws JSQLParserException {
 		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
