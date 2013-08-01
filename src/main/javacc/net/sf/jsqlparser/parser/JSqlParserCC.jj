@@ -132,6 +132,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.FunctionItem;
+import net.sf.jsqlparser.statement.select.ExpressionListItem;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
@@ -805,11 +806,11 @@ List<FunctionItem> PivotFunctionItems():
 }
 {
     item = FunctionItem() {functionItems.add(item);}
-    ("," item = FunctionItem() {functionItems.add(item);} )*
+    ( "," item = FunctionItem() {functionItems.add(item);} )*
     { return functionItems; }
 }
 
-List<SelectExpressionItem> PivotInItems():
+List<SelectExpressionItem> PivotSingleInItems():
 {
    List<SelectExpressionItem> retval = new ArrayList<SelectExpressionItem>();
    SelectExpressionItem item;
@@ -820,31 +821,86 @@ List<SelectExpressionItem> PivotInItems():
    { return retval; }
 }
 
+
+ExpressionListItem ExpressionListItem():
+{
+	ExpressionListItem expressionListItem = null;
+	ExpressionList expressionList = null;
+	String alias = null;
+}
+{
+    "("
+    expressionList=SimpleExpressionList() { expressionListItem = new ExpressionListItem(); expressionListItem.setExpressionList(expressionList); }
+    ")"
+	[alias=Alias() { expressionListItem.setAlias(alias); }]
+    { return expressionListItem; }
+}
+
+
+List<ExpressionListItem> PivotMultiInItems():
+{
+   List<ExpressionListItem> retval = new ArrayList<ExpressionListItem>();
+   ExpressionListItem item;
+}
+{
+   item = ExpressionListItem() {retval.add(item);}
+   ("," item = ExpressionListItem() {retval.add(item);} )*
+   { return retval; }
+}
+
 Pivot Pivot():
 {
     Pivot retval = new Pivot();
     List<FunctionItem> functionItems;
     List<Column> forColumns;
-    List<SelectExpressionItem> inItems;
+    List<SelectExpressionItem> singleInItems = null;
+    List<ExpressionListItem> multiInItems = null;
 }
 {
 	<K_PIVOT> "(" functionItems = PivotFunctionItems() <K_FOR>
-	(forColumns = PivotForColumn() | forColumns = PivotForColumns())
-	<K_IN> "(" inItems = PivotInItems() ")"
+	( forColumns = PivotForColumn() | forColumns = PivotForColumns() )
+	<K_IN> "("
+	(LOOKAHEAD(3) singleInItems = PivotSingleInItems() | multiInItems = PivotMultiInItems() )
+	")"
 	")"
     {
         retval.setFunctionItems(functionItems);
         retval.setForColumns(forColumns);
-        retval.setInItems(inItems);
+        retval.setSingleInItems(singleInItems);
+        retval.setMultiInItems(multiInItems);
         return retval;
     }
 }
 
 PivotXml PivotXml():
-{ PivotXml retval = new PivotXml(); }
 {
-	<K_PIVOT> <K_XML>
-   { return retval; }
+    PivotXml retval = new PivotXml();
+    List<FunctionItem> functionItems;
+    List<Column> forColumns;
+    List<SelectExpressionItem> singleInItems = null;
+    List<ExpressionListItem> multiInItems = null;
+    SelectBody inSelect = null;
+}
+{
+	<K_PIVOT> <K_XML> "(" functionItems = PivotFunctionItems() <K_FOR>
+	( forColumns = PivotForColumn() | forColumns = PivotForColumns() )
+	<K_IN> "("
+	(
+	    <K_ANY> { retval.setInAny(true); } |
+	    LOOKAHEAD(1) inSelect = SelectBody() |
+	    LOOKAHEAD(2) singleInItems = PivotSingleInItems() |
+	    multiInItems = PivotMultiInItems()
+    )
+	")"
+	")"
+    {
+        retval.setFunctionItems(functionItems);
+        retval.setForColumns(forColumns);
+        retval.setSingleInItems(singleInItems);
+        retval.setMultiInItems(multiInItems);
+        retval.setInSelect(inSelect);
+        return retval;
+    }
 }
 
 void IntoClause():
@@ -880,7 +936,7 @@ FromItem FromItem():
 				|
 				fromItem=LateralSubSelect()
 			)
-			[LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot() { fromItem.setPivot(pivot); } ]
+			[(LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot()) { fromItem.setPivot(pivot); } ]
 			[alias=Alias() { fromItem.setAlias(alias); } ]
 		)
 	)

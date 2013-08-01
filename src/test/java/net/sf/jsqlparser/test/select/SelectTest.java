@@ -983,7 +983,42 @@ public class SelectTest extends TestCase {
 	}
 
     public void testPivot1() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN ('col1', 'col2'))";
+        String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN ('val1'))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivot2() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN (10, 20, 30))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivot3() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT (count(a) AS vals FOR b IN (10 AS d1, 20, 30 AS d3))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivot4() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT (count(a), sum(b) FOR b IN (10, 20, 30))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivot5() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR (b, c) IN ((10, 'a'), (20, 'b'), (30, 'c')))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivotXml1() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN ('val1'))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivotXml2() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN (SELECT vals FROM myothertable))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivotXml3() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN (ANY))";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 

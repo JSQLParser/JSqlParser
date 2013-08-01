@@ -31,7 +31,29 @@ public class Pivot {
 
     private List<Column> forColumns;
 
-    private List<SelectExpressionItem> inItems;
+    private List<SelectExpressionItem> singleInItems;
+
+    private List<ExpressionListItem> multiInItems;
+
+    public void accept(PivotVisitor pivotVisitor) {
+        pivotVisitor.visit(this);
+    }
+
+    public List<SelectExpressionItem> getSingleInItems() {
+        return singleInItems;
+    }
+
+    public void setSingleInItems(List<SelectExpressionItem> singleInItems) {
+        this.singleInItems = singleInItems;
+    }
+
+    public List<ExpressionListItem> getMultiInItems() {
+        return multiInItems;
+    }
+
+    public void setMultiInItems(List<ExpressionListItem> multiInItems) {
+        this.multiInItems = multiInItems;
+    }
 
     public List<FunctionItem> getFunctionItems() {
         return functionItems;
@@ -49,19 +71,15 @@ public class Pivot {
         this.forColumns = forColumns;
     }
 
-    public List<SelectExpressionItem> getInItems() {
-        return inItems;
-    }
-
-    public void setInItems(List<SelectExpressionItem> inItems) {
-        this.inItems = inItems;
+    public List<?> getInItems() {
+        return singleInItems == null ? multiInItems : singleInItems;
     }
 
     @Override
     public String toString() {
         return "PIVOT (" +
                 PlainSelect.getStringList(functionItems) +
-                " FOR " + PlainSelect.getStringList(forColumns, true, forColumns.size() > 1) +
-                " IN " + PlainSelect.getStringList(inItems, true, true) + ")";
+                " FOR " + PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1) +
+                " IN " + PlainSelect.getStringList(getInItems(), true, true) + ")";
     }
 }
