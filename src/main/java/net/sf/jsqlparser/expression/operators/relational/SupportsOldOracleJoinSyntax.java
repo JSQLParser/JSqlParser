@@ -21,17 +21,12 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
-import net.sf.jsqlparser.expression.ExpressionVisitor;
+public interface SupportsOldOracleJoinSyntax {
+    public static final int NO_ORACLE_JOIN = 0;
+    public static final int ORACLE_JOIN_RIGHT = 1;
+    public static final int ORACLE_JOIN_LEFT = 2;
 
-public class MinorThanEquals extends OldOracleJoinBinaryExpression {
+    public int getOldOracleJoinSyntax();
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
-
-	@Override
-	public String getStringExpression() {
-		return "<=";
-	}
+    public void setOldOracleJoinSyntax(int oldOracleJoinSyntax);
 }

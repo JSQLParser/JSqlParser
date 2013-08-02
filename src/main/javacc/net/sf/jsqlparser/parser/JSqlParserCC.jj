@@ -106,6 +106,7 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -1341,7 +1342,7 @@ Expression RegularCondition():
 			regCond.setNot();
 
 		if (oracleJoin>0)
-			((EqualsTo)result).setOldOracleJoinSyntax(oracleJoin);
+			((SupportsOldOracleJoinSyntax)result).setOldOracleJoinSyntax(oracleJoin);
 	}		
 	
 	{ return result; }
@@ -1369,18 +1370,19 @@ Expression InExpression() :
 	ItemsList leftItemsList = null;
 	ItemsList rightItemsList = null;
 	Expression leftExpression = null;
-	
 }
 {
-	( LOOKAHEAD(1) "(" ( 
+	( LOOKAHEAD(1) "(" (
 			LOOKAHEAD(SimpleExpressionList()) leftItemsList = SimpleExpressionList() { result.setLeftItemsList(leftItemsList); } 
 			|
 			leftExpression=SimpleExpression()
+	        [ "(+)" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
 		  )
 	  ")"
 	|
 		leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
-	)	
+        [ "(+)" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
+	)
     [<K_NOT> { result.setNot(true); } ] <K_IN> "(" (LOOKAHEAD(SubSelect()) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")"
 	{ 
 		result.setRightItemsList(rightItemsList);

@@ -795,6 +795,16 @@ public class SelectTest extends TestCase {
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
+    public void testOracleJoin3() throws JSQLParserException {
+        String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) > tabelle2.b";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testOracleJoin4() throws JSQLParserException {
+        String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) = tabelle2.b AND tabelle1.b(+) IN ('A', 'B')";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
 	public void testProblemSqlIntersect() throws Exception {
 		String stmt = "(SELECT * FROM a) INTERSECT (SELECT * FROM b)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
