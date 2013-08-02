@@ -106,6 +106,7 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -129,6 +130,10 @@ import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Pivot;
+import net.sf.jsqlparser.statement.select.PivotXml;
+import net.sf.jsqlparser.statement.select.FunctionItem;
+import net.sf.jsqlparser.statement.select.ExpressionListItem;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
@@ -189,6 +194,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_NULL:"NULL">
 |   <K_LIKE:"LIKE">
 |   <K_REGEXP:"REGEXP">
+|   <K_REGEXP_LIKE:"REGEXP_LIKE">
 |   <K_DROP:"DROP">
 |   <K_JOIN:"JOIN">
 |   <K_LEFT:"LEFT">
@@ -205,6 +211,9 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TABLE:"TABLE">
 |   <K_VIEW:"VIEW">
 |   <K_WHERE:"WHERE">
+|   <K_FOR:"FOR">
+|   <K_PIVOT:"PIVOT">
+|   <K_XML:"XML">
 |   <K_USING:"USING">
 |   <K_UNION:"UNION">
 |   <K_GROUP:"GROUP">
@@ -698,15 +707,24 @@ List<SelectItem> SelectItemsList():
     { return selectItemsList; }
 }
 
+SelectExpressionItem SelectExpressionItem():
+{
+	SelectExpressionItem selectExpressionItem = null;
+	Expression expression = null;
+	String alias = null;
+}
+{
+	 expression=SimpleExpression() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
+			 [alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
+}
+
 SelectItem SelectItem():
 {
 	Function function = null;
 	AllColumns allTableColumns = null;
 	Column tableColumn = null;
-	String alias = null;
 	SelectItem selectItem = null;
 	SelectExpressionItem selectExpressionItem = null;
-	Expression expression = null;
 	SubSelect subSelect = null;
 }
 {
@@ -716,8 +734,7 @@ SelectItem SelectItem():
     |
 	LOOKAHEAD(AllTableColumns()) selectItem=AllTableColumns()
 	|
-	 expression=SimpleExpression() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
-			 [alias=Alias() { selectExpressionItem.setAlias(alias); }] { selectItem = selectExpressionItem; }
+	 selectExpressionItem=SelectExpressionItem() {selectItem = selectExpressionItem; }
 	)
 	{
 		return selectItem;
@@ -744,6 +761,150 @@ String Alias():
    { return retval; }
 }
 
+
+FunctionItem FunctionItem():
+{
+    String alias = null;
+    Function function;
+    FunctionItem functionItem;
+}
+{
+    function=Function() { functionItem = new FunctionItem(); functionItem.setFunction(function); }
+			 [alias=Alias() { functionItem.setAlias(alias); }]
+    { return functionItem; }
+}
+
+
+
+List<Column> PivotForColumn():
+{
+    List<Column> columns = new ArrayList<Column>();
+    Column column;
+}
+{
+    column = Column()
+    {
+        columns.add(column);
+        return columns;
+    }
+}
+
+List<Column> PivotForColumns():
+{
+    List<Column> columns = new ArrayList<Column>();
+    Column column;
+}
+{
+    "(" column = Column() { columns.add(column); }
+    ("," column = Column() { columns.add(column); } )*
+    ")"
+    { return columns; }
+}
+
+List<FunctionItem> PivotFunctionItems():
+{
+    List<FunctionItem> functionItems = new ArrayList<FunctionItem>();
+    FunctionItem item;
+}
+{
+    item = FunctionItem() {functionItems.add(item);}
+    ( "," item = FunctionItem() {functionItems.add(item);} )*
+    { return functionItems; }
+}
+
+List<SelectExpressionItem> PivotSingleInItems():
+{
+   List<SelectExpressionItem> retval = new ArrayList<SelectExpressionItem>();
+   SelectExpressionItem item;
+}
+{
+   item = SelectExpressionItem() {retval.add(item);}
+   ("," item = SelectExpressionItem() {retval.add(item);} )*
+   { return retval; }
+}
+
+
+ExpressionListItem ExpressionListItem():
+{
+	ExpressionListItem expressionListItem = null;
+	ExpressionList expressionList = null;
+	String alias = null;
+}
+{
+    "("
+    expressionList=SimpleExpressionList() { expressionListItem = new ExpressionListItem(); expressionListItem.setExpressionList(expressionList); }
+    ")"
+	[alias=Alias() { expressionListItem.setAlias(alias); }]
+    { return expressionListItem; }
+}
+
+
+List<ExpressionListItem> PivotMultiInItems():
+{
+   List<ExpressionListItem> retval = new ArrayList<ExpressionListItem>();
+   ExpressionListItem item;
+}
+{
+   item = ExpressionListItem() {retval.add(item);}
+   ("," item = ExpressionListItem() {retval.add(item);} )*
+   { return retval; }
+}
+
+Pivot Pivot():
+{
+    Pivot retval = new Pivot();
+    List<FunctionItem> functionItems;
+    List<Column> forColumns;
+    List<SelectExpressionItem> singleInItems = null;
+    List<ExpressionListItem> multiInItems = null;
+}
+{
+	<K_PIVOT> "(" functionItems = PivotFunctionItems() <K_FOR>
+	( forColumns = PivotForColumn() | forColumns = PivotForColumns() )
+	<K_IN> "("
+	(LOOKAHEAD(3) singleInItems = PivotSingleInItems() | multiInItems = PivotMultiInItems() )
+	")"
+	")"
+    {
+        retval.setFunctionItems(functionItems);
+        retval.setForColumns(forColumns);
+        retval.setSingleInItems(singleInItems);
+        retval.setMultiInItems(multiInItems);
+        return retval;
+    }
+}
+
+PivotXml PivotXml():
+{
+    PivotXml retval = new PivotXml();
+    List<FunctionItem> functionItems;
+    List<Column> forColumns;
+    List<SelectExpressionItem> singleInItems = null;
+    List<ExpressionListItem> multiInItems = null;
+    SelectBody inSelect = null;
+}
+{
+	<K_PIVOT> <K_XML> "(" functionItems = PivotFunctionItems() <K_FOR>
+	( forColumns = PivotForColumn() | forColumns = PivotForColumns() )
+	<K_IN> "("
+	(
+	    <K_ANY> { retval.setInAny(true); } |
+	    LOOKAHEAD(1) inSelect = SelectBody() |
+	    LOOKAHEAD(2) singleInItems = PivotSingleInItems() |
+	    multiInItems = PivotMultiInItems()
+    )
+	")"
+	")"
+    {
+        retval.setFunctionItems(functionItems);
+        retval.setForColumns(forColumns);
+        retval.setSingleInItems(singleInItems);
+        retval.setMultiInItems(multiInItems);
+        retval.setInSelect(inSelect);
+        return retval;
+    }
+}
+
 void IntoClause():
 {}
 {
@@ -753,6 +914,7 @@ void IntoClause():
 FromItem FromItem():
 {
 	FromItem fromItem = null;
+	Pivot pivot = null;
 	String alias = null;
 }
 {
@@ -776,7 +938,7 @@ FromItem FromItem():
 				|
 				fromItem=LateralSubSelect()
 			)
-
+			[(LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot()) { fromItem.setPivot(pivot); } ]
 			[alias=Alias() { fromItem.setAlias(alias); } ]
 		)
 	)
@@ -1123,8 +1285,24 @@ Expression Condition():
 }
 {
 	(LOOKAHEAD(SQLCondition()) result=SQLCondition()
-	| result=RegularCondition())
+	| result=FunctionCondition()
+	| result=RegularCondition()
+	)
 	
+	{ return result; }
+}
+
+Expression FunctionCondition():
+{
+	Function result;
+	ExpressionList parameters;
+}
+{
+    <K_REGEXP_LIKE> { result = new Function(); result.setName("REGEXP_LIKE"); }
+    "("
+    parameters=SimpleExpressionList() { result.setParameters(parameters); }
+    ")"
+
 	{ return result; }
 }
 
@@ -1164,7 +1342,7 @@ Expression RegularCondition():
 			regCond.setNot();
 
 		if (oracleJoin>0)
-			((EqualsTo)result).setOldOracleJoinSyntax(oracleJoin);
+			((SupportsOldOracleJoinSyntax)result).setOldOracleJoinSyntax(oracleJoin);
 	}		
 	
 	{ return result; }
@@ -1192,18 +1370,19 @@ Expression InExpression() :
 	ItemsList leftItemsList = null;
 	ItemsList rightItemsList = null;
 	Expression leftExpression = null;
-	
 }
 {
-	( LOOKAHEAD(1) "(" ( 
+	( LOOKAHEAD(1) "(" (
 			LOOKAHEAD(SimpleExpressionList()) leftItemsList = SimpleExpressionList() { result.setLeftItemsList(leftItemsList); } 
 			|
 			leftExpression=SimpleExpression()
+	        [ "(+)" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
 		  )
 	  ")"
 	|
 		leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
-	)	
+        [ "(+)" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
+	)
     [<K_NOT> { result.setNot(true); } ] <K_IN> "(" (LOOKAHEAD(SubSelect()) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")"
 	{ 
 		result.setRightItemsList(rightItemsList);
@@ -1588,13 +1767,18 @@ AnalyticExpression AnalyticExpression() :
 	Token token = null;
 	Column column = null;
 	Expression expr = null;
+	Expression offset = null;
+	Expression defaultValue = null;
 }
 {
-	token=<S_IDENTIFIER> { retval.setName(token.image); } "(" [ expr=SimpleExpression() | "*" { retval.setAllColumns(true); } ] ")" <K_OVER> "(" 
+	token=<S_IDENTIFIER> { retval.setName(token.image); }
+	    "(" [ expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } ] ")" <K_OVER> "("
         [<K_PARTITION> <K_BY> column=Column() {plist.add(column);}  ("," column=Column() {plist.add(column);} )* ] 
         [olist=OrderByElements() ]
 	{
 		retval.setExpression(expr);
+		retval.setOffset(offset);
+		retval.setDefaultValue(defaultValue);
 		retval.setPartitionByColumns(plist);
 		retval.setOrderByElements(olist);
 	} 

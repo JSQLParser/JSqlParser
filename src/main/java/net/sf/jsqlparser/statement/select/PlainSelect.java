@@ -21,11 +21,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import java.util.Iterator;
-import java.util.List;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The core of a "SELECT" statement (no UNION, no ORDER BY)
@@ -159,7 +159,7 @@ public class PlainSelect implements SelectBody {
 		groupByColumnReferences = list;
 	}
 
-	@Override
+    @Override
 	public String toString() {
 		StringBuilder sql = new StringBuilder("SELECT ");
 		if (distinct != null) {

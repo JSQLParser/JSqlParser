@@ -1,19 +1,8 @@
 package net.sf.jsqlparser.test.select;
 
-import java.io.IOException;
-import java.io.StringReader;
-import static junit.framework.Assert.assertEquals;
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.BinaryExpression;
-import net.sf.jsqlparser.expression.DoubleValue;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.IntervalExpression;
-import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.expression.TimeValue;
-import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
@@ -25,14 +14,12 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.io.IOUtils;
+
+import java.io.IOException;
+import java.io.StringReader;
+
 import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class SelectTest extends TestCase {
@@ -788,6 +775,16 @@ public class SelectTest extends TestCase {
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
+    public void testProblemSqlAnalytic10Lag() throws JSQLParserException {
+        String stmt = "SELECT a, lag(a, 1) OVER (PARTITION BY c ORDER BY a, b) AS n FROM table1";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testProblemSqlAnalytic11Lag() throws JSQLParserException {
+        String stmt = "SELECT a, lag(a, 1, 0) OVER (PARTITION BY c ORDER BY a, b) AS n FROM table1";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
 	public void testOracleJoin() throws JSQLParserException {
 		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
@@ -797,6 +794,16 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) = tabelle2.b";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+
+    public void testOracleJoin3() throws JSQLParserException {
+        String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) > tabelle2.b";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testOracleJoin4() throws JSQLParserException {
+        String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) = tabelle2.b AND tabelle1.b(+) IN ('A', 'B')";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 
 	public void testProblemSqlIntersect() throws Exception {
 		String stmt = "(SELECT * FROM a) INTERSECT (SELECT * FROM b)";
@@ -994,4 +1001,55 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT * FROM mytable WHERE (trim(a), trim(b)) IN (SELECT a, b FROM mytable2)";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+
+    public void testPivot1() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN ('val1'))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivot2() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN (10, 20, 30))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivot3() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT (count(a) AS vals FOR b IN (10 AS d1, 20, 30 AS d3))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivot4() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT (count(a), sum(b) FOR b IN (10, 20, 30))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivot5() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR (b, c) IN ((10, 'a'), (20, 'b'), (30, 'c')))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivotXml1() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN ('val1'))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivotXml2() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN (SELECT vals FROM myothertable))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testPivotXml3() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN (ANY))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testRegexpLike1() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE REGEXP_LIKE(first_name, '^Ste(v|ph)en$')";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testRegexpLike2() throws JSQLParserException {
+        String stmt = "SELECT CASE WHEN REGEXP_LIKE(first_name, '^Ste(v|ph)en$') THEN 1 ELSE 2 END FROM mytable";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
 }

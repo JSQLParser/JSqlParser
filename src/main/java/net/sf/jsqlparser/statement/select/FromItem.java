@@ -32,4 +32,9 @@ public interface FromItem {
 	String getAlias();
 
 	void setAlias(String alias);
+
+    Pivot getPivot();
+
+    void setPivot(Pivot pivot);
+
 }

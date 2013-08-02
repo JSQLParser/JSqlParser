@@ -30,6 +30,7 @@ public class LateralSubSelect implements FromItem {
 
 	private SubSelect subSelect;
 	private String alias;
+    private Pivot pivot;
 
 	public void setSubSelect(SubSelect subSelect) {
 		this.subSelect = subSelect;
@@ -54,8 +55,18 @@ public class LateralSubSelect implements FromItem {
 		this.alias = alias;
 	}
 
-	@Override
+    public Pivot getPivot() {
+        return pivot;
+    }
+
+    public void setPivot(Pivot pivot) {
+        this.pivot = pivot;
+    }
+
+    @Override
 	public String toString() {
-		return "LATERAL" + subSelect.toString() + ((alias != null) ? " AS " + alias : "");
+		return "LATERAL" + subSelect.toString() +
+                ((pivot != null) ? " "+pivot : "") +
+                ((alias != null) ? " AS " + alias : "");
 	}
 }

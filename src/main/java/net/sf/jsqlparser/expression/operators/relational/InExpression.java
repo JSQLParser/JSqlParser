@@ -24,12 +24,14 @@ package net.sf.jsqlparser.expression.operators.relational;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
-public class InExpression implements Expression {
+public class InExpression implements Expression, SupportsOldOracleJoinSyntax {
 
 	private Expression leftExpression;
 	private ItemsList leftItemsList;
 	private ItemsList rightItemsList;
 	private boolean not = false;
+
+    private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
 
 	public InExpression() {
 	}
@@ -38,6 +40,17 @@ public class InExpression implements Expression {
 		setLeftExpression(leftExpression);
 		setRightItemsList(itemsList);
 	}
+
+    public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
+        this.oldOracleJoinSyntax = oldOracleJoinSyntax;
+        if (oldOracleJoinSyntax < 0 || oldOracleJoinSyntax > 1) {
+            throw new IllegalArgumentException("unexpected join type for oracle found with IN (type=" + oldOracleJoinSyntax + ")");
+        }
+    }
+
+    public int getOldOracleJoinSyntax() {
+        return oldOracleJoinSyntax;
+    }
 
 	public ItemsList getRightItemsList() {
 		return rightItemsList;
@@ -76,8 +89,12 @@ public class InExpression implements Expression {
 		expressionVisitor.visit(this);
 	}
 
+    private String getLeftExpressionString() {
+        return leftExpression + (oldOracleJoinSyntax == ORACLE_JOIN_RIGHT ? "(+)" : "");
+    }
+
 	@Override
 	public String toString() {
-		return (leftExpression == null ? leftItemsList : leftExpression) + " " + ((not) ? "NOT " : "") + "IN " + rightItemsList + "";
+		return (leftExpression == null ? leftItemsList : getLeftExpressionString()) + " " + ((not) ? "NOT " : "") + "IN " + rightItemsList + "";
 	}
 }

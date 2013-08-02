@@ -21,59 +21,16 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.Iterator;
-
-import net.sf.jsqlparser.expression.AllComparisonExpression;
-import net.sf.jsqlparser.expression.AnalyticExpression;
-import net.sf.jsqlparser.expression.AnyComparisonExpression;
-import net.sf.jsqlparser.expression.BinaryExpression;
-import net.sf.jsqlparser.expression.CaseExpression;
-import net.sf.jsqlparser.expression.CastExpression;
-import net.sf.jsqlparser.expression.DateValue;
-import net.sf.jsqlparser.expression.DoubleValue;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.ExtractExpression;
-import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.IntervalExpression;
-import net.sf.jsqlparser.expression.InverseExpression;
-import net.sf.jsqlparser.expression.JdbcParameter;
-import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.expression.NullValue;
-import net.sf.jsqlparser.expression.Parenthesis;
-import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.expression.TimeValue;
-import net.sf.jsqlparser.expression.TimestampValue;
-import net.sf.jsqlparser.expression.WhenClause;
-import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
-import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
-import net.sf.jsqlparser.expression.operators.arithmetic.Division;
-import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
-import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
-import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
-import net.sf.jsqlparser.expression.operators.relational.Between;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
-import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
-import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.InExpression;
-import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
-import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
-import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
-import net.sf.jsqlparser.expression.operators.relational.Matches;
-import net.sf.jsqlparser.expression.operators.relational.MinorThan;
-import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
+
+import java.util.Iterator;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
@@ -139,7 +96,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	}
 
-	@Override
+    @Override
+    public void visit(EqualsTo equalsTo) {
+        visitOldOracleJoinBinaryExpression(equalsTo, " = ");
+    }
+
+    @Override
 	public void visit(Division division) {
 		visitBinaryExpression(division, " / ");
 
@@ -151,30 +113,29 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	}
 
-	@Override
-	public void visit(EqualsTo equalsTo) {
-		if (equalsTo.isNot()) {
+	public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
+		if (expression.isNot()) {
 			buffer.append(" NOT ");
 		}
-		equalsTo.getLeftExpression().accept(this);
-		if (equalsTo.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_RIGHT) {
+        expression.getLeftExpression().accept(this);
+		if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_RIGHT) {
 			buffer.append("(+)");
 		}
-		buffer.append(" = ");
-		equalsTo.getRightExpression().accept(this);
-		if (equalsTo.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_LEFT) {
+		buffer.append(operator);
+        expression.getRightExpression().accept(this);
+		if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_LEFT) {
 			buffer.append("(+)");
 		}
 	}
 
 	@Override
 	public void visit(GreaterThan greaterThan) {
-		visitBinaryExpression(greaterThan, " > ");
+        visitOldOracleJoinBinaryExpression(greaterThan, " > ");
 	}
 
 	@Override
 	public void visit(GreaterThanEquals greaterThanEquals) {
-		visitBinaryExpression(greaterThanEquals, " >= ");
+        visitOldOracleJoinBinaryExpression(greaterThanEquals, " >= ");
 
 	}
 
@@ -184,6 +145,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 			inExpression.getLeftItemsList().accept(this);
 		} else {
 			inExpression.getLeftExpression().accept(this);
+            if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
+                buffer.append("(+)");
+            }
 		}
 		if (inExpression.isNot()) {
 			buffer.append(" NOT");
@@ -242,13 +206,13 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	@Override
 	public void visit(MinorThan minorThan) {
-		visitBinaryExpression(minorThan, " < ");
+        visitOldOracleJoinBinaryExpression(minorThan, " < ");
 
 	}
 
 	@Override
 	public void visit(MinorThanEquals minorThanEquals) {
-		visitBinaryExpression(minorThanEquals, " <= ");
+        visitOldOracleJoinBinaryExpression(minorThanEquals, " <= ");
 
 	}
 
@@ -260,7 +224,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	@Override
 	public void visit(NotEqualsTo notEqualsTo) {
-		visitBinaryExpression(notEqualsTo, " <> ");
+        visitOldOracleJoinBinaryExpression(notEqualsTo, " <> ");
 
 	}
 
@@ -451,7 +415,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	@Override
 	public void visit(Matches matches) {
-		visitBinaryExpression(matches, " @@ ");
+        visitOldOracleJoinBinaryExpression(matches, " @@ ");
 	}
 
 	@Override

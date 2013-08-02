@@ -21,10 +21,9 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
-import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
-public class GreaterThanEquals extends BinaryExpression {
+public class GreaterThanEquals extends OldOracleJoinBinaryExpression {
 
 	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {

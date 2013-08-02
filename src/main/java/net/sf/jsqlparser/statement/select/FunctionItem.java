@@ -19,19 +19,33 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-package net.sf.jsqlparser.expression.operators.relational;
+package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.Function;
 
-public class MinorThanEquals extends OldOracleJoinBinaryExpression {
+public class FunctionItem {
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    private Function function;
+    private String alias;
 
-	@Override
-	public String getStringExpression() {
-		return "<=";
-	}
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String string) {
+        alias = string;
+    }
+
+    public Function getFunction() {
+        return function;
+    }
+
+    public void setFunction(Function function) {
+        this.function = function;
+    }
+
+    @Override
+    public String toString() {
+        return function + ((alias != null) ? " AS " + alias : "");
+    }
 }

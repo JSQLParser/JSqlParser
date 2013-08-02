@@ -19,19 +19,12 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-package net.sf.jsqlparser.expression.operators.relational;
+package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.ExpressionVisitor;
+public interface PivotVisitor {
 
-public class MinorThanEquals extends OldOracleJoinBinaryExpression {
+    void visit(Pivot pivot);
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    void visit(PivotXml pivot);
 
-	@Override
-	public String getStringExpression() {
-		return "<=";
-	}
 }

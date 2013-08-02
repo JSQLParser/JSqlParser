@@ -21,39 +21,20 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.Iterator;
-import java.util.List;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.FromItemVisitor;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.LateralSubSelect;
-import net.sf.jsqlparser.statement.select.Limit;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.OrderByVisitor;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SelectItemVisitor;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.SubJoin;
-import net.sf.jsqlparser.statement.select.SubSelect;
-import net.sf.jsqlparser.statement.select.Top;
-import net.sf.jsqlparser.statement.select.ValuesList;
-import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.select.*;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
  * string) a {@link net.sf.jsqlparser.statement.select.Select}
  */
-public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItemVisitor, FromItemVisitor {
+public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
 	private StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
@@ -190,11 +171,45 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	@Override
 	public void visit(Table tableName) {
 		buffer.append(tableName.getWholeTableName());
+        Pivot pivot = tableName.getPivot();
+        if (pivot != null) {
+            pivot.accept(this);
+        }
 		String alias = tableName.getAlias();
 		if (alias != null && !alias.isEmpty()) {
 			buffer.append(" AS ").append(alias);
 		}
 	}
+
+    @Override
+    public void visit(Pivot pivot) {
+        List<Column> forColumns = pivot.getForColumns();
+        buffer.append(" PIVOT (")
+            .append(PlainSelect.getStringList(pivot.getFunctionItems()))
+            .append(" FOR ")
+            .append(PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1))
+            .append(" IN ")
+            .append(PlainSelect.getStringList(pivot.getInItems(), true, true))
+            .append(")");
+    }
+
+    @Override
+    public void visit(PivotXml pivot) {
+        List<Column> forColumns = pivot.getForColumns();
+        buffer.append(" PIVOT XML (")
+                .append(PlainSelect.getStringList(pivot.getFunctionItems()))
+                .append(" FOR ")
+                .append(PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1))
+                .append(" IN (");
+        if (pivot.isInAny()) {
+            buffer.append("ANY");
+        } else if (pivot.getInSelect() != null) {
+            buffer.append(pivot.getInSelect());
+        } else {
+            buffer.append(PlainSelect.getStringList(pivot.getInItems()));
+        }
+            buffer.append("))");
+    }
 
 	public void deparseOrderBy(List<OrderByElement> orderByElements) {
 		buffer.append(" ORDER BY ");
