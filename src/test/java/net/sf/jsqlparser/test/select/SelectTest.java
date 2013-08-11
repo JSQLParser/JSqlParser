@@ -1051,5 +1051,10 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT CASE WHEN REGEXP_LIKE(first_name, '^Ste(v|ph)en$') THEN 1 ELSE 2 END FROM mytable";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+	
+	public void testBooleanFunction1() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE test_func(col1)";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 
 }
