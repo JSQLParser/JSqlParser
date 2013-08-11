@@ -774,7 +774,7 @@ FunctionItem FunctionItem():
 
 
 
-List<Column> PivotForColumn():
+/* List<Column> PivotForColumn():
 {
     List<Column> columns = new ArrayList<Column>();
     Column column;
@@ -785,7 +785,7 @@ List<Column> PivotForColumn():
         columns.add(column);
         return columns;
     }
-}
+}*/
 
 List<Column> PivotForColumns():
 {
@@ -793,9 +793,12 @@ List<Column> PivotForColumns():
     Column column;
 }
 {
-    "(" column = Column() { columns.add(column); }
-    ("," column = Column() { columns.add(column); } )*
-    ")"
+    (
+		("(" column = Column() { columns.add(column); }
+         ("," column = Column() { columns.add(column); } )*
+		 ")") 
+	| column = Column() { columns.add(column); }
+	)
     { return columns; }
 }
 
@@ -858,9 +861,10 @@ Pivot Pivot():
 }
 {
 	<K_PIVOT> "(" functionItems = PivotFunctionItems() <K_FOR>
-	( forColumns = PivotForColumn() | forColumns = PivotForColumns() )
+	forColumns = PivotForColumns()
 	<K_IN> "("
-	(LOOKAHEAD(3) singleInItems = PivotSingleInItems() | multiInItems = PivotMultiInItems() )
+	(LOOKAHEAD(3) singleInItems = PivotSingleInItems() 
+	| multiInItems = PivotMultiInItems() )
 	")"
 	")"
     {
@@ -883,7 +887,7 @@ PivotXml PivotXml():
 }
 {
 	<K_PIVOT> <K_XML> "(" functionItems = PivotFunctionItems() <K_FOR>
-	( forColumns = PivotForColumn() | forColumns = PivotForColumns() )
+	forColumns = PivotForColumns()
 	<K_IN> "("
 	(
 	    <K_ANY> { retval.setInAny(true); } |
