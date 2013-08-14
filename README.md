@@ -7,6 +7,17 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.8.4
 
+* Added support for pivot expressions 
+* Added support for boolean functions in where statements
+
+```sql
+select * from my_table where bool_func(col)
+```
+* Added support for Oracles old join syntax for more compare operations
+
+```sql
+select * from taba, tabb where taba.a<tabb.a(+)
+```
 * Added support for foreign keys in create table statements
 
 ```sql
