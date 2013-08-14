@@ -30,6 +30,7 @@ public class PivotXml extends Pivot {
     private SelectBody inSelect;
     private boolean inAny = false;
 
+	@Override
     public void accept(PivotVisitor pivotVisitor) {
         pivotVisitor.visit(this);
     }

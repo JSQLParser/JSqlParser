@@ -773,20 +773,6 @@ FunctionItem FunctionItem():
 }
 
 
-
-/* List<Column> PivotForColumn():
-{
-    List<Column> columns = new ArrayList<Column>();
-    Column column;
-}
-{
-    column = Column()
-    {
-        columns.add(column);
-        return columns;
-    }
-}*/
-
 List<Column> PivotForColumns():
 {
     List<Column> columns = new ArrayList<Column>();

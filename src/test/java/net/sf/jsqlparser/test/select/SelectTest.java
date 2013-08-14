@@ -799,6 +799,11 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) > tabelle2.b";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+	
+	public void testOracleJoin3_1() throws JSQLParserException {
+        String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a > tabelle2.b(+)";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 
     public void testOracleJoin4() throws JSQLParserException {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) = tabelle2.b AND tabelle1.b(+) IN ('A', 'B')";

@@ -27,6 +27,7 @@ public abstract class OldOracleJoinBinaryExpression extends BinaryExpression imp
 
     private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
 
+	@Override
     public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
         this.oldOracleJoinSyntax = oldOracleJoinSyntax;
         if (oldOracleJoinSyntax < 0 || oldOracleJoinSyntax > 2) {
@@ -39,6 +40,7 @@ public abstract class OldOracleJoinBinaryExpression extends BinaryExpression imp
         return (isNot() ? "NOT " : "") + getLeftExpression() + (oldOracleJoinSyntax == ORACLE_JOIN_RIGHT ? "(+)" : "") + " " + getStringExpression() + " " + getRightExpression() + (oldOracleJoinSyntax == ORACLE_JOIN_LEFT ? "(+)" : "");
     }
 
+	@Override
     public int getOldOracleJoinSyntax() {
         return oldOracleJoinSyntax;
     }
