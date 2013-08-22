@@ -66,6 +66,7 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.InverseExpression;
 import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.TimeValue;
@@ -1143,6 +1144,7 @@ Limit Limit():
 					 	token=<S_INTEGER> { limit.setOffset(Long.parseLong(token.image)); } 
 					 	|
 					 	"?" { limit.setOffsetJdbcParameter(true);} 
+
 					 ) 
 					 ","  
 				
@@ -1677,6 +1679,8 @@ Expression PrimaryExpression():
 	
 	| "?" { retval = new JdbcParameter(); }
 
+        | LOOKAHEAD(JdbcNamedParameter()) retval=JdbcNamedParameter()
+
 	| LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
 
 	| LOOKAHEAD(ExtractExpression()) retval=ExtractExpression()
@@ -1720,6 +1724,17 @@ Expression PrimaryExpression():
 		}
     	return retval; 
     }
+}
+
+JdbcNamedParameter JdbcNamedParameter() : {
+	JdbcNamedParameter parameter = new JdbcNamedParameter();
+	Token token;
+}
+{
+        ":" token=<S_IDENTIFIER> { parameter.setName(token.image); }
+	{
+		return parameter;
+	}
 }
 
 IntervalExpression IntervalExpression() : {

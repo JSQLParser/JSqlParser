@@ -477,4 +477,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	public void visit(IntervalExpression iexpr) {
 		buffer.append(iexpr.toString());
 	}
+
+    @Override
+    public void visit(JdbcNamedParameter jdbcNamedParameter) {
+        buffer.append(jdbcNamedParameter.toString());
+    }
 }

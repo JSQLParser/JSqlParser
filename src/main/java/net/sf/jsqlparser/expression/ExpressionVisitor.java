@@ -56,6 +56,8 @@ public interface ExpressionVisitor {
 	void visit(InverseExpression inverseExpression);
 
 	void visit(JdbcParameter jdbcParameter);
+        
+        void visit(JdbcNamedParameter jdbcNamedParameter);
 
 	void visit(DoubleValue doubleValue);
 
