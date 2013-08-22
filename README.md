@@ -7,6 +7,11 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.8.4
 
+* Added support named JDBC parameters
+
+```sql
+SELECT * FROM mytable WHERE b = :param
+```
 * Added support for pivot expressions 
 * Added support for boolean functions in where statements
 
