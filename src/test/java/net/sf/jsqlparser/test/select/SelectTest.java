@@ -1057,9 +1057,51 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 	
-	public void testBooleanFunction1() throws JSQLParserException {
+    public void testBooleanFunction1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE test_func(col1)";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+        
+    public void testNamedParameter() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE b = :param";
+        assertSqlCanBeParsedAndDeparsed(stmt);
 
+        Statement st = CCJSqlParserUtil.parse(stmt);
+        Select select = (Select) st;
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        Expression exp = ((BinaryExpression) plainSelect.getWhere()).getRightExpression();
+        assertTrue(exp instanceof JdbcNamedParameter);
+        JdbcNamedParameter namedParameter = (JdbcNamedParameter) exp;
+        assertEquals("param", namedParameter.getName());
+        
+    }
+    public void testNamedParameter2() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE a = :param OR a = :param2 AND b = :param3";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+
+        Statement st = CCJSqlParserUtil.parse(stmt);
+        Select select = (Select) st;
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+
+        Expression exp_l = ((BinaryExpression) plainSelect.getWhere()).getLeftExpression();
+        Expression exp_r = ((BinaryExpression) plainSelect.getWhere()).getRightExpression();
+        Expression exp_rl = ((BinaryExpression) exp_r).getLeftExpression();
+        Expression exp_rr = ((BinaryExpression) exp_r).getRightExpression();
+        
+        Expression exp_param1 = ((BinaryExpression) exp_l).getRightExpression();
+        Expression exp_param2 = ((BinaryExpression) exp_rl).getRightExpression();
+        Expression exp_param3 = ((BinaryExpression) exp_rr).getRightExpression();
+        
+        assertTrue(exp_param1 instanceof JdbcNamedParameter);
+        assertTrue(exp_param2 instanceof JdbcNamedParameter);
+        assertTrue(exp_param3 instanceof JdbcNamedParameter);
+        
+        JdbcNamedParameter namedParameter1 = (JdbcNamedParameter) exp_param1;
+        JdbcNamedParameter namedParameter2 = (JdbcNamedParameter) exp_param2;
+        JdbcNamedParameter namedParameter3 = (JdbcNamedParameter) exp_param3;
+        
+        assertEquals("param", namedParameter1.getName());
+        assertEquals("param2", namedParameter2.getName());
+        assertEquals("param3", namedParameter3.getName());
+    }
 }

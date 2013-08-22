@@ -37,6 +37,7 @@ import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.InverseExpression;
+import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.NullValue;
@@ -496,4 +497,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	@Override
 	public void visit(IntervalExpression iexpr) {
 	}
+
+    @Override
+    public void visit(JdbcNamedParameter jdbcNamedParameter) {
+    }
 }
