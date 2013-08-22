@@ -96,12 +96,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	}
 
-    @Override
-    public void visit(EqualsTo equalsTo) {
-        visitOldOracleJoinBinaryExpression(equalsTo, " = ");
-    }
+	@Override
+	public void visit(EqualsTo equalsTo) {
+		visitOldOracleJoinBinaryExpression(equalsTo, " = ");
+	}
 
-    @Override
+	@Override
 	public void visit(Division division) {
 		visitBinaryExpression(division, " / ");
 
@@ -117,12 +117,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 		if (expression.isNot()) {
 			buffer.append(" NOT ");
 		}
-        expression.getLeftExpression().accept(this);
+		expression.getLeftExpression().accept(this);
 		if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_RIGHT) {
 			buffer.append("(+)");
 		}
 		buffer.append(operator);
-        expression.getRightExpression().accept(this);
+		expression.getRightExpression().accept(this);
 		if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_LEFT) {
 			buffer.append("(+)");
 		}
@@ -130,12 +130,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	@Override
 	public void visit(GreaterThan greaterThan) {
-        visitOldOracleJoinBinaryExpression(greaterThan, " > ");
+		visitOldOracleJoinBinaryExpression(greaterThan, " > ");
 	}
 
 	@Override
 	public void visit(GreaterThanEquals greaterThanEquals) {
-        visitOldOracleJoinBinaryExpression(greaterThanEquals, " >= ");
+		visitOldOracleJoinBinaryExpression(greaterThanEquals, " >= ");
 
 	}
 
@@ -145,9 +145,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 			inExpression.getLeftItemsList().accept(this);
 		} else {
 			inExpression.getLeftExpression().accept(this);
-            if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
-                buffer.append("(+)");
-            }
+			if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
+				buffer.append("(+)");
+			}
 		}
 		if (inExpression.isNot()) {
 			buffer.append(" NOT");
@@ -206,13 +206,13 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	@Override
 	public void visit(MinorThan minorThan) {
-        visitOldOracleJoinBinaryExpression(minorThan, " < ");
+		visitOldOracleJoinBinaryExpression(minorThan, " < ");
 
 	}
 
 	@Override
 	public void visit(MinorThanEquals minorThanEquals) {
-        visitOldOracleJoinBinaryExpression(minorThanEquals, " <= ");
+		visitOldOracleJoinBinaryExpression(minorThanEquals, " <= ");
 
 	}
 
@@ -224,7 +224,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	@Override
 	public void visit(NotEqualsTo notEqualsTo) {
-        visitOldOracleJoinBinaryExpression(notEqualsTo, " <> ");
+		visitOldOracleJoinBinaryExpression(notEqualsTo, " <> ");
 
 	}
 
@@ -373,9 +373,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 			buffer.append(" ");
 		}
 
-        for (Expression exp : caseExpression.getWhenClauses()) {
-            exp.accept(this);
-        }
+		for (Expression exp : caseExpression.getWhenClauses()) {
+			exp.accept(this);
+		}
 
 		Expression elseExp = caseExpression.getElseExpression();
 		if (elseExp != null) {
@@ -415,7 +415,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	@Override
 	public void visit(Matches matches) {
-        visitOldOracleJoinBinaryExpression(matches, " @@ ");
+		visitOldOracleJoinBinaryExpression(matches, " @@ ");
 	}
 
 	@Override
@@ -478,8 +478,8 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 		buffer.append(iexpr.toString());
 	}
 
-    @Override
-    public void visit(JdbcNamedParameter jdbcNamedParameter) {
-        buffer.append(jdbcNamedParameter.toString());
-    }
+	@Override
+	public void visit(JdbcNamedParameter jdbcNamedParameter) {
+		buffer.append(jdbcNamedParameter.toString());
+	}
 }

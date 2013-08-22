@@ -1675,11 +1675,11 @@ Expression PrimaryExpression():
 
 	<K_NULL> { retval = new NullValue(); }
 
-	|	retval=CaseWhenExpression()
+	| retval=CaseWhenExpression()
 	
-	| "?" { retval = new JdbcParameter(); }
+	| "?" { retval = new JdbcParameter(); } 
 
-        | LOOKAHEAD(JdbcNamedParameter()) retval=JdbcNamedParameter()
+    | retval=JdbcNamedParameter()
 
 	| LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
 
