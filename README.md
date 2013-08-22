@@ -150,7 +150,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>net.sf.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>0.8.1-SNAPSHOT</version>
+	<version>0.8.4-SNAPSHOT</version>
 </dependency>
 ```
 
