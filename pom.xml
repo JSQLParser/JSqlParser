@@ -132,4 +132,12 @@
 		Project Info:  http://jsqlparser.sourceforge.net
 		Project Lead:  Leonardo Francalanci (leoonardoo@yahoo.it);
 </description>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>javacc-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>
