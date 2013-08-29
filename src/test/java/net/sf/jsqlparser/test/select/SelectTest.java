@@ -901,6 +901,11 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT sysdate FROM testtable";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testProblemFunction3() throws JSQLParserException {
+		String stmt = "SELECT TRUNCATE(col) FROM testtable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	public void testAdditionalLettersGerman() throws JSQLParserException {
 		String stmt = "SELECT colä, colö, colü FROM testtableäöü";
