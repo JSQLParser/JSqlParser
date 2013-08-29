@@ -22,11 +22,12 @@
 package net.sf.jsqlparser.expression.operators.relational;
 
 public interface SupportsOldOracleJoinSyntax {
-    public static final int NO_ORACLE_JOIN = 0;
-    public static final int ORACLE_JOIN_RIGHT = 1;
-    public static final int ORACLE_JOIN_LEFT = 2;
 
-    public int getOldOracleJoinSyntax();
+	static final int NO_ORACLE_JOIN = 0;
+	static final int ORACLE_JOIN_RIGHT = 1;
+	static final int ORACLE_JOIN_LEFT = 2;
 
-    public void setOldOracleJoinSyntax(int oldOracleJoinSyntax);
+	int getOldOracleJoinSyntax();
+
+	void setOldOracleJoinSyntax(int oldOracleJoinSyntax);
 }
