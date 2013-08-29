@@ -19,6 +19,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
+import static junit.framework.Assert.assertEquals;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
 
@@ -895,6 +896,13 @@ public class SelectTest extends TestCase {
 	public void testProblemFunction() throws JSQLParserException {
 		String stmt = "SELECT test() FROM testtable";
 		assertSqlCanBeParsedAndDeparsed(stmt);
+		Statement parsed = CCJSqlParserUtil.parse(stmt);
+		Select select = (Select) parsed;
+		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+		SelectItem get = plainSelect.getSelectItems().get(0);
+		SelectExpressionItem item = (SelectExpressionItem)get;
+		assertTrue(item.getExpression() instanceof Function);
+		assertEquals("test", ((Function)item.getExpression()).getName());
 	}
 
 	public void testProblemFunction2() throws JSQLParserException {
