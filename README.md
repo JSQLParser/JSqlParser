@@ -1,9 +1,10 @@
 # JSqlParser Organisation
 
-The maven repository settings have been changed. Version 0.8.5-SNAPSHOT will be the
-first snapshot at sonytypes open source repository location. The following releases will
+The maven repository settings have been changed. Version **0.8.5-SNAPSHOT** will be the
+first snapshot at sonatypes open source repository location. The following releases will
 go there as well and published to maven central. To avoid problems with the original 
-projects artifacts the groupid was changed to com.github.jsqlparser.
+projects artifacts the *groupid* was changed to **com.github.jsqlparser**. You will find
+configuration details below.
 
 ## JSqlParser
 
