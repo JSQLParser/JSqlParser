@@ -1,5 +1,10 @@
 # JSqlParser Organisation
 
+The maven repository settings have been changed. Version 0.8.5-SNAPSHOT will be the
+first snapshot at sonytypes open source repository location. The following releases will
+go there as well and published to maven central. To avoid problems with the original 
+projects artifacts the groupid was changed to com.github.jsqlparser.
+
 ## JSqlParser
 
 JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes. 
@@ -130,7 +135,8 @@ This will produce the jsqlparser-VERSION.jar file in the target/ directory.
 
 ## Maven Repository
 
-At the moment I created a github maven repository. Starting from now I will deploy there. 
+JSQLParser is deployed at sonatypes open source maven repository. 
+Starting from now I will deploy there. The first snapshot version there will be 0.8.5-SNAPSHOT.
 To use it this is the repository configuration:
 
 ```xml
@@ -140,7 +146,7 @@ To use it this is the repository configuration:
          <snapshots>
              <enabled>true</enabled>
          </snapshots>
-         <url>https://raw.github.com/wumpz/maven_repo/master/snapshots</url>
+         <url>https://oss.sonatype.org/content/groups/public/</url>
      </repository>
 </repositories>
 ```
@@ -148,9 +154,9 @@ To use it this is the repository configuration:
 And this is the dependency declaration in your pom:
 ```xml
 <dependency>
-	<groupId>net.sf.jsqlparser</groupId>
+	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>0.8.4-SNAPSHOT</version>
+	<version>0.8.5-SNAPSHOT</version>
 </dependency>
 ```
 
