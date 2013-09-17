@@ -24,7 +24,7 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
 /**
- *
+ * 
  * @author tw
  */
 public class CastExpression implements Expression {
