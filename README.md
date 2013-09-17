@@ -11,6 +11,11 @@ configuration details below.
 JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes. 
 The generated hierarchy can be navigated using the Visitor Pattern.
 
+## Extensions Version 0.8.5
+
+* Added support for mysql truncate function
+* Changed repository location and groupid of JSqlParsers artifact.
+
 ## Extensions Version 0.8.4
 
 * Added support for named JDBC parameters
