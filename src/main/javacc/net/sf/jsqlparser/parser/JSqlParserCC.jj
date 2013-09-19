@@ -253,6 +253,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_FOREIGN:"FOREIGN">
 |	<K_CONSTRAINT:"CONSTRAINT">
 |	<K_REFERENCES:"REFERENCES">
+|	<K_START:"START">
+|	<K_CONNECT:"CONNECT">
 }
 
 
@@ -619,6 +621,7 @@ PlainSelect PlainSelect():
       joins=JoinsList() ]
 
     [ where=WhereClause() { plainSelect.setWhere(where); }]
+	[ OracleHierarchicalQueryClause() ]
     [ groupByColumnReferences=GroupByColumnReferences() { plainSelect.setGroupByColumnReferences(groupByColumnReferences); }]
     [ having=Having() { plainSelect.setHaving(having); }]
 	[LOOKAHEAD(2) orderByElements = OrderByElements()	{ 		 plainSelect.setOrderByElements(orderByElements);	}   ]
@@ -1076,6 +1079,14 @@ Expression WhereClause():
 {
     <K_WHERE> retval=Expression()
     { return retval; }
+}
+
+Expression OracleHierarchicalQueryClause(): {}
+{
+	[ <K_START> <K_WITH>  AndExpression() ]
+	<K_CONNECT> <K_BY> [ "NOCYCLE" ]  AndExpression()
+
+	{ return null; }
 }
 
 

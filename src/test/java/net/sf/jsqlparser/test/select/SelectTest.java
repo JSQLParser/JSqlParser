@@ -1117,4 +1117,19 @@ public class SelectTest extends TestCase {
         assertEquals("param2", namedParameter2.getName());
         assertEquals("param3", namedParameter3.getName());
     }
+	
+	public void testOracleHierarchicalQuery() throws JSQLParserException {
+		String stmt= "SELECT last_name, employee_id, manager_id FROM employees CONNECT BY employee_id = manager_id ORDER BY last_name";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testOracleHierarchicalQuery2() throws JSQLParserException {
+		String stmt= "SELECT employee_id, last_name, manager_id FROM employees CONNECT BY PRIOR employee_id = manager_id";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testOracleHierarchicalQuery3() throws JSQLParserException {
+		String stmt= "SELECT last_name, employee_id, manager_id, LEVEL FROM employees START WITH employee_id = 100 CONNECT BY PRIOR employee_id = manager_id ORDER SIBLINGS BY last_name";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 }
