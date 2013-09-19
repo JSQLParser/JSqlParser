@@ -253,6 +253,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_FOREIGN:"FOREIGN">
 |	<K_CONSTRAINT:"CONSTRAINT">
 |	<K_REFERENCES:"REFERENCES">
+|	<K_CHARACTER:"CHARACTER">
+|	<K_VARYING:"VARYING">
 }
 
 
@@ -2128,7 +2130,8 @@ ColDataType ColDataType():
 	ArrayList argumentsStringList = new ArrayList();
 }
 {
-	( tk=<S_IDENTIFIER> { colDataType.setDataType(tk.image); } )
+	( <K_CHARACTER> <K_VARYING> { colDataType.setDataType("character varying"); }
+	| tk=<S_IDENTIFIER> { colDataType.setDataType(tk.image); } )
 		
 	
 	[LOOKAHEAD(2) "(" ( (tk=<S_INTEGER> | tk=<S_CHAR_LITERAL>) { argumentsStringList.add(tk.image); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
