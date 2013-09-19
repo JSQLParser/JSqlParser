@@ -693,6 +693,11 @@ public class SelectTest extends TestCase {
 		String stmt = "SELECT 'test'::character varying FROM tabelle1";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testCastTypeProblem7() throws JSQLParserException {
+		String stmt = "SELECT CAST('test' AS character varying) FROM tabelle1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	public void testCaseElseAddition() throws JSQLParserException {
 		String stmt = "SELECT CASE WHEN 1 + 3 > 20 THEN 0 ELSE 1000 + 1 END AS d FROM dual";

@@ -2127,10 +2127,11 @@ ColDataType ColDataType():
 {
 	ColDataType colDataType = new ColDataType();
 	Token tk = null;
+	Token tk2 = null;
 	ArrayList argumentsStringList = new ArrayList();
 }
 {
-	( <K_CHARACTER> <K_VARYING> { colDataType.setDataType("character varying"); }
+	( tk=<K_CHARACTER> tk2=<K_VARYING> { colDataType.setDataType(tk.image + " " + tk2.image); }
 	| tk=<S_IDENTIFIER> { colDataType.setDataType(tk.image); } )
 		
 	
