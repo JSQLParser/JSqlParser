@@ -15,6 +15,7 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 * Added support for mysql truncate function
 * Changed repository location and groupid of JSqlParsers artifact.
+* Added support for postgresql type **character varying**.
 
 ## Extensions Version 0.8.4
 
