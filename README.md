@@ -1,5 +1,12 @@
 # JSqlParser Organisation
 
+## News
+
+The first release version **0.8.5** is available at repository 
+**https://oss.sonatype.org/content/groups/public/**.
+It should be synched with maven central.
+
+
 The maven repository settings have been changed. Version **0.8.5-SNAPSHOT** will be the
 first snapshot at sonatypes open source repository location. The following releases will
 go there as well and published to maven central. To avoid problems with the original 
@@ -157,13 +164,14 @@ To use it this is the repository configuration:
      </repository>
 </repositories>
 ```
+This repositories releases will be synched to maven central. Snapshots remain at sonatype.
 
 And this is the dependency declaration in your pom:
 ```xml
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>0.8.5-SNAPSHOT</version>
+	<version>0.8.5</version>
 </dependency>
 ```
 
