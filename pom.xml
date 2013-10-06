@@ -138,6 +138,7 @@
 				<configuration>
 					<localCheckout>true</localCheckout>
 					<pushChanges>false</pushChanges>
+					<mavenExecutorId>forked-path</mavenExecutorId>
 				</configuration>
 			</plugin> 
 			<plugin>
