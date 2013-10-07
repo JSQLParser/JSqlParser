@@ -2,9 +2,8 @@
 
 ## News
 
-The first release version **0.8.5** is available at repository 
+The first release version **0.8.5** is available at maven central and at repository 
 **https://oss.sonatype.org/content/groups/public/**.
-It should be synched with maven central.
 
 
 The maven repository settings have been changed. Version **0.8.5-SNAPSHOT** will be the
