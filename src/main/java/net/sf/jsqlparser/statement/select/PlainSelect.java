@@ -26,6 +26,7 @@ import net.sf.jsqlparser.schema.Table;
 
 import java.util.Iterator;
 import java.util.List;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 
 /**
  * The core of a "SELECT" statement (no UNION, no ORDER BY)
@@ -43,6 +44,7 @@ public class PlainSelect implements SelectBody {
 	private Expression having;
 	private Limit limit;
 	private Top top;
+	private OracleHierarchicalExpression oracleHierarchical = null;
 
 	/**
 	 * The {@link FromItem} in this query
@@ -159,7 +161,15 @@ public class PlainSelect implements SelectBody {
 		groupByColumnReferences = list;
 	}
 
-    @Override
+	public OracleHierarchicalExpression getOracleHierarchical() {
+		return oracleHierarchical;
+	}
+
+	public void setOracleHierarchical(OracleHierarchicalExpression oracleHierarchical) {
+		this.oracleHierarchical = oracleHierarchical;
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder sql = new StringBuilder("SELECT ");
 		if (distinct != null) {
@@ -185,6 +195,9 @@ public class PlainSelect implements SelectBody {
 			// sql += getFormatedList(joins, "", false, false);
 			if (where != null) {
 				sql.append(" WHERE ").append(where);
+			}
+			if (oracleHierarchical != null) {
+				sql.append(oracleHierarchical.toString());
 			}
 			sql.append(getFormatedList(groupByColumnReferences, "GROUP BY"));
 			if (having != null) {

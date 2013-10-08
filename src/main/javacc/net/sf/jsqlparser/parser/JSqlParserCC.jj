@@ -81,6 +81,7 @@ import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.AllComparisonExpression;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
@@ -257,6 +258,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_START:"START">
 |	<K_CONNECT:"CONNECT">
 |	<K_PRIOR:"PRIOR">
+|   <K_NOCYCLE:"NOCYCLE">
 }
 
 
@@ -597,6 +599,7 @@ PlainSelect PlainSelect():
 	Expression having = null;
 	Limit limit = null;
 	Top top = null;
+	OracleHierarchicalExpression oracleHierarchicalQueryClause = null;
 }
 {
     <K_SELECT> 
@@ -623,7 +626,7 @@ PlainSelect PlainSelect():
       joins=JoinsList() ]
 
     [ where=WhereClause() { plainSelect.setWhere(where); }]
-	[ OracleHierarchicalQueryClause() ]
+	[ oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
     [ groupByColumnReferences=GroupByColumnReferences() { plainSelect.setGroupByColumnReferences(groupByColumnReferences); }]
     [ having=Having() { plainSelect.setHaving(having); }]
 	[LOOKAHEAD(2) orderByElements = OrderByElements()	{ 		 plainSelect.setOrderByElements(orderByElements);	}   ]
@@ -1083,12 +1086,18 @@ Expression WhereClause():
     { return retval; }
 }
 
-Expression OracleHierarchicalQueryClause(): {}
+OracleHierarchicalExpression OracleHierarchicalQueryClause(): 
 {
-	[ <K_START> <K_WITH>  AndExpression() ]
-	<K_CONNECT> <K_BY> [ "NOCYCLE" ]  { allowOraclePrior=true; } AndExpression() { allowOraclePrior=false; }
+	OracleHierarchicalExpression result = new OracleHierarchicalExpression();
+	Expression expr;
+}
+{
+	[ <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);} ]
+	<K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ]  
+	{ allowOraclePrior=true; } expr=AndExpression() 
+	{ result.setConnectExpression(expr);allowOraclePrior=false; }
 
-	{ return null; }
+	{ return result; }
 }
 
 
