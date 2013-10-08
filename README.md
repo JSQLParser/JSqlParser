@@ -20,6 +20,7 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 ## Extensions Version 0.8.6
 
 * Added first support for Oracle hierarchical queries
+
 ```sql
 SELECT * FROM employees CONNECT BY employee_id = manager_id ORDER BY last_name;
 SELECT * FROM employees START WITH employee_id = 100 CONNECT BY PRIOR employee_id = manager_id ORDER SIBLINGS BY last_name;
