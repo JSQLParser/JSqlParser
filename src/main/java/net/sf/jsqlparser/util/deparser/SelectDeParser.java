@@ -95,6 +95,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
             }
 		}
 
+		if (plainSelect.getOracleHierarchical() != null) {
+			plainSelect.getOracleHierarchical().accept(expressionVisitor);
+		}
+		
 		if (plainSelect.getWhere() != null) {
 			buffer.append(" WHERE ");
 			plainSelect.getWhere().accept(expressionVisitor);
@@ -117,7 +121,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		}
 
 		if (plainSelect.getOrderByElements() != null) {
-			deparseOrderBy(plainSelect.getOrderByElements());
+			deparseOrderBy(plainSelect.isOracleSiblings(), plainSelect.getOrderByElements());
 		}
 
 		if (plainSelect.getLimit() != null) {
@@ -212,7 +216,14 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
     }
 
 	public void deparseOrderBy(List<OrderByElement> orderByElements) {
-		buffer.append(" ORDER BY ");
+		deparseOrderBy(false, orderByElements);
+	}
+	
+	public void deparseOrderBy(boolean oracleSiblings, List<OrderByElement> orderByElements) {
+		if (oracleSiblings)
+			buffer.append(" ORDER SIBLINGS BY ");
+		else
+			buffer.append(" ORDER BY ");
 		for (Iterator<OrderByElement> iter = orderByElements.iterator(); iter.hasNext();) {
 			OrderByElement orderByElement = iter.next();
 			orderByElement.accept(this);

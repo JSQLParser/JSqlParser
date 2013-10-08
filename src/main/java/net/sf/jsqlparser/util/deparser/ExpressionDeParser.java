@@ -482,4 +482,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	public void visit(JdbcNamedParameter jdbcNamedParameter) {
 		buffer.append(jdbcNamedParameter.toString());
 	}
+
+	@Override
+	public void visit(OracleHierarchicalExpression oexpr) {
+		buffer.append(oexpr.toString());
+	}
 }

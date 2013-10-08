@@ -41,6 +41,7 @@ public class InExpression implements Expression, SupportsOldOracleJoinSyntax {
 		setRightItemsList(itemsList);
 	}
 
+	@Override
     public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
         this.oldOracleJoinSyntax = oldOracleJoinSyntax;
         if (oldOracleJoinSyntax < 0 || oldOracleJoinSyntax > 1) {
@@ -48,6 +49,7 @@ public class InExpression implements Expression, SupportsOldOracleJoinSyntax {
         }
     }
 
+	@Override
     public int getOldOracleJoinSyntax() {
         return oldOracleJoinSyntax;
     }
@@ -96,5 +98,17 @@ public class InExpression implements Expression, SupportsOldOracleJoinSyntax {
 	@Override
 	public String toString() {
 		return (leftExpression == null ? leftItemsList : getLeftExpressionString()) + " " + ((not) ? "NOT " : "") + "IN " + rightItemsList + "";
+	}
+
+	@Override
+	public int getOraclePriorPosition() {
+		return SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR;
+	}
+
+	@Override
+	public void setOraclePriorPosition(int priorPosition) {
+        if (priorPosition != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
+            throw new IllegalArgumentException("unexpected prior for oracle found");
+        }
 	}
 }

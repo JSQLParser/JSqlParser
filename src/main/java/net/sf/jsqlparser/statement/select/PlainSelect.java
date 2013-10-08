@@ -26,6 +26,7 @@ import net.sf.jsqlparser.schema.Table;
 
 import java.util.Iterator;
 import java.util.List;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 
 /**
  * The core of a "SELECT" statement (no UNION, no ORDER BY)
@@ -43,6 +44,8 @@ public class PlainSelect implements SelectBody {
 	private Expression having;
 	private Limit limit;
 	private Top top;
+	private OracleHierarchicalExpression oracleHierarchical = null;
+	private boolean oracleSiblings = false;
 
 	/**
 	 * The {@link FromItem} in this query
@@ -159,7 +162,23 @@ public class PlainSelect implements SelectBody {
 		groupByColumnReferences = list;
 	}
 
-    @Override
+	public OracleHierarchicalExpression getOracleHierarchical() {
+		return oracleHierarchical;
+	}
+
+	public void setOracleHierarchical(OracleHierarchicalExpression oracleHierarchical) {
+		this.oracleHierarchical = oracleHierarchical;
+	}
+
+	public boolean isOracleSiblings() {
+		return oracleSiblings;
+	}
+
+	public void setOracleSiblings(boolean oracleSiblings) {
+		this.oracleSiblings = oracleSiblings;
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder sql = new StringBuilder("SELECT ");
 		if (distinct != null) {
@@ -186,11 +205,14 @@ public class PlainSelect implements SelectBody {
 			if (where != null) {
 				sql.append(" WHERE ").append(where);
 			}
+			if (oracleHierarchical != null) {
+				sql.append(oracleHierarchical.toString());
+			}
 			sql.append(getFormatedList(groupByColumnReferences, "GROUP BY"));
 			if (having != null) {
 				sql.append(" HAVING ").append(having);
 			}
-			sql.append(orderByToString(orderByElements));
+			sql.append(orderByToString(oracleSiblings, orderByElements));
 			if (limit != null) {
 				sql.append(limit);
 			}
@@ -199,7 +221,11 @@ public class PlainSelect implements SelectBody {
 	}
 
 	public static String orderByToString(List<OrderByElement> orderByElements) {
-		return getFormatedList(orderByElements, "ORDER BY");
+		return orderByToString(false, orderByElements);
+	}
+	
+	public static String orderByToString(boolean oracleSiblings, List<OrderByElement> orderByElements) {
+		return getFormatedList(orderByElements, oracleSiblings?"ORDER SIBLINGS BY":"ORDER BY");
 	}
 
 	public static String getFormatedList(List<?> list, String expression) {

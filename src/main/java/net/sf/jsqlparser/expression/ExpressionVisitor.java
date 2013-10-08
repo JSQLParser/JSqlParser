@@ -138,4 +138,6 @@ public interface ExpressionVisitor {
 	void visit(ExtractExpression eexpr);
 	
 	void visit(IntervalExpression iexpr);
+	
+	void visit(OracleHierarchicalExpression oexpr);
 }
