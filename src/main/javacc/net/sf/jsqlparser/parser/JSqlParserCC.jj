@@ -259,6 +259,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_CONNECT:"CONNECT">
 |	<K_PRIOR:"PRIOR">
 |   <K_NOCYCLE:"NOCYCLE">
+|	<K_SIBLINGS:"SIBLINGS">
 }
 
 
@@ -629,7 +630,8 @@ PlainSelect PlainSelect():
 	[ oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
     [ groupByColumnReferences=GroupByColumnReferences() { plainSelect.setGroupByColumnReferences(groupByColumnReferences); }]
     [ having=Having() { plainSelect.setHaving(having); }]
-	[LOOKAHEAD(2) orderByElements = OrderByElements()	{ 		 plainSelect.setOrderByElements(orderByElements);	}   ]
+	[LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);	}   ]
+	[LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements);	}   ]
     [LOOKAHEAD(2) limit = Limit() { plainSelect.setLimit(limit);	} ]
 	
 	{ 
@@ -1131,7 +1133,7 @@ List<OrderByElement> OrderByElements():
 	OrderByElement orderByElement = null;
 }
 {
-    <K_ORDER> <K_BY> orderByElement=OrderByElement() { orderByList.add(orderByElement); }
+    <K_ORDER> [ <K_SIBLINGS> ] <K_BY> orderByElement=OrderByElement() { orderByList.add(orderByElement); }
         ("," orderByElement=OrderByElement() { orderByList.add(orderByElement); } )*
     {
     	return orderByList; 	
@@ -1311,10 +1313,11 @@ Expression RegularCondition():
 	Expression rightExpression;
 	boolean not = false;
 	int oracleJoin=EqualsTo.NO_ORACLE_JOIN;
+	int oraclePrior=EqualsTo.NO_ORACLE_PRIOR;
 }
 {
 
-	[ <K_PRIOR> ]
+	[ <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; }]
 	[ <K_NOT> { not = true; } ] 
 	leftExpression=ComparisonItem() { result = leftExpression; }
 
@@ -1331,7 +1334,7 @@ Expression RegularCondition():
 	)
 	rightExpression=ComparisonItem()
 
-	[ <K_PRIOR> ]
+	[ <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_END; } ]
 	[ "(+)" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
 
 	{
@@ -1343,6 +1346,9 @@ Expression RegularCondition():
 
 		if (oracleJoin>0)
 			((SupportsOldOracleJoinSyntax)result).setOldOracleJoinSyntax(oracleJoin);
+
+		if (oraclePrior!=EqualsTo.NO_ORACLE_PRIOR) 
+			((SupportsOldOracleJoinSyntax)result).setOraclePriorPosition(oraclePrior);
 	}		
 	
 	{ return result; }

@@ -45,6 +45,7 @@ public class PlainSelect implements SelectBody {
 	private Limit limit;
 	private Top top;
 	private OracleHierarchicalExpression oracleHierarchical = null;
+	private boolean oracleSiblings = false;
 
 	/**
 	 * The {@link FromItem} in this query
@@ -169,6 +170,14 @@ public class PlainSelect implements SelectBody {
 		this.oracleHierarchical = oracleHierarchical;
 	}
 
+	public boolean isOracleSiblings() {
+		return oracleSiblings;
+	}
+
+	public void setOracleSiblings(boolean oracleSiblings) {
+		this.oracleSiblings = oracleSiblings;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sql = new StringBuilder("SELECT ");
@@ -203,7 +212,7 @@ public class PlainSelect implements SelectBody {
 			if (having != null) {
 				sql.append(" HAVING ").append(having);
 			}
-			sql.append(orderByToString(orderByElements));
+			sql.append(orderByToString(oracleSiblings, orderByElements));
 			if (limit != null) {
 				sql.append(limit);
 			}
@@ -212,7 +221,11 @@ public class PlainSelect implements SelectBody {
 	}
 
 	public static String orderByToString(List<OrderByElement> orderByElements) {
-		return getFormatedList(orderByElements, "ORDER BY");
+		return orderByToString(false, orderByElements);
+	}
+	
+	public static String orderByToString(boolean oracleSiblings, List<OrderByElement> orderByElements) {
+		return getFormatedList(orderByElements, oracleSiblings?"ORDER SIBLINGS BY":"ORDER BY");
 	}
 
 	public static String getFormatedList(List<?> list, String expression) {

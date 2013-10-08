@@ -30,4 +30,12 @@ public interface SupportsOldOracleJoinSyntax {
 	int getOldOracleJoinSyntax();
 
 	void setOldOracleJoinSyntax(int oldOracleJoinSyntax);
+	
+	static final int NO_ORACLE_PRIOR = 0;
+	static final int ORACLE_PRIOR_START = 1;
+	static final int ORACLE_PRIOR_END = 2;
+	
+	int getOraclePriorPosition();
+	
+	void setOraclePriorPosition(int priorPosition);
 }
