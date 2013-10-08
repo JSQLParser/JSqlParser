@@ -30,6 +30,15 @@ SELECT * FROM employees START WITH employee_id = 100 CONNECT BY PRIOR employee_i
 
 * Added support for mysql truncate function
 * Changed repository location and groupid of JSqlParsers artifact.
+
+```xml
+<dependency>
+	<groupId>com.github.jsqlparser</groupId>
+	<artifactId>jsqlparser</artifactId>
+	<version>0.8.5</version>
+</dependency>
+```
+
 * Added support for postgresql type **character varying**.
 
 ## Extensions Version 0.8.4
