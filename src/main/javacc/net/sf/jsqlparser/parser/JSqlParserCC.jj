@@ -257,6 +257,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_REFERENCES:"REFERENCES">
 |	<K_CHARACTER:"CHARACTER">
 |	<K_VARYING:"VARYING">
+|	<K_START:"START">
+|	<K_CONNECT:"CONNECT">
+|	<K_PRIOR:"PRIOR">
+|   <K_NOCYCLE:"NOCYCLE">
+|	<K_SIBLINGS:"SIBLINGS">
 }
 
 
