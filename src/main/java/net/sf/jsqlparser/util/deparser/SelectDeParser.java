@@ -37,7 +37,7 @@ import java.util.List;
 public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
 	private StringBuilder buffer;
-    private ExpressionVisitor expressionVisitor;
+	private ExpressionVisitor expressionVisitor;
 
 	public SelectDeParser() {
 	}
@@ -90,15 +90,15 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		}
 
 		if (plainSelect.getJoins() != null) {
-            for (Join join : plainSelect.getJoins()) {
-                deparseJoin(join);
-            }
+			for (Join join : plainSelect.getJoins()) {
+				deparseJoin(join);
+			}
 		}
 
 		if (plainSelect.getOracleHierarchical() != null) {
 			plainSelect.getOracleHierarchical().accept(expressionVisitor);
 		}
-		
+
 		if (plainSelect.getWhere() != null) {
 			buffer.append(" WHERE ");
 			plainSelect.getWhere().accept(expressionVisitor);
@@ -175,55 +175,56 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	@Override
 	public void visit(Table tableName) {
 		buffer.append(tableName.getWholeTableName());
-        Pivot pivot = tableName.getPivot();
-        if (pivot != null) {
-            pivot.accept(this);
-        }
+		Pivot pivot = tableName.getPivot();
+		if (pivot != null) {
+			pivot.accept(this);
+		}
 		String alias = tableName.getAlias();
 		if (alias != null && !alias.isEmpty()) {
 			buffer.append(" AS ").append(alias);
 		}
 	}
 
-    @Override
-    public void visit(Pivot pivot) {
-        List<Column> forColumns = pivot.getForColumns();
-        buffer.append(" PIVOT (")
-            .append(PlainSelect.getStringList(pivot.getFunctionItems()))
-            .append(" FOR ")
-            .append(PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1))
-            .append(" IN ")
-            .append(PlainSelect.getStringList(pivot.getInItems(), true, true))
-            .append(")");
-    }
+	@Override
+	public void visit(Pivot pivot) {
+		List<Column> forColumns = pivot.getForColumns();
+		buffer.append(" PIVOT (")
+				.append(PlainSelect.getStringList(pivot.getFunctionItems()))
+				.append(" FOR ")
+				.append(PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1))
+				.append(" IN ")
+				.append(PlainSelect.getStringList(pivot.getInItems(), true, true))
+				.append(")");
+	}
 
-    @Override
-    public void visit(PivotXml pivot) {
-        List<Column> forColumns = pivot.getForColumns();
-        buffer.append(" PIVOT XML (")
-                .append(PlainSelect.getStringList(pivot.getFunctionItems()))
-                .append(" FOR ")
-                .append(PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1))
-                .append(" IN (");
-        if (pivot.isInAny()) {
-            buffer.append("ANY");
-        } else if (pivot.getInSelect() != null) {
-            buffer.append(pivot.getInSelect());
-        } else {
-            buffer.append(PlainSelect.getStringList(pivot.getInItems()));
-        }
-            buffer.append("))");
-    }
+	@Override
+	public void visit(PivotXml pivot) {
+		List<Column> forColumns = pivot.getForColumns();
+		buffer.append(" PIVOT XML (")
+				.append(PlainSelect.getStringList(pivot.getFunctionItems()))
+				.append(" FOR ")
+				.append(PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1))
+				.append(" IN (");
+		if (pivot.isInAny()) {
+			buffer.append("ANY");
+		} else if (pivot.getInSelect() != null) {
+			buffer.append(pivot.getInSelect());
+		} else {
+			buffer.append(PlainSelect.getStringList(pivot.getInItems()));
+		}
+		buffer.append("))");
+	}
 
 	public void deparseOrderBy(List<OrderByElement> orderByElements) {
 		deparseOrderBy(false, orderByElements);
 	}
-	
+
 	public void deparseOrderBy(boolean oracleSiblings, List<OrderByElement> orderByElements) {
-		if (oracleSiblings)
+		if (oracleSiblings) {
 			buffer.append(" ORDER SIBLINGS BY ");
-		else
+		} else {
 			buffer.append(" ORDER BY ");
+		}
 		for (Iterator<OrderByElement> iter = orderByElements.iterator(); iter.hasNext();) {
 			OrderByElement orderByElement = iter.next();
 			orderByElement.accept(this);

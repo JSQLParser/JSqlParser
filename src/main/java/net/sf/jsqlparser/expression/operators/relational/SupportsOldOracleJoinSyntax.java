@@ -23,19 +23,19 @@ package net.sf.jsqlparser.expression.operators.relational;
 
 public interface SupportsOldOracleJoinSyntax {
 
-	static final int NO_ORACLE_JOIN = 0;
-	static final int ORACLE_JOIN_RIGHT = 1;
-	static final int ORACLE_JOIN_LEFT = 2;
+	final int NO_ORACLE_JOIN = 0;
+	final int ORACLE_JOIN_RIGHT = 1;
+	final int ORACLE_JOIN_LEFT = 2;
 
 	int getOldOracleJoinSyntax();
 
 	void setOldOracleJoinSyntax(int oldOracleJoinSyntax);
-	
-	static final int NO_ORACLE_PRIOR = 0;
-	static final int ORACLE_PRIOR_START = 1;
-	static final int ORACLE_PRIOR_END = 2;
-	
+
+	final int NO_ORACLE_PRIOR = 0;
+	final int ORACLE_PRIOR_START = 1;
+	final int ORACLE_PRIOR_END = 2;
+
 	int getOraclePriorPosition();
-	
+
 	void setOraclePriorPosition(int priorPosition);
 }
