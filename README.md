@@ -2,6 +2,9 @@
 
 ## News
 
+Version **0.8.6** released.
+
+
 The first release version **0.8.5** is available at maven central and at repository 
 **https://oss.sonatype.org/content/groups/public/**.
 
@@ -188,7 +191,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>0.8.5</version>
+	<version>0.8.6</version>
 </dependency>
 ```
 
