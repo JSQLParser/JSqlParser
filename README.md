@@ -5,7 +5,7 @@
 Version **0.8.6** released.
 
 
-The first release version **0.8.5** is available at maven central and at repository 
+The first release version **0.8.5** is available at maven central (**http://repo1.maven.org/maven2/**) and at repository 
 **https://oss.sonatype.org/content/groups/public/**.
 
 
