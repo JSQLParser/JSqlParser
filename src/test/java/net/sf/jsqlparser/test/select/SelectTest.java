@@ -1148,4 +1148,9 @@ public class SelectTest extends TestCase {
 		String stmt= "SELECT last_name, employee_id, manager_id, LEVEL FROM employees START WITH employee_id = 100 CONNECT BY PRIOR employee_id = manager_id ORDER SIBLINGS BY last_name";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testPostgreSQLRegExpCaseSensitiveMatch() throws JSQLParserException {
+		String stmt= "SELECT a, b FROM foo WHERE a ~ '[help].*'";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 }

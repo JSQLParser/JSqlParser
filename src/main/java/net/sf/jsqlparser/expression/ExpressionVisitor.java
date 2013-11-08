@@ -44,6 +44,7 @@ import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.RegExpCaseSensitiveMatch;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
@@ -140,4 +141,6 @@ public interface ExpressionVisitor {
 	void visit(IntervalExpression iexpr);
 	
 	void visit(OracleHierarchicalExpression oexpr);
+	
+	void visit(RegExpCaseSensitiveMatch rexpr);
 }

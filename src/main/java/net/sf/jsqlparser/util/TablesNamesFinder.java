@@ -73,6 +73,7 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.RegExpCaseSensitiveMatch;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -505,5 +506,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
 	@Override
 	public void visit(OracleHierarchicalExpression oexpr) {
+	}
+
+	@Override
+	public void visit(RegExpCaseSensitiveMatch rexpr) {
+		visitBinaryExpression(rexpr);
 	}
 }

@@ -487,4 +487,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	public void visit(OracleHierarchicalExpression oexpr) {
 		buffer.append(oexpr.toString());
 	}
+
+	@Override
+	public void visit(RegExpCaseSensitiveMatch rexpr) {
+		visitBinaryExpression(rexpr, " ~ ");
+	}
 }
