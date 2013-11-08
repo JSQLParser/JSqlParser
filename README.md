@@ -20,6 +20,14 @@ configuration details below.
 JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes. 
 The generated hierarchy can be navigated using the Visitor Pattern.
 
+## Extensions Version 0.8.7
+
+* PostgreSQL regular expression case sensitive match condition ~.
+
+```sql
+SELECT a, b FROM foo WHERE a ~ '[help].*'
+```
+
 ## Extensions Version 0.8.6
 
 * Added first support for Oracle hierarchical queries
