@@ -98,7 +98,8 @@ import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.RegExpCaseSensitiveMatch;
+import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
+import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperatorType;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
@@ -1334,7 +1335,10 @@ Expression RegularCondition():
 	| "<=" { result = new MinorThanEquals(); }
 	| ("<>" | "!=") { result = new NotEqualsTo(); }
 	| "@@" { result = new Matches(); }
-	| "~" { result = new RegExpCaseSensitiveMatch(); }
+	| "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
+	| "~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
+	| "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
+	| "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
 	)
 	rightExpression=ComparisonItem()
 

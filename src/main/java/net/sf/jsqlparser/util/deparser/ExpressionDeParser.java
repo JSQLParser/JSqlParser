@@ -489,7 +489,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	}
 
 	@Override
-	public void visit(RegExpCaseSensitiveMatch rexpr) {
-		visitBinaryExpression(rexpr, " ~ ");
+	public void visit(RegExpMatchOperator rexpr) {
+		visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ");
 	}
 }

@@ -1153,4 +1153,19 @@ public class SelectTest extends TestCase {
 		String stmt= "SELECT a, b FROM foo WHERE a ~ '[help].*'";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
+	
+	public void testPostgreSQLRegExpCaseSensitiveMatch2() throws JSQLParserException {
+		String stmt= "SELECT a, b FROM foo WHERE a ~* '[help].*'";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testPostgreSQLRegExpCaseSensitiveMatch3() throws JSQLParserException {
+		String stmt= "SELECT a, b FROM foo WHERE a !~ '[help].*'";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	public void testPostgreSQLRegExpCaseSensitiveMatch4() throws JSQLParserException {
+		String stmt= "SELECT a, b FROM foo WHERE a !~* '[help].*'";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 }

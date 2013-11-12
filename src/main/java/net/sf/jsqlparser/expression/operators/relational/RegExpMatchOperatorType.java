@@ -19,20 +19,16 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
+
 package net.sf.jsqlparser.expression.operators.relational;
 
-import net.sf.jsqlparser.expression.BinaryExpression;
-import net.sf.jsqlparser.expression.ExpressionVisitor;
-
-public class RegExpCaseSensitiveMatch extends BinaryExpression {
-
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
-
-	@Override
-	public String getStringExpression() {
-		return "~";
-	}
+/**
+ * PostgresSQL match operators.
+ * @author toben
+ */
+public enum RegExpMatchOperatorType {
+	MATCH_CASESENSITIVE,
+	MATCH_CASEINSENSITIVE,
+	NOT_MATCH_CASESENSITIVE,
+	NOT_MATCH_CASEINSENSITIVE
 }

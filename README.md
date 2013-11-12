@@ -22,10 +22,13 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.8.7
 
-* Added support for PostgreSQL regular expression case sensitive match condition ~.
+* Added support for PostgreSQL regular expression match operators.
 
 ```sql
-SELECT a, b FROM foo WHERE a ~ '[help].*'
+SELECT a, b FROM foo WHERE a ~ '[help].*';
+SELECT a, b FROM foo WHERE a ~* '[help].*'
+SELECT a, b FROM foo WHERE a !~ '[help].*'
+SELECT a, b FROM foo WHERE a !~* '[help].*'
 ```
 
 ## Extensions Version 0.8.6
