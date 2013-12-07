@@ -24,6 +24,7 @@ package net.sf.jsqlparser.util.deparser;
 import java.util.Iterator;
 
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -141,5 +142,10 @@ public class StatementDeParser implements StatementVisitor {
 
 	public void setBuffer(StringBuilder buffer) {
 		this.buffer = buffer;
+	}
+
+	@Override
+	public void visit(Alter alter) {
+		
 	}
 }

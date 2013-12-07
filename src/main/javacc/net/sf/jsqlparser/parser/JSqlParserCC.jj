@@ -123,6 +123,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
+import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -264,6 +265,9 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_PRIOR:"PRIOR">
 |   <K_NOCYCLE:"NOCYCLE">
 |	<K_SIBLINGS:"SIBLINGS">
+|	<K_ALTER:"ALTER">
+|	<K_ADD:"ADD">
+|	<K_COLUMN:"COLUMN">
 }
 
 
@@ -323,6 +327,8 @@ Statement Statement() :
     |
     stm =  Replace()
     |
+	stm = Alter() 
+	|
     LOOKAHEAD(3)
     stm = CreateIndex()
     |
@@ -2303,5 +2309,24 @@ Truncate Truncate():
 	
 	{
 		return truncate;
+	}
+}
+
+Alter Alter():
+{
+	Alter alter = new Alter();
+	Table table;
+	Token tk;
+	ColDataType dataType;
+}
+{
+	<K_ALTER> <K_TABLE> table=Table() <K_ADD> <K_COLUMN> 
+	(tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) dataType=ColDataType()
+
+	{
+		alter.setTable(table);
+		alter.setColumnName(tk.image);
+		alter.setDataType(dataType);
+		return alter;
 	}
 }

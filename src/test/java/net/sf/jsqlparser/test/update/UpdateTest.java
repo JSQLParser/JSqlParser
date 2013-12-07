@@ -38,15 +38,15 @@ public class UpdateTest extends TestCase {
 	}
 
 	public void testUpdateWAlias() throws JSQLParserException {
-		String statement = "UPDATE table1 A SET A.column = 'XXX' WHERE A.cod_table = 'YYY'";
+		String statement = "UPDATE table1 A SET A.columna = 'XXX' WHERE A.cod_table = 'YYY'";
 		Update update = (Update) parserManager.parse(new StringReader(statement));
 	}
 	
 	public void testUpdateWithDeparser() throws JSQLParserException {
-		assertSqlCanBeParsedAndDeparsed("UPDATE table1 AS A SET A.column = 'XXX' WHERE A.cod_table = 'YYY'");
+		assertSqlCanBeParsedAndDeparsed("UPDATE table1 AS A SET A.columna = 'XXX' WHERE A.cod_table = 'YYY'");
 	}
 	
 	public void testUpdateWithFrom() throws JSQLParserException {
-		assertSqlCanBeParsedAndDeparsed("UPDATE table1 SET column = 5 FROM table1 LEFT JOIN table2 ON col1 = col2");
+		assertSqlCanBeParsedAndDeparsed("UPDATE table1 SET columna = 5 FROM table1 LEFT JOIN table2 ON col1 = col2");
 	}
 }

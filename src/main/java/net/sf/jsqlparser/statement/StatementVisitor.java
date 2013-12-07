@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -53,4 +54,6 @@ public interface StatementVisitor {
 	void visit(CreateTable createTable);
 
 	void visit(CreateView createView);
+	
+	void visit(Alter alter);
 }
