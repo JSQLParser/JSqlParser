@@ -22,7 +22,7 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.8.7
 
-* Added first support for ALTER statements
+* Added first support for ALTER TABLE statements
 
 ```sql
 ALTER TABLE mytable ADD COLUMN mycolumn varchar (255)
