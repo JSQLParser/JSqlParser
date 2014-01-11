@@ -93,4 +93,8 @@ public class InsertTest extends TestCase {
 
 		fail("should not work");
 	}
+	
+	public void testSimpleInsert() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("INSERT INTO example (num, name, address, tel) VALUES (1, 'name', 'test ', '1234-1234')");
+	}
 }
