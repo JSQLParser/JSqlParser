@@ -59,6 +59,7 @@ package net.sf.jsqlparser.parser;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
@@ -542,7 +543,7 @@ String RelObjectName()  :
 Table TableWithAlias():
 {
 	Table table = null;
-	String alias = null;
+	Alias alias = null;
 }
 {
 	table=Table() [alias=Alias() { table.setAlias(alias); }]
@@ -730,7 +731,7 @@ SelectExpressionItem SelectExpressionItem():
 {
 	SelectExpressionItem selectExpressionItem = null;
 	Expression expression = null;
-	String alias = null;
+	Alias alias = null;
 }
 {
 	 expression=SimpleExpression() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
@@ -773,17 +774,18 @@ AllTableColumns AllTableColumns():
 	
 }
 
-String Alias():
-{ String retval = null; }
+Alias Alias():
+{ String name = null;
+  boolean useAs = false; }
 {
-	[<K_AS>] retval=RelObjectName()
-   { return retval; }
+	[<K_AS> { useAs = true; } ] name=RelObjectName()
+   { return new Alias(name,useAs); }
 }
 
 
 FunctionItem FunctionItem():
 {
-    String alias = null;
+    Alias alias = null;
     Function function;
     FunctionItem functionItem;
 }
@@ -836,7 +838,7 @@ ExpressionListItem ExpressionListItem():
 {
 	ExpressionListItem expressionListItem = null;
 	ExpressionList expressionList = null;
-	String alias = null;
+	Alias alias = null;
 }
 {
     "("
@@ -924,7 +926,7 @@ FromItem FromItem():
 {
 	FromItem fromItem = null;
 	Pivot pivot = null;
-	String alias = null;
+	Alias alias = null;
 }
 {
 	(
@@ -964,7 +966,7 @@ FromItem ValuesList():
 	Expression exp = null;
 	List<String> colNames = null;
 	String colName;
-	String alias;
+	Alias alias;
 }
 {
 	"("

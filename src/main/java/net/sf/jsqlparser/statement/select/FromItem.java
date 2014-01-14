@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
+
 /**
  * An item in a "SELECT [...] FROM item1" statement. (for example a table or a
  * sub-select)
@@ -29,9 +31,9 @@ public interface FromItem {
 
 	void accept(FromItemVisitor fromItemVisitor);
 
-	String getAlias();
+	Alias getAlias();
 
-	void setAlias(String alias);
+	void setAlias(Alias alias);
 
     Pivot getPivot();
 

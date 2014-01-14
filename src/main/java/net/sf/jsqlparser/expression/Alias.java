@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2014 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -19,34 +19,44 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-package net.sf.jsqlparser.statement.select;
+package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Function;
+/**
+ *
+ * @author toben
+ */
+public class Alias {
 
-public class FunctionItem {
+	private String name;
+	private boolean useAs = true;
 
-    private Function function;
-    private Alias alias;
+	public Alias(String name) {
+		this.name = name;
+	}
+	
+	public Alias(String name, boolean useAs) {
+		this.name = name;
+		this.useAs = useAs;
+	}
 
-    public Alias getAlias() {
-        return alias;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setAlias(Alias alias) {
-        this.alias = alias;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public Function getFunction() {
-        return function;
-    }
+	public boolean isUseAs() {
+		return useAs;
+	}
 
-    public void setFunction(Function function) {
-        this.function = function;
-    }
+	public void setUseAs(boolean useAs) {
+		this.useAs = useAs;
+	}
 
-    @Override
-    public String toString() {
-        return function + ((alias != null) ? alias.toString() : "");
-    }
+	@Override
+	public String toString() {
+		return (useAs ? " AS " : " ") + name;
+	}
 }

@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
+
 /**
  * A table created by "(tab1 join tab2)".
  */
@@ -28,8 +30,8 @@ public class SubJoin implements FromItem {
 
 	private FromItem left;
 	private Join join;
-	private String alias;
-    private Pivot pivot;
+	private Alias alias;
+	private Pivot pivot;
 
 	@Override
 	public void accept(FromItemVisitor fromItemVisitor) {
@@ -52,28 +54,30 @@ public class SubJoin implements FromItem {
 		join = j;
 	}
 
-    public Pivot getPivot() {
-        return pivot;
-    }
+	@Override
+	public Pivot getPivot() {
+		return pivot;
+	}
 
-    public void setPivot(Pivot pivot) {
-        this.pivot = pivot;
-    }
+	@Override
+	public void setPivot(Pivot pivot) {
+		this.pivot = pivot;
+	}
 
-    @Override
-	public String getAlias() {
+	@Override
+	public Alias getAlias() {
 		return alias;
 	}
 
 	@Override
-	public void setAlias(String string) {
-		alias = string;
+	public void setAlias(Alias alias) {
+		this.alias = alias;
 	}
 
 	@Override
 	public String toString() {
-		return "(" + left + " " + join + ")" +
-                ((pivot != null) ? " "+pivot : "") +
-                ((alias != null) ? " AS " + alias : "");
+		return "(" + left + " " + join + ")"
+				+ ((pivot != null) ? " " + pivot : "")
+				+ ((alias != null) ? alias.toString() : "");
 	}
 }

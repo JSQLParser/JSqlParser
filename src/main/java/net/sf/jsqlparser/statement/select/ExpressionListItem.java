@@ -21,12 +21,13 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
 public class ExpressionListItem {
 
     private ExpressionList expressionList;
-    private String alias;
+    private Alias alias;
 
     public ExpressionList getExpressionList() {
         return expressionList;
@@ -36,16 +37,16 @@ public class ExpressionListItem {
         this.expressionList = expressionList;
     }
 
-    public String getAlias() {
+    public Alias getAlias() {
         return alias;
     }
 
-    public void setAlias(String string) {
-        alias = string;
+    public void setAlias(Alias alias) {
+        this.alias = alias;
     }
 
     @Override
     public String toString() {
-        return expressionList + ((alias != null) ? " AS " + alias : "");
+        return expressionList + ((alias != null) ? alias.toString() : "");
     }
 }

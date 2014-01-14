@@ -57,6 +57,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	 * ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeparser, myBuf);
 	 * </code>
 	 * </pre>
+	 *
 	 * @param buffer the buffer that will be filled with the expression
 	 */
 	public ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer) {
@@ -283,8 +284,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 	@Override
 	public void visit(Column tableColumn) {
-		String tableName = tableColumn.getTable().getAlias();
-		if (tableName == null) {
+		final Alias alias = tableColumn.getTable().getAlias();
+		String tableName = null;
+		if (alias != null) {
+			tableName = alias.getName();
+		} else if (tableName == null) {
 			tableName = tableColumn.getTable().getWholeTableName();
 		}
 		if (tableName != null) {

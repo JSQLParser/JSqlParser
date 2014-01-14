@@ -91,7 +91,7 @@ public class SelectTest extends TestCase {
 		Select select = (Select) parserManager.parse(new StringReader(statement));
 		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
 
-		assertEquals("MYID", ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias());
+		assertEquals("MYID", ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias().getName());
 		assertEquals("mycol",
 				((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).getExpression()).getColumnName());
 		assertEquals("tab", ((AllTableColumns) plainSelect.getSelectItems().get(2)).getTable().getName());
@@ -111,13 +111,13 @@ public class SelectTest extends TestCase {
 		statement = "SELECT myid AS MYID, (SELECT MAX(ID) AS myid2 FROM mytable2) AS myalias FROM mytable WHERE mytable.col = 9";
 		select = (Select) parserManager.parse(new StringReader(statement));
 		plainSelect = (PlainSelect) select.getSelectBody();
-		assertEquals("myalias", ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).getAlias());
+		assertEquals("myalias", ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).getAlias().getName());
 		assertStatementCanBeDeparsedAs(select, statement);
 
 		statement = "SELECT (myid + myid2) AS MYID FROM mytable WHERE mytable.col = 9";
 		select = (Select) parserManager.parse(new StringReader(statement));
 		plainSelect = (PlainSelect) select.getSelectBody();
-		assertEquals("MYID", ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias());
+		assertEquals("MYID", ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias().getName());
 		assertStatementCanBeDeparsedAs(select, statement);
 	}
 
@@ -155,15 +155,15 @@ public class SelectTest extends TestCase {
 
 	public void testFrom() throws JSQLParserException {
 		String statement = "SELECT * FROM mytable as mytable0, mytable1 alias_tab1, mytable2 as alias_tab2, (SELECT * FROM mytable3) AS mytable4 WHERE mytable.col = 9";
-		String statementToString = "SELECT * FROM mytable AS mytable0, mytable1 AS alias_tab1, mytable2 AS alias_tab2, (SELECT * FROM mytable3) AS mytable4 WHERE mytable.col = 9";
+		String statementToString = "SELECT * FROM mytable AS mytable0, mytable1 alias_tab1, mytable2 AS alias_tab2, (SELECT * FROM mytable3) AS mytable4 WHERE mytable.col = 9";
 
 		Select select = (Select) parserManager.parse(new StringReader(statement));
 		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
 		assertEquals(3, plainSelect.getJoins().size());
-		assertEquals("mytable0", ((Table) plainSelect.getFromItem()).getAlias());
-		assertEquals("alias_tab1", ((Join) plainSelect.getJoins().get(0)).getRightItem().getAlias());
-		assertEquals("alias_tab2", ((Join) plainSelect.getJoins().get(1)).getRightItem().getAlias());
-		assertEquals("mytable4", ((Join) plainSelect.getJoins().get(2)).getRightItem().getAlias());
+		assertEquals("mytable0", ((Table) plainSelect.getFromItem()).getAlias().getName());
+		assertEquals("alias_tab1", ((Join) plainSelect.getJoins().get(0)).getRightItem().getAlias().getName());
+		assertEquals("alias_tab2", ((Join) plainSelect.getJoins().get(1)).getRightItem().getAlias().getName());
+		assertEquals("mytable4", ((Join) plainSelect.getJoins().get(2)).getRightItem().getAlias().getName());
 		assertStatementCanBeDeparsedAs(select, statementToString);
 	}
 
@@ -228,13 +228,13 @@ public class SelectTest extends TestCase {
 		String statement = "SELECT MAX(id) AS max FROM mytable WHERE mytable.col = 9";
 		Select select = (Select) parserManager.parse(new StringReader(statement));
 		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
-		assertEquals("max", ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias());
+		assertEquals("max", ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias().getName());
 		assertStatementCanBeDeparsedAs(select, statement);
 
 		statement = "SELECT MAX(id), AVG(pro) AS myavg FROM mytable WHERE mytable.col = 9 GROUP BY pro";
 		select = (Select) parserManager.parse(new StringReader(statement));
 		plainSelect = (PlainSelect) select.getSelectBody();
-		assertEquals("myavg", ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).getAlias());
+		assertEquals("myavg", ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).getAlias().getName());
 		assertStatementCanBeDeparsedAs(select, statement);
 
 		statement = "SELECT MAX(a, b, c), COUNT(*), D FROM tab1 GROUP BY D";
@@ -540,6 +540,11 @@ public class SelectTest extends TestCase {
 
 	public void testSelectAliasInQuotes() throws JSQLParserException {
 		String statement = "SELECT mycolumn AS \"My Column Name\" FROM mytable";
+		assertSqlCanBeParsedAndDeparsed(statement);
+	}
+	
+	public void testSelectAliasWithoutAs() throws JSQLParserException {
+		String statement = "SELECT mycolumn \"My Column Name\" FROM mytable";
 		assertSqlCanBeParsedAndDeparsed(statement);
 	}
 
@@ -954,7 +959,7 @@ public class SelectTest extends TestCase {
 	public void testLateralComplex1() throws IOException, JSQLParserException {
 		String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("complex-lateral-select-request.txt"));
 		Select select = (Select) parserManager.parse(new StringReader(stmt));
-		assertEquals("SELECT O.ORDERID, O.CUSTNAME, OL.LINETOTAL, OC.ORDCHGTOTAL, OT.TAXTOTAL FROM ORDERS AS O, LATERAL(SELECT SUM(NETAMT) AS LINETOTAL FROM ORDERLINES AS LINES WHERE LINES.ORDERID = O.ORDERID) AS OL, LATERAL(SELECT SUM(CHGAMT) AS ORDCHGTOTAL FROM ORDERCHARGES AS CHARGES WHERE LINES.ORDERID = O.ORDERID) AS OC, LATERAL(SELECT SUM(TAXAMT) AS TAXTOTAL FROM ORDERTAXES AS TAXES WHERE TAXES.ORDERID = O.ORDERID) AS OT", select.toString());
+		assertEquals("SELECT O.ORDERID, O.CUSTNAME, OL.LINETOTAL, OC.ORDCHGTOTAL, OT.TAXTOTAL FROM ORDERS O, LATERAL(SELECT SUM(NETAMT) AS LINETOTAL FROM ORDERLINES LINES WHERE LINES.ORDERID = O.ORDERID) AS OL, LATERAL(SELECT SUM(CHGAMT) AS ORDCHGTOTAL FROM ORDERCHARGES CHARGES WHERE LINES.ORDERID = O.ORDERID) AS OC, LATERAL(SELECT SUM(TAXAMT) AS TAXTOTAL FROM ORDERTAXES TAXES WHERE TAXES.ORDERID = O.ORDERID) AS OT", select.toString());
 	}
 
 	public void testValues() throws JSQLParserException {

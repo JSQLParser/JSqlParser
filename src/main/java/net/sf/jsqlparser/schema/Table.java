@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.schema;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.IntoTableVisitor;
@@ -33,7 +34,7 @@ public class Table implements FromItem {
 
 	private String schemaName;
 	private String name;
-	private String alias;
+	private Alias alias;
     private Pivot pivot;
 
 	public Table() {
@@ -61,13 +62,13 @@ public class Table implements FromItem {
 	}
 
 	@Override
-	public String getAlias() {
+	public Alias getAlias() {
 		return alias;
 	}
 
 	@Override
-	public void setAlias(String string) {
-		alias = string;
+	public void setAlias(Alias alias) {
+		this.alias = alias;
 	}
 
     public String getWholeTableName() {
@@ -95,10 +96,12 @@ public class Table implements FromItem {
 		intoTableVisitor.visit(this);
 	}
 
+	@Override
     public Pivot getPivot() {
         return pivot;
     }
 
+	@Override
     public void setPivot(Pivot pivot) {
         this.pivot = pivot;
     }
@@ -107,6 +110,6 @@ public class Table implements FromItem {
 	public String toString() {
 		return getWholeTableName() +
                 ((pivot != null) ? " "+pivot : "") +
-                ((alias != null) ? " AS " + alias : "");
+                ((alias != null) ? alias.toString() : "");
 	}
 }

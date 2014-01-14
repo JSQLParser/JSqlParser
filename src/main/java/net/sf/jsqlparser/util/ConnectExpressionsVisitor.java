@@ -23,6 +23,7 @@ package net.sf.jsqlparser.util;
 
 import java.util.LinkedList;
 import java.util.List;
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
@@ -86,7 +87,7 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
 			plainSelect.getSelectItems().add(sei);
 		}
 
-		((SelectExpressionItem) plainSelect.getSelectItems().get(0)).setAlias(alias);
+		((SelectExpressionItem) plainSelect.getSelectItems().get(0)).setAlias(new Alias(alias));
 	}
 
 	@Override

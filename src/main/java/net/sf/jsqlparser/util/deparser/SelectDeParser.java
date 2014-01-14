@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.select.*;
 
 import java.util.Iterator;
 import java.util.List;
+import net.sf.jsqlparser.expression.Alias;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
@@ -156,7 +157,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	public void visit(SelectExpressionItem selectExpressionItem) {
 		selectExpressionItem.getExpression().accept(expressionVisitor);
 		if (selectExpressionItem.getAlias() != null) {
-			buffer.append(" AS ").append(selectExpressionItem.getAlias());
+			buffer.append(selectExpressionItem.getAlias().toString());
 		}
 
 	}
@@ -166,9 +167,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		buffer.append("(");
 		subSelect.getSelectBody().accept(this);
 		buffer.append(")");
-		String alias = subSelect.getAlias();
+		Alias alias = subSelect.getAlias();
 		if (alias != null) {
-			buffer.append(" AS ").append(alias);
+			buffer.append(alias.toString());
 		}
 	}
 
@@ -179,9 +180,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 		if (pivot != null) {
 			pivot.accept(this);
 		}
-		String alias = tableName.getAlias();
-		if (alias != null && !alias.isEmpty()) {
-			buffer.append(" AS ").append(alias);
+		Alias alias = tableName.getAlias();
+		if (alias != null) {
+			buffer.append(alias);
 		}
 	}
 

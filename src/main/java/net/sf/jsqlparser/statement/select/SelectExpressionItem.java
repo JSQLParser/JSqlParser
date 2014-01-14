@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 
 /**
@@ -29,9 +30,9 @@ import net.sf.jsqlparser.expression.Expression;
 public class SelectExpressionItem implements SelectItem {
 
 	private Expression expression;
-	private String alias;
+	private Alias alias;
 
-	public String getAlias() {
+	public Alias getAlias() {
 		return alias;
 	}
 
@@ -39,8 +40,8 @@ public class SelectExpressionItem implements SelectItem {
 		return expression;
 	}
 
-	public void setAlias(String string) {
-		alias = string;
+	public void setAlias(Alias alias) {
+		this.alias = alias;
 	}
 
 	public void setExpression(Expression expression) {
@@ -54,6 +55,6 @@ public class SelectExpressionItem implements SelectItem {
 
 	@Override
 	public String toString() {
-		return expression + ((alias != null) ? " AS " + alias : "");
+		return expression + ((alias != null) ? alias.toString() : "");
 	}
 }

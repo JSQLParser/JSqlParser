@@ -23,6 +23,7 @@ package net.sf.jsqlparser.util;
 
 import java.util.LinkedList;
 import java.util.List;
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -83,7 +84,7 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 	public void visit(SelectExpressionItem selectExpressionItem) {
 		if (firstRun) {
 			if (selectExpressionItem.getAlias() != null) {
-				aliases.add(selectExpressionItem.getAlias().toUpperCase());
+				aliases.add(selectExpressionItem.getAlias().getName().toUpperCase());
 			}
 		} else {
 			if (selectExpressionItem.getAlias() == null) {
@@ -92,7 +93,7 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 					String alias = getNextAlias().toUpperCase();
 					if (!aliases.contains(alias)) {
 						aliases.add(alias);
-						selectExpressionItem.setAlias(alias);
+						selectExpressionItem.setAlias(new Alias(alias));
 						break;
 					}
 				}
