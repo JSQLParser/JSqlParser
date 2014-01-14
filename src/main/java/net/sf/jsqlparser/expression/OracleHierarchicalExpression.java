@@ -60,6 +60,7 @@ public class OracleHierarchicalExpression implements Expression {
 		expressionVisitor.visit(this);
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
 		if (startExpression != null) {

@@ -57,10 +57,12 @@ public class LateralSubSelect implements FromItem {
 		this.alias = alias;
 	}
 
+	@Override
     public Pivot getPivot() {
         return pivot;
     }
 
+	@Override
     public void setPivot(Pivot pivot) {
         this.pivot = pivot;
     }

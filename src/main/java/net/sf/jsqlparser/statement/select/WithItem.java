@@ -80,6 +80,7 @@ public class WithItem implements SelectBody {
 				+ " AS (" + selectBody + ")";
 	}
 
+	@Override
 	public void accept(SelectVisitor visitor) {
 		visitor.visit(this);
 	}

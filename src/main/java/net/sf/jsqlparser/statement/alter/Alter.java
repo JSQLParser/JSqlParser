@@ -83,6 +83,7 @@ public class Alter implements Statement {
 		statementVisitor.visit(this);
 	}
 	
+	@Override
 	public String toString() {
 		return "ALTER TABLE " + table.getWholeTableName() + " ADD COLUMN " + columnName + " " + dataType.toString();
 	}
