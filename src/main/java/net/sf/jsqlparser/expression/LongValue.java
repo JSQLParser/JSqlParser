@@ -37,6 +37,11 @@ public class LongValue implements Expression {
 		this.value = Long.parseLong(val);
         this.stringValue = val;
 	}
+	
+	public LongValue(long value) {
+		this.value=value;
+		stringValue = String.valueOf(value);
+	}
 
 	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {

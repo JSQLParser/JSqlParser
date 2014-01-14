@@ -1,9 +1,10 @@
 package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.Select;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -45,5 +46,12 @@ public class SelectUtilsTest {
 		Select select = (Select) CCJSqlParserUtil.parse("select a from mytable");
 		SelectUtils.addExpression(select, new Column("b"));
 		assertEquals("SELECT a, b FROM mytable", select.toString());
+		
+		Addition add = new Addition();
+		add.setLeftExpression(new LongValue(5));
+		add.setRightExpression(new LongValue(6));
+		SelectUtils.addExpression(select, add);
+		
+		assertEquals("SELECT a, b, 5 + 6 FROM mytable", select.toString());
 	}
 }
