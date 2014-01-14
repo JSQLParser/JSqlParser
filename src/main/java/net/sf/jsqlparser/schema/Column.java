@@ -40,6 +40,10 @@ public class Column implements Expression {
 		this.columnName = columnName;
 	}
 
+	public Column(String columnName) {
+		this(null, columnName);
+	}
+
 	public String getColumnName() {
 		return columnName;
 	}
@@ -61,9 +65,12 @@ public class Column implements Expression {
 	 */
 	public String getWholeColumnName() {
 
-		String columnWholeName = null;
-		String tableWholeName = table.getWholeTableName();
+		String columnWholeName;
+		String tableWholeName = null;
 
+		if (table != null) {
+			tableWholeName = table.getWholeTableName();
+		}
 		if (tableWholeName != null && tableWholeName.length() != 0) {
 			columnWholeName = tableWholeName + "." + columnName;
 		} else {
