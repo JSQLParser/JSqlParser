@@ -24,6 +24,7 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.8.7
 
+* Startet a simple utility class **SelectUtils** to collect basic **select** modification tools.
 * Added support for optional " AS " for aliases. 
 
 ```sql
