@@ -2,6 +2,8 @@
 
 ## News
 
+Recent changes in **0.8.7-SNAPSHOT** for some alias support changes introducing some API changes.
+
 Version **0.8.6** released.
 
 
@@ -21,6 +23,12 @@ JSqlParser parses an SQL statement and translate it into a hierarchy of Java cla
 The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.8.7
+
+* Added support for optional " AS " for aliases. 
+
+```sql
+SELECT * FROM mytable myalias
+```
 
 * Added first support for ALTER TABLE statements
 
