@@ -21,7 +21,11 @@
  */
 package net.sf.jsqlparser.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
@@ -40,7 +44,8 @@ public final class SelectUtils {
 	}
 
 	/**
-	 * Adds an expression to select statements. E.g. a simple column is an expression.
+	 * Adds an expression to select statements. E.g. a simple column is an
+	 * expression.
 	 *
 	 * @param select
 	 * @param expr
@@ -63,5 +68,30 @@ public final class SelectUtils {
 				throw new UnsupportedOperationException("Not supported yet.");
 			}
 		});
+	}
+
+	/**
+	 * Adds a simple join to a select statement. The introduced join is returned for
+	 * more configuration settings on it (e.g. left join, right join).
+	 * @param select
+	 * @param table
+	 * @param onExpression
+	 * @return 
+	 */
+	public static Join addJoin(Select select, final Table table, final Expression onExpression) {
+		if (select.getSelectBody() instanceof PlainSelect) {
+			PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+			List<Join> joins = plainSelect.getJoins();
+			if (joins == null) {
+				joins = new ArrayList<Join>();
+				plainSelect.setJoins(joins);
+			}
+			Join join = new Join();
+			join.setRightItem(table);
+			join.setOnExpression(onExpression);
+			joins.add(join);
+			return join;
+		}
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 }

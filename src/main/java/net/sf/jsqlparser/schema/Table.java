@@ -35,9 +35,13 @@ public class Table implements FromItem {
 	private String schemaName;
 	private String name;
 	private Alias alias;
-    private Pivot pivot;
+	private Pivot pivot;
 
 	public Table() {
+	}
+
+	public Table(String name) {
+		this.name = name;
 	}
 
 	public Table(String schemaName, String name) {
@@ -71,7 +75,7 @@ public class Table implements FromItem {
 		this.alias = alias;
 	}
 
-    public String getWholeTableName() {
+	public String getWholeTableName() {
 
 		String tableWholeName = null;
 		if (name == null) {
@@ -97,19 +101,19 @@ public class Table implements FromItem {
 	}
 
 	@Override
-    public Pivot getPivot() {
-        return pivot;
-    }
+	public Pivot getPivot() {
+		return pivot;
+	}
 
 	@Override
-    public void setPivot(Pivot pivot) {
-        this.pivot = pivot;
-    }
+	public void setPivot(Pivot pivot) {
+		this.pivot = pivot;
+	}
 
-    @Override
+	@Override
 	public String toString() {
-		return getWholeTableName() +
-                ((pivot != null) ? " "+pivot : "") +
-                ((alias != null) ? alias.toString() : "");
+		return getWholeTableName()
+				+ ((pivot != null) ? " " + pivot : "")
+				+ ((alias != null) ? alias.toString() : "");
 	}
 }

@@ -3,8 +3,11 @@ package net.sf.jsqlparser.util;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Select;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -53,5 +56,16 @@ public class SelectUtilsTest {
 		SelectUtils.addExpression(select, add);
 		
 		assertEquals("SELECT a, b, 5 + 6 FROM mytable", select.toString());
+	}
+	
+	@Test
+	public void testAddJoin() throws JSQLParserException {
+		Select select = (Select)CCJSqlParserUtil.parse("select a from mytable");
+		final EqualsTo equalsTo = new EqualsTo();
+		equalsTo.setLeftExpression(new Column("a"));
+		equalsTo.setRightExpression(new Column("b"));
+		Join addJoin = SelectUtils.addJoin(select, new Table("mytable2"), equalsTo);
+		addJoin.setLeft(true);
+		assertEquals("SELECT a FROM mytable LEFT JOIN mytable2 ON a = b", select.toString());
 	}
 }

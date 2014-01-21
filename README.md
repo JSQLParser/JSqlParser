@@ -25,6 +25,8 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 ## Extensions Version 0.8.7
 
 * Startet a simple utility class **SelectUtils** to collect basic **select** modification tools.
+** addExpression adds a new expression to the select list.
+** addJoin adds a new join to the select.
 * Added support for optional " AS " for aliases. 
 
 ```sql
