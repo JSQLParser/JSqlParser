@@ -2,6 +2,10 @@
 
 ## News
 
+Version **0.8.8** released.
+
+Due to incompatibilities using maven release with git v1.8.5 I skipped version 0.8.7. So the actual released version is **0.8.8**.
+
 Recent changes in **0.8.7-SNAPSHOT** for some alias support changes introducing some API changes.
 
 Version **0.8.6** released.
@@ -22,7 +26,7 @@ configuration details below.
 JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes. 
 The generated hierarchy can be navigated using the Visitor Pattern.
 
-## Extensions Version 0.8.7
+## Extensions Version 0.8.8
 
 * Startet a simple utility class **SelectUtils** to collect basic **select** modification tools.
     * addExpression adds a new expression to the select list.
