@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
 
 /**
@@ -63,6 +64,21 @@ public final class CCJSqlParserUtil {
 		CCJSqlParser parser = new CCJSqlParser(is,encoding);
 		try {
 			return parser.Statement();
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
+	}
+	
+	/**
+	 * Parse an expression.
+	 * @param expression
+	 * @return
+	 * @throws JSQLParserException 
+	 */
+	public static Expression parseExpression(String expression) throws JSQLParserException {
+		CCJSqlParser parser = new CCJSqlParser(new StringReader(expression));
+		try {
+			return parser.SimpleExpression();
 		} catch (Exception ex) {
 			throw new JSQLParserException(ex);
 		} 

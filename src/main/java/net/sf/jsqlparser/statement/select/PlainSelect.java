@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 
@@ -84,6 +86,13 @@ public class PlainSelect implements SelectBody {
 
 	public void setSelectItems(List<SelectItem> list) {
 		selectItems = list;
+	}
+	
+	public void addSelectItems(SelectItem ... items) {
+		if (selectItems == null) {
+			selectItems = new ArrayList<SelectItem>();
+		}
+		Collections.addAll(selectItems, items);
 	}
 
 	public void setWhere(Expression where) {

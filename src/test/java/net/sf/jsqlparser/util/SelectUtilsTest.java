@@ -1,6 +1,7 @@
 package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
@@ -8,7 +9,9 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -68,4 +71,25 @@ public class SelectUtilsTest {
 		addJoin.setLeft(true);
 		assertEquals("SELECT a FROM mytable LEFT JOIN mytable2 ON a = b", select.toString());
 	}
+	
+	@Test
+	public void testBuildSelectFromTableAndExpressions() {
+		Select select = SelectUtils.buildSelectFromTableAndExpressions(new Table("mytable"), new Column("a"), new Column("b"));
+		assertEquals("SELECT a, b FROM mytable", select.toString());
+	}
+	
+	@Test
+	public void testBuildSelectFromTable() {
+		Select select = SelectUtils.buildSelectFromTable(new Table("mytable"));
+		assertEquals("SELECT * FROM mytable", select.toString());
+	}
+	
+	@Test
+	public void testBuildSelectFromTableAndParsedExpression() throws JSQLParserException {
+		Select select = SelectUtils.buildSelectFromTableAndExpressions(new Table("mytable"), "a+b", "test");
+		assertEquals("SELECT a + b, test FROM mytable", select.toString());
+		
+		assertTrue(((SelectExpressionItem)((PlainSelect)select.getSelectBody()).getSelectItems().get(0)).getExpression() instanceof Addition);
+	}
+	
 }

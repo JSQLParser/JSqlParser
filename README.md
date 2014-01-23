@@ -26,6 +26,20 @@ configuration details below.
 JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes. 
 The generated hierarchy can be navigated using the Visitor Pattern.
 
+## Extensions Version 0.8.9
+
+* Added **CCJSqlParserUtil.parseExpression** to parse a simple expression. Now you can build expressions from a String like "a+b".
+
+```java
+Expression expr = CCJSqlParserUtil.parseExpression("a*(5+mycolumn)");
+```
+
+* Improved **SelectUtils** to build simple select statements.
+
+```java
+Select select = SelectUtils.buildSelectFromTable(new Table("mytable"));
+```
+
 ## Extensions Version 0.8.8
 
 * Startet a simple utility class **SelectUtils** to collect basic **select** modification tools.

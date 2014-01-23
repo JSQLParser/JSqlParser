@@ -22,13 +22,19 @@
 package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.WithItem;
@@ -41,6 +47,53 @@ import net.sf.jsqlparser.statement.select.WithItem;
 public final class SelectUtils {
 
 	private SelectUtils() {
+	}
+	
+	/**
+	 * Builds select expr1, expr2 from table.
+	 * @param table
+	 * @param expr
+	 * @return 
+	 */
+	public static Select buildSelectFromTableAndExpressions(Table table, Expression ... expr) {
+		SelectItem[] list = new SelectItem[expr.length];
+		for (int i=0;i<expr.length;i++) {
+			list[i]=new SelectExpressionItem(expr[i]);
+		}
+		return buildSelectFromTableAndSelectItems(table, list);
+	}
+	
+	/**
+	 * Builds select expr1, expr2 from table.
+	 * @param table
+	 * @param expr
+	 * @return 
+	 * @throws net.sf.jsqlparser.JSQLParserException 
+	 */
+	public static Select buildSelectFromTableAndExpressions(Table table, String ... expr) throws JSQLParserException {
+		SelectItem[] list = new SelectItem[expr.length];
+		for (int i=0;i<expr.length;i++) {
+			list[i]=new SelectExpressionItem(CCJSqlParserUtil.parseExpression(expr[i]));
+		}
+		return buildSelectFromTableAndSelectItems(table, list);
+	}
+	
+	public static Select buildSelectFromTableAndSelectItems(Table table, SelectItem ... selectItems) {
+		Select select = new Select();
+		PlainSelect body = new PlainSelect();
+		body.addSelectItems(selectItems);
+		body.setFromItem(table);
+		select.setSelectBody(body);
+		return select;
+	}
+	
+	/**
+	 * Builds select * from table.
+	 * @param table
+	 * @return 
+	 */
+	public static Select buildSelectFromTable(Table table) {
+		return buildSelectFromTableAndSelectItems(table, new AllColumns());
 	}
 
 	/**
