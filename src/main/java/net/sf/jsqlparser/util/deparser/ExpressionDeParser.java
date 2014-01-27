@@ -159,9 +159,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	}
 
 	@Override
-	public void visit(InverseExpression inverseExpression) {
-		buffer.append("-");
-		inverseExpression.getExpression().accept(this);
+	public void visit(SignedExpression signedExpression) {
+		buffer.append(signedExpression.getSign());
+		signedExpression.getExpression().accept(this);
 	}
 
 	@Override

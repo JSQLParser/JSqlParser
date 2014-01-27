@@ -75,23 +75,22 @@ public class Table implements FromItem {
 		this.alias = alias;
 	}
 
-	public String getWholeTableName() {
+    public String getWholeTableName() {
+        String tableWholeName = null;
 
-		String tableWholeName = null;
-		if (name == null) {
-			return null;
-		}
-		if (schemaName != null) {
-			tableWholeName = schemaName + "." + name;
-		} else {
-			tableWholeName = name;
-		}
+        if (schemaName != null) {
+            tableWholeName = schemaName + ".";
+        }
 
-		return tableWholeName;
+        if (name != null) {
+            tableWholeName = (tableWholeName == null) ? name
+                                                      : tableWholeName + name;
+        }
 
-	}
+        return tableWholeName;
+    }
 
-	@Override
+    @Override
 	public void accept(FromItemVisitor fromItemVisitor) {
 		fromItemVisitor.visit(this);
 	}
