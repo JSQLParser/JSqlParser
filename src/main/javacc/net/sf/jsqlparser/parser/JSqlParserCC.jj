@@ -64,7 +64,7 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.InverseExpression;
+import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
@@ -180,7 +180,7 @@ SKIP:
 
 TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 {
-<K_AS: "AS">
+    <K_AS: "AS">
 |   <K_BY:"BY">
 |   <K_DO:"DO">
 |   <K_IS:"IS">
@@ -271,26 +271,22 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_COLUMN:"COLUMN">
 }
 
-
 TOKEN : /* Numeric Constants */
 {
-	< S_DOUBLE: ((<S_INTEGER>)? "." <S_INTEGER> ( ["e","E"] ([ "-","+"])? <S_INTEGER> )?
+	< S_DOUBLE: ((<S_LONG>)? "." <S_LONG> ( ["e","E"] (["+", "-"])? <S_LONG>)?
 				|
-				<S_INTEGER> "." (["e","E"] ([ "-","+"])? <S_INTEGER>)?
+				<S_LONG> "." (["e","E"] (["+", "-"])? <S_LONG>)?
 				|
-				<S_INTEGER> ["e","E"] ([ "-","+"])? <S_INTEGER>
+				<S_LONG> ["e","E"] (["+", "-"])? <S_LONG>
 				)>
-  | 	< S_INTEGER: ( <DIGIT> )+ >
+  | 	< S_LONG: ( <DIGIT> )+ >
   | 	< #DIGIT: ["0" - "9"] >
-
 }
-
 
 SPECIAL_TOKEN:
 {
-   <LINE_COMMENT: "--"(~["\r","\n"])*>
-|  <MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
-
+   < LINE_COMMENT: "--"(~["\r","\n"])*>
+|  < MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
 }
 
 
@@ -1184,7 +1180,7 @@ Limit Limit():
 				// mysql-> LIMIT offset,row_count
 				<K_LIMIT>
 					 (
-					 	token=<S_INTEGER> { limit.setOffset(Long.parseLong(token.image)); }
+					 	token=<S_LONG> { limit.setOffset(Long.parseLong(token.image)); }
 					 	|
 					 	"?" { limit.setOffsetJdbcParameter(true);}
 
@@ -1192,17 +1188,17 @@ Limit Limit():
 					 ","
 
 				(
-				token=<S_INTEGER> { limit.setRowCount(Long.parseLong(token.image)); } | "?" { limit.setRowCountJdbcParameter(true);}
+				token=<S_LONG> { limit.setRowCount(Long.parseLong(token.image)); } | "?" { limit.setRowCountJdbcParameter(true);}
 				)
 			|
 			// postgresql-> OFFSET offset
 			 <K_OFFSET>
-				 (token=<S_INTEGER> { limit.setOffset(Long.parseLong(token.image)); } | "?" { limit.setOffsetJdbcParameter(true);} )
+				 (token=<S_LONG> { limit.setOffset(Long.parseLong(token.image)); } | "?" { limit.setOffsetJdbcParameter(true);} )
 			|
 				// mysql-postgresql-> LIMIT (row_count | ALL) [OFFSET offset]
 				<K_LIMIT>
 				 (
-				 	token=<S_INTEGER> { limit.setRowCount(Long.parseLong(token.image)); }
+				 	token=<S_LONG> { limit.setRowCount(Long.parseLong(token.image)); }
 				 	|
 				 	"?" { limit.setRowCountJdbcParameter(true);}
 				 	|
@@ -1210,7 +1206,7 @@ Limit Limit():
 				 )
 
 				 [LOOKAHEAD(2) <K_OFFSET>
-					 (token=<S_INTEGER> { limit.setOffset(Long.parseLong(token.image)); } | "?" { limit.setOffsetJdbcParameter(true);} )  ]
+					 (token=<S_LONG> { limit.setOffset(Long.parseLong(token.image)); } | "?" { limit.setOffsetJdbcParameter(true);} )  ]
 
 		)
 	{
@@ -1226,7 +1222,7 @@ Top Top():
 {
 	<K_TOP>
 	 (
-	 	token=<S_INTEGER> { top.setRowCount(Long.parseLong(token.image)); }
+	 	token=<S_LONG> { top.setRowCount(Long.parseLong(token.image)); }
 	 	|
 	 	"?" { top.setRowCountJdbcParameter(true);}
 	 )
@@ -1636,9 +1632,9 @@ Expression AdditiveExpression():
     leftExpression=MultiplicativeExpression()  { result = leftExpression; }
     (
     	LOOKAHEAD(2) ("+" { result = new Addition(); }
-    								| "-" { result = new Subtraction(); } )
+    			    | "-" { result = new Subtraction(); } )
 
-    						rightExpression=MultiplicativeExpression()
+        rightExpression=MultiplicativeExpression()
 
 		{
 			BinaryExpression binExp = (BinaryExpression) result;
@@ -1718,7 +1714,7 @@ Expression PrimaryExpression():
 	Expression retval = null;
     CastExpression castExpr = null;
 	Token token = null;
-	boolean isInverse = false;
+	Token sign = null;
 	String tmp = "";
 	ColDataType type = null;
 }
@@ -1738,27 +1734,27 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(ExtractExpression()) retval=ExtractExpression()
 
-	| LOOKAHEAD([ "+" | "-"] Function()) [ "+" | "-" { isInverse = true; }] retval=Function()
+	| LOOKAHEAD(["+" | "-"] Function())       [sign="+" | sign="-"] retval=Function()
 
-	| LOOKAHEAD([	"+" | "-"] <S_DOUBLE>) 	[	"+" | "-" { tmp = "-"; }]  token=<S_DOUBLE> { retval = new DoubleValue(tmp+token.image); }
+	| LOOKAHEAD(["+" | "-"] <S_DOUBLE>)       [sign="+" | sign="-"] token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
 
-	| LOOKAHEAD([	"+" | "-"] <S_INTEGER>)  	[	"+" | "-" { tmp = "-"; }]  token=<S_INTEGER> { retval = new LongValue(tmp+token.image); }
+	| LOOKAHEAD(["+" | "-"] <S_LONG>)         [sign="+" | sign="-"] token=<S_LONG> { retval = new LongValue(token.image); }
 
-	| LOOKAHEAD(CastExpression()) [ "+" | "-" { isInverse = true; }] retval=CastExpression()
+	| LOOKAHEAD(["+" | "-"] CastExpression()) [sign="+" | sign="-"] retval=CastExpression()
 
-	| LOOKAHEAD(Column()) 	[ "+" | "-" { isInverse = true; }] retval=Column()
+	| LOOKAHEAD(["+" | "-"] Column())         [sign="+" | sign="-"] retval=Column()
 
-	| LOOKAHEAD(2) [ "+" | "-" { isInverse = true; }]  "(" retval=PrimaryExpression() ")" {retval = new Parenthesis(retval); }
+	| LOOKAHEAD(2)                            [sign="+" | sign="-"] "(" retval=PrimaryExpression() ")" {retval = new Parenthesis(retval); }
+
+	|                                         [sign="+" | sign="-"] "(" retval=SubSelect() ")"
 
 	| token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 
-	| [ "+" | "-" { isInverse = true; }] "(" retval=SubSelect() ")"
+	| "{d" token=<S_CHAR_LITERAL> "}"  { retval = new DateValue(token.image); }
 
-	| 	"{d" token=<S_CHAR_LITERAL> "}" { retval = new DateValue(token.image); }
+	| "{t" token=<S_CHAR_LITERAL> "}"  { retval = new TimeValue(token.image); }
 
-	| 	"{t" token=<S_CHAR_LITERAL> "}" { retval = new TimeValue(token.image); }
-
-	| 	"{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
+	| "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
 	| retval = IntervalExpression()
 )
@@ -1772,8 +1768,8 @@ Expression PrimaryExpression():
 } ]
 
     {
-		if (isInverse) {
-			retval = new InverseExpression(retval);
+		if (sign != null) {
+			retval = new SignedExpression(sign.image.charAt(0), retval);
 		}
     	return retval;
     }
@@ -2186,7 +2182,7 @@ ColDataType ColDataType():
 	| tk=<S_IDENTIFIER> { colDataType.setDataType(tk.image); } )
 
 
-	[LOOKAHEAD(2) "(" ( (tk=<S_INTEGER> | tk=<S_CHAR_LITERAL>) { argumentsStringList.add(tk.image); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
+	[LOOKAHEAD(2) "(" ( (tk=<S_LONG> | tk=<S_CHAR_LITERAL>) { argumentsStringList.add(tk.image); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
 	{
 		if (argumentsStringList.size() > 0)
 			colDataType.setArgumentsStringList(argumentsStringList);
@@ -2235,7 +2231,7 @@ String CreateParameter():
 			|
 			tk=<S_CHAR_LITERAL> { retval = tk.image; }
 			|
-			tk=<S_INTEGER> { retval = tk.image; }
+			tk=<S_LONG> { retval = tk.image; }
 			|
 			tk=<S_DOUBLE> { retval = tk.image; }
 			|
@@ -2254,7 +2250,7 @@ String AList():
 {
 	 "("
 
-	 ( (tk=<S_INTEGER> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER>) { retval.append(tk.image); } ["," {retval.append(",");}] )*
+	 ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER>) { retval.append(tk.image); } ["," {retval.append(",");}] )*
 
 	")"
 	{

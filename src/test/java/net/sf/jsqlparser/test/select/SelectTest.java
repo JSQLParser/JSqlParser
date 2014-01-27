@@ -30,6 +30,34 @@ public class SelectTest extends TestCase {
 		super(arg0);
 	}
 
+    public void testSimpleSigns() throws Exception {
+        final String statement = "SELECT +1, -1 FROM tableName";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    public void testSimpleAdditionsAndSubtractions() throws Exception {
+        final String statement = "SELECT 1 - 1, 1 + 1, -1 - 1, -1 + 1, +1 + 1, +1 - 1 FROM tableName";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    public void testSignedColumns() throws Exception {
+        final String statement = "SELECT -columnName, +columnName, +(columnName), -(columnName) FROM tableName";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    public void testSigns() throws Exception {
+        final String statement = "SELECT (-(1)), -(1), (-(columnName)), -(columnName), (-1), -1, (-columnName), -columnName FROM tableName";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
     public void testMultiPartColumnNameWithColumnName() throws Exception {
         final String statement = "SELECT columnName FROM tableName";
         Select select = (Select) parserManager.parse(new StringReader(statement));

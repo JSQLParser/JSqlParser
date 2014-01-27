@@ -22,20 +22,27 @@
 package net.sf.jsqlparser.expression;
 
 /**
- * It represents a "-" before an expression
+ * It represents a "-" or "+" before an expression
  */
-public class InverseExpression implements Expression {
+public class SignedExpression implements Expression {
 
-	private Expression expression;
+    private char sign;
+    private Expression expression;
 
-	public InverseExpression() {
+	public SignedExpression(char sign, Expression expression) {
+        this.sign = sign;
+        setExpression(expression);
 	}
 
-	public InverseExpression(Expression expression) {
-		setExpression(expression);
-	}
+    public char getSign() {
+        return sign;
+    }
 
-	public Expression getExpression() {
+    public void setSign(char sign) {
+        this.sign = sign;
+    }
+
+    public Expression getExpression() {
 		return expression;
 	}
 
@@ -47,4 +54,9 @@ public class InverseExpression implements Expression {
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
+
+    @Override
+    public String toString() {
+        return getSign() + expression.toString();
+    }
 }
