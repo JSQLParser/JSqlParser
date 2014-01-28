@@ -369,7 +369,7 @@ Insert Insert():
 		[LOOKAHEAD(2) "(" ]
 		(
 			{ insert.setUseValues(false); }
-			itemsList = SubSelect()
+			itemsList=  SubSelect()
 		)
 		[ ")" ]
 	)
@@ -419,7 +419,7 @@ Column Column():
     	} else {
     		table = new Table(null, null);
     		colName = name1;
-    	}
+        }
 
     	return new Column(table, colName);
    	}
@@ -1585,7 +1585,7 @@ Expression PrimaryExpression():
 	Expression retval = null;
     CastExpression castExpr = null;
 	Token token = null;
-	boolean isInverse = false;
+	Token sign = null;
 	String tmp = "";
 	ColDataType type = null;
 }
@@ -1603,27 +1603,28 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(ExtractExpression()) retval=ExtractExpression()
 
-	| LOOKAHEAD([ "+" | "-"] Function()) [ "+" | "-" { isInverse = true; }] retval=Function()
+	| LOOKAHEAD(["+" | "-"] Function())       [sign="+" | sign="-"] retval=Function()
 
-	| LOOKAHEAD([	"+" | "-"] <S_DOUBLE>) 	[	"+" | "-" { tmp = "-"; }]  token=<S_DOUBLE> { retval = new DoubleValue(tmp+token.image); }
+	| LOOKAHEAD(["+" | "-"] <S_DOUBLE>)       [sign="+" | sign="-"] token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
 
-	| LOOKAHEAD([	"+" | "-"] <S_LONG>)  	[	"+" | "-" { tmp = "-"; }]  token=<S_LONG> { retval = new LongValue(tmp+token.image); }
+	| LOOKAHEAD(["+" | "-"] <S_LONG>)         [sign="+" | sign="-"] token=<S_LONG> { retval = new LongValue(token.image); }
 
-	| LOOKAHEAD(CastExpression()) [ "+" | "-" { isInverse = true; }] retval=CastExpression()
+	| LOOKAHEAD(["+" | "-"] CastExpression()) [sign="+" | sign="-"] retval=CastExpression()
 
-	| LOOKAHEAD(Column()) 	[ "+" | "-" { isInverse = true; }] retval=Column()
+	| LOOKAHEAD(["+" | "-"] Column())         [sign="+" | sign="-"] retval=Column()
 
-	| LOOKAHEAD(2) [ "+" | "-" { isInverse = true; }]  "(" retval=PrimaryExpression() ")" {retval = new Parenthesis(retval); }
+	| LOOKAHEAD(2)                            [sign="+" | sign="-"] "(" retval=PrimaryExpression() ")" {retval = new Parenthesis(retval); }
+
+	|                                         [sign="+" | sign="-"] "(" retval=SubSelect() ")"
 
 	| token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 
-	| [ "+" | "-" { isInverse = true; }] "(" retval=SubSelect() ")"
 
-	| 	"{d" token=<S_CHAR_LITERAL> "}" { retval = new DateValue(token.image); }
+	| "{d" token=<S_CHAR_LITERAL> "}"  { retval = new DateValue(token.image); }
 
-	| 	"{t" token=<S_CHAR_LITERAL> "}" { retval = new TimeValue(token.image); }
+	| "{t" token=<S_CHAR_LITERAL> "}"  { retval = new TimeValue(token.image); }
 
-	| 	"{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
+	| "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
 	| retval = IntervalExpression()
 )
@@ -1637,8 +1638,8 @@ Expression PrimaryExpression():
 } ]
 
     {
-		if (isInverse) {
-			retval = new InverseExpression(retval);
+		if (sign != null) {
+			retval = new SignedExpression(sign.image.charAt(0), retval);
 		}
     	return retval;
     }
