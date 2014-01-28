@@ -21,9 +21,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.schema.*;
+
 public interface SelectItemVisitor {
 
-	void visit(AllColumns allColumns);
+	void visit(Column column);
 
 	void visit(AllTableColumns allTableColumns);
 

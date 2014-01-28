@@ -5,16 +5,16 @@
  * Copyright (C) 2004 - 2013 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 2.1 of the
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
- * You should have received a copy of the GNU General Lesser Public
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
@@ -26,7 +26,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
-import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
@@ -282,23 +282,25 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 		buffer.append(")");
 	}
 
-	@Override
-	public void visit(Column tableColumn) {
-		final Alias alias = tableColumn.getTable().getAlias();
-		String tableName = null;
-		if (alias != null) {
-			tableName = alias.getName();
-		} else if (tableName == null) {
-			tableName = tableColumn.getTable().getFullyQualifiedName();
-		}
-		if (tableName != null) {
-			buffer.append(tableName).append(".");
-		}
+    @Override
+    public void visit(Column tableColumn) {
+        final Table table = tableColumn.getTable();
+        String tableName = null;
+        if (table != null) {
+            if (table.getAlias() != null) {
+                tableName = table.getAlias().getName();
+            } else {
+                tableName = table.getFullyQualifiedName();
+            }
+        }
+        if (tableName != null && !tableName.isEmpty()) {
+            buffer.append(tableName).append(".");
+        }
 
-		buffer.append(tableColumn.getColumnName());
-	}
+        buffer.append(tableColumn.getColumnName());
+    }
 
-	@Override
+    @Override
 	public void visit(Function function) {
 		if (function.isEscaped()) {
 			buffer.append("{fn ");

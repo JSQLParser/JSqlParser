@@ -21,76 +21,55 @@
  */
 package net.sf.jsqlparser.schema;
 
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.statement.select.*;
+public class Database implements MultiPartName {
+    private Server server;
+    private String databaseName;
 
-/**
- * A column. It can have the table name it belongs to.
- */
-public class Column implements SelectItem, Expression, MultiPartName {
-
-    private Table table;
-    private String columnName;
-
-    public Column() {
+    public Database(String databaseName) {
+        setDatabaseName(databaseName);
     }
 
-    public Column(Table table, String columnName) {
-        setTable(table);
-        setColumnName(columnName);
+    public Database(Server server, String databaseName) {
+        setServer(server);
+        setDatabaseName(databaseName);
     }
 
-    public Column(String columnName) {
-        this(null, columnName);
+    public Server getServer() {
+        return server;
     }
 
-    public Table getTable() {
-        return table;
+    public void setServer(Server server) {
+        this.server = server;
     }
 
-    public void setTable(Table table) {
-        this.table = table;
+    public String getDatabaseName() {
+        return databaseName;
     }
 
-    public String getColumnName() {
-        return columnName;
-    }
-
-    public void setColumnName(String string) {
-        columnName = string;
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     @Override
     public String getFullyQualifiedName() {
         String fqn = "";
 
-        if (table != null) {
-            fqn += table.getFullyQualifiedName();
+        if (server != null) {
+            fqn += server.getFullyQualifiedName();
         }
         if (!fqn.isEmpty()) {
             fqn += ".";
         }
 
-
-        if (columnName != null) {
-            fqn += columnName;
+        if (databaseName != null) {
+            fqn += databaseName;
         }
 
         return fqn;
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
-
-    @Override
     public String toString() {
         return getFullyQualifiedName();
-    }
-
-    @Override
-    public void accept(SelectItemVisitor selectItemVisitor) {
-        selectItemVisitor.visit(this);
     }
 }

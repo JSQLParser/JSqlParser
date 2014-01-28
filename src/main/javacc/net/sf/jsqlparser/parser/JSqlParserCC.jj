@@ -398,43 +398,55 @@ Delete Delete():
     }
 }
 
+// See: http://technet.microsoft.com/en-us/library/ms187879%28v=sql.105%29.aspx
+
 Column Column():
 {
-	String name1 = null;
-	String name2 = null;
-	String name3 = null;
+	String databaseName = null, schemaName = null, tableName = null, columnName = null;
 }
 {
-    // [schema.][tabella.]colonna
-    name1=RelObjectName() [ "." name2=RelObjectName() ["." name3=RelObjectName()]]
-    {
-    	String colName = null;
-    	Table table = null;
-    	if (name3 != null) {
-    		table = new Table(name1, name2);
-    		colName = name3;
-    	} else if (name2 != null) {
-    		table = new Table(null, name1);
-    		colName = name2;
-    	} else {
-    		table = new Table(null, null);
-    		colName = name1;
-        }
-
-    	return new Column(table, colName);
-   	}
+    (
+          LOOKAHEAD(7) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." [tableName=RelObjectName()] "." columnName=RelObjectName()
+        | LOOKAHEAD(5) schemaName=RelObjectName() "." [tableName=RelObjectName()] "." columnName=RelObjectName()
+        | LOOKAHEAD(3) tableName=RelObjectName() "." columnName=RelObjectName()
+        | columnName=RelObjectName()
+    )
+	{
+        final Database database = new Database(databaseName);
+        final Table table = new Table(database, schemaName, tableName);
+    	return new Column(table, columnName);
+	}
 }
 
-String RelObjectName()  :
+String RelObjectName():
 {	Token tk = null; }
 {
 	(
-	tk=<S_IDENTIFIER>
+	    tk=<S_IDENTIFIER>
 	|
-	tk=<S_QUOTED_IDENTIFIER>
+	    tk=<S_QUOTED_IDENTIFIER>
 	)
 
     { return tk.image; }
+}
+
+Table Table():
+{
+	String serverName = null, databaseName = null, schemaName = null, tableName = null;
+}
+{
+    (
+          LOOKAHEAD(7) serverName=RelObjectName() "." [databaseName=RelObjectName()] "." [schemaName=RelObjectName()] "." tableName=RelObjectName()
+        | LOOKAHEAD(5) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." tableName=RelObjectName()
+        | LOOKAHEAD(3) schemaName=RelObjectName() "." tableName=RelObjectName()
+        | tableName=RelObjectName()
+    )
+	{
+
+        final Server server = new Server(serverName);
+        final Database database = new Database(server, databaseName);
+    	return new Table(database, schemaName, tableName);
+	}
 }
 
 Table TableWithAlias():
@@ -445,24 +457,6 @@ Table TableWithAlias():
 {
 	table=Table() [alias=Alias() { table.setAlias(alias); }]
 	{ return table; }
-}
-
-Table Table():
-{
-	Table table = null;
-	String name1 = null;
-	String name2 = null;
-}
-{
-	(LOOKAHEAD(3)
-		name1=RelObjectName() "." name2=RelObjectName()  { table = new Table(name1, name2); }
-		|
-		name1=RelObjectName() { table = new Table(null, name1); }
-	)
-	{
-		return table;
-	}
-
 }
 
 Select Select():
@@ -632,17 +626,10 @@ SelectExpressionItem SelectExpressionItem():
 
 SelectItem SelectItem():
 {
-	Function function = null;
-	AllColumns allTableColumns = null;
-	Column tableColumn = null;
 	SelectItem selectItem = null;
 	SelectExpressionItem selectExpressionItem = null;
-	SubSelect subSelect = null;
 }
-{
-
-
-    ("*" { selectItem = new AllColumns(); }
+{   ("*" { selectItem = new AllColumns(); }
     |
 	LOOKAHEAD(AllTableColumns()) selectItem=AllTableColumns()
 	|
