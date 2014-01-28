@@ -289,7 +289,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 		if (alias != null) {
 			tableName = alias.getName();
 		} else if (tableName == null) {
-			tableName = tableColumn.getTable().getWholeTableName();
+			tableName = tableColumn.getTable().getFullyQualifiedName();
 		}
 		if (tableName != null) {
 			buffer.append(tableName).append(".");

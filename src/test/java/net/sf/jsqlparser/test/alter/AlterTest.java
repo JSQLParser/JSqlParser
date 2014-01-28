@@ -17,7 +17,7 @@ public class AlterTest extends TestCase {
 		Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable ADD COLUMN mycolumn varchar (255)");
 		assertTrue(stmt instanceof Alter);
 		Alter alter = (Alter)stmt;
-		assertEquals("mytable",alter.getTable().getWholeTableName());
+		assertEquals("mytable",alter.getTable().getFullyQualifiedName());
 		assertEquals("mycolumn", alter.getColumnName());
 		assertEquals("varchar (255)", alter.getDataType().toString());
 	}

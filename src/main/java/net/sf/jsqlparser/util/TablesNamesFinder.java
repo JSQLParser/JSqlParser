@@ -174,7 +174,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
 	@Override
 	public void visit(Table tableName) {
-		String tableWholeName = tableName.getWholeTableName();
+		String tableWholeName = tableName.getFullyQualifiedName();
 		if (!otherItemNames.contains(tableWholeName.toLowerCase())
 				&& !tables.contains(tableWholeName)) {
 			tables.add(tableWholeName);

@@ -26,7 +26,7 @@ public class CreateIndexTest extends TestCase {
 		assertEquals(2, createIndex.getIndex().getColumnsNames().size());
 		assertEquals("myindex", createIndex.getIndex().getName());
 		assertNull(createIndex.getIndex().getType());
-		assertEquals("mytab", createIndex.getTable().getWholeTableName());
+		assertEquals("mytab", createIndex.getTable().getFullyQualifiedName());
 		assertEquals("mycol", createIndex.getIndex().getColumnsNames().get(0));
 		assertEquals(statement, ""+createIndex);
 	}
@@ -38,7 +38,7 @@ public class CreateIndexTest extends TestCase {
 		assertEquals(2, createIndex.getIndex().getColumnsNames().size());
 		assertEquals("myindex", createIndex.getIndex().getName());
 		assertEquals("mytype", createIndex.getIndex().getType());
-		assertEquals("mytab", createIndex.getTable().getWholeTableName());
+		assertEquals("mytab", createIndex.getTable().getFullyQualifiedName());
 		assertEquals("mycol2", createIndex.getIndex().getColumnsNames().get(1));
 		assertEquals(statement, ""+createIndex);
 	}
@@ -50,7 +50,7 @@ public class CreateIndexTest extends TestCase {
 		assertEquals(3, createIndex.getIndex().getColumnsNames().size());
 		assertEquals("myindex", createIndex.getIndex().getName());
 		assertEquals("mytype", createIndex.getIndex().getType());
-		assertEquals("mytab", createIndex.getTable().getWholeTableName());
+		assertEquals("mytab", createIndex.getTable().getFullyQualifiedName());
 		assertEquals("mycol3", createIndex.getIndex().getColumnsNames().get(2));
 	}
 
@@ -61,7 +61,7 @@ public class CreateIndexTest extends TestCase {
 		assertEquals(3, createIndex.getIndex().getColumnsNames().size());
 		assertEquals("myindex", createIndex.getIndex().getName());
 		assertEquals("mytype", createIndex.getIndex().getType());
-		assertEquals("mytab", createIndex.getTable().getWholeTableName());
+		assertEquals("mytab", createIndex.getTable().getFullyQualifiedName());
 		assertEquals("mycol3", createIndex.getIndex().getColumnsNames().get(2));
 	}
 
@@ -72,12 +72,12 @@ public class CreateIndexTest extends TestCase {
 		assertEquals(3, createIndex.getIndex().getColumnsNames().size());
 		assertEquals("myindex", createIndex.getIndex().getName());
 		assertEquals("mytype", createIndex.getIndex().getType());
-		assertEquals("mytab", createIndex.getTable().getWholeTableName());
+		assertEquals("mytab", createIndex.getTable().getFullyQualifiedName());
 		assertEquals("mycol3", createIndex.getIndex().getColumnsNames().get(2));
 	}
 
 	public void testCreateIndex6() throws JSQLParserException {
 		String stmt= "CREATE INDEX myindex ON mytab (mycol, mycol2)";
-		assertSqlCanBeParsedAndDeparsed(stmt);		
+		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 }
