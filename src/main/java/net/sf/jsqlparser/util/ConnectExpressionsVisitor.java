@@ -21,19 +21,11 @@
  */
 package net.sf.jsqlparser.util;
 
-import java.util.LinkedList;
-import java.util.List;
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.BinaryExpression;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SelectItemVisitor;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.schema.*;
+import net.sf.jsqlparser.statement.select.*;
+
+import java.util.*;
 
 /**
  * Connect all selected expressions with a binary expression. Out of select a,b
@@ -102,7 +94,7 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
 	}
 
 	@Override
-	public void visit(AllColumns allColumns) {
+    public void visit(Column column) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 

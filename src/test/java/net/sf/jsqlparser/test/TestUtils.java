@@ -18,18 +18,18 @@
  */
 package net.sf.jsqlparser.test;
 
-import java.io.StringReader;
+import net.sf.jsqlparser.*;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.parser.*;
+import net.sf.jsqlparser.statement.*;
+import net.sf.jsqlparser.util.deparser.*;
+
+import java.io.*;
+
 import static junit.framework.Assert.assertEquals;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
-import net.sf.jsqlparser.util.deparser.SelectDeParser;
-import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
 /**
- * 
+ *
  * @author toben
  */
 public class TestUtils {
@@ -45,15 +45,15 @@ public class TestUtils {
 		parsed.accept(deParser);
 		assertEquals(statement, deParser.getBuffer().toString());
 	}
-	
+
 	public static void assertExpressionCanBeDeparsedAs(final Expression parsed, String expression) {
 		ExpressionDeParser expressionDeParser = new ExpressionDeParser();
-		StringBuilder stringBuffer = new StringBuilder();
-		expressionDeParser.setBuffer(stringBuffer);
-		SelectDeParser selectDeParser = new SelectDeParser(expressionDeParser, stringBuffer);
+		StringBuilder stringBuilder = new StringBuilder();
+		expressionDeParser.setBuffer(stringBuilder);
+		SelectDeParser selectDeParser = new SelectDeParser(expressionDeParser, stringBuilder);
 		expressionDeParser.setSelectVisitor(selectDeParser);
 		parsed.accept(expressionDeParser);
 
-		assertEquals(expression, stringBuffer.toString());
+		assertEquals(expression, stringBuilder.toString());
 	}
 }

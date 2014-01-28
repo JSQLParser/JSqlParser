@@ -26,7 +26,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
-import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
@@ -159,9 +159,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 	}
 
 	@Override
-	public void visit(InverseExpression inverseExpression) {
-		buffer.append("-");
-		inverseExpression.getExpression().accept(this);
+	public void visit(SignedExpression signedExpression) {
+		buffer.append(signedExpression.getSign());
+		signedExpression.getExpression().accept(this);
 	}
 
 	@Override
@@ -282,23 +282,25 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 		buffer.append(")");
 	}
 
-	@Override
-	public void visit(Column tableColumn) {
-		final Alias alias = tableColumn.getTable().getAlias();
-		String tableName = null;
-		if (alias != null) {
-			tableName = alias.getName();
-		} else if (tableName == null) {
-			tableName = tableColumn.getTable().getWholeTableName();
-		}
-		if (tableName != null) {
-			buffer.append(tableName).append(".");
-		}
+    @Override
+    public void visit(Column tableColumn) {
+        final Table table = tableColumn.getTable();
+        String tableName = null;
+        if (table != null) {
+            if (table.getAlias() != null) {
+                tableName = table.getAlias().getName();
+            } else {
+                tableName = table.getFullyQualifiedName();
+            }
+        }
+        if (tableName != null && !tableName.isEmpty()) {
+            buffer.append(tableName).append(".");
+        }
 
-		buffer.append(tableColumn.getColumnName());
-	}
+        buffer.append(tableColumn.getColumnName());
+    }
 
-	@Override
+    @Override
 	public void visit(Function function) {
 		if (function.isEscaped()) {
 			buffer.append("{fn ");

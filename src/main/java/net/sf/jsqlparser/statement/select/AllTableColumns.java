@@ -24,34 +24,16 @@ package net.sf.jsqlparser.statement.select;
 /**
  * All the columns of a table (as in "SELECT TableName.* FROM ...")
  */
-import net.sf.jsqlparser.schema.Table;
 
-public class AllTableColumns implements SelectItem {
+import net.sf.jsqlparser.schema.*;
 
-	private Table table;
+public class AllTableColumns extends Column implements SelectItem {
+    public AllTableColumns(Table table) {
+        super(table, "*");
+    }
 
-	public AllTableColumns() {
-	}
-
-	public AllTableColumns(Table tableName) {
-		this.table = tableName;
-	}
-
-	public Table getTable() {
-		return table;
-	}
-
-	public void setTable(Table table) {
-		this.table = table;
-	}
-
-	@Override
-	public void accept(SelectItemVisitor selectItemVisitor) {
-		selectItemVisitor.visit(this);
-	}
-
-	@Override
-	public String toString() {
-		return table + ".*";
-	}
+    @Override
+    public void accept(SelectItemVisitor selectItemVisitor) {
+        selectItemVisitor.visit(this);
+    }
 }
