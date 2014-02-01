@@ -22,12 +22,11 @@
 package net.sf.jsqlparser.schema;
 
 import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.statement.select.*;
 
 /**
  * A column. It can have the table name it belongs to.
  */
-public class Column implements SelectItem, Expression, MultiPartName {
+public final class Column implements Expression, MultiPartName {
 
     private Table table;
     private String columnName;
@@ -62,21 +61,18 @@ public class Column implements SelectItem, Expression, MultiPartName {
 
     @Override
     public String getFullyQualifiedName() {
-        String fqn = "";
+        StringBuilder fqn = new StringBuilder();
 
         if (table != null) {
-            fqn += table.getFullyQualifiedName();
+            fqn.append(table.getFullyQualifiedName());
         }
-        if (!fqn.isEmpty()) {
-            fqn += ".";
+        if (fqn.length()>0) {
+            fqn.append('.');
         }
-
-
         if (columnName != null) {
-            fqn += columnName;
+            fqn.append(columnName);
         }
-
-        return fqn;
+        return fqn.toString();
     }
 
     @Override
@@ -87,10 +83,5 @@ public class Column implements SelectItem, Expression, MultiPartName {
     @Override
     public String toString() {
         return getFullyQualifiedName();
-    }
-
-    @Override
-    public void accept(SelectItemVisitor selectItemVisitor) {
-        selectItemVisitor.visit(this);
     }
 }

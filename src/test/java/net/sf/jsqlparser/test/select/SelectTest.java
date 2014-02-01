@@ -161,7 +161,7 @@ public class SelectTest extends TestCase {
 		assertTrue(sub.getRightExpression() instanceof SignedExpression);
 		
 		SignedExpression sexpr = (SignedExpression) sub.getRightExpression();
-		assertEquals("-", sexpr.getSign());
+		assertEquals('-', sexpr.getSign());
 		assertEquals("1", sexpr.getExpression().toString());
     }
 

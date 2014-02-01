@@ -26,10 +26,9 @@ import net.sf.jsqlparser.schema.*;
 /**
  * All the columns (as in "SELECT * FROM ...")
  */
-public class AllColumns extends Column implements SelectItem {
+public class AllColumns implements SelectItem {
 
     public AllColumns() {
-        super("*");
     }
 
     @Override
@@ -39,6 +38,6 @@ public class AllColumns extends Column implements SelectItem {
 
     @Override
     public String toString() {
-        return getColumnName();
+        return "*";
     }
 }

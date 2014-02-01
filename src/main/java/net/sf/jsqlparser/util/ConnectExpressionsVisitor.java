@@ -22,7 +22,6 @@
 package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.*;
@@ -38,7 +37,7 @@ import java.util.*;
 public abstract class ConnectExpressionsVisitor implements SelectVisitor, SelectItemVisitor {
 
 	private String alias = "expr";
-	private List<SelectExpressionItem> itemsExpr = new LinkedList<SelectExpressionItem>();
+	private final List<SelectExpressionItem> itemsExpr = new LinkedList<SelectExpressionItem>();
 
 	public ConnectExpressionsVisitor() {
 	}
@@ -94,12 +93,12 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
 	}
 
 	@Override
-    public void visit(Column column) {
+	public void visit(AllTableColumns allTableColumns) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 	@Override
-	public void visit(AllTableColumns allTableColumns) {
+	public void visit(AllColumns allColumns) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 

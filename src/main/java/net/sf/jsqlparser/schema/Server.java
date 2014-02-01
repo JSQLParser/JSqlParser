@@ -23,7 +23,7 @@ package net.sf.jsqlparser.schema;
 
 import java.util.regex.*;
 
-public class Server implements MultiPartName {
+public final class Server implements MultiPartName {
     public static final Pattern SERVER_PATTERN = Pattern.compile("\\[([^\\]]+?)(?:\\\\([^\\]]+))?\\]");
 
     private String serverName;
