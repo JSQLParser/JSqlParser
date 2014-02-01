@@ -442,7 +442,6 @@ Table Table():
         | tableName=RelObjectName()
     )
 	{
-
         final Server server = new Server(serverName);
         final Database database = new Database(server, databaseName);
     	return new Table(database, schemaName, tableName);
