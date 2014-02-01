@@ -138,21 +138,34 @@ public class SelectTest extends TestCase {
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
-    public void testSimpleSigns() throws Exception {
+    public void testSimpleSigns() throws JSQLParserException  {
         final String statement = "SELECT +1, -1 FROM tableName";
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
-    public void testSimpleAdditionsAndSubtractions() throws Exception {
+    public void testSimpleAdditionsAndSubtractionsWithSigns() throws JSQLParserException  {
         final String statement = "SELECT 1 - 1, 1 + 1, -1 - 1, -1 + 1, +1 + 1, +1 - 1 FROM tableName";
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
         assertStatementCanBeDeparsedAs(select, statement);
     }
+	
+	public void testOperationsWithSigns() throws JSQLParserException  {
+		Expression expr = CCJSqlParserUtil.parseExpression("1 - -1");
+        assertEquals("1 - -1", expr.toString());
+		assertTrue(expr instanceof Subtraction);
+		Subtraction sub = (Subtraction) expr;
+		assertTrue(sub.getLeftExpression() instanceof LongValue);
+		assertTrue(sub.getRightExpression() instanceof SignedExpression);
+		
+		SignedExpression sexpr = (SignedExpression) sub.getRightExpression();
+		assertEquals("-", sexpr.getSign());
+		assertEquals("1", sexpr.getExpression().toString());
+    }
 
-    public void testSignedColumns() throws Exception {
+    public void testSignedColumns() throws JSQLParserException {
         final String statement = "SELECT -columnName, +columnName, +(columnName), -(columnName) FROM tableName";
         Select select = (Select) parserManager.parse(new StringReader(statement));
 

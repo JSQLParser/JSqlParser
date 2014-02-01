@@ -26,23 +26,26 @@ package net.sf.jsqlparser.expression;
  */
 public class SignedExpression implements Expression {
 
-    private char sign;
-    private Expression expression;
+	private char sign;
+	private Expression expression;
 
 	public SignedExpression(char sign, Expression expression) {
-        this.sign = sign;
-        setExpression(expression);
+		setSign(sign);
+		setExpression(expression);
 	}
 
-    public char getSign() {
-        return sign;
-    }
+	public char getSign() {
+		return sign;
+	}
 
-    public void setSign(char sign) {
-        this.sign = sign;
-    }
+	public final void setSign(char sign) {
+		this.sign = sign;
+		if (sign != '+' && sign != '-') {
+			throw new IllegalArgumentException("illegal sign character, only + - allowed");
+		}
+	}
 
-    public Expression getExpression() {
+	public Expression getExpression() {
 		return expression;
 	}
 
@@ -55,8 +58,8 @@ public class SignedExpression implements Expression {
 		expressionVisitor.visit(this);
 	}
 
-    @Override
-    public String toString() {
-        return getSign() + expression.toString();
-    }
+	@Override
+	public String toString() {
+		return getSign() + expression.toString();
+	}
 }
