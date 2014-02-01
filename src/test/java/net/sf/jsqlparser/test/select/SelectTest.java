@@ -13,6 +13,8 @@ import org.apache.commons.io.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
 
@@ -86,35 +88,52 @@ public class SelectTest extends TestCase {
 
         assertStatementCanBeDeparsedAs(select, statement);
     }
-    public void testMultiPartColumnNameWithDatabaseNameAndSchemaName() throws Exception {
+	
+	
+    public void testMultiPartColumnNameWithDatabaseNameAndSchemaName() {
         final String statement = "SELECT databaseName.schemaName..columnName FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
-
-        assertStatementCanBeDeparsedAs(select, statement);
+        Select select;
+		try {
+			select = (Select) parserManager.parse(new StringReader(statement));
+			fail("must not work");
+		} catch (JSQLParserException ex) {
+			Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
+		}
     }
+	
     public void testMultiPartColumnNameWithDatabaseNameAndTableName() throws Exception {
         final String statement = "SELECT databaseName..tableName.columnName FROM tableName";
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
         assertStatementCanBeDeparsedAs(select, statement);
     }
-    public void testMultiPartColumnNameWithDatabaseName() throws Exception {
+    public void testMultiPartColumnNameWithDatabaseName() {
         final String statement = "SELECT databaseName...columnName FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
-
-        assertStatementCanBeDeparsedAs(select, statement);
+        Select select;
+		try {
+			select = (Select) parserManager.parse(new StringReader(statement));
+			fail("must not work");
+		} catch (JSQLParserException ex) {
+			Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
+		}
     }
+	
     public void testMultiPartColumnNameWithSchemaNameAndTableName() throws Exception {
         final String statement = "SELECT schemaName.tableName.columnName FROM tableName";
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
         assertStatementCanBeDeparsedAs(select, statement);
     }
-    public void testMultiPartColumnNameWithSchemaName() throws Exception {
+	
+    public void testMultiPartColumnNameWithSchemaName() {
         final String statement = "SELECT schemaName..columnName FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
-
-        assertStatementCanBeDeparsedAs(select, statement);
+        Select select;
+		try {
+			select = (Select) parserManager.parse(new StringReader(statement));
+			fail("must not work");
+		} catch (JSQLParserException ex) {
+			Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
+		}
     }
 
     public void testMultiPartColumnNameWithTableName() throws Exception {

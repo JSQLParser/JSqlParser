@@ -187,12 +187,12 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 
 TOKEN : /* Numeric Constants */
 {
-	< S_DOUBLE: ((<S_LONG>)? "." <S_LONG> ( ["e","E"] (["+", "-"])? <S_LONG>)?
-				|
-				<S_LONG> "." (["e","E"] (["+", "-"])? <S_LONG>)?
-				|
-				<S_LONG> ["e","E"] (["+", "-"])? <S_LONG>
-				)>
+   < S_DOUBLE: ((<S_LONG>)? "." <S_LONG> ( ["e","E"] (["+", "-"])? <S_LONG>)?
+			|
+			<S_LONG> "." (["e","E"] (["+", "-"])? <S_LONG>)?
+			|
+			<S_LONG> ["e","E"] (["+", "-"])? <S_LONG>
+			)>
   | 	< S_LONG: ( <DIGIT> )+ >
   | 	< #DIGIT: ["0" - "9"] >
 }
@@ -406,8 +406,8 @@ Column Column():
 }
 {
     (
-          LOOKAHEAD(7) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." [tableName=RelObjectName()] "." columnName=RelObjectName()
-        | LOOKAHEAD(5) schemaName=RelObjectName() "." [tableName=RelObjectName()] "." columnName=RelObjectName()
+          LOOKAHEAD(7) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." tableName=RelObjectName() "." columnName=RelObjectName()
+        | LOOKAHEAD(5) schemaName=RelObjectName() "." tableName=RelObjectName() "." columnName=RelObjectName()
         | LOOKAHEAD(3) tableName=RelObjectName() "." columnName=RelObjectName()
         | columnName=RelObjectName()
     )
