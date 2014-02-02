@@ -26,179 +26,194 @@ public class SelectTest extends TestCase {
 		super(arg0);
 	}
 
-    // From statement multipart
-    public void testMultiPartTableNameWithServerNameAndDatabaseNameAndSchemaName() throws Exception {
-        final String statement = "SELECT columnName FROM [server-name\\server-instance].databaseName.schemaName.tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	// From statement multipart
+	public void testMultiPartTableNameWithServerNameAndDatabaseNameAndSchemaName() throws Exception {
+		final String statement = "SELECT columnName FROM [server-name\\server-instance].databaseName.schemaName.tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
-    public void testMultiPartTableNameWithServerNameAndDatabaseName() throws Exception {
-        final String statement = "SELECT columnName FROM [server-name\\server-instance].databaseName..tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
+	public void testMultiPartTableNameWithServerNameAndDatabaseName() throws Exception {
+		final String statement = "SELECT columnName FROM [server-name\\server-instance].databaseName..tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-    public void testMultiPartTableNameWithServerNameAndSchemaName() throws Exception {
-        final String statement = "SELECT columnName FROM [server-name\\server-instance]..schemaName.tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
-    public void testMultiPartTableNameWithServerName() throws Exception {
-        final String statement = "SELECT columnName FROM [server-name\\server-instance]...tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	public void testMultiPartTableNameWithServerNameAndSchemaName() throws Exception {
+		final String statement = "SELECT columnName FROM [server-name\\server-instance]..schemaName.tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
 
-    public void testMultiPartTableNameWithDatabaseNameAndSchemaName() throws Exception {
-        final String statement = "SELECT columnName FROM databaseName.schemaName.tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	public void testMultiPartTableNameWithServerName() throws Exception {
+		final String statement = "SELECT columnName FROM [server-name\\server-instance]...tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
 
-    public void testMultiPartTableNameWithDatabaseName() throws Exception {
-        final String statement = "SELECT columnName FROM databaseName..tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	public void testMultiPartTableNameWithDatabaseNameAndSchemaName() throws Exception {
+		final String statement = "SELECT columnName FROM databaseName.schemaName.tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
 
-    public void testMultiPartTableNameWithSchemaName() throws Exception {
-        final String statement = "SELECT columnName FROM schemaName.tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	public void testMultiPartTableNameWithDatabaseName() throws Exception {
+		final String statement = "SELECT columnName FROM databaseName..tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
 
-    public void testMultiPartTableNameWithColumnName() throws Exception {
-        final String statement = "SELECT columnName FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	public void testMultiPartTableNameWithSchemaName() throws Exception {
+		final String statement = "SELECT columnName FROM schemaName.tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
 
-    // Select statement statement multipart
-    public void testMultiPartColumnNameWithDatabaseNameAndSchemaNameAndTableName() throws Exception {
-        final String statement = "SELECT databaseName.schemaName.tableName.columnName FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	public void testMultiPartTableNameWithColumnName() throws Exception {
+		final String statement = "SELECT columnName FROM tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
-	
-	
-    public void testMultiPartColumnNameWithDatabaseNameAndSchemaName() {
-        final String statement = "SELECT databaseName.schemaName..columnName FROM tableName";
-        Select select;
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
+
+	// Select statement statement multipart
+	public void testMultiPartColumnNameWithDatabaseNameAndSchemaNameAndTableName() throws Exception {
+		final String statement = "SELECT databaseName.schemaName.tableName.columnName FROM tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
+
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
+
+	public void testMultiPartColumnNameWithDatabaseNameAndSchemaName() {
+		final String statement = "SELECT databaseName.schemaName..columnName FROM tableName";
+		Select select;
 		try {
 			select = (Select) parserManager.parse(new StringReader(statement));
 			fail("must not work");
 		} catch (JSQLParserException ex) {
 			Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
 		}
-    }
-	
-    public void testMultiPartColumnNameWithDatabaseNameAndTableName() throws Exception {
-        final String statement = "SELECT databaseName..tableName.columnName FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	}
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
-    public void testMultiPartColumnNameWithDatabaseName() {
-        final String statement = "SELECT databaseName...columnName FROM tableName";
-        Select select;
+	public void testMultiPartColumnNameWithDatabaseNameAndTableName() throws Exception {
+		final String statement = "SELECT databaseName..tableName.columnName FROM tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
+
+		assertStatementCanBeDeparsedAs(select, statement);
+		checkMultipartIdentifier(select, "columnName", "databaseName..tableName.columnName");
+	}
+
+	public void testMultiPartColumnNameWithDatabaseName() {
+		final String statement = "SELECT databaseName...columnName FROM tableName";
+		Select select;
 		try {
 			select = (Select) parserManager.parse(new StringReader(statement));
 			fail("must not work");
 		} catch (JSQLParserException ex) {
 			Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
 		}
-    }
-	
-    public void testMultiPartColumnNameWithSchemaNameAndTableName() throws Exception {
-        final String statement = "SELECT schemaName.tableName.columnName FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	}
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
-	
-    public void testMultiPartColumnNameWithSchemaName() {
-        final String statement = "SELECT schemaName..columnName FROM tableName";
-        Select select;
+	public void testMultiPartColumnNameWithSchemaNameAndTableName() throws Exception {
+		final String statement = "SELECT schemaName.tableName.columnName FROM tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
+
+		assertStatementCanBeDeparsedAs(select, statement);
+		checkMultipartIdentifier(select, "columnName", "schemaName.tableName.columnName");
+	}
+
+	public void testMultiPartColumnNameWithSchemaName() {
+		final String statement = "SELECT schemaName..columnName FROM tableName";
+		Select select;
 		try {
 			select = (Select) parserManager.parse(new StringReader(statement));
 			fail("must not work");
 		} catch (JSQLParserException ex) {
 			Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
 		}
-    }
+	}
 
-    public void testMultiPartColumnNameWithTableName() throws Exception {
-        final String statement = "SELECT tableName.columnName FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	public void testMultiPartColumnNameWithTableName() throws Exception {
+		final String statement = "SELECT tableName.columnName FROM tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
+		assertStatementCanBeDeparsedAs(select, statement);
+		checkMultipartIdentifier(select, "columnName", "tableName.columnName");
+	}
 
-    public void testMultiPartColumnName() throws Exception {
-        final String statement = "SELECT tableName FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	public void testMultiPartColumnName() throws Exception {
+		final String statement = "SELECT columnName FROM tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
+		assertStatementCanBeDeparsedAs(select, statement);
+		checkMultipartIdentifier(select, "columnName", "columnName");
+	}
 
-    public void testAllColumnsFromTable() throws Exception {
-        final String statement = "SELECT tableName.* FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	void checkMultipartIdentifier(Select select, String columnName, String fullColumnName) {
+		final Expression expr = ((SelectExpressionItem) ((PlainSelect) select.getSelectBody()).getSelectItems().get(0)).getExpression();
+		assertTrue(expr instanceof Column);
+		Column col = (Column) expr;
+		assertEquals(columnName, col.getColumnName());
+		assertEquals(fullColumnName, col.getFullyQualifiedName());
+	}
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
+	public void testAllColumnsFromTable() throws Exception {
+		final String statement = "SELECT tableName.* FROM tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-    public void testSimpleSigns() throws JSQLParserException  {
-        final String statement = "SELECT +1, -1 FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+		assertStatementCanBeDeparsedAs(select, statement);
+		assertTrue(((PlainSelect) select.getSelectBody()).getSelectItems().get(0) instanceof AllTableColumns);
+	}
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
+	public void testSimpleSigns() throws JSQLParserException {
+		final String statement = "SELECT +1, -1 FROM tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-    public void testSimpleAdditionsAndSubtractionsWithSigns() throws JSQLParserException  {
-        final String statement = "SELECT 1 - 1, 1 + 1, -1 - 1, -1 + 1, +1 + 1, +1 - 1 FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
-	
-	public void testOperationsWithSigns() throws JSQLParserException  {
+	public void testSimpleAdditionsAndSubtractionsWithSigns() throws JSQLParserException {
+		final String statement = "SELECT 1 - 1, 1 + 1, -1 - 1, -1 + 1, +1 + 1, +1 - 1 FROM tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
+
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
+
+	public void testOperationsWithSigns() throws JSQLParserException {
 		Expression expr = CCJSqlParserUtil.parseExpression("1 - -1");
-        assertEquals("1 - -1", expr.toString());
+		assertEquals("1 - -1", expr.toString());
 		assertTrue(expr instanceof Subtraction);
 		Subtraction sub = (Subtraction) expr;
 		assertTrue(sub.getLeftExpression() instanceof LongValue);
 		assertTrue(sub.getRightExpression() instanceof SignedExpression);
-		
+
 		SignedExpression sexpr = (SignedExpression) sub.getRightExpression();
 		assertEquals('-', sexpr.getSign());
 		assertEquals("1", sexpr.getExpression().toString());
-    }
+	}
 
-    public void testSignedColumns() throws JSQLParserException {
-        final String statement = "SELECT -columnName, +columnName, +(columnName), -(columnName) FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	public void testSignedColumns() throws JSQLParserException {
+		final String statement = "SELECT -columnName, +columnName, +(columnName), -(columnName) FROM tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
 
-    public void testSigns() throws Exception {
-        final String statement = "SELECT (-(1)), -(1), (-(columnName)), -(columnName), (-1), -1, (-columnName), -columnName FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
+	public void testSigns() throws Exception {
+		final String statement = "SELECT (-(1)), -(1), (-(columnName)), -(columnName), (-1), -1, (-columnName), -columnName FROM tableName";
+		Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
+		assertStatementCanBeDeparsedAs(select, statement);
+	}
 
-    public void testLimit() throws JSQLParserException {
+	public void testLimit() throws JSQLParserException {
 		String statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 3, ?";
 
 		Select select = (Select) parserManager.parse(new StringReader(statement));
@@ -258,8 +273,8 @@ public class SelectTest extends TestCase {
 		Select select = (Select) parserManager.parse(new StringReader(statement));
 		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
 
-        final List<SelectItem> selectItems = plainSelect.getSelectItems();
-        assertEquals("MYID", ((SelectExpressionItem) selectItems.get(0)).getAlias().getName());
+		final List<SelectItem> selectItems = plainSelect.getSelectItems();
+		assertEquals("MYID", ((SelectExpressionItem) selectItems.get(0)).getAlias().getName());
 		assertEquals("mycol", ((Column) ((SelectExpressionItem) selectItems.get(1)).getExpression()).getColumnName());
 		assertEquals("tab", ((AllTableColumns) selectItems.get(2)).getTable().getName());
 		assertEquals("schema", ((AllTableColumns) selectItems.get(3)).getTable().getSchemaName());
@@ -602,10 +617,10 @@ public class SelectTest extends TestCase {
 		Select select = (Select) stmt;
 		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
 
-		assertEquals(1,plainSelect.getSelectItems().size());
-		Expression expression = ((SelectExpressionItem)plainSelect.getSelectItems().get(0)).getExpression();
+		assertEquals(1, plainSelect.getSelectItems().size());
+		Expression expression = ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getExpression();
 		assertTrue(expression instanceof Function);
-		Function func = (Function)expression;
+		Function func = (Function) expression;
 		assertEquals("REPLACE", func.getName());
 		assertEquals(3, func.getParameters().getExpressions().size());
 	}
@@ -613,14 +628,14 @@ public class SelectTest extends TestCase {
 	public void testLike() throws JSQLParserException {
 		String statement = "SELECT * FROM tab1 WHERE a LIKE 'test'";
 		Select select = (Select) parserManager.parse(new StringReader(statement));
-        assertStatementCanBeDeparsedAs(select, statement);
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+		assertStatementCanBeDeparsedAs(select, statement);
+		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
 		assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).getRightExpression()).getValue());
 
 		statement = "SELECT * FROM tab1 WHERE a LIKE 'test' ESCAPE 'test2'";
 		select = (Select) parserManager.parse(new StringReader(statement));
-        assertStatementCanBeDeparsedAs(select, statement);
-        plainSelect = (PlainSelect) select.getSelectBody();
+		assertStatementCanBeDeparsedAs(select, statement);
+		plainSelect = (PlainSelect) select.getSelectBody();
 		assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).getRightExpression()).getValue());
 		assertEquals("test2", ((LikeExpression) plainSelect.getWhere()).getEscape());
 	}
@@ -737,11 +752,11 @@ public class SelectTest extends TestCase {
 	}
 
 	public void testConcatProblem2() throws JSQLParserException {
-		String stmt = "SELECT MAX(((((" +
-			"(SPA.SOORTAANLEVERPERIODE)::VARCHAR (2) || (VARCHAR(SPA.AANLEVERPERIODEJAAR))::VARCHAR (4)" +
-			") || TO_CHAR(SPA.AANLEVERPERIODEVOLGNR, 'FM09'::VARCHAR)" +
-			") || TO_CHAR((10000 - SPA.VERSCHIJNINGSVOLGNR), 'FM0999'::VARCHAR)" +
-			") || (SPA.GESLACHT)::VARCHAR (1))) AS GESLACHT_TMP FROM testtable";
+		String stmt = "SELECT MAX((((("
+				+ "(SPA.SOORTAANLEVERPERIODE)::VARCHAR (2) || (VARCHAR(SPA.AANLEVERPERIODEJAAR))::VARCHAR (4)"
+				+ ") || TO_CHAR(SPA.AANLEVERPERIODEVOLGNR, 'FM09'::VARCHAR)"
+				+ ") || TO_CHAR((10000 - SPA.VERSCHIJNINGSVOLGNR), 'FM0999'::VARCHAR)"
+				+ ") || (SPA.GESLACHT)::VARCHAR (1))) AS GESLACHT_TMP FROM testtable";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
@@ -950,15 +965,15 @@ public class SelectTest extends TestCase {
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
-    public void testProblemSqlAnalytic10Lag() throws JSQLParserException {
-        String stmt = "SELECT a, lag(a, 1) OVER (PARTITION BY c ORDER BY a, b) AS n FROM table1";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testProblemSqlAnalytic10Lag() throws JSQLParserException {
+		String stmt = "SELECT a, lag(a, 1) OVER (PARTITION BY c ORDER BY a, b) AS n FROM table1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testProblemSqlAnalytic11Lag() throws JSQLParserException {
-        String stmt = "SELECT a, lag(a, 1, 0) OVER (PARTITION BY c ORDER BY a, b) AS n FROM table1";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testProblemSqlAnalytic11Lag() throws JSQLParserException {
+		String stmt = "SELECT a, lag(a, 1, 0) OVER (PARTITION BY c ORDER BY a, b) AS n FROM table1";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	public void testOracleJoin() throws JSQLParserException {
 		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
@@ -970,20 +985,20 @@ public class SelectTest extends TestCase {
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
-    public void testOracleJoin3() throws JSQLParserException {
-        String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) > tabelle2.b";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testOracleJoin3() throws JSQLParserException {
+		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) > tabelle2.b";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	public void testOracleJoin3_1() throws JSQLParserException {
-        String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a > tabelle2.b(+)";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a > tabelle2.b(+)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testOracleJoin4() throws JSQLParserException {
-        String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) = tabelle2.b AND tabelle1.b(+) IN ('A', 'B')";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testOracleJoin4() throws JSQLParserException {
+		String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) = tabelle2.b AND tabelle1.b(+) IN ('A', 'B')";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
 	public void testProblemSqlIntersect() throws Exception {
 		String stmt = "(SELECT * FROM a) INTERSECT (SELECT * FROM b)";
@@ -1074,9 +1089,9 @@ public class SelectTest extends TestCase {
 		Select select = (Select) parsed;
 		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
 		SelectItem get = plainSelect.getSelectItems().get(0);
-		SelectExpressionItem item = (SelectExpressionItem)get;
+		SelectExpressionItem item = (SelectExpressionItem) get;
 		assertTrue(item.getExpression() instanceof Function);
-		assertEquals("test", ((Function)item.getExpression()).getName());
+		assertEquals("test", ((Function) item.getExpression()).getName());
 	}
 
 	public void testProblemFunction2() throws JSQLParserException {
@@ -1166,7 +1181,7 @@ public class SelectTest extends TestCase {
 
 		assertEquals(1, plainSelect.getSelectItems().size());
 		SelectExpressionItem item = (SelectExpressionItem) plainSelect.getSelectItems().get(0);
-		Function function = (Function)item.getExpression();
+		Function function = (Function) item.getExpression();
 
 		assertEquals("to_timestamp", function.getName());
 
@@ -1194,104 +1209,104 @@ public class SelectTest extends TestCase {
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
-    public void testPivot1() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN ('val1'))";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testPivot1() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN ('val1'))";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testPivot2() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN (10, 20, 30))";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testPivot2() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN (10, 20, 30))";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testPivot3() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable PIVOT (count(a) AS vals FOR b IN (10 AS d1, 20, 30 AS d3))";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testPivot3() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable PIVOT (count(a) AS vals FOR b IN (10 AS d1, 20, 30 AS d3))";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testPivot4() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable PIVOT (count(a), sum(b) FOR b IN (10, 20, 30))";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testPivot4() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable PIVOT (count(a), sum(b) FOR b IN (10, 20, 30))";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testPivot5() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR (b, c) IN ((10, 'a'), (20, 'b'), (30, 'c')))";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testPivot5() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR (b, c) IN ((10, 'a'), (20, 'b'), (30, 'c')))";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testPivotXml1() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN ('val1'))";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testPivotXml1() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN ('val1'))";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testPivotXml2() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN (SELECT vals FROM myothertable))";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testPivotXml2() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN (SELECT vals FROM myothertable))";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testPivotXml3() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN (ANY))";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testPivotXml3() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN (ANY))";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testRegexpLike1() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable WHERE REGEXP_LIKE(first_name, '^Ste(v|ph)en$')";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testRegexpLike1() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable WHERE REGEXP_LIKE(first_name, '^Ste(v|ph)en$')";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testRegexpLike2() throws JSQLParserException {
-        String stmt = "SELECT CASE WHEN REGEXP_LIKE(first_name, '^Ste(v|ph)en$') THEN 1 ELSE 2 END FROM mytable";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testRegexpLike2() throws JSQLParserException {
+		String stmt = "SELECT CASE WHEN REGEXP_LIKE(first_name, '^Ste(v|ph)en$') THEN 1 ELSE 2 END FROM mytable";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testBooleanFunction1() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable WHERE test_func(col1)";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-    }
+	public void testBooleanFunction1() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable WHERE test_func(col1)";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 
-    public void testNamedParameter() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable WHERE b = :param";
-        assertSqlCanBeParsedAndDeparsed(stmt);
+	public void testNamedParameter() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable WHERE b = :param";
+		assertSqlCanBeParsedAndDeparsed(stmt);
 
-        Statement st = CCJSqlParserUtil.parse(stmt);
-        Select select = (Select) st;
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
-        Expression exp = ((BinaryExpression) plainSelect.getWhere()).getRightExpression();
-        assertTrue(exp instanceof JdbcNamedParameter);
-        JdbcNamedParameter namedParameter = (JdbcNamedParameter) exp;
-        assertEquals("param", namedParameter.getName());
+		Statement st = CCJSqlParserUtil.parse(stmt);
+		Select select = (Select) st;
+		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+		Expression exp = ((BinaryExpression) plainSelect.getWhere()).getRightExpression();
+		assertTrue(exp instanceof JdbcNamedParameter);
+		JdbcNamedParameter namedParameter = (JdbcNamedParameter) exp;
+		assertEquals("param", namedParameter.getName());
 
-    }
+	}
 
-    public void testNamedParameter2() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable WHERE a = :param OR a = :param2 AND b = :param3";
-        assertSqlCanBeParsedAndDeparsed(stmt);
+	public void testNamedParameter2() throws JSQLParserException {
+		String stmt = "SELECT * FROM mytable WHERE a = :param OR a = :param2 AND b = :param3";
+		assertSqlCanBeParsedAndDeparsed(stmt);
 
-        Statement st = CCJSqlParserUtil.parse(stmt);
-        Select select = (Select) st;
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+		Statement st = CCJSqlParserUtil.parse(stmt);
+		Select select = (Select) st;
+		PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
 
-        Expression exp_l = ((BinaryExpression) plainSelect.getWhere()).getLeftExpression();
-        Expression exp_r = ((BinaryExpression) plainSelect.getWhere()).getRightExpression();
-        Expression exp_rl = ((BinaryExpression) exp_r).getLeftExpression();
-        Expression exp_rr = ((BinaryExpression) exp_r).getRightExpression();
+		Expression exp_l = ((BinaryExpression) plainSelect.getWhere()).getLeftExpression();
+		Expression exp_r = ((BinaryExpression) plainSelect.getWhere()).getRightExpression();
+		Expression exp_rl = ((BinaryExpression) exp_r).getLeftExpression();
+		Expression exp_rr = ((BinaryExpression) exp_r).getRightExpression();
 
-        Expression exp_param1 = ((BinaryExpression) exp_l).getRightExpression();
-        Expression exp_param2 = ((BinaryExpression) exp_rl).getRightExpression();
-        Expression exp_param3 = ((BinaryExpression) exp_rr).getRightExpression();
+		Expression exp_param1 = ((BinaryExpression) exp_l).getRightExpression();
+		Expression exp_param2 = ((BinaryExpression) exp_rl).getRightExpression();
+		Expression exp_param3 = ((BinaryExpression) exp_rr).getRightExpression();
 
-        assertTrue(exp_param1 instanceof JdbcNamedParameter);
-        assertTrue(exp_param2 instanceof JdbcNamedParameter);
-        assertTrue(exp_param3 instanceof JdbcNamedParameter);
+		assertTrue(exp_param1 instanceof JdbcNamedParameter);
+		assertTrue(exp_param2 instanceof JdbcNamedParameter);
+		assertTrue(exp_param3 instanceof JdbcNamedParameter);
 
-        JdbcNamedParameter namedParameter1 = (JdbcNamedParameter) exp_param1;
-        JdbcNamedParameter namedParameter2 = (JdbcNamedParameter) exp_param2;
-        JdbcNamedParameter namedParameter3 = (JdbcNamedParameter) exp_param3;
+		JdbcNamedParameter namedParameter1 = (JdbcNamedParameter) exp_param1;
+		JdbcNamedParameter namedParameter2 = (JdbcNamedParameter) exp_param2;
+		JdbcNamedParameter namedParameter3 = (JdbcNamedParameter) exp_param3;
 
-        assertEquals("param", namedParameter1.getName());
-        assertEquals("param2", namedParameter2.getName());
-        assertEquals("param3", namedParameter3.getName());
-    }
+		assertEquals("param", namedParameter1.getName());
+		assertEquals("param2", namedParameter2.getName());
+		assertEquals("param3", namedParameter3.getName());
+	}
 
 	public void testComplexUnion1() throws IOException, JSQLParserException {
 		String stmt = "(SELECT 'abc-' || coalesce(mytab.a::varchar, '') AS a, mytab.b, mytab.c AS st, mytab.d, mytab.e FROM mytab WHERE mytab.del = 0) UNION (SELECT 'cde-' || coalesce(mytab2.a::varchar, '') AS a, mytab2.b, mytab2.bezeichnung AS c, 0 AS d, 0 AS e FROM mytab2 WHERE mytab2.del = 0)";
@@ -1299,37 +1314,37 @@ public class SelectTest extends TestCase {
 	}
 
 	public void testOracleHierarchicalQuery() throws JSQLParserException {
-		String stmt= "SELECT last_name, employee_id, manager_id FROM employees CONNECT BY employee_id = manager_id ORDER BY last_name";
+		String stmt = "SELECT last_name, employee_id, manager_id FROM employees CONNECT BY employee_id = manager_id ORDER BY last_name";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
 	public void testOracleHierarchicalQuery2() throws JSQLParserException {
-		String stmt= "SELECT employee_id, last_name, manager_id FROM employees CONNECT BY PRIOR employee_id = manager_id";
+		String stmt = "SELECT employee_id, last_name, manager_id FROM employees CONNECT BY PRIOR employee_id = manager_id";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
 	public void testOracleHierarchicalQuery3() throws JSQLParserException {
-		String stmt= "SELECT last_name, employee_id, manager_id, LEVEL FROM employees START WITH employee_id = 100 CONNECT BY PRIOR employee_id = manager_id ORDER SIBLINGS BY last_name";
+		String stmt = "SELECT last_name, employee_id, manager_id, LEVEL FROM employees START WITH employee_id = 100 CONNECT BY PRIOR employee_id = manager_id ORDER SIBLINGS BY last_name";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
 	public void testPostgreSQLRegExpCaseSensitiveMatch() throws JSQLParserException {
-		String stmt= "SELECT a, b FROM foo WHERE a ~ '[help].*'";
+		String stmt = "SELECT a, b FROM foo WHERE a ~ '[help].*'";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
 	public void testPostgreSQLRegExpCaseSensitiveMatch2() throws JSQLParserException {
-		String stmt= "SELECT a, b FROM foo WHERE a ~* '[help].*'";
+		String stmt = "SELECT a, b FROM foo WHERE a ~* '[help].*'";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
 	public void testPostgreSQLRegExpCaseSensitiveMatch3() throws JSQLParserException {
-		String stmt= "SELECT a, b FROM foo WHERE a !~ '[help].*'";
+		String stmt = "SELECT a, b FROM foo WHERE a !~ '[help].*'";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 
 	public void testPostgreSQLRegExpCaseSensitiveMatch4() throws JSQLParserException {
-		String stmt= "SELECT a, b FROM foo WHERE a !~* '[help].*'";
+		String stmt = "SELECT a, b FROM foo WHERE a !~* '[help].*'";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
 }
