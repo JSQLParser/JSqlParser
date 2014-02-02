@@ -174,6 +174,74 @@
 					</execution>
 				</executions>
 			</plugin> 
+			<plugin>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.3</version>
+				<executions>
+					<execution>
+						<id>attach-descriptor</id>
+						<goals>
+							<goal>attach-descriptor</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<reportPlugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-surefire-report-plugin</artifactId>
+							<configuration>
+								<outputDirectory>${project.reporting.outputDirectory}/testresults</outputDirectory>
+							</configuration>
+						</plugin>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-javadoc-plugin</artifactId>
+							<version>2.9.1</version>
+							<configuration>
+								<aggregate>true</aggregate>
+							</configuration>
+							<reportSets>
+								<reportSet>
+									<id>html</id>
+									<reports>
+										<report>javadoc</report>
+									</reports>
+								</reportSet>
+							</reportSets>
+						</plugin>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-project-info-reports-plugin</artifactId>
+						</plugin>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-jxr-plugin</artifactId>
+							<configuration>
+								<aggregate>true</aggregate>
+							</configuration>
+						</plugin>
+						<plugin>
+							<groupId>org.codehaus.mojo</groupId>
+							<artifactId>cobertura-maven-plugin</artifactId>
+							<configuration>
+								<aggregate>true</aggregate>
+								<outputDirectory>%{project.reporting.outputDirectory}/cobertura</outputDirectory>
+							</configuration>
+						</plugin>
+						<plugin>
+							<groupId>org.codehaus.mojo</groupId>
+							<artifactId>findbugs-maven-plugin</artifactId>
+						</plugin>
+						<plugin>
+							<groupId>org.codehaus.mojo</groupId>
+							<artifactId>javacc-maven-plugin</artifactId>
+							<version>2.6</version>
+						</plugin>
+					</reportPlugins>
+					<locales>en</locales>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
     
@@ -217,20 +285,5 @@
 	<description>
 		JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes. 
 		The generated hierarchy can be navigated using the Visitor Pattern.
-        
-		-----------------
-        
-		This is a fork of 
-		Project Info:  http://jsqlparser.sourceforge.net
-		Project Lead:  Leonardo Francalanci (leoonardoo@yahoo.it);
 </description>
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>javacc-maven-plugin</artifactId>
-				<version>2.6</version>
-			</plugin>
-		</plugins>
-	</reporting>
 </project>
