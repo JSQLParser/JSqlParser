@@ -98,7 +98,7 @@ public class SelectTest extends TestCase {
 			select = (Select) parserManager.parse(new StringReader(statement));
 			fail("must not work");
 		} catch (JSQLParserException ex) {
-			Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
+			//Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
@@ -117,7 +117,7 @@ public class SelectTest extends TestCase {
 			select = (Select) parserManager.parse(new StringReader(statement));
 			fail("must not work");
 		} catch (JSQLParserException ex) {
-			Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
+			//Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
@@ -136,7 +136,7 @@ public class SelectTest extends TestCase {
 			select = (Select) parserManager.parse(new StringReader(statement));
 			fail("must not work");
 		} catch (JSQLParserException ex) {
-			Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
+			//Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
