@@ -28,6 +28,13 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.8.9
 
+* Improved support for multi part names (SQLServer) 
+* Better support for signed expressions. The sign is stored in the parse tree.
+
+```sql
+SELECT +col, -col FROM mytable
+```
+
 * Added **CCJSqlParserUtil.parseExpression** to parse a simple expression. Now you can build expressions from a String like "a+b".
 
 ```java
