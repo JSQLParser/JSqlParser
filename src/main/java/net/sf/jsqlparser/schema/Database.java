@@ -21,7 +21,7 @@
  */
 package net.sf.jsqlparser.schema;
 
-public class Database implements MultiPartName {
+public final class Database implements MultiPartName {
     private Server server;
     private String databaseName;
 
