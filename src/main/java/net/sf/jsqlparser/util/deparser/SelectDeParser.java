@@ -21,15 +21,11 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.*;
 
-import java.util.Iterator;
-import java.util.List;
-import net.sf.jsqlparser.expression.Alias;
+import java.util.*;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
@@ -140,17 +136,12 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	}
 
 	public void visit(Column column) {
-		buffer.append(column.getWholeColumnName());
-	}
-
-	@Override
-	public void visit(AllColumns allColumns) {
-		buffer.append("*");
+		buffer.append(column.getFullyQualifiedName());
 	}
 
 	@Override
 	public void visit(AllTableColumns allTableColumns) {
-		buffer.append(allTableColumns.getTable().getWholeTableName()).append(".*");
+		buffer.append(allTableColumns.getTable().getFullyQualifiedName()).append(".*");
 	}
 
 	@Override
@@ -175,7 +166,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
 	@Override
 	public void visit(Table tableName) {
-		buffer.append(tableName.getWholeTableName());
+		buffer.append(tableName.getFullyQualifiedName());
 		Pivot pivot = tableName.getPivot();
 		if (pivot != null) {
 			pivot.accept(this);
@@ -314,7 +305,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 			buffer.append(" USING (");
 			for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator.hasNext();) {
 				Column column = iterator.next();
-				buffer.append(column.getWholeColumnName());
+				buffer.append(column.getFullyQualifiedName());
 				if (iterator.hasNext()) {
 					buffer.append(", ");
 				}
@@ -356,5 +347,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 	@Override
 	public void visit(ValuesList valuesList) {
 		buffer.append(valuesList.toString());
+	}
+
+	@Override
+	public void visit(AllColumns allColumns) {
+		buffer.append('*');
 	}
 }

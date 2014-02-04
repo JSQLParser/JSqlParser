@@ -21,12 +21,11 @@
  */
 package net.sf.jsqlparser.statement.create.index;
 
-import java.util.Iterator;
+import net.sf.jsqlparser.schema.*;
+import net.sf.jsqlparser.statement.*;
+import net.sf.jsqlparser.statement.create.table.*;
 
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.create.table.Index;
+import java.util.*;
 
 /**
  * A "CREATE INDEX" statement
@@ -67,7 +66,7 @@ public class CreateIndex implements Statement {
 
 	@Override
 	public String toString() {
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 
 		buffer.append("CREATE ");
 
@@ -79,7 +78,7 @@ public class CreateIndex implements Statement {
 		buffer.append("INDEX ");
 		buffer.append(index.getName());
 		buffer.append(" ON ");
-		buffer.append(table.getWholeTableName());
+		buffer.append(table.getFullyQualifiedName());
 
 		if (index.getColumnsNames() != null) {
 			buffer.append(" (");

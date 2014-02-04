@@ -19,39 +19,8 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-package net.sf.jsqlparser.statement.select;
+package net.sf.jsqlparser.schema;
 
-/**
- * All the columns of a table (as in "SELECT TableName.* FROM ...")
- */
-import net.sf.jsqlparser.schema.*;
-
-public class AllTableColumns implements SelectItem {
-
-	private Table table;
-
-	public AllTableColumns() {
-	}
-
-	public AllTableColumns(Table tableName) {
-		this.table = tableName;
-	}
-
-	public Table getTable() {
-		return table;
-	}
-
-	public void setTable(Table table) {
-		this.table = table;
-	}
-
-	@Override
-	public void accept(SelectItemVisitor selectItemVisitor) {
-		selectItemVisitor.visit(this);
-	}
-
-	@Override
-	public String toString() {
-		return table + ".*";
-	}
+public interface MultiPartName {
+    String getFullyQualifiedName();
 }

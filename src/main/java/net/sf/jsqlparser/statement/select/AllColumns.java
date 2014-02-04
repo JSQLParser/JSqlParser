@@ -21,18 +21,23 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.schema.*;
+
 /**
  * All the columns (as in "SELECT * FROM ...")
  */
 public class AllColumns implements SelectItem {
 
-	@Override
-	public void accept(SelectItemVisitor selectItemVisitor) {
-		selectItemVisitor.visit(this);
-	}
+    public AllColumns() {
+    }
 
-	@Override
-	public String toString() {
-		return "*";
-	}
+    @Override
+    public void accept(SelectItemVisitor selectItemVisitor) {
+        selectItemVisitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return "*";
+    }
 }
