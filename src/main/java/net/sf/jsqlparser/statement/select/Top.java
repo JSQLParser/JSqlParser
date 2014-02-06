@@ -22,31 +22,57 @@
 package net.sf.jsqlparser.statement.select;
 
 /**
- * A top clause in the form [TOP row_count]
+ * A top clause in the form [TOP (row_count) or TOP row_count]
  */
 public class Top {
 
 	private long rowCount;
 	private boolean rowCountJdbcParameter = false;
+	private boolean hasParenthesis = false;
 
 	public long getRowCount() {
 		return rowCount;
 	}
 
-	public void setRowCount(long l) {
-		rowCount = l;
+    // TODO instead of a plain number, an expression should be added, which could be a NumberExpression, a GroupedExpression or a JdbcParameter
+    public void setRowCount(long rowCount) {
+		this.rowCount = rowCount;
 	}
 
 	public boolean isRowCountJdbcParameter() {
 		return rowCountJdbcParameter;
 	}
 
-	public void setRowCountJdbcParameter(boolean b) {
-		rowCountJdbcParameter = b;
+	public void setRowCountJdbcParameter(boolean rowCountJdbcParameter) {
+		this.rowCountJdbcParameter = rowCountJdbcParameter;
 	}
 
-	@Override
-	public String toString() {
-		return "TOP " + (rowCountJdbcParameter ? "?" : rowCount + "");
-	}
+    public boolean hasParenthesis()
+    {
+        return hasParenthesis;
+    }
+
+    public void setParenthesis(boolean hasParenthesis)
+    {
+        this.hasParenthesis = hasParenthesis;
+    }
+
+    @Override
+    public String toString() {
+        String result = "TOP ";
+
+        if ( hasParenthesis) {
+            result += "(";
+        }
+
+        result += rowCountJdbcParameter ? "?"
+                                        : rowCount;
+
+        if (hasParenthesis)
+        {
+            result += ")";
+        }
+
+        return result;
+    }
 }
