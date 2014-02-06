@@ -13,8 +13,6 @@ import org.apache.commons.io.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
 
@@ -265,8 +263,15 @@ public class SelectTest extends TestCase {
 		statement = "select top 5 foo from bar";
 		select = (Select) parserManager.parse(new StringReader(statement));
 		assertEquals(5, ((PlainSelect) select.getSelectBody()).getTop().getRowCount());
-
 	}
+
+    public void testTopWithParenthesis() throws JSQLParserException {
+		final String statement = "SELECT TOP (5) PERCENT JobTitle, HireDate FROM HumanResources.Employee ORDER BY HireDate DESC";
+        final Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertEquals(5, ((PlainSelect) select.getSelectBody()).getTop().getRowCount());
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
 
 	public void testSelectItems() throws JSQLParserException {
 		String statement = "SELECT myid AS MYID, mycol, tab.*, schema.tab.*, mytab.mycol2, myschema.mytab.mycol, myschema.mytab.* FROM mytable WHERE mytable.col = 9";

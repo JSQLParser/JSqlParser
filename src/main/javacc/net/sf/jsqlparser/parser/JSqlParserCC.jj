@@ -1083,18 +1083,24 @@ Limit Limit():
 	}
 }
 
+// according to http://technet.microsoft.com/en-us/library/ms189463.aspx
 Top Top():
 {
 	Top top = new Top();
 	Token token = null;
 }
 {
+    // TODO the inside should be extracted, ? should be added as a new JdbcParameter and the parenthesis should wrap them with a GroupedExpression
 	<K_TOP>
-	 (
-	 	token=<S_LONG> { top.setRowCount(Long.parseLong(token.image)); }
-	 	|
-	 	"?" { top.setRowCountJdbcParameter(true);}
-	 )
+	(
+	 	token=<S_LONG>                      { top.setRowCount(Long.parseLong(token.image)); }
+	   |
+	 	"?"                                 { top.setRowCountJdbcParameter(true);}
+	   |
+	 	LOOKAHEAD(2) "(" token=<S_LONG> ")" { top.setRowCount(Long.parseLong(token.image)); top.setParenthesis(true);}
+	   |
+	 	LOOKAHEAD(2) "(" "?" ")"            { top.setRowCountJdbcParameter(true); top.setParenthesis(true);}
+	)
 	{
 		return top;
 	}
@@ -1116,7 +1122,7 @@ Expression Expression():
     { return retval; }
 }
 
-Expression OrExpression()  :
+Expression OrExpression():
 {
 	Expression left, right, result;
 }
