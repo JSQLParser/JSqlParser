@@ -28,6 +28,7 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.8.9
 
+* Improved parsing of **top** parsing.
 * Improved support for multi part names (SQLServer) 
 * Better support for signed expressions. The sign is stored in the parse tree.
 
