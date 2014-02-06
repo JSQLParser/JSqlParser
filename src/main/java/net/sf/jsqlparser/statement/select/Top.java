@@ -26,34 +26,32 @@ package net.sf.jsqlparser.statement.select;
  */
 public class Top {
 
-	private long rowCount;
-	private boolean rowCountJdbcParameter = false;
-	private boolean hasParenthesis = false;
+    private long rowCount;
+    private boolean rowCountJdbcParameter = false;
+    private boolean hasParenthesis = false;
 
-	public long getRowCount() {
-		return rowCount;
-	}
+    public long getRowCount() {
+        return rowCount;
+    }
 
     // TODO instead of a plain number, an expression should be added, which could be a NumberExpression, a GroupedExpression or a JdbcParameter
     public void setRowCount(long rowCount) {
-		this.rowCount = rowCount;
-	}
+        this.rowCount = rowCount;
+    }
 
-	public boolean isRowCountJdbcParameter() {
-		return rowCountJdbcParameter;
-	}
+    public boolean isRowCountJdbcParameter() {
+        return rowCountJdbcParameter;
+    }
 
-	public void setRowCountJdbcParameter(boolean rowCountJdbcParameter) {
-		this.rowCountJdbcParameter = rowCountJdbcParameter;
-	}
+    public void setRowCountJdbcParameter(boolean rowCountJdbcParameter) {
+        this.rowCountJdbcParameter = rowCountJdbcParameter;
+    }
 
-    public boolean hasParenthesis()
-    {
+    public boolean hasParenthesis() {
         return hasParenthesis;
     }
 
-    public void setParenthesis(boolean hasParenthesis)
-    {
+    public void setParenthesis(boolean hasParenthesis) {
         this.hasParenthesis = hasParenthesis;
     }
 
@@ -61,15 +59,14 @@ public class Top {
     public String toString() {
         String result = "TOP ";
 
-        if ( hasParenthesis) {
+        if (hasParenthesis) {
             result += "(";
         }
 
         result += rowCountJdbcParameter ? "?"
-                                        : rowCount;
+                : rowCount;
 
-        if (hasParenthesis)
-        {
+        if (hasParenthesis) {
             result += ")";
         }
 

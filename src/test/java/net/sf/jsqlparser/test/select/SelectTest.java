@@ -272,6 +272,14 @@ public class SelectTest extends TestCase {
         assertEquals(5, ((PlainSelect) select.getSelectBody()).getTop().getRowCount());
         assertStatementCanBeDeparsedAs(select, statement);
     }
+    
+    public void testTopWithParenthesisJDBC() throws JSQLParserException {
+		final String statement = "SELECT TOP (?) col1 FROM mytab";
+        final Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertTrue(((PlainSelect) select.getSelectBody()).getTop().isRowCountJdbcParameter());
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
 
 	public void testSelectItems() throws JSQLParserException {
 		String statement = "SELECT myid AS MYID, mycol, tab.*, schema.tab.*, mytab.mycol2, myschema.mytab.mycol, myschema.mytab.* FROM mytable WHERE mytable.col = 9";
