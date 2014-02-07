@@ -56,13 +56,11 @@ public class Top {
         this.hasParenthesis = hasParenthesis;
     }
 
-    public boolean isPercentage()
-    {
+    public boolean isPercentage() {
         return isPercentage;
     }
 
-    public void setPercentage(boolean percentage)
-    {
+    public void setPercentage(boolean percentage) {
         this.isPercentage = percentage;
     }
 
@@ -75,7 +73,7 @@ public class Top {
         }
 
         result += rowCountJdbcParameter ? "?"
-                                        : rowCount;
+                : rowCount;
 
         if (hasParenthesis) {
             result += ")";

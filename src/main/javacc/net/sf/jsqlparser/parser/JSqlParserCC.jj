@@ -1091,7 +1091,6 @@ Top Top():
 	Token token = null;
 }
 {
-    // TODO the inside should be extracted, ? should be added as a new JdbcParameter and the parenthesis should wrap them with a GroupedExpression
 	<K_TOP>
 	(
 	 	token=<S_LONG>                      { top.setRowCount(Long.parseLong(token.image)); }
@@ -1103,7 +1102,7 @@ Top Top():
               | "?"                         { top.setRowCountJdbcParameter(true);} )
             { top.setParenthesis(true);}
        ")"
-	) [ <K_PERCENT>                         { top.setPercentage(true); } ]    // TODO how would you select a column called 'percent' if it was after the TOP expression?
+	) [ <K_PERCENT>                         { top.setPercentage(true); } ] 
 	{
 		return top;
 	}
