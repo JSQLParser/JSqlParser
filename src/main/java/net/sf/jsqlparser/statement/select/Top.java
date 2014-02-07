@@ -29,6 +29,7 @@ public class Top {
     private long rowCount;
     private boolean rowCountJdbcParameter = false;
     private boolean hasParenthesis = false;
+    private boolean isPercentage = false;
 
     public long getRowCount() {
         return rowCount;
@@ -55,6 +56,16 @@ public class Top {
         this.hasParenthesis = hasParenthesis;
     }
 
+    public boolean isPercentage()
+    {
+        return isPercentage;
+    }
+
+    public void setPercentage(boolean percentage)
+    {
+        this.isPercentage = percentage;
+    }
+
     @Override
     public String toString() {
         String result = "TOP ";
@@ -64,10 +75,14 @@ public class Top {
         }
 
         result += rowCountJdbcParameter ? "?"
-                : rowCount;
+                                        : rowCount;
 
         if (hasParenthesis) {
             result += ")";
+        }
+
+        if (isPercentage) {
+            result += " PERCENT";
         }
 
         return result;

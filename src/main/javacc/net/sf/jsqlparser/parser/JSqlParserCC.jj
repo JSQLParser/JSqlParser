@@ -101,14 +101,15 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_IN:"IN">
 |   <K_OR:"OR">
 |   <K_ON:"ON">
-|   <K_ALL: "ALL">
-|   <K_AND: "AND">
-|   <K_ANY: "ANY">
-|   <K_KEY: "KEY">
+|   <K_ALL:"ALL">
+|   <K_AND:"AND">
+|   <K_ANY:"ANY">
+|   <K_KEY:"KEY">
 |   <K_NOT:"NOT">
 |   <K_SET:"SET">
 |   <K_ASC:"ASC">
 |   <K_TOP:"TOP">
+|   <K_PERCENT:"PERCENT">
 |   <K_END:"END">
 |   <K_DESC:"DESC">
 |   <K_INTO:"INTO">
@@ -1097,12 +1098,12 @@ Top Top():
 	   |
 	 	"?"                                 { top.setRowCountJdbcParameter(true);}
 	   |
-	   "(" 
-            ( token=<S_LONG>                { top.setRowCount(Long.parseLong(token.image)); } 
-              | "?"                         { top.setRowCountJdbcParameter(true);} ) 
+	   "("
+            ( token=<S_LONG>                { top.setRowCount(Long.parseLong(token.image)); }
+              | "?"                         { top.setRowCountJdbcParameter(true);} )
             { top.setParenthesis(true);}
        ")"
-	)
+	) [ <K_PERCENT>                         { top.setPercentage(true); } ]    // TODO how would you select a column called 'percent' if it was after the TOP expression?
 	{
 		return top;
 	}
