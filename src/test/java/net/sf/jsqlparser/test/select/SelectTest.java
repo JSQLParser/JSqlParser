@@ -266,18 +266,24 @@ public class SelectTest extends TestCase {
 	}
 
     public void testTopWithParenthesis() throws JSQLParserException {
-		final String statement = "SELECT TOP (5) PERCENT JobTitle, HireDate FROM HumanResources.Employee ORDER BY HireDate DESC";
+        final String firstColumnName = "alias.columnName1";
+        final String secondColumnName = "alias.columnName2";
+        final String statement = "SELECT TOP (5) PERCENT " + firstColumnName + ", " + secondColumnName + " FROM schemaName.tableName alias ORDER BY " + secondColumnName + " DESC";
         final Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(5, ((PlainSelect) select.getSelectBody()).getTop().getRowCount());
-        assertStatementCanBeDeparsedAs(select, statement);
-    }
-    
-    public void testTopWithParenthesisJDBC() throws JSQLParserException {
-		final String statement = "SELECT TOP (?) col1 FROM mytab";
-        final Select select = (Select) parserManager.parse(new StringReader(statement));
+        final PlainSelect selectBody = (PlainSelect) select.getSelectBody();
 
-        assertTrue(((PlainSelect) select.getSelectBody()).getTop().isRowCountJdbcParameter());
+        final Top top = selectBody.getTop();
+        assertEquals(5, top.getRowCount());
+        assertFalse(top.isRowCountJdbcParameter());
+        assertTrue(top.hasParenthesis());
+        assertTrue(top.isPercentage());
+
+        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        assertEquals(2, selectItems.size());
+        assertEquals(firstColumnName, selectItems.get(0).toString());
+        assertEquals(secondColumnName, selectItems.get(1).toString());
+
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -551,7 +557,7 @@ public class SelectTest extends TestCase {
 				((Column) plainSelect.getOrderByElements().get(0).getExpression())
 				.getFullyQualifiedName());
 		assertEquals("b",
-				((Column) plainSelect.getOrderByElements().get(1).getExpression()).getColumnName());
+                     ((Column) plainSelect.getOrderByElements().get(1).getExpression()).getColumnName());
 		assertTrue(plainSelect.getOrderByElements().get(1).isAsc());
 		assertFalse(plainSelect.getOrderByElements().get(0).isAsc());
 		assertStatementCanBeDeparsedAs(select, statementToString);
@@ -561,7 +567,7 @@ public class SelectTest extends TestCase {
 		plainSelect = (PlainSelect) select.getSelectBody();
 		assertEquals(2, plainSelect.getOrderByElements().size());
 		assertEquals("a",
-				((Column) plainSelect.getOrderByElements().get(0).getExpression()).getColumnName());
+                     ((Column) plainSelect.getOrderByElements().get(0).getExpression()).getColumnName());
 		assertEquals(2,
 				((LongValue) plainSelect.getOrderByElements().get(1).getExpression()).getValue());
 		assertStatementCanBeDeparsedAs(select, statement);
@@ -696,7 +702,7 @@ public class SelectTest extends TestCase {
 		Select select = (Select) parserManager.parse(new StringReader(statement));
 
 		assertEquals(1e22, ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select.getSelectBody())
-				.getSelectItems().get(0)).getExpression()).getValue(), 0);
+                .getSelectItems().get(0)).getExpression()).getValue(), 0);
 	}
 
 	public void testDouble3() throws JSQLParserException {
@@ -704,7 +710,7 @@ public class SelectTest extends TestCase {
 		Select select = (Select) parserManager.parse(new StringReader(statement));
 
 		assertEquals(1.0, ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select.getSelectBody())
-				.getSelectItems().get(0)).getExpression()).getValue(), 0);
+                .getSelectItems().get(0)).getExpression()).getValue(), 0);
 	}
 
 	public void testDouble4() throws JSQLParserException {
@@ -712,7 +718,7 @@ public class SelectTest extends TestCase {
 		Select select = (Select) parserManager.parse(new StringReader(statement));
 
 		assertEquals(1.2e22, ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select.getSelectBody())
-				.getSelectItems().get(0)).getExpression()).getValue(), 0);
+                .getSelectItems().get(0)).getExpression()).getValue(), 0);
 	}
 
 	public void testWith() throws JSQLParserException {

@@ -10,19 +10,19 @@
 	</organization>
 	<packaging>jar</packaging>
 	<url>https://github.com/JSQLParser/JSqlParser</url>
-    
+
 	<licenses>
 		<license>
 			<name>GNU Library or Lesser General Public License (LGPL) V2.1</name>
 			<url>http://www.gnu.org/licenses/lgpl-2.1.html</url>
 		</license>
 	</licenses>
-    
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.10</version>
+			<version>4.11</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -31,7 +31,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-    
+
 	<developers>
 		<developer>
 			<name>Tobias Warneke</name>
@@ -49,14 +49,14 @@
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
-	
+
 	<scm>
 		<connection>scm:git:https://github.com/JSQLParser/JSqlParser.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:JSQLParser/JSqlParser.git</developerConnection>
 		<url>https://github.com/JSQLParser/JSqlParser.git</url>
 		<tag>HEAD</tag>
 	</scm>
-  
+
 	<issueManagement>
 		<system>GitHub Issues</system>
 		<url>https://github.com/JSQLParser/JSqlParser/issues</url>
@@ -66,7 +66,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.0</version>
+				<version>3.1</version>
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
@@ -91,7 +91,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>2.8</version>
+				<version>2.9</version>
 				<configuration>
 					<sourceIncludes>
 						<sourceInclude>/target/generated-sources/javacc</sourceInclude>
@@ -101,7 +101,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.4.3</version>
+				<version>2.6</version>
 				<configuration>
 					<encoding>${project.build.sourceEncoding}</encoding>
 				</configuration>
@@ -109,7 +109,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>license-maven-plugin</artifactId>
-				<version>1.4</version>
+				<version>1.6</version>
 				<configuration>
 					<verbose>false</verbose>
 					<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
@@ -147,7 +147,7 @@
 						<version>1.9</version>
 					</dependency>
 				</dependencies>
-			</plugin> 
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -164,7 +164,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9</version>
+				<version>2.9.1</version>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
@@ -173,7 +173,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin> 
+			</plugin>
 			<plugin>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>3.3</version>
@@ -186,7 +186,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<reportPlugins>
+					<reportPlugins> <!--TODO this is marked as private since version 3.2 and should be removed-->
 						<plugin>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-surefire-report-plugin</artifactId>
@@ -245,7 +245,7 @@
 			</plugin>
 		</plugins>
 	</build>
-    
+
 	<profiles>
 		<profile>
 			<id>sign-release-artifacts</id>
@@ -278,13 +278,13 @@
 			</build>
 		</profile>
 	</profiles>
-    
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-    
+
 	<description>
-		JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes. 
+		JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes.
 		The generated hierarchy can be navigated using the Visitor Pattern.
 </description>
 </project>
