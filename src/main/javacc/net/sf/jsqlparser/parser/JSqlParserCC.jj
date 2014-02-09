@@ -184,6 +184,9 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_ALTER:"ALTER">
 |	<K_ADD:"ADD">
 |	<K_COLUMN:"COLUMN">
+|   <K_NULLS: "NULLS">
+|   <K_FIRST: "FIRST">
+|   <K_LAST: "LAST">
 }
 
 TOKEN : /* Numeric Constants */
@@ -1033,6 +1036,11 @@ OrderByElement OrderByElement():
 {
 	columnReference = SimpleExpression()
     [<K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )  ]
+    [<K_NULLS> ( 
+        [<K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  } ] | 
+        [<K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  } ] 
+        ) 
+    ]
 	{
     	orderByElement.setExpression(columnReference);
 		return orderByElement;

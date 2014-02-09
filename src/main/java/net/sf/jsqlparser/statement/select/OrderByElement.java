@@ -28,31 +28,55 @@ import net.sf.jsqlparser.expression.Expression;
  */
 public class OrderByElement {
 
-	private Expression expression;
-	private boolean asc = true;
+    public enum NullOrdering {
 
-	public boolean isAsc() {
-		return asc;
-	}
+        NULLS_FIRST,
+        NULLS_LAST
+    }
 
-	public void setAsc(boolean b) {
-		asc = b;
-	}
+    private Expression expression;
+    private boolean asc = true;
+    private NullOrdering nullOrdering;
 
-	public void accept(OrderByVisitor orderByVisitor) {
-		orderByVisitor.visit(this);
-	}
+    public boolean isAsc() {
+        return asc;
+    }
 
-	public Expression getExpression() {
-		return expression;
-	}
+    public NullOrdering getNullOrdering() {
+        return nullOrdering;
+    }
 
-	public void setExpression(Expression expression) {
-		this.expression = expression;
-	}
+    public void setNullOrdering(NullOrdering nullOrdering) {
+        this.nullOrdering = nullOrdering;
+    }
 
-	@Override
-	public String toString() {
-		return "" + expression + ((asc) ? "" : " DESC");
-	}
+    public void setAsc(boolean b) {
+        asc = b;
+    }
+
+    public void accept(OrderByVisitor orderByVisitor) {
+        orderByVisitor.visit(this);
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append(expression.toString());
+        if (!asc) {
+            b.append(" DESC");
+        }
+        if (nullOrdering != null) {
+            b.append(' ');
+            b.append(nullOrdering == NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
+        }
+        return b.toString();
+    }
 }
