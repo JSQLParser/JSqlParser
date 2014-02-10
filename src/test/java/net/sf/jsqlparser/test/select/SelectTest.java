@@ -1025,12 +1025,12 @@ public class SelectTest extends TestCase {
     }
 
     public void testAnalyticFunction17() throws JSQLParserException {
-        String statement = "SELECT AVG(sal) OVER (PARTITION BY deptno ORDER BY sal ROWS BETWEEN 0 PRECEDING  AND  0 PRECEDING ) AS avg_of_current_sal FROM emp";
+        String statement = "SELECT AVG(sal) OVER (PARTITION BY deptno ORDER BY sal ROWS BETWEEN 0 PRECEDING AND  0 PRECEDING) AS avg_of_current_sal FROM emp";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
     public void testAnalyticFunction18() throws JSQLParserException {
-        String statement = "SELECT AVG(sal) OVER (PARTITION BY deptno ORDER BY sal RANGE CURRENT ROW ) AS avg_of_current_sal FROM emp";
+        String statement = "SELECT AVG(sal) OVER (PARTITION BY deptno ORDER BY sal RANGE CURRENT ROW) AS avg_of_current_sal FROM emp";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 

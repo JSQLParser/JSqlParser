@@ -60,7 +60,6 @@ public class WindowOffset {
                 buffer.append(' ');
                 buffer.append(type);
             }
-            buffer.append(' ');
         } else {
             switch (type) {
                 case PRECEDING:
@@ -70,14 +69,12 @@ public class WindowOffset {
                     buffer.append(" UNBOUNDED FOLLOWING");
                     break;
                 case CURRENT:
-                    buffer.append(" CURRENT ROW ");
+                    buffer.append(" CURRENT ROW");
                     break;
                 default:
                     break;
             }
-
         }
-
         return buffer.toString();
     }
 }
