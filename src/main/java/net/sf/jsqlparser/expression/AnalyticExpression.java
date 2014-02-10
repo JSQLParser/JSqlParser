@@ -43,6 +43,7 @@ public class AnalyticExpression implements Expression {
     private Expression offset;
     private Expression defaultValue;
 	private boolean allColumns = false;
+    private WindowElement windowElement;
 
 	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
@@ -95,6 +96,14 @@ public class AnalyticExpression implements Expression {
 
     public void setDefaultValue(Expression defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public WindowElement getWindowElement() {
+        return windowElement;
+    }
+
+    public void setWindowElement(WindowElement windowElement) {
+        this.windowElement = windowElement;
     }
 
     @Override
@@ -153,6 +162,11 @@ public class AnalyticExpression implements Expression {
 				}
 				b.append(orderByElements.get(i).toString());
 			}
+            
+            if(windowElement != null){
+                b.append(' ');
+                b.append(windowElement);
+            }
 		}
 	}
 }

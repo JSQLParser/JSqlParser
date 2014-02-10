@@ -980,7 +980,7 @@ public class SelectTest extends TestCase {
     }
 
     public void testProblemSqlAnalytic8Complex() throws JSQLParserException {
-        String stmt = "SELECT ID, NAME, SALARY, SUM(SALARY) OVER () AS SUM_SAL, AVG(SALARY) OVER () AS AVG_SAL, MIN(SALARY) OVER () AS MIN_SAL, MAX(SALARY) OVER () AS MAX_SAL, COUNT(*) OVER () AS ROWS FROM STAFF WHERE ID < 60 ORDER BY ID";
+        String stmt = "SELECT ID, NAME, SALARY, SUM(SALARY) OVER () AS SUM_SAL, AVG(SALARY) OVER () AS AVG_SAL, MIN(SALARY) OVER () AS MIN_SAL, MAX(SALARY) OVER () AS MAX_SAL, COUNT(*) OVER () AS ROWS2 FROM STAFF WHERE ID < 60 ORDER BY ID";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 

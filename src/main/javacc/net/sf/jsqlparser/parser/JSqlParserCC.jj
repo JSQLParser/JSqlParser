@@ -187,6 +187,13 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_NULLS: "NULLS">
 |   <K_FIRST: "FIRST">
 |   <K_LAST: "LAST">
+|   <K_ROWS: "ROWS">
+|   <K_RANGE: "RANGE">
+|   <K_UNBOUNDED: "UNBOUNDED"> 
+|   <K_PRECEDING: "PRECEDING">
+|   <K_FOLLOWING: "FOLLOWING">
+|   <K_CURRENT: "CURRENT">
+|   <K_ROW: "ROW"> 
 }
 
 TOKEN : /* Numeric Constants */
@@ -1679,24 +1686,75 @@ AnalyticExpression AnalyticExpression() :
 	Expression expr = null;
 	Expression offset = null;
 	Expression defaultValue = null;
+    WindowElement windowElement = null;
 }
 {
 	token=<S_IDENTIFIER> { retval.setName(token.image); }
 	    "(" [ expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } ] ")" <K_OVER> "("
         [<K_PARTITION> <K_BY> column=Column() {plist.add(column);}  ("," column=Column() {plist.add(column);} )* ]
-        [olist=OrderByElements() ]
+        [olist=OrderByElements() [windowElement = WindowElement() ] ]
+        
 	{
 		retval.setExpression(expr);
 		retval.setOffset(offset);
 		retval.setDefaultValue(defaultValue);
 		retval.setPartitionByColumns(plist);
 		retval.setOrderByElements(olist);
+        retval.setWindowElement(windowElement);
 	}
 	")"
 	{
 		return retval;
 	}
 }
+
+WindowElement WindowElement():
+{
+    WindowElement windowElement = new WindowElement();
+    WindowRange range = new WindowRange();
+    WindowOffset offset = null;
+}
+{
+    (<K_ROWS> { windowElement.setType(WindowElement.Type.ROWS); }  |  <K_RANGE> { windowElement.setType(WindowElement.Type.RANGE); } )
+    ( (
+      <K_BETWEEN> { windowElement.setRange(range); } 
+      offset = WindowOffset() { range.setStart(offset); } 
+      <K_AND> offset = WindowOffset() { range.setEnd(offset); }
+      )
+    | 
+      offset = WindowOffset() { windowElement.setOffset(offset); } 
+    )
+ 
+    {
+        return windowElement;
+    }
+}
+
+WindowOffset WindowOffset():
+{
+    WindowOffset offset = new WindowOffset();
+    Expression expr = null;
+}
+{
+    (
+  
+        <K_UNBOUNDED> (<K_PRECEDING> { offset.setType(WindowOffset.Type.PRECEDING); return offset; } |
+   									 <K_FOLLOWING> { offset.setType(WindowOffset.Type.FOLLOWING); return offset; } )
+    ) 
+    |
+    ( <K_CURRENT> <K_ROW> { offset.setType(WindowOffset.Type.CURRENT); return offset;} ) 
+    |
+    ( expr = SimpleExpression() {
+        offset.setType(WindowOffset.Type.EXPR); 
+        offset.setExpression(expr); 
+        } 
+        (<K_PRECEDING> { offset.setType(WindowOffset.Type.PRECEDING); } | <K_FOLLOWING> { offset.setType(WindowOffset.Type.FOLLOWING);  } )
+    )
+  
+    {
+        return offset;
+    }
+} 
 
 ExtractExpression ExtractExpression() :
 {
