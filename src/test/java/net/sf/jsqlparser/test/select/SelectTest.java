@@ -573,7 +573,7 @@ public class SelectTest extends TestCase {
         assertStatementCanBeDeparsedAs(select, statement);
 
     }
-    
+
     public void testOrderByNullsFirst() throws JSQLParserException {
         String statement = "SELECT a FROM tab1 ORDER BY a NULLS FIRST";
         assertSqlCanBeParsedAndDeparsed(statement);
