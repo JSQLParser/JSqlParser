@@ -54,7 +54,6 @@ public class WindowOffset {
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         if (expression != null) {
-            buffer.append(' ');
             buffer.append(expression);
             if (type != null) {
                 buffer.append(' ');

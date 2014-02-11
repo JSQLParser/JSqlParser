@@ -45,7 +45,7 @@ public class WindowRange {
     @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(" BETWEEN");
+        buffer.append(" BETWEEN ");
         buffer.append(start);
         buffer.append(" AND ");
         buffer.append(end);

@@ -28,6 +28,8 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.8.9
 
+* Backported window option to analytic expression.
+* Added **NULLS FIRST** and **NULLS LAST** to order by.
 * Improved parsing of **top**.
 * Improved support for multi part names (SQLServer) 
 * Better support for signed expressions. The sign is stored in the parse tree.
