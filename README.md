@@ -28,6 +28,7 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.8.9
 
+* First multi statements or script support.
 * Backported window option from fork to analytic expression.
 * Added **NULLS FIRST** and **NULLS LAST** to order by.
 * Improved parsing of **top**.
