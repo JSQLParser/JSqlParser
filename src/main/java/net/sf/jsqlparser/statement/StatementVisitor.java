@@ -56,4 +56,6 @@ public interface StatementVisitor {
 	void visit(CreateView createView);
 	
 	void visit(Alter alter);
+    
+    void visit(Statements stmts);
 }

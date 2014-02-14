@@ -232,8 +232,16 @@ a configurable addition. One must rebuild JSqlParser with this new "Letterset".
 |   < #ADDITIONAL_LETTERS: ["ä","ö","ü","Ä","Ö","Ü","ß"] >
 }
 
+Statement Statement() : 
+{ Statement stm; } 
+{
+    stm = SingleStatement()
+    [";"]
+    <EOF>
+    { return stm; }
+}
 
-Statement Statement() :
+Statement SingleStatement() :
 { Statement stm;}
 {
 	(
@@ -245,7 +253,7 @@ Statement Statement() :
     |
     stm = Delete()
     |
-    stm =  Replace()
+    stm = Replace()
     |
 	stm = Alter()
 	|
@@ -262,9 +270,24 @@ Statement Statement() :
     |
     stm = Truncate()
     )
+    { return stm; }
+}
+
+Statements Statements() : 
+{ Statements stmts = new Statements();
+  List<Statement> list = new ArrayList<Statement>();
+  Statement stm; }
+{
+    stm = SingleStatement() { list.add(stm); }
+     (LOOKAHEAD(2) ";" stm = SingleStatement() { list.add(stm); } )*
+
     [";"]
     <EOF>
-    { return stm; }
+
+    {
+        stmts.setStatements(list);
+        return stmts;
+    }
 }
 
 Update Update():
@@ -1044,9 +1067,9 @@ OrderByElement OrderByElement():
 	columnReference = SimpleExpression()
     [<K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )  ]
     [<K_NULLS> ( 
-        [<K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  } ] | 
-        [<K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  } ] 
-        ) 
+        <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }  | 
+        <K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  }  
+        )?
     ]
 	{
     	orderByElement.setExpression(columnReference);

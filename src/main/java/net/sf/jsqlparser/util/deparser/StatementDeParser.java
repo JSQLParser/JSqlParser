@@ -22,8 +22,10 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
+import net.sf.jsqlparser.statement.Statement;
 
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -117,12 +119,10 @@ public class StatementDeParser implements StatementVisitor {
 			}
 		}
 		select.getSelectBody().accept(selectDeParser);
-
 	}
 
 	@Override
 	public void visit(Truncate truncate) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -148,4 +148,9 @@ public class StatementDeParser implements StatementVisitor {
 	public void visit(Alter alter) {
 		
 	}
+
+    @Override
+    public void visit(Statements stmts) {
+        stmts.accept(this);
+    }
 }

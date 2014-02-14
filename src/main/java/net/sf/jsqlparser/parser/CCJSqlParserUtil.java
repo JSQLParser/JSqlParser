@@ -27,6 +27,7 @@ import java.io.StringReader;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.Statements;
 
 /**
  * Toolfunctions to start and use JSqlParser.
@@ -79,6 +80,18 @@ public final class CCJSqlParserUtil {
 		CCJSqlParser parser = new CCJSqlParser(new StringReader(expression));
 		try {
 			return parser.SimpleExpression();
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
+	}
+    
+    /**
+     * Parse a statement list.
+     */
+    public static Statements parseStatements(String sqls) throws JSQLParserException {
+		CCJSqlParser parser = new CCJSqlParser(new StringReader(sqls));
+		try {
+			return parser.Statements();
 		} catch (Exception ex) {
 			throw new JSQLParserException(ex);
 		} 
