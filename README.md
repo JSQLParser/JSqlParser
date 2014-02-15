@@ -1,4 +1,4 @@
-# JSqlParser Organisation
+# JSqlParser
 
 ## News
 
