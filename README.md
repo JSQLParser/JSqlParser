@@ -2,6 +2,8 @@
 
 ## News
 
+Version **0.8.9** released.
+
 Version **0.8.8** released.
 
 Due to incompatibilities using maven release with git v1.8.5 I skipped version 0.8.7. So the actual released version is **0.8.8**.
