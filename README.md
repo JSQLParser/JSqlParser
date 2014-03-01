@@ -26,6 +26,14 @@ configuration details below.
 JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes. 
 The generated hierarchy can be navigated using the Visitor Pattern.
 
+## Extensions Version 0.9
+
+* Character Set support included.
+
+```sql
+CAST(col2 AS CHAR(255) CHARACTER SET utf8)
+```
+
 ## Extensions Version 0.8.9
 
 * First multi statements or script support.
