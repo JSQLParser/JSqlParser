@@ -1406,4 +1406,9 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT a, b FROM foo WHERE a !~* '[help].*'";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+    
+    public void testCharacterSetClause() throws JSQLParserException {
+        String stmt="SELECT DISTINCT CAST(`view0`.`nick2` AS CHAR (8000) CHARACTER SET utf8) AS `v0` FROM people `view0` WHERE `view0`.`nick2` IS NOT NULL";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 }

@@ -29,6 +29,7 @@ public class ColDataType {
 
 	private String dataType;
 	private List<String> argumentsStringList;
+    private String characterSet;
 
 	public List<String> getArgumentsStringList() {
 		return argumentsStringList;
@@ -46,9 +47,18 @@ public class ColDataType {
 		dataType = string;
 	}
 
+    public String getCharacterSet() {
+        return characterSet;
+    }
+
+    public void setCharacterSet(String characterSet) {
+        this.characterSet = characterSet;
+    }
+
 	@Override
 	public String toString() {
 		return dataType
-				+ (argumentsStringList != null ? " " + PlainSelect.getStringList(argumentsStringList, true, true) : "");
+				+ (argumentsStringList != null ? " " + PlainSelect.getStringList(argumentsStringList, true, true) : "")
+                + (characterSet != null ? " CHARACTER SET " + characterSet : "");
 	}
 }
