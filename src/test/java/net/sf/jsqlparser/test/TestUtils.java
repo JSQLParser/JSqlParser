@@ -68,7 +68,7 @@ public class TestUtils {
 
     public static String buildSqlString(String sql, boolean laxDeparsingCheck) {
         if (laxDeparsingCheck) {
-            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").toLowerCase().trim();
+            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([,()])\\s*", "$1").toLowerCase().trim();
         } else {
             return sql;
         }
