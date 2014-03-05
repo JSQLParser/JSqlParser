@@ -27,33 +27,67 @@ import net.sf.jsqlparser.util.deparser.*;
 import java.io.*;
 
 import static junit.framework.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  *
  * @author toben
  */
 public class TestUtils {
-	public static void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
-		Statement parsed = CCJSqlParserUtil.parse(new StringReader(statement));
-		assertStatementCanBeDeparsedAs(parsed, statement);
-	}
 
-	public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
-		assertEquals(statement, parsed.toString());
+    public static void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(statement, false);
+    }
 
-		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-		parsed.accept(deParser);
-		assertEquals(statement, deParser.getBuffer().toString());
-	}
+    /**
+     * Tries to parse and deparse the given statement.
+     *
+     * @param statement
+     * @param laxDeparsingCheck removes all linefeeds from the original and
+     * removes all double spaces. The check is caseinsensitive.
+     * @throws JSQLParserException
+     */
+    public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck) throws JSQLParserException {
+        Statement parsed = CCJSqlParserUtil.parse(new StringReader(statement));
+        assertStatementCanBeDeparsedAs(parsed, statement, laxDeparsingCheck);
+    }
 
-	public static void assertExpressionCanBeDeparsedAs(final Expression parsed, String expression) {
-		ExpressionDeParser expressionDeParser = new ExpressionDeParser();
-		StringBuilder stringBuilder = new StringBuilder();
-		expressionDeParser.setBuffer(stringBuilder);
-		SelectDeParser selectDeParser = new SelectDeParser(expressionDeParser, stringBuilder);
-		expressionDeParser.setSelectVisitor(selectDeParser);
-		parsed.accept(expressionDeParser);
+    public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
+        assertStatementCanBeDeparsedAs(parsed, statement, false);
+    }
 
-		assertEquals(expression, stringBuilder.toString());
-	}
+    public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement, boolean laxDeparsingCheck) {
+        assertEquals(buildSqlString(statement, laxDeparsingCheck), 
+                buildSqlString(parsed.toString(), laxDeparsingCheck));
+
+        StatementDeParser deParser = new StatementDeParser(new StringBuilder());
+        parsed.accept(deParser);
+        assertEquals(buildSqlString(statement, laxDeparsingCheck), 
+                buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
+    }
+
+    public static String buildSqlString(String sql, boolean laxDeparsingCheck) {
+        if (laxDeparsingCheck) {
+            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").toLowerCase().trim();
+        } else {
+            return sql;
+        }
+    }
+    
+    @Test
+    public void testBuildSqlString() {
+        assertEquals("select * from test", buildSqlString("   SELECT   * FROM  \r\n \t  TEST \n", true));
+        assertEquals("select  *  from test", buildSqlString("select  *  from test", false));
+    }
+
+    public static void assertExpressionCanBeDeparsedAs(final Expression parsed, String expression) {
+        ExpressionDeParser expressionDeParser = new ExpressionDeParser();
+        StringBuilder stringBuilder = new StringBuilder();
+        expressionDeParser.setBuffer(stringBuilder);
+        SelectDeParser selectDeParser = new SelectDeParser(expressionDeParser, stringBuilder);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        parsed.accept(expressionDeParser);
+
+        assertEquals(expression, stringBuilder.toString());
+    }
 }
