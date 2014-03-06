@@ -1,7 +1,5 @@
 select
        c.constraint_name
-       -- max(a.constraint_name) as constraint_name
-       -- , c.constraint_name
        , max(r.constraint_name) as r_constraint_name
        , max(c.owner)           as owner
        , max(c.table_name)      as table_name

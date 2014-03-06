@@ -68,7 +68,7 @@ public class TestUtils {
 
     public static String buildSqlString(String sql, boolean laxDeparsingCheck) {
         if (laxDeparsingCheck) {
-            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([,()])\\s*", "$1").toLowerCase().trim();
+            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
         } else {
             return sql;
         }
@@ -76,8 +76,8 @@ public class TestUtils {
     
     @Test
     public void testBuildSqlString() {
-        assertEquals("select * from test", buildSqlString("   SELECT   * FROM  \r\n \t  TEST \n", true));
-        assertEquals("select  *  from test", buildSqlString("select  *  from test", false));
+        assertEquals("select col from test", buildSqlString("   SELECT   col FROM  \r\n \t  TEST \n", true));
+        assertEquals("select  col  from test", buildSqlString("select  col  from test", false));
     }
 
     public static void assertExpressionCanBeDeparsedAs(final Expression parsed, String expression) {

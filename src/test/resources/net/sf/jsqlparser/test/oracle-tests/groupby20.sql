@@ -10,4 +10,4 @@ where sales.time_id=times.time_id
   and times.calendar_month_desc in ('2000-09', '2000-10') 
   and countries.country_iso_code in ('gb', 'us')
 group by 
-  rollup(channels.channel_desc, calendar_month_desc, countries.country_iso_code);
+  rollup(channels.channel_desc, calendar_month_desc, countries.country_iso_code)

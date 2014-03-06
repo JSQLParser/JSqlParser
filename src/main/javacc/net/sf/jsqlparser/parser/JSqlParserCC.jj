@@ -1065,7 +1065,7 @@ OrderByElement OrderByElement():
 }
 {
 	columnReference = SimpleExpression()
-    [<K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )  ]
+    [ ( <K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )) { orderByElement.setAscDescPresent(true); }  ]
     [<K_NULLS> ( 
         <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }  | 
         <K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  }  
@@ -1253,7 +1253,8 @@ Expression RegularCondition():
 	| "=" { result = new EqualsTo(); }
 	| ">=" { result = new GreaterThanEquals(); }
 	| "<=" { result = new MinorThanEquals(); }
-	| ("<>" | "!=") { result = new NotEqualsTo(); }
+	| "<>" { result = new NotEqualsTo(); }
+    | "!=" { result = new NotEqualsTo("!="); }
 	| "@@" { result = new Matches(); }
 	| "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
 	| "~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }

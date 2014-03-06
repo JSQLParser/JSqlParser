@@ -23,29 +23,56 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 /**
- * Tries to parse and deparse all statments in net.sf.jsqlparser.test.oracle-tests.
+ * Tries to parse and deparse all statments in
+ * net.sf.jsqlparser.test.oracle-tests.
+ *
  * @author toben
  */
 public class SpecialOracleTests {
-    
-    private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/test/oracle-tests"); 
+
+    private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/test/oracle-tests");
     private static final Logger LOG = Logger.getLogger(SpecialOracleTests.class.getName());
-    
+
     @Test
-    public void testAllSqls() throws IOException {
+    public void testAllSqlsParseDeparse() throws IOException {
+        int count=0;
+        int success=0;
         File[] sqlTestFiles = SQLS_DIR.listFiles();
+
+        for (File file : sqlTestFiles) {
+            if (file.isFile()) {
+                count++;
+                LOG.log(Level.INFO, "testing {0}", file.getName());
+                String sql = FileUtils.readFileToString(file);
+                try {
+                    assertSqlCanBeParsedAndDeparsed(sql, true);
+                    success++;
+                    LOG.info("   -> SUCCESS");
+                } catch (JSQLParserException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
+            }
+        }
         
+        LOG.log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
+    }
+
+    @Test
+    public void testAllSqlsOnlyParse() throws IOException {
+        File[] sqlTestFiles = new File(SQLS_DIR, "only-parse-test").listFiles();
+
         for (File file : sqlTestFiles) {
             LOG.log(Level.INFO, "testing {0}", file.getName());
             String sql = FileUtils.readFileToString(file);
             try {
-                assertSqlCanBeParsedAndDeparsed(sql, true);
-                
+                CCJSqlParserUtil.parse(sql);
+
                 LOG.info("   -> SUCCESS");
             } catch (JSQLParserException ex) {
                 LOG.log(Level.SEVERE, null, ex);

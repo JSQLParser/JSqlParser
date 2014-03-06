@@ -549,7 +549,7 @@ public class SelectTest extends TestCase {
     public void testOrderBy() throws JSQLParserException {
         // TODO: should there be a DESC marker in the OrderByElement class?
         String statement = "SELECT * FROM tab1 WHERE a > 34 GROUP BY tab1.b ORDER BY tab1.a DESC, tab1.b ASC";
-        String statementToString = "SELECT * FROM tab1 WHERE a > 34 GROUP BY tab1.b ORDER BY tab1.a DESC, tab1.b";
+        String statementToString = "SELECT * FROM tab1 WHERE a > 34 GROUP BY tab1.b ORDER BY tab1.a DESC, tab1.b ASC";
         Select select = (Select) parserManager.parse(new StringReader(statement));
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         assertEquals(2, plainSelect.getOrderByElements().size());
@@ -1414,5 +1414,10 @@ public class SelectTest extends TestCase {
     public void testCharacterSetClause() throws JSQLParserException {
         String stmt="SELECT DISTINCT CAST(`view0`.`nick2` AS CHAR (8000) CHARACTER SET utf8) AS `v0` FROM people `view0` WHERE `view0`.`nick2` IS NOT NULL";
         assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+    
+    public void testNotEqualsTo() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo WHERE a != b");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo WHERE a <> b");
     }
 }

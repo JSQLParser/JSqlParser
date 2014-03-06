@@ -92,13 +92,13 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
             }
         }
 
-        if (plainSelect.getOracleHierarchical() != null) {
-            plainSelect.getOracleHierarchical().accept(expressionVisitor);
-        }
-
         if (plainSelect.getWhere() != null) {
             buffer.append(" WHERE ");
             plainSelect.getWhere().accept(expressionVisitor);
+        }
+        
+        if (plainSelect.getOracleHierarchical() != null) {
+            plainSelect.getOracleHierarchical().accept(expressionVisitor);
         }
 
         if (plainSelect.getGroupByColumnReferences() != null) {
@@ -132,6 +132,8 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         orderBy.getExpression().accept(expressionVisitor);
         if (!orderBy.isAsc()) {
             buffer.append(" DESC");
+        } else if (orderBy.isAscDescPresent()) {
+            buffer.append(" ASC");
         }
         if (orderBy.getNullOrdering() != null) {
             buffer.append(' ');
