@@ -763,6 +763,10 @@ public class SelectTest extends TestCase {
         statement = "SELECT count(DISTINCT f, g, h) FROM a";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
+    
+    public void testCount2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT count(ALL col1 + col2) FROM mytable");
+    }
 
     public void testMysqlQuote() throws JSQLParserException {
         String statement = "SELECT `a.OWNERLASTNAME`, `OWNERFIRSTNAME` " + "FROM `ANTIQUEOWNERS` AS a, ANTIQUES AS b "

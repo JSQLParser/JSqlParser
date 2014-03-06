@@ -109,13 +109,15 @@ public class Function implements Expression {
 	public String toString() {
 		String params;
 
-		if (allColumns) {
-			params = "(*)";
-		} else if (parameters != null) {
+		if (parameters != null) {
 			params = parameters.toString();
 			if (isDistinct()) {
 				params = params.replaceFirst("\\(", "(DISTINCT ");
-			}
+			} else if (isAllColumns()) {
+                params = params.replaceFirst("\\(", "(ALL ");
+            }
+		} else if (isAllColumns()) {
+			params = "(*)";
 		} else {
 			params = "()";
 		}
