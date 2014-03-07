@@ -164,6 +164,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         buffer.append("(");
         subSelect.getSelectBody().accept(this);
         buffer.append(")");
+        Pivot pivot = subSelect.getPivot();
+        if (pivot != null) {
+            pivot.accept(this);
+        }
         Alias alias = subSelect.getAlias();
         if (alias != null) {
             buffer.append(alias.toString());

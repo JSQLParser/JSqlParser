@@ -1311,6 +1311,10 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN (ANY))";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+    
+    public void testPivotXmlSubquery1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (SELECT times_purchased, state_code FROM customers t) PIVOT (count(state_code) FOR state_code IN ('NY', 'CT', 'NJ', 'FL', 'MO')) ORDER BY times_purchased");
+    }
 
     public void testRegexpLike1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE REGEXP_LIKE(first_name, '^Ste(v|ph)en$')";

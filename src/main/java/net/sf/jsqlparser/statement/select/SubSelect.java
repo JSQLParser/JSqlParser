@@ -82,6 +82,8 @@ public class SubSelect implements FromItem, Expression, ItemsList {
 
 	@Override
 	public String toString() {
-		return "(" + selectBody + ")" + ((alias != null) ? alias.toString() : "");
+		return "(" + selectBody + ")" 
+                + ((pivot != null) ? " " + pivot : "")
+                + ((alias != null) ? alias.toString() : "");
 	}
 }
