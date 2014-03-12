@@ -1,4 +1,4 @@
-with -- qf
+with
 	x1 as ( select * from t1 ),
 	x2 as ( select * from t2 join t3 on (t2.a2 = t3.a3))
 select

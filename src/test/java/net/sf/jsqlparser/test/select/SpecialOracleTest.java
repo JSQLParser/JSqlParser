@@ -26,18 +26,24 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import org.apache.commons.io.FileUtils;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
  * Tries to parse and deparse all statments in
  * net.sf.jsqlparser.test.oracle-tests.
+ * 
+ * As a matter of fact there are a lot of files that can still not processed.
+ * Here a step by step improvement is the way to go.
+ * 
+ * The test ensures, that the successfull parsed file count does not decrease.
  *
  * @author toben
  */
-public class SpecialOracleTests {
+public class SpecialOracleTest {
 
     private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/test/oracle-tests");
-    private static final Logger LOG = Logger.getLogger(SpecialOracleTests.class.getName());
+    private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
 
     @Test
     public void testAllSqlsParseDeparse() throws IOException {
@@ -61,6 +67,7 @@ public class SpecialOracleTests {
         }
         
         LOG.log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
+        assertTrue(success>100);
     }
 
     @Test

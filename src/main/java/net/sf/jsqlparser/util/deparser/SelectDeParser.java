@@ -96,7 +96,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
             buffer.append(" WHERE ");
             plainSelect.getWhere().accept(expressionVisitor);
         }
-        
+
         if (plainSelect.getOracleHierarchical() != null) {
             plainSelect.getOracleHierarchical().accept(expressionVisitor);
         }
@@ -276,6 +276,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         subjoin.getLeft().accept(this);
         deparseJoin(subjoin.getJoin());
         buffer.append(")");
+
+        if (subjoin.getPivot() != null) {
+            subjoin.getPivot().accept(this);
+        }
     }
 
     public void deparseJoin(Join join) {

@@ -1,7 +1,3 @@
---
--- note: this query was copied from the druid project
--- http://code.alibabatech.com/wiki/display/druid/home
--- 
 select * from (
         select row_.*, rownum rownum_
         from (

@@ -1,4 +1,4 @@
-select * from dual
+(select * from dual)
 union all
 (
 	select * from dual
