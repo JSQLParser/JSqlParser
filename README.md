@@ -30,6 +30,17 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.9
 
+* included a huge amount of oracle test sqls. There is much room for improvement supporting all oracle syntax specials. 
+* pivot support for subqueries implemented 
+
+```sql
+SELECT * FROM (SELECT times_purchased, state_code FROM customers t) PIVOT (count(state_code) FOR state_code IN ('NY', 'CT')) ORDER BY times_purchased
+```
+
+* "!=" support corrected to not give "<>" while deparsing
+* Improved **COUNT(ALL expr)** support
+* lax test utils implemented
+* toString() for window elements corrected
 * Character Set support included.
 
 ```sql
