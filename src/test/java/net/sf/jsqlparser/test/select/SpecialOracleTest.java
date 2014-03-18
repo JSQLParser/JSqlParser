@@ -61,7 +61,8 @@ public class SpecialOracleTest {
                     success++;
                     LOG.info("   -> SUCCESS");
                 } catch (JSQLParserException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
+                    //LOG.log(Level.SEVERE, null, ex);
+                    LOG.info("   -> PROBLEM");
                 }
             }
         }
