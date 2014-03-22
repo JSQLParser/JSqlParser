@@ -175,13 +175,13 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
-    public void visit(Column column) {
+    public void visit(Column column) {  
 
     }
 
     @Override
     public void visit(SubSelect subSelect) {
-
+        
     }
 
     @Override
