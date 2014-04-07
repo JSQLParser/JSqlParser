@@ -86,6 +86,21 @@ public final class CCJSqlParserUtil {
 	}
     
     /**
+	 * Parse an conditional expression. This is the expression after a where clause.
+	 * @param condExpr
+	 * @return
+	 * @throws JSQLParserException 
+	 */
+	public static Expression parseCondExpression(String condExpr) throws JSQLParserException {
+		CCJSqlParser parser = new CCJSqlParser(new StringReader(condExpr));
+		try {
+			return parser.Expression();
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
+	}
+    
+    /**
      * Parse a statement list.
      */
     public static Statements parseStatements(String sqls) throws JSQLParserException {
