@@ -2036,12 +2036,15 @@ CreateTable CreateTable():
 						}
 				)
 				|
-				(
+				LOOKAHEAD(3) (
+                    {
+                        index = new NamedConstraint();
+                    }
+                    [<K_CONSTRAINT> tk3=<S_IDENTIFIER> {index.setName(tk3.image);} ]
 					tk=<K_PRIMARY> tk2=<K_KEY>
 						colNames=ColumnsNamesList()
 						{
-							index = new Index();
-							index.setType(tk.image + " "+ tk2.image);
+							index.setType(tk.image + " " + tk2.image);
 							index.setColumnsNames(colNames);
 							indexes.add(index);
 						}

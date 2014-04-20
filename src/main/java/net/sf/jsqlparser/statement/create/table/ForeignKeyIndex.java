@@ -29,7 +29,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  * Foreign Key Index
  * @author toben
  */
-public class ForeignKeyIndex extends Index {
+public class ForeignKeyIndex extends NamedConstraint {
 	private Table table;
 	private List<String> referencedColumnNames;
 
@@ -51,8 +51,7 @@ public class ForeignKeyIndex extends Index {
 
 	@Override
 	public String toString() {
-		return (getName()!=null?"CONSTRAINT " + getName() + " ":"") 
-				+  getType() + " " + PlainSelect.getStringList(getColumnsNames(), true, true) 
+		return super.toString()
 				+ " REFERENCES " + table + PlainSelect.getStringList(getReferencedColumnNames(), true, true);
 	}
 }
