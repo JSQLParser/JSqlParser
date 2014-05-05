@@ -336,6 +336,12 @@ public class SelectTest extends TestCase {
         assertStatementCanBeDeparsedAs(select, statementToString);
     }
 
+    public void testReservedKeyword() throws JSQLParserException {
+        final String statement = "SELECT cast, do, extract, first, following, last, materialized, nulls, partition, range, row, rows, siblings, value, xml FROM tableName"; // all of these are legal in SQL server; 'row' and 'rows' are not legal on Oracle, though;
+        final Select select = (Select) parserManager.parse(new StringReader(statement));
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
     public void testDistinct() throws JSQLParserException {
         String statement = "SELECT DISTINCT ON (myid) myid, mycol FROM mytable WHERE mytable.col = 9";
         Select select = (Select) parserManager.parse(new StringReader(statement));

@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2014 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,6 +20,8 @@
  * #L%
  */
 
+// Grammar based on: https://java.net/downloads/javacc/contrib/grammars/FormsPlSql.jj
+
 options{
     IGNORE_CASE=true ;
     STATIC=false;
@@ -27,7 +29,6 @@ options{
 //  DEBUG_LOOKAHEAD=true ;
 //  FORCE_LA_CHECK=true;
 //  DEBUG_TOKEN_MANAGER=true;
-    UNICODE_INPUT=true;
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -35,7 +36,7 @@ PARSER_BEGIN(CCJSqlParser)
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2014 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -86,115 +87,115 @@ PARSER_END(CCJSqlParser)
 
 SKIP:
 {
-    " "
-|   "\t"
-|   "\r"
-|   "\n"
+        " "
+    |   "\t"
+    |   "\r"
+    |   "\n"
 }
 
 TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 {
-    <K_AS: "AS">
-|   <K_BY:"BY">
-|   <K_DO:"DO">
-|   <K_IS:"IS">
-|   <K_IN:"IN">
-|   <K_OR:"OR">
-|   <K_ON:"ON">
-|   <K_ALL:"ALL">
-|   <K_AND:"AND">
-|   <K_ANY:"ANY">
-|   <K_KEY:"KEY">
-|   <K_NOT:"NOT">
-|   <K_SET:"SET">
-|   <K_ASC:"ASC">
-|   <K_TOP:"TOP">
-|   <K_PERCENT:"PERCENT">
-|   <K_END:"END">
-|   <K_DESC:"DESC">
-|   <K_INTO:"INTO">
-|   <K_NULL:"NULL">
-|   <K_LIKE:"LIKE">
-|   <K_DROP:"DROP">
-|   <K_JOIN:"JOIN">
-|   <K_LEFT:"LEFT">
-|   <K_CROSS:"CROSS">
-|   <K_FROM:"FROM">
-|   <K_OPEN:"OPEN">
-|   <K_CASE:"CASE">
-|   <K_WHEN:"WHEN">
-|   <K_THEN:"THEN">
-|   <K_ELSE:"ELSE">
-|   <K_SOME:"SOME">
-|   <K_FULL:"FULL">
-|   <K_WITH:"WITH">
-|   <K_TABLE:"TABLE">
-|   <K_VIEW:"VIEW">
-|   <K_WHERE:"WHERE">
-|   <K_FOR:"FOR">
-|   <K_PIVOT:"PIVOT">
-|   <K_XML:"XML">
-|   <K_USING:"USING">
-|   <K_UNION:"UNION">
-|   <K_GROUP:"GROUP">
-|   <K_BEGIN:"BEGIN">
-|   <K_INDEX: "INDEX">
-|   <K_INNER:"INNER">
-|   <K_LIMIT:"LIMIT">
-|   <K_OUTER:"OUTER">
-|   <K_ORDER:"ORDER">
-|   <K_RIGHT:"RIGHT">
-|   <K_VALUE:"VALUE">
-|   <K_DELETE:"DELETE">
-|   <K_CREATE:"CREATE">
-|   <K_SELECT:"SELECT">
-|   <K_OFFSET:"OFFSET">
-|   <K_EXISTS:"EXISTS">
-|   <K_HAVING:"HAVING">
-|   <K_INSERT:"INSERT">
-|   <K_UPDATE:"UPDATE">
-|   <K_VALUES:"VALUES">
-|   <K_ESCAPE:"ESCAPE">
-|   <K_PRIMARY:"PRIMARY">
-|   <K_NATURAL:"NATURAL">
-|   <K_REPLACE:"REPLACE">
-|   <K_BETWEEN:"BETWEEN">
-|   <K_TRUNCATE:"TRUNCATE">
-|   <K_DISTINCT:"DISTINCT">
-|   <K_INTERSECT:"INTERSECT">
-|   <K_CAST:"CAST">
-|   <K_EXCEPT:"EXCEPT">
-|   <K_MINUS:"MINUS">
-|   <K_OVER:"OVER">
-|   <K_PARTITION:"PARTITION">
-|   <K_EXTRACT:"EXTRACT">
-|	<K_LATERAL:"LATERAL">
-|	<K_MATERIALIZED:"MATERIALIZED">
-|   <K_INTERVAL:"INTERVAL">
-|	<K_FOREIGN:"FOREIGN">
-|	<K_CONSTRAINT:"CONSTRAINT">
-|	<K_REFERENCES:"REFERENCES">
-|	<K_CHARACTER:"CHARACTER">
-|	<K_VARYING:"VARYING">
-|	<K_START:"START">
-|	<K_CONNECT:"CONNECT">
-|	<K_PRIOR:"PRIOR">
-|   <K_NOCYCLE:"NOCYCLE">
-|	<K_SIBLINGS:"SIBLINGS">
-|	<K_ALTER:"ALTER">
-|	<K_ADD:"ADD">
-|	<K_COLUMN:"COLUMN">
-|   <K_NULLS: "NULLS">
-|   <K_FIRST: "FIRST">
-|   <K_LAST: "LAST">
-|   <K_ROWS: "ROWS">
-|   <K_RANGE: "RANGE">
-|   <K_UNBOUNDED: "UNBOUNDED"> 
-|   <K_PRECEDING: "PRECEDING">
-|   <K_FOLLOWING: "FOLLOWING">
-|   <K_CURRENT: "CURRENT">
-|   <K_ROW: "ROW"> 
-}
+        <K_AS : "AS">
+    |   <K_BY : "BY">
+    |   <K_DO : "DO">
+    |   <K_IS : "IS">
+    |   <K_IN : "IN">
+    |   <K_OR : "OR">
+    |   <K_ON : "ON">
+    |   <K_ALL : "ALL">
+    |   <K_AND : "AND">
+    |   <K_ANY : "ANY">
+    |   <K_KEY : "KEY">
+    |   <K_NOT : "NOT">
+    |   <K_SET : "SET">
+    |   <K_ASC : "ASC">
+    |   <K_TOP : "TOP">
+    |   <K_PERCENT : "PERCENT">
+    |   <K_END : "END">
+    |   <K_DESC : "DESC">
+    |   <K_INTO : "INTO">
+    |   <K_NULL : "NULL">
+    |   <K_LIKE : "LIKE">
+    |   <K_DROP : "DROP">
+    |   <K_JOIN : "JOIN">
+    |   <K_LEFT : "LEFT">
+    |   <K_CROSS : "CROSS">
+    |   <K_FROM : "FROM">
+    |   <K_OPEN : "OPEN">
+    |   <K_CASE : "CASE">
+    |   <K_WHEN : "WHEN">
+    |   <K_THEN : "THEN">
+    |   <K_ELSE : "ELSE">
+    |   <K_SOME : "SOME">
+    |   <K_FULL : "FULL">
+    |   <K_WITH : "WITH">
+    |   <K_TABLE : "TABLE">
+    |   <K_VIEW : "VIEW">
+    |   <K_WHERE : "WHERE">
+    |   <K_FOR : "FOR">
+    |   <K_PIVOT : "PIVOT">
+    |   <K_XML : "XML">
+    |   <K_USING : "USING">
+    |   <K_UNION : "UNION">
+    |   <K_GROUP : "GROUP">
+    |   <K_BEGIN : "BEGIN">
+    |   <K_INDEX : "INDEX">
+    |   <K_INNER : "INNER">
+    |   <K_LIMIT : "LIMIT">
+    |   <K_OUTER : "OUTER">
+    |   <K_ORDER : "ORDER">
+    |   <K_RIGHT : "RIGHT">
+    |   <K_VALUE : "VALUE">
+    |   <K_DELETE : "DELETE">
+    |   <K_CREATE : "CREATE">
+    |   <K_SELECT : "SELECT">
+    |   <K_OFFSET : "OFFSET">
+    |   <K_EXISTS : "EXISTS">
+    |   <K_HAVING : "HAVING">
+    |   <K_INSERT : "INSERT">
+    |   <K_UPDATE : "UPDATE">
+    |   <K_VALUES : "VALUES">
+    |   <K_ESCAPE : "ESCAPE">
+    |   <K_PRIMARY : "PRIMARY">
+    |   <K_NATURAL : "NATURAL">
+    |   <K_REPLACE : "REPLACE">
+    |   <K_BETWEEN : "BETWEEN">
+    |   <K_TRUNCATE : "TRUNCATE">
+    |   <K_DISTINCT : "DISTINCT">
+    |   <K_INTERSECT : "INTERSECT">
+    |   <K_CAST : "CAST">
+    |   <K_EXCEPT : "EXCEPT">
+    |   <K_MINUS : "MINUS">
+    |   <K_OVER : "OVER">
+    |   <K_PARTITION : "PARTITION">
+    |   <K_EXTRACT : "EXTRACT">
+    |   <K_LATERAL : "LATERAL">
+    |   <K_MATERIALIZED : "MATERIALIZED">
+    |   <K_INTERVAL : "INTERVAL">
+    |   <K_FOREIGN : "FOREIGN">
+    |   <K_CONSTRAINT : "CONSTRAINT">
+    |   <K_REFERENCES : "REFERENCES">
+    |   <K_CHARACTER : "CHARACTER">
+    |   <K_VARYING : "VARYING">
+    |   <K_START : "START">
+    |   <K_CONNECT : "CONNECT">
+    |   <K_PRIOR : "PRIOR">
+    |   <K_NOCYCLE : "NOCYCLE">
+    |   <K_SIBLINGS : "SIBLINGS">
+    |   <K_ALTER : "ALTER">
+    |   <K_ADD : "ADD">
+    |   <K_COLUMN : "COLUMN">
+    |   <K_NULLS : "NULLS">
+    |   <K_FIRST : "FIRST">
+    |   <K_LAST : "LAST">
+    |   <K_ROWS : "ROWS">
+    |   <K_RANGE : "RANGE">
+    |   <K_UNBOUNDED : "UNBOUNDED"> 
+    |   <K_PRECEDING : "PRECEDING">
+    |   <K_FOLLOWING : "FOLLOWING">
+    |   <K_CURRENT : "CURRENT">
+    |   <K_ROW : "ROW"> 
+} 
 
 TOKEN : /* Numeric Constants */
 {
@@ -210,8 +211,8 @@ TOKEN : /* Numeric Constants */
 
 SPECIAL_TOKEN:
 {
-   < LINE_COMMENT: "--"(~["\r","\n"])*>
-|  < MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+       < LINE_COMMENT: "--"(~["\r","\n"])*>
+    |  < MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
 }
 
 TOKEN:
@@ -453,15 +454,15 @@ Column Column():
 }
 
 String RelObjectName():
-{	Token tk = null; }
+{	Token token = null; }
 {
 	(
-	    tk=<S_IDENTIFIER>
-	|
-	    tk=<S_QUOTED_IDENTIFIER>
+	        (token=<S_IDENTIFIER> | token=<S_QUOTED_IDENTIFIER>)
+        |   (token=<K_CAST> | token=<K_DO> | token=<K_EXTRACT> | token=<K_FIRST> | token=<K_FOLLOWING> | token=<K_LAST> | token=<K_MATERIALIZED> | token=<K_NULLS> | token=<K_PARTITION> | token=<K_RANGE> | token=<K_ROW> | token=<K_ROWS> | token=<K_SIBLINGS> | token=<K_VALUE> | token=<K_XML>)
 	)
-
-    { return tk.image; }
+    {
+        return token.image;
+    }
 }
 
 Table Table():
@@ -653,7 +654,7 @@ SelectExpressionItem SelectExpressionItem():
 	Alias alias = null;
 }
 {
-	 expression=SimpleExpression() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
+	 expression=SimpleExpression() { selectExpressionItem = new SelectExpressionItem(expression); }
 			 [alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
 }
 
@@ -662,11 +663,11 @@ SelectItem SelectItem():
 	SelectItem selectItem = null;
 	SelectExpressionItem selectExpressionItem = null;
 }
-{   ("*" { selectItem = new AllColumns(); }
+{       ("*" { selectItem = new AllColumns(); }
     |
-	LOOKAHEAD(AllTableColumns()) selectItem=AllTableColumns()
+	    LOOKAHEAD(AllTableColumns()) selectItem=AllTableColumns()
 	|
-	 selectExpressionItem=SelectExpressionItem() {selectItem = selectExpressionItem; }
+	    LOOKAHEAD(SelectExpressionItem()) selectItem=SelectExpressionItem()
 	)
 	{
 		return selectItem;
@@ -1626,11 +1627,11 @@ Expression PrimaryExpression():
 (
 	<K_NULL> { retval = new NullValue(); }
 
-	| retval=CaseWhenExpression()
-
 	| "?" { retval = new JdbcParameter(); }
 
-    | retval=JdbcNamedParameter()
+	| LOOKAHEAD(CaseWhenExpression()) retval=CaseWhenExpression()
+
+    | LOOKAHEAD(JdbcNamedParameter()) retval=JdbcNamedParameter()
 
 	| LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
 
@@ -1651,7 +1652,6 @@ Expression PrimaryExpression():
 	|                                         [sign="+" | sign="-"] "(" retval=SubSelect() ")"
 
 	| token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
-
 
 	| "{d" token=<S_CHAR_LITERAL> "}"  { retval = new DateValue(token.image); }
 
