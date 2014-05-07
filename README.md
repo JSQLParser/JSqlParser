@@ -30,6 +30,12 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.9
 
+* Included support for some keyword object names.
+
+```sql
+SELECT cast, do FROM tableName
+```
+
 * Included support for named primary keys in create table statements.
 * Include adapter classes for visitor interfaces to simplify visitor usage. 
 * included a huge amount of oracle test sqls. There is much room for improvement supporting all oracle syntax specials. 
