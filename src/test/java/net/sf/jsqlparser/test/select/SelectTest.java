@@ -1415,6 +1415,12 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
     
+     public void testReservedKeyword() throws JSQLParserException {
+        final String statement = "SELECT cast, do, extract, first, following, last, materialized, nulls, partition, range, row, rows, siblings, value, xml FROM tableName"; // all of these are legal in SQL server; 'row' and 'rows' are not legal on Oracle, though;
+        final Select select = (Select) parserManager.parse(new StringReader(statement));
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+    
     public void testCharacterSetClause() throws JSQLParserException {
         String stmt="SELECT DISTINCT CAST(`view0`.`nick2` AS CHAR (8000) CHARACTER SET utf8) AS `v0` FROM people `view0` WHERE `view0`.`nick2` IS NOT NULL";
         assertSqlCanBeParsedAndDeparsed(stmt);
