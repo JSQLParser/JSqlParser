@@ -59,7 +59,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	public List<String> getTableList(Delete delete) {
 		init();
 		tables.add(delete.getTable().getName());
-		delete.getWhere().accept(this);
+		if (delete.getWhere() != null) {
+			delete.getWhere().accept(this);
+		}
 
 		return tables;
 	}
