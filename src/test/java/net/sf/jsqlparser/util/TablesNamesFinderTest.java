@@ -174,6 +174,17 @@ public class TablesNamesFinderTest extends TestCase {
 		assertTrue(tableList.contains("MY_TABLE2"));
 	}
 
+	public void testGetTableListFromDelete2() throws Exception {
+		String sql = "DELETE FROM MY_TABLE1";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Delete deleteStatement = (Delete) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(deleteStatement);
+		assertEquals(1, tableList.size());
+		assertTrue(tableList.contains("MY_TABLE1"));
+	}
+
 	public void testGetTableListFromInsert() throws Exception {
 		String sql = "INSERT INTO MY_TABLE1 (a) VALUES ((SELECT a from MY_TABLE2 WHERE a = 1))";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
