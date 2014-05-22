@@ -1,5 +1,7 @@
 # JSqlParser
 
+Look here for more information and examples: https://github.com/JSQLParser/JSqlParser/wiki.
+
 ## News
 
 Version **0.9** released.
