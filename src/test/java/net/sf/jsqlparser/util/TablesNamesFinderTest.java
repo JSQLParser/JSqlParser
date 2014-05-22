@@ -1,6 +1,5 @@
 package net.sf.jsqlparser.util;
 
-import net.sf.jsqlparser.util.TablesNamesFinder;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -8,10 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
-import junit.framework.TestCase;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -20,19 +16,19 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
+import static org.junit.Assert.*;
+import org.junit.Test;
 
-public class TablesNamesFinderTest extends TestCase {
+public class TablesNamesFinderTest {
 
-	CCJSqlParserManager pm = new CCJSqlParserManager();
+	static CCJSqlParserManager pm = new CCJSqlParserManager();
 
-	public TablesNamesFinderTest(String arg0) {
-		super(arg0);
-	}
-
+    @Test
 	public void testRUBiSTableList() throws Exception {
 		runTestOnResource("/RUBiS-select-requests.txt");
 	}
 
+    @Test
 	public void testMoreComplexExamples() throws Exception {
 		runTestOnResource("complex-select-requests.txt");
 	}
@@ -104,6 +100,7 @@ public class TablesNamesFinderTest extends TestCase {
 		}
 	}
 
+    @Test
 	public void testGetTableList() throws Exception {
 
 		String sql = "SELECT * FROM MY_TABLE1, MY_TABLE2, (SELECT * FROM MY_TABLE3) LEFT OUTER JOIN MY_TABLE4 "
@@ -128,6 +125,7 @@ public class TablesNamesFinderTest extends TestCase {
 
 	}
 
+    @Test
 	public void testGetTableListWithAlias() throws Exception {
 		String sql = "SELECT * FROM MY_TABLE1 as ALIAS_TABLE1";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
@@ -139,6 +137,7 @@ public class TablesNamesFinderTest extends TestCase {
 		assertEquals("MY_TABLE1", (String) tableList.get(0));
 	}
 
+    @Test
 	public void testGetTableListWithStmt() throws Exception {
 		String sql = "WITH TESTSTMT as (SELECT * FROM MY_TABLE1 as ALIAS_TABLE1) SELECT * FROM TESTSTMT";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
@@ -150,6 +149,7 @@ public class TablesNamesFinderTest extends TestCase {
 		assertEquals("MY_TABLE1", (String) tableList.get(0));
 	}
 
+    @Test
 	public void testGetTableListWithLateral() throws Exception {
 		String sql = "SELECT * FROM MY_TABLE1, LATERAL(select a from MY_TABLE2) as AL";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
@@ -162,6 +162,7 @@ public class TablesNamesFinderTest extends TestCase {
 		assertTrue(tableList.contains("MY_TABLE2"));
 	}
 
+    @Test
 	public void testGetTableListFromDelete() throws Exception {
 		String sql = "DELETE FROM MY_TABLE1 as AL WHERE a = (SELECT a from MY_TABLE2)";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
@@ -174,6 +175,7 @@ public class TablesNamesFinderTest extends TestCase {
 		assertTrue(tableList.contains("MY_TABLE2"));
 	}
 
+    @Test
 	public void testGetTableListFromDelete2() throws Exception {
 		String sql = "DELETE FROM MY_TABLE1";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
@@ -185,6 +187,7 @@ public class TablesNamesFinderTest extends TestCase {
 		assertTrue(tableList.contains("MY_TABLE1"));
 	}
 
+    @Test
 	public void testGetTableListFromInsert() throws Exception {
 		String sql = "INSERT INTO MY_TABLE1 (a) VALUES ((SELECT a from MY_TABLE2 WHERE a = 1))";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
@@ -197,6 +200,7 @@ public class TablesNamesFinderTest extends TestCase {
 		assertTrue(tableList.contains("MY_TABLE2"));
 	}
 	
+    @Test
 	public void testGetTableListFromInsertValues() throws Exception {
 		String sql = "INSERT INTO MY_TABLE1 (a) VALUES (5)";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
@@ -208,6 +212,7 @@ public class TablesNamesFinderTest extends TestCase {
 		assertTrue(tableList.contains("MY_TABLE1"));
 	}
 
+    @Test
 	public void testGetTableListFromReplace() throws Exception {
 		String sql = "REPLACE INTO MY_TABLE1 (a) VALUES ((SELECT a from MY_TABLE2 WHERE a = 1))";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
@@ -220,6 +225,7 @@ public class TablesNamesFinderTest extends TestCase {
 		assertTrue(tableList.contains("MY_TABLE2"));
 	}
 
+    @Test
 	public void testGetTableListFromUpdate() throws Exception {
 		String sql = "UPDATE MY_TABLE1 SET a = (SELECT a from MY_TABLE2 WHERE a = 1)";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
@@ -232,6 +238,7 @@ public class TablesNamesFinderTest extends TestCase {
 		assertTrue(tableList.contains("MY_TABLE2"));
 	}
 	
+    @Test
 	public void testGetTableListFromUpdate2() throws Exception {
 		String sql = "UPDATE MY_TABLE1 SET a = 5 WHERE 0 < (SELECT COUNT(b) FROM MY_TABLE3)";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
@@ -244,6 +251,7 @@ public class TablesNamesFinderTest extends TestCase {
 		assertTrue(tableList.contains("MY_TABLE3"));
 	}
 	
+    @Test
 	public void testGetTableListFromUpdate3() throws Exception {
 		String sql = "UPDATE MY_TABLE1 SET a = 5 FROM MY_TABLE1 INNER JOIN MY_TABLE2 on MY_TABLE1.C = MY_TABLE2.D WHERE 0 < (SELECT COUNT(b) FROM MY_TABLE3)";
 		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
