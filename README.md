@@ -32,6 +32,14 @@ configuration details below.
 JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes. 
 The generated hierarchy can be navigated using the Visitor Pattern.
 
+## Extensions Version 0.9.1
+
+* Included support for multitable update statements..
+
+```sql
+UPDATE table1, table2 SET table1.col2 = table2.col2, table2.col3 = 'UPDATED' WHERE table1.col1 = table2.col1
+```
+
 ## Extensions Version 0.9
 
 * Included support for some keyword object names.
