@@ -102,6 +102,16 @@ public class ReplaceDeParser implements ItemsListVisitor {
 			}
 		}
 
+        if (replace.getItemsList() != null) {
+			// REPLACE mytab SELECT * FROM mytab2
+			// or VALUES ('as', ?, 565)
+
+			if (replace.isUseValues()) {
+				buffer.append(" VALUES");
+			}
+
+			buffer.append(replace.getItemsList());
+		}
 	}
 
 	@Override

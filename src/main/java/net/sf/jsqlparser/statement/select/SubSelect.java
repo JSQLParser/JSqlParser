@@ -34,6 +34,7 @@ public class SubSelect implements FromItem, Expression, ItemsList {
 
 	private SelectBody selectBody;
 	private Alias alias;
+    private boolean useBrackets = true;
 
     private Pivot pivot;
 
@@ -75,6 +76,14 @@ public class SubSelect implements FromItem, Expression, ItemsList {
         this.pivot = pivot;
     }
 
+    public boolean isUseBrackets() {
+        return useBrackets;
+    }
+
+    public void setUseBrackets(boolean useBrackets) {
+        this.useBrackets = useBrackets;
+    }
+
 	@Override
 	public void accept(ItemsListVisitor itemsListVisitor) {
 		itemsListVisitor.visit(this);
@@ -82,7 +91,7 @@ public class SubSelect implements FromItem, Expression, ItemsList {
 
 	@Override
 	public String toString() {
-		return "(" + selectBody + ")" 
+		return (useBrackets?"(":"") + selectBody + (useBrackets?")":"") 
                 + ((pivot != null) ? " " + pivot : "")
                 + ((alias != null) ? alias.toString() : "");
 	}

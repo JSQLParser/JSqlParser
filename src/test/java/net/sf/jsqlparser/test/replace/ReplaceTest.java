@@ -2,7 +2,6 @@ package net.sf.jsqlparser.test.replace;
 
 import java.io.StringReader;
 
-import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
@@ -12,15 +11,17 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.test.TestUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
-public class ReplaceTest extends TestCase {
+public class ReplaceTest {
 
-	CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private static CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
-	public ReplaceTest(String arg0) {
-		super(arg0);
-	}
 
+    @Test
 	public void testReplaceSyntax1() throws JSQLParserException {
 		String statement = "REPLACE mytable SET col1='as', col2=?, col3=565";
 		Replace replace = (Replace) parserManager.parse(new StringReader(statement));
@@ -36,6 +37,7 @@ public class ReplaceTest extends TestCase {
 
 	}
 
+    @Test
 	public void testReplaceSyntax2() throws JSQLParserException {
 		String statement = "REPLACE mytable (col1, col2, col3) VALUES ('as', ?, 565)";
 		Replace replace = (Replace) parserManager.parse(new StringReader(statement));
@@ -50,6 +52,7 @@ public class ReplaceTest extends TestCase {
 		assertEquals(statement, "" + replace);
 	}
 
+    @Test
 	public void testReplaceSyntax3() throws JSQLParserException {
 		String statement = "REPLACE mytable (col1, col2, col3) SELECT * FROM mytable3";
 		Replace replace = (Replace) parserManager.parse(new StringReader(statement));
@@ -62,4 +65,9 @@ public class ReplaceTest extends TestCase {
 		// TODO:
 		// assertEquals(statement, ""+replace);
 	}
+    
+    @Test
+    public void testProblemReplaceParseDeparse() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("REPLACE a_table (ID, A, B) SELECT A_ID, A, B FROM b_table", false);
+    }
 }

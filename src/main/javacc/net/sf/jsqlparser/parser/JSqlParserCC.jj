@@ -355,6 +355,7 @@ Replace Replace():
 				|
 					{ replace.setUseValues(false); }
 				    itemsList=SubSelect()
+                    { ((SubSelect)itemsList).setUseBrackets(false); }
 			)
 		    {
 				replace.setItemsList(itemsList);
