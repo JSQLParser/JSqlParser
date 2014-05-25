@@ -30,13 +30,14 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * The update statement.
  */
 public class Update implements Statement {
 
-	private Table table;
+	private List<Table> tables;
 	private Expression where;
 	private List<Column> columns;
 	private List<Expression> expressions;
@@ -48,16 +49,16 @@ public class Update implements Statement {
 		statementVisitor.visit(this);
 	}
 
-	public Table getTable() {
-		return table;
+	public List<Table> getTables() {
+		return tables;
 	}
 
 	public Expression getWhere() {
 		return where;
 	}
 
-	public void setTable(Table name) {
-		table = name;
+	public void setTables(List<Table> list) {
+		tables = list;
 	}
 
 	public void setWhere(Expression expression) {
@@ -111,7 +112,7 @@ public class Update implements Statement {
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder("UPDATE ");
-		b.append(getTable()).append(" SET ");
+		b.append(PlainSelect.getStringList(getTables(), true, false)).append(" SET ");
 		for (int i = 0; i < getColumns().size(); i++) {
 			if (i != 0) {
 				b.append(", ");

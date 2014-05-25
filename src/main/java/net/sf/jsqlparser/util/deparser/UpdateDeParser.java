@@ -25,6 +25,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.update.Update;
 
 /**
@@ -56,7 +57,7 @@ public class UpdateDeParser {
 	}
 
 	public void deParse(Update update) {
-		buffer.append("UPDATE ").append(update.getTable()).append(" SET ");
+		buffer.append("UPDATE ").append(PlainSelect.getStringList(update.getTables(), true, false)).append(" SET ");
 		for (int i = 0; i < update.getColumns().size(); i++) {
 			Column column = update.getColumns().get(i);
 			buffer.append(column.getFullyQualifiedName()).append(" = ");

@@ -293,7 +293,8 @@ Statements Statements() :
 Update Update():
 {
 	Update update = new Update();
-	Table table = null;
+    Table table = null;
+	List<Table> tables = new ArrayList<Table>();
 	Expression where = null;
 	Column tableColumn = null;
 	List<Expression> expList = new ArrayList<Expression>();
@@ -303,7 +304,8 @@ Update Update():
 	List<Join> joins = null;
 }
 {
-    <K_UPDATE> table=TableWithAlias()
+    <K_UPDATE> table=TableWithAlias() { tables.add(table); } 
+          ("," table=TableWithAlias() { tables.add(table); } )*
     <K_SET> tableColumn=Column() "=" value=SimpleExpression() { columns.add(tableColumn); expList.add(value); }
 		  ("," tableColumn=Column() "=" value=SimpleExpression()  { columns.add(tableColumn); expList.add(value); } )*
 
@@ -315,7 +317,7 @@ Update Update():
    {
    		update.setColumns(columns);
    		update.setExpressions(expList);
-   		update.setTable(table);
+   		update.setTables(tables);
 		update.setFromItem(fromItem);
 		update.setJoins(joins);
 		return update;
