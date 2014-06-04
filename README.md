@@ -10,7 +10,7 @@ More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
 
 ## JSqlParser
 
-JSqlParser is a SQL statement parser. It translates SQLs in a traversable hierarchy of Java classes. JSqlParser is not limited to one database but provides support for a lot of specials of Oracle, SqlServer, MySQL, PostgreSQL ... To name some it has support for Oracles join syntax using (+), PostgreSQLs cast syntax using ::, relational operators like != and so on.
+JSqlParser is a SQL statement parser. It translates SQLs in a traversable hierarchy of Java classes. JSqlParser is not limited to one database but provides support for a lot of specials of Oracle, SqlServer, MySQL, PostgreSQL ... To name some, it has support for Oracles join syntax using (+), PostgreSQLs cast syntax using ::, relational operators like != and so on.
 
 ## Contributions
 To help JSqlParsers development you are encouraged to provide 
