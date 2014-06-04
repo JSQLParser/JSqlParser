@@ -29,7 +29,7 @@ Also I would like to know about needed examples or documentation stuff.
 UPDATE table1, table2 SET table1.col2 = table2.col2, table2.col3 = 'UPDATED' WHERE table1.col1 = table2.col1
 ```
 
-## Extensions in older releases
+## Extensions of JSqlParser releases
 
 * [Release Notes](https://github.com/JSQLParser/JSqlParser/releases)
 * Modifications before GitHubs release tagging are listed in the [Older Releases](https://github.com/JSQLParser/JSqlParser/wiki/Older-Releases) page.
