@@ -34,7 +34,13 @@ The generated hierarchy can be navigated using the Visitor Pattern.
 
 ## Extensions Version 0.9.1
 
-* Included support for multitable update statements..
+* Included support for returning for insert statements.
+
+```sql
+INSERT INTO mytable (mycolumn) VALUES ('1') RETURNING id
+```
+
+* Included support for multitable update statements.
 
 ```sql
 UPDATE table1, table2 SET table1.col2 = table2.col2, table2.col3 = 'UPDATED' WHERE table1.col1 = table2.col1
