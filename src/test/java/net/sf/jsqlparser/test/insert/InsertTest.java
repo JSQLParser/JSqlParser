@@ -3,7 +3,6 @@ package net.sf.jsqlparser.test.insert;
 import java.io.StringReader;
 import static junit.framework.Assert.assertEquals;
 
-import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -17,15 +16,15 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 
-public class InsertTest extends TestCase {
+public class InsertTest {
 
 	CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
-	public InsertTest(String arg0) {
-		super(arg0);
-	}
-
+    @Test
 	public void testRegularInsert() throws JSQLParserException {
 		String statement = "INSERT INTO mytable (col1, col2, col3) VALUES (?, 'sadfsd', 234)";
 		Insert insert = (Insert) parserManager.parse(new StringReader(statement));
@@ -52,6 +51,7 @@ public class InsertTest extends TestCase {
 
 	}
 
+    @Test
 	public void testInsertWithKeywordValue() throws JSQLParserException {
 		String statement = "INSERT INTO mytable (col1) VALUE ('val1')";
 		Insert insert = (Insert) parserManager.parse(new StringReader(statement));
@@ -63,6 +63,7 @@ public class InsertTest extends TestCase {
 		assertEquals("INSERT INTO mytable (col1) VALUES ('val1')", insert.toString());
 	}
 
+    @Test
 	public void testInsertFromSelect() throws JSQLParserException {
 		String statement = "INSERT INTO mytable (col1, col2, col3) SELECT * FROM mytable2";
 		Insert insert = (Insert) parserManager.parse(new StringReader(statement));
@@ -80,10 +81,12 @@ public class InsertTest extends TestCase {
 		assertEquals(statementToString, "" + insert);
 	}
 
+    @Test
 	public void testInsertMultiRowValue() throws JSQLParserException {
 		assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e)");
 	}
 
+    @Test
 	public void testInsertMultiRowValueDifferent() throws JSQLParserException {
 		try {
 			assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e, c)");
@@ -94,7 +97,23 @@ public class InsertTest extends TestCase {
 		fail("should not work");
 	}
 
+    @Test
 	public void testSimpleInsert() throws JSQLParserException {
 		assertSqlCanBeParsedAndDeparsed("INSERT INTO example (num, name, address, tel) VALUES (1, 'name', 'test ', '1234-1234')");
 	}
+    
+    @Test
+    public void testInsertWithReturning() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (mycolumn) VALUES ('1') RETURNING id");
+    }
+    
+    @Test
+    public void testInsertWithReturning2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (mycolumn) VALUES ('1') RETURNING *");
+    }
+    
+    @Test
+    public void testInsertWithReturning3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (mycolumn) VALUES ('1') RETURNING id AS a1, id2 AS a2");
+    }
 }

@@ -29,6 +29,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
 /**
  * The insert statement. Every column name in
@@ -41,6 +42,10 @@ public class Insert implements Statement {
 	private List<Column> columns;
 	private ItemsList itemsList;
 	private boolean useValues = true;
+    
+    private boolean returningAllColumns = false;
+    
+    private List<SelectExpressionItem> returningExpressionList = null;
 
 	@Override
 	public void accept(StatementVisitor statementVisitor) {
@@ -89,6 +94,22 @@ public class Insert implements Statement {
 		this.useValues = useValues;
 	}
 
+    public boolean isReturningAllColumns() {
+        return returningAllColumns;
+    }
+
+    public void setReturningAllColumns(boolean returningAllColumns) {
+        this.returningAllColumns = returningAllColumns;
+    }
+
+    public List<SelectExpressionItem> getReturningExpressionList() {
+        return returningExpressionList;
+    }
+
+    public void setReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
+        this.returningExpressionList = returningExpressionList;
+    }
+
 	@Override
 	public String toString() {
 		String sql = "";
@@ -102,6 +123,12 @@ public class Insert implements Statement {
 		} else {
 			sql += "" + itemsList + "";
 		}
+        
+        if (isReturningAllColumns())
+            sql += " RETURNING *";
+        else if (getReturningExpressionList()!=null) {
+            sql+= " RETURNING " + PlainSelect.getStringList(getReturningExpressionList(), true, false);
+        }
 
 		return sql;
 	}

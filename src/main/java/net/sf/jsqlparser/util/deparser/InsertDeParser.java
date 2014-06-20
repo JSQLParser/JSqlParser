@@ -30,6 +30,7 @@ import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
@@ -87,7 +88,17 @@ public class InsertDeParser implements ItemsListVisitor {
 		}
 
 		insert.getItemsList().accept(this);
-
+        
+        if (insert.isReturningAllColumns())
+            buffer.append(" RETURNING *");
+        else if (insert.getReturningExpressionList()!=null) {
+            buffer.append(" RETURNING ");
+            for (Iterator<SelectExpressionItem> iter = insert.getReturningExpressionList().iterator();iter.hasNext();) {
+                buffer.append(iter.next().toString());
+                if (iter.hasNext())
+                    buffer.append(", ");
+            }
+        }
 	}
 
 	@Override

@@ -194,6 +194,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_FOLLOWING: "FOLLOWING">
 |   <K_CURRENT: "CURRENT">
 |   <K_ROW: "ROW"> 
+|   <K_RETURNING: "RETURNING"> 
 }
 
 TOKEN : /* Numeric Constants */
@@ -372,6 +373,17 @@ Replace Replace():
    }
 }
 
+List<SelectExpressionItem> ListExpressionItem():
+{
+   List<SelectExpressionItem> retval = new ArrayList<SelectExpressionItem>();
+   SelectExpressionItem item;
+}
+{
+   item = SelectExpressionItem() {retval.add(item);}
+   ("," item = SelectExpressionItem() {retval.add(item);} )*
+   { return retval; }
+}
+
 Insert Insert():
 {
 	Insert insert = new Insert();
@@ -382,6 +394,7 @@ Insert Insert():
 	ItemsList itemsList = null;
 	Expression exp = null;
 	MultiExpressionList multiExpr = null;
+    List<SelectExpressionItem> returning = null;
 }
 {
     <K_INSERT> [<K_INTO>] table=Table()
@@ -408,14 +421,21 @@ Insert Insert():
 			{ insert.setUseValues(false); }
 			itemsList=  SubSelect()
 		)
-		[ ")" ]
+		[ ")" ]        
 	)
+
+    [ <K_RETURNING> (
+           "*" { insert.setReturningAllColumns(true); }
+           | returning=ListExpressionItem()
+           )
+    ]
 
     {
 		insert.setItemsList(itemsList);
 	    insert.setTable(table);
 	    if (columns.size() > 0)
 	    	insert.setColumns(columns);
+        insert.setReturningExpressionList(returning);
     	return insert;
     }
 }
@@ -459,7 +479,10 @@ String RelObjectName():
 {	Token tk = null; }
 {
 	(tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>
-      | tk=<K_CAST> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE> | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_VALUE> | tk=<K_XML>)
+      | tk=<K_CAST> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> 
+      | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE> 
+      | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_VALUE> | tk=<K_XML>
+      | tk=<K_COLUMN> )
 
     { return tk.image; }
 }
