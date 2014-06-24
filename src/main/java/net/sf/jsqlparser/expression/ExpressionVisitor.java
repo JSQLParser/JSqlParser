@@ -143,4 +143,6 @@ public interface ExpressionVisitor {
 	void visit(OracleHierarchicalExpression oexpr);
 
 	void visit(RegExpMatchOperator rexpr);
+    
+    void visit(JsonExpression jsonExpr);
 }

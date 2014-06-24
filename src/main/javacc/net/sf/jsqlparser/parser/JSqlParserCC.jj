@@ -1657,6 +1657,8 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(ExtractExpression()) retval=ExtractExpression()
 
+    | LOOKAHEAD([sign="+" | sign="-"] JsonExpression()) [sign="+" | sign="-"] retval=JsonExpression()
+
 	| LOOKAHEAD(["+" | "-"] Function())       [sign="+" | sign="-"] retval=Function()
 
 	| LOOKAHEAD(["+" | "-"] <S_DOUBLE>)       [sign="+" | sign="-"] token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
@@ -1708,6 +1710,19 @@ JdbcNamedParameter JdbcNamedParameter() : {
 	{
 		return parameter;
 	}
+}
+
+JsonExpression JsonExpression() : {
+  JsonExpression result = new JsonExpression();
+  Column column;
+  Token token;
+}
+{
+    column=Column() ("->" token=<S_CHAR_LITERAL> {result.addIdent(token.image);} )+
+    { 
+        result.setColumn(column);
+        return result; 
+    }
 }
 
 IntervalExpression IntervalExpression() : {

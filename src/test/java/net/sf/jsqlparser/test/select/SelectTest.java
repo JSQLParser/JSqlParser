@@ -1430,4 +1430,8 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo WHERE a != b");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo WHERE a <> b");
     }
+    
+    public void testJsonExpression() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT data->'images'->'thumbnail'->'url' AS thumb FROM instagram");
+    }
 }
