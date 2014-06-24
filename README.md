@@ -23,6 +23,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.1
 
+* First simple support of postgresqls JSON syntax.
+
+```sql
+SELECT data->'images'->'thumbnail'->'url' AS thumb FROM instagram
+```
+
 * Included support for returning for insert statements.
 
 ```sql
