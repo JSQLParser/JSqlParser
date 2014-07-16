@@ -195,7 +195,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CURRENT: "CURRENT">
 |   <K_ROW: "ROW"> 
 |   <K_RETURNING: "RETURNING"> 
-|   <K_REGEXP_B: "REGEXP BINARY">  
+|   <K_BINARY: "BINARY">  
 |   <K_REGEXP: "REGEXP">
 }
 
@@ -1280,8 +1280,8 @@ Expression RegularCondition():
     | "!=" { result = new NotEqualsTo("!="); }
 	| "@@" { result = new Matches(); }
 	| "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
+	| LOOKAHEAD(2) <K_REGEXP> <K_BINARY> { result = new RegExpMySQLOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
 	| <K_REGEXP> { result = new RegExpMySQLOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
-	| <K_REGEXP_B> { result = new RegExpMySQLOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
 	| "~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
 	| "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
 	| "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
