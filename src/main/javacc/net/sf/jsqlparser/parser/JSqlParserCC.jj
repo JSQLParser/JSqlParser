@@ -1262,6 +1262,7 @@ Expression RegularCondition():
 	boolean not = false;
 	int oracleJoin=EqualsTo.NO_ORACLE_JOIN;
 	int oraclePrior=EqualsTo.NO_ORACLE_PRIOR;
+    boolean binary = false;
 }
 {
 	[ <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; }]
@@ -1280,8 +1281,7 @@ Expression RegularCondition():
     | "!=" { result = new NotEqualsTo("!="); }
 	| "@@" { result = new Matches(); }
 	| "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
-	| LOOKAHEAD(2) <K_REGEXP> <K_BINARY> { result = new RegExpMySQLOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
-	| <K_REGEXP> { result = new RegExpMySQLOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
+	| <K_REGEXP> [ <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
 	| "~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
 	| "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
 	| "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
