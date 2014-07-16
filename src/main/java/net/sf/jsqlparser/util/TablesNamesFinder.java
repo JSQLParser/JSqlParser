@@ -463,6 +463,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
+	public void visit(RegExpMySQLOperator rexpr) {
+    	visitBinaryExpression(rexpr);
+	}
+    
+    @Override
     public void visit(JsonExpression jsonExpr) {
     }
+
+	
 }
