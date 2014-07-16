@@ -1325,6 +1325,16 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT CASE WHEN REGEXP_LIKE(first_name, '^Ste(v|ph)en$') THEN 1 ELSE 2 END FROM mytable";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+    
+    public void testRegexpMySQL() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE first_name REGEXP '^Ste(v|ph)en$'";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+    
+    public void testRegexpBinaryMySQL() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE first_name REGEXP BINARY '^Ste(v|ph)en$'";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 
     public void testBooleanFunction1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE test_func(col1)";

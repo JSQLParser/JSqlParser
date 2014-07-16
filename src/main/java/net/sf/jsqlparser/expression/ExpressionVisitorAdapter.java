@@ -307,4 +307,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(JsonExpression jsonExpr) {
         visit(jsonExpr.getColumn());
     }
+
+	@Override
+	public void visit(RegExpMySQLOperator expr) {
+		visitBinaryExpression(expr);	
+	}
 }
