@@ -2029,6 +2029,7 @@ CreateTable CreateTable():
 	ForeignKeyIndex fkIndex = null;
 	String parameter = null;
 	Table fkTable = null;
+    SelectBody select = null;
 }
 {
 	<K_CREATE>
@@ -2038,7 +2039,7 @@ CreateTable CreateTable():
 
 	<K_TABLE> table=Table()
 	[
-		"("
+		("("
 		(columnName=<S_IDENTIFIER>
 		|
 		columnName=<S_QUOTED_IDENTIFIER>)
@@ -2147,7 +2148,11 @@ CreateTable CreateTable():
 
 		")"
 		( 	parameter=CreateParameter() { tableOptions.add(parameter); } )*
-
+        )
+        |
+        (
+        <K_AS> select = SelectBody() { createTable.setSelectBody(select); }
+        )
 	]
 
 	{

@@ -35,6 +35,11 @@ public class CreateTableTest extends TestCase {
 		String statement = "CREATE TABLE testtab (\"test\" varchar (255), \"test2\" varchar (255))";
 		assertSqlCanBeParsedAndDeparsed(statement);
 	}
+    
+    public void testCreateTableAsSelect() throws JSQLParserException {
+		String statement = "CREATE TABLE a AS SELECT col1, col2 FROM b";
+		assertSqlCanBeParsedAndDeparsed(statement);
+	}
 
 	public void testCreateTable() throws JSQLParserException {
 		String statement = "CREATE TABLE mytab (mycol a (10, 20) c nm g, mycol2 mypar1 mypar2 (23,323,3) asdf ('23','123') dasd, "

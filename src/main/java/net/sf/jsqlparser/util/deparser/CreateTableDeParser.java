@@ -33,53 +33,57 @@ import net.sf.jsqlparser.statement.create.table.Index;
  */
 public class CreateTableDeParser {
 
-	private StringBuilder buffer;
+    private StringBuilder buffer;
 
-	/**
-	 * @param buffer the buffer that will be filled with the select
-	 */
-	public CreateTableDeParser(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    /**
+     * @param buffer the buffer that will be filled with the select
+     */
+    public CreateTableDeParser(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 
-	public void deParse(CreateTable createTable) {
-		buffer.append("CREATE TABLE ").append(createTable.getTable().getFullyQualifiedName());
-		if (createTable.getColumnDefinitions() != null) {
-			buffer.append(" (");
-			for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
-				ColumnDefinition columnDefinition = iter.next();
-				buffer.append(columnDefinition.getColumnName());
-				buffer.append(" ");
-				buffer.append(columnDefinition.getColDataType().toString());
-				if (columnDefinition.getColumnSpecStrings() != null) {
-                    for (String s : columnDefinition.getColumnSpecStrings()) {
-                        buffer.append(" ");
-                        buffer.append(s);
+    public void deParse(CreateTable createTable) {
+        buffer.append("CREATE TABLE ").append(createTable.getTable().getFullyQualifiedName());
+        if (createTable.getSelectBody() != null) {
+            buffer.append(" AS ").append(createTable.getSelectBody().toString());
+        } else {
+            if (createTable.getColumnDefinitions() != null) {
+                buffer.append(" (");
+                for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
+                    ColumnDefinition columnDefinition = iter.next();
+                    buffer.append(columnDefinition.getColumnName());
+                    buffer.append(" ");
+                    buffer.append(columnDefinition.getColDataType().toString());
+                    if (columnDefinition.getColumnSpecStrings() != null) {
+                        for (String s : columnDefinition.getColumnSpecStrings()) {
+                            buffer.append(" ");
+                            buffer.append(s);
+                        }
                     }
-				}
 
-				if (iter.hasNext()) {
-					buffer.append(", ");
-				}
-			}
+                    if (iter.hasNext()) {
+                        buffer.append(", ");
+                    }
+                }
 
-			if (createTable.getIndexes() != null) {
-				for (Iterator<Index> iter = createTable.getIndexes().iterator(); iter.hasNext();) {
-					buffer.append(", ");
-					Index index = iter.next();
-					buffer.append(index.toString());
-				}
-			}
+                if (createTable.getIndexes() != null) {
+                    for (Iterator<Index> iter = createTable.getIndexes().iterator(); iter.hasNext();) {
+                        buffer.append(", ");
+                        Index index = iter.next();
+                        buffer.append(index.toString());
+                    }
+                }
 
-			buffer.append(")");
-		}
-	}
+                buffer.append(")");
+            }
+        }
+    }
 
-	public StringBuilder getBuffer() {
-		return buffer;
-	}
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
 
-	public void setBuffer(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 }
