@@ -23,6 +23,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.1
 
+* Support for create table as select syntax:
+
+```sql
+CREATE TABLE table1 as SELECT col1, col2 FROM table2
+```
+
 * First simple support of postgresqls JSON syntax.
 
 ```sql
