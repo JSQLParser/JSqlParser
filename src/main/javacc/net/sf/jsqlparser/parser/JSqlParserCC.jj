@@ -1743,10 +1743,9 @@ IntervalExpression IntervalExpression() : {
 AnalyticExpression AnalyticExpression() :
 {
 	AnalyticExpression retval = new AnalyticExpression();
-	List<Column> plist = new ArrayList<Column>();
+	ExpressionList expressionList = null;
 	List<OrderByElement> olist = null;
 	Token token = null;
-	Column column = null;
 	Expression expr = null;
 	Expression offset = null;
 	Expression defaultValue = null;
@@ -1755,14 +1754,14 @@ AnalyticExpression AnalyticExpression() :
 {
 	token=<S_IDENTIFIER> { retval.setName(token.image); }
 	    "(" [ expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } ] ")" <K_OVER> "("
-        [<K_PARTITION> <K_BY> column=Column() {plist.add(column);}  ("," column=Column() {plist.add(column);} )* ]
+        [<K_PARTITION> <K_BY> expressionList=SimpleExpressionList() ]
         [olist=OrderByElements() [windowElement = WindowElement() ] ]
         
 	{
 		retval.setExpression(expr);
 		retval.setOffset(offset);
 		retval.setDefaultValue(defaultValue);
-		retval.setPartitionByColumns(plist);
+		retval.setPartitionExpressionList(expressionList);
 		retval.setOrderByElements(olist);
         retval.setWindowElement(windowElement);
 	}

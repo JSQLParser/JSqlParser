@@ -1037,6 +1037,16 @@ public class SelectTest extends TestCase {
         String statement = "SELECT AVG(sal) OVER (PARTITION BY deptno ORDER BY sal RANGE CURRENT ROW) AS avg_of_current_sal FROM emp";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
+    
+    public void testAnalyticFunctionProblem1() throws JSQLParserException {
+        String statement = "SELECT last_value(s.revenue_hold) OVER (PARTITION BY s.id_d_insertion_order, s.id_d_product_ad_attr, trunc(s.date_id, 'mm') ORDER BY s.date_id) AS col FROM s";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+    
+    public void testAnalyticFunctionProblem1b() throws JSQLParserException {
+        String statement = "SELECT last_value(s.revenue_hold) OVER (PARTITION BY s.id_d_insertion_order, s.id_d_product_ad_attr, trunc(s.date_id, 'mm') ORDER BY s.date_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS col FROM s";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
 
     public void testOracleJoin() throws JSQLParserException {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
