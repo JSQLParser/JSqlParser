@@ -23,6 +23,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.1
 
+* Window functions now allow simple expressions for partition by. 
 * Support for create table as select syntax:
 
 ```sql
