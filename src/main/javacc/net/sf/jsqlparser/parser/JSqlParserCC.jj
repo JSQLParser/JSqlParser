@@ -2028,7 +2028,7 @@ CreateTable CreateTable():
 	ForeignKeyIndex fkIndex = null;
 	String parameter = null;
 	Table fkTable = null;
-    SelectBody select = null;
+    Select select = null;
 }
 {
 	<K_CREATE>
@@ -2150,7 +2150,7 @@ CreateTable CreateTable():
         )
         |
         (
-        <K_AS> select = SelectBody() { createTable.setSelectBody(select); }
+        <K_AS> select = Select() { createTable.setSelect(select); }
         )
 	]
 

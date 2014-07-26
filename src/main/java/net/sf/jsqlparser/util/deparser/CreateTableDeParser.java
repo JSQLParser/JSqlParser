@@ -44,8 +44,8 @@ public class CreateTableDeParser {
 
     public void deParse(CreateTable createTable) {
         buffer.append("CREATE TABLE ").append(createTable.getTable().getFullyQualifiedName());
-        if (createTable.getSelectBody() != null) {
-            buffer.append(" AS ").append(createTable.getSelectBody().toString());
+        if (createTable.getSelect() != null) {
+            buffer.append(" AS ").append(createTable.getSelect().toString());
         } else {
             if (createTable.getColumnDefinitions() != null) {
                 buffer.append(" (");

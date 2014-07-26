@@ -27,6 +27,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 
 /**
@@ -38,7 +39,7 @@ public class CreateTable implements Statement {
     private List<String> tableOptionsStrings;
     private List<ColumnDefinition> columnDefinitions;
     private List<Index> indexes;
-    private SelectBody selectBody;
+    private Select select;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -92,12 +93,12 @@ public class CreateTable implements Statement {
         indexes = list;
     }
 
-    public SelectBody getSelectBody() {
-        return selectBody;
+    public Select getSelect() {
+        return select;
     }
 
-    public void setSelectBody(SelectBody selectBody) {
-        this.selectBody = selectBody;
+    public void setSelect(Select select) {
+        this.select = select;
     }
 
     @Override
@@ -106,8 +107,8 @@ public class CreateTable implements Statement {
 
         sql = "CREATE TABLE " + table;
 
-        if (selectBody != null) {
-            sql += " AS " + selectBody.toString();
+        if (select != null) {
+            sql += " AS " + select.toString();
         } else {
             sql += " (";
 
