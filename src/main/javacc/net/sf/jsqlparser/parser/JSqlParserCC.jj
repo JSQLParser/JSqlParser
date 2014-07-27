@@ -197,6 +197,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_RETURNING: "RETURNING"> 
 |   <K_BINARY: "BINARY">  
 |   <K_REGEXP: "REGEXP">
+|   <K_UNLOGGED: "UNLOGGED">
 }
 
 TOKEN : /* Numeric Constants */
@@ -2034,6 +2035,7 @@ CreateTable CreateTable():
 	<K_CREATE>
 	// TODO:
 //	[ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } ]
+    [ <K_UNLOGGED> { createTable.setUnlogged(true); } ]
 	(CreateParameter())*
 
 	<K_TABLE> table=Table()
