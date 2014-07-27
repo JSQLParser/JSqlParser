@@ -47,6 +47,19 @@ public class CreateTableTest extends TestCase {
 	}
 
 	public void testCreateTable() throws JSQLParserException {
+		String statement = "CREATE TABLE mytab (mycol a (10, 20) c nm g, mycol2 mypar1 mypar2 (23,323,3) asdf ('23','123') dasd, "
+				+ "PRIMARY KEY (mycol2, mycol)) type = myisam";
+		CreateTable createTable = (CreateTable) parserManager.parse(new StringReader(statement));
+		assertEquals(2, createTable.getColumnDefinitions().size());
+        assertFalse(createTable.isUnlogged());
+		assertEquals("mycol", ((ColumnDefinition) createTable.getColumnDefinitions().get(0)).getColumnName());
+		assertEquals("mycol2", ((ColumnDefinition) createTable.getColumnDefinitions().get(1)).getColumnName());
+		assertEquals("PRIMARY KEY", ((Index) createTable.getIndexes().get(0)).getType());
+		assertEquals("mycol", ((Index) createTable.getIndexes().get(0)).getColumnsNames().get(1));
+		assertEquals(statement, "" + createTable);
+	}
+    
+    public void testCreateTableUnlogged() throws JSQLParserException {
 		String statement = "CREATE UNLOGGED TABLE mytab (mycol a (10, 20) c nm g, mycol2 mypar1 mypar2 (23,323,3) asdf ('23','123') dasd, "
 				+ "PRIMARY KEY (mycol2, mycol)) type = myisam";
 		CreateTable createTable = (CreateTable) parserManager.parse(new StringReader(statement));
@@ -57,6 +70,11 @@ public class CreateTableTest extends TestCase {
 		assertEquals("PRIMARY KEY", ((Index) createTable.getIndexes().get(0)).getType());
 		assertEquals("mycol", ((Index) createTable.getIndexes().get(0)).getColumnsNames().get(1));
 		assertEquals(statement, "" + createTable);
+	}
+    
+    public void testCreateTableUnlogged2() throws JSQLParserException {
+		String statement = "CREATE UNLOGGED TABLE mytab (mycol a (10, 20) c nm g, mycol2 mypar1 mypar2 (23,323,3) asdf ('23','123') dasd, PRIMARY KEY (mycol2, mycol))";
+		assertSqlCanBeParsedAndDeparsed(statement);
 	}
 	
 	public void testCreateTableForeignKey() throws JSQLParserException {

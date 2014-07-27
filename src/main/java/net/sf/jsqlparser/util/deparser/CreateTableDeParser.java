@@ -43,7 +43,11 @@ public class CreateTableDeParser {
     }
 
     public void deParse(CreateTable createTable) {
-        buffer.append("CREATE TABLE ").append(createTable.getTable().getFullyQualifiedName());
+        buffer.append("CREATE ");
+        if (createTable.isUnlogged()) {
+            buffer.append("UNLOGGED ");
+        }
+        buffer.append("TABLE ").append(createTable.getTable().getFullyQualifiedName());
         if (createTable.getSelect() != null) {
             buffer.append(" AS ").append(createTable.getSelect().toString());
         } else {
