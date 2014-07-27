@@ -36,6 +36,7 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 public class CreateTable implements Statement {
 
     private Table table;
+    private Boolean unlogged;
     private List<String> tableOptionsStrings;
     private List<ColumnDefinition> columnDefinitions;
     private List<Index> indexes;
@@ -56,6 +57,13 @@ public class CreateTable implements Statement {
     public void setTable(Table table) {
         this.table = table;
     }
+
+    /**
+     * Whether the table is unlogged or not (PostgreSQL 9.1+ feature)
+     */
+    public Boolean isUnlogged() { return unlogged; }
+
+    public void setUnlogged(Boolean unlogged) { this.unlogged = unlogged; }
 
     /**
      * A list of {@link ColumnDefinition}s of this table.
@@ -105,7 +113,7 @@ public class CreateTable implements Statement {
     public String toString() {
         String sql = "";
 
-        sql = "CREATE TABLE " + table;
+        sql = "CREATE " + (unlogged != null && unlogged ? "UNLOGGED " : "") + "TABLE " + table;
 
         if (select != null) {
             sql += " AS " + select.toString();
