@@ -241,9 +241,11 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         if (limit.isRowCountJdbcParameter()) {
             buffer.append(" LIMIT ");
             buffer.append("?");
-        } else if (limit.getRowCount() != 0) {
+        } else if (limit.getRowCount() >= 0) {
             buffer.append(" LIMIT ");
             buffer.append(limit.getRowCount());
+        } else if (limit.isLimitNull()) {
+            buffer.append(" LIMIT NULL");
         }
 
         if (limit.isOffsetJdbcParameter()) {
