@@ -228,7 +228,7 @@ public class SelectTest extends TestCase {
         statement = "SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?";
         select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(0, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
+        assertEquals(-1, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
         assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOffsetJdbcParameter());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
         assertStatementCanBeDeparsedAs(select, statement);
