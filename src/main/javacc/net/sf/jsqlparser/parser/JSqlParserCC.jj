@@ -398,6 +398,8 @@ Insert Insert():
 	Expression exp = null;
 	MultiExpressionList multiExpr = null;
     List<SelectExpressionItem> returning = null;
+    Select select = null;
+    boolean useSelectBrackets = false;
 }
 {
     <K_INSERT> [<K_INTO>] table=Table()
@@ -419,10 +421,10 @@ Insert Insert():
 
 		|
 
-		[LOOKAHEAD(2) "(" ]
+		[LOOKAHEAD(2) "(" { useSelectBrackets = true; }]
 		(
 			{ insert.setUseValues(false); }
-			itemsList=  SubSelect()
+			select = Select()
 		)
 		[ ")" ]        
 	)
@@ -435,6 +437,8 @@ Insert Insert():
 
     {
 		insert.setItemsList(itemsList);
+        insert.setUseSelectBrackets(useSelectBrackets);
+        insert.setSelect(select);
 	    insert.setTable(table);
 	    if (columns.size() > 0)
 	    	insert.setColumns(columns);

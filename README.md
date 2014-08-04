@@ -23,6 +23,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.1
 
+* Improved support for insert table using with clause.
+
+```sql
+INSERT INTO mytable (mycolumn) WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a
+```
+
 * Support for ```limit 0``` and ```limit null``` clause.
 * Window functions now allow simple expressions for partition by. 
 * Support for create table as select syntax:

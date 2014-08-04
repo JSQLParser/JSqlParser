@@ -16,6 +16,8 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
@@ -72,12 +74,13 @@ public class InsertTest {
 		assertEquals("col1", ((Column) insert.getColumns().get(0)).getColumnName());
 		assertEquals("col2", ((Column) insert.getColumns().get(1)).getColumnName());
 		assertEquals("col3", ((Column) insert.getColumns().get(2)).getColumnName());
-		assertTrue(insert.getItemsList() instanceof SubSelect);
+		assertNull(insert.getItemsList());
+        assertNotNull(insert.getSelect());
 		assertEquals("mytable2",
-				((Table) ((PlainSelect) ((SubSelect) insert.getItemsList()).getSelectBody()).getFromItem()).getName());
+				((Table) ((PlainSelect)insert.getSelect().getSelectBody()).getFromItem()).getName());
 
 		// toString uses brakets
-		String statementToString = "INSERT INTO mytable (col1, col2, col3) (SELECT * FROM mytable2)";
+		String statementToString = "INSERT INTO mytable (col1, col2, col3) SELECT * FROM mytable2";
 		assertEquals(statementToString, "" + insert);
 	}
 
@@ -115,5 +118,17 @@ public class InsertTest {
     @Test
     public void testInsertWithReturning3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (mycolumn) VALUES ('1') RETURNING id AS a1, id2 AS a2");
+    }
+    
+    @Test
+    public void testInsertSelect() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (mycolumn) SELECT mycolumn FROM mytable");
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (mycolumn) (SELECT mycolumn FROM mytable)");
+    }
+    
+    @Test
+    public void testInsertWithSelect() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (mycolumn) WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a");
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (mycolumn) (WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a)");
     }
 }

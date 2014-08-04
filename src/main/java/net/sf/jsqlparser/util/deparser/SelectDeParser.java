@@ -353,6 +353,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
     @Override
     public void visit(WithItem withItem) {
+        buffer.append(withItem.toString());
     }
 
     @Override
