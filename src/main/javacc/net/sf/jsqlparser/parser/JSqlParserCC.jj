@@ -198,6 +198,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_BINARY: "BINARY">  
 |   <K_REGEXP: "REGEXP">
 |   <K_UNLOGGED: "UNLOGGED">
+|   <K_CALL: "CALL">
 }
 
 TOKEN : /* Numeric Constants */
@@ -273,6 +274,8 @@ Statement SingleStatement() :
     stm = Drop()
     |
     stm = Truncate()
+    //|
+    //stm = Execute()
     )
     { return stm; }
 }
@@ -489,7 +492,7 @@ String RelObjectName():
       | tk=<K_CAST> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> 
       | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE> 
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_VALUE> | tk=<K_XML>
-      | tk=<K_COLUMN> )
+      | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> )
 
     { return tk.image; }
 }
@@ -1928,15 +1931,10 @@ Function Function():
 }
 {
 	["{fn" { retval.setEscaped(true); } ]
-	(
-	    funcName=RelObjectName()
-    	|
-    	// workaround for replace(string) function (name clash with mysql REPLACE expression)
-	    <K_REPLACE> { funcName = "REPLACE"; }
-		|
-    	// workaround for truncate(string) function (name clash with mysql TRUNCATE expression)
-	    <K_TRUNCATE> { funcName = "TRUNCATE"; }
-    ) [ "." tmp=RelObjectName() { funcName+= "." + tmp; } ["." tmp=RelObjectName() { funcName+= "." + tmp; }]]
+
+	funcName=RelObjectName()
+
+    [ "." tmp=RelObjectName() { funcName+= "." + tmp; } ["." tmp=RelObjectName() { funcName+= "." + tmp; }]]
     "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] (expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }) ] ")"
 
     ["}"]
