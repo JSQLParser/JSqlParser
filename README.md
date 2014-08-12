@@ -23,6 +23,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.1
 
+* Improved support for select into clause.
+
+```sql
+SELECT * INTO mytable FROM mytable2
+```
+
 * Improved support for insert table using with clause.
 
 ```sql
