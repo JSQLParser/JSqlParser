@@ -220,17 +220,37 @@ public class SelectTest extends TestCase {
         assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isRowCountJdbcParameter());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isOffsetJdbcParameter());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitNull());
 
         // toString uses standard syntax
         statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ? OFFSET 3";
         assertSqlCanBeParsedAndDeparsed(statement);
 
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT NULL OFFSET 3";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        assertEquals(-1, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isRowCountJdbcParameter());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isOffsetJdbcParameter());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isLimitNull());
+        assertSqlCanBeParsedAndDeparsed(statement);
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 0 OFFSET 3";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        assertEquals(0, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isRowCountJdbcParameter());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isOffsetJdbcParameter());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitNull());
+        assertSqlCanBeParsedAndDeparsed(statement);
+
         statement = "SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?";
         select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(0, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
+        assertEquals(-1, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
         assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOffsetJdbcParameter());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitNull());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
@@ -249,7 +269,6 @@ public class SelectTest extends TestCase {
                 + "(SELECT * FROM mytable2 WHERE mytable2.col = 9 OFFSET ?) UNION ALL "
                 + "(SELECT * FROM mytable3 WHERE mytable4.col = 9 OFFSET ?) LIMIT 4 OFFSET 3";
         assertSqlCanBeParsedAndDeparsed(statement);
-
     }
 
     public void testTop() throws JSQLParserException {

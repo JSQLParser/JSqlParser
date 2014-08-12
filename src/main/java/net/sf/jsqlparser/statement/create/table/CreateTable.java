@@ -60,6 +60,7 @@ public class CreateTable implements Statement {
 
     /**
      * Whether the table is unlogged or not (PostgreSQL 9.1+ feature)
+     * @return 
      */
     public boolean isUnlogged() { return unlogged; }
 
