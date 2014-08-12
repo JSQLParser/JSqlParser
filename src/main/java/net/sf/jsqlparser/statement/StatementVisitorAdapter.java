@@ -27,6 +27,7 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
+import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
@@ -92,5 +93,10 @@ public class StatementVisitorAdapter implements StatementVisitor {
     @Override
     public void visit(Statements stmts) {
 
+    }
+
+    @Override
+    public void visit(Execute execute) {
+        
     }
 }

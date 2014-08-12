@@ -274,8 +274,8 @@ Statement SingleStatement() :
     stm = Drop()
     |
     stm = Truncate()
-    //|
-    //stm = Execute()
+    /* |
+    stm = Execute() */
     )
     { return stm; }
 }
@@ -566,6 +566,7 @@ PlainSelect PlainSelect():
 	Limit limit = null;
 	Top top = null;
 	OracleHierarchicalExpression oracleHierarchicalQueryClause = null;
+    List<Table> intoTables = null;
 }
 {
     <K_SELECT>
@@ -584,8 +585,7 @@ PlainSelect PlainSelect():
 
     selectItems=SelectItemsList()
 
-     // TODO
-    [IntoClause()]
+    [intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); } ]
     [ <K_FROM>
       fromItem=FromItem()
       joins=JoinsList() ]
@@ -855,10 +855,16 @@ PivotXml PivotXml():
     }
 }
 
-void IntoClause():
-{}
+List<Table> IntoClause():
 {
-   <K_INTO> Table() ("," Table())*
+    List<Table> tables = new ArrayList<Table>();
+    Table table;
+}
+{
+    <K_INTO> table=Table() { tables.add(table); } ("," table=Table() { tables.add(table); } )*
+    {
+        return tables;
+    }
 }
 
 FromItem FromItem():

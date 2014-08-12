@@ -81,6 +81,16 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
             }
         }
 
+        if (plainSelect.getIntoTables() != null) {
+            buffer.append(" INTO ");
+            for (Iterator<Table> iter = plainSelect.getIntoTables().iterator(); iter.hasNext();) {
+                visit(iter.next());
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
+        }
+
         if (plainSelect.getFromItem() != null) {
             buffer.append(" FROM ");
             plainSelect.getFromItem().accept(this);

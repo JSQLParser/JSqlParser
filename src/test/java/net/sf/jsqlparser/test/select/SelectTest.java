@@ -1514,4 +1514,8 @@ public class SelectTest extends TestCase {
     public void testJsonExpression() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT data->'images'->'thumbnail'->'url' AS thumb FROM instagram");
     }
+    
+    public void testSelectInto1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * INTO user_copy FROM user");
+    }
 }
