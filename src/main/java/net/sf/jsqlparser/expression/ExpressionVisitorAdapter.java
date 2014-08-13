@@ -312,4 +312,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 	public void visit(RegExpMySQLOperator expr) {
 		visitBinaryExpression(expr);	
 	}
+
+    @Override
+    public void visit(DateExpression dateExpression) { dateExpression.accept(this); }
 }

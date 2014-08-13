@@ -1174,6 +1174,16 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
+    public void testExtractFrom5() throws JSQLParserException {
+        String stmt = "SELECT EXTRACT(year FROM DATE '2000-01-01') FROM testtable";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    public void testExtractFrom6() throws JSQLParserException {
+        String stmt = "SELECT EXTRACT(year FROM date'2000-01-01') FROM testtable";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
     public void testProblemFunction() throws JSQLParserException {
         String stmt = "SELECT test() FROM testtable";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -1472,5 +1482,9 @@ public class SelectTest extends TestCase {
     
     public void testJsonExpression() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT data->'images'->'thumbnail'->'url' AS thumb FROM instagram");
+    }
+
+    public void testCastExtractExpression() {
+        String stmt="SELECT cast(extract(year from date '2000-01-01') as integer) as col1";
     }
 }

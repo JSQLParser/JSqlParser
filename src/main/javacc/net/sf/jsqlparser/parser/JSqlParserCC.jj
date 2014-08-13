@@ -220,7 +220,8 @@ SPECIAL_TOKEN:
 
 TOKEN:
 {
-	< S_IDENTIFIER: ( <LETTER> | <ADDITIONAL_LETTERS> )+ ( <DIGIT> | <LETTER> | <ADDITIONAL_LETTERS> | <SPECIAL_CHARS>)* >
+    < S_DATE_EXPRESSION: "DATE" (" ")* < S_CHAR_LITERAL >>
+|	< S_IDENTIFIER: ( <LETTER> | <ADDITIONAL_LETTERS> )+ ( <DIGIT> | <LETTER> | <ADDITIONAL_LETTERS> | <SPECIAL_CHARS>)* >
 | 	< #LETTER: ["a"-"z", "A"-"Z", "_"] >
 |   < #SPECIAL_CHARS: "$" | "_" | "#" | "@">
 |   < S_CHAR_LITERAL: "'" (~["'"])* "'" ("'" (~["'"])* "'")*>
@@ -1828,17 +1829,34 @@ ExtractExpression ExtractExpression() :
 	ExtractExpression retval = new ExtractExpression();
 	Token token = null;
 	Expression expr = null;
+	DateExpression dateExpr = null;
 }
 {
 	<K_EXTRACT>
 	"("
 		token=<S_IDENTIFIER> { retval.setName(token.image); }
 		<K_FROM>
-		expr=SimpleExpression() { retval.setExpression(expr); }
+		(
+            dateExpr=DateExpression() { retval.setExpression(dateExpr); }
+            |
+            expr=SimpleExpression() { retval.setExpression(expr); }
+        )
 	")"
 	{
 		return retval;
 	}
+}
+
+DateExpression DateExpression():
+{
+    DateExpression retval = new DateExpression();
+    Token token = null;
+}
+{
+    token = <S_DATE_EXPRESSION> { retval.setParameter(token.image); }
+    {
+        return retval;
+    }
 }
 
 CastExpression CastExpression():
