@@ -1483,8 +1483,4 @@ public class SelectTest extends TestCase {
     public void testJsonExpression() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT data->'images'->'thumbnail'->'url' AS thumb FROM instagram");
     }
-
-    public void testCastExtractExpression() {
-        String stmt="SELECT cast(extract(year from date '2000-01-01') as integer) as col1";
-    }
 }
