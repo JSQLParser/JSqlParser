@@ -69,6 +69,7 @@ import net.sf.jsqlparser.statement.delete.*;
 import net.sf.jsqlparser.statement.drop.*;
 import net.sf.jsqlparser.statement.insert.*;
 import net.sf.jsqlparser.statement.replace.*;
+import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
@@ -198,7 +199,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_BINARY: "BINARY">  
 |   <K_REGEXP: "REGEXP">
 |   <K_UNLOGGED: "UNLOGGED">
-|   <K_CALL: "CALL">
+|   <K_EXEC: "EXEC">
+|   <K_EXECUTE: "EXECUTE">
 }
 
 TOKEN : /* Numeric Constants */
@@ -274,8 +276,8 @@ Statement SingleStatement() :
     stm = Drop()
     |
     stm = Truncate()
-    /* |
-    stm = Execute() */
+    |
+    stm = Execute()
     )
     { return stm; }
 }
@@ -1926,6 +1928,21 @@ WhenClause WhenThenValue():
 	   whenThen.setThenExpression(thenExp);
 	   return whenThen;
 	}
+}
+
+Execute Execute(): {
+	String funcName = null;
+    ExpressionList expressionList = null;
+    Execute execute = new Execute();
+}
+{
+    (<K_EXEC> | <K_EXECUTE>)
+
+    funcName=RelObjectName()
+
+    [ expressionList=SimpleExpressionList() ]
+
+    { return execute; }
 }
 
 Function Function():
