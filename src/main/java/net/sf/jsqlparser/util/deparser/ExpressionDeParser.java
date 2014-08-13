@@ -511,5 +511,6 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         buffer.append(jsonExpr.toString());
     }
 
-	
+    @Override
+    public void visit(DateExpression dateExpression) { buffer.append(dateExpression.toString()); }
 }

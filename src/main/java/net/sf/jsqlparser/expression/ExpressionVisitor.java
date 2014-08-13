@@ -148,4 +148,6 @@ public interface ExpressionVisitor {
     void visit(JsonExpression jsonExpr);
 
 	void visit(RegExpMySQLOperator regExpMySQLOperator);
+
+    void visit(DateExpression dateExpression);
 }
