@@ -1938,11 +1938,14 @@ Execute Execute(): {
 {
     (<K_EXEC> | <K_EXECUTE>)
 
-    funcName=RelObjectName()
+    funcName=RelObjectName() { execute.setName(funcName); }
 
     [ expressionList=SimpleExpressionList() ]
 
-    { return execute; }
+    { 
+        execute.setExprList(expressionList);
+        return execute; 
+    }
 }
 
 Function Function():

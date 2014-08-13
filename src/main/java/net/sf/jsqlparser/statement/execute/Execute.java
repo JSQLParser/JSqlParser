@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.execute;
 
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -30,6 +31,25 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  */
 public class Execute implements Statement {
 
+    private String name;
+    private ExpressionList exprList;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public ExpressionList getExprList() {
+        return exprList;
+    }
+
+    public void setExprList(ExpressionList exprList) {
+        this.exprList = exprList;
+    }
+    
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
