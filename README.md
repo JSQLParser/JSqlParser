@@ -23,6 +23,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.1
 
+* Simple suppor for EXECUTE.
+
+```sql
+EXECUTE myproc 'a', 2, 'b'
+```
+
 * Improved support for select into clause.
 
 ```sql

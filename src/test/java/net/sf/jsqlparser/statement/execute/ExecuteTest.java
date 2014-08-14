@@ -56,9 +56,10 @@ public class ExecuteTest {
 
     /**
      * Test of accept method, of class Execute.
+     * @throws net.sf.jsqlparser.JSQLParserException
      */
     @Test
     public void testAccept() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("EXEC myproc 'a', 2, 'b'");
+        assertSqlCanBeParsedAndDeparsed("EXECUTE myproc 'a', 2, 'b'");
     }
 }

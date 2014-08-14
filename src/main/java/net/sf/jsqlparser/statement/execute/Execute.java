@@ -24,6 +24,7 @@ package net.sf.jsqlparser.statement.execute;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  *
@@ -54,5 +55,10 @@ public class Execute implements Statement {
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
-    
+
+    @Override
+    public String toString() {
+        return "EXECUTE " + name + " " + PlainSelect.getStringList(exprList.getExpressions(), true, false);
+    }
+
 }
