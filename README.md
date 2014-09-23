@@ -4,6 +4,8 @@ Look here for more information and examples: https://github.com/JSQLParser/JSqlP
 
 ## News
 
+Version **0.9.1** released.
+
 Version **0.9** released.
 
 More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
