@@ -471,5 +471,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(JsonExpression jsonExpr) {
     }
 
-	
+    @Override
+    public void visit(DateExpression dateExpression) {
+    }
 }
