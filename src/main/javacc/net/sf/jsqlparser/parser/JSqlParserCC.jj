@@ -226,7 +226,7 @@ TOKEN:
 	< S_IDENTIFIER: ( <LETTER> | <ADDITIONAL_LETTERS> )+ ( <DIGIT> | <LETTER> | <ADDITIONAL_LETTERS> | <SPECIAL_CHARS>)* >
 | 	< #LETTER: ["a"-"z", "A"-"Z", "_"] >
 |   < #SPECIAL_CHARS: "$" | "_" | "#" | "@">
-|   < S_CHAR_LITERAL: "'" (~["'"])* "'" ("'" (~["'"])* "'")*>
+|   < S_CHAR_LITERAL: "'" ("\\" "\'" | ~["'"])* "'" ("'" ("\\" "\'" | ~["'"])* "'")*>
 |   < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" | ("`" (~["\n","\r","`"])* "`") | ("[" (~["\n","\r","]"])* "]") >
 
 /*
