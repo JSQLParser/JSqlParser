@@ -94,7 +94,7 @@ public class UpdateDeParser {
 			buffer.append(" = ");
 			buffer.append("(");
 			Select select = update.getSelect();
-			select.accept(selectVisitor);
+			select.getSelectBody().accept(selectVisitor);
 			buffer.append(")");
 		}
 			
