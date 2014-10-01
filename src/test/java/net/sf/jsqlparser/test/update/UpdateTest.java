@@ -55,4 +55,9 @@ public class UpdateTest {
     public void testUpdateMultiTable() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE T1, T2 SET T1.C2 = T2.C2, T2.C3 = 'UPDATED' WHERE T1.C1 = T2.C1 AND T1.C2 < 10");
     }
+    
+    @Test
+    public void testUpdateWithSelect() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE NATION SET (N_NATIONKEY) = (SELECT ? FROM SYSIBM.SYSDUMMY1)");
+    }
 }
