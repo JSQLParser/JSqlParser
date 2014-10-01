@@ -27,6 +27,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
@@ -36,16 +37,22 @@ public class UpdateDeParser {
 
 	private StringBuilder buffer;
 	private ExpressionVisitor expressionVisitor;
+	private SelectVisitor selectVisitor;
 
 	/**
 	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
 	 * expressions. It has to share the same<br>
 	 * StringBuilder (buffer parameter) as this object in order to work
+	 * @param selectVisitor a {@link SelectVisitor} to de-parse
+	 * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the
+	 * same<br>
+	 * StringBuilder (buffer parameter) as this object in order to work
 	 * @param buffer the buffer that will be filled with the select
 	 */
-	public UpdateDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+	public UpdateDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
 		this.buffer = buffer;
 		this.expressionVisitor = expressionVisitor;
+		this.selectVisitor = selectVisitor;
 	}
 
 	public StringBuilder getBuffer() {
@@ -58,17 +65,39 @@ public class UpdateDeParser {
 
 	public void deParse(Update update) {
 		buffer.append("UPDATE ").append(PlainSelect.getStringList(update.getTables(), true, false)).append(" SET ");
-		for (int i = 0; i < update.getColumns().size(); i++) {
-			Column column = update.getColumns().get(i);
-			buffer.append(column.getFullyQualifiedName()).append(" = ");
-
-			Expression expression = update.getExpressions().get(i);
-			expression.accept(expressionVisitor);
-			if (i < update.getColumns().size() - 1) {
-				buffer.append(", ");
+		
+		if (!update.isUseSelect()) {
+			for (int i = 0; i < update.getColumns().size(); i++) {
+				Column column = update.getColumns().get(i);
+				buffer.append(column.getFullyQualifiedName()).append(" = ");
+	
+				Expression expression = update.getExpressions().get(i);
+				expression.accept(expressionVisitor);
+				if (i < update.getColumns().size() - 1) {
+					buffer.append(", ");
+				}
 			}
+		} else {
+			if (update.isUseColumnsBrackets()) {
+				buffer.append("(");
+			}
+			for (int i = 0; i < update.getColumns().size(); i++) {
+				if (i != 0) {
+					buffer.append(", ");
+				}
+				Column column = update.getColumns().get(i);
+				buffer.append(column.getFullyQualifiedName());
+			}
+			if (update.isUseColumnsBrackets()) {
+				buffer.append(")");
+			}
+			buffer.append(" = ");
+			buffer.append("(");
+			Select select = update.getSelect();
+			select.accept(selectVisitor);
+			buffer.append(")");
 		}
-
+			
 		if (update.getFromItem() != null) {
 			buffer.append(" FROM ").append(update.getFromItem());
 			if (update.getJoins() != null) {
