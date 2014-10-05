@@ -31,6 +31,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 
 /**
  * The update statement.
@@ -43,6 +44,9 @@ public class Update implements Statement {
 	private List<Expression> expressions;
 	private FromItem fromItem;
 	private List<Join> joins;
+	private Select select;
+	private boolean useColumnsBrackets = true;
+	private boolean useSelect = false;
 
 	@Override
 	public void accept(StatementVisitor statementVisitor) {
@@ -109,16 +113,58 @@ public class Update implements Statement {
 		this.joins = joins;
 	}
 
+	public Select getSelect() {
+	        return select;
+    	}
+	
+    	public void setSelect(Select select) {
+	        this.select = select;
+    	}
+		
+	public boolean isUseColumnsBrackets() {
+	        return useColumnsBrackets;
+    	}
+	
+    	public void setUseColumnsBrackets(boolean useColumnsBrackets) {
+	        this.useColumnsBrackets = useColumnsBrackets;
+    	}
+		
+	public boolean isUseSelect() {
+	        return useSelect;
+    	}
+	
+    	public void setUseSelect(boolean useSelect) {
+	        this.useSelect = useSelect;
+    	}
+
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder("UPDATE ");
 		b.append(PlainSelect.getStringList(getTables(), true, false)).append(" SET ");
-		for (int i = 0; i < getColumns().size(); i++) {
-			if (i != 0) {
-				b.append(", ");
+		
+		if (!useSelect) {
+			for (int i = 0; i < getColumns().size(); i++) {
+				if (i != 0) {
+					b.append(", ");
+				}
+				b.append(columns.get(i)).append(" = ");
+				b.append(expressions.get(i));
 			}
-			b.append(columns.get(i)).append(" = ");
-			b.append(expressions.get(i));
+		} else {
+			if (useColumnsBrackets) {
+				b.append("(");
+			}
+			for (int i = 0; i < getColumns().size(); i++) {
+				if (i != 0) {
+					b.append(", ");
+				}
+				b.append(columns.get(i));
+			}
+			if (useColumnsBrackets) {
+				b.append(")");
+			}
+			b.append(" = ");
+			b.append("(").append(select).append(")");
 		}
 
 		if (fromItem != null) {

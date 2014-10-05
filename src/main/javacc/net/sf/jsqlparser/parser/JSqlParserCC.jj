@@ -224,7 +224,7 @@ SPECIAL_TOKEN:
 TOKEN:
 {
 	< S_IDENTIFIER: ( <LETTER> | <ADDITIONAL_LETTERS> )+ ( <DIGIT> | <LETTER> | <ADDITIONAL_LETTERS> | <SPECIAL_CHARS>)* >
-| 	< #LETTER: ["a"-"z", "A"-"Z", "_"] >
+| 	< #LETTER: ["a"-"z", "A"-"Z", "_", "$"] >
 |   < #SPECIAL_CHARS: "$" | "_" | "#" | "@">
 |   < S_CHAR_LITERAL: "'" (~["'"])* "'" ("'" (~["'"])* "'")*>
 |   < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" | ("`" (~["\n","\r","`"])* "`") | ("[" (~["\n","\r","]"])* "]") >
@@ -311,12 +311,27 @@ Update Update():
 	Expression value = null;
 	FromItem fromItem = null;
 	List<Join> joins = null;
+	Select select = null;
+	boolean useColumnsBrackets = false;
 }
 {
     <K_UPDATE> table=TableWithAlias() { tables.add(table); } 
           ("," table=TableWithAlias() { tables.add(table); } )*
-    <K_SET> tableColumn=Column() "=" value=SimpleExpression() { columns.add(tableColumn); expList.add(value); }
-		  ("," tableColumn=Column() "=" value=SimpleExpression()  { columns.add(tableColumn); expList.add(value); } )*
+    <K_SET> 
+    (
+	tableColumn=Column() "=" value=SimpleExpression() { columns.add(tableColumn); expList.add(value); }
+		("," tableColumn=Column() "=" value=SimpleExpression() { columns.add(tableColumn); expList.add(value); } )*
+
+	|
+
+	[LOOKAHEAD(2) "(" { useColumnsBrackets = true; }] tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* [ ")" ] "="
+		"("
+		(
+			{ update.setUseSelect(true); }
+			select = Select()
+		)
+		")"
+   )
 
    [ <K_FROM>
       fromItem=FromItem()
@@ -329,6 +344,8 @@ Update Update():
    		update.setTables(tables);
 		update.setFromItem(fromItem);
 		update.setJoins(joins);
+		update.setSelect(select);
+		update.setUseColumnsBrackets(useColumnsBrackets);
 		return update;
    }
 }
