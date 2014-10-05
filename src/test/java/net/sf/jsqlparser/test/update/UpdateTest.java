@@ -60,4 +60,9 @@ public class UpdateTest {
     public void testUpdateWithSelect() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE NATION SET (N_NATIONKEY) = (SELECT ? FROM SYSIBM.SYSDUMMY1)");
     }
+    
+    @Test
+    public void testUpdateWithSelect2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE mytable SET (col1, col2, col3) = (SELECT a, b, c FROM mytable2)");
+    }
 }

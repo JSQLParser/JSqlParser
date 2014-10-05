@@ -23,50 +23,10 @@ To help JSqlParsers development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff. 
 
-## Extensions in the latest SNAPSHOT version 0.9.1
-
-* Simple support for EXECUTE.
+## Extensions in the latest SNAPSHOT version 0.9.2
 
 ```sql
-EXECUTE myproc 'a', 2, 'b'
-```
-
-* Improved support for select into clause.
-
-```sql
-SELECT * INTO mytable FROM mytable2
-```
-
-* Improved support for insert table using with clause.
-
-```sql
-INSERT INTO mytable (mycolumn) WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a
-```
-
-* Support for ```limit 0``` and ```limit null``` clause.
-* Window functions now allow simple expressions for partition by. 
-* Support for create table as select syntax:
-
-```sql
-CREATE TABLE table1 as SELECT col1, col2 FROM table2
-```
-
-* First simple support of postgresqls JSON syntax.
-
-```sql
-SELECT data->'images'->'thumbnail'->'url' AS thumb FROM instagram
-```
-
-* Included support for returning for insert statements.
-
-```sql
-INSERT INTO mytable (mycolumn) VALUES ('1') RETURNING id
-```
-
-* Included support for multitable update statements.
-
-```sql
-UPDATE table1, table2 SET table1.col2 = table2.col2, table2.col3 = 'UPDATED' WHERE table1.col1 = table2.col1
+UPDATE mytable SET (col) = (SELECT a FROM mytable2)
 ```
 
 ## Extensions of JSqlParser releases
