@@ -36,94 +36,94 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
  */
 public class UpdateDeParser {
 
-	private StringBuilder buffer;
-	private ExpressionVisitor expressionVisitor;
-	private SelectVisitor selectVisitor;
+    private StringBuilder buffer;
+    private ExpressionVisitor expressionVisitor;
+    private SelectVisitor selectVisitor;
 
-	/**
-	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
-	 * expressions. It has to share the same<br>
-	 * StringBuilder (buffer parameter) as this object in order to work
-	 * @param selectVisitor a {@link SelectVisitor} to de-parse
-	 * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the
-	 * same<br>
-	 * StringBuilder (buffer parameter) as this object in order to work
-	 * @param buffer the buffer that will be filled with the select
-	 */
-	public UpdateDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
-		this.buffer = buffer;
-		this.expressionVisitor = expressionVisitor;
-		this.selectVisitor = selectVisitor;
-	}
+    /**
+     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
+     * expressions. It has to share the same<br>
+     * StringBuilder (buffer parameter) as this object in order to work
+     * @param selectVisitor a {@link SelectVisitor} to de-parse
+     * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the
+     * same<br>
+     * StringBuilder (buffer parameter) as this object in order to work
+     * @param buffer the buffer that will be filled with the select
+     */
+    public UpdateDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
+        this.buffer = buffer;
+        this.expressionVisitor = expressionVisitor;
+        this.selectVisitor = selectVisitor;
+    }
 
-	public StringBuilder getBuffer() {
-		return buffer;
-	}
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
 
-	public void setBuffer(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 
-	public void deParse(Update update) {
-		buffer.append("UPDATE ").append(PlainSelect.getStringList(update.getTables(), true, false)).append(" SET ");
-		
-		if (!update.isUseSelect()) {
-			for (int i = 0; i < update.getColumns().size(); i++) {
-				Column column = update.getColumns().get(i);
-				buffer.append(column.getFullyQualifiedName()).append(" = ");
-	
-				Expression expression = update.getExpressions().get(i);
-				expression.accept(expressionVisitor);
-				if (i < update.getColumns().size() - 1) {
-					buffer.append(", ");
-				}
-			}
-		} else {
-			if (update.isUseColumnsBrackets()) {
-				buffer.append("(");
-			}
-			for (int i = 0; i < update.getColumns().size(); i++) {
-				if (i != 0) {
-					buffer.append(", ");
-				}
-				Column column = update.getColumns().get(i);
-				buffer.append(column.getFullyQualifiedName());
-			}
-			if (update.isUseColumnsBrackets()) {
-				buffer.append(")");
-			}
-			buffer.append(" = ");
-			buffer.append("(");
-			Select select = update.getSelect();
-			select.getSelectBody().accept(selectVisitor);
-			buffer.append(")");
-		}
-			
-		if (update.getFromItem() != null) {
-			buffer.append(" FROM ").append(update.getFromItem());
-			if (update.getJoins() != null) {
-				for (Join join : update.getJoins()) {
-					if (join.isSimple()) {
-						buffer.append(", ").append(join);
-					} else {
-						buffer.append(" ").append(join);
-					}
-				}
-			}
-		}
+    public void deParse(Update update) {
+        buffer.append("UPDATE ").append(PlainSelect.getStringList(update.getTables(), true, false)).append(" SET ");
 
-		if (update.getWhere() != null) {
-			buffer.append(" WHERE ");
-			update.getWhere().accept(expressionVisitor);
-		}
+        if (!update.isUseSelect()) {
+            for (int i = 0; i < update.getColumns().size(); i++) {
+                Column column = update.getColumns().get(i);
+                buffer.append(column.getFullyQualifiedName()).append(" = ");
 
-	}
+                Expression expression = update.getExpressions().get(i);
+                expression.accept(expressionVisitor);
+                if (i < update.getColumns().size() - 1) {
+                    buffer.append(", ");
+                }
+            }
+        } else {
+            if (update.isUseColumnsBrackets()) {
+                buffer.append("(");
+            }
+            for (int i = 0; i < update.getColumns().size(); i++) {
+                if (i != 0) {
+                    buffer.append(", ");
+                }
+                Column column = update.getColumns().get(i);
+                buffer.append(column.getFullyQualifiedName());
+            }
+            if (update.isUseColumnsBrackets()) {
+                buffer.append(")");
+            }
+            buffer.append(" = ");
+            buffer.append("(");
+            Select select = update.getSelect();
+            select.getSelectBody().accept(selectVisitor);
+            buffer.append(")");
+        }
 
-	public ExpressionVisitor getExpressionVisitor() {
-		return expressionVisitor;
-	}
+        if (update.getFromItem() != null) {
+            buffer.append(" FROM ").append(update.getFromItem());
+            if (update.getJoins() != null) {
+                for (Join join : update.getJoins()) {
+                    if (join.isSimple()) {
+                        buffer.append(", ").append(join);
+                    } else {
+                        buffer.append(" ").append(join);
+                    }
+                }
+            }
+        }
 
-	public void setExpressionVisitor(ExpressionVisitor visitor) {
-		expressionVisitor = visitor;
-	}
+        if (update.getWhere() != null) {
+            buffer.append(" WHERE ");
+            update.getWhere().accept(expressionVisitor);
+        }
+
+    }
+
+    public ExpressionVisitor getExpressionVisitor() {
+        return expressionVisitor;
+    }
+
+    public void setExpressionVisitor(ExpressionVisitor visitor) {
+        expressionVisitor = visitor;
+    }
 }
