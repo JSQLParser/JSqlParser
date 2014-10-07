@@ -24,6 +24,8 @@ package net.sf.jsqlparser.statement.select;
 /**
  * A limit clause in the form [LIMIT {[offset,] row_count) | (row_count | ALL)
  * OFFSET offset}]
+ * or in the form [OFFSET offset (ROW | ROWS) [FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY]]
+ * or in the form FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
  */
 public class Limit {
 
@@ -33,6 +35,12 @@ public class Limit {
 	private boolean offsetJdbcParameter = false;
 	private boolean limitAll;
     private boolean limitNull = false;
+    private boolean oracleSqlServerVersion = false;
+    private boolean hasOffset = false;
+	private boolean isOffsetParamRows = false;
+    private boolean hasFetch = false;
+    private boolean isFetchParamRows = false;
+    private boolean isFetchParamFirst = false;
 
 	public long getOffset() {
 		return offset;
@@ -58,12 +66,59 @@ public class Limit {
 		return rowCountJdbcParameter;
 	}
 
+	public boolean isOracleSqlServerVersion() {
+		return oracleSqlServerVersion;
+	}
+
+	public boolean isHasOffset() {
+		return hasOffset;
+	}
+
+	public boolean isHasFetch() {
+		return hasFetch;
+	}
+    public boolean isOffsetParamRows() {
+		return isOffsetParamRows;
+	}
+
+	public boolean isFetchParamRows() {
+		return isFetchParamRows;
+	}
+
+	public boolean isFetchParamFirst() {
+		return isFetchParamFirst;
+	}
+
 	public void setOffsetJdbcParameter(boolean b) {
 		offsetJdbcParameter = b;
 	}
 
 	public void setRowCountJdbcParameter(boolean b) {
 		rowCountJdbcParameter = b;
+	}
+
+	public void setOracleSqlServerVersion(boolean b) {
+		oracleSqlServerVersion = b;
+	}
+
+	public void setHasOffset(boolean b) {
+		hasOffset = b;
+	}
+
+	public void setHasFetch(boolean b) {
+		hasFetch = b;
+	}
+
+	public void setOffsetParamRows(boolean isOffsetParamRows) {
+		this.isOffsetParamRows = isOffsetParamRows;
+	}
+
+	public void setFetchParamRows(boolean isFetchParamRows) {
+		this.isFetchParamRows = isFetchParamRows;
+	}
+
+	public void setFetchParamFirst(boolean isFetchParamFirst) {
+		this.isFetchParamFirst = isFetchParamFirst;
 	}
 
 	/**
@@ -87,13 +142,22 @@ public class Limit {
 	@Override
 	public String toString() {
 		String retVal = "";
-		if (limitNull) {
-            retVal += " LIMIT NULL";
-        } else if (rowCount >= 0 || rowCountJdbcParameter) {
-			retVal += " LIMIT " + (rowCountJdbcParameter ? "?" : rowCount + "");
-		}
-		if (offset > 0 || offsetJdbcParameter) {
-			retVal += " OFFSET " + (offsetJdbcParameter ? "?" : offset + "");
+		if (oracleSqlServerVersion) {
+			if (hasOffset) {
+				retVal = " OFFSET " + offset + " "+(isOffsetParamRows ? "ROWS" : "ROW");
+			}
+			if (hasFetch) {
+				retVal += " FETCH "+(isFetchParamFirst ? "FIRST" : "NEXT")+" " + rowCount + " "+(isFetchParamRows ? "ROWS" : "ROW")+" ONLY";
+			}
+		} else {
+			if (limitNull) {
+	            retVal += " LIMIT NULL";
+	        } else if (rowCount >= 0 || rowCountJdbcParameter) {
+				retVal += " LIMIT " + (rowCountJdbcParameter ? "?" : rowCount + "");
+			}
+			if (offset > 0 || offsetJdbcParameter) {
+				retVal += " OFFSET " + (offsetJdbcParameter ? "?" : offset + "");
+			}
 		}
 		return retVal;
 	}

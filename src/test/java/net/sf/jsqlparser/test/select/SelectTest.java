@@ -312,6 +312,68 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
+    public void testLimitSqlServer1() throws JSQLParserException {
+        String statement = "SELECT * FROM mytable WHERE mytable.col = 9 ORDER BY mytable.id OFFSET 3 ROWS FETCH NEXT 5 ROWS ONLY";
+
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOracleSqlServerVersion());
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isHasOffset());
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isHasFetch());
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOffsetParamRows());
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isFetchParamRows());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isFetchParamFirst());
+        assertEquals(3, ((PlainSelect) select.getSelectBody()).getLimit().getOffset());
+        assertEquals(5, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    public void testLimitSqlServer2() throws JSQLParserException {
+        // Alternative with the other keywords
+        String statement = "SELECT * FROM mytable WHERE mytable.col = 9 ORDER BY mytable.id OFFSET 3 ROW FETCH FIRST 5 ROW ONLY";
+
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOracleSqlServerVersion());
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isHasOffset());
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isHasFetch());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isOffsetParamRows());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isFetchParamRows());
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isFetchParamFirst());
+        assertEquals(3, ((PlainSelect) select.getSelectBody()).getLimit().getOffset());
+        assertEquals(5, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    public void testLimitSqlServer3() throws JSQLParserException {
+        // Query with no Fetch
+        String statement = "SELECT * FROM mytable WHERE mytable.col = 9 ORDER BY mytable.id OFFSET 3 ROWS";
+
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOracleSqlServerVersion());
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isHasOffset());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isHasFetch());
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOffsetParamRows());
+        assertEquals(3, ((PlainSelect) select.getSelectBody()).getLimit().getOffset());
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    public void testLimitSqlServer4() throws JSQLParserException {
+        // For Oracle syntax, query with no offset
+        String statement = "SELECT * FROM mytable WHERE mytable.col = 9 ORDER BY mytable.id FETCH NEXT 5 ROWS ONLY";
+
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOracleSqlServerVersion());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isHasOffset());
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isHasFetch());
+        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isFetchParamRows());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isFetchParamFirst());
+        assertEquals(5, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
     public void testTop() throws JSQLParserException {
         String statement = "SELECT TOP 3 * FROM mytable WHERE mytable.col = 9";
 

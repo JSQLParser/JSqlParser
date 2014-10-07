@@ -201,6 +201,9 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_UNLOGGED: "UNLOGGED">
 |   <K_EXEC: "EXEC">
 |   <K_EXECUTE: "EXECUTE">
+|   <K_FETCH:"FETCH">
+|   <K_NEXT:"NEXT">
+|   <K_ONLY:"ONLY">
 }
 
 TOKEN : /* Numeric Constants */
@@ -1163,10 +1166,6 @@ Limit Limit():
 				token=<S_LONG> { limit.setRowCount(Long.parseLong(token.image)); } | "?" { limit.setRowCountJdbcParameter(true);}
 				)
 			|
-			// postgresql-> OFFSET offset
-			 <K_OFFSET>
-				 (token=<S_LONG> { limit.setOffset(Long.parseLong(token.image)); } | "?" { limit.setOffsetJdbcParameter(true);} )
-			|
 				// mysql-postgresql-> LIMIT (row_count | ALL | NULL) [OFFSET offset]
 				<K_LIMIT>
 				 (
@@ -1181,6 +1180,25 @@ Limit Limit():
 
 				 [LOOKAHEAD(2) <K_OFFSET>
 					 (token=<S_LONG> { limit.setOffset(Long.parseLong(token.image)); } | "?" { limit.setOffsetJdbcParameter(true);} )  ]
+			|
+			// postgresql-> OFFSET offset
+			// sqlserver-oracle-> OFFSET offset (ROW | ROWS) [FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY]
+			 <K_OFFSET>
+				 (token=<S_LONG> { limit.setOffset(Long.parseLong(token.image)); }
+					 [(<K_ROWS> { limit.setOffsetParamRows(true); } | <K_ROW>) {limit.setOracleSqlServerVersion(true); limit.setHasOffset(true); }]
+				 | "?" { limit.setOffsetJdbcParameter(true);} )
+			 [LOOKAHEAD(5) <K_FETCH>
+			 	 (<K_FIRST> { limit.setFetchParamFirst(true); } | <K_NEXT>)
+				 (token=<S_LONG> { limit.setOracleSqlServerVersion(true); limit.setHasFetch(true); limit.setRowCount(Long.parseLong(token.image)); })
+				 (<K_ROWS> { limit.setFetchParamRows(true); } | <K_ROW>) 
+				 <K_ONLY> ]
+			|
+			// oracle-> FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
+			 <K_FETCH>
+			 	 (<K_FIRST> { limit.setFetchParamFirst(true); } | <K_NEXT>)
+				 (token=<S_LONG> { limit.setOracleSqlServerVersion(true); limit.setHasFetch(true); limit.setRowCount(Long.parseLong(token.image)); })
+				 (<K_ROWS> { limit.setFetchParamRows(true); } | <K_ROW>) 
+				 <K_ONLY>
 
 		)
 	{
