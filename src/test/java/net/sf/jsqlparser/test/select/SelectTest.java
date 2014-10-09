@@ -13,6 +13,8 @@ import org.apache.commons.io.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
 
@@ -419,6 +421,15 @@ public class SelectTest extends TestCase {
                 ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).getExpression()).getColumnName());
         assertNotNull(plainSelect.getTop());
         assertStatementCanBeDeparsedAs(select, statement);
+    }
+    
+    public void testDistinctTop2() {
+        String statement = "SELECT TOP 5 DISTINCT myid, mycol FROM mytable WHERE mytable.col = 9";
+        try {
+            parserManager.parse(new StringReader(statement));
+            fail("sould not work");
+        } catch (JSQLParserException ex) {
+        }
     }
 
     public void testFrom() throws JSQLParserException {
