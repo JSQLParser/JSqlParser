@@ -53,10 +53,6 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
     @Override
     public void visit(PlainSelect plainSelect) {
         buffer.append("SELECT ");
-        Top top = plainSelect.getTop();
-        if (top != null) {
-            buffer.append(top).append(" ");
-        }
         if (plainSelect.getDistinct() != null) {
             buffer.append("DISTINCT ");
             if (plainSelect.getDistinct().getOnSelectItems() != null) {
@@ -71,6 +67,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
                 buffer.append(") ");
             }
 
+        }
+        Top top = plainSelect.getTop();
+        if (top != null) {
+            buffer.append(top).append(" ");
         }
 
         for (Iterator<SelectItem> iter = plainSelect.getSelectItems().iterator(); iter.hasNext();) {
