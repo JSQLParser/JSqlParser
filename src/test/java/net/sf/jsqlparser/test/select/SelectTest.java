@@ -408,6 +408,19 @@ public class SelectTest extends TestCase {
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
+    public void testDistinctTop() throws JSQLParserException {
+        String statement = "SELECT DISTINCT TOP 5 myid, mycol FROM mytable WHERE mytable.col = 9";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertEquals("myid",
+                ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getExpression())
+                .getColumnName());
+        assertEquals("mycol",
+                ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).getExpression()).getColumnName());
+        assertNotNull(plainSelect.getTop());
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
     public void testFrom() throws JSQLParserException {
         String statement = "SELECT * FROM mytable as mytable0, mytable1 alias_tab1, mytable2 as alias_tab2, (SELECT * FROM mytable3) AS mytable4 WHERE mytable.col = 9";
         String statementToString = "SELECT * FROM mytable AS mytable0, mytable1 alias_tab1, mytable2 AS alias_tab2, (SELECT * FROM mytable3) AS mytable4 WHERE mytable.col = 9";
