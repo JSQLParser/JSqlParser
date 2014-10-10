@@ -586,6 +586,8 @@ PlainSelect PlainSelect():
 	List<Expression> groupByColumnReferences = null;
 	Expression having = null;
 	Limit limit = null;
+	Offset offset = null;
+	Fetch fetch = null;
 	Top top = null;
 	OracleHierarchicalExpression oracleHierarchicalQueryClause = null;
     List<Table> intoTables = null;
@@ -618,7 +620,9 @@ PlainSelect PlainSelect():
     [ having=Having() { plainSelect.setHaving(having); }]
 	[LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);	}   ]
 	[LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements);	}   ]
-    [LOOKAHEAD(2) limit = Limit() { plainSelect.setLimit(limit);	} ]
+    [LOOKAHEAD(<K_LIMIT>) limit = Limit() { plainSelect.setLimit(limit);	} ]
+	[LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);	} ]
+	[LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);	} ]
 
 	{
 		plainSelect.setSelectItems(selectItems);
@@ -634,6 +638,8 @@ SetOperationList SetOperationList():
 	SetOperationList list = new SetOperationList();
 	List<OrderByElement> orderByElements = null;
 	Limit limit = null;
+	Offset offset = null;
+	Fetch fetch = null;
 	PlainSelect select = null;
 	List<PlainSelect> selects = new ArrayList<PlainSelect>();
 	List<SetOperation> operations = new ArrayList<SetOperation>();
@@ -655,7 +661,9 @@ SetOperationList SetOperationList():
 		)
 
 		[orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
-		[limit=Limit() {list.setLimit(limit);} ]
+		[LOOKAHEAD(<K_LIMIT>) limit=Limit() {list.setLimit(limit);} ]
+		[LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);} ]
+		[LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);} ]
 	)
 
 	{
@@ -1166,7 +1174,7 @@ Limit Limit():
 				token=<S_LONG> { limit.setRowCount(Long.parseLong(token.image)); } | "?" { limit.setRowCountJdbcParameter(true);}
 				)
 			|
-				// mysql-postgresql-> LIMIT (row_count | ALL | NULL) [OFFSET offset]
+				// mysql-postgresql-> LIMIT (row_count | ALL | NULL)
 				<K_LIMIT>
 				 (
 				 	token=<S_LONG> { limit.setRowCount(Long.parseLong(token.image)); }
@@ -1178,31 +1186,50 @@ Limit Limit():
 				 	<K_NULL> { limit.setLimitNull(true); }
 				 )
 
-				 [LOOKAHEAD(2) <K_OFFSET>
-					 (token=<S_LONG> { limit.setOffset(Long.parseLong(token.image)); } | "?" { limit.setOffsetJdbcParameter(true);} )  ]
-			|
+		)
+	{
+		return limit;
+	}
+}
+
+Offset Offset():
+{
+	Offset offset = new Offset();
+	Token token = null;
+}
+{
+	(
 			// postgresql-> OFFSET offset
-			// sqlserver-oracle-> OFFSET offset (ROW | ROWS) [FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY]
+			// sqlserver-oracle-> OFFSET offset (ROW | ROWS)
 			 <K_OFFSET>
-				 (token=<S_LONG> { limit.setOffset(Long.parseLong(token.image)); }
-					 [(<K_ROWS> { limit.setOffsetParamRows(true); } | <K_ROW>) {limit.setOracleSqlServerVersion(true); limit.setHasOffset(true); }]
-				 | "?" { limit.setOffsetJdbcParameter(true);} )
-			 [LOOKAHEAD(5) <K_FETCH>
-			 	 (<K_FIRST> { limit.setFetchParamFirst(true); } | <K_NEXT>)
-				 (token=<S_LONG> { limit.setOracleSqlServerVersion(true); limit.setHasFetch(true); limit.setRowCount(Long.parseLong(token.image)); })
-				 (<K_ROWS> { limit.setFetchParamRows(true); } | <K_ROW>) 
-				 <K_ONLY> ]
-			|
-			// oracle-> FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
+				 (token=<S_LONG> { offset.setOffset(Long.parseLong(token.image)); }
+				 | "?" { offset.setOffsetJdbcParameter(true); } )
+				 [(<K_ROWS> { offset.setOffsetParam("ROWS"); } | <K_ROW> { offset.setOffsetParam("ROW"); })]
+
+		)
+	{
+		return offset;
+	}
+}
+
+Fetch Fetch():
+{
+	Fetch fetch = new Fetch();
+	Token token = null;
+}
+{
+	(
+			// sqlserver-oracle-> FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
 			 <K_FETCH>
-			 	 (<K_FIRST> { limit.setFetchParamFirst(true); } | <K_NEXT>)
-				 (token=<S_LONG> { limit.setOracleSqlServerVersion(true); limit.setHasFetch(true); limit.setRowCount(Long.parseLong(token.image)); })
-				 (<K_ROWS> { limit.setFetchParamRows(true); } | <K_ROW>) 
+			 	 (<K_FIRST> { fetch.setFetchParamFirst(true); } | <K_NEXT>)
+				 (token=<S_LONG> { fetch.setRowCount(Long.parseLong(token.image)); }
+				 | "?" { fetch.setFetchJdbcParameter(true); } )
+				 (<K_ROWS> { fetch.setFetchParam("ROWS"); } | <K_ROW>) 
 				 <K_ONLY>
 
 		)
 	{
-		return limit;
+		return fetch;
 	}
 }
 

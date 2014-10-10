@@ -134,6 +134,12 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         if (plainSelect.getLimit() != null) {
             deparseLimit(plainSelect.getLimit());
         }
+        if (plainSelect.getOffset() != null) {
+            deparseOffset(plainSelect.getOffset());
+        }
+        if (plainSelect.getFetch() != null) {
+            deparseFetch(plainSelect.getFetch());
+        }
 
     }
 
@@ -248,54 +254,53 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
     public void deparseLimit(Limit limit) {
         // LIMIT n OFFSET skip
-        // or
-        // OFFSET offset (ROW | ROWS) [FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY]
-        // or
-        // FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
-        if (limit.isOracleSqlServerVersion()) {
-            if (limit.isHasOffset()) {
-                buffer.append(" OFFSET ");
-                buffer.append(limit.getOffset());
-                buffer.append(" ");
-                if (limit.isOffsetParamRows()) {
-                    buffer.append("ROWS");
-                } else {
-                    buffer.append("ROW");
-                }
-            }
-            if (limit.isHasFetch()) {
-                buffer.append(" FETCH ");
-                if (limit.isFetchParamFirst()) {
-                    buffer.append("FIRST ");
-                } else {
-                    buffer.append("NEXT ");
-                }
-                buffer.append(limit.getRowCount());
-                buffer.append(" ");
-                if (limit.isFetchParamRows()) {
-                    buffer.append("ROWS");
-                } else {
-                    buffer.append("ROW");
-                }
-                buffer.append(" ONLY");
-            }
-        } else {
-            if (limit.isRowCountJdbcParameter()) {
-                buffer.append(" LIMIT ");
-                buffer.append("?");
-            } else if (limit.getRowCount() >= 0) {
-                buffer.append(" LIMIT ");
-                buffer.append(limit.getRowCount());
-            } else if (limit.isLimitNull()) {
-                buffer.append(" LIMIT NULL");
-            }
-
-            if (limit.isOffsetJdbcParameter()) {
-                buffer.append(" OFFSET ?");
-            } else if (limit.getOffset() != 0) {
-                buffer.append(" OFFSET ").append(limit.getOffset());
-            }
+        if (limit.isRowCountJdbcParameter()) {
+            buffer.append(" LIMIT ");
+            buffer.append("?");
+        } else if (limit.getRowCount() >= 0) {
+            buffer.append(" LIMIT ");
+            buffer.append(limit.getRowCount());
+        } else if (limit.isLimitNull()) {
+            buffer.append(" LIMIT NULL");
         }
+
+        if (limit.isOffsetJdbcParameter()) {
+            buffer.append(" OFFSET ?");
+        } else if (limit.getOffset() != 0) {
+            buffer.append(" OFFSET ").append(limit.getOffset());
+        }
+
+    }
+
+    public void deparseOffset(Offset offset) {
+        // OFFSET offset
+    	// or OFFSET offset (ROW | ROWS)
+        if (offset.isOffsetJdbcParameter()) {
+            buffer.append(" OFFSET ?");
+        } else if (offset.getOffset() != 0) {
+            buffer.append(" OFFSET ");
+            buffer.append(offset.getOffset());
+        }
+        if (offset.getOffsetParam() != null) {
+        	buffer.append(" ").append(offset.getOffsetParam());
+        }
+
+    }
+
+    public void deparseFetch(Fetch fetch) {
+        // FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
+    	buffer.append(" FETCH ");
+    	if (fetch.isFetchParamFirst()) {
+    		buffer.append("FIRST ");
+    	} else {
+    		buffer.append("NEXT ");
+    	}
+    	if (fetch.isFetchJdbcParameter()) {
+    		buffer.append("?");
+    	} else {
+    		buffer.append(fetch.getRowCount());
+    	}
+    	buffer.append(" ").append(fetch.getFetchParam()).append(" ONLY");
 
     }
 
@@ -391,6 +396,12 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
         if (list.getLimit() != null) {
             deparseLimit(list.getLimit());
+        }
+        if (list.getOffset() != null) {
+            deparseOffset(list.getOffset());
+        }
+        if (list.getFetch() != null) {
+            deparseFetch(list.getFetch());
         }
     }
 

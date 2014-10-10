@@ -228,9 +228,9 @@ public class SelectTest extends TestCase {
         statement = "SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?";
         select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(-1, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOffsetJdbcParameter());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+        assertNull(((PlainSelect) select.getSelectBody()).getLimit());
+        assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
+        assertTrue(((PlainSelect) select.getSelectBody()).getOffset().isOffsetJdbcParameter());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
@@ -288,10 +288,9 @@ public class SelectTest extends TestCase {
         statement = "SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?";
         select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(-1, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOffsetJdbcParameter());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitNull());
+        assertNull(((PlainSelect) select.getSelectBody()).getLimit());
+        assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
+        assertTrue(((PlainSelect) select.getSelectBody()).getOffset().isOffsetJdbcParameter());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
@@ -317,14 +316,15 @@ public class SelectTest extends TestCase {
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOracleSqlServerVersion());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isHasOffset());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isHasFetch());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOffsetParamRows());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isFetchParamRows());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isFetchParamFirst());
-        assertEquals(3, ((PlainSelect) select.getSelectBody()).getLimit().getOffset());
-        assertEquals(5, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
+        assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
+        assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetParam());
+        assertNotNull(((PlainSelect) select.getSelectBody()).getFetch());
+        assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getFetch().getFetchParam());
+        assertFalse(((PlainSelect) select.getSelectBody()).getFetch().isFetchParamFirst());
+        assertFalse(((PlainSelect) select.getSelectBody()).getOffset().isOffsetJdbcParameter());
+        assertFalse(((PlainSelect) select.getSelectBody()).getFetch().isFetchJdbcParameter());
+        assertEquals(3, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
+        assertEquals(5, ((PlainSelect) select.getSelectBody()).getFetch().getRowCount());
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -334,14 +334,13 @@ public class SelectTest extends TestCase {
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOracleSqlServerVersion());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isHasOffset());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isHasFetch());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isOffsetParamRows());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isFetchParamRows());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isFetchParamFirst());
-        assertEquals(3, ((PlainSelect) select.getSelectBody()).getLimit().getOffset());
-        assertEquals(5, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
+        assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
+        assertNotNull(((PlainSelect) select.getSelectBody()).getFetch());
+        assertEquals("ROW", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetParam());
+        assertEquals("ROW", ((PlainSelect) select.getSelectBody()).getFetch().getFetchParam());
+        assertTrue(((PlainSelect) select.getSelectBody()).getFetch().isFetchParamFirst());
+        assertEquals(3, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
+        assertEquals(5, ((PlainSelect) select.getSelectBody()).getFetch().getRowCount());
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -351,11 +350,10 @@ public class SelectTest extends TestCase {
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOracleSqlServerVersion());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isHasOffset());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isHasFetch());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOffsetParamRows());
-        assertEquals(3, ((PlainSelect) select.getSelectBody()).getLimit().getOffset());
+        assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
+        assertNull(((PlainSelect) select.getSelectBody()).getFetch());
+        assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetParam());
+        assertEquals(3, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -365,12 +363,26 @@ public class SelectTest extends TestCase {
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isOracleSqlServerVersion());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isHasOffset());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isHasFetch());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isFetchParamRows());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isFetchParamFirst());
-        assertEquals(5, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
+        assertNull(((PlainSelect) select.getSelectBody()).getOffset());
+        assertNotNull(((PlainSelect) select.getSelectBody()).getFetch());
+        assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getFetch().getFetchParam());
+        assertFalse(((PlainSelect) select.getSelectBody()).getFetch().isFetchParamFirst());
+        assertEquals(5, ((PlainSelect) select.getSelectBody()).getFetch().getRowCount());
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    public void testLimitSqlServerJdbcParameters() throws JSQLParserException {
+        String statement = "SELECT * FROM mytable WHERE mytable.col = 9 ORDER BY mytable.id OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
+        assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetParam());
+        assertNotNull(((PlainSelect) select.getSelectBody()).getFetch());
+        assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getFetch().getFetchParam());
+        assertFalse(((PlainSelect) select.getSelectBody()).getFetch().isFetchParamFirst());
+        assertTrue(((PlainSelect) select.getSelectBody()).getOffset().isOffsetJdbcParameter());
+        assertTrue(((PlainSelect) select.getSelectBody()).getFetch().isFetchJdbcParameter());
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
