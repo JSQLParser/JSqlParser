@@ -29,6 +29,8 @@ Also I would like to know about needed examples or documentation stuff.
 UPDATE mytable SET (col) = (SELECT a FROM mytable2)
 ```
 
+* partially support SQL Server 2012 and Oracle 12c OFFSET ... FETCH ... 
+
 ## Extensions of JSqlParser releases
 
 * [Release Notes](https://github.com/JSQLParser/JSqlParser/releases)
