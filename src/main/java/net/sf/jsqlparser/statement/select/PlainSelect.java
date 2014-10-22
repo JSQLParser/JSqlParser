@@ -45,6 +45,8 @@ public class PlainSelect implements SelectBody {
     private List<OrderByElement> orderByElements;
     private Expression having;
     private Limit limit;
+    private Offset offset;
+    private Fetch fetch;
     private Top top;
     private OracleHierarchicalExpression oracleHierarchical = null;
     private boolean oracleSiblings = false;
@@ -131,6 +133,22 @@ public class PlainSelect implements SelectBody {
 
     public void setLimit(Limit limit) {
         this.limit = limit;
+    }
+
+    public Offset getOffset() {
+        return offset;
+    }
+
+    public void setOffset(Offset offset) {
+        this.offset = offset;
+    }
+
+    public Fetch getFetch() {
+        return fetch;
+    }
+
+    public void setFetch(Fetch fetch) {
+        this.fetch = fetch;
     }
 
     public Top getTop() {
@@ -235,6 +253,12 @@ public class PlainSelect implements SelectBody {
             sql.append(orderByToString(oracleSiblings, orderByElements));
             if (limit != null) {
                 sql.append(limit);
+            }
+            if (offset != null) {
+            	sql.append(offset);
+            }
+            if (fetch != null) {
+            	sql.append(fetch);
             }
         }
         return sql.toString();

@@ -134,6 +134,12 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         if (plainSelect.getLimit() != null) {
             deparseLimit(plainSelect.getLimit());
         }
+        if (plainSelect.getOffset() != null) {
+            deparseOffset(plainSelect.getOffset());
+        }
+        if (plainSelect.getFetch() != null) {
+            deparseFetch(plainSelect.getFetch());
+        }
 
     }
 
@@ -266,6 +272,38 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
     }
 
+    public void deparseOffset(Offset offset) {
+        // OFFSET offset
+    	// or OFFSET offset (ROW | ROWS)
+        if (offset.isOffsetJdbcParameter()) {
+            buffer.append(" OFFSET ?");
+        } else if (offset.getOffset() != 0) {
+            buffer.append(" OFFSET ");
+            buffer.append(offset.getOffset());
+        }
+        if (offset.getOffsetParam() != null) {
+        	buffer.append(" ").append(offset.getOffsetParam());
+        }
+
+    }
+
+    public void deparseFetch(Fetch fetch) {
+        // FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
+    	buffer.append(" FETCH ");
+    	if (fetch.isFetchParamFirst()) {
+    		buffer.append("FIRST ");
+    	} else {
+    		buffer.append("NEXT ");
+    	}
+    	if (fetch.isFetchJdbcParameter()) {
+    		buffer.append("?");
+    	} else {
+    		buffer.append(fetch.getRowCount());
+    	}
+    	buffer.append(" ").append(fetch.getFetchParam()).append(" ONLY");
+
+    }
+
     public StringBuilder getBuffer() {
         return buffer;
     }
@@ -358,6 +396,12 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
         if (list.getLimit() != null) {
             deparseLimit(list.getLimit());
+        }
+        if (list.getOffset() != null) {
+            deparseOffset(list.getOffset());
+        }
+        if (list.getFetch() != null) {
+            deparseFetch(list.getFetch());
         }
     }
 

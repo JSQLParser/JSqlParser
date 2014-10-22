@@ -36,6 +36,8 @@ public class SetOperationList implements SelectBody {
 	private List<SetOperation> operations;
 	private List<OrderByElement> orderByElements;
 	private Limit limit;
+	private Offset offset;
+	private Fetch fetch;
 
 	@Override
 	public void accept(SelectVisitor selectVisitor) {
@@ -75,6 +77,22 @@ public class SetOperationList implements SelectBody {
 		this.limit = limit;
 	}
 
+	public Offset getOffset() {
+		return offset;
+	}
+
+	public void setOffset(Offset offset) {
+		this.offset = offset;
+	}
+
+	public Fetch getFetch() {
+		return fetch;
+	}
+
+	public void setFetch(Fetch fetch) {
+		this.fetch = fetch;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder buffer = new StringBuilder();
@@ -91,6 +109,12 @@ public class SetOperationList implements SelectBody {
 		}
 		if (limit != null) {
 			buffer.append(limit.toString());
+		}
+		if (offset != null) {
+			buffer.append(offset.toString());
+		}
+		if (fetch != null) {
+			buffer.append(fetch.toString());
 		}
 		return buffer.toString();
 	}
