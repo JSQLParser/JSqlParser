@@ -25,6 +25,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.2
 
+* first support for *FOR UPDATE*
+
+```sql
+SELECT * FROM user_table FOR UPDATE
+```
+
 ```sql
 UPDATE mytable SET (col) = (SELECT a FROM mytable2)
 ```

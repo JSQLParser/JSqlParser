@@ -50,6 +50,7 @@ public class PlainSelect implements SelectBody {
     private Top top;
     private OracleHierarchicalExpression oracleHierarchical = null;
     private boolean oracleSiblings = false;
+    private boolean forUpdate = false;
 
     /**
      * The {@link FromItem} in this query
@@ -205,6 +206,14 @@ public class PlainSelect implements SelectBody {
         this.oracleSiblings = oracleSiblings;
     }
 
+    public boolean isForUpdate() {
+        return forUpdate;
+    }
+
+    public void setForUpdate(boolean forUpdate) {
+        this.forUpdate = forUpdate;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder("SELECT ");
@@ -259,6 +268,9 @@ public class PlainSelect implements SelectBody {
             }
             if (fetch != null) {
             	sql.append(fetch);
+            }
+            if (isForUpdate()) {
+                sql.append(" FOR UPDATE");
             }
         }
         return sql.toString();

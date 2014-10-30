@@ -1616,4 +1616,9 @@ public class SelectTest extends TestCase {
     public void testSelectInto1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * INTO user_copy FROM user");
     }
+    
+    public void testSelectForUpdate() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM user_table FOR UPDATE");
+    }
+    
 }
