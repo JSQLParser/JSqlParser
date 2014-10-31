@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * Find all used tables within an select statement.
  */
-public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor {
+public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor {
 
     private List<String> tables;
     /**
@@ -163,6 +163,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(PlainSelect plainSelect) {
+        if (plainSelect.getSelectItems() != null) {
+            for (SelectItem item : plainSelect.getSelectItems()) {
+                item.accept(this);
+            }
+        }
+
         plainSelect.getFromItem().accept(this);
 
         if (plainSelect.getJoins() != null) {
@@ -173,7 +179,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (plainSelect.getWhere() != null) {
             plainSelect.getWhere().accept(this);
         }
-
+        if (plainSelect.getOracleHierarchical() != null) {
+            plainSelect.getOracleHierarchical().accept(this);
+        }
     }
 
     @Override
@@ -455,6 +463,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(OracleHierarchicalExpression oexpr) {
+        if (oexpr.getStartExpression() != null) {
+            oexpr.getStartExpression().accept(this);
+        }
+
+        if (oexpr.getConnectExpression() != null) {
+            oexpr.getConnectExpression().accept(this);
+        }
     }
 
     @Override
@@ -463,13 +478,24 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-	public void visit(RegExpMySQLOperator rexpr) {
-    	visitBinaryExpression(rexpr);
-	}
-    
+    public void visit(RegExpMySQLOperator rexpr) {
+        visitBinaryExpression(rexpr);
+    }
+
     @Override
     public void visit(JsonExpression jsonExpr) {
     }
 
-	
+    @Override
+    public void visit(AllColumns allColumns) {
+    }
+
+    @Override
+    public void visit(AllTableColumns allTableColumns) {
+    }
+
+    @Override
+    public void visit(SelectExpressionItem item) {
+        item.getExpression().accept(this);
+    }
 }

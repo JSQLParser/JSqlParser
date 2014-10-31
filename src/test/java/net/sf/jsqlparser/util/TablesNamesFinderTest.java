@@ -264,6 +264,20 @@ public class TablesNamesFinderTest {
 		assertTrue(tableList.contains("MY_TABLE2"));
 		assertTrue(tableList.contains("MY_TABLE3"));
 	}
+    
+    @Test
+	public void testCmplxSelectProblem() throws Exception {
+		String sql = "SELECT cid, (SELECT name FROM tbl0 WHERE tbl0.id = cid) AS name, original_id AS bc_id FROM tbl WHERE crid = ? AND user_id is null START WITH ID = (SELECT original_id FROM tbl2 WHERE USER_ID = ?) CONNECT BY prior parent_id = id AND rownum = 1";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Select selectStatement = (Select) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(selectStatement);
+		assertEquals(3, tableList.size());
+		assertTrue(tableList.contains("tbl0"));
+        assertTrue(tableList.contains("tbl"));
+        assertTrue(tableList.contains("tbl2"));
+	}
 
 	private String getLine(BufferedReader in) throws Exception {
 		return CCJSqlParserManagerTest.getLine(in);
