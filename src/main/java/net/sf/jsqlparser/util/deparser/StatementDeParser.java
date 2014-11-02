@@ -111,7 +111,10 @@ public class StatementDeParser implements StatementVisitor {
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = select.getWithItemsList().iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
-                buffer.append(withItem);
+                buffer.append(withItem.getName());
+                buffer.append(" AS (");
+                withItem.getSelectBody().accept(selectDeParser);
+                buffer.append(")");
                 if (iter.hasNext()) {
                     buffer.append(",");
                 }
