@@ -410,7 +410,13 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
     @Override
     public void visit(WithItem withItem) {
-        buffer.append(withItem.toString());
+        buffer.append(withItem.getName());
+        if (withItem.getWithItemList()!=null) {
+            buffer.append(" ").append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
+        }
+        buffer.append(" AS (");
+        withItem.getSelectBody().accept(this);
+        buffer.append(")");
     }
 
     @Override
