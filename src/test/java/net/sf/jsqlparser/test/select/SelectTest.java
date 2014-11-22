@@ -253,7 +253,7 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(statement);
 
     }
-    
+
     public void testLimit2() throws JSQLParserException {
         String statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 3, ?";
 
@@ -496,7 +496,7 @@ public class SelectTest extends TestCase {
         assertNotNull(plainSelect.getTop());
         assertStatementCanBeDeparsedAs(select, statement);
     }
-    
+
     public void testDistinctTop2() {
         String statement = "SELECT TOP 5 DISTINCT myid, mycol FROM mytable WHERE mytable.col = 9";
         try {
@@ -921,7 +921,7 @@ public class SelectTest extends TestCase {
         statement = "SELECT count(DISTINCT f, g, h) FROM a";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
-    
+
     public void testCount2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT count(ALL col1 + col2) FROM mytable");
     }
@@ -1195,12 +1195,12 @@ public class SelectTest extends TestCase {
         String statement = "SELECT AVG(sal) OVER (PARTITION BY deptno ORDER BY sal RANGE CURRENT ROW) AS avg_of_current_sal FROM emp";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
-    
+
     public void testAnalyticFunctionProblem1() throws JSQLParserException {
         String statement = "SELECT last_value(s.revenue_hold) OVER (PARTITION BY s.id_d_insertion_order, s.id_d_product_ad_attr, trunc(s.date_id, 'mm') ORDER BY s.date_id) AS col FROM s";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
-    
+
     public void testAnalyticFunctionProblem1b() throws JSQLParserException {
         String statement = "SELECT last_value(s.revenue_hold) OVER (PARTITION BY s.id_d_insertion_order, s.id_d_product_ad_attr, trunc(s.date_id, 'mm') ORDER BY s.date_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS col FROM s";
         assertSqlCanBeParsedAndDeparsed(statement);
@@ -1479,7 +1479,7 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN (ANY))";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-    
+
     public void testPivotXmlSubquery1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (SELECT times_purchased, state_code FROM customers t) PIVOT (count(state_code) FOR state_code IN ('NY', 'CT', 'NJ', 'FL', 'MO')) ORDER BY times_purchased");
     }
@@ -1493,12 +1493,12 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT CASE WHEN REGEXP_LIKE(first_name, '^Ste(v|ph)en$') THEN 1 ELSE 2 END FROM mytable";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-    
+
     public void testRegexpMySQL() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE first_name REGEXP '^Ste(v|ph)en$'";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-    
+
     public void testRegexpBinaryMySQL() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE first_name REGEXP BINARY '^Ste(v|ph)en$'";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -1592,33 +1592,45 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT a, b FROM foo WHERE a !~* '[help].*'";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-    
-     public void testReservedKeyword() throws JSQLParserException {
+
+    public void testReservedKeyword() throws JSQLParserException {
         final String statement = "SELECT cast, do, extract, first, following, last, materialized, nulls, partition, range, row, rows, siblings, value, xml FROM tableName"; // all of these are legal in SQL server; 'row' and 'rows' are not legal on Oracle, though;
         final Select select = (Select) parserManager.parse(new StringReader(statement));
         assertStatementCanBeDeparsedAs(select, statement);
     }
-    
+
     public void testCharacterSetClause() throws JSQLParserException {
-        String stmt="SELECT DISTINCT CAST(`view0`.`nick2` AS CHAR (8000) CHARACTER SET utf8) AS `v0` FROM people `view0` WHERE `view0`.`nick2` IS NOT NULL";
+        String stmt = "SELECT DISTINCT CAST(`view0`.`nick2` AS CHAR (8000) CHARACTER SET utf8) AS `v0` FROM people `view0` WHERE `view0`.`nick2` IS NOT NULL";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-    
+
     public void testNotEqualsTo() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo WHERE a != b");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo WHERE a <> b");
     }
-    
+
     public void testJsonExpression() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT data->'images'->'thumbnail'->'url' AS thumb FROM instagram");
     }
-    
+
     public void testSelectInto1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * INTO user_copy FROM user");
     }
-    
+
     public void testSelectForUpdate() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM user_table FOR UPDATE");
     }
+
+    public void testSelectJoin() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT pg_class.relname, pg_attribute.attname, pg_constraint.conname "
+                + "FROM pg_constraint JOIN pg_class ON pg_class.oid = pg_constraint.conrelid"
+                + " JOIN pg_attribute ON pg_attribute.attrelid = pg_constraint.conrelid"
+                + " WHERE pg_constraint.contype = 'u' AND (pg_attribute.attnum = ANY(pg_constraint.conkey))"
+                + " ORDER BY pg_constraint.conname");
+    }
     
+    public void testSelectJoin2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM pg_constraint WHERE pg_attribute.attnum = ANY(pg_constraint.conkey)");
+    }
+
 }
