@@ -37,6 +37,7 @@ public class CreateTable implements Statement {
 
     private Table table;
     private boolean unlogged = false;
+    private List<String> createOptionsStrings;
     private List<String> tableOptionsStrings;
     private List<ColumnDefinition> columnDefinitions;
     private List<Index> indexes;
@@ -88,6 +89,16 @@ public class CreateTable implements Statement {
     public void setTableOptionsStrings(List<String> list) {
         tableOptionsStrings = list;
     }
+
+    public List<String> getCreateOptionsStrings() {
+        return createOptionsStrings;
+    }
+
+    public void setCreateOptionsStrings(List<String> createOptionsStrings) {
+        this.createOptionsStrings = createOptionsStrings;
+    }
+    
+    
 
     /**
      * A list of {@link Index}es (for example "PRIMARY KEY") of this table.<br>

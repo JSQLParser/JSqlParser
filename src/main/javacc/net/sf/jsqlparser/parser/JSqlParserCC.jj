@@ -204,6 +204,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_FETCH:"FETCH">
 |   <K_NEXT:"NEXT">
 |   <K_ONLY:"ONLY">
+|   <K_COMMIT:"COMMIT">
 }
 
 TOKEN : /* Numeric Constants */
@@ -2117,7 +2118,8 @@ CreateTable CreateTable():
 	Table table = null;
 	List columnDefinitions = new ArrayList();
 	List columnSpecs = null;
-	List tableOptions = new ArrayList();
+	List<String> tableOptions = new ArrayList<String>();
+    List<String> createOptions = new ArrayList<String>();
 	Token columnName;
 	Token tk = null;
 	Token tk2 = null;
@@ -2138,7 +2140,7 @@ CreateTable CreateTable():
 	// TODO:
 //	[ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } ]
     [ <K_UNLOGGED> { createTable.setUnlogged(true); } ]
-	(CreateParameter())*
+	(parameter = CreateParameter() { createOptions.add(parameter); })*
 
 	<K_TABLE> table=Table()
 	[
@@ -2262,6 +2264,8 @@ CreateTable CreateTable():
 		createTable.setTable(table);
 		if (indexes.size() > 0)
 			createTable.setIndexes(indexes);
+        if (createOptions.size() > 0)
+            createTable.setCreateOptionsStrings(createOptions);
 		if (tableOptions.size() > 0)
 			createTable.setTableOptionsStrings(tableOptions);
 		if (columnDefinitions.size() > 0)
@@ -2336,6 +2340,12 @@ String CreateParameter():
 			|
 			tk=<S_DOUBLE> { retval = tk.image; }
 			|
+			tk=<K_ON> { retval = tk.image; } 
+            |
+			tk=<K_COMMIT> { retval = tk.image; } 
+            |
+			tk=<K_ROWS> { retval = tk.image; } 
+            |
 			"=" { retval = "="; }
 			|
 			retval=AList()

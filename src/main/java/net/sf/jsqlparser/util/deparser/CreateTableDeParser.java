@@ -47,6 +47,7 @@ public class CreateTableDeParser {
         if (createTable.isUnlogged()) {
             buffer.append("UNLOGGED ");
         }
+        if (createTable.)
         buffer.append("TABLE ").append(createTable.getTable().getFullyQualifiedName());
         if (createTable.getSelect() != null) {
             buffer.append(" AS ").append(createTable.getSelect().toString());
