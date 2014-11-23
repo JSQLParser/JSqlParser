@@ -91,6 +91,10 @@ public class CreateTableTest extends TestCase {
 		String statement = "CREATE TABLE test (id INT UNSIGNED NOT NULL AUTO_INCREMENT, string VARCHAR (20), user_id INT UNSIGNED, CONSTRAINT pk_name PRIMARY KEY (id))";
 		assertSqlCanBeParsedAndDeparsed(statement);
 	}
+    
+    public void testCreateTableParams() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TEMPORARY TABLE T1(PROCESSID VARCHAR(32)) ON COMMIT PRESERVE ROWS");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
