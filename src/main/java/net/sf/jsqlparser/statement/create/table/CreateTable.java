@@ -124,8 +124,11 @@ public class CreateTable implements Statement {
     @Override
     public String toString() {
         String sql = "";
+        String createOps = PlainSelect.getStringList(createOptionsStrings, false, false);
 
-        sql = "CREATE " + (unlogged ? "UNLOGGED " : "") + "TABLE " + table;
+        sql = "CREATE " + (unlogged ? "UNLOGGED " : "") + 
+                (!"".equals(createOps)?createOps + " ":"") +
+                "TABLE " + table;
 
         if (select != null) {
             sql += " AS " + select.toString();

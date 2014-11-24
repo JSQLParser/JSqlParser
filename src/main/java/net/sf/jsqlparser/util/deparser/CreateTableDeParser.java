@@ -26,6 +26,7 @@ import java.util.Iterator;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
@@ -47,7 +48,11 @@ public class CreateTableDeParser {
         if (createTable.isUnlogged()) {
             buffer.append("UNLOGGED ");
         }
-        if (createTable.)
+        String params = PlainSelect.getStringList(createTable.getCreateOptionsStrings(), false, false);
+        if (!"".equals(params)) {
+            buffer.append(params).append(' ');
+        }
+
         buffer.append("TABLE ").append(createTable.getTable().getFullyQualifiedName());
         if (createTable.getSelect() != null) {
             buffer.append(" AS ").append(createTable.getSelect().toString());
@@ -81,6 +86,11 @@ public class CreateTableDeParser {
 
                 buffer.append(")");
             }
+        }
+        
+        params = PlainSelect.getStringList(createTable.getTableOptionsStrings(), false, false);
+        if (!"".equals(params)) {
+            buffer.append(' ').append(params);
         }
     }
 

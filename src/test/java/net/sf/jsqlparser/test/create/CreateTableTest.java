@@ -93,7 +93,7 @@ public class CreateTableTest extends TestCase {
 	}
     
     public void testCreateTableParams() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE TEMPORARY TABLE T1(PROCESSID VARCHAR(32)) ON COMMIT PRESERVE ROWS");
+        assertSqlCanBeParsedAndDeparsed("CREATE TEMPORARY TABLE T1 (PROCESSID VARCHAR (32)) ON COMMIT PRESERVE ROWS");
     }
 
 	public void testRUBiSCreateList() throws Exception {
