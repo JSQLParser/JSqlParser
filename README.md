@@ -25,6 +25,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.2
 
+* support for PostgreSQL ANY - array syntax
+* introduced additional parameters for create table statements (deparser extended)
 * first support for *FOR UPDATE*
 
 ```sql
