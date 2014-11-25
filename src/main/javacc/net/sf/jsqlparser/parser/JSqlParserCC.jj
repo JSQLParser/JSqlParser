@@ -23,10 +23,10 @@
 options{
     IGNORE_CASE=true ;
     STATIC=false;
-//	DEBUG_PARSER=true;
-//  DEBUG_LOOKAHEAD=true ;
+	DEBUG_PARSER=false;
+    DEBUG_LOOKAHEAD=false;
+    DEBUG_TOKEN_MANAGER=false;
 //  FORCE_LA_CHECK=true;
-//  DEBUG_TOKEN_MANAGER=true;
     UNICODE_INPUT=true;
 }
 
