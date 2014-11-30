@@ -1632,5 +1632,9 @@ public class SelectTest extends TestCase {
     public void testSelectJoin2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM pg_constraint WHERE pg_attribute.attnum = ANY(pg_constraint.conkey)");
     }
+    
+    public void testSelectOracleColl() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM the_table tt WHERE TT.COL1 = lines(idx).COL1");
+    }
 
 }
