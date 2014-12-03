@@ -23,7 +23,7 @@
 options{
     IGNORE_CASE=true ;
     STATIC=false;
-	DEBUG_PARSER=true;
+	DEBUG_PARSER=false;
     DEBUG_LOOKAHEAD=false;
     DEBUG_TOKEN_MANAGER=false;
 //  FORCE_LA_CHECK=true;
@@ -2034,6 +2034,8 @@ Function Function():
 
     [ "." tmp=RelObjectName() { funcName+= "." + tmp; } ["." tmp=RelObjectName() { funcName+= "." + tmp; }]]
     "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] (expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }) ] ")"
+
+    [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]
 
     ["}"]
     {

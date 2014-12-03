@@ -327,6 +327,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
             }
         }
 
+        if (function.getAttribute() != null) {
+            buffer.append(".").append(function.getAttribute());
+        }
+
         if (function.isEscaped()) {
             buffer.append("}");
         }
@@ -502,14 +506,13 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     }
 
     @Override
-	public void visit(RegExpMySQLOperator rexpr) {
-    	visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ");
-	}
-    
+    public void visit(RegExpMySQLOperator rexpr) {
+        visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ");
+    }
+
     @Override
     public void visit(JsonExpression jsonExpr) {
         buffer.append(jsonExpr.toString());
     }
 
-	
 }

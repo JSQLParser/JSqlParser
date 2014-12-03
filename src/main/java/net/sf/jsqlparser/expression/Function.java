@@ -28,106 +28,119 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
  */
 public class Function implements Expression {
 
-	private String name;
-	private ExpressionList parameters;
-	private boolean allColumns = false;
-	private boolean distinct = false;
-	private boolean isEscaped = false;
+    private String name;
+    private ExpressionList parameters;
+    private boolean allColumns = false;
+    private boolean distinct = false;
+    private boolean isEscaped = false;
+    private String attribute;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	/**
-	 * The name of he function, i.e. "MAX"
-	 *
-	 * @return the name of he function
-	 */
-	public String getName() {
-		return name;
-	}
+    /**
+     * The name of he function, i.e. "MAX"
+     *
+     * @return the name of he function
+     */
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String string) {
-		name = string;
-	}
+    public void setName(String string) {
+        name = string;
+    }
 
-	/**
-	 * true if the parameter to the function is "*"
-	 *
-	 * @return true if the parameter to the function is "*"
-	 */
-	public boolean isAllColumns() {
-		return allColumns;
-	}
+    /**
+     * true if the parameter to the function is "*"
+     *
+     * @return true if the parameter to the function is "*"
+     */
+    public boolean isAllColumns() {
+        return allColumns;
+    }
 
-	public void setAllColumns(boolean b) {
-		allColumns = b;
-	}
+    public void setAllColumns(boolean b) {
+        allColumns = b;
+    }
 
-	/**
-	 * true if the function is "distinct"
-	 *
-	 * @return true if the function is "distinct"
-	 */
-	public boolean isDistinct() {
-		return distinct;
-	}
+    /**
+     * true if the function is "distinct"
+     *
+     * @return true if the function is "distinct"
+     */
+    public boolean isDistinct() {
+        return distinct;
+    }
 
-	public void setDistinct(boolean b) {
-		distinct = b;
-	}
+    public void setDistinct(boolean b) {
+        distinct = b;
+    }
 
-	/**
-	 * The list of parameters of the function (if any, else null) If the
-	 * parameter is "*", allColumns is set to true
-	 *
-	 * @return the list of parameters of the function (if any, else null)
-	 */
-	public ExpressionList getParameters() {
-		return parameters;
-	}
+    /**
+     * The list of parameters of the function (if any, else null) If the
+     * parameter is "*", allColumns is set to true
+     *
+     * @return the list of parameters of the function (if any, else null)
+     */
+    public ExpressionList getParameters() {
+        return parameters;
+    }
 
-	public void setParameters(ExpressionList list) {
-		parameters = list;
-	}
+    public void setParameters(ExpressionList list) {
+        parameters = list;
+    }
 
-	/**
-	 * Return true if it's in the form "{fn function_body() }"
-	 *
-	 * @return true if it's java-escaped
-	 */
-	public boolean isEscaped() {
-		return isEscaped;
-	}
+    /**
+     * Return true if it's in the form "{fn function_body() }"
+     *
+     * @return true if it's java-escaped
+     */
+    public boolean isEscaped() {
+        return isEscaped;
+    }
 
-	public void setEscaped(boolean isEscaped) {
-		this.isEscaped = isEscaped;
-	}
+    public void setEscaped(boolean isEscaped) {
+        this.isEscaped = isEscaped;
+    }
 
-	@Override
-	public String toString() {
-		String params;
+    public String getAttribute() {
+        return attribute;
+    }
 
-		if (parameters != null) {
-			params = parameters.toString();
-			if (isDistinct()) {
-				params = params.replaceFirst("\\(", "(DISTINCT ");
-			} else if (isAllColumns()) {
+    public void setAttribute(String attribute) {
+        this.attribute = attribute;
+    }
+
+    @Override
+    public String toString() {
+        String params;
+
+        if (parameters != null) {
+            params = parameters.toString();
+            if (isDistinct()) {
+                params = params.replaceFirst("\\(", "(DISTINCT ");
+            } else if (isAllColumns()) {
                 params = params.replaceFirst("\\(", "(ALL ");
             }
-		} else if (isAllColumns()) {
-			params = "(*)";
-		} else {
-			params = "()";
-		}
+        } else if (isAllColumns()) {
+            params = "(*)";
+        } else {
+            params = "()";
+        }
 
-		String ans = name + "" + params + "";
+        String ans = name + "" + params + "";
 
-		if (isEscaped) {
-			ans = "{fn " + ans + "}";
-		}
+        if (attribute != null) {
+            ans += "." + attribute;
+        }
 
-		return ans;
-	}
+        if (isEscaped) {
+            ans = "{fn " + ans + "}";
+        }
+
+        return ans;
+    }
 }
