@@ -515,7 +515,8 @@ String RelObjectName():
       | tk=<K_CAST> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> 
       | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE> 
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_VALUE> | tk=<K_XML>
-      | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>)
+      | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>
+      )
 
     { return tk.image; }
 }
@@ -928,7 +929,7 @@ FromItem FromItem():
 				fromItem=LateralSubSelect()
 			)
 			[(LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot()) { fromItem.setPivot(pivot); } ]
-			[alias=Alias() { fromItem.setAlias(alias); } ]
+			[ alias=Alias() { fromItem.setAlias(alias); } ]
 		)
 	)
 	{
@@ -962,7 +963,7 @@ FromItem ValuesList():
 	))
 	")"
 
-	[alias=Alias() { valuesList.setAlias(alias); }
+	[ alias=Alias() { valuesList.setAlias(alias); }
 
 		[ "("
 			colName = RelObjectName() { colNames = new ArrayList<String>(); colNames.add(colName); }
