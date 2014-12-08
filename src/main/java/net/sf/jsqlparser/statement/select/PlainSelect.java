@@ -190,6 +190,13 @@ public class PlainSelect implements SelectBody {
         groupByColumnReferences = list;
     }
 
+    public void addGroupByColumnReference(Expression expr) {
+        if (groupByColumnReferences == null) {
+            groupByColumnReferences = new ArrayList<Expression>();
+        }
+        groupByColumnReferences.add(expr);
+    }
+
     public OracleHierarchicalExpression getOracleHierarchical() {
         return oracleHierarchical;
     }
@@ -264,10 +271,10 @@ public class PlainSelect implements SelectBody {
                 sql.append(limit);
             }
             if (offset != null) {
-            	sql.append(offset);
+                sql.append(offset);
             }
             if (fetch != null) {
-            	sql.append(fetch);
+                sql.append(fetch);
             }
             if (isForUpdate()) {
                 sql.append(" FOR UPDATE");

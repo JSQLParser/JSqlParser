@@ -91,5 +91,12 @@ public class SelectUtilsTest {
 		
 		assertTrue(((SelectExpressionItem)((PlainSelect)select.getSelectBody()).getSelectItems().get(0)).getExpression() instanceof Addition);
 	}
+    
+    @Test
+    public void testBuildSelectFromTableWithGroupBy() {
+        Select select = SelectUtils.buildSelectFromTable(new Table("mytable"));
+        SelectUtils.addGroupBy(select, new Column("b"));
+        assertEquals("SELECT * FROM mytable GROUP BY b", select.toString());
+    }
 	
 }

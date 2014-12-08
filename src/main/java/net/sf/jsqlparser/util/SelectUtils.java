@@ -147,4 +147,29 @@ public final class SelectUtils {
 		}
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
+    
+    /**
+     * Adds group by to a plain select statement.
+     * @param select
+     * @param expr 
+     */
+    public static void addGroupBy(Select select, final Expression expr) {
+        select.getSelectBody().accept(new SelectVisitor() {
+
+			@Override
+			public void visit(PlainSelect plainSelect) {
+                plainSelect.addGroupByColumnReference(expr);
+			}
+
+			@Override
+			public void visit(SetOperationList setOpList) {
+				throw new UnsupportedOperationException("Not supported yet.");
+			}
+
+			@Override
+			public void visit(WithItem withItem) {
+				throw new UnsupportedOperationException("Not supported yet.");
+			}
+		});
+    }
 }
