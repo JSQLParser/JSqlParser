@@ -2325,8 +2325,9 @@ CreateView CreateView():
 
 String CreateParameter():
 {
-	String retval = null;
+	String retval = "";
 	Token tk = null;
+    Token sign = null;
 }
 {
 		(
@@ -2342,9 +2343,12 @@ String CreateParameter():
 			|
 			tk=<S_CHAR_LITERAL> { retval = tk.image; }
 			|
-			tk=<S_LONG> { retval = tk.image; }
-			|
-			tk=<S_DOUBLE> { retval = tk.image; }
+              ("+" {retval = "+";} | "-" {retval = "-";})?
+              (
+			   tk=<S_LONG> { retval += tk.image; }
+			   |
+			   tk=<S_DOUBLE> { retval += tk.image; }
+              )
 			|
 			tk=<K_ON> { retval = tk.image; } 
             |

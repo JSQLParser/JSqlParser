@@ -99,6 +99,14 @@ public class CreateTableTest extends TestCase {
     public void testCreateTableUniqueConstraint() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE Activities (_id INTEGER PRIMARY KEY AUTOINCREMENT,uuid VARCHAR(255),user_id INTEGER,sound_id INTEGER,sound_type INTEGER,comment_id INTEGER,type String,tags VARCHAR(255),created_at INTEGER,content_id INTEGER,sharing_note_text VARCHAR(255),sharing_note_created_at INTEGER,UNIQUE (created_at, type, content_id, sound_id, user_id))", true);
     }
+    
+    public void testCreateTableDefault() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE T1 (id integer default -1)");
+    }
+    
+    public void testCreateTableDefault2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE T1 (id integer default 1)");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
