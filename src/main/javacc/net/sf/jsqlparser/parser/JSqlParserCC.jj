@@ -205,6 +205,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_NEXT:"NEXT">
 |   <K_ONLY:"ONLY">
 |   <K_COMMIT:"COMMIT">
+|   <K_UNIQUE:"UNIQUE">
 }
 
 TOKEN : /* Numeric Constants */
@@ -2190,10 +2191,12 @@ CreateTable CreateTable():
                         index = new NamedConstraint();
                     }
                     [<K_CONSTRAINT> tk3=<S_IDENTIFIER> {index.setName(tk3.image);} ]
-					tk=<K_PRIMARY> tk2=<K_KEY>
+					
+                    (tk=<K_PRIMARY> tk2=<K_KEY> {index.setType(tk.image + " " + tk2.image);}
+                     | tk=<K_UNIQUE> {index.setType(tk.image);} )
 						colNames=ColumnsNamesList()
 						{
-							index.setType(tk.image + " " + tk2.image);
+							
 							index.setColumnsNames(colNames);
 							indexes.add(index);
 						}
@@ -2348,6 +2351,8 @@ String CreateParameter():
 			tk=<K_COMMIT> { retval = tk.image; } 
             |
 			tk=<K_ROWS> { retval = tk.image; } 
+            |
+            tk=<K_UNIQUE> { retval = tk.image; } 
             |
 			"=" { retval = "="; }
 			|
