@@ -34,6 +34,7 @@ public class Function implements Expression {
     private boolean distinct = false;
     private boolean isEscaped = false;
     private String attribute;
+    private FirstLastElement firstLastElement;
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
@@ -93,6 +94,14 @@ public class Function implements Expression {
         parameters = list;
     }
 
+    public FirstLastElement getFirstLastElement() {
+        return firstLastElement;
+    }
+
+    public void setFirstLastElement(FirstLastElement firstLastElement) {
+        this.firstLastElement = firstLastElement;
+    }
+
     /**
      * Return true if it's in the form "{fn function_body() }"
      *
@@ -139,6 +148,10 @@ public class Function implements Expression {
 
         if (isEscaped) {
             ans = "{fn " + ans + "}";
+        }
+        
+        if (firstLastElement != null) {
+        	ans += firstLastElement.toString();
         }
 
         return ans;

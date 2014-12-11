@@ -22,11 +22,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import static net.sf.jsqlparser.test.TestUtils.*;
+
 import org.apache.commons.io.FileUtils;
+
 import static org.junit.Assert.assertTrue;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -42,8 +47,9 @@ import org.junit.Test;
  */
 public class SpecialOracleTest {
 
-    private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/test/oracle-tests");
-    private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
+    private static final File SQLS_DIR = new File("C:/Users/bkrahmer/ws-west-core/JSqlParser/trunk/target/test-classes/net/sf/jsqlparser/test/oracle-tests");
+//	private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/test/oracle-tests");
+	private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
 
     @Test
     public void testAllSqlsParseDeparse() throws IOException {

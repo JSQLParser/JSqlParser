@@ -312,4 +312,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 	public void visit(RegExpMySQLOperator expr) {
 		visitBinaryExpression(expr);	
 	}
+	
+	@Override
+	public void visit(FirstLastElement firstLastElement) {
+		for (OrderByElement element : firstLastElement.getOrderByElements()) {
+            element.getExpression().accept(this);
+        }
+	}
 }

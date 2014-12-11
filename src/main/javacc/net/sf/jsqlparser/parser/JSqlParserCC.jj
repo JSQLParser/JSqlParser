@@ -206,6 +206,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ONLY:"ONLY">
 |   <K_COMMIT:"COMMIT">
 |   <K_UNIQUE:"UNIQUE">
+|   <K_KEEP:"KEEP">
+|   <K_DENSE_RANK:"DENSE_RANK">
 }
 
 TOKEN : /* Numeric Constants */
@@ -1864,6 +1866,22 @@ AnalyticExpression AnalyticExpression() :
 	}
 }
 
+FirstLastElement FirstLastElement():
+{
+	FirstLastElement firstLastElement = new FirstLastElement();
+	List<OrderByElement> orderByElements = null;
+}
+{
+	(<K_DENSE_RANK> 
+		( <K_FIRST> { firstLastElement.setType(FirstLastElement.Type.FIRST); } 
+		| 
+		<K_LAST> { firstLastElement.setType(FirstLastElement.Type.LAST); }) 
+		orderByElements = OrderByElements() { firstLastElement.setOrderByElements(orderByElements); })
+	{
+		return firstLastElement;
+	}
+}
+
 WindowElement WindowElement():
 {
     WindowElement windowElement = new WindowElement();
@@ -2028,6 +2046,7 @@ Function Function():
 	String funcName = null;
 	String tmp = null;
 	ExpressionList expressionList = null;
+    FirstLastElement firstLastElement = null;
 }
 {
 	["{fn" { retval.setEscaped(true); } ]
@@ -2040,9 +2059,12 @@ Function Function():
     [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]
 
     ["}"]
+    [ <K_KEEP> "(" firstLastElement=FirstLastElement() ")" ]
+
     {
 	    retval.setParameters(expressionList);
 	    retval.setName(funcName);
+        retval.setFirstLastElement(firstLastElement);
     	return retval;
     }
 }

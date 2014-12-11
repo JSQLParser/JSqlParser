@@ -27,10 +27,12 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.*;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
@@ -334,8 +336,27 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         if (function.isEscaped()) {
             buffer.append("}");
         }
+        
+        if (function.getFirstLastElement() != null) {
+        	visit(function.getFirstLastElement());
+        }
     }
 
+    @Override
+    public void visit(FirstLastElement firstLastElement) {
+		buffer.append(" KEEP (DENSE_RANK ");
+		buffer.append(firstLastElement.getType().toString());
+		buffer.append(" ");
+		List<OrderByElement> orderByElements = firstLastElement.getOrderByElements();
+		if (orderByElements != null) {
+			buffer.append(" ORDER BY ");
+		}
+		for (OrderByElement element : firstLastElement.getOrderByElements()) {
+			element.getExpression().accept(this);
+	    }
+		buffer.append(")");
+    }
+    
     @Override
     public void visit(ExpressionList expressionList) {
         if (useBracketsInExprList) {

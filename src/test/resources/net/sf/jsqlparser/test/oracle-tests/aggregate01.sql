@@ -32,9 +32,7 @@ with
 		from
 		servicedesk.itsm_historylines_incident t101
 		join incident i on (t101.hin_inc_oid = i.inc_oid)
---		from servicedesk.itsm_incidents i (t101.hin_inc_oid = i.inc_oid)
 		where t101.hin_subject like 'to workgroup from%'
---		and i."reg_created" between sysdate-1 and sysdate		
 		group by i.inc_id
 	)
 select
