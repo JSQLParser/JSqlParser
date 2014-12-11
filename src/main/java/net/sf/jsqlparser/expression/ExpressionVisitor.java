@@ -47,6 +47,7 @@ import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.ListaggFunction;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 public interface ExpressionVisitor {
@@ -150,5 +151,7 @@ public interface ExpressionVisitor {
 	void visit(RegExpMySQLOperator regExpMySQLOperator);
 	
 	void visit(FirstLastElement firstLastElement);
+
+	void visit(ListaggFunction listaggFunction);
 	
 }

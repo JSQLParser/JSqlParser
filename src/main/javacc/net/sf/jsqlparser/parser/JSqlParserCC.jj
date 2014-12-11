@@ -208,6 +208,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_UNIQUE:"UNIQUE">
 |   <K_KEEP:"KEEP">
 |   <K_DENSE_RANK:"DENSE_RANK">
+|   <K_LISTAGG:"LISTAGG">
+|   <K_WITHIN:"WITHIN">
 }
 
 TOKEN : /* Numeric Constants */
@@ -735,6 +737,8 @@ SelectItem SelectItem():
     |
 	LOOKAHEAD(AllTableColumns()) selectItem=AllTableColumns()
 	|
+	<K_LISTAGG> selectItem=ListaggFunction()
+	|
 	LOOKAHEAD(SelectExpressionItem()) selectItem=SelectExpressionItem() 
 	)
 	{
@@ -760,6 +764,27 @@ Alias Alias():
 {
 	[<K_AS> { useAs = true; } ] name=RelObjectName()
    { return new Alias(name,useAs); }
+}
+
+ListaggFunction ListaggFunction():
+{
+	ListaggFunction retval = new ListaggFunction();
+	Expression measureExpression, delimiter;
+    OrderByElement orderByElement;
+    ExpressionList expressionList;
+    Alias alias;
+}
+{
+	"(" 
+	measureExpression=SimpleExpression() { retval.setMeasureExpression(measureExpression); } 
+	[ "," 
+		delimiter=SimpleExpression() { retval.setDelimiter(delimiter); } ] ")" 
+	<K_WITHIN> <K_GROUP> "(" <K_ORDER> <K_BY> 
+		orderByElement=OrderByElement() { retval.setOrderByElement(orderByElement); } ")"
+	[ <K_OVER> "(" <K_PARTITION> <K_BY> 
+		expressionList=SimpleExpressionList() { retval.setQueryPartitionList(expressionList); } ")" ]
+	[ alias=Alias() { retval.setAlias(alias); } ]
+	{ return retval; }
 }
 
 FunctionItem FunctionItem():

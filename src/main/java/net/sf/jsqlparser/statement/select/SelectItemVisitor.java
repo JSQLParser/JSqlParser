@@ -28,4 +28,6 @@ public interface SelectItemVisitor {
 	void visit(AllTableColumns allTableColumns);
 
 	void visit(SelectExpressionItem selectExpressionItem);
+
+	void visit(ListaggFunction listaggFunction);
 }

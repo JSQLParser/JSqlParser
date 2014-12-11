@@ -27,6 +27,7 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.*;
+import net.sf.jsqlparser.statement.select.ListaggFunction;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
@@ -534,6 +535,31 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(JsonExpression jsonExpr) {
         buffer.append(jsonExpr.toString());
+    }
+
+    @Override
+    public void visit(ListaggFunction fx) {
+        buffer.append("LISTAGG (");
+        buffer.append(fx.getMeasureExpression());
+        Expression delimiter = fx.getDelimiter();
+        if (delimiter != null) {
+            buffer.append(", ");
+            buffer.append(delimiter);
+        }
+        buffer.append(") WITHIN GROUP (ORDER BY ");
+        fx.getOrderByElement().getExpression().accept(this);
+        buffer.append(")");
+        ExpressionList queryPartitionList = fx.getQueryPartitionList();
+        if (queryPartitionList != null) {
+            buffer.append(" OVER (PARTITION BY ");
+            visit(queryPartitionList);
+            buffer.append(") ");
+        }
+        Alias alias = fx.getAlias();
+        if (alias != null) {
+            buffer.append(" ");
+            buffer.append(alias);
+        }
     }
 
 }
