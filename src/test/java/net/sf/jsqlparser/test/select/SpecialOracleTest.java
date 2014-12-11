@@ -47,8 +47,7 @@ import org.junit.Test;
  */
 public class SpecialOracleTest {
 
-    private static final File SQLS_DIR = new File("C:/Users/bkrahmer/ws-west-core/JSqlParser/trunk/target/test-classes/net/sf/jsqlparser/test/oracle-tests");
-//	private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/test/oracle-tests");
+	private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/test/oracle-tests");
 	private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
 
     @Test
