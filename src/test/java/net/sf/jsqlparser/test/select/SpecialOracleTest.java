@@ -47,8 +47,8 @@ import org.junit.Test;
  */
 public class SpecialOracleTest {
 
-	private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/test/oracle-tests");
-	private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
+    private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/test/oracle-tests");
+    private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
 
     @Test
     public void testAllSqlsParseDeparse() throws IOException {
