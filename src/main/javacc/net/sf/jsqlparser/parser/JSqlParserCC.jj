@@ -1029,39 +1029,21 @@ Join JoinerExpression():
 	List<Column> columns = null;
 }
 {
-	/*
-		Refactor to be more restrictive.
-			left [outer] join
-			right [outer] join
-			full [outer] join
-			[inner] join
-			cross join
-			natural join
-     */
-	  /* [ (
-	  	<K_LEFT> { join.setLeft(true); }
-  		| <K_RIGHT> { join.setRight(true); }
-  		| <K_FULL> { join.setFull(true); }
-  		| <K_NATURAL> { join.setNatural(true); }
-		| <K_CROSS> { join.setCross(true); }
-  		)
-  	   ]
-
-  	   [
-  	    (
-  		<K_OUTER> { join.setOuter(true); }
-  		| <K_INNER> { join.setInner(true); }
-  		)
-  	   ] */
-
-       [ ( <K_LEFT> { join.setLeft(true); }
-  		| <K_RIGHT> { join.setRight(true); }
-  		| <K_FULL> { join.setFull(true); } ) [ <K_OUTER> { join.setOuter(true); } ]
+    [   
+           ( <K_LEFT> { join.setLeft(true); }
+  		   | <K_RIGHT> { join.setRight(true); }
+  		   | <K_FULL> { join.setFull(true); } 
+           ) [ <K_OUTER> { join.setOuter(true); } ]
         | <K_INNER> { join.setInner(true); }
         | <K_NATURAL> { join.setNatural(true); }
-		| <K_CROSS> { join.setCross(true); } ]
+		| <K_CROSS> { join.setCross(true); } 
+    ]
 
-  	    ( <K_JOIN> | "," { join.setSimple(true); } ) right=FromItem()
+  	    ( <K_JOIN> | "," { join.setSimple(true); } ) 
+
+        right=FromItem()
+
+
 	[
 		( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); } )
 		|
@@ -1071,10 +1053,8 @@ Join JoinerExpression():
   	]
   {
   	join.setRightItem(right);
+    return join; 
   }
-
-
-  { return join; }
 }
 
 Expression WhereClause():
