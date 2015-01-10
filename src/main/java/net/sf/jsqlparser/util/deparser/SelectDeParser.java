@@ -181,6 +181,17 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
     @Override
     public void visit(SubSelect subSelect) {
         buffer.append("(");
+        if (subSelect.getWithItemsList() != null && !subSelect.getWithItemsList().isEmpty()) {
+            buffer.append("WITH ");
+            for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.hasNext();) {
+                WithItem withItem = iter.next();
+                withItem.accept(this);
+                if (iter.hasNext()) {
+                    buffer.append(",");
+                }
+                buffer.append(" ");
+            }
+        }
         subSelect.getSelectBody().accept(this);
         buffer.append(")");
         Pivot pivot = subSelect.getPivot();

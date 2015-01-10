@@ -2030,11 +2030,13 @@ Function Function():
 SubSelect SubSelect():
 {
 	SelectBody selectBody = null;
+    SubSelect subSelect = new SubSelect();
+    List<WithItem> with = null;
 }
 {
+    [ with=WithList() { subSelect.setWithItemsList(with); } ]
     selectBody=SelectBody()
     {
-    	SubSelect subSelect = new SubSelect();
     	subSelect.setSelectBody(selectBody);
     	return subSelect;
     }

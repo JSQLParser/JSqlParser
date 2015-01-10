@@ -1636,5 +1636,8 @@ public class SelectTest extends TestCase {
     public void testSelectOracleColl() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM the_table tt WHERE TT.COL1 = lines(idx).COL1");
     }
-
+    
+    public void testSelectInnerWith() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (WITH actor AS (SELECT 'a' aid FROM DUAL) SELECT aid FROM actor)");
+    }
 }
