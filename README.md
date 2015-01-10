@@ -25,6 +25,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.2
 
+* support for inner with statements 
+
+```sql
+SELECT * FROM (WITH actor AS (SELECT 'a' aid FROM DUAL) SELECT aid FROM actor)
+```
+
 * support for Oracle collections 
 
 ```sql
