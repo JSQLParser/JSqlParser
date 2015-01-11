@@ -1,5 +1,7 @@
 # JSqlParser
 
+[![Flattr](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=wumpz&url=http%3A%2F%2Fgithub.com%2FJSQLParser%2FJSqlParser)
+
 Look here for more information and examples: https://github.com/JSQLParser/JSqlParser/wiki.
 
 ## News
