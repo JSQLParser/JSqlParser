@@ -444,4 +444,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
     public void visit(AllColumns allColumns) {
         buffer.append('*');
     }
+    
+    @Override
+    public void visit(ListaggFunction fx) {
+    	buffer.append(fx.toString());
+    }
+    
 }

@@ -498,4 +498,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(SelectExpressionItem item) {
         item.getExpression().accept(this);
     }
+    
+    @Override
+    public void visit(FirstLastElement firstLastElement) {
+		for (OrderByElement element : firstLastElement.getOrderByElements()) {
+			element.getExpression().accept(this);
+	    }
+    }
+
+    @Override
+    public void visit(ListaggFunction fx) {
+        fx.getMeasureExpression().accept(this);
+        fx.getOrderByElement().getExpression().accept(this);
+    }
 }

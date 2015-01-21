@@ -206,6 +206,10 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ONLY:"ONLY">
 |   <K_COMMIT:"COMMIT">
 |   <K_UNIQUE:"UNIQUE">
+|   <K_KEEP:"KEEP">
+|   <K_DENSE_RANK:"DENSE_RANK">
+|   <K_LISTAGG:"LISTAGG">
+|   <K_WITHIN:"WITHIN">
 }
 
 TOKEN : /* Numeric Constants */
@@ -734,6 +738,8 @@ SelectItem SelectItem():
     |
 	LOOKAHEAD(AllTableColumns()) selectItem=AllTableColumns()
 	|
+	<K_LISTAGG> selectItem=ListaggFunction()
+	|
 	LOOKAHEAD(SelectExpressionItem()) selectItem=SelectExpressionItem() 
 	)
 	{
@@ -759,6 +765,27 @@ Alias Alias():
 {
 	[<K_AS> { useAs = true; } ] name=RelObjectName()
    { return new Alias(name,useAs); }
+}
+
+ListaggFunction ListaggFunction():
+{
+	ListaggFunction retval = new ListaggFunction();
+	Expression measureExpression, delimiter;
+    OrderByElement orderByElement;
+    ExpressionList expressionList;
+    Alias alias;
+}
+{
+	"(" 
+	measureExpression=SimpleExpression() { retval.setMeasureExpression(measureExpression); } 
+	[ "," 
+		delimiter=SimpleExpression() { retval.setDelimiter(delimiter); } ] ")" 
+	<K_WITHIN> <K_GROUP> "(" <K_ORDER> <K_BY> 
+		orderByElement=OrderByElement() { retval.setOrderByElement(orderByElement); } ")"
+	[ <K_OVER> "(" <K_PARTITION> <K_BY> 
+		expressionList=SimpleExpressionList() { retval.setQueryPartitionList(expressionList); } ")" ]
+	[ alias=Alias() { retval.setAlias(alias); } ]
+	{ return retval; }
 }
 
 FunctionItem FunctionItem():
@@ -1845,6 +1872,22 @@ AnalyticExpression AnalyticExpression() :
 	}
 }
 
+FirstLastElement FirstLastElement():
+{
+	FirstLastElement firstLastElement = new FirstLastElement();
+	List<OrderByElement> orderByElements = null;
+}
+{
+	(<K_DENSE_RANK> 
+		( <K_FIRST> { firstLastElement.setType(FirstLastElement.Type.FIRST); } 
+		| 
+		<K_LAST> { firstLastElement.setType(FirstLastElement.Type.LAST); }) 
+		orderByElements = OrderByElements() { firstLastElement.setOrderByElements(orderByElements); })
+	{
+		return firstLastElement;
+	}
+}
+
 WindowElement WindowElement():
 {
     WindowElement windowElement = new WindowElement();
@@ -2009,6 +2052,7 @@ Function Function():
 	String funcName = null;
 	String tmp = null;
 	ExpressionList expressionList = null;
+    FirstLastElement firstLastElement = null;
 }
 {
 	["{fn" { retval.setEscaped(true); } ]
@@ -2021,9 +2065,12 @@ Function Function():
     [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]
 
     ["}"]
+    [ <K_KEEP> "(" firstLastElement=FirstLastElement() ")" ]
+
     {
 	    retval.setParameters(expressionList);
 	    retval.setName(funcName);
+        retval.setFirstLastElement(firstLastElement);
     	return retval;
     }
 }

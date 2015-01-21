@@ -26,6 +26,7 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.ListaggFunction;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
@@ -312,4 +313,17 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 	public void visit(RegExpMySQLOperator expr) {
 		visitBinaryExpression(expr);	
 	}
+	
+	@Override
+	public void visit(FirstLastElement firstLastElement) {
+		for (OrderByElement element : firstLastElement.getOrderByElements()) {
+            element.getExpression().accept(this);
+        }
+	}
+
+    @Override
+    public void visit(ListaggFunction listaggFunction) {
+        // TODO not sure of the purpose of this class     
+    	boolean brk = true;
+    }
 }

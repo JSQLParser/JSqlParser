@@ -22,11 +22,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import static net.sf.jsqlparser.test.TestUtils.*;
+
 import org.apache.commons.io.FileUtils;
+
 import static org.junit.Assert.assertTrue;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**

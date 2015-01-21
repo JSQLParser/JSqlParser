@@ -36,4 +36,9 @@ public class SelectItemVisitorAdapter implements SelectItemVisitor{
     public void visit(SelectExpressionItem item) {
 
     }
+    
+    @Override
+    public void visit(ListaggFunction listaggFunction) {
+    	
+    }
 }
