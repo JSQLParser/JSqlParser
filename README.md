@@ -4,6 +4,11 @@
 
 Look here for more information and examples: https://github.com/JSQLParser/JSqlParser/wiki.
 
+## License
+
+JSqlParser is licensed under the **LGPL V2.1**.
+
+
 ## News
 
 Version **0.9.1** released.
