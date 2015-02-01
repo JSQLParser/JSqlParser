@@ -136,6 +136,8 @@ public interface ExpressionVisitor {
 	void visit(Modulo modulo);
 
 	void visit(AnalyticExpression aexpr);
+    
+    void visit(WithinGroupExpression wgexpr);
 
 	void visit(ExtractExpression eexpr);
 

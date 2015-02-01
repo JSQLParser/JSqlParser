@@ -32,6 +32,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.2
 
+* support for within group expressions, e.g. oracls LISTAGG function
+
+```sql
+SELECT LISTAGG(col1, '##') WITHIN GROUP (ORDER BY col1) FROM table1
+```
+
 * support for inner with statements 
 
 ```sql

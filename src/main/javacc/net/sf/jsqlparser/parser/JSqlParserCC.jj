@@ -206,6 +206,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ONLY:"ONLY">
 |   <K_COMMIT:"COMMIT">
 |   <K_UNIQUE:"UNIQUE">
+|   <K_WITHIN:"WITHIN">
 }
 
 TOKEN : /* Numeric Constants */
@@ -1733,6 +1734,8 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
 
+    | LOOKAHEAD(WithinGroupExpression()) retval=WithinGroupExpression()
+
 	| LOOKAHEAD(ExtractExpression()) retval=ExtractExpression()
 
     | LOOKAHEAD([sign="+" | sign="-"] JsonExpression()) [sign="+" | sign="-"] retval=JsonExpression()
@@ -1812,6 +1815,26 @@ IntervalExpression IntervalExpression() : {
 	{
 		return interval;
 	}
+}
+
+WithinGroupExpression WithinGroupExpression() :
+{
+    Token token = null;
+    List<OrderByElement> orderByElements = null;
+    WithinGroupExpression result = new WithinGroupExpression();
+    ExpressionList exprList;
+}
+{
+    token = <S_IDENTIFIER> "(" exprList = SimpleExpressionList() ")" 
+      <K_WITHIN> <K_GROUP>
+    "(" orderByElements = OrderByElements() ")"
+
+    { 
+        result.setName(token.image);
+        result.setExprList(exprList);
+        result.setOrderByElements(orderByElements);
+        return result; 
+    }
 }
 
 AnalyticExpression AnalyticExpression() :

@@ -515,4 +515,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         buffer.append(jsonExpr.toString());
     }
 
+    @Override
+    public void visit(WithinGroupExpression wgexpr) {
+        buffer.append(wgexpr.toString());
+    }
+
 }

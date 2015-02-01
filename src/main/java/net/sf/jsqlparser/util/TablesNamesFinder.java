@@ -498,4 +498,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(SelectExpressionItem item) {
         item.getExpression().accept(this);
     }
+
+    @Override
+    public void visit(WithinGroupExpression wgexpr) {
+    }
 }

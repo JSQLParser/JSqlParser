@@ -1649,4 +1649,8 @@ public class SelectTest extends TestCase {
     public void testSelectInnerWith() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (WITH actor AS (SELECT 'a' aid FROM DUAL) SELECT aid FROM actor)");
     }
+    
+    public void testSelectWithinGroup() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT LISTAGG(col1, '##') WITHIN GROUP (ORDER BY col1) FROM table1");
+    }
 }
