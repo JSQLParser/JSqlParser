@@ -207,6 +207,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_COMMIT:"COMMIT">
 |   <K_UNIQUE:"UNIQUE">
 |   <K_WITHIN:"WITHIN">
+|   <K_IF:"IF">
 }
 
 TOKEN : /* Numeric Constants */
@@ -2152,7 +2153,9 @@ CreateTable CreateTable():
     [ <K_UNLOGGED> { createTable.setUnlogged(true); } ]
 	(parameter = CreateParameter() { createOptions.add(parameter); })*
 
-	<K_TABLE> table=Table()
+	<K_TABLE> 
+    [ <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
+    table=Table()
 	[
 		("("
 		(columnName=<S_IDENTIFIER>
@@ -2344,7 +2347,7 @@ String CreateParameter():
 			tk=<K_NOT> { retval = tk.image; }
 			|
 			tk=<K_PRIMARY> { retval = tk.image; }
-			|
+            |
 			tk=<K_KEY> { retval = tk.image; }
 			|
 			tk=<S_CHAR_LITERAL> { retval = tk.image; }
