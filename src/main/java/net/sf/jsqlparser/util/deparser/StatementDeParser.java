@@ -146,7 +146,8 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Alter alter) {
-
+        AlterDeParser alterDeParser = new AlterDeParser(buffer);
+        alterDeParser.deParse(alter);
     }
 
     @Override

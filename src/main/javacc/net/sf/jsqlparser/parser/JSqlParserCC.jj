@@ -2397,10 +2397,10 @@ List<String> ColumnsNamesList():
 	Token tk = null;
 }
 {
-	 "("
+	"("
 
-	 	tk=<S_IDENTIFIER> { retval.add(tk.image); }
-	 	( "," tk=<S_IDENTIFIER> { retval.add(tk.image); } )*
+	 	(tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { retval.add(tk.image); }
+	 	( "," (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { retval.add(tk.image); } )*
 
 	")"
 	{
@@ -2453,15 +2453,29 @@ Alter Alter():
 	Table table;
 	Token tk;
 	ColDataType dataType;
+    List<String> pkColumnNames = null;
+    List<String> ukColumnNames = null;
 }
 {
-	<K_ALTER> <K_TABLE> table=Table() <K_ADD> <K_COLUMN>
-	(tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) dataType=ColDataType()
+	<K_ALTER> <K_TABLE> table=Table() { alter.setTable(table); } 
 
-	{
-		alter.setTable(table);
-		alter.setColumnName(tk.image);
-		alter.setDataType(dataType);
+    <K_ADD> 
+    
+    (  
+        (  <K_COLUMN>
+	       (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) dataType=ColDataType()
+            {
+               alter.setColumnName(tk.image);
+               alter.setDataType(dataType);
+            }
+        )
+        |
+        ( <K_PRIMARY> <K_KEY> pkColumnNames=ColumnsNamesList() { alter.setPkColumns(pkColumnNames); } )
+        |
+        ( <K_UNIQUE> <K_KEY> (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) ukColumnNames=ColumnsNamesList() { alter.setUkName(tk.image); alter.setUkColumns(ukColumnNames); } )
+    )
+
+    {
 		return alter;
 	}
 }

@@ -111,6 +111,10 @@ public class CreateTableTest extends TestCase {
     public void testCreateTableIfNotExists() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE IF NOT EXISTS animals (id INT NOT NULL)");
     }
+    
+    public void testCreateTableInlinePrimaryKey() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE animals (id INT PRIMARY KEY NOT NULL)");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
