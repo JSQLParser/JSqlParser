@@ -520,4 +520,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         buffer.append(wgexpr.toString());
     }
 
+    @Override
+    public void visit(UserVariable var) {
+        buffer.append(var.toString());
+    }
+
 }

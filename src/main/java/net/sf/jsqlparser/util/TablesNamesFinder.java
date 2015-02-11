@@ -502,4 +502,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(WithinGroupExpression wgexpr) {
     }
+
+    @Override
+    public void visit(UserVariable var) {
+    }
 }

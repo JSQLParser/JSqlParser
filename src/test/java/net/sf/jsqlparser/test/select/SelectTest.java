@@ -1653,4 +1653,8 @@ public class SelectTest extends TestCase {
     public void testSelectWithinGroup() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT LISTAGG(col1, '##') WITHIN GROUP (ORDER BY col1) FROM table1");
     }
+    
+    public void testSelectUserVariable() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT @col FROM t1");
+    }
 }

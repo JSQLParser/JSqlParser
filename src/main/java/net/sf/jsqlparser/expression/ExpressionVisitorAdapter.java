@@ -320,4 +320,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             element.getExpression().accept(this);
         }
     }
+
+    @Override
+    public void visit(UserVariable var) {
+        
+    }
 }

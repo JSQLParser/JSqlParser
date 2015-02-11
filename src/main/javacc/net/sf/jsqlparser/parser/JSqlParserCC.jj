@@ -1733,6 +1733,8 @@ Expression PrimaryExpression():
 
     | retval=JdbcNamedParameter()
 
+    | retval=UserVariable()
+
 	| LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
 
     | LOOKAHEAD(WithinGroupExpression()) retval=WithinGroupExpression()
@@ -1788,10 +1790,21 @@ JdbcNamedParameter JdbcNamedParameter() : {
 	Token token;
 }
 {
-        ":" token=<S_IDENTIFIER> { parameter.setName(token.image); }
+    ":" token=<S_IDENTIFIER> { parameter.setName(token.image); }
 	{
 		return parameter;
 	}
+}
+
+UserVariable UserVariable() : {
+    UserVariable var = new UserVariable();
+	Token token;
+}
+{
+    "@" token=<S_IDENTIFIER> { var.setName(token.image); }
+    { 
+        return var; 
+    }
 }
 
 JsonExpression JsonExpression() : {
