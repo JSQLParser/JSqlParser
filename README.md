@@ -11,6 +11,8 @@ JSqlParser is licensed under the **LGPL V2.1**.
 
 ## News
 
+Version **0.9.2** released.
+
 Version **0.9.1** released.
 
 Version **0.9** released.
@@ -30,45 +32,9 @@ To help JSqlParsers development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff. 
 
-## Extensions in the latest SNAPSHOT version 0.9.2
+## Extensions in the latest SNAPSHOT version 0.9.3
 
-* first support for user variables
 
-```sql
-SELECT @col FROM table1
-```
-
-* support for within group expressions, e.g. oracls LISTAGG function
-
-```sql
-SELECT LISTAGG(col1, '##') WITHIN GROUP (ORDER BY col1) FROM table1
-```
-
-* support for inner with statements 
-
-```sql
-SELECT * FROM (WITH actor AS (SELECT 'a' aid FROM DUAL) SELECT aid FROM actor)
-```
-
-* support for Oracle collections 
-
-```sql
-SELECT * FROM mytable WHERE COL1 = lines(idx).field1
-```
-
-* support for PostgreSQL ANY - array syntax
-* introduced additional parameters for create table statements (deparser extended)
-* first support for *FOR UPDATE*
-
-```sql
-SELECT * FROM user_table FOR UPDATE
-```
-
-```sql
-UPDATE mytable SET (col) = (SELECT a FROM mytable2)
-```
-
-* partially support SQL Server 2012 and Oracle 12c OFFSET ... FETCH ... 
 
 ## Extensions of JSqlParser releases
 
