@@ -32,6 +32,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.2
 
+* first support for user variables
+
+```sql
+SELECT @col FROM table1
+```
+
 * support for within group expressions, e.g. oracls LISTAGG function
 
 ```sql
