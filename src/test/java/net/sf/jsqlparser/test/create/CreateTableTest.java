@@ -115,6 +115,14 @@ public class CreateTableTest extends TestCase {
     public void testCreateTableInlinePrimaryKey() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE animals (id INT PRIMARY KEY NOT NULL)");
     }
+    
+    public void testCreateTableWithRange() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE foo (name character varying (255), range character varying (255), start_range integer, end_range integer)");
+    }
+    
+    public void testCreateTableWithKey() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE bar (key character varying (255) NOT NULL)");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));

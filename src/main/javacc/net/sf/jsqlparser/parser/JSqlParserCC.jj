@@ -2159,7 +2159,7 @@ CreateTable CreateTable():
 	List columnSpecs = null;
 	List<String> tableOptions = new ArrayList<String>();
     List<String> createOptions = new ArrayList<String>();
-	Token columnName;
+	String columnName;
 	Token tk = null;
 	Token tk2 = null;
 	Token tk3 = null;
@@ -2186,9 +2186,7 @@ CreateTable CreateTable():
     table=Table()
 	[
 		("("
-		(columnName=<S_IDENTIFIER>
-		|
-		columnName=<S_QUOTED_IDENTIFIER>)
+		columnName=RelObjectName()
 
 		colDataType = ColDataType()
 		{
@@ -2199,7 +2197,7 @@ CreateTable CreateTable():
 
 		{
 			coldef = new ColumnDefinition();
-			coldef.setColumnName(columnName.image);
+			coldef.setColumnName(columnName);
 			coldef.setColDataType(colDataType);
 			if (columnSpecs.size() > 0)
 				coldef.setColumnSpecStrings(columnSpecs);
@@ -2272,9 +2270,8 @@ CreateTable CreateTable():
 				)
 				|
 				(
-					(columnName=<S_IDENTIFIER>
-					|
-					columnName=<S_QUOTED_IDENTIFIER>)
+					columnName=RelObjectName()
+
 					colDataType = ColDataType()
 					{
 						columnSpecs = new ArrayList();
@@ -2284,7 +2281,7 @@ CreateTable CreateTable():
 
 					{
 						coldef = new ColumnDefinition();
-						coldef.setColumnName(columnName.image);
+						coldef.setColumnName(columnName);
 						coldef.setColDataType(colDataType);
 						if (columnSpecs.size() > 0)
 							coldef.setColumnSpecStrings(columnSpecs);
