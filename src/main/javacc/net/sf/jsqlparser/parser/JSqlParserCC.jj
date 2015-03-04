@@ -2237,7 +2237,7 @@ CreateTable CreateTable():
 						}
 				)
 				|
-				(
+				LOOKAHEAD(3) (
 					tk=<K_KEY>
 						tk3=<S_IDENTIFIER>
 						colNames=ColumnsNamesList()
