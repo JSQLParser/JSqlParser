@@ -506,4 +506,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(UserVariable var) {
     }
+
+    @Override
+    public void visit(NumericBind bind) {
+        
+    }
 }

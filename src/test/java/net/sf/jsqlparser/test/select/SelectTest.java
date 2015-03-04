@@ -13,8 +13,6 @@ import org.apache.commons.io.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
 
@@ -1656,5 +1654,9 @@ public class SelectTest extends TestCase {
     
     public void testSelectUserVariable() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @col FROM t1");
+    }
+    
+    public void testSelectNumericBind() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a FROM b WHERE c = :1");
     }
 }

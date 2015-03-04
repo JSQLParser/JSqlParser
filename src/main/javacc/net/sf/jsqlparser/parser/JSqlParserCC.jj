@@ -1731,9 +1731,11 @@ Expression PrimaryExpression():
 
 	| "?" { retval = new JdbcParameter(); }
 
-    | retval=JdbcNamedParameter()
+    | LOOKAHEAD(2) retval=JdbcNamedParameter()
 
     | retval=UserVariable()
+
+    | retval=NumericBind()
 
 	| LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
 
@@ -1801,8 +1803,21 @@ UserVariable UserVariable() : {
 	Token token;
 }
 {
-    "@" token=<S_IDENTIFIER> { var.setName(token.image); }
+    "@" token=<S_IDENTIFIER> 
     { 
+        var.setName(token.image); 
+        return var; 
+    }
+}
+
+NumericBind NumericBind() : {
+    NumericBind var = new NumericBind();
+	Token token;
+}
+{
+    ":" token=<S_LONG> 
+    { 
+        var.setBindId(Integer.valueOf(token.image)); 
         return var; 
     }
 }

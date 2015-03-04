@@ -152,4 +152,6 @@ public interface ExpressionVisitor {
 	void visit(RegExpMySQLOperator regExpMySQLOperator);
     
     void visit(UserVariable var);
+    
+    void visit(NumericBind bind);
 }

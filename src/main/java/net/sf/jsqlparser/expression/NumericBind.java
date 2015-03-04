@@ -25,22 +25,17 @@ package net.sf.jsqlparser.expression;
  *
  * @author aud
  */
-public class UserVariable implements Expression {
+public class NumericBind implements Expression {
 
-	private String name;
+	private int bindId;
 
-	/**
-	 * The name of the parameter
-	 *
-	 * @return the name of the parameter
-	 */
-	public String getName() {
-		return name;
-	}
+    public int getBindId() {
+        return bindId;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setBindId(int bindId) {
+        this.bindId = bindId;
+    }
 
 	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
@@ -49,6 +44,6 @@ public class UserVariable implements Expression {
 
 	@Override
 	public String toString() {
-		return "@" + name;
+		return ":" + bindId;
 	}
 }
