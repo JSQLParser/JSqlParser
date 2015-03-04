@@ -34,7 +34,13 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.3
 
+* first support for numeric bind
 
+```sql
+SELECT a FROM b WHERE c = :1
+```
+
+* support for keywords as column names in create table statements
 
 ## Extensions of JSqlParser releases
 
