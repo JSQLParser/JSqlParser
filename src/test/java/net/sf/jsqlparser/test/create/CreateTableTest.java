@@ -123,6 +123,14 @@ public class CreateTableTest extends TestCase {
     public void testCreateTableWithKey() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE bar (key character varying (255) NOT NULL)");
     }
+    
+    public void testCreateTableWithUniqueKey() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE animals (id INT NOT NULL, name VARCHAR (100) UNIQUE KEY (id))");
+    }
+    
+//    public void testCreateTableWithSizedKey() throws JSQLParserException {
+//        assertSqlCanBeParsedAndDeparsed("CREATE TABLE animals (info mediumtext NOT NULL, KEY idx_info (info(10)))");
+//    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
