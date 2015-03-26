@@ -1346,6 +1346,7 @@ Expression RegularCondition():
 	leftExpression=ComparisonItem() { result = leftExpression; }
 
 	[ "(+)" { oracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
+	[ "( + )" { oracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
 
 	(
 	">" { result = new GreaterThan(); }
@@ -1366,6 +1367,7 @@ Expression RegularCondition():
 
 	[ <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_END; } ]
 	[ "(+)" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
+	[ "( + )" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
 
 	{
 		BinaryExpression regCond = (BinaryExpression) result;
