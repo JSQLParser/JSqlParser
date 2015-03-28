@@ -1345,7 +1345,7 @@ Expression RegularCondition():
 	[ <K_NOT> { not = true; } ]
 	leftExpression=ComparisonItem() { result = leftExpression; }
 
-	[ "(+)" { oracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
+	[ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
 
 	(
 	">" { result = new GreaterThan(); }
@@ -1365,7 +1365,7 @@ Expression RegularCondition():
 	rightExpression=ComparisonItem()
 
 	[ <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_END; } ]
-	[ "(+)" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
+	[ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
 
 	{
 		BinaryExpression regCond = (BinaryExpression) result;
@@ -1411,12 +1411,12 @@ Expression InExpression() :
 			LOOKAHEAD(SimpleExpressionList()) leftItemsList = SimpleExpressionList() { result.setLeftItemsList(leftItemsList); }
 			|
 			leftExpression=SimpleExpression()
-	        [ "(+)" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
+	        [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
 		  )
 	  ")"
 	|
 		leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
-        [ "(+)" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
+        [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
 	)
     [<K_NOT> { result.setNot(true); } ] <K_IN> "(" (LOOKAHEAD(SubSelect()) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")"
 	{

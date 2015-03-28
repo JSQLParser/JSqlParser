@@ -1214,6 +1214,20 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
+    public void testOracleJoin2_1() throws JSQLParserException {
+        String[] values = new String[]{"(+)", "( +)", "(+ )", "( + )"," (+) "};
+        for (String value : values) {
+            assertSqlCanBeParsedAndDeparsed("SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a" + value + " = tabelle2.b", true);
+        }
+    }
+    
+    public void testOracleJoin2_2() throws JSQLParserException {
+        String[] values = new String[]{"(+)", "( +)", "(+ )", "( + )"," (+) "};
+        for (String value : values) {
+            assertSqlCanBeParsedAndDeparsed("SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b" + value, true);
+        }
+    }
+
     public void testOracleJoin3() throws JSQLParserException {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) > tabelle2.b";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -1600,9 +1614,9 @@ public class SelectTest extends TestCase {
         final Select select = (Select) parserManager.parse(new StringReader(statement));
         assertStatementCanBeDeparsedAs(select, statement);
     }
-    
-     public void testReservedKeyword2() throws JSQLParserException {
-        final String stmt = "SELECT open FROM tableName"; 
+
+    public void testReservedKeyword2() throws JSQLParserException {
+        final String stmt = "SELECT open FROM tableName";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
@@ -1647,15 +1661,15 @@ public class SelectTest extends TestCase {
     public void testSelectInnerWith() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (WITH actor AS (SELECT 'a' aid FROM DUAL) SELECT aid FROM actor)");
     }
-    
+
     public void testSelectWithinGroup() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT LISTAGG(col1, '##') WITHIN GROUP (ORDER BY col1) FROM table1");
     }
-    
+
     public void testSelectUserVariable() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @col FROM t1");
     }
-    
+
     public void testSelectNumericBind() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a FROM b WHERE c = :1");
     }
