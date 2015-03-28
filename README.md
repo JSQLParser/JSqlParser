@@ -34,6 +34,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.3
 
+* support for oracles old join syntax improved
+
+```sql
+.. WHERE a( + ) = b
+```
+
 * first support for numeric bind
 
 ```sql
