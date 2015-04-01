@@ -891,6 +891,10 @@ public class SelectTest extends TestCase {
                 + "WHERE THIS_EMP.JOB = 'SALESREP' AND THIS_EMP.WORKDEPT = DINFO.DEPTNO";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
+    
+    public void testWithRecursive() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("WITH RECURSIVE t (n) AS ((SELECT 1) UNION ALL (SELECT n + 1 FROM t WHERE n < 100)) SELECT sum(n) FROM t");
+    }
 
     public void testSelectAliasInQuotes() throws JSQLParserException {
         String statement = "SELECT mycolumn AS \"My Column Name\" FROM mytable";

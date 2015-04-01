@@ -208,6 +208,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_UNIQUE:"UNIQUE">
 |   <K_WITHIN:"WITHIN">
 |   <K_IF:"IF">
+|   <K_RECURSIVE:"RECURSIVE">
 }
 
 TOKEN : /* Numeric Constants */
@@ -699,7 +700,7 @@ WithItem WithItem():
 	SelectBody selectBody = null;
 }
 {
-	 name=RelObjectName() { with.setName(name); }
+	 [ <K_RECURSIVE> { with.setRecursive(true); } ] name=RelObjectName() { with.setName(name); }
 	 [ "(" selectItems=SelectItemsList() ")" { with.setWithItemList(selectItems); } ]
 	 <K_AS>
 	 "(" selectBody = SelectBody() { with.setSelectBody(selectBody); } ")"
