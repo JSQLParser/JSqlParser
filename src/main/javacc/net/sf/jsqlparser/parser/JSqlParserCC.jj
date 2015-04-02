@@ -2164,6 +2164,7 @@ CreateTable CreateTable():
 	Token tk = null;
 	Token tk2 = null;
 	Token tk3 = null;
+    String sk3 = null;
 	ColDataType colDataType = null;
 	String stringList = null;
 	ColumnDefinition coldef = null;
@@ -2211,12 +2212,12 @@ CreateTable CreateTable():
 			(
 				(
 					tk=<K_INDEX>
-						tk3=<S_IDENTIFIER>
+						sk3=RelObjectName()
 						colNames=ColumnsNamesList()
 						{
 							index = new Index();
 							index.setType(tk.image);
-							index.setName(tk3.image);
+							index.setName(sk3);
 							index.setColumnsNames(colNames);
 							indexes.add(index);
 						}
@@ -2226,10 +2227,11 @@ CreateTable CreateTable():
                     {
                         index = new NamedConstraint();
                     }
-                    [<K_CONSTRAINT> tk3=<S_IDENTIFIER> {index.setName(tk3.image);} ]
+                    [<K_CONSTRAINT> sk3=RelObjectName() {index.setName(sk3);} ]
 					
                     (tk=<K_PRIMARY> tk2=<K_KEY> {index.setType(tk.image + " " + tk2.image);}
-                     | tk=<K_UNIQUE> {index.setType(tk.image);} )
+                     | tk=<K_UNIQUE> [ tk2=<K_KEY> ] {index.setType(tk.image + (tk2!=null?" " + tk2.image:""));}
+                     )
 						colNames=ColumnsNamesList()
 						{
 							
@@ -2238,14 +2240,14 @@ CreateTable CreateTable():
 						}
 				)
 				|
-				LOOKAHEAD(3) (
-					tk=<K_KEY>
-						tk3=<S_IDENTIFIER>
+				LOOKAHEAD(3) ( {tk=null;}
+					 [ tk=<K_UNIQUE> ] tk2=<K_KEY>
+						sk3=RelObjectName()
 						colNames=ColumnsNamesList()
 						{
 							index = new Index();
-							index.setType(tk.image);
-							index.setName(tk3.image);
+							index.setType((tk!=null?tk.image + " ":"") + tk2.image);
+							index.setName(sk3);
 							index.setColumnsNames(colNames);
 							indexes.add(index);
 						}
@@ -2255,7 +2257,7 @@ CreateTable CreateTable():
 					{
 						fkIndex = new ForeignKeyIndex();
 					}
-					[<K_CONSTRAINT> tk3=<S_IDENTIFIER> {fkIndex.setName(tk3.image);} ]
+					[<K_CONSTRAINT> sk3=RelObjectName() {fkIndex.setName(sk3);} ]
 					tk=<K_FOREIGN> tk2=<K_KEY>
 						colNames=ColumnsNamesList()
 						{
