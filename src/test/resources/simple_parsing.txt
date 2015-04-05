@@ -59,6 +59,8 @@ insert into tabName VALUES ('sdgf', ?, ?)
 
 insert into myschama.tabName2 (col1, col2, col3) VALUES ('sdgf', ?, ?)
 
+insert into tabName3 VALUES ('isn\'t', ?)
+
 delete from jk
 
 delete from asdff where INI = 94 OR (ASD>9 AND (SELECT MAX(ID) from myt) > ?)
