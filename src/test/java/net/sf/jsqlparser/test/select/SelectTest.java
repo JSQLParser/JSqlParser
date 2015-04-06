@@ -1677,4 +1677,8 @@ public class SelectTest extends TestCase {
     public void testSelectNumericBind() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a FROM b WHERE c = :1");
     }
+    
+    public void testSelectBracketsTest() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT avg((123.250)::numeric)");
+    }
 }
