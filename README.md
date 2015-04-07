@@ -36,6 +36,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.3
 
+* First support for Postgresql arrays. Some quoted identifier rules for SQLServer
+  had to be changed. 
 * support for with recursive
 
 ```sql
