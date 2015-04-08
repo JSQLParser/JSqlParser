@@ -520,7 +520,7 @@ String RelObjectName():
       | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE> 
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_VALUE> | tk=<K_XML>
       | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>
-      | tk=<K_OPEN>
+      | tk=<K_OPEN> | tk=<K_OVER>
       )
 
     { return tk.image; }
@@ -1756,7 +1756,7 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(["+" | "-"] Column())         [sign="+" | sign="-"] retval=Column()
 
-	| LOOKAHEAD(2)                            [sign="+" | sign="-"] "(" retval=PrimaryExpression() ")" {retval = new Parenthesis(retval); }
+	| LOOKAHEAD(3)                            [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
 
 	|                                         [sign="+" | sign="-"] "(" retval=SubSelect() ")"
 

@@ -1678,7 +1678,19 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT a FROM b WHERE c = :1");
     }
     
-    public void testSelectBracketsTest() throws JSQLParserException {
+    public void testSelectBrackets() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT avg((123.250)::numeric)");
+    }
+    
+    public void testSelectBrackets2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT (EXTRACT(epoch FROM age(d1, d2)) / 2)::numeric");
+    }
+    
+    public void testSelectBrackets3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT avg((EXTRACT(epoch FROM age(d1, d2)) / 2)::numeric)");
+    }
+    
+    public void testSelectBrackets4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT (1 / 2)::numeric");
     }
 }
