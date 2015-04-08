@@ -423,8 +423,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(SetOperationList list) {
-        for (PlainSelect plainSelect : list.getPlainSelects()) {
-            visit(plainSelect);
+        for (SelectBody plainSelect : list.getSelects()) {
+            plainSelect.accept(this);
         }
     }
 

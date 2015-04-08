@@ -83,7 +83,7 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
 
 	@Override
 	public void visit(SetOperationList setOpList) {
-		for (PlainSelect select : setOpList.getPlainSelects()) {
+		for (SelectBody select : setOpList.getSelects()) {
 			select.accept(this);
 		}
 	}

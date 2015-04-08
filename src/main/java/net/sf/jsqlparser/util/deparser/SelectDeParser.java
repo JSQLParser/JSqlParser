@@ -395,13 +395,13 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
     @Override
     public void visit(SetOperationList list) {
-        for (int i = 0; i < list.getPlainSelects().size(); i++) {
+        for (int i = 0; i < list.getSelects().size(); i++) {
             if (i != 0) {
                 buffer.append(' ').append(list.getOperations().get(i - 1)).append(' ');
             }
             buffer.append("(");
-            PlainSelect plainSelect = list.getPlainSelects().get(i);
-            plainSelect.accept(this);
+            SelectBody select = list.getSelects().get(i);
+            select.accept(this);
             buffer.append(")");
         }
         if (list.getOrderByElements() != null) {

@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class SetOperationList implements SelectBody {
 
-	private List<PlainSelect> plainSelects;
+	private List<SelectBody> selects;
 	private List<SetOperation> operations;
 	private List<OrderByElement> orderByElements;
 	private Limit limit;
@@ -48,8 +48,8 @@ public class SetOperationList implements SelectBody {
 		return orderByElements;
 	}
 
-	public List<PlainSelect> getPlainSelects() {
-		return plainSelects;
+	public List<SelectBody> getSelects() {
+		return selects;
 	}
 
 	public List<SetOperation> getOperations() {
@@ -60,8 +60,8 @@ public class SetOperationList implements SelectBody {
 		this.orderByElements = orderByElements;
 	}
 
-	public void setOpsAndSelects(List<PlainSelect> select, List<SetOperation> ops) {
-		plainSelects = select;
+	public void setOpsAndSelects(List<SelectBody> select, List<SetOperation> ops) {
+		selects = select;
 		operations = ops;
 
 		if (select.size() - 1 != ops.size()) {
@@ -97,11 +97,11 @@ public class SetOperationList implements SelectBody {
 	public String toString() {
 		StringBuilder buffer = new StringBuilder();
 
-		for (int i = 0; i < plainSelects.size(); i++) {
+		for (int i = 0; i < selects.size(); i++) {
 			if (i != 0) {
 				buffer.append(" ").append(operations.get(i - 1).toString()).append(" ");
 			}
-			buffer.append("(").append(plainSelects.get(i).toString()).append(")");
+			buffer.append("(").append(selects.get(i).toString()).append(")");
 		}
 
 		if (orderByElements != null) {

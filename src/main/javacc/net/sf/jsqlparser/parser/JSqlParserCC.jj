@@ -649,15 +649,15 @@ SetOperationList SetOperationList():
 	Limit limit = null;
 	Offset offset = null;
 	Fetch fetch = null;
-	PlainSelect select = null;
-	List<PlainSelect> selects = new ArrayList<PlainSelect>();
+	SelectBody select = null;
+	List<SelectBody> selects = new ArrayList<SelectBody>();
 	List<SetOperation> operations = new ArrayList<SetOperation>();
 }
 {
 	(
 
 		(
-			(("(" select=PlainSelect() ")") | (select=PlainSelect() )) {selects.add(select);}
+			(("(" select=SelectBody() ")") | select=PlainSelect() ) {selects.add(select);}
 			(
 				((<K_UNION> { UnionOp union = new UnionOp();operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
 				| <K_INTERSECT> { operations.add(new IntersectOp()); }
@@ -665,7 +665,7 @@ SetOperationList SetOperationList():
 				| <K_EXCEPT> { operations.add(new ExceptOp()); }
 				)
 
-				(("(" select=PlainSelect() ")") | (select=PlainSelect() )) {selects.add(select);}
+				(("(" select=SelectBody() ")") | select=PlainSelect() ) {selects.add(select);}
 			)+
 		)
 
@@ -1756,9 +1756,9 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(["+" | "-"] Column())         [sign="+" | sign="-"] retval=Column()
 
-	| LOOKAHEAD(3)                            [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
+    | LOOKAHEAD([sign="+" | sign="-"] "(" SubSelect() ")")     [sign="+" | sign="-"] "(" retval=SubSelect() ")"
 
-	|                                         [sign="+" | sign="-"] "(" retval=SubSelect() ")"
+	| LOOKAHEAD(3)                            [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
 
 	| token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 

@@ -456,11 +456,11 @@ public class SelectTest extends TestCase {
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
         SetOperationList setList = (SetOperationList) select.getSelectBody();
-        assertEquals(3, setList.getPlainSelects().size());
-        assertEquals("mytable", ((Table) setList.getPlainSelects().get(0).getFromItem()).getName());
-        assertEquals("mytable3", ((Table) setList.getPlainSelects().get(1).getFromItem()).getName());
-        assertEquals("mytable2", ((Table) setList.getPlainSelects().get(2).getFromItem()).getName());
-        assertEquals(3, setList.getPlainSelects().get(2).getLimit().getOffset());
+        assertEquals(3, setList.getSelects().size());
+        assertEquals("mytable", ((Table) ((PlainSelect)setList.getSelects().get(0)).getFromItem()).getName());
+        assertEquals("mytable3", ((Table) ((PlainSelect)setList.getSelects().get(1)).getFromItem()).getName());
+        assertEquals("mytable2", ((Table) ((PlainSelect)setList.getSelects().get(2)).getFromItem()).getName());
+        assertEquals(3, ((PlainSelect)setList.getSelects().get(2)).getLimit().getOffset());
 
         // use brakets for toString
         // use standard limit syntax
