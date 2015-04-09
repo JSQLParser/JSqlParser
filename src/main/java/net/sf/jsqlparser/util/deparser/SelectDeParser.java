@@ -142,6 +142,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         }
         if (plainSelect.isForUpdate()) {
             buffer.append(" FOR UPDATE");
+            if (plainSelect.getForUpdateTable() != null) {
+                buffer.append(" OF ").append(plainSelect.getForUpdateTable());
+            }
         }
 
     }

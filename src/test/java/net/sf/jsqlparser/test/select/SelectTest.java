@@ -1708,4 +1708,8 @@ public class SelectTest extends TestCase {
     public void testSelectBrackets4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT (1 / 2)::numeric");
     }
+    
+    public void testSelectForUpdateOfTable() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT foo.*, bar.* FROM foo, bar WHERE foo.id = bar.foo_id FOR UPDATE OF foo");
+    }
 }

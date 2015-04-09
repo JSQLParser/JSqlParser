@@ -210,6 +210,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WITHIN:"WITHIN">
 |   <K_IF:"IF">
 |   <K_RECURSIVE:"RECURSIVE">
+|   <K_OF:"OF">
 }
 
 TOKEN : /* Numeric Constants */
@@ -614,6 +615,7 @@ PlainSelect PlainSelect():
 	Top top = null;
 	OracleHierarchicalExpression oracleHierarchicalQueryClause = null;
     List<Table> intoTables = null;
+    Table updateTable = null;
 }
 {
     <K_SELECT>
@@ -647,7 +649,8 @@ PlainSelect PlainSelect():
 	[LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);	} ]
 	[LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);	} ]
 
-    [ <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); } ]
+    [ <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); } 
+        [ <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ] ]
 
 	{
 		plainSelect.setSelectItems(selectItems);
@@ -946,7 +949,7 @@ FromItem FromItem():
 				)
 				|
 				fromItem=Table()
-				|
+                |
 				fromItem=LateralSubSelect()
 			)
 			[(LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot()) { fromItem.setPivot(pivot); } ]
