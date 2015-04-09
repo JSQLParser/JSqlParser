@@ -819,6 +819,11 @@ public class SelectTest extends TestCase {
         assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).getRightExpression()).getValue());
         assertEquals("test2", ((LikeExpression) plainSelect.getWhere()).getEscape());
     }
+    
+    public void testIlike() throws JSQLParserException {
+        String statement = "SELECT col1 FROM table1 WHERE col1 ILIKE '%hello%'";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
 
     public void testSelectOrderHaving() throws JSQLParserException {
         String statement = "SELECT units, count(units) AS num FROM currency GROUP BY units HAVING count(units) > 1 ORDER BY num";
