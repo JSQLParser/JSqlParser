@@ -527,6 +527,21 @@ String RelObjectName():
     { return tk.image; }
 }
 
+/*
+Extended usage of object names.
+*/
+String RelObjectNameExt():
+{ Token tk = null;
+  String result=null;
+} 
+{
+    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> )
+    {
+        if (tk!=null) result=tk.image;
+        return result;
+    }
+}
+
 Table Table():
 {
 	String serverName = null, databaseName = null, schemaName = null, tableName = null;
@@ -2067,9 +2082,9 @@ Function Function():
 {
 	["{fn" { retval.setEscaped(true); } ]
 
-	funcName=RelObjectName()
+	funcName=RelObjectNameExt()
 
-    [ "." tmp=RelObjectName() { funcName+= "." + tmp; } ["." tmp=RelObjectName() { funcName+= "." + tmp; }]]
+    [ "." tmp=RelObjectNameExt() { funcName+= "." + tmp; } ["." tmp=RelObjectNameExt() { funcName+= "." + tmp; }]]
     "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] (expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }) ] ")"
 
     [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]

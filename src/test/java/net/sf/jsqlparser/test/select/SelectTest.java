@@ -1212,6 +1212,16 @@ public class SelectTest extends TestCase {
         String statement = "SELECT last_value(s.revenue_hold) OVER (PARTITION BY s.id_d_insertion_order, s.id_d_product_ad_attr, trunc(s.date_id, 'mm') ORDER BY s.date_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS col FROM s";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
+    
+    public void testFunctionLeft() throws JSQLParserException {
+        String statement = "SELECT left(table1.col1, 4) FROM table1";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+    
+    public void testFunctionRight() throws JSQLParserException {
+        String statement = "SELECT right(table1.col1, 4) FROM table1";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
 
     public void testOracleJoin() throws JSQLParserException {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
