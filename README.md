@@ -36,6 +36,9 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.3
 
+* support for ILIKE
+* support for LEFT/RIGHT as function names
+* support for UPDATE OF table
 * API changes due to grammar refactoring
 * First support for Postgresql arrays. Some quoted identifier rules for SQLServer
   had to be changed. 
