@@ -288,6 +288,8 @@ Statement SingleStatement() :
     stm = Truncate()
     |
     stm = Execute()
+    |
+    stm = Set()
     )
     { return stm; }
 }
@@ -306,6 +308,17 @@ Statements Statements() :
     {
         stmts.setStatements(list);
         return stmts;
+    }
+}
+
+SetStatement Set(): {
+    String name;
+    Expression value;
+}
+{
+    <K_SET> name = RelObjectNameExt() "=" value=SimpleExpression()
+    {
+        return new SetStatement(name,value);
     }
 }
 

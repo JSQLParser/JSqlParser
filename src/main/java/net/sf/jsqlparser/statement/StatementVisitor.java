@@ -61,4 +61,6 @@ public interface StatementVisitor {
     void visit(Statements stmts);
     
     void visit(Execute execute);
+    
+    void visit(SetStatement set);
 }

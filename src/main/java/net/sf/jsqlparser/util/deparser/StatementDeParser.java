@@ -22,6 +22,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
+import net.sf.jsqlparser.statement.SetStatement;
 
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
@@ -163,5 +164,15 @@ public class StatementDeParser implements StatementVisitor {
         ExecuteDeParser executeDeParser = new ExecuteDeParser(expressionDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         executeDeParser.deParse(execute);
+    }
+
+    @Override
+    public void visit(SetStatement set) {
+        SelectDeParser selectDeParser = new SelectDeParser();
+        selectDeParser.setBuffer(buffer);
+        ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
+        SetStatementDeParser setStatementDeparser = new SetStatementDeParser(expressionDeParser, buffer);
+        selectDeParser.setExpressionVisitor(expressionDeParser);
+        setStatementDeparser.deParse(set);
     }
 }

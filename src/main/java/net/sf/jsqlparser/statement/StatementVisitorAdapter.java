@@ -99,4 +99,9 @@ public class StatementVisitorAdapter implements StatementVisitor {
     public void visit(Execute execute) {
         
     }
+
+    @Override
+    public void visit(SetStatement set) {
+        
+    }
 }
