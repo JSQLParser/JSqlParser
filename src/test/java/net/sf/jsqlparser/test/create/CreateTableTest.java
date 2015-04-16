@@ -149,6 +149,14 @@ public class CreateTableTest extends TestCase {
     public void testCreateTableArrays2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE sal_emp (name text, pay_by_quarter integer[5], schedule text[3][2])");
     }
+    
+    public void testCreateTableColumnValues() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE mytable1 (values INTEGER)");
+    }
+    
+    public void testCreateTableColumnValue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE mytable1 (value INTEGER)");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
