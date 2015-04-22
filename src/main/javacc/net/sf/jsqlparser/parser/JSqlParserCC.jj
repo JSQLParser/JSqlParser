@@ -466,12 +466,15 @@ Insert Insert():
 
 		|
 
-		[LOOKAHEAD(2) "(" { useSelectBrackets = true; }]
 		(
-			{ insert.setUseValues(false); }
-			select = Select()
-		)
-		[ ")" ]        
+            LOOKAHEAD(2) "(" { useSelectBrackets = true; }
+                { insert.setUseValues(false); }
+                select = Select()
+            ")"
+            |
+            { insert.setUseValues(false); }
+            select = Select()
+        )
 	)
 
     [ <K_RETURNING> (
@@ -591,9 +594,9 @@ Select Select():
 	List<WithItem> with = null;
 }
 {
-	[ with=WithList() { select.setWithItemsList(with); } ]
-    selectBody = SelectBody()
+    [ with=WithList() {  } ] selectBody = SelectBody()
 	{
+        select.setWithItemsList(with);
 		select.setSelectBody(selectBody);
 		return select;
 	}
@@ -607,6 +610,8 @@ SelectBody SelectBody():
 		    selectBody = SetOperationList()
     	|
 	    selectBody = PlainSelect()
+        |
+        ( "(" selectBody = PlainSelect() { ((PlainSelect)selectBody).setUseBrackets(true); } ")" )
 	)
 	{ return selectBody; }
 }

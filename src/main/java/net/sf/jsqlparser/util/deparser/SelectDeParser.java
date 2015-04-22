@@ -52,6 +52,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
     @Override
     public void visit(PlainSelect plainSelect) {
+        if (plainSelect.isUseBrackets()) {
+            buffer.append("(");
+        }
         buffer.append("SELECT ");
         if (plainSelect.getDistinct() != null) {
             buffer.append("DISTINCT ");
@@ -146,7 +149,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
                 buffer.append(" OF ").append(plainSelect.getForUpdateTable());
             }
         }
-
+        if (plainSelect.isUseBrackets()) {
+            buffer.append(")");
+        }
     }
 
     @Override

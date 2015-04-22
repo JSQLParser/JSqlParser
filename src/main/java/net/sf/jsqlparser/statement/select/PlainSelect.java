@@ -52,6 +52,15 @@ public class PlainSelect implements SelectBody {
     private boolean oracleSiblings = false;
     private boolean forUpdate = false;
     private Table forUpdateTable = null;
+    private boolean useBrackets = false;
+
+    public boolean isUseBrackets() {
+        return useBrackets;
+    }
+
+    public void setUseBrackets(boolean useBrackets) {
+        this.useBrackets = useBrackets;
+    }
 
     /**
      * The {@link FromItem} in this query
@@ -232,7 +241,11 @@ public class PlainSelect implements SelectBody {
 
     @Override
     public String toString() {
-        StringBuilder sql = new StringBuilder("SELECT ");
+        StringBuilder sql = new StringBuilder();
+        if (useBrackets) {
+            sql.append("(");
+        }
+        sql.append("SELECT ");
         if (distinct != null) {
             sql.append(distinct).append(" ");
         }
@@ -292,6 +305,9 @@ public class PlainSelect implements SelectBody {
                     sql.append(" OF ").append(forUpdateTable);
                 }
             }
+        }
+        if (useBrackets) {
+            sql.append(")");
         }
         return sql.toString();
     }

@@ -1712,4 +1712,12 @@ public class SelectTest extends TestCase {
     public void testSelectForUpdateOfTable() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT foo.*, bar.* FROM foo, bar WHERE foo.id = bar.foo_id FOR UPDATE OF foo");
     }
+    
+    public void testSelectWithBrackets() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("(SELECT 1 FROM mytable)");
+    }
+    
+    public void testSelectWithBrackets2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("(SELECT 1)");
+    }
 }
