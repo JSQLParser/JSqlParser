@@ -25,6 +25,9 @@ More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
 
 JSqlParser is a SQL statement parser. It translates SQLs in a traversable hierarchy of Java classes. JSqlParser is not limited to one database but provides support for a lot of specials of Oracle, SqlServer, MySQL, PostgreSQL ... To name some, it has support for Oracles join syntax using (+), PostgreSQLs cast syntax using ::, relational operators like != and so on.
 
+## Support
+If you need help using JSqlParser feel free to file an issue or contact me.
+
 ## Contributions
 To help JSqlParsers development you are encouraged to provide 
 * feedback
@@ -32,17 +35,17 @@ To help JSqlParsers development you are encouraged to provide
 * pull requests for new features
 * improvement requests
 
-Also I would like to know about needed examples or documentation stuff. 
+Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.3
 
-* support for ILIKE
-* support for LEFT/RIGHT as function names
-* support for UPDATE OF table
+* support for **ILIKE**
+* support for **LEFT/RIGHT** as function names
+* support for **UPDATE OF table**
 * API changes due to grammar refactoring
 * First support for Postgresql arrays. Some quoted identifier rules for SQLServer
   had to be changed. 
-* support for with recursive
+* support for **with recursive**
 
 ```sql
 WITH RECURSIVE data as (SELECT ...) ...
