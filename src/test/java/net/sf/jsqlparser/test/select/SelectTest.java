@@ -1720,4 +1720,9 @@ public class SelectTest extends TestCase {
     public void testSelectWithBrackets2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("(SELECT 1)");
     }
+    
+    public void testSelectKeywordPercent() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT percent FROM MY_TABLE");
+    }
+    
 }
