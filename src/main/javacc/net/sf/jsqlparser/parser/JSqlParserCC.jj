@@ -1277,7 +1277,7 @@ Top Top():
               | "?"                         { top.setRowCountJdbcParameter(true);} )
             { top.setParenthesis(true);}
        ")"
-	) [ <K_PERCENT>                         { top.setPercentage(true); } ] 
+	) [ LOOKAHEAD(2) <K_PERCENT>            { top.setPercentage(true); } ] 
 	{
 		return top;
 	}
@@ -1767,7 +1767,7 @@ Expression PrimaryExpression():
 
 	| retval=CaseWhenExpression()
 
-	| "?" { retval = new JdbcParameter(); }
+	| "?" { retval = new JdbcParameter(); } [ token = <S_LONG> { ((JdbcParameter)retval).setIndex(Integer.valueOf(token.image)); } ]
 
     | LOOKAHEAD(2) retval=JdbcNamedParameter()
 

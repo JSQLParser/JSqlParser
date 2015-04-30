@@ -22,17 +22,27 @@
 package net.sf.jsqlparser.expression;
 
 /**
- * A '?' in a statement
+ * A '?' in a statement or a ?<number> e.g. ?4
  */
 public class JdbcParameter implements Expression {
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    private Integer index;
 
-	@Override
-	public String toString() {
-		return "?";
-	}
+    public Integer getIndex() {
+        return index;
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
+    }
+
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return "?" + (index == null ? "" : index);
+    }
 }

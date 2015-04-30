@@ -1725,4 +1725,7 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT percent FROM MY_TABLE");
     }
     
+    public void testSelectJPQLPositionalParameter() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT email FROM users WHERE (type LIKE 'B') AND (username LIKE ?1)");
+    }
 }
