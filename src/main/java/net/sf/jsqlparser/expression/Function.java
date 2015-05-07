@@ -34,6 +34,7 @@ public class Function implements Expression {
     private boolean distinct = false;
     private boolean isEscaped = false;
     private String attribute;
+    private KeepExpression keep = null;
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
@@ -114,6 +115,14 @@ public class Function implements Expression {
         this.attribute = attribute;
     }
 
+    public KeepExpression getKeep() {
+        return keep;
+    }
+
+    public void setKeep(KeepExpression keep) {
+        this.keep = keep;
+    }
+
     @Override
     public String toString() {
         String params;
@@ -137,6 +146,10 @@ public class Function implements Expression {
             ans += "." + attribute;
         }
 
+        if (keep != null) {
+            ans += " " + keep.toString();
+        }
+        
         if (isEscaped) {
             ans = "{fn " + ans + "}";
         }

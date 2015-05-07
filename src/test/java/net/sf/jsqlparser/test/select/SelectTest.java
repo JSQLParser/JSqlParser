@@ -1732,4 +1732,12 @@ public class SelectTest extends TestCase {
     public void testSelectJPQLPositionalParameter() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT email FROM users WHERE (type LIKE 'B') AND (username LIKE ?1)");
     }
+    
+    public void testSelectKeep() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT col1, min(col2) KEEP (DENSE_RANK FIRST ORDER BY col3), col4 FROM table1 GROUP BY col5 ORDER BY col3");
+    }
+    
+    public void testSelectKeepOver() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT MIN(salary) KEEP (DENSE_RANK FIRST ORDER BY commission_pct) OVER (PARTITION BY department_id ) \"Worst\" FROM employees ORDER BY department_id, salary");
+    }
 }

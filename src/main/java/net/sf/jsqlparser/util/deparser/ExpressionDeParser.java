@@ -333,6 +333,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         if (function.getAttribute() != null) {
             buffer.append(".").append(function.getAttribute());
         }
+        if (function.getKeep() != null) {
+            buffer.append(" ").append(function.getKeep());
+        }
 
         if (function.isEscaped()) {
             buffer.append("}");
@@ -531,5 +534,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(NumericBind bind) {
         buffer.append(bind.toString());
+    }
+
+    @Override
+    public void visit(KeepExpression aexpr) {
+        buffer.append(aexpr.toString());
     }
 }

@@ -30,6 +30,7 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVisitor {
+
     @Override
     public void visit(NullValue value) {
 
@@ -175,13 +176,13 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
-    public void visit(Column column) {  
+    public void visit(Column column) {
 
     }
 
     @Override
     public void visit(SubSelect subSelect) {
-        
+
     }
 
     @Override
@@ -254,6 +255,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         expr.getExpression().accept(this);
         expr.getDefaultValue().accept(this);
         expr.getOffset().accept(this);
+        if (expr.getKeep() != null) {
+            expr.getKeep().accept(this);
+        }
         for (OrderByElement element : expr.getOrderByElements()) {
             element.getExpression().accept(this);
         }
@@ -308,10 +312,10 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         visit(jsonExpr.getColumn());
     }
 
-	@Override
-	public void visit(RegExpMySQLOperator expr) {
-		visitBinaryExpression(expr);	
-	}
+    @Override
+    public void visit(RegExpMySQLOperator expr) {
+        visitBinaryExpression(expr);
+    }
 
     @Override
     public void visit(WithinGroupExpression wgexpr) {
@@ -323,11 +327,18 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(UserVariable var) {
-        
+
     }
 
     @Override
     public void visit(NumericBind bind) {
-        
+
+    }
+
+    @Override
+    public void visit(KeepExpression expr) {
+        for (OrderByElement element : expr.getOrderByElements()) {
+            element.getExpression().accept(this);
+        }
     }
 }

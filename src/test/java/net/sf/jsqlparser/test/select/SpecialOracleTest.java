@@ -61,14 +61,14 @@ public class SpecialOracleTest {
                     success++;
                     LOG.info("   -> SUCCESS");
                 } catch (JSQLParserException ex) {
-                    //LOG.log(Level.SEVERE, null, ex);
+                    LOG.log(Level.SEVERE, null, ex);
                     LOG.info("   -> PROBLEM");
                 }
             }
         }
         
         LOG.log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
-        assertTrue(success>=122);
+        assertTrue(success>=127);
     }
 
     @Test

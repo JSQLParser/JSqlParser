@@ -211,6 +211,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_IF:"IF">
 |   <K_RECURSIVE:"RECURSIVE">
 |   <K_OF:"OF">
+|   <K_KEEP:"KEEP">
 }
 
 TOKEN : /* Numeric Constants */
@@ -552,7 +553,7 @@ String RelObjectNameExt():
   String result=null;
 } 
 {
-    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> )
+    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -1904,6 +1905,22 @@ WithinGroupExpression WithinGroupExpression() :
     }
 }
 
+KeepExpression KeepExpression() : {
+    KeepExpression keep = new KeepExpression();
+    Token token;
+    List<OrderByElement> list;
+}
+{
+    <K_KEEP> "(" token = <S_IDENTIFIER> (<K_FIRST> { keep.setFirst(true); } | <K_LAST> { keep.setFirst(false); })
+      list = OrderByElements() ")"
+
+    {
+        keep.setName(token.image);
+        keep.setOrderByElements(list);
+        return keep;
+    }
+}
+
 AnalyticExpression AnalyticExpression() :
 {
 	AnalyticExpression retval = new AnalyticExpression();
@@ -1914,10 +1931,15 @@ AnalyticExpression AnalyticExpression() :
 	Expression offset = null;
 	Expression defaultValue = null;
     WindowElement windowElement = null;
+    KeepExpression keep = null;
 }
 {
 	token=<S_IDENTIFIER> { retval.setName(token.image); }
-	    "(" [ expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } ] ")" <K_OVER> "("
+	    "(" [ expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } ] ")" 
+
+    [ keep=KeepExpression() ]
+
+    <K_OVER> "("
         [<K_PARTITION> <K_BY> expressionList=SimpleExpressionList() ]
         [olist=OrderByElements() [windowElement = WindowElement() ] ]
         
@@ -1925,6 +1947,7 @@ AnalyticExpression AnalyticExpression() :
 		retval.setExpression(expr);
 		retval.setOffset(offset);
 		retval.setDefaultValue(defaultValue);
+        retval.setKeep(keep);
 		retval.setPartitionExpressionList(expressionList);
 		retval.setOrderByElements(olist);
         retval.setWindowElement(windowElement);
@@ -2099,6 +2122,7 @@ Function Function():
 	String funcName = null;
 	String tmp = null;
 	ExpressionList expressionList = null;
+    KeepExpression keep = null;
 }
 {
 	["{fn" { retval.setEscaped(true); } ]
@@ -2110,10 +2134,13 @@ Function Function():
 
     [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]
 
+    [ keep = KeepExpression() ]
+
     ["}"]
     {
 	    retval.setParameters(expressionList);
 	    retval.setName(funcName);
+        retval.setKeep(keep);
     	return retval;
     }
 }

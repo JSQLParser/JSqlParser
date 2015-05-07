@@ -154,4 +154,6 @@ public interface ExpressionVisitor {
     void visit(UserVariable var);
     
     void visit(NumericBind bind);
+    
+    void visit(KeepExpression aexpr);
 }
