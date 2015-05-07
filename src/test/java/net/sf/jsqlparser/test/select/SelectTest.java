@@ -1721,6 +1721,10 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("(SELECT 1)");
     }
     
+    public void testSelectWithoutFrom() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT footable.foocolumn");
+    }
+    
     public void testSelectKeywordPercent() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT percent FROM MY_TABLE");
     }
