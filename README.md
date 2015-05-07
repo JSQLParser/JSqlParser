@@ -39,6 +39,11 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.3
 
+* support for **KEEP**
+
+```sql
+KEEP (DENSE_RANK FIRST ORDER BY col1)
+```
 * support for **ILIKE**
 * support for **LEFT/RIGHT** as function names
 * support for **UPDATE OF table**
