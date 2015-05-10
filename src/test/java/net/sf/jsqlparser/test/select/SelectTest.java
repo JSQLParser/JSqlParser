@@ -1460,6 +1460,11 @@ public class SelectTest extends TestCase {
 
         assertEquals("'45 MINUTE'", iexpr.getParameter());
     }
+    
+    public void testInterval3() throws JSQLParserException {
+        String stmt = "SELECT 5 + INTERVAL '3' day";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 
     public void testMultiValueIn() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE (a, b, c) IN (SELECT a, b, c FROM mytable2)";

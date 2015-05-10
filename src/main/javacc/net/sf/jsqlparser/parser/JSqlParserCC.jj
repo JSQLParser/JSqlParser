@@ -1880,6 +1880,7 @@ IntervalExpression IntervalExpression() : {
 }
 {
 	<K_INTERVAL> token=<S_CHAR_LITERAL> { interval.setParameter(token.image); }
+    [ LOOKAHEAD(2) token = <S_IDENTIFIER> { interval.setIntervalType(token.image); } ]
 	{
 		return interval;
 	}
