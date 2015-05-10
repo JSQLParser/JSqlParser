@@ -39,6 +39,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.3
 
+* improved interval expression support
 * support for **KEEP**
 
 ```sql
