@@ -13,11 +13,7 @@ JSqlParser is licensed under the **LGPL V2.1**.
 
 ## News
 
-Version **0.9.2** released.
-
-Version **0.9.1** released.
-
-Version **0.9** released.
+Version **0.9.3** released.
 
 More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
 
@@ -37,39 +33,8 @@ To help JSqlParsers development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 0.9.3
+## Extensions in the latest SNAPSHOT version 0.9.4
 
-* improved interval expression support
-* support for **KEEP**
-
-```sql
-KEEP (DENSE_RANK FIRST ORDER BY col1)
-```
-* support for **ILIKE**
-* support for **LEFT/RIGHT** as function names
-* support for **UPDATE OF table**
-* API changes due to grammar refactoring
-* First support for Postgresql arrays. Some quoted identifier rules for SQLServer
-  had to be changed. 
-* support for **with recursive**
-
-```sql
-WITH RECURSIVE data as (SELECT ...) ...
-```
-
-* support for oracles old join syntax improved
-
-```sql
-.. WHERE a( + ) = b
-```
-
-* first support for numeric bind
-
-```sql
-SELECT a FROM b WHERE c = :1
-```
-
-* support for keywords as column names in create table statements
 
 ## Extensions of JSqlParser releases
 
