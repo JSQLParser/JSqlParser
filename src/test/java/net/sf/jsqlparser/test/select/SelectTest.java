@@ -1745,4 +1745,8 @@ public class SelectTest extends TestCase {
     public void testSelectKeepOver() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT MIN(salary) KEEP (DENSE_RANK FIRST ORDER BY commission_pct) OVER (PARTITION BY department_id ) \"Worst\" FROM employees ORDER BY department_id, salary");
     }
+    
+    public void testGroupConcat() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT student_name, GROUP_CONCAT(DISTINCT test_score ORDER BY test_score DESC SEPARATOR ' ') FROM student GROUP BY student_name");
+    }
 }

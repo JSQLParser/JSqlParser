@@ -212,6 +212,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_RECURSIVE:"RECURSIVE">
 |   <K_OF:"OF">
 |   <K_KEEP:"KEEP">
+|   <K_GROUP_CONCAT:"GROUP_CONCAT">
+|   <K_SEPARATOR:"SEPARATOR">
 }
 
 TOKEN : /* Numeric Constants */
@@ -1782,6 +1784,8 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(ExtractExpression()) retval=ExtractExpression()
 
+    | MySQLGroupConcat()
+
     | LOOKAHEAD([sign="+" | sign="-"] JsonExpression()) [sign="+" | sign="-"] retval=JsonExpression()
 
 	| LOOKAHEAD(["+" | "-"] Function())       [sign="+" | sign="-"] retval=Function()
@@ -2145,6 +2149,16 @@ Function Function():
     	return retval;
     }
 }
+
+void MySQLGroupConcat():{}
+{
+    <K_GROUP_CONCAT> "(" 
+       [<K_DISTINCT>] SimpleExpressionList() 
+       OrderByElements()
+       [ <K_SEPARATOR> <S_CHAR_LITERAL> ]
+    ")"
+}
+
 
 SubSelect SubSelect():
 {
