@@ -35,6 +35,11 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.4
 
+* support for MySQL **GROUP_CONCAT**
+
+```sql
+GROUP_CONCAT(DISTINCT test_score ORDER BY test_score DESC SEPARATOR ' ')
+```
 
 ## Extensions of JSqlParser releases
 
