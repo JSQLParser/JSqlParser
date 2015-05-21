@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.replace.Replace;
@@ -277,6 +278,32 @@ public class TablesNamesFinderTest {
 		assertTrue(tableList.contains("tbl0"));
         assertTrue(tableList.contains("tbl"));
         assertTrue(tableList.contains("tbl2"));
+	}
+    
+    @Test
+	public void testInsertSelect() throws Exception {
+		String sql = "INSERT INTO mytable (mycolumn) SELECT mycolumn FROM mytable2";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Insert insertStatement = (Insert) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(insertStatement);
+		assertEquals(2, tableList.size());
+		assertTrue(tableList.contains("mytable"));
+        assertTrue(tableList.contains("mytable2"));
+	}
+    
+    @Test
+	public void testCreateSelect() throws Exception {
+		String sql = "CREATE TABLE mytable AS SELECT mycolumn FROM mytable2";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		CreateTable createTable = (CreateTable) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(createTable);
+		assertEquals(2, tableList.size());
+		assertTrue(tableList.contains("mytable"));
+        assertTrue(tableList.contains("mytable2"));
 	}
 
 	private String getLine(BufferedReader in) throws Exception {

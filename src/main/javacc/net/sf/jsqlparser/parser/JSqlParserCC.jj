@@ -2531,6 +2531,7 @@ Drop Drop():
 {
 	Drop drop = new Drop();
 	Token tk = null;
+    Table name;
 	List<String> dropArgs = new ArrayList<String>();
 }
 {
@@ -2543,7 +2544,7 @@ Drop Drop():
 		tk=<K_INDEX>
 	)
     { drop.setType(tk.image); }
-	tk=<S_IDENTIFIER> { drop.setName(tk.image); }
+	name = Table() { drop.setName(name); }
 	(tk=<S_IDENTIFIER> { dropArgs.add(tk.image); })*
 
 	{

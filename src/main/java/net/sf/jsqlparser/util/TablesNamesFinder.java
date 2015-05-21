@@ -36,6 +36,7 @@ import net.sf.jsqlparser.statement.update.Update;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
 
 /**
  * Find all used tables within an select statement.
@@ -78,6 +79,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (insert.getItemsList() != null) {
             insert.getItemsList().accept(this);
         }
+        if (insert.getSelect() != null) {
+            visit(insert.getSelect());
+        }
 
         return tables;
     }
@@ -111,14 +115,18 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      */
     public List<String> getTableList(Select select) {
         init();
+        visit(select);
+
+        return tables;
+    }
+
+    public void visit(Select select) {
         if (select.getWithItemsList() != null) {
             for (WithItem withItem : select.getWithItemsList()) {
                 withItem.accept(this);
             }
         }
         select.getSelectBody().accept(this);
-
-        return tables;
     }
 
     /**
@@ -150,6 +158,16 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
         if (update.getWhere() != null) {
             update.getWhere().accept(this);
+        }
+
+        return tables;
+    }
+
+    public List<String> getTableList(CreateTable create) {
+        init();
+        tables.add(create.getTable().getFullyQualifiedName());
+        if (create.getSelect() != null) {
+            visit(create.getSelect());
         }
 
         return tables;
@@ -509,7 +527,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(NumericBind bind) {
-        
+
     }
 
     @Override
