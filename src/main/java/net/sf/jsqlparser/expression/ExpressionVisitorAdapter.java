@@ -341,4 +341,16 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             element.getExpression().accept(this);
         }
     }
+
+    @Override
+    public void visit(MySQLGroupConcat groupConcat) {
+        for (Expression expr : groupConcat.getExpressionList().getExpressions()) {
+            expr.accept(this);
+        }
+        if (groupConcat.getOrderByElements() != null) {
+            for (OrderByElement element : groupConcat.getOrderByElements()) {
+                element.getExpression().accept(this);
+            }
+        }
+    }
 }

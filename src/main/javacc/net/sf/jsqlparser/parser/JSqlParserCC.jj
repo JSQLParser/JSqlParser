@@ -1784,7 +1784,7 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(ExtractExpression()) retval=ExtractExpression()
 
-    | MySQLGroupConcat()
+    | retval=MySQLGroupConcat()
 
     | LOOKAHEAD([sign="+" | sign="-"] JsonExpression()) [sign="+" | sign="-"] retval=JsonExpression()
 
@@ -2150,13 +2150,23 @@ Function Function():
     }
 }
 
-void MySQLGroupConcat():{}
+MySQLGroupConcat MySQLGroupConcat():{
+    MySQLGroupConcat retval = new MySQLGroupConcat();
+    ExpressionList expressionList = null;
+    List<OrderByElement> orderByList = null;
+    Token t;
+}
 {
     <K_GROUP_CONCAT> "(" 
-       [<K_DISTINCT>] SimpleExpressionList() 
-       OrderByElements()
-       [ <K_SEPARATOR> <S_CHAR_LITERAL> ]
+       [<K_DISTINCT>  { retval.setDistinct(true); } ] 
+       expressionList = SimpleExpressionList() 
+       [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
+       [ <K_SEPARATOR> t=<S_CHAR_LITERAL> { retval.setSeparator(t.image); } ]
     ")"
+    { 
+        retval.setExpressionList(expressionList);
+        return retval; 
+    }
 }
 
 

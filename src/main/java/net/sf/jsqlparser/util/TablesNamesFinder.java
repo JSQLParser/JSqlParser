@@ -515,4 +515,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(KeepExpression aexpr) {
     }
+
+    @Override
+    public void visit(MySQLGroupConcat groupConcat) {
+    }
 }

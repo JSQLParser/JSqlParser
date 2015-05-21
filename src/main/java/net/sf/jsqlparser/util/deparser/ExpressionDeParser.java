@@ -540,4 +540,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     public void visit(KeepExpression aexpr) {
         buffer.append(aexpr.toString());
     }
+
+    @Override
+    public void visit(MySQLGroupConcat groupConcat) {
+        buffer.append(groupConcat.toString());
+    }
 }

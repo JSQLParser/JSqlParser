@@ -156,4 +156,6 @@ public interface ExpressionVisitor {
     void visit(NumericBind bind);
     
     void visit(KeepExpression aexpr);
+    
+    void visit(MySQLGroupConcat groupConcat);
 }
