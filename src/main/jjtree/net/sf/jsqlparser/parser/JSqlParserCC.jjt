@@ -515,7 +515,7 @@ Delete Delete():
 
 // See: http://technet.microsoft.com/en-us/library/ms187879%28v=sql.105%29.aspx
 
-Column Column():
+Column Column() #Column :
 {
 	String databaseName = null, schemaName = null, tableName = null, columnName = null;
 }
@@ -533,7 +533,7 @@ Column Column():
 	}
 }
 
-String RelObjectName():
+String RelObjectName() :
 {	Token tk = null; }
 {
 	(tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>
@@ -562,7 +562,7 @@ String RelObjectNameExt():
     }
 }
 
-Table Table():
+Table Table() #Table :
 {
 	String serverName = null, databaseName = null, schemaName = null, tableName = null;
 }
