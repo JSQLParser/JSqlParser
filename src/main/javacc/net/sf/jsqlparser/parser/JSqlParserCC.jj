@@ -1114,18 +1114,21 @@ OracleHierarchicalExpression OracleHierarchicalQueryClause():
 {
 	OracleHierarchicalExpression result = new OracleHierarchicalExpression();
 	Expression expr;
-	Expression connectExpr;
 }
 {
 	(
 				<K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);}
-				<K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] connectExpr=AndExpression()
+				<K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
+                { result.setConnectExpression(expr); }
 			|
-				<K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] connectExpr=AndExpression()
+				<K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
+                { 
+                    result.setConnectExpression(expr); 
+                    result.setConnectFirst(true);
+                }
 				[ <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);} ]
 	)
 	{
-		result.setConnectExpression(connectExpr);
 		return result;
 	}
 }

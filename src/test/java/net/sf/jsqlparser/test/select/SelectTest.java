@@ -1615,8 +1615,7 @@ public class SelectTest extends TestCase {
 
     public void testOracleHierarchicalQuery4() throws JSQLParserException {
         String stmt = "SELECT last_name, employee_id, manager_id, LEVEL FROM employees CONNECT BY PRIOR employee_id = manager_id START WITH employee_id = 100 ORDER SIBLINGS BY last_name";
-        Statement parsed = CCJSqlParserUtil.parse(new StringReader(stmt));
-        assertStatementCanBeDeparsedAs(parsed, "SELECT last_name, employee_id, manager_id, LEVEL FROM employees START WITH employee_id = 100 CONNECT BY PRIOR employee_id = manager_id ORDER SIBLINGS BY last_name");
+        assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
     public void testPostgreSQLRegExpCaseSensitiveMatch() throws JSQLParserException {
