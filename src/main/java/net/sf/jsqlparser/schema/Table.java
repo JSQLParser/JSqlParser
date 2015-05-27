@@ -22,12 +22,13 @@
 package net.sf.jsqlparser.schema;
 
 import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.*;
 
 /**
  * A table. It can have an alias and the schema name it belongs to.
  */
-public class Table implements FromItem, MultiPartName {
+public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName {
 
     private Database database;
     private String schemaName;
