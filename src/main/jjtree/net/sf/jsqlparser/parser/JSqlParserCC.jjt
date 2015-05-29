@@ -84,6 +84,10 @@ public class CCJSqlParser {
         access.setASTNode(node);
         node.jjtSetValue(access);
     }
+
+    public Node getASTRoot() {
+        return jjtree.rootNode();
+    }
 }
 
 PARSER_END(CCJSqlParser)
