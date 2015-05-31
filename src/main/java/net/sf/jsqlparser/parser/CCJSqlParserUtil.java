@@ -51,6 +51,16 @@ public final class CCJSqlParserUtil {
 			throw new JSQLParserException(ex);
 		} 
 	}
+    
+    public static Node parseAST(String sql) throws JSQLParserException {
+		CCJSqlParser parser = new CCJSqlParser(new StringReader(sql));
+		try {
+            parser.Statement();
+			return parser.jjtree.rootNode();
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
+	}
 	
 	public static Statement parse(InputStream is) throws JSQLParserException {
 		CCJSqlParser parser = new CCJSqlParser(is);

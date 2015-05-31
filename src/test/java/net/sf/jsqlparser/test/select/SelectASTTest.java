@@ -20,6 +20,7 @@ package net.sf.jsqlparser.test.select;
 
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserTreeConstants;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.SimpleNode;
 import net.sf.jsqlparser.schema.Column;
@@ -60,5 +61,13 @@ public class SelectASTTest extends TestCase {
             b.setCharAt(astNode.jjtGetFirstToken().beginColumn-1, '#');
         }
         assertEquals("SELECT  *,  * FROM  mytable  order by   #,  #", b.toString());
+    }
+    
+    public void testSelectASTNode() throws JSQLParserException {
+        String sql = "SELECT  a,  b FROM  mytable  order by   b,  c";
+        StringBuilder b = new StringBuilder(sql);
+        SimpleNode node = (SimpleNode) CCJSqlParserUtil.parseAST(sql);
+        node.dump("*");
+        assertEquals(CCJSqlParserTreeConstants.JJTSTATEMENT, node.getId());
     }
 }

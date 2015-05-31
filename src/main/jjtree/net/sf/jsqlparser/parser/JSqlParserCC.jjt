@@ -259,13 +259,15 @@ a configurable addition. One must rebuild JSqlParser with this new "Letterset".
 |   < #ADDITIONAL_LETTERS: ["ä","ö","ü","Ä","Ö","Ü","ß"] >
 }
 
-Statement Statement() : 
+Statement Statement() #Statement: 
 { Statement stm; } 
 {
     stm = SingleStatement()
     [";"]
     <EOF>
-    { return stm; }
+    { 
+        return stm; 
+    }
 }
 
 Statement SingleStatement() :
@@ -304,7 +306,7 @@ Statement SingleStatement() :
     { return stm; }
 }
 
-Statements Statements() : 
+Statements Statements() #Statements : 
 { Statements stmts = new Statements();
   List<Statement> list = new ArrayList<Statement>();
   Statement stm; }
@@ -1306,7 +1308,7 @@ Top Top():
 	}
 }
 
-Expression Expression():
+Expression Expression() #Expression :
 {
 	Expression retval = null;
 }
