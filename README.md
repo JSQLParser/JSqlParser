@@ -35,6 +35,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.4
 
+* established JJTree nodes for columns and tables (look at *SelectASTTest*) for first usages
 * support for MySQL **GROUP_CONCAT**
 
 ```sql
