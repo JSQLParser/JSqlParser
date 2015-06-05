@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import net.sf.jsqlparser.JSQLParserException;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -305,6 +306,17 @@ public class TablesNamesFinderTest {
 		assertTrue(tableList.contains("mytable"));
         assertTrue(tableList.contains("mytable2"));
 	}
+    
+    @Test
+    public void testInsertSubSelect() throws JSQLParserException {
+        String sql = "INSERT INTO Customers (CustomerName, Country) SELECT SupplierName, Country FROM Suppliers WHERE Country='Germany'";
+        Insert insert = (Insert) pm.parse(new StringReader(sql));
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(insert);
+        assertEquals(2, tableList.size());
+        assertTrue(tableList.contains("Customers"));
+        assertTrue(tableList.contains("Suppliers"));
+    }
 
 	private String getLine(BufferedReader in) throws Exception {
 		return CCJSqlParserManagerTest.getLine(in);
