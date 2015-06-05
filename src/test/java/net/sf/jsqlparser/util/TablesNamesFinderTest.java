@@ -8,8 +8,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -316,6 +318,16 @@ public class TablesNamesFinderTest {
         assertEquals(2, tableList.size());
         assertTrue(tableList.contains("Customers"));
         assertTrue(tableList.contains("Suppliers"));
+    }
+    
+    @Test
+    public void testExpr() throws JSQLParserException {
+        String sql = "mycol in (select col2 from mytable)";
+        Expression expr = (Expression) CCJSqlParserUtil.parseCondExpression(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(expr);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("mytable"));
     }
 
 	private String getLine(BufferedReader in) throws Exception {

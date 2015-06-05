@@ -172,6 +172,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
         return tables;
     }
+    
+    public List<String> getTableList(Expression expr) {
+        init();
+        expr.accept(this);
+
+        return tables;
+    }
 
     @Override
     public void visit(WithItem withItem) {
