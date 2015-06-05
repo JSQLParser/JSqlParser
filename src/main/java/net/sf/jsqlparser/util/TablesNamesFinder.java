@@ -466,7 +466,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(ValuesList valuesList) {
     }
 
-    private void init() {
+    /**
+     * Initializes table names collector.
+     */
+    protected void init() {
         otherItemNames = new ArrayList<String>();
         tables = new ArrayList<String>();
     }
