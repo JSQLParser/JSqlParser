@@ -36,12 +36,21 @@ import net.sf.jsqlparser.statement.update.Update;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.drop.Drop;
+import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.truncate.Truncate;
 
 /**
  * Find all used tables within an select statement.
  */
-public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor {
+public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor, StatementVisitor  {
 
     private List<String> tables;
     /**
@@ -59,11 +68,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      */
     public List<String> getTableList(Delete delete) {
         init();
-        tables.add(delete.getTable().getName());
-        if (delete.getWhere() != null) {
-            delete.getWhere().accept(this);
-        }
-
+        delete.accept(this);
         return tables;
     }
 
@@ -75,14 +80,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      */
     public List<String> getTableList(Insert insert) {
         init();
-        tables.add(insert.getTable().getName());
-        if (insert.getItemsList() != null) {
-            insert.getItemsList().accept(this);
-        }
-        if (insert.getSelect() != null) {
-            visit(insert.getSelect());
-        }
-
+        insert.accept(this);
         return tables;
     }
 
@@ -94,16 +92,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      */
     public List<String> getTableList(Replace replace) {
         init();
-        tables.add(replace.getTable().getName());
-        if (replace.getExpressions() != null) {
-            for (Expression expression : replace.getExpressions()) {
-                expression.accept(this);
-            }
-        }
-        if (replace.getItemsList() != null) {
-            replace.getItemsList().accept(this);
-        }
-
+        replace.accept(this);
         return tables;
     }
 
@@ -115,11 +104,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      */
     public List<String> getTableList(Select select) {
         init();
-        visit(select);
-
+        select.accept(this);
         return tables;
     }
 
+    @Override
     public void visit(Select select) {
         if (select.getWithItemsList() != null) {
             for (WithItem withItem : select.getWithItemsList()) {
@@ -137,46 +126,19 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      */
     public List<String> getTableList(Update update) {
         init();
-        for (Table table : update.getTables()) {
-            tables.add(table.getName());
-        }
-        if (update.getExpressions() != null) {
-            for (Expression expression : update.getExpressions()) {
-                expression.accept(this);
-            }
-        }
-
-        if (update.getFromItem() != null) {
-            update.getFromItem().accept(this);
-        }
-
-        if (update.getJoins() != null) {
-            for (Join join : update.getJoins()) {
-                join.getRightItem().accept(this);
-            }
-        }
-
-        if (update.getWhere() != null) {
-            update.getWhere().accept(this);
-        }
-
+        update.accept(this);
         return tables;
     }
 
     public List<String> getTableList(CreateTable create) {
         init();
-        tables.add(create.getTable().getFullyQualifiedName());
-        if (create.getSelect() != null) {
-            visit(create.getSelect());
-        }
-
+        create.accept(this);
         return tables;
     }
     
     public List<String> getTableList(Expression expr) {
         init();
         expr.accept(this);
-
         return tables;
     }
 
@@ -546,5 +508,111 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(MySQLGroupConcat groupConcat) {
+    }
+
+    @Override
+    public void visit(Delete delete) {
+        tables.add(delete.getTable().getName());
+        if (delete.getWhere() != null) {
+            delete.getWhere().accept(this);
+        }
+    }
+
+    @Override
+    public void visit(Update update) {
+        for (Table table : update.getTables()) {
+            tables.add(table.getName());
+        }
+        if (update.getExpressions() != null) {
+            for (Expression expression : update.getExpressions()) {
+                expression.accept(this);
+            }
+        }
+
+        if (update.getFromItem() != null) {
+            update.getFromItem().accept(this);
+        }
+
+        if (update.getJoins() != null) {
+            for (Join join : update.getJoins()) {
+                join.getRightItem().accept(this);
+            }
+        }
+
+        if (update.getWhere() != null) {
+            update.getWhere().accept(this);
+        }
+    }
+
+    @Override
+    public void visit(Insert insert) {
+        tables.add(insert.getTable().getName());
+        if (insert.getItemsList() != null) {
+            insert.getItemsList().accept(this);
+        }
+        if (insert.getSelect() != null) {
+            visit(insert.getSelect());
+        }
+    }
+
+    @Override
+    public void visit(Replace replace) {
+        tables.add(replace.getTable().getName());
+        if (replace.getExpressions() != null) {
+            for (Expression expression : replace.getExpressions()) {
+                expression.accept(this);
+            }
+        }
+        if (replace.getItemsList() != null) {
+            replace.getItemsList().accept(this);
+        }
+    }
+
+    @Override
+    public void visit(Drop drop) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(Truncate truncate) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(CreateIndex createIndex) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(CreateTable create) {
+        tables.add(create.getTable().getFullyQualifiedName());
+        if (create.getSelect() != null) {
+            create.getSelect().accept(this);
+        }
+    }
+
+    @Override
+    public void visit(CreateView createView) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(Alter alter) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(Statements stmts) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(Execute execute) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(SetStatement set) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
