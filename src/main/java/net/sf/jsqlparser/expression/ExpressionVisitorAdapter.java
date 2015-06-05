@@ -27,9 +27,32 @@ import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.PivotVisitor;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVisitor {
+
+    private SelectVisitor selectVisitor;
+
+    public SelectVisitor getSelectVisitor() {
+        return selectVisitor;
+    }
+
+    public void setSelectVisitor(SelectVisitor selectVisitor) {
+        this.selectVisitor = selectVisitor;
+    }
+
+    private PivotVisitor pivotVisitor;
+
+    public PivotVisitor getPivotVisitor() {
+        return pivotVisitor;
+    }
+
+    public void setPivotVisitor(PivotVisitor pivotVisitor) {
+        this.pivotVisitor = pivotVisitor;
+    }
 
     @Override
     public void visit(NullValue value) {
@@ -38,7 +61,12 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(Function function) {
-
+        if (function.getParameters() != null) {
+            function.getParameters().accept(this);
+        }
+        if (function.getKeep() != null) {
+            function.getKeep().accept(this);
+        }
     }
 
     @Override
@@ -182,7 +210,15 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(SubSelect subSelect) {
-
+        if (selectVisitor != null) {
+            for (WithItem item : subSelect.getWithItemsList()) {
+                item.accept(selectVisitor);
+            }
+        }
+        subSelect.getSelectBody().accept(selectVisitor);
+        if (pivotVisitor != null && subSelect.getPivot() != null) {
+            subSelect.getPivot().accept(pivotVisitor);
+        }
     }
 
     @Override
@@ -274,7 +310,6 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(IntervalExpression expr) {
-
     }
 
     @Override
