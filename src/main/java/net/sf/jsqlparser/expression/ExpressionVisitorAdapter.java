@@ -26,13 +26,21 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.ExpressionListItem;
+import net.sf.jsqlparser.statement.select.FunctionItem;
 import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
+import net.sf.jsqlparser.statement.select.PivotXml;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
-public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVisitor {
+public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVisitor, PivotVisitor, SelectItemVisitor {
 
     private SelectVisitor selectVisitor;
 
@@ -42,16 +50,6 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     public void setSelectVisitor(SelectVisitor selectVisitor) {
         this.selectVisitor = selectVisitor;
-    }
-
-    private PivotVisitor pivotVisitor;
-
-    public PivotVisitor getPivotVisitor() {
-        return pivotVisitor;
-    }
-
-    public void setPivotVisitor(PivotVisitor pivotVisitor) {
-        this.pivotVisitor = pivotVisitor;
     }
 
     @Override
@@ -216,8 +214,8 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             }
         }
         subSelect.getSelectBody().accept(selectVisitor);
-        if (pivotVisitor != null && subSelect.getPivot() != null) {
-            subSelect.getPivot().accept(pivotVisitor);
+        if (subSelect.getPivot() != null) {
+            subSelect.getPivot().accept(this);
         }
     }
 
@@ -387,5 +385,51 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
                 element.getExpression().accept(this);
             }
         }
+    }
+
+    @Override
+    public void visit(Pivot pivot) {
+        for (FunctionItem item : pivot.getFunctionItems()) {
+            item.getFunction().accept(this);
+        }
+        for (Column col : pivot.getForColumns()) {
+            col.accept(this);
+        }
+        if (pivot.getSingleInItems()!=null)
+            for (SelectExpressionItem item : pivot.getSingleInItems()) {
+                item.accept(this);
+            }
+        
+        if (pivot.getMultiInItems()!=null) 
+            for (ExpressionListItem item : pivot.getMultiInItems()) {
+                item.getExpressionList().accept(this);
+            }
+    }
+
+    @Override
+    public void visit(PivotXml pivot) {
+        for (FunctionItem item : pivot.getFunctionItems()) {
+            item.getFunction().accept(this);
+        }
+        for (Column col : pivot.getForColumns()) {
+            col.accept(this);
+        }
+        if (pivot.getInSelect()!=null)
+            pivot.getInSelect().accept(selectVisitor);
+    }
+
+    @Override
+    public void visit(AllColumns allColumns) {
+        
+    }
+
+    @Override
+    public void visit(AllTableColumns allTableColumns) {
+        
+    }
+
+    @Override
+    public void visit(SelectExpressionItem selectExpressionItem) {
+        selectExpressionItem.getExpression().accept(this);
     }
 }
