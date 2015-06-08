@@ -37,7 +37,7 @@ import net.sf.jsqlparser.statement.update.Update;
 public class StatementVisitorAdapter implements StatementVisitor {
     @Override
     public void visit(Select select) {
-
+        
     }
 
     @Override

@@ -29,7 +29,7 @@ public class SelectVisitorAdapter implements SelectVisitor {
 
     @Override
     public void visit(SetOperationList setOpList) {
-
+       
     }
 
     @Override
