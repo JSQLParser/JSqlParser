@@ -214,6 +214,11 @@
                 <configuration>
                     <format>xml</format>
                     <maxmem>256m</maxmem>
+                    <instrumentation>
+                        <excludes>
+                            <exclude>net/sf/jsqlparser/parser/*.class</exclude>
+                        </excludes>
+                    </instrumentation>
                 </configuration>
             </plugin>
         </plugins>
