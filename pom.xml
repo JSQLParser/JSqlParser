@@ -217,6 +217,7 @@
                     <instrumentation>
                         <excludes>
                             <exclude>net/sf/jsqlparser/parser/*.class</exclude>
+                            <exclude>net/sf/jsqlparser/JSQLParserException.class</exclude>
                         </excludes>
                     </instrumentation>
                 </configuration>
