@@ -234,7 +234,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(NullValue nullValue) {
-        buffer.append("NULL");
+        buffer.append(nullValue.toString());
 
     }
 
