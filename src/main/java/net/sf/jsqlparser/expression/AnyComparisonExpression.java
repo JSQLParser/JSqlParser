@@ -25,7 +25,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 
 public class AnyComparisonExpression implements Expression {
 
-	private SubSelect subSelect;
+	private final SubSelect subSelect;
 
 	public AnyComparisonExpression(SubSelect subSelect) {
 		this.subSelect = subSelect;
@@ -39,4 +39,9 @@ public class AnyComparisonExpression implements Expression {
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
+    
+    @Override
+    public String toString() {
+        return "ANY " + subSelect.toString();
+    }
 }
