@@ -478,7 +478,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(ExtractExpression eexpr) {
-        buffer.append(eexpr.toString());
+        buffer.append("EXTRACT(").append(eexpr.getName());
+        buffer.append(" FROM ");
+        eexpr.getExpression().accept(this);
+        buffer.append(')');
     }
 
     @Override
