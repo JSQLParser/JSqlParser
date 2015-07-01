@@ -35,6 +35,11 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.4
 
+* support for **row constructors in conditions**
+
+```sql
+SELECT * FROM t1 WHERE ROW(col1, col2) = (SELECT col3, col4 FROM t2 WHERE id = 10)
+```
 * some refactorings for TablesNamesFinder to improve usability
 * established JJTree nodes for columns and tables (look at *SelectASTTest*) for first usages
 * support for MySQL **GROUP_CONCAT**
