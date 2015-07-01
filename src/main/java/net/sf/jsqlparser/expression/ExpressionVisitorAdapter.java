@@ -432,4 +432,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(SelectExpressionItem selectExpressionItem) {
         selectExpressionItem.getExpression().accept(this);
     }
+
+    @Override
+    public void visit(RowConstructor rowConstructor) {
+        for (Expression expr : rowConstructor.getExprList().getExpressions()) {
+            expr.accept(this);
+        }
+    }
 }

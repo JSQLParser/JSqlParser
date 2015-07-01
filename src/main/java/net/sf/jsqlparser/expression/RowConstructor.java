@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2015 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -21,37 +21,43 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
 /**
- * Combines ANY and SOME expressions.
- * @author toben
+ * Rowconstructor.
+ * @author tw
  */
-public class AnyComparisonExpression implements Expression {
+public class RowConstructor implements Expression {
 
-	private final SubSelect subSelect;
-    private final AnyType anyType;
-   
-	public AnyComparisonExpression(AnyType anyType, SubSelect subSelect) {
-        this.anyType = anyType;
-		this.subSelect = subSelect;
+	private ExpressionList exprList;
+    private String name = null;
+
+	public RowConstructor() {
 	}
 
-	public SubSelect getSubSelect() {
-		return subSelect;
-	}
+    public ExpressionList getExprList() {
+        return exprList;
+    }
+
+    public void setExprList(ExpressionList exprList) {
+        this.exprList = exprList;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
 	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
 	}
 
-    public AnyType getAnyType() {
-        return anyType;
-    }
-    
-    @Override
-    public String toString() {
-        return anyType.name() + " " + subSelect.toString();
-    }
+	@Override
+	public String toString() {
+		return (name !=null ? name : "") + exprList.toString();
+	}
 }

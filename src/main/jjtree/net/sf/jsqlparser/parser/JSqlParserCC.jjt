@@ -1584,6 +1584,20 @@ ExpressionList SimpleExpressionList():
 	}
 }
 
+ExpressionList SimpleExpressionListAtLeastTwoItems():
+{
+	ExpressionList retval = new ExpressionList();
+	List<Expression> expressions = new ArrayList<Expression>();
+	Expression expr = null;
+}
+{
+    expr=SimpleExpression() { expressions.add(expr); } ("," expr=SimpleExpression() { expressions.add(expr); })+
+	{
+		retval.setExpressions(expressions);
+		return retval;
+	}
+}
+
 Expression ComparisonItem() :
 {
 	Expression retval = null;
@@ -1592,7 +1606,8 @@ Expression ComparisonItem() :
   (
     retval=AllComparisonExpression()
     | LOOKAHEAD(AnyComparisonExpression()) retval=AnyComparisonExpression()
-    | retval=SimpleExpression()
+    | LOOKAHEAD(3) retval=SimpleExpression()
+    | retval=RowConstructor()
   )
 
    {
@@ -1615,10 +1630,12 @@ Expression AllComparisonExpression() :
 Expression AnyComparisonExpression() :
 {
 	AnyComparisonExpression retval = null;
+    AnyType anyType;
 	SubSelect subselect = null;
 }
 {
- (<K_ANY> | <K_SOME>) "(" subselect=SubSelect() ")" { retval = new AnyComparisonExpression(subselect); }
+ (<K_ANY> { anyType = AnyType.ANY; } | <K_SOME> { anyType = AnyType.SOME; } ) 
+ "(" subselect=SubSelect() ")" { retval = new AnyComparisonExpression(anyType, subselect); }
    {
       return retval;
    }
@@ -1792,7 +1809,7 @@ Expression PrimaryExpression():
 
 	| retval=CaseWhenExpression()
 
-	| "?" { retval = new JdbcParameter(); } [ token = <S_LONG> { ((JdbcParameter)retval).setIndex(Integer.valueOf(token.image)); } ]
+	| "?" { retval = new JdbcParameter(); } [ LOOKAHEAD(2) token = <S_LONG> { ((JdbcParameter)retval).setIndex(Integer.valueOf(token.image)); } ]
 
     | LOOKAHEAD(2) retval=JdbcNamedParameter()
 
@@ -2123,6 +2140,23 @@ WhenClause WhenThenValue():
 	   whenThen.setThenExpression(thenExp);
 	   return whenThen;
 	}
+}
+
+RowConstructor RowConstructor(): {
+    ExpressionList list = null;
+    RowConstructor rowConstructor = new RowConstructor();
+} {
+    //("(" list =SimpleExpressionListAtLeastTwoItems() ")"
+    //|
+    [ <K_ROW> { rowConstructor.setName("ROW");} ]
+    "("
+        list = SimpleExpressionList()
+    ")"
+
+    {
+        rowConstructor.setExprList(list);
+        return rowConstructor;
+    }
 }
 
 Execute Execute(): {

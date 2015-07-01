@@ -158,4 +158,6 @@ public interface ExpressionVisitor {
     void visit(KeepExpression aexpr);
     
     void visit(MySQLGroupConcat groupConcat);
+    
+    void visit(RowConstructor rowConstructor);
 }

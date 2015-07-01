@@ -422,7 +422,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(AnyComparisonExpression anyComparisonExpression) {
-        buffer.append("ANY ");
+        buffer.append(anyComparisonExpression.getAnyType().name()).append(" ");
         anyComparisonExpression.getSubSelect().accept((ExpressionVisitor) this);
     }
 
@@ -544,5 +544,23 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(MySQLGroupConcat groupConcat) {
         buffer.append(groupConcat.toString());
+    }
+
+    @Override
+    public void visit(RowConstructor rowConstructor) {
+        if (rowConstructor.getName() != null) {
+            buffer.append(rowConstructor.getName());
+        }
+        buffer.append("(");
+        boolean first = true;
+        for (Expression expr : rowConstructor.getExprList().getExpressions()) {
+            if (first) {
+                first = false;
+            } else {
+                buffer.append(", ");
+            }
+            expr.accept(this);
+        }
+        buffer.append(")");
     }
 }

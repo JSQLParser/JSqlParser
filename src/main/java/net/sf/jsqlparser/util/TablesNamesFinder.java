@@ -615,4 +615,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(SetStatement set) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public void visit(RowConstructor rowConstructor) {
+        for (Expression expr : rowConstructor.getExprList().getExpressions()) {
+            expr.accept(this);
+        }
+    }
 }
