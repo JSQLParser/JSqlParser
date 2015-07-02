@@ -8,7 +8,7 @@ Look here for more information and examples: https://github.com/JSQLParser/JSqlP
 
 ## License
 
-JSqlParser is licensed under the **LGPL V2.1**.
+JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, Version 2.0**.
 
 
 ## News
@@ -35,6 +35,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.4
 
+* revived Apache Software License, Version 2.0
 * support for **row constructors in conditions**
 
 ```sql
