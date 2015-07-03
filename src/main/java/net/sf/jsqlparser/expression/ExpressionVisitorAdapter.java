@@ -171,8 +171,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(InExpression expr) {
-        expr.getLeftExpression().accept(this);
-        expr.getLeftItemsList().accept(this);
+        if (expr.getLeftExpression() != null) {
+            expr.getLeftExpression().accept(this);
+        } else if (expr.getLeftItemsList() != null) {
+            expr.getLeftItemsList().accept(this);
+        }
         expr.getRightItemsList().accept(this);
     }
 
@@ -212,8 +215,8 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             for (WithItem item : subSelect.getWithItemsList()) {
                 item.accept(selectVisitor);
             }
+            subSelect.getSelectBody().accept(selectVisitor);
         }
-        subSelect.getSelectBody().accept(selectVisitor);
         if (subSelect.getPivot() != null) {
             subSelect.getPivot().accept(this);
         }
@@ -395,15 +398,17 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         for (Column col : pivot.getForColumns()) {
             col.accept(this);
         }
-        if (pivot.getSingleInItems()!=null)
+        if (pivot.getSingleInItems() != null) {
             for (SelectExpressionItem item : pivot.getSingleInItems()) {
                 item.accept(this);
             }
-        
-        if (pivot.getMultiInItems()!=null) 
+        }
+
+        if (pivot.getMultiInItems() != null) {
             for (ExpressionListItem item : pivot.getMultiInItems()) {
                 item.getExpressionList().accept(this);
             }
+        }
     }
 
     @Override
@@ -414,18 +419,21 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         for (Column col : pivot.getForColumns()) {
             col.accept(this);
         }
-        if (pivot.getInSelect()!=null)
-            pivot.getInSelect().accept(selectVisitor);
+        if (pivot.getInSelect() != null) {
+            if (selectVisitor != null) {
+                pivot.getInSelect().accept(selectVisitor);
+            }
+        }
     }
 
     @Override
     public void visit(AllColumns allColumns) {
-        
+
     }
 
     @Override
     public void visit(AllTableColumns allTableColumns) {
-        
+
     }
 
     @Override
