@@ -86,6 +86,16 @@ public class CreateTableTest extends TestCase {
 		String statement = "CREATE TABLE test (id INT UNSIGNED NOT NULL AUTO_INCREMENT, string VARCHAR (20), user_id INT UNSIGNED, PRIMARY KEY (id), CONSTRAINT fkIdx FOREIGN KEY (user_id) REFERENCES ra_user(id))";
 		assertSqlCanBeParsedAndDeparsed(statement);
 	}
+
+    public void testCreateTableForeignKey3() throws JSQLParserException {
+        String statement = "CREATE TABLE test (id INT UNSIGNED NOT NULL AUTO_INCREMENT, string VARCHAR (20), user_id INT UNSIGNED REFERENCES ra_user(id), PRIMARY KEY (id))";
+        assertSqlCanBeParsedAndDeparsed(statement,true);
+    }
+
+    public void testCreateTableForeignKey4() throws JSQLParserException {
+        String statement = "CREATE TABLE test (id INT UNSIGNED NOT NULL AUTO_INCREMENT, string VARCHAR (20), user_id INT UNSIGNED FOREIGN KEY REFERENCES ra_user(id), PRIMARY KEY (id))";
+        assertSqlCanBeParsedAndDeparsed(statement,true);
+    }
     
     public void testCreateTablePrimaryKey() throws JSQLParserException {
 		String statement = "CREATE TABLE test (id INT UNSIGNED NOT NULL AUTO_INCREMENT, string VARCHAR (20), user_id INT UNSIGNED, CONSTRAINT pk_name PRIMARY KEY (id))";

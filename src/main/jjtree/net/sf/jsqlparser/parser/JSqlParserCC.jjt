@@ -2522,6 +2522,10 @@ String CreateParameter():
 			tk=<K_NOT> { retval = tk.image; }
 			|
 			tk=<K_PRIMARY> { retval = tk.image; }
+			|
+			tk=<K_FOREIGN> { retval=tk.image; }
+            |
+            tk=<K_REFERENCES> { retval=tk.image; }
             |
 			tk=<K_KEY> { retval = tk.image; }
 			|
