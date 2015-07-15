@@ -13,7 +13,8 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 ## News
 
-Version **0.9.3** released.
+* Please test the actual SNAPSHOT, if there are problems using the extended identifier token.
+* Version **0.9.3** released.
 
 More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
 
@@ -35,6 +36,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.4
 
+* Completely rewritten S_IDENTIFIER rule to accept hopefully all possible UTF-8 letters without
+  specifying some additional rules.
 * allow **Server** within multipart names to act as database link
 * revived Apache Software License, Version 2.0
 * support for **row constructors in conditions**
