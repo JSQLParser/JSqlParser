@@ -1380,6 +1380,14 @@ public class SelectTest extends TestCase {
 
         stmt = "SELECT Äcol FROM testtableÄÖÜ";
         assertSqlCanBeParsedAndDeparsed(stmt);
+        
+        stmt = "SELECT ßcolß FROM testtableß";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+    
+    public void testAdditionalLettersSpanish() throws JSQLParserException {
+        String stmt = "SELECT * FROM años";
+        assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
     public void testMultiTableJoin() throws JSQLParserException {
