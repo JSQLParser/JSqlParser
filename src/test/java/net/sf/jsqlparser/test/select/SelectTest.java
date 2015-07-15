@@ -45,6 +45,11 @@ public class SelectTest extends TestCase {
 
         assertStatementCanBeDeparsedAs(select, statement);
     }
+    
+    public void testMultiPartTableNameWithServerProblem() throws Exception {
+        final String statement = "SELECT * FROM LINK_100.htsac.dbo.t_transfer_num a";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
 
     public void testMultiPartTableNameWithServerName() throws Exception {
         final String statement = "SELECT columnName FROM [server-name\\server-instance]...tableName";

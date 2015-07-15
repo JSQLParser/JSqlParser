@@ -32,8 +32,8 @@ public class ServerTest extends TestCase {
         final String fullServerName = String.format("[%s]", serverName);
         final Server server = new Server(fullServerName);
 
-        Assert.assertEquals(serverName, server.getServerName());
-        Assert.assertEquals(fullServerName, server.toString());
+        assertEquals(serverName, server.getServerName());
+        assertEquals(fullServerName, server.toString());
     }
 
     public void testServerNameAndInstanceParsing() throws Exception {
@@ -43,9 +43,9 @@ public class ServerTest extends TestCase {
         final String fullServerName = String.format("[%s\\%s]", serverName, serverInstanceName);
         final Server server = new Server(fullServerName);
 
-        Assert.assertEquals(serverName, server.getServerName());
-        Assert.assertEquals(serverInstanceName, server.getInstanceName());
-        Assert.assertEquals(fullServerName, server.toString());
+        assertEquals(serverName, server.getServerName());
+        assertEquals(serverInstanceName, server.getInstanceName());
+        assertEquals(fullServerName, server.toString());
 
     }
 }

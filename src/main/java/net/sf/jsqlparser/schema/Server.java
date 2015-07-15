@@ -24,20 +24,23 @@ package net.sf.jsqlparser.schema;
 import java.util.regex.*;
 
 public final class Server implements MultiPartName {
+
     public static final Pattern SERVER_PATTERN = Pattern.compile("\\[([^\\]]+?)(?:\\\\([^\\]]+))?\\]");
 
     private String serverName;
     private String instanceName;
-
+    private String simpleName;
 
     public Server(String serverAndInstanceName) {
         if (serverAndInstanceName != null) {
             final Matcher matcher = SERVER_PATTERN.matcher(serverAndInstanceName);
             if (!matcher.find()) {
-                throw new IllegalArgumentException(String.format("%s is not a valid database reference", serverAndInstanceName));
+                //throw new IllegalArgumentException(String.format("%s is not a valid database reference", serverAndInstanceName));
+                simpleName = serverAndInstanceName;
+            } else {
+                setServerName(matcher.group(1));
+                setInstanceName(matcher.group(2));
             }
-            setServerName(matcher.group(1));
-            setInstanceName(matcher.group(2));
         }
     }
 
@@ -68,6 +71,8 @@ public final class Server implements MultiPartName {
             return String.format("[%s\\%s]", serverName, instanceName);
         } else if (serverName != null && !serverName.isEmpty()) {
             return String.format("[%s]", serverName);
+        } else if (simpleName != null && !simpleName.isEmpty()) {
+            return simpleName;
         } else {
             return "";
         }

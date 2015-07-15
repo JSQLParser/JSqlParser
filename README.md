@@ -35,6 +35,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.4
 
+* allow **Server** within multipart names to act as database link
 * revived Apache Software License, Version 2.0
 * support for **row constructors in conditions**
 
