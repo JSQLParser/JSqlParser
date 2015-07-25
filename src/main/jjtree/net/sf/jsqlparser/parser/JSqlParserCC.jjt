@@ -221,6 +221,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_KEEP:"KEEP">
 |   <K_GROUP_CONCAT:"GROUP_CONCAT">
 |   <K_SEPARATOR:"SEPARATOR">
+|   <K_SKIP: "SKIP">
 }
 
 TOKEN : /* Numeric Constants */
@@ -638,12 +639,18 @@ PlainSelect PlainSelect():
 	Offset offset = null;
 	Fetch fetch = null;
 	Top top = null;
+        Skip skip = null;
+        First first = null;
 	OracleHierarchicalExpression oracleHierarchicalQueryClause = null;
     List<Table> intoTables = null;
     Table updateTable = null;
 }
 {
     <K_SELECT>
+
+    [LOOKAHEAD(<K_SKIP> (<S_LONG> | "?")) skip = Skip() { plainSelect.setSkip(skip);	} ]
+
+    [LOOKAHEAD((<K_FIRST> | <K_LIMIT>) (<S_LONG> | "?")) first = First() { plainSelect.setFirst(first);	} ]
 
     [
     	<K_ALL>
@@ -655,7 +662,6 @@ PlainSelect PlainSelect():
     ]
 
     [top = Top() { plainSelect.setTop(top);	} ]
-
 
     selectItems=SelectItemsList()
 
@@ -1296,6 +1302,41 @@ Top Top():
 	) [ LOOKAHEAD(2) <K_PERCENT>            { top.setPercentage(true); } ] 
 	{
 		return top;
+	}
+}
+
+// according to http://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqls.doc/ids_sqs_0156.htm
+Skip Skip():
+{
+	Skip skip = new Skip();
+	Token token = null;
+}
+{
+	<K_SKIP>
+	(
+	 	token=<S_LONG>                      { skip.setRowCount(Long.parseLong(token.image)); }
+                | "?" { skip.setJdbcParameter(new JdbcParameter()); } [ LOOKAHEAD(2) token = <S_LONG> { skip.getJdbcParameter().setIndex(Integer.valueOf(token.image)); } ]
+	)
+	{
+		return skip;
+	}
+}
+
+First First():
+{
+	First first = new First();
+	Token token = null;
+}
+{
+	( <K_FIRST>                                 { first.setKeyword(First.Keyword.FIRST); }
+            |  <K_LIMIT>                            { first.setKeyword(First.Keyword.LIMIT); }
+        )
+	(
+	 	token=<S_LONG>                      { first.setRowCount(Long.parseLong(token.image)); }
+                |  "?" { first.setJdbcParameter(new JdbcParameter()); } [ LOOKAHEAD(2) token = <S_LONG> { first.getJdbcParameter().setIndex(Integer.valueOf(token.image)); } ]
+	)
+	{
+		return first;
 	}
 }
 

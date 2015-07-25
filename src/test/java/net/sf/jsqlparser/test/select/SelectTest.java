@@ -425,7 +425,93 @@ public class SelectTest extends TestCase {
 
         assertStatementCanBeDeparsedAs(select, statement);
     }
+    
+    public void testSkip() throws JSQLParserException {
+        final String firstColumnName = "alias.columnName1";
+        final String secondColumnName = "alias.columnName2";
+        final String statement = "SELECT SKIP 5 " + firstColumnName + ", " + secondColumnName + " FROM schemaName.tableName alias ORDER BY " + secondColumnName + " DESC";
+        final Select select = (Select) parserManager.parse(new StringReader(statement));
 
+        final PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+
+        final Skip skip = selectBody.getSkip();
+        assertEquals((long) 5, (long) skip.getRowCount());
+        assertNull(skip.getJdbcParameter());
+
+        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        assertEquals(2, selectItems.size());
+        assertEquals(firstColumnName, selectItems.get(0).toString());
+        assertEquals(secondColumnName, selectItems.get(1).toString());
+
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+    
+    public void testFirst() throws JSQLParserException {
+        final String firstColumnName = "alias.columnName1";
+        final String secondColumnName = "alias.columnName2";
+        final String statement = "SELECT FIRST 5 " + firstColumnName + ", " + secondColumnName + " FROM schemaName.tableName alias ORDER BY " + secondColumnName + " DESC";
+        final Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        final PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+
+        final First limit = selectBody.getFirst();
+        assertEquals((long) 5, (long) limit.getRowCount());
+        assertNull(limit.getJdbcParameter());
+        assertEquals(First.Keyword.FIRST, limit.getKeyword());
+
+        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        assertEquals(2, selectItems.size());
+        assertEquals(firstColumnName, selectItems.get(0).toString());
+        assertEquals(secondColumnName, selectItems.get(1).toString());
+
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    public void testFirstWithKeywordLimit() throws JSQLParserException {
+        final String firstColumnName = "alias.columnName1";
+        final String secondColumnName = "alias.columnName2";
+        final String statement = "SELECT LIMIT ? " + firstColumnName + ", " + secondColumnName + " FROM schemaName.tableName alias ORDER BY " + secondColumnName + " DESC";
+        final Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        final PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+
+        final First limit = selectBody.getFirst();
+        assertNull(limit.getRowCount());
+        assertNotNull(limit.getJdbcParameter());
+        assertNull(limit.getJdbcParameter().getIndex());
+        assertEquals(First.Keyword.LIMIT, limit.getKeyword());
+
+        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        assertEquals(2, selectItems.size());
+        assertEquals(firstColumnName, selectItems.get(0).toString());
+        assertEquals(secondColumnName, selectItems.get(1).toString());
+
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+    
+    public void testSkipFirst() throws JSQLParserException {
+        final String statement = "SELECT SKIP ?1 FIRST ?2 c1, c2 FROM t1";
+        final Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        final PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+
+        final Skip skip = selectBody.getSkip();
+        assertNotNull(skip.getJdbcParameter());
+        assertNotNull(skip.getJdbcParameter().getIndex());
+        assertEquals((int) 1, (int) skip.getJdbcParameter().getIndex());
+        final First first = selectBody.getFirst();
+        assertNotNull(first.getJdbcParameter());
+        assertNotNull(first.getJdbcParameter().getIndex());
+        assertEquals((int) 2, (int) first.getJdbcParameter().getIndex());
+
+        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        assertEquals(2, selectItems.size());
+        assertEquals("c1", selectItems.get(0).toString());
+        assertEquals("c2", selectItems.get(1).toString());
+        
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+    
     public void testSelectItems() throws JSQLParserException {
         String statement = "SELECT myid AS MYID, mycol, tab.*, schema.tab.*, mytab.mycol2, myschema.mytab.mycol, myschema.mytab.* FROM mytable WHERE mytable.col = 9";
         Select select = (Select) parserManager.parse(new StringReader(statement));
