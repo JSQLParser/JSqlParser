@@ -31,6 +31,7 @@ To help JSqlParsers development you are encouraged to provide
 * bugreports
 * pull requests for new features
 * improvement requests
+* fund new features
 
 Also I would like to know about needed examples or documentation stuff.
 

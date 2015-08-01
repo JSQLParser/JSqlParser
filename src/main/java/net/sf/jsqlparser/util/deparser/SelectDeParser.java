@@ -56,6 +56,17 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
             buffer.append("(");
         }
         buffer.append("SELECT ");
+        
+        Skip skip = plainSelect.getSkip();
+        if (skip != null) {
+            buffer.append(skip).append(" ");
+        }
+
+        First first = plainSelect.getFirst();
+        if (first != null) {
+            buffer.append(first).append(" ");
+        }
+        
         if (plainSelect.getDistinct() != null) {
             buffer.append("DISTINCT ");
             if (plainSelect.getDistinct().getOnSelectItems() != null) {
