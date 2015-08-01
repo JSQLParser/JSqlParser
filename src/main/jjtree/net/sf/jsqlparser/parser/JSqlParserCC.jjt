@@ -648,9 +648,9 @@ PlainSelect PlainSelect():
 {
     <K_SELECT>
 
-    [LOOKAHEAD(<K_SKIP> (<S_LONG> | "?")) skip = Skip() { plainSelect.setSkip(skip);	} ]
+    [skip = Skip() { plainSelect.setSkip(skip);	} ]
 
-    [LOOKAHEAD((<K_FIRST> | <K_LIMIT>) (<S_LONG> | "?")) first = First() { plainSelect.setFirst(first);	} ]
+    [LOOKAHEAD(2) first = First() { plainSelect.setFirst(first); } ]
 
     [
     	<K_ALL>
