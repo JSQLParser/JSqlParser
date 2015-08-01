@@ -47,6 +47,8 @@ public class PlainSelect implements SelectBody {
     private Limit limit;
     private Offset offset;
     private Fetch fetch;
+    private Skip skip;
+    private First first;
     private Top top;
     private OracleHierarchicalExpression oracleHierarchical = null;
     private boolean oracleSiblings = false;
@@ -170,6 +172,22 @@ public class PlainSelect implements SelectBody {
         this.top = top;
     }
 
+    public Skip getSkip() {
+        return skip;
+    }
+
+    public void setSkip(Skip skip) {
+        this.skip = skip;
+    }
+
+    public First getFirst() {
+        return first;
+    }
+
+    public void setFirst(First first) {
+        this.first = first;
+    }
+    
     public Distinct getDistinct() {
         return distinct;
     }
@@ -246,6 +264,15 @@ public class PlainSelect implements SelectBody {
             sql.append("(");
         }
         sql.append("SELECT ");
+        
+        if (skip != null) {
+            sql.append(skip).append(" ");
+        }
+        
+        if (first != null) {
+            sql.append(first).append(" ");
+        }
+        
         if (distinct != null) {
             sql.append(distinct).append(" ");
         }
