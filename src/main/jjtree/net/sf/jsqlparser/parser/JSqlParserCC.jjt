@@ -1315,6 +1315,7 @@ Skip Skip():
 	<K_SKIP>
 	(
 	 	token=<S_LONG>                      { skip.setRowCount(Long.parseLong(token.image)); }
+                | token=<S_IDENTIFIER>              { skip.setVariable(token.image); }
                 | "?" { skip.setJdbcParameter(new JdbcParameter()); } [ LOOKAHEAD(2) token = <S_LONG> { skip.getJdbcParameter().setIndex(Integer.valueOf(token.image)); } ]
 	)
 	{
@@ -1333,6 +1334,7 @@ First First():
         )
 	(
 	 	token=<S_LONG>                      { first.setRowCount(Long.parseLong(token.image)); }
+                | token=<S_IDENTIFIER>              { first.setVariable(token.image); }
                 |  "?" { first.setJdbcParameter(new JdbcParameter()); } [ LOOKAHEAD(2) token = <S_LONG> { first.getJdbcParameter().setIndex(Integer.valueOf(token.image)); } ]
 	)
 	{
