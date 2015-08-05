@@ -437,6 +437,7 @@ public class SelectTest extends TestCase {
         final Skip skip = selectBody.getSkip();
         assertEquals((long) 5, (long) skip.getRowCount());
         assertNull(skip.getJdbcParameter());
+        assertNull(skip.getVariable());
 
         final List<SelectItem> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
@@ -444,6 +445,23 @@ public class SelectTest extends TestCase {
         assertEquals(secondColumnName, selectItems.get(1).toString());
 
         assertStatementCanBeDeparsedAs(select, statement);
+        
+        final String statement2 = "SELECT SKIP skipVar c1, c2 FROM t";
+        final Select select2 = (Select) parserManager.parse(new StringReader(statement2));
+
+        final PlainSelect selectBody2 = (PlainSelect) select2.getSelectBody();
+
+        final Skip skip2 = selectBody2.getSkip();
+        assertNull(skip2.getRowCount());
+        assertNull(skip2.getJdbcParameter());
+        assertEquals("skipVar", skip2.getVariable());
+
+        final List<SelectItem> selectItems2 = selectBody2.getSelectItems();
+        assertEquals(2, selectItems2.size());
+        assertEquals("c1", selectItems2.get(0).toString());
+        assertEquals("c2", selectItems2.get(1).toString());
+
+        assertStatementCanBeDeparsedAs(select2, statement2);
     }
     
     public void testFirst() throws JSQLParserException {
@@ -465,6 +483,24 @@ public class SelectTest extends TestCase {
         assertEquals(secondColumnName, selectItems.get(1).toString());
 
         assertStatementCanBeDeparsedAs(select, statement);
+        
+        
+        final String statement2 = "SELECT FIRST firstVar c1, c2 FROM t";
+        final Select select2 = (Select) parserManager.parse(new StringReader(statement2));
+
+        final PlainSelect selectBody2 = (PlainSelect) select2.getSelectBody();
+
+        final First first2 = selectBody2.getFirst();
+        assertNull(first2.getRowCount());
+        assertNull(first2.getJdbcParameter());
+        assertEquals("firstVar", first2.getVariable());
+
+        final List<SelectItem> selectItems2 = selectBody2.getSelectItems();
+        assertEquals(2, selectItems2.size());
+        assertEquals("c1", selectItems2.get(0).toString());
+        assertEquals("c2", selectItems2.get(1).toString());
+
+        assertStatementCanBeDeparsedAs(select2, statement2);
     }
 
     public void testFirstWithKeywordLimit() throws JSQLParserException {
@@ -490,7 +526,7 @@ public class SelectTest extends TestCase {
     }
     
     public void testSkipFirst() throws JSQLParserException {
-        final String statement = "SELECT SKIP ?1 FIRST ?2 c1, c2 FROM t1";
+        final String statement = "SELECT SKIP ?1 FIRST f1 c1, c2 FROM t1";
         final Select select = (Select) parserManager.parse(new StringReader(statement));
 
         final PlainSelect selectBody = (PlainSelect) select.getSelectBody();
@@ -499,11 +535,12 @@ public class SelectTest extends TestCase {
         assertNotNull(skip.getJdbcParameter());
         assertNotNull(skip.getJdbcParameter().getIndex());
         assertEquals((int) 1, (int) skip.getJdbcParameter().getIndex());
+        assertNull(skip.getVariable());
         final First first = selectBody.getFirst();
-        assertNotNull(first.getJdbcParameter());
-        assertNotNull(first.getJdbcParameter().getIndex());
-        assertEquals((int) 2, (int) first.getJdbcParameter().getIndex());
-
+        assertNull(first.getJdbcParameter());
+        assertNull(first.getRowCount());
+        assertEquals("f1", first.getVariable());
+        
         final List<SelectItem> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
         assertEquals("c1", selectItems.get(0).toString());
