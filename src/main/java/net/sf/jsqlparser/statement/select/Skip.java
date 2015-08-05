@@ -33,6 +33,7 @@ public class Skip {
 
     private Long rowCount;
     private JdbcParameter jdbcParameter;
+    private String variable;
 
     public Long getRowCount() {
         return rowCount;
@@ -50,11 +51,25 @@ public class Skip {
         this.jdbcParameter = jdbcParameter;
     }
 
+    public String getVariable() {
+        return variable;
+    }
+
+    public void setVariable(String variable) {
+        this.variable = variable;
+    }
+
     @Override
     public String toString() {
         String result = "SKIP ";
 
-        result += jdbcParameter != null ? jdbcParameter.toString() : rowCount;
+        if(rowCount != null) {
+            result += rowCount;
+        } else if (jdbcParameter != null) {
+            result += jdbcParameter.toString();
+        } else if (variable != null){
+            result += variable;
+        }
 
         return result;
     }
