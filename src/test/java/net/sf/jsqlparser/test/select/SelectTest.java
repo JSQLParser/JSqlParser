@@ -1921,4 +1921,8 @@ public class SelectTest extends TestCase {
     public void testIssue160_signedParameter2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE -? = 5");
     }
+    
+    public void testIssue162_doubleUserVar() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT @@SPID AS ID, SYSTEM_USER AS \"Login Name\", USER AS \"User Name\"");
+    }
 }

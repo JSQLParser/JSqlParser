@@ -22,12 +22,13 @@
 package net.sf.jsqlparser.expression;
 
 /**
- *
+ * Simple uservariables like @test.
  * @author aud
  */
 public class UserVariable implements Expression {
 
 	private String name;
+    private boolean doubleAdd = false;
 
 	/**
 	 * The name of the parameter
@@ -47,8 +48,18 @@ public class UserVariable implements Expression {
 		expressionVisitor.visit(this);
 	}
 
+    public boolean isDoubleAdd() {
+        return doubleAdd;
+    }
+
+    public void setDoubleAdd(boolean doubleAdd) {
+        this.doubleAdd = doubleAdd;
+    }
+    
+    
+
 	@Override
 	public String toString() {
-		return "@" + name;
+		return "@" + (doubleAdd?"@":"") + name;
 	}
 }

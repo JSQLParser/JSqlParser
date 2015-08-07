@@ -1919,7 +1919,8 @@ UserVariable UserVariable() : {
 	Token token;
 }
 {
-    "@" token=<S_IDENTIFIER> 
+    ("@" | "@@" { var.setDoubleAdd(true);} )
+    token=<S_IDENTIFIER> 
     { 
         var.setName(token.image); 
         return var; 
