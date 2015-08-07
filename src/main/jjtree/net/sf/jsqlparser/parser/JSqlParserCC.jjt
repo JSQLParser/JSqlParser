@@ -1843,13 +1843,13 @@ Expression PrimaryExpression():
 
 	| retval=CaseWhenExpression()
 
-	| "?" { retval = new JdbcParameter(); } [ LOOKAHEAD(2) token = <S_LONG> { ((JdbcParameter)retval).setIndex(Integer.valueOf(token.image)); } ]
+	| LOOKAHEAD(3) [sign="+" | sign="-"] "?" { retval = new JdbcParameter(); } [ LOOKAHEAD(2) token = <S_LONG> { ((JdbcParameter)retval).setIndex(Integer.valueOf(token.image)); } ]
 
-    | LOOKAHEAD(2) retval=JdbcNamedParameter()
+    | LOOKAHEAD(3) [sign="+" | sign="-"] retval=JdbcNamedParameter()
 
-    | retval=UserVariable()
+    | LOOKAHEAD(3) [sign="+" | sign="-"] retval=UserVariable()
 
-    | retval=NumericBind()
+    | LOOKAHEAD(3) [sign="+" | sign="-"] retval=NumericBind()
 
 	| LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
 
@@ -1873,7 +1873,7 @@ Expression PrimaryExpression():
 
     | LOOKAHEAD([sign="+" | sign="-"] "(" SubSelect() ")")     [sign="+" | sign="-"] "(" retval=SubSelect() ")"
 
-	| LOOKAHEAD(3)                            [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
+	| LOOKAHEAD(3)   [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
 
 	| token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 

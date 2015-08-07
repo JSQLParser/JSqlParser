@@ -332,6 +332,11 @@ public class PlainSelect implements SelectBody {
                     sql.append(" OF ").append(forUpdateTable);
                 }
             }
+        } else {
+            //without from
+            if (where != null) {
+                sql.append(" WHERE ").append(where);
+            }
         }
         if (useBrackets) {
             sql.append(")");

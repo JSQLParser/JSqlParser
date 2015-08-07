@@ -37,6 +37,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.4
 
+* support of signed parameters added
+
+~~~sql
+SELECT * FROM mytable WHERE -? < 4
+~~~
+
 * support for **SELECT SKIP <OFFSET> FIRST <LIMIT>...**
 * Completely rewritten S_IDENTIFIER rule to accept hopefully all possible UTF-8 letters without
   specifying some additional rules.
