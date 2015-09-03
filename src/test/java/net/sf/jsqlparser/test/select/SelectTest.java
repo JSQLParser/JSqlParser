@@ -1600,7 +1600,12 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT 5 + INTERVAL '3' day";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-
+    
+    public void testInterval4() throws JSQLParserException {
+        String stmt = "SELECT '2008-12-31 23:59:59' + INTERVAL 1 SECOND";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+    
     public void testMultiValueIn() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE (a, b, c) IN (SELECT a, b, c FROM mytable2)";
         assertSqlCanBeParsedAndDeparsed(stmt);
