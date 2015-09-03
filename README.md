@@ -37,6 +37,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.4
 
+* improved **interval** expression syntax
 * support of hex values (**0xabc54**, **x'abc567'**) added
 * support of (e.g. **@@SPID**) system parameters
 * support of signed parameters added
