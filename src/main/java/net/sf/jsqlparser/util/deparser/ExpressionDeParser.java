@@ -105,14 +105,17 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(Division division) {
         visitBinaryExpression(division, " / ");
-
     }
 
     @Override
     public void visit(DoubleValue doubleValue) {
         buffer.append(doubleValue.toString());
+	}
 
-    }
+	@Override
+	public void visit(HexValue hexValue) {
+		buffer.append(hexValue.toString());
+	}
 
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
         if (expression.isNot()) {

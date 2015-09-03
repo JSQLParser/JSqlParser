@@ -447,4 +447,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             expr.accept(this);
         }
     }
+
+	@Override
+	public void visit(HexValue hexValue) {
+		
+	}
 }

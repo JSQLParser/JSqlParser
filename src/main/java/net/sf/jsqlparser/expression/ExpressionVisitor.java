@@ -62,8 +62,10 @@ public interface ExpressionVisitor {
     void visit(JdbcNamedParameter jdbcNamedParameter);
 
 	void visit(DoubleValue doubleValue);
-
+	
 	void visit(LongValue longValue);
+	
+	void visit(HexValue hexValue);
 
 	void visit(DateValue dateValue);
 

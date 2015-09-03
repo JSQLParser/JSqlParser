@@ -622,4 +622,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
             expr.accept(this);
         }
     }
+
+	@Override
+	public void visit(HexValue hexValue) {
+		
+	}
 }

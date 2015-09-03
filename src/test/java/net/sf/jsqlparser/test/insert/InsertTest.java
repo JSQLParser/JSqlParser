@@ -14,7 +14,6 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SubSelect;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -137,4 +136,18 @@ public class InsertTest {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO kvPair (value, key) VALUES (?, ?)");
     }
     
+	@Test
+	public void testHexValues() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("INSERT INTO TABLE2 VALUES ('1', \"DSDD\", x'EFBFBDC7AB')");
+	}
+	
+	@Test
+	public void testHexValues2() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("INSERT INTO TABLE2 VALUES ('1', \"DSDD\", 0xEFBFBDC7AB)");
+	}
+	
+	@Test
+	public void testHexValues3() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("INSERT INTO TABLE2 VALUES ('1', \"DSDD\", 0xabcde)");
+	}
 }
