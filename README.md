@@ -13,6 +13,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 ## News
 
+* Version **0.9.4** released.
 * Please test the actual SNAPSHOT, if there are problems using the extended identifier token.
 * Version **0.9.3** released.
 
@@ -35,34 +36,8 @@ To help JSqlParsers development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 0.9.4
+## Extensions in the latest SNAPSHOT version 0.9.5
 
-* improved **interval** expression syntax
-* support of hex values (**0xabc54**, **x'abc567'**) added
-* support of (e.g. **@@SPID**) system parameters
-* support of signed parameters added
-
-~~~sql
-SELECT * FROM mytable WHERE -? < 4
-~~~
-
-* support for **SELECT SKIP <OFFSET> FIRST <LIMIT>...**
-* Completely rewritten S_IDENTIFIER rule to accept hopefully all possible UTF-8 letters without
-  specifying some additional rules.
-* allow **Server** within multipart names to act as database link
-* revived Apache Software License, Version 2.0
-* support for **row constructors in conditions**
-
-```sql
-SELECT * FROM t1 WHERE ROW(col1, col2) = (SELECT col3, col4 FROM t2 WHERE id = 10)
-```
-* some refactorings for TablesNamesFinder to improve usability
-* established JJTree nodes for columns and tables (look at *SelectASTTest*) for first usages
-* support for MySQL **GROUP_CONCAT**
-
-```sql
-GROUP_CONCAT(DISTINCT test_score ORDER BY test_score DESC SEPARATOR ' ')
-```
 
 ## Extensions of JSqlParser releases
 
