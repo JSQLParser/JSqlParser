@@ -1930,4 +1930,24 @@ public class SelectTest extends TestCase {
     public void testIssue162_doubleUserVar() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @@SPID AS ID, SYSTEM_USER AS \"Login Name\", USER AS \"User Name\"");
     }
+	
+	public void testIssue167_singleQuoteEscape() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 'a'");
+		assertSqlCanBeParsedAndDeparsed("SELECT ''''");
+		assertSqlCanBeParsedAndDeparsed("SELECT '\\''");
+		assertSqlCanBeParsedAndDeparsed("SELECT 'ab''ab'");
+		assertSqlCanBeParsedAndDeparsed("SELECT 'ab\\'ab'");
+    }
+	
+	/**
+	 * These are accepted due to reading one backslash and a double quote.
+	 */
+	public void testIssue167_singleQuoteEscape2() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("SELECT '\\'''");
+		assertSqlCanBeParsedAndDeparsed("SELECT '\\\\''");
+	}
+	
+	public void testIssue77_singleQuoteEscape2() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("SELECT 'test\\'' FROM dual");
+	}
 }
