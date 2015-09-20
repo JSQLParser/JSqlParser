@@ -38,6 +38,11 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.5
 
+* first version of escaped single quotes support
+
+~~~
+select '\'' 
+~~~
 
 ## Extensions of JSqlParser releases
 
@@ -78,7 +83,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>0.9</version>
+	<version>0.9.4</version>
 </dependency>
 ```
 

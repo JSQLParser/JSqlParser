@@ -65,4 +65,9 @@ public class UpdateTest {
     public void testUpdateWithSelect2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE mytable SET (col1, col2, col3) = (SELECT a, b, c FROM mytable2)");
     }
+	
+	@Test
+    public void testUpdateIssue167_SingleQuotes() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET NAME = 'Customer 2', ADDRESS = 'Address \\' ddad2', AUTH_KEY = 'samplekey' WHERE ID = 2");
+    }
 }
