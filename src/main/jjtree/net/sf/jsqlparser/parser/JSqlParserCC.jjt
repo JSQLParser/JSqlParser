@@ -2585,6 +2585,8 @@ String CreateParameter():
 			tk=<K_ROWS> { retval = tk.image; } 
             |
             tk=<K_UNIQUE> { retval = tk.image; } 
+			|
+            tk=<K_DELETE> { retval = tk.image; } 
             |
 			"=" { retval = "="; }
 			|
