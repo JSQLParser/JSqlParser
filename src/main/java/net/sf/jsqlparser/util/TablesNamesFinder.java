@@ -45,6 +45,7 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 
 /**
@@ -627,4 +628,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 	public void visit(HexValue hexValue) {
 		
 	}
+
+    @Override
+    public void visit(Merge merge) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

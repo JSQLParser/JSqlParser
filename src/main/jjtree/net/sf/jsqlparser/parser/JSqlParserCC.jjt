@@ -73,6 +73,7 @@ import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
+import net.sf.jsqlparser.statement.merge.*;
 
 import java.util.*;
 
@@ -222,6 +223,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_GROUP_CONCAT:"GROUP_CONCAT">
 |   <K_SEPARATOR:"SEPARATOR">
 |   <K_SKIP: "SKIP">
+|   <K_MERGE: "MERGE">
+|   <K_MATCHED: "MATCHED">
 }
 
 TOKEN : /* Numeric Constants */
@@ -279,6 +282,8 @@ Statement SingleStatement() :
     stm = Replace()
     |
 	stm = Alter()
+    |
+    stm = Merge()
 	|
     LOOKAHEAD(3)
     stm = CreateIndex()
@@ -514,6 +519,44 @@ Delete Delete():
     	delete.setTable(table);
     	return delete;
     }
+}
+
+Statement Merge() : {
+    Merge merge = new Merge();
+    Table table;
+    SubSelect select;
+    Alias alias;
+    Expression condition;
+}
+{
+    <K_MERGE> <K_INTO> table=TableWithAlias() { merge.setTable(table); }
+    <K_USING> "(" 
+        ( table=Table() { merge.setUsingTable(table); } 
+            | select=SubSelect() { merge.setUsingSelect(select); } )
+    ")" [ alias = Alias() { merge.setUsingAlias(alias); } ] <K_ON> 
+       "(" condition = Condition() { merge.setOnCondition(condition); } ")"
+
+    [ LOOKAHEAD(2) MergeUpdateClause() ]
+ 
+    [ MergeInsertClause() ]
+    
+    { return merge; }
+}
+
+void MergeUpdateClause() : {}
+{
+  <K_WHEN> <K_MATCHED> <K_THEN>  <K_UPDATE> 
+    <K_SET> 
+     Column() "=" SimpleExpression() ("," Column() "=" SimpleExpression() )* 
+        [ <K_WHERE> Condition() ]
+        [ <K_DELETE> <K_WHERE> Condition() ]
+}
+
+void MergeInsertClause() : {}
+{
+    <K_WHEN> <K_NOT> <K_MATCHED> <K_THEN> 
+        <K_INSERT> "(" Column() ("," Column() )* ")"  <K_VALUES> 
+           "(" SimpleExpression() ("," SimpleExpression() )* ")" 
 }
 
 // See: http://technet.microsoft.com/en-us/library/ms187879%28v=sql.105%29.aspx
