@@ -171,6 +171,10 @@ public class CreateTableTest extends TestCase {
 	public void testCreateTableForeignKey5() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE IF NOT EXISTS table1 (id INTEGER PRIMARY KEY AUTO_INCREMENT, aid INTEGER REFERENCES accounts ON aid ON DELETE CASCADE, name STRING, lastname STRING)");
     }
+    
+    public void testCreateTableForeignKey6() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE test (id long, fkey long references another_table (id))");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
