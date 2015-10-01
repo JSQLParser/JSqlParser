@@ -88,6 +88,26 @@ public class Merge implements Statement {
         this.onCondition = onCondition;
     }
 
+    private MergeInsert mergeInsert;
+
+    public MergeInsert getMergeInsert() {
+        return mergeInsert;
+    }
+
+    public void setMergeInsert(MergeInsert insert) {
+        this.mergeInsert = insert;
+    }
+
+    private MergeUpdate mergeUpdate;
+
+    public MergeUpdate getMergeUpdate() {
+        return mergeUpdate;
+    }
+
+    public void setMergeUpdate(MergeUpdate mergeUpdate) {
+        this.mergeUpdate = mergeUpdate;
+    }
+
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
@@ -111,6 +131,14 @@ public class Merge implements Statement {
         b.append(" ON (");
         b.append(onCondition);
         b.append(")");
+
+        if (mergeUpdate != null) {
+            b.append(mergeUpdate.toString());
+        }
+
+        if (mergeInsert != null) {
+            b.append(mergeInsert.toString());
+        }
 
         return b.toString();
     }

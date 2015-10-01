@@ -22,6 +22,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import org.junit.Test;
+import static net.sf.jsqlparser.test.TestUtils.*;
 
 /**
  *
@@ -46,5 +47,7 @@ public class MergeTest {
         Statement statement = CCJSqlParserUtil.parse(sql);
         
         System.out.println(statement.toString());
+        
+        assertSqlCanBeParsedAndDeparsed(sql, true);
     }
 }

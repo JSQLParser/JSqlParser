@@ -179,6 +179,7 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Merge merge) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //TODO implementation of a deparser
+        buffer.append(merge.toString());
     }
 }

@@ -527,6 +527,8 @@ Statement Merge() : {
     SubSelect select;
     Alias alias;
     Expression condition;
+    MergeUpdate update;
+    MergeInsert insert;
 }
 {
     <K_MERGE> <K_INTO> table=TableWithAlias() { merge.setTable(table); }
@@ -536,9 +538,9 @@ Statement Merge() : {
     ")" [ alias = Alias() { merge.setUsingAlias(alias); } ] <K_ON> 
        "(" condition = Condition() { merge.setOnCondition(condition); } ")"
 
-    [ LOOKAHEAD(2) MergeUpdateClause() ]
+    [ LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
  
-    [ MergeInsertClause() ]
+    [ insert = MergeInsertClause() { merge.setMergeInsert(insert); } ]
     
     { return merge; }
 }
@@ -547,7 +549,7 @@ MergeUpdate MergeUpdateClause() : {
     MergeUpdate mu = new MergeUpdate();
     List<Column> columns = new ArrayList<Column>();
     List<Expression> expList = new ArrayList<Expression>();
-    Columns col;
+    Column col;
     Expression exp;
     Expression condition;
 }
@@ -558,7 +560,7 @@ MergeUpdate MergeUpdateClause() : {
             { columns.add(col); expList.add(exp); } 
         ("," col = Column() "=" exp = SimpleExpression() { columns.add(col); expList.add(exp); } )* 
 
-        { mu.setColumns(columns); mu.setExpressions(expList); }
+        { mu.setColumns(columns); mu.setValues(expList); }
 
         [ <K_WHERE> condition = Condition() { mu.setWhereCondition(condition); }]
         [ <K_DELETE> <K_WHERE> condition = Condition() { mu.setDeleteWhereCondition(condition); } ]
@@ -566,14 +568,22 @@ MergeUpdate MergeUpdateClause() : {
         { return mu; }
 }
 
-void MergeInsertClause() : {
+MergeInsert MergeInsertClause() : {
+    MergeInsert mi = new MergeInsert();
     List<Column> columns = new ArrayList<Column>();
     List<Expression> expList = new ArrayList<Expression>();
+    Column col;
+    Expression exp;
 }
 {
     <K_WHEN> <K_NOT> <K_MATCHED> <K_THEN> 
-        <K_INSERT> "(" Column() ("," Column() )* ")"  <K_VALUES> 
-           "(" SimpleExpression() ("," SimpleExpression() )* ")" 
+        <K_INSERT> "(" col=Column() { columns.add(col); } ("," col=Column() { columns.add(col); } )* ")"  <K_VALUES> 
+           "(" exp=SimpleExpression() { expList.add(exp); } ("," exp=SimpleExpression() { expList.add(exp); } )* ")" 
+    {
+        mi.setColumns(columns);
+        mi.setValues(expList);
+        return mi;
+    }
 }
 
 // See: http://technet.microsoft.com/en-us/library/ms187879%28v=sql.105%29.aspx

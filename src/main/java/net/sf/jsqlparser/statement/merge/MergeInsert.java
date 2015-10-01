@@ -24,12 +24,13 @@ package net.sf.jsqlparser.statement.merge;
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  *
  * @author toben
  */
-public class MergeUpdate {
+public class MergeInsert {
 
     private List<Column> columns = null;
     private List<Expression> values = null;
@@ -50,39 +51,9 @@ public class MergeUpdate {
         this.values = values;
     }
 
-    private Expression whereCondition;
-
-    public Expression getWhereCondition() {
-        return whereCondition;
-    }
-
-    public void setWhereCondition(Expression whereCondition) {
-        this.whereCondition = whereCondition;
-    }
-
-    private Expression deleteWhereCondition;
-
-    public Expression getDeleteWhereCondition() {
-        return deleteWhereCondition;
-    }
-
-    public void setDeleteWhereCondition(Expression deleteWhereCondition) {
-        this.deleteWhereCondition = deleteWhereCondition;
-    }
-
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder();
-        b.append(" WHEN MATCHED THEN UPDATE SET ");
-        for (int i = 0; i < columns.size(); i++) {
-            b.append(columns.get(i).toString()).append(" = ").append(values.get(i).toString());
-        }
-        if (whereCondition != null) {
-            b.append(" WHERE ").append(whereCondition.toString());
-        }
-        if (deleteWhereCondition != null) {
-            b.append(" DELETE WHERE ").append(deleteWhereCondition.toString());
-        }
-        return b.toString();
+        return " WHEN NOT MATCHED THEN INSERT " + PlainSelect.getStringList(columns, true, true)
+                + " VALUES " + PlainSelect.getStringList(values, true, true);
     }
 }
