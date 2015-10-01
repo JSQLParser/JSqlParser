@@ -1440,7 +1440,7 @@ Expression RegularCondition():
     boolean binary = false;
 }
 {
-	[ <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; }]
+	[ LOOKAHEAD(2) <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; }]
 	[ <K_NOT> { not = true; } ]
 	leftExpression=ComparisonItem() { result = leftExpression; }
 
