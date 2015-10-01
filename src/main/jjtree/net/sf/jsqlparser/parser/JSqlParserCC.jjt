@@ -542,17 +542,34 @@ Statement Merge() : {
     
     { return merge; }
 }
-
-void MergeUpdateClause() : {}
+    
+MergeUpdate MergeUpdateClause() : {
+    MergeUpdate mu = new MergeUpdate();
+    List<Column> columns = new ArrayList<Column>();
+    List<Expression> expList = new ArrayList<Expression>();
+    Columns col;
+    Expression exp;
+    Expression condition;
+}
 {
   <K_WHEN> <K_MATCHED> <K_THEN>  <K_UPDATE> 
     <K_SET> 
-     Column() "=" SimpleExpression() ("," Column() "=" SimpleExpression() )* 
-        [ <K_WHERE> Condition() ]
-        [ <K_DELETE> <K_WHERE> Condition() ]
+     col = Column() "=" exp = SimpleExpression() 
+            { columns.add(col); expList.add(exp); } 
+        ("," col = Column() "=" exp = SimpleExpression() { columns.add(col); expList.add(exp); } )* 
+
+        { mu.setColumns(columns); mu.setExpressions(expList); }
+
+        [ <K_WHERE> condition = Condition() { mu.setWhereCondition(condition); }]
+        [ <K_DELETE> <K_WHERE> condition = Condition() { mu.setDeleteWhereCondition(condition); } ]
+
+        { return mu; }
 }
 
-void MergeInsertClause() : {}
+void MergeInsertClause() : {
+    List<Column> columns = new ArrayList<Column>();
+    List<Expression> expList = new ArrayList<Expression>();
+}
 {
     <K_WHEN> <K_NOT> <K_MATCHED> <K_THEN> 
         <K_INSERT> "(" Column() ("," Column() )* ")"  <K_VALUES> 
