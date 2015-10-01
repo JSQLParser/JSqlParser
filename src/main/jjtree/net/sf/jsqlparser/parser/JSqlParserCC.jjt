@@ -73,6 +73,7 @@ import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
+import net.sf.jsqlparser.statement.merge.*;
 
 import java.util.*;
 
@@ -222,6 +223,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_GROUP_CONCAT:"GROUP_CONCAT">
 |   <K_SEPARATOR:"SEPARATOR">
 |   <K_SKIP: "SKIP">
+|   <K_MERGE: "MERGE">
+|   <K_MATCHED: "MATCHED">
 }
 
 TOKEN : /* Numeric Constants */
@@ -279,6 +282,8 @@ Statement SingleStatement() :
     stm = Replace()
     |
 	stm = Alter()
+    |
+    stm = Merge()
 	|
     LOOKAHEAD(3)
     stm = CreateIndex()
@@ -513,6 +518,71 @@ Delete Delete():
     {
     	delete.setTable(table);
     	return delete;
+    }
+}
+
+Statement Merge() : {
+    Merge merge = new Merge();
+    Table table;
+    SubSelect select;
+    Alias alias;
+    Expression condition;
+    MergeUpdate update;
+    MergeInsert insert;
+}
+{
+    <K_MERGE> <K_INTO> table=TableWithAlias() { merge.setTable(table); }
+    <K_USING> "(" 
+        ( table=Table() { merge.setUsingTable(table); } 
+            | select=SubSelect() { merge.setUsingSelect(select); } )
+    ")" [ alias = Alias() { merge.setUsingAlias(alias); } ] <K_ON> 
+       "(" condition = Condition() { merge.setOnCondition(condition); } ")"
+
+    [ LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
+ 
+    [ insert = MergeInsertClause() { merge.setMergeInsert(insert); } ]
+    
+    { return merge; }
+}
+    
+MergeUpdate MergeUpdateClause() : {
+    MergeUpdate mu = new MergeUpdate();
+    List<Column> columns = new ArrayList<Column>();
+    List<Expression> expList = new ArrayList<Expression>();
+    Column col;
+    Expression exp;
+    Expression condition;
+}
+{
+  <K_WHEN> <K_MATCHED> <K_THEN>  <K_UPDATE> 
+    <K_SET> 
+     col = Column() "=" exp = SimpleExpression() 
+            { columns.add(col); expList.add(exp); } 
+        ("," col = Column() "=" exp = SimpleExpression() { columns.add(col); expList.add(exp); } )* 
+
+        { mu.setColumns(columns); mu.setValues(expList); }
+
+        [ <K_WHERE> condition = Condition() { mu.setWhereCondition(condition); }]
+        [ <K_DELETE> <K_WHERE> condition = Condition() { mu.setDeleteWhereCondition(condition); } ]
+
+        { return mu; }
+}
+
+MergeInsert MergeInsertClause() : {
+    MergeInsert mi = new MergeInsert();
+    List<Column> columns = new ArrayList<Column>();
+    List<Expression> expList = new ArrayList<Expression>();
+    Column col;
+    Expression exp;
+}
+{
+    <K_WHEN> <K_NOT> <K_MATCHED> <K_THEN> 
+        <K_INSERT> "(" col=Column() { columns.add(col); } ("," col=Column() { columns.add(col); } )* ")"  <K_VALUES> 
+           "(" exp=SimpleExpression() { expList.add(exp); } ("," exp=SimpleExpression() { expList.add(exp); } )* ")" 
+    {
+        mi.setColumns(columns);
+        mi.setValues(expList);
+        return mi;
     }
 }
 
