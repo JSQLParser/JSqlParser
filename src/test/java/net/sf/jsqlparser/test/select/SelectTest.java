@@ -879,6 +879,10 @@ public class SelectTest extends TestCase {
                 (((TimeValue) ((GreaterThan) plainSelect.getWhere()).getRightExpression()).getValue()).toString());
         assertStatementCanBeDeparsedAs(select, statement);
     }
+    
+    public void testBetweenDate() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE col BETWEEN {d '2015-09-19'} AND {d '2015-09-24'}");
+    }
 
     public void testCase() throws JSQLParserException {
         String statement = "SELECT a, CASE b WHEN 1 THEN 2 END FROM tab1";
