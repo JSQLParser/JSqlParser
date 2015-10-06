@@ -30,4 +30,8 @@ public class AlterTest extends TestCase {
     public void testAlterTableUniqueKey() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE `schema_migrations` ADD UNIQUE KEY `unique_schema_migrations` (`version`)");
     }
+    
+    public void testAlterTableForgeignKey() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE CASCADE");
+    }
 }

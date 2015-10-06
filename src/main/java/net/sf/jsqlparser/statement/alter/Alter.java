@@ -41,6 +41,46 @@ public class Alter implements Statement {
     private List<String> ukColumns;
     private String ukName;
 
+    private boolean onDeleteCascade;
+
+    public boolean isOnDeleteCascade() {
+        return onDeleteCascade;
+    }
+
+    public void setOnDeleteCascade(boolean onDeleteCascade) {
+        this.onDeleteCascade = onDeleteCascade;
+    }
+
+    private List<String> fkColumns;
+
+    public List<String> getFkColumns() {
+        return fkColumns;
+    }
+
+    public void setFkColumns(List<String> fkColumns) {
+        this.fkColumns = fkColumns;
+    }
+
+    private String fkSourceTable;
+
+    public String getFkSourceTable() {
+        return fkSourceTable;
+    }
+
+    public void setFkSourceTable(String fkSourceTable) {
+        this.fkSourceTable = fkSourceTable;
+    }
+
+    private List<String> fkSourceColumns;
+
+    public List<String> getFkSourceColumns() {
+        return fkSourceColumns;
+    }
+
+    public void setFkSourceColumns(List<String> fkSourceColumns) {
+        this.fkSourceColumns = fkSourceColumns;
+    }
+
     public Table getTable() {
         return table;
     }
@@ -104,6 +144,11 @@ public class Alter implements Statement {
             b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(")");
         } else if (ukColumns != null) {
             b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
+        } else if (fkColumns != null) {
+            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).append(") REFERENCES ").append(fkSourceTable).append(" (").append(PlainSelect.getStringList(fkSourceColumns)).append(")");
+            if (isOnDeleteCascade()) {
+                b.append(" ON DELETE CASCADE");
+            }
         }
         return b.toString();
     }

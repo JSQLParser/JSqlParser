@@ -225,6 +225,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SKIP: "SKIP">
 |   <K_MERGE: "MERGE">
 |   <K_MATCHED: "MATCHED">
+|   <K_CASCADE: "CASCADE">
 }
 
 TOKEN : /* Numeric Constants */
@@ -2655,6 +2656,8 @@ String CreateParameter():
 			tk=<K_ROWS> { retval = tk.image; } 
             |
             tk=<K_UNIQUE> { retval = tk.image; } 
+            |
+            tk=<K_CASCADE> { retval = tk.image; } 
 			|
             tk=<K_DELETE> { retval = tk.image; } 
             |
@@ -2717,7 +2720,7 @@ Drop Drop():
 	)
     { drop.setType(tk.image); }
 	name = Table() { drop.setName(name); }
-	(tk=<S_IDENTIFIER> { dropArgs.add(tk.image); })*
+	((tk=<S_IDENTIFIER> | tk=<K_CASCADE>) { dropArgs.add(tk.image); })*
 
 	{
 		if (dropArgs.size() > 0)
@@ -2745,8 +2748,7 @@ Alter Alter():
 	Table table;
 	Token tk;
 	ColDataType dataType;
-    List<String> pkColumnNames = null;
-    List<String> ukColumnNames = null;
+    List<String> columnNames = null;
 }
 {
 	<K_ALTER> <K_TABLE> table=Table() { alter.setTable(table); } 
@@ -2762,9 +2764,14 @@ Alter Alter():
             }
         )
         |
-        ( <K_PRIMARY> <K_KEY> pkColumnNames=ColumnsNamesList() { alter.setPkColumns(pkColumnNames); } )
+        ( <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alter.setPkColumns(columnNames); } )
         |
-        ( <K_UNIQUE> <K_KEY> (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) ukColumnNames=ColumnsNamesList() { alter.setUkName(tk.image); alter.setUkColumns(ukColumnNames); } )
+        ( <K_UNIQUE> <K_KEY> (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) columnNames=ColumnsNamesList() { alter.setUkName(tk.image); alter.setUkColumns(columnNames); } )
+        |
+        ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alter.setFkColumns(columnNames); }
+             <K_REFERENCES> tk=<S_IDENTIFIER> columnNames=ColumnsNamesList() 
+                    { alter.setFkSourceTable(tk.image); alter.setFkSourceColumns(columnNames); }
+            [<K_ON> <K_DELETE> <K_CASCADE> { alter.setOnDeleteCascade(true); } ] )
     )
 
     {
