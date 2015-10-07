@@ -34,4 +34,16 @@ public class AlterTest extends TestCase {
     public void testAlterTableForgeignKey() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE CASCADE");
     }
+    
+    public void testAlterTableForgeignKey2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id)");
+    }
+    
+    public void testAlterTableForgeignKey3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE RESTRICT");
+    }
+    
+    public void testAlterTableForgeignKey4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL");
+    }
 }

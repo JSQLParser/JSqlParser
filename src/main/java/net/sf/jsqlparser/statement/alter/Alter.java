@@ -51,6 +51,26 @@ public class Alter implements Statement {
         this.onDeleteCascade = onDeleteCascade;
     }
 
+    private boolean onDeleteRestrict;
+
+    public boolean isOnDeleteRestrict() {
+        return onDeleteRestrict;
+    }
+
+    public void setOnDeleteRestrict(boolean onDeleteRestrict) {
+        this.onDeleteRestrict = onDeleteRestrict;
+    }
+
+    private boolean onDeleteSetNull;
+
+    public boolean isOnDeleteSetNull() {
+        return onDeleteSetNull;
+    }
+
+    public void setOnDeleteSetNull(boolean onDeleteSetNull) {
+        this.onDeleteSetNull = onDeleteSetNull;
+    }
+
     private List<String> fkColumns;
 
     public List<String> getFkColumns() {
@@ -148,6 +168,10 @@ public class Alter implements Statement {
             b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).append(") REFERENCES ").append(fkSourceTable).append(" (").append(PlainSelect.getStringList(fkSourceColumns)).append(")");
             if (isOnDeleteCascade()) {
                 b.append(" ON DELETE CASCADE");
+            } else if (isOnDeleteRestrict()) {
+                b.append(" ON DELETE RESTRICT");
+            } else if (isOnDeleteSetNull()) {
+                b.append(" ON DELETE SET NULL");
             }
         }
         return b.toString();
