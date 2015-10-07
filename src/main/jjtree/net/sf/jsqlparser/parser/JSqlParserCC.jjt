@@ -2747,8 +2747,12 @@ Alter Alter():
 	Alter alter = new Alter();
 	Table table;
 	Token tk;
+	Token tk2 = null;
+    String sk3 = null;
 	ColDataType dataType;
     List<String> columnNames = null;
+    ForeignKeyIndex fkIndex = null;
+    Table fkTable = null;
 }
 {
 	<K_ALTER> <K_TABLE> table=Table() { alter.setTable(table); } 
@@ -2772,6 +2776,25 @@ Alter Alter():
              <K_REFERENCES> tk=<S_IDENTIFIER> columnNames=ColumnsNamesList() 
                     { alter.setFkSourceTable(tk.image); alter.setFkSourceColumns(columnNames); }
             [<K_ON> <K_DELETE> <K_CASCADE> { alter.setOnDeleteCascade(true); } ] )
+        |
+        (
+            {
+                fkIndex = new ForeignKeyIndex();
+            }
+            [<K_CONSTRAINT> sk3=RelObjectName() {fkIndex.setName(sk3);} ]
+            tk=<K_FOREIGN> tk2=<K_KEY>
+                columnNames=ColumnsNamesList()
+                {
+                    fkIndex.setType(tk.image + " " + tk2.image);
+                    fkIndex.setColumnsNames(columnNames);
+                }
+                <K_REFERENCES> fkTable=Table() columnNames=ColumnsNamesList()
+                {
+                    fkIndex.setTable(fkTable);
+                    fkIndex.setReferencedColumnNames(columnNames);
+                    alter.setFkIndex(fkIndex);
+                }
+        )
     )
 
     {

@@ -26,6 +26,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
@@ -40,6 +41,7 @@ public class Alter implements Statement {
     private List<String> pkColumns;
     private List<String> ukColumns;
     private String ukName;
+    private ForeignKeyIndex fkIndex = null;
 
     private boolean onDeleteCascade;
 
@@ -134,6 +136,14 @@ public class Alter implements Statement {
         statementVisitor.visit(this);
     }
 
+    public ForeignKeyIndex getFkIndex() {
+        return fkIndex;
+    }
+
+    public void setFkIndex(ForeignKeyIndex fkIndex) {
+        this.fkIndex = fkIndex;
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -145,11 +155,14 @@ public class Alter implements Statement {
         } else if (ukColumns != null) {
             b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
-            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).append(") REFERENCES ").append(fkSourceTable).append(" (").append(PlainSelect.getStringList(fkSourceColumns)).append(")");
+            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).append(") REFERENCES ").append(fkSourceTable).append(" (").append(
+				PlainSelect.getStringList(fkSourceColumns)).append(")");
             if (isOnDeleteCascade()) {
                 b.append(" ON DELETE CASCADE");
             }
-        }
-        return b.toString();
+		} else if (fkIndex != null) {
+			b.append(fkIndex);
+		}
+		return b.toString();
     }
 }
