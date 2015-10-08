@@ -226,6 +226,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MERGE: "MERGE">
 |   <K_MATCHED: "MATCHED">
 |   <K_CASCADE: "CASCADE">
+|   <K_RESTRICT: "RESTRICT">
 }
 
 TOKEN : /* Numeric Constants */
@@ -2775,7 +2776,11 @@ Alter Alter():
         ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alter.setFkColumns(columnNames); }
              <K_REFERENCES> tk=<S_IDENTIFIER> columnNames=ColumnsNamesList() 
                     { alter.setFkSourceTable(tk.image); alter.setFkSourceColumns(columnNames); }
-            [<K_ON> <K_DELETE> <K_CASCADE> { alter.setOnDeleteCascade(true); } ] )
+            [<K_ON> <K_DELETE>
+                            (<K_CASCADE> { alter.setOnDeleteCascade(true); }
+                            | <K_RESTRICT> { alter.setOnDeleteRestrict(true); }
+                            | <K_SET> <K_NULL> { alter.setOnDeleteSetNull(true); } ) ]
+        )
         |
         (
             {

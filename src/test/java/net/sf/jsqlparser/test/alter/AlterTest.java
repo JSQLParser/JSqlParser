@@ -38,4 +38,16 @@ public class AlterTest extends TestCase {
 	public void testAlterTableAddConstraint() throws JSQLParserException {
 		assertSqlCanBeParsedAndDeparsed("ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT FK_RESOURCELINKTYPE_PARENTTYPE_PRIMARYKEY FOREIGN KEY (PARENTTYPE_PRIMARYKEY) REFERENCES RESOURCETYPE(PRIMARYKEY)");
 	}
+    
+    public void testAlterTableForgeignKey2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id)");
+    }
+    
+    public void testAlterTableForgeignKey3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE RESTRICT");
+    }
+    
+    public void testAlterTableForgeignKey4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL");
+    }
 }
