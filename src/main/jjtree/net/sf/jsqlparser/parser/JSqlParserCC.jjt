@@ -2773,6 +2773,7 @@ Alter Alter():
         |
         ( <K_UNIQUE> <K_KEY> (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) columnNames=ColumnsNamesList() { alter.setUkName(tk.image); alter.setUkColumns(columnNames); } )
         |
+//following two choices regarding foreign keys should be merged
         ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alter.setFkColumns(columnNames); }
              <K_REFERENCES> tk=<S_IDENTIFIER> columnNames=ColumnsNamesList() 
                     { alter.setFkSourceTable(tk.image); alter.setFkSourceColumns(columnNames); }
@@ -2786,7 +2787,7 @@ Alter Alter():
             {
                 fkIndex = new ForeignKeyIndex();
             }
-            [<K_CONSTRAINT> sk3=RelObjectName() {fkIndex.setName(sk3);} ]
+            <K_CONSTRAINT> sk3=RelObjectName() {fkIndex.setName(sk3);}
             tk=<K_FOREIGN> tk2=<K_KEY>
                 columnNames=ColumnsNamesList()
                 {
