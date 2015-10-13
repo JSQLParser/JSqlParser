@@ -452,4 +452,10 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 	public void visit(HexValue hexValue) {
 		
 	}
+        
+    @Override
+    public void visit(OracleHint hint) {
+
+    }
+        
 }

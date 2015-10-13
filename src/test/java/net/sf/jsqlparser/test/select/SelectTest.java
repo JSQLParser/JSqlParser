@@ -1958,4 +1958,69 @@ public class SelectTest extends TestCase {
 	public void testIssue77_singleQuoteEscape2() throws JSQLParserException {
 		assertSqlCanBeParsedAndDeparsed("SELECT 'test\\'' FROM dual");
 	}
+        
+    public void testOracleHint() throws JSQLParserException {
+        String[][] sqls = new String[][] {
+            {"SOMEHINT", "SELECT /*+ SOMEHINT */ * FROM mytable", 
+                "true"},
+            {"MORE HINTS POSSIBLE", "SELECT /*+ MORE HINTS POSSIBLE */ * FROM mytable", 
+                "true"},
+            {"MORE\nHINTS\t\nPOSSIBLE", "SELECT /*+   MORE\nHINTS\t\nPOSSIBLE  */ * FROM mytable", 
+                "true"},
+            {"leading(sn di md sh ot) cardinality(ot 1000)", "SELECT /*+ leading(sn di md sh ot) cardinality(ot 1000) */ c, b FROM mytable", 
+                "true"},
+            {"ORDERED INDEX (b, jl_br_balances_n1) USE_NL (j b) \n" +
+                "           USE_NL (glcc glf) USE_MERGE (gp gsb)", 
+                "SELECT /*+ ORDERED INDEX (b, jl_br_balances_n1) USE_NL (j b) \n" +
+                "           USE_NL (glcc glf) USE_MERGE (gp gsb) */\n" +
+                " b.application_id ,\n" +
+                " b.set_of_books_id ,\n" +
+                " b.personnel_id,\n" +
+                " p.vendor_id Personnel,\n" +
+                " p.segment1 PersonnelNumber,\n" +
+                " p.vendor_name Name\n" +
+                "FROM  jl_br_journals j,\n" +
+                "      jl_br_balances b,\n" +
+                "      gl_code_combinations glcc,\n" +
+                "      fnd_flex_values_vl glf,\n" +
+                "      gl_periods gp,\n" +
+                "      gl_sets_of_books gsb,\n" +
+                "      po_vendors p", 
+                "true" },
+            {"ROWID(emp)", "SELECT /*+ROWID(emp)*/ /*+ THIS IS NOT HINT! ***/ * \n" +
+                "FROM emp \n" +
+                "WHERE rowid > 'AAAAtkAABAAAFNTAAA' AND empno = 155", 
+                "false"},
+            {"INDEX(patients sex_index) use sex_index because there are few\n" +
+                "   male patients", "SELECT /*+ INDEX(patients sex_index) use sex_index because there are few\n" +
+                "   male patients  */ name, height, weight\n" +
+                "FROM patients\n" +
+                "WHERE sex = 'm'", 
+                "true"},
+            {"INDEX_COMBINE(emp sal_bmi hiredate_bmi)", "SELECT /*+INDEX_COMBINE(emp sal_bmi hiredate_bmi)*/ * \n" +
+                "FROM emp  \n" +
+                "WHERE sal < 50000 AND hiredate < '01-JAN-1990'", 
+                "true"},
+            {"CLUSTER", "SELECT --+ CLUSTER \n" +
+                "emp.ename, deptno\n" +
+                "FROM emp, dept\n" +
+                "WHERE deptno = 10 \n" +
+                "AND emp.deptno = dept.deptno", 
+                "true"},
+            {"CLUSTER", "SELECT --+ CLUSTER \n --+ some other comment, not hint\n /* even more comments */ * from dual", 
+                "false"}
+        };
+        
+        for (String[] sql: sqls) {
+            if (Boolean.parseBoolean(sql[2])) {
+                assertSqlCanBeParsedAndDeparsed(sql[1], true);
+            }
+            Select select = (Select) CCJSqlParserUtil.parse(sql[1]);
+            PlainSelect pselect = (PlainSelect) select.getSelectBody();
+            OracleHint hint = pselect.getOracleHint();
+            assertNotNull(hint);
+            assertEquals(sql[0], hint.getValue());
+        }
+    }
+        
 }
