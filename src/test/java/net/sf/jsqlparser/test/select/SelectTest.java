@@ -1991,5 +1991,14 @@ public class SelectTest extends TestCase {
         assertOracleHintExists("(SELECT --+ HINT1 HINT2 HINT3\n * from t1) UNION (select /*+ HINT4 HINT5 */ * from dual)", true, "HINT1 HINT2 HINT3", "HINT4 HINT5");
 
     }
+    
+    public void testOracleHintExpression() throws JSQLParserException {
+        String statement = "SELECT --+ HINT\n * FROM tab1";
+        Statement parsed = parserManager.parse(new StringReader(statement));
+
+        assertEquals(statement, parsed.toString());
+        PlainSelect plainSelect = (PlainSelect) ((Select) parsed).getSelectBody();
+        assertExpressionCanBeDeparsedAs(plainSelect.getOracleHint(), "--+ HINT\n");
+    }
         
 }

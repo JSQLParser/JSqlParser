@@ -28,8 +28,11 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -102,4 +105,30 @@ public class ExpressionVisitorAdapterTest {
         assertTrue(exprList.get(1) instanceof ItemsList);
         assertTrue(exprList.get(2) instanceof ItemsList);
     }
+    
+    @Test
+    public void testOracleHintExpressions() throws JSQLParserException {
+        testOracleHintExpression("select --+ MYHINT \n * from foo", "MYHINT", true);
+        testOracleHintExpression("select /*+ MYHINT */ * from foo", "MYHINT", false);
+    }
+
+    public static void testOracleHintExpression(String sql, String hint, boolean singleLine) throws JSQLParserException {
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        final OracleHint[] holder = new OracleHint[1];
+        assertNotNull(plainSelect.getOracleHint());
+        plainSelect.getOracleHint().accept(new ExpressionVisitorAdapter() {
+
+            @Override
+            public void visit(OracleHint hint) {
+                super.visit(hint);
+                holder[0] = hint;
+            }
+        });
+        
+        assertNotNull(holder[0]);
+        assertEquals(singleLine, holder[0].isSingleLine());
+        assertEquals(hint, holder[0].getValue());
+    }
+    
 }
