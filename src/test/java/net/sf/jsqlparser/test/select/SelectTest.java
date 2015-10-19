@@ -1958,4 +1958,47 @@ public class SelectTest extends TestCase {
 	public void testIssue77_singleQuoteEscape2() throws JSQLParserException {
 		assertSqlCanBeParsedAndDeparsed("SELECT 'test\\'' FROM dual");
 	}
+        
+    public void testOracleHint() throws JSQLParserException {
+        assertOracleHintExists("SELECT /*+ SOMEHINT */ * FROM mytable", true, "SOMEHINT");
+        assertOracleHintExists("SELECT /*+ MORE HINTS POSSIBLE */ * FROM mytable", true, "MORE HINTS POSSIBLE");
+        assertOracleHintExists("SELECT /*+   MORE\nHINTS\t\nPOSSIBLE  */ * FROM mytable", true, "MORE\nHINTS\t\nPOSSIBLE");
+        assertOracleHintExists("SELECT /*+ leading(sn di md sh ot) cardinality(ot 1000) */ c, b FROM mytable", true, "leading(sn di md sh ot) cardinality(ot 1000)");
+        assertOracleHintExists("SELECT /*+ ORDERED INDEX (b, jl_br_balances_n1) USE_NL (j b) \n" +
+                "           USE_NL (glcc glf) USE_MERGE (gp gsb) */\n" +
+                " b.application_id\n" +
+                "FROM  jl_br_journals j,\n" +
+                "      po_vendors p", true, "ORDERED INDEX (b, jl_br_balances_n1) USE_NL (j b) \n" +
+                "           USE_NL (glcc glf) USE_MERGE (gp gsb)");
+        assertOracleHintExists("SELECT /*+ROWID(emp)*/ /*+ THIS IS NOT HINT! ***/ * \n" +
+                "FROM emp \n" +
+                "WHERE rowid > 'AAAAtkAABAAAFNTAAA' AND empno = 155", false, "ROWID(emp)");
+        assertOracleHintExists("SELECT /*+ INDEX(patients sex_index) use sex_index because there are few\n" +
+                "   male patients  */ name, height, weight\n" +
+                "FROM patients\n" +
+                "WHERE sex = 'm'", true, "INDEX(patients sex_index) use sex_index because there are few\n   male patients");
+        assertOracleHintExists("SELECT /*+INDEX_COMBINE(emp sal_bmi hiredate_bmi)*/ * \n" +
+                "FROM emp  \n" +
+                "WHERE sal < 50000 AND hiredate < '01-JAN-1990'", true, "INDEX_COMBINE(emp sal_bmi hiredate_bmi)");
+        assertOracleHintExists("SELECT --+ CLUSTER \n" +
+                "emp.ename, deptno\n" +
+                "FROM emp, dept\n" +
+                "WHERE deptno = 10 \n" +
+                "AND emp.deptno = dept.deptno", true, "CLUSTER");
+        assertOracleHintExists("SELECT --+ CLUSTER \n --+ some other comment, not hint\n /* even more comments */ * from dual", false, "CLUSTER");
+        assertOracleHintExists("(SELECT * from t1) UNION (select /*+ CLUSTER */ * from dual)", true, null, "CLUSTER");
+        assertOracleHintExists("(SELECT * from t1) UNION (select /*+ CLUSTER */ * from dual) UNION (select * from dual)", true, null, "CLUSTER", null);
+        assertOracleHintExists("(SELECT --+ HINT1 HINT2 HINT3\n * from t1) UNION (select /*+ HINT4 HINT5 */ * from dual)", true, "HINT1 HINT2 HINT3", "HINT4 HINT5");
+
+    }
+    
+    public void testOracleHintExpression() throws JSQLParserException {
+        String statement = "SELECT --+ HINT\n * FROM tab1";
+        Statement parsed = parserManager.parse(new StringReader(statement));
+
+        assertEquals(statement, parsed.toString());
+        PlainSelect plainSelect = (PlainSelect) ((Select) parsed).getSelectBody();
+        assertExpressionCanBeDeparsedAs(plainSelect.getOracleHint(), "--+ HINT\n");
+    }
+        
 }

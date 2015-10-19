@@ -722,6 +722,8 @@ PlainSelect PlainSelect():
 {
     <K_SELECT>
 
+    { plainSelect.setOracleHint(getOracleHint()); }
+
     [skip = Skip() { plainSelect.setSkip(skip);	} ]
 
     [LOOKAHEAD(2) first = First() { plainSelect.setFirst(first); } ]
@@ -1395,6 +1397,23 @@ Skip Skip():
 	{
 		return skip;
 	}
+}
+
+JAVACODE
+OracleHint getOracleHint() {
+  OracleHint hint = null;
+  Token tok = getToken(1);
+  // Retrieve first comment (if any) prior next token
+  if (tok.specialToken != null) {
+    tok = tok.specialToken;
+    while (tok.specialToken != null) tok = tok.specialToken;
+    // Check if it matches Hint pattern?
+    if (OracleHint.isHintMatch(tok.image)) {
+      hint = new OracleHint();
+      hint.setComment(tok.image);
+    }
+  }
+  return hint;
 }
 
 First First():

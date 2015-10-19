@@ -27,6 +27,13 @@ import net.sf.jsqlparser.util.deparser.*;
 import java.io.*;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -90,4 +97,32 @@ public class TestUtils {
 
         assertEquals(expression, stringBuilder.toString());
     }
+    
+    public static void assertOracleHintExists(String sql, boolean assertDeparser, String... hints) throws JSQLParserException {
+        if (assertDeparser) {
+            assertSqlCanBeParsedAndDeparsed(sql, true);
+        }
+        Select stmt = (Select) CCJSqlParserUtil.parse(sql);
+        if (stmt.getSelectBody() instanceof PlainSelect) {
+            PlainSelect ps = (PlainSelect) stmt.getSelectBody();
+            OracleHint hint = ps.getOracleHint();
+            assertNotNull(hint);
+            assertEquals(hints[0], hint.getValue());
+        } else {
+            if (stmt.getSelectBody() instanceof SetOperationList) {
+                SetOperationList setop = (SetOperationList) stmt.getSelectBody();
+                for (int i = 0; i < setop.getSelects().size(); i++) {
+                    PlainSelect pselect = (PlainSelect) setop.getSelects().get(i);
+                    OracleHint hint = pselect.getOracleHint();
+                    if (hints[i] == null) {
+                        Assert.assertNull(hint);
+                    } else {
+                        assertNotNull(hint);
+                        assertEquals(hints[i], hint.getValue());
+                    }
+                }
+            }
+        }
+    }
+    
 }
