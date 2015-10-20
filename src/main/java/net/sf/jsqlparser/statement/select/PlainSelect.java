@@ -29,6 +29,7 @@ import net.sf.jsqlparser.schema.Table;
 import java.util.Iterator;
 import java.util.List;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
 
 /**
  * The core of a "SELECT" statement (no UNION, no ORDER BY)
@@ -51,6 +52,7 @@ public class PlainSelect implements SelectBody {
     private First first;
     private Top top;
     private OracleHierarchicalExpression oracleHierarchical = null;
+    private OracleHint oracleHint = null;
     private boolean oracleSiblings = false;
     private boolean forUpdate = false;
     private Table forUpdateTable = null;
@@ -257,6 +259,14 @@ public class PlainSelect implements SelectBody {
         this.forUpdateTable = forUpdateTable;
     }
 
+    public OracleHint getOracleHint() {
+        return oracleHint;
+    }
+
+    public void setOracleHint(OracleHint oracleHint) {
+        this.oracleHint = oracleHint;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder();
@@ -265,6 +275,10 @@ public class PlainSelect implements SelectBody {
         }
         sql.append("SELECT ");
         
+        if (oracleHint != null) {
+            sql.append(oracleHint).append(" ");
+        }
+
         if (skip != null) {
             sql.append(skip).append(" ");
         }

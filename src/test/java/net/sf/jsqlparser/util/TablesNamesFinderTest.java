@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHint;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -333,4 +334,24 @@ public class TablesNamesFinderTest {
 	private String getLine(BufferedReader in) throws Exception {
 		return CCJSqlParserManagerTest.getLine(in);
 	}
+        
+    @Test
+    public void testOracleHint() throws JSQLParserException {
+        String sql = "select --+ HINT\ncol2 from mytable";
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        final OracleHint[] holder = new OracleHint[1];
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder() {
+
+            @Override
+            public void visit(OracleHint hint) {
+                super.visit(hint);
+                holder[0] = hint;
+            }
+            
+        };
+        tablesNamesFinder.getTableList(select);
+        assertNull(holder[0]);
+
+    }
+        
 }

@@ -162,4 +162,7 @@ public interface ExpressionVisitor {
     void visit(MySQLGroupConcat groupConcat);
     
     void visit(RowConstructor rowConstructor);
+    
+    void visit(OracleHint hint);
+    
 }

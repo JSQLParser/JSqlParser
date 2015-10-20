@@ -38,6 +38,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.5
 
+* first Oracle hint support for **select** statements 
 * first **alter table foreign key** support
 * first **merge** support
 * first version of escaped single quotes support
