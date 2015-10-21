@@ -49,4 +49,15 @@ public class StatementsTest {
         assertTrue(parseStatements.getStatements().get(1) instanceof Select);
     }
     
+    @Test
+    public void testStatementsProblem() throws JSQLParserException {
+        String sqls = ";;select * from mytable;;select * from mytable2;;;";
+        Statements parseStatements = CCJSqlParserUtil.parseStatements(sqls);
+        
+        assertEquals("SELECT * FROM mytable;\nSELECT * FROM mytable2;\n", parseStatements.toString());
+        
+        assertTrue(parseStatements.getStatements().get(0) instanceof Select);
+        assertTrue(parseStatements.getStatements().get(1) instanceof Select);
+    }
+    
 }

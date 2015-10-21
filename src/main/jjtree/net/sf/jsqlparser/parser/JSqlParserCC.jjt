@@ -312,10 +312,10 @@ Statements Statements() #Statements :
   List<Statement> list = new ArrayList<Statement>();
   Statement stm; }
 {
+	(";")*
     stm = SingleStatement() { list.add(stm); }
-     (LOOKAHEAD(2) ";" stm = SingleStatement() { list.add(stm); } )*
+    ( (";") [ stm = SingleStatement() { list.add(stm); } ] )*
 
-    [";"]
     <EOF>
 
     {
