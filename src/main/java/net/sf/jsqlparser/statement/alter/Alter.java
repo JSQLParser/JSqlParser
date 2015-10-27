@@ -42,6 +42,8 @@ public class Alter implements Statement {
     private List<String> ukColumns;
     private String ukName;
     private ForeignKeyIndex fkIndex = null;
+	private String operation;
+    private String constraintName;
 
     private boolean onDeleteCascade;
 
@@ -93,6 +95,14 @@ public class Alter implements Statement {
         this.fkSourceTable = fkSourceTable;
     }
 
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation = operation;
+    }
+
     private List<String> fkSourceColumns;
 
     public List<String> getFkSourceColumns() {
@@ -117,6 +127,14 @@ public class Alter implements Statement {
 
     public void setColumnName(String columnName) {
         this.columnName = columnName;
+    }
+
+    public String getConstraintName() {
+        return this.constraintName;
+    }
+
+    public void setConstraintName(final String constraintName) {
+        this.constraintName = constraintName;
     }
 
     public ColDataType getDataType() {
@@ -167,9 +185,14 @@ public class Alter implements Statement {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append("ALTER TABLE ").append(table.getFullyQualifiedName()).append(" ADD ");
+        b.append("ALTER TABLE ").append(table.getFullyQualifiedName()).append(" ").append(operation).append(" ");
         if (columnName != null) {
-            b.append("COLUMN ").append(columnName).append(" ").append(dataType.toString());
+            b.append("COLUMN ").append(columnName);
+            if (dataType != null) {
+                b.append(" ").append(dataType.toString());
+            }
+        } else if (constraintName != null) {
+            b.append("CONSTRAINT ").append(constraintName);
         } else if (pkColumns != null) {
             b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(")");
         } else if (ukColumns != null) {

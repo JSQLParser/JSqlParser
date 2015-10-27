@@ -50,4 +50,12 @@ public class AlterTest extends TestCase {
     public void testAlterTableForgeignKey4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL");
     }
+
+    public void testAlterTableDropColumn() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test DROP COLUMN YYY");
+    }
+
+    public void testAlterTableDropConstraint() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test DROP CONSTRAINT YYY");
+    }
 }

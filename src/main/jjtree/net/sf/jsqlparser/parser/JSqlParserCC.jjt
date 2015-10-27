@@ -2773,13 +2773,16 @@ Alter Alter():
     List<String> columnNames = null;
     ForeignKeyIndex fkIndex = null;
     Table fkTable = null;
+    Token alterDrop = null;
 }
 {
 	<K_ALTER> <K_TABLE> table=Table() { alter.setTable(table); } 
-
-    <K_ADD> 
-    
-    (  
+    (
+    (alterDrop = <K_ADD>
+    	{
+    		alter.setOperation(alterDrop.image);
+    	}
+    	  (
         (  <K_COLUMN>
 	       (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) dataType=ColDataType()
             {
@@ -2820,8 +2823,30 @@ Alter Alter():
                     alter.setFkIndex(fkIndex);
                 }
         )
+        )
     )
-
+    |
+    (alterDrop = <K_DROP>
+      {
+    		alter.setOperation(alterDrop.image);
+    	}
+    	 (
+			 (  <K_COLUMN>
+			 (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>)
+					 {
+							alter.setColumnName(tk.image);
+					 }
+			 )
+			 |
+       (  <K_CONSTRAINT>
+       (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>)
+           {
+              alter.setConstraintName(tk.image);
+           }
+       )
+       )
+    )
+    )
     {
 		return alter;
 	}
