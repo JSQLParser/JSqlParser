@@ -2739,6 +2739,9 @@ Drop Drop():
 		tk=<K_INDEX>
 	)
     { drop.setType(tk.image); }
+
+    [<K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
+
 	name = Table() { drop.setName(name); }
 	((tk=<S_IDENTIFIER> | tk=<K_CASCADE>) { dropArgs.add(tk.image); })*
 
