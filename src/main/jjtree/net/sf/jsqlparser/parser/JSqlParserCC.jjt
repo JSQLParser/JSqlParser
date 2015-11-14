@@ -227,6 +227,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MATCHED: "MATCHED">
 |   <K_CASCADE: "CASCADE">
 |   <K_RESTRICT: "RESTRICT">
+|   <K_DUPLICATE: "DUPLICATE">
 }
 
 TOKEN : /* Numeric Constants */
@@ -493,8 +494,8 @@ Insert Insert():
         )
 	)
 
-	[ "ON DUPLICATE KEY UPDATE"
-	    { useDuplicate = true;}
+	[ <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
+	    { useDuplicate = true; }
 	  tableColumn=Column() "=" exp=SimpleExpression()
 	    {
 	        duplicateUpdateColumns = new ArrayList<Column>();
@@ -1194,7 +1195,7 @@ Join JoinerExpression():
         right=FromItem()
 
 
-	[
+    [ LOOKAHEAD(2)
 		( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); } )
 		|
 		( <K_USING> "(" tableColumn=Column() { columns = new ArrayList(); columns.add(tableColumn); }
