@@ -458,6 +458,9 @@ Insert Insert():
     List<SelectExpressionItem> returning = null;
     Select select = null;
     boolean useSelectBrackets = false;
+    boolean useDuplicate = false;
+    List<Column> duplicateUpdateColumns = null;
+    List<Expression> duplicateUpdateExpressionList = null;
 }
 {
     <K_INSERT> [<K_INTO>] table=Table()
@@ -490,6 +493,20 @@ Insert Insert():
         )
 	)
 
+	[ "ON DUPLICATE KEY UPDATE"
+	    { useDuplicate = true;}
+	  tableColumn=Column() "=" exp=SimpleExpression()
+	    {
+	        duplicateUpdateColumns = new ArrayList<Column>();
+	        duplicateUpdateExpressionList = new ArrayList<Expression>();
+	        duplicateUpdateColumns.add(tableColumn);
+	        duplicateUpdateExpressionList.add(exp);
+	    }
+      ("," tableColumn=Column() "=" exp=SimpleExpression()
+        { duplicateUpdateColumns.add(tableColumn);
+        duplicateUpdateExpressionList.add(exp); } )*]
+
+
     [ <K_RETURNING> (
            "*" { insert.setReturningAllColumns(true); }
            | returning=ListExpressionItem()
@@ -503,6 +520,9 @@ Insert Insert():
 	    insert.setTable(table);
 	    if (columns.size() > 0)
 	    	insert.setColumns(columns);
+	    insert.setUseDuplicate(useDuplicate);
+	    insert.setDuplicateUpdateColumns(duplicateUpdateColumns);
+	    insert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
         insert.setReturningExpressionList(returning);
     	return insert;
     }

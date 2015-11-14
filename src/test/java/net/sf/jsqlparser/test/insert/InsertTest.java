@@ -13,7 +13,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import static net.sf.jsqlparser.test.TestUtils.*;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -146,5 +146,10 @@ public class InsertTest {
 	@Test
 	public void testHexValues3() throws JSQLParserException {
 		assertSqlCanBeParsedAndDeparsed("INSERT INTO TABLE2 VALUES ('1', \"DSDD\", 0xabcde)");
+	}
+
+	@Test
+	public void testDuplicateKey() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("INSERT INTO Users0 (UserId, Key, Value) VALUES (51311, 'T_211', 18) ON DUPLICATE KEY UPDATE Value = 18");
 	}
 }
