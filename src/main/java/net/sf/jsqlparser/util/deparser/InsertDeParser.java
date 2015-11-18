@@ -74,7 +74,15 @@ public class InsertDeParser implements ItemsListVisitor {
     }
 
     public void deParse(Insert insert) {
-        buffer.append("INSERT INTO ");
+        buffer.append("INSERT ");
+        if(insert.getModifierPriority() != null){
+            buffer.append(insert.getModifierPriority() + " ");
+        }
+        if(insert.isModifierIgnore()){
+            buffer.append("IGNORE ");
+        }
+        buffer.append("INTO ");
+
         buffer.append(insert.getTable().getFullyQualifiedName());
         if (insert.getColumns() != null) {
             buffer.append(" (");

@@ -227,6 +227,10 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MATCHED: "MATCHED">
 |   <K_CASCADE: "CASCADE">
 |   <K_RESTRICT: "RESTRICT">
+|	<K_LOW_PRIORITY : "LOW_PRIORITY">
+|	<K_DELAYED : "DELAYED">
+|	<K_HIGH_PRIORITY : "HIGH_PRIORITY">
+|	<K_IGNORE : "IGNORE">
 }
 
 TOKEN : /* Numeric Constants */
@@ -461,9 +465,18 @@ Insert Insert():
     boolean useDuplicate = false;
     List<Column> duplicateUpdateColumns = null;
     List<Expression> duplicateUpdateExpressionList = null;
+    Token tk = null;
+    String modifierPriority = null;
+    boolean modifierIgnore = false;
 }
 {
-    <K_INSERT> [<K_INTO>] table=Table()
+    <K_INSERT>
+    [(tk = <K_LOW_PRIORITY> | tk = <K_DELAYED> | tk = <K_HIGH_PRIORITY>)
+    {if (tk!=null)
+    	modifierPriority = tk.image.toUpperCase();
+    }]
+    [<K_IGNORE>{ modifierIgnore = true; }]
+    [<K_INTO>] table=Table()
 
 
      [LOOKAHEAD(2) "(" tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"  ]
@@ -524,6 +537,8 @@ Insert Insert():
 	    insert.setDuplicateUpdateColumns(duplicateUpdateColumns);
 	    insert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
         insert.setReturningExpressionList(returning);
+        insert.setModifierPriority(modifierPriority);
+        insert.setModifierIgnore(modifierIgnore);
     	return insert;
     }
 }
