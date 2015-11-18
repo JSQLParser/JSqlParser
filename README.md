@@ -38,6 +38,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.5
 
+* support for **insert ... on duplicate key update**
 * improved support for **alter table** statements
 * first Oracle hint support for **select** statements 
 * first **alter table foreign key** support
