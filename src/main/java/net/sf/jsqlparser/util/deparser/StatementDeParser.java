@@ -79,7 +79,8 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Drop drop) {
-        // TODO Auto-generated method stub
+        DropDeParser dropDeParser = new DropDeParser(buffer);
+        dropDeParser.deParse(drop);
     }
 
     @Override
@@ -90,7 +91,6 @@ public class StatementDeParser implements StatementVisitor {
         selectDeParser.setExpressionVisitor(expressionDeParser);
         InsertDeParser insertDeParser = new InsertDeParser(expressionDeParser, selectDeParser, buffer);
         insertDeParser.deParse(insert);
-
     }
 
     @Override

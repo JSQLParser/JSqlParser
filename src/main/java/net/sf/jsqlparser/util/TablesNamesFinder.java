@@ -51,7 +51,7 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 /**
  * Find all used tables within an select statement.
  */
-public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor, StatementVisitor  {
+public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor, StatementVisitor {
 
     private List<String> tables;
     /**
@@ -136,7 +136,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         create.accept(this);
         return tables;
     }
-    
+
     public List<String> getTableList(Expression expr) {
         init();
         expr.accept(this);
@@ -157,7 +157,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
             }
         }
 
-        plainSelect.getFromItem().accept(this);
+        if (plainSelect.getFromItem() != null) {
+            plainSelect.getFromItem().accept(this);
+        }
 
         if (plainSelect.getJoins() != null) {
             for (Join join : plainSelect.getJoins()) {
@@ -624,18 +626,18 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         }
     }
 
-	@Override
-	public void visit(HexValue hexValue) {
-		
-	}
+    @Override
+    public void visit(HexValue hexValue) {
+
+    }
 
     @Override
     public void visit(Merge merge) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     @Override
     public void visit(OracleHint hint) {
     }
-    
+
 }

@@ -23,6 +23,7 @@ package net.sf.jsqlparser.statement.insert;
 
 import java.util.List;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -44,6 +45,9 @@ public class Insert implements Statement {
     private boolean useValues = true;
     private Select select;
     private boolean useSelectBrackets = true;
+    private boolean useDuplicate = false;
+    private List<Column> duplicateUpdateColumns;
+    private List<Expression> duplicateUpdateExpressionList;
 
     private boolean returningAllColumns = false;
 
@@ -128,6 +132,30 @@ public class Insert implements Statement {
         this.useSelectBrackets = useSelectBrackets;
     }
 
+    public boolean isUseDuplicate() {
+        return useDuplicate;
+    }
+
+    public void setUseDuplicate(boolean useDuplicate) {
+        this.useDuplicate = useDuplicate;
+    }
+
+    public List<Column> getDuplicateUpdateColumns() {
+        return duplicateUpdateColumns;
+    }
+
+    public void setDuplicateUpdateColumns(List<Column> duplicateUpdateColumns) {
+        this.duplicateUpdateColumns = duplicateUpdateColumns;
+    }
+
+    public List<Expression> getDuplicateUpdateExpressionList() {
+        return duplicateUpdateExpressionList;
+    }
+
+    public void setDuplicateUpdateExpressionList(List<Expression> duplicateUpdateExpressionList) {
+        this.duplicateUpdateExpressionList = duplicateUpdateExpressionList;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder();
@@ -154,6 +182,17 @@ public class Insert implements Statement {
         }
         if (useSelectBrackets) {
             sql.append(")");
+        }
+
+        if (useDuplicate){
+            sql.append(" ON DUPLICATE KEY UPDATE ");
+            for (int i = 0; i < getDuplicateUpdateColumns().size(); i++) {
+                if (i != 0) {
+                    sql.append(", ");
+                }
+                sql.append(duplicateUpdateColumns.get(i)).append(" = ");
+                sql.append(duplicateUpdateExpressionList.get(i));
+            }
         }
 
         if (isReturningAllColumns()) {

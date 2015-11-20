@@ -36,4 +36,8 @@ public class DropTest extends TestCase {
         assertEquals("TABLE", drop.getType());
         assertEquals("\"testtable\"", drop.getName().getFullyQualifiedName());
     }
+    
+    public void testDropIfExists() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP TABLE IF EXISTS my_table");
+    }
 }

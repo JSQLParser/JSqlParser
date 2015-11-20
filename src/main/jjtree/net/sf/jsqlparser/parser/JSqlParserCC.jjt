@@ -227,6 +227,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MATCHED: "MATCHED">
 |   <K_CASCADE: "CASCADE">
 |   <K_RESTRICT: "RESTRICT">
+|   <K_DUPLICATE: "DUPLICATE">
 }
 
 TOKEN : /* Numeric Constants */
@@ -458,6 +459,9 @@ Insert Insert():
     List<SelectExpressionItem> returning = null;
     Select select = null;
     boolean useSelectBrackets = false;
+    boolean useDuplicate = false;
+    List<Column> duplicateUpdateColumns = null;
+    List<Expression> duplicateUpdateExpressionList = null;
 }
 {
     <K_INSERT> [<K_INTO>] table=Table()
@@ -490,6 +494,20 @@ Insert Insert():
         )
 	)
 
+	[ <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
+	    { useDuplicate = true; }
+	  tableColumn=Column() "=" exp=SimpleExpression()
+	    {
+	        duplicateUpdateColumns = new ArrayList<Column>();
+	        duplicateUpdateExpressionList = new ArrayList<Expression>();
+	        duplicateUpdateColumns.add(tableColumn);
+	        duplicateUpdateExpressionList.add(exp);
+	    }
+      ("," tableColumn=Column() "=" exp=SimpleExpression()
+        { duplicateUpdateColumns.add(tableColumn);
+        duplicateUpdateExpressionList.add(exp); } )*]
+
+
     [ <K_RETURNING> (
            "*" { insert.setReturningAllColumns(true); }
            | returning=ListExpressionItem()
@@ -503,6 +521,9 @@ Insert Insert():
 	    insert.setTable(table);
 	    if (columns.size() > 0)
 	    	insert.setColumns(columns);
+	    insert.setUseDuplicate(useDuplicate);
+	    insert.setDuplicateUpdateColumns(duplicateUpdateColumns);
+	    insert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
         insert.setReturningExpressionList(returning);
     	return insert;
     }
@@ -1174,12 +1195,12 @@ Join JoinerExpression():
         right=FromItem()
 
 
-	[
-		( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); } )
+    [ 
+	LOOKAHEAD(2) (( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); } )
 		|
 		( <K_USING> "(" tableColumn=Column() { columns = new ArrayList(); columns.add(tableColumn); }
 				("," tableColumn=Column() { columns.add(tableColumn); } )* ")"
-		  { join.setUsingColumns(columns); }   )
+		  { join.setUsingColumns(columns); }   ))
   	]
   {
   	join.setRightItem(right);
@@ -2741,6 +2762,9 @@ Drop Drop():
 		tk=<K_INDEX>
 	)
     { drop.setType(tk.image); }
+
+    [<K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
+
 	name = Table() { drop.setName(name); }
 	((tk=<S_IDENTIFIER> | tk=<K_CASCADE>) { dropArgs.add(tk.image); })*
 
@@ -2775,13 +2799,16 @@ Alter Alter():
     List<String> columnNames = null;
     ForeignKeyIndex fkIndex = null;
     Table fkTable = null;
+    Token alterDrop = null;
 }
 {
 	<K_ALTER> <K_TABLE> table=Table() { alter.setTable(table); } 
-
-    <K_ADD> 
-    
-    (  
+    (
+    (alterDrop = <K_ADD>
+    	{
+    		alter.setOperation(alterDrop.image);
+    	}
+    	  (
         (  <K_COLUMN>
 	       (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) dataType=ColDataType()
             {
@@ -2822,8 +2849,30 @@ Alter Alter():
                     alter.setFkIndex(fkIndex);
                 }
         )
+        )
     )
-
+    |
+    (alterDrop = <K_DROP>
+      {
+    		alter.setOperation(alterDrop.image);
+    	}
+    	 (
+			 (  <K_COLUMN>
+			 (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>)
+					 {
+							alter.setColumnName(tk.image);
+					 }
+			 )
+			 |
+       (  <K_CONSTRAINT>
+       (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>)
+           {
+              alter.setConstraintName(tk.image);
+           }
+       )
+       )
+    )
+    )
     {
 		return alter;
 	}

@@ -110,6 +110,20 @@ public class InsertDeParser implements ItemsListVisitor {
             }
         }
 
+        if(insert.isUseDuplicate()){
+            buffer.append(" ON DUPLICATE KEY UPDATE ");
+            for (int i = 0; i < insert.getDuplicateUpdateColumns().size(); i++) {
+                Column column = insert.getDuplicateUpdateColumns().get(i);
+                buffer.append(column.getFullyQualifiedName()).append(" = ");
+
+                Expression expression = insert.getDuplicateUpdateExpressionList().get(i);
+                expression.accept(expressionVisitor);
+                if (i < insert.getDuplicateUpdateColumns().size() - 1) {
+                    buffer.append(", ");
+                }
+            }
+        }
+
         if (insert.isReturningAllColumns()) {
             buffer.append(" RETURNING *");
         } else if (insert.getReturningExpressionList() != null) {
