@@ -1552,9 +1552,11 @@ Expression RegularCondition():
 	| "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
 	| "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
 	)
-	rightExpression=ComparisonItem()
 
 	[ <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_END; } ]
+
+	rightExpression=ComparisonItem()
+	
 	[ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
 
 	{
