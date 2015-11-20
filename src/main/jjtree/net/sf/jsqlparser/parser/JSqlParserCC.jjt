@@ -1574,10 +1574,9 @@ Expression RegularCondition():
 	| "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
 	)
 
-	[ <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_END; } ]
+	( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; } 
+      | rightExpression=ComparisonItem() )
 
-	rightExpression=ComparisonItem()
-	
 	[ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
 
 	{
