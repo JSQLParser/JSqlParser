@@ -31,7 +31,7 @@ import java.util.*;
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
  * string) a {@link net.sf.jsqlparser.statement.select.Select}
  */
-public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
+public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     private StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
@@ -147,11 +147,11 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         }
 
         if (plainSelect.getOrderByElements() != null) {
-            deparseOrderBy(plainSelect.isOracleSiblings(), plainSelect.getOrderByElements());
+            new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(), plainSelect.getOrderByElements());
         }
 
         if (plainSelect.getLimit() != null) {
-            deparseLimit(plainSelect.getLimit());
+            new LimitDeparser(buffer).deParse(plainSelect.getLimit());
         }
         if (plainSelect.getOffset() != null) {
             deparseOffset(plainSelect.getOffset());
@@ -167,20 +167,6 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         }
         if (plainSelect.isUseBrackets()) {
             buffer.append(")");
-        }
-    }
-
-    @Override
-    public void visit(OrderByElement orderBy) {
-        orderBy.getExpression().accept(expressionVisitor);
-        if (!orderBy.isAsc()) {
-            buffer.append(" DESC");
-        } else if (orderBy.isAscDescPresent()) {
-            buffer.append(" ASC");
-        }
-        if (orderBy.getNullOrdering() != null) {
-            buffer.append(' ');
-            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
         }
     }
 
@@ -271,44 +257,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         buffer.append("))");
     }
 
-    public void deparseOrderBy(List<OrderByElement> orderByElements) {
-        deparseOrderBy(false, orderByElements);
-    }
 
-    public void deparseOrderBy(boolean oracleSiblings, List<OrderByElement> orderByElements) {
-        if (oracleSiblings) {
-            buffer.append(" ORDER SIBLINGS BY ");
-        } else {
-            buffer.append(" ORDER BY ");
-        }
-        for (Iterator<OrderByElement> iter = orderByElements.iterator(); iter.hasNext();) {
-            OrderByElement orderByElement = iter.next();
-            orderByElement.accept(this);
-            if (iter.hasNext()) {
-                buffer.append(", ");
-            }
-        }
-    }
-
-    public void deparseLimit(Limit limit) {
-        // LIMIT n OFFSET skip
-        if (limit.isRowCountJdbcParameter()) {
-            buffer.append(" LIMIT ");
-            buffer.append("?");
-        } else if (limit.getRowCount() >= 0) {
-            buffer.append(" LIMIT ");
-            buffer.append(limit.getRowCount());
-        } else if (limit.isLimitNull()) {
-            buffer.append(" LIMIT NULL");
-        }
-
-        if (limit.isOffsetJdbcParameter()) {
-            buffer.append(" OFFSET ?");
-        } else if (limit.getOffset() != 0) {
-            buffer.append(" OFFSET ").append(limit.getOffset());
-        }
-
-    }
 
     public void deparseOffset(Offset offset) {
         // OFFSET offset
@@ -429,11 +378,11 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
             buffer.append(")");
         }
         if (list.getOrderByElements() != null) {
-            deparseOrderBy(list.getOrderByElements());
+            new OrderByDeParser(expressionVisitor,buffer).deParse(list.getOrderByElements());
         }
 
         if (list.getLimit() != null) {
-            deparseLimit(list.getLimit());
+            new LimitDeparser(buffer).deParse(list.getLimit());
         }
         if (list.getOffset() != null) {
             deparseOffset(list.getOffset());

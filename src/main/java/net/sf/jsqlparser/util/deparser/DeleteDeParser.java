@@ -59,6 +59,13 @@ public class DeleteDeParser {
 			delete.getWhere().accept(expressionVisitor);
 		}
 
+		if(delete.getOrderByElements()!=null){
+			new OrderByDeParser(expressionVisitor, buffer).deParse(delete.getOrderByElements());
+		}
+		if (delete.getLimit() != null) {
+			new LimitDeparser(buffer).deParse(delete.getLimit());
+		}
+
 	}
 
 	public ExpressionVisitor getExpressionVisitor() {

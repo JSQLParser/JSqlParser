@@ -29,12 +29,14 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.OrderByVisitor;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
  * string) an {@link net.sf.jsqlparser.statement.update.Update}
  */
-public class UpdateDeParser {
+public class UpdateDeParser implements OrderByVisitor {
 
     private StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
@@ -116,6 +118,12 @@ public class UpdateDeParser {
             buffer.append(" WHERE ");
             update.getWhere().accept(expressionVisitor);
         }
+        if (update.getOrderByElements()!=null) {
+           new OrderByDeParser(expressionVisitor, buffer).deParse(update.getOrderByElements());
+        }
+        if (update.getLimit() != null) {
+            new LimitDeparser(buffer).deParse(update.getLimit());
+        }
 
     }
 
@@ -125,5 +133,19 @@ public class UpdateDeParser {
 
     public void setExpressionVisitor(ExpressionVisitor visitor) {
         expressionVisitor = visitor;
+    }
+
+    @Override
+    public void visit(OrderByElement orderBy) {
+        orderBy.getExpression().accept(expressionVisitor);
+        if (!orderBy.isAsc()) {
+            buffer.append(" DESC");
+        } else if (orderBy.isAscDescPresent()) {
+            buffer.append(" ASC");
+        }
+        if (orderBy.getNullOrdering() != null) {
+            buffer.append(' ');
+            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
+        }
     }
 }
