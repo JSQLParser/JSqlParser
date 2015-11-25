@@ -32,6 +32,8 @@ import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.Limit;
 
 /**
  * The update statement.
@@ -47,6 +49,8 @@ public class Update implements Statement {
 	private Select select;
 	private boolean useColumnsBrackets = true;
 	private boolean useSelect = false;
+	private List<OrderByElement> orderByElements;
+	private Limit limit;
 
 	@Override
 	public void accept(StatementVisitor statementVisitor) {
@@ -137,6 +141,22 @@ public class Update implements Statement {
 	        this.useSelect = useSelect;
     	}
 
+	public void setOrderByElements(List<OrderByElement> orderByElements) {
+		this.orderByElements = orderByElements;
+	}
+
+	public void setLimit(Limit limit) {
+		this.limit = limit;
+	}
+
+	public List<OrderByElement> getOrderByElements() {
+		return orderByElements;
+	}
+
+	public Limit getLimit() {
+		return limit;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder("UPDATE ");
@@ -183,6 +203,12 @@ public class Update implements Statement {
 		if (where != null) {
 			b.append(" WHERE ");
 			b.append(where);
+		}
+		if (orderByElements!=null) {
+			b.append(PlainSelect.orderByToString(orderByElements));
+		}
+		if (limit != null) {
+			b.append(limit);
 		}
 		return b.toString();
 	}

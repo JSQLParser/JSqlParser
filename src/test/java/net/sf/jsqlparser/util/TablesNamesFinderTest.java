@@ -351,7 +351,17 @@ public class TablesNamesFinderTest {
         };
         tablesNamesFinder.getTableList(select);
         assertNull(holder[0]);
-
     }
+    
+    @Test
+	public void testGetTableListIssue194() throws Exception {
+		String sql = "SELECT 1";
+		net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+		Select selectStatement = (Select) statement;
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(selectStatement);
+		assertEquals(0, tableList.size());
+	}
         
 }

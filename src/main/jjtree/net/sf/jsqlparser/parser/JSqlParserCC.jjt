@@ -353,6 +353,8 @@ Update Update():
 	FromItem fromItem = null;
 	List<Join> joins = null;
 	Select select = null;
+	Limit limit = null;
+	List<OrderByElement> orderByElements;
 	boolean useColumnsBrackets = false;
 }
 {
@@ -379,6 +381,9 @@ Update Update():
       joins=JoinsList() ]
 
    [ where=WhereClause() { update.setWhere(where); } ]
+
+   [ orderByElements = OrderByElements() { update.setOrderByElements(orderByElements); } ]
+   [ limit = PlainLimit() { update.setLimit(limit); } ]
    {
    		update.setColumns(columns);
    		update.setExpressions(expList);
@@ -467,14 +472,14 @@ Insert Insert():
     List<Column> duplicateUpdateColumns = null;
     List<Expression> duplicateUpdateExpressionList = null;
     Token tk = null;
-    String modifierPriority = null;
+    InsertModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
 }
 {
     <K_INSERT>
     [(tk = <K_LOW_PRIORITY> | tk = <K_DELAYED> | tk = <K_HIGH_PRIORITY>)
     {if (tk!=null)
-    	modifierPriority = tk.image.toUpperCase();
+    	modifierPriority = InsertModifierPriority.valueOf(tk.image.toUpperCase());
     }]
     [<K_IGNORE>{ modifierIgnore = true; }]
     [<K_INTO>] table=Table()
@@ -549,10 +554,14 @@ Delete Delete():
 	Delete delete = new Delete();
 	Table table = null;
 	Expression where = null;
+	Limit limit = null;
+	List<OrderByElement> orderByElements;
 }
 {
     <K_DELETE> [<K_FROM>] table=TableWithAlias()
     [where=WhereClause() { delete.setWhere(where); } ]
+    [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
+    [limit=PlainLimit() {delete.setLimit(limit); } ]
     {
     	delete.setTable(table);
     	return delete;
@@ -788,7 +797,7 @@ PlainSelect PlainSelect():
     [ having=Having() { plainSelect.setHaving(having); }]
 	[LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);	}   ]
 	[LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements);	}   ]
-    [LOOKAHEAD(<K_LIMIT>) limit = Limit() { plainSelect.setLimit(limit);	} ]
+    [LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);	} ]
 	[LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);	} ]
 	[LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);	} ]
 
@@ -832,7 +841,7 @@ SetOperationList SetOperationList():
 		)
 
 		[orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
-		[LOOKAHEAD(<K_LIMIT>) limit=Limit() {list.setLimit(limit);} ]
+		[LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {list.setLimit(limit);} ]
 		[LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);} ]
 		[LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);} ]
 	)
@@ -1311,7 +1320,7 @@ OrderByElement OrderByElement():
 	}
 }
 
-Limit Limit():
+Limit LimitWithOffset():
 {
 	Limit limit = new Limit();
 	limit.setRowCount(-1l);
@@ -1334,19 +1343,31 @@ Limit Limit():
 				token=<S_LONG> { limit.setRowCount(Long.parseLong(token.image)); } | "?" { limit.setRowCountJdbcParameter(true);}
 				)
 			|
-				// mysql-postgresql-> LIMIT (row_count | ALL | NULL)
-				<K_LIMIT>
-				 (
-				 	token=<S_LONG> { limit.setRowCount(Long.parseLong(token.image)); }
-				 	|
-				 	"?" { limit.setRowCountJdbcParameter(true);}
-				 	|
-				 	<K_ALL> { limit.setLimitAll(true);}
-				 	|
-				 	<K_NULL> { limit.setLimitNull(true); }
-				 )
-
+			limit = PlainLimit()
 		)
+	{
+		return limit;
+	}
+}
+
+Limit PlainLimit():
+{
+	Limit limit = new Limit();
+	limit.setRowCount(-1l);
+	Token token = null;
+}
+{
+	// mysql-postgresql-> LIMIT (row_count | ALL | NULL)
+	<K_LIMIT>
+	 (
+	 	token=<S_LONG> { limit.setRowCount(Long.parseLong(token.image)); }
+	 	|
+	 	"?" { limit.setRowCountJdbcParameter(true);}
+	 	|
+	 	<K_ALL> { limit.setLimitAll(true);}
+	 	|
+	 	<K_NULL> { limit.setLimitNull(true); }
+	 )
 	{
 		return limit;
 	}
@@ -1588,9 +1609,10 @@ Expression RegularCondition():
 	| "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
 	| "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
 	)
-	rightExpression=ComparisonItem()
 
-	[ <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_END; } ]
+	( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; } 
+      | rightExpression=ComparisonItem() )
+
 	[ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
 
 	{

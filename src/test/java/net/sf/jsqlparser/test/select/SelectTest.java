@@ -1761,6 +1761,11 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT last_name, employee_id, manager_id, LEVEL FROM employees CONNECT BY PRIOR employee_id = manager_id START WITH employee_id = 100 ORDER SIBLINGS BY last_name";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+    
+    public void testOracleHierarchicalQueryIssue196() throws JSQLParserException {
+        String stmt = "SELECT num1, num2, level FROM carol_tmp START WITH num2 = 1008 CONNECT BY num2 = PRIOR num1 ORDER BY level DESC";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 
     public void testPostgreSQLRegExpCaseSensitiveMatch() throws JSQLParserException {
         String stmt = "SELECT a, b FROM foo WHERE a ~ '[help].*'";
