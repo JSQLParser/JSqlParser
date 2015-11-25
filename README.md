@@ -38,11 +38,22 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.5
 
-* support for **insert ... on duplicate key update**
-* improved support for **alter table** statements
-* first Oracle hint support for **select** statements 
-* first **alter table foreign key** support
-* first **merge** support
+* support for **ORDER BY** and **LIMIT** in **UPDATE** and **DELETE** statements
+
+~~~
+UPDATE tablename SET ... ORDER BY col;
+UPDATE tablename SET ... ORDER BY col LIMIT 10;
+UPDATE table1 A SET ... LIMIT 10;
+DELETE FROM tablename LIMIT 5;
+DELETE FROM tablename ORDER BY col;
+DELETE FROM tablename ORDER BY col LIMIT 10;
+~~~
+
+* support for **INSERT ... ON DUPLICATE KEY UPDATE**
+* improved support for **ALTER TABLE** statements
+* first Oracle hint support for **SELECT** statements 
+* first **ALTER TABLE FOREIGN KEY** support
+* first **MERGE** support
 * first version of escaped single quotes support
 
 ~~~

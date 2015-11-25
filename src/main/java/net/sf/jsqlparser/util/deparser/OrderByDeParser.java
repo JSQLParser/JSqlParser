@@ -30,8 +30,8 @@ import java.util.List;
 
 public class OrderByDeParser {
 
-    private StringBuilder buffer;
-    private ExpressionVisitor expressionVisitor;
+    private final StringBuilder buffer;
+    private final ExpressionVisitor expressionVisitor;
 
     public OrderByDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
         this.expressionVisitor= expressionVisitor;
