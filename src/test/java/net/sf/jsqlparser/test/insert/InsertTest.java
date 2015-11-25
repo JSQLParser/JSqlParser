@@ -152,4 +152,15 @@ public class InsertTest {
 	public void testDuplicateKey() throws JSQLParserException {
 		assertSqlCanBeParsedAndDeparsed("INSERT INTO Users0 (UserId, Key, Value) VALUES (51311, 'T_211', 18) ON DUPLICATE KEY UPDATE Value = 18");
 	}
+
+    @Test
+    public void testModifierIgnore() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT IGNORE INTO `AoQiSurvey_FlashVersion_Single` VALUES (302215163, 'WIN 16,0,0,235')");
+    }
+
+    @Test
+    public void testModifierPriority() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT DELAYED INTO kvPair (value, key) VALUES (?, ?)");
+        assertSqlCanBeParsedAndDeparsed("INSERT LOW_PRIORITY INTO kvPair (value, key) VALUES (?, ?)");
+    }
 }
