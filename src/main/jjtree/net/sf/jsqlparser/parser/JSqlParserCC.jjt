@@ -472,14 +472,14 @@ Insert Insert():
     List<Column> duplicateUpdateColumns = null;
     List<Expression> duplicateUpdateExpressionList = null;
     Token tk = null;
-    String modifierPriority = null;
+    InsertModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
 }
 {
     <K_INSERT>
     [(tk = <K_LOW_PRIORITY> | tk = <K_DELAYED> | tk = <K_HIGH_PRIORITY>)
     {if (tk!=null)
-    	modifierPriority = tk.image.toUpperCase();
+    	modifierPriority = InsertModifierPriority.valueOf(tk.image.toUpperCase());
     }]
     [<K_IGNORE>{ modifierIgnore = true; }]
     [<K_INTO>] table=Table()

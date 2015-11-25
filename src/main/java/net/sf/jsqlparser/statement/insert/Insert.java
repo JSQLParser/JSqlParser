@@ -48,7 +48,7 @@ public class Insert implements Statement {
     private boolean useDuplicate = false;
     private List<Column> duplicateUpdateColumns;
     private List<Expression> duplicateUpdateExpressionList;
-    private String modifierPriority = null;
+    private InsertModifierPriority modifierPriority = null;
     private boolean modifierIgnore = false;
 
     private boolean returningAllColumns = false;
@@ -158,11 +158,11 @@ public class Insert implements Statement {
         this.duplicateUpdateExpressionList = duplicateUpdateExpressionList;
     }
 
-    public String getModifierPriority() {
+    public InsertModifierPriority getModifierPriority() {
         return modifierPriority;
     }
 
-    public void setModifierPriority(String modifierPriority) {
+    public void setModifierPriority(InsertModifierPriority modifierPriority) {
         this.modifierPriority = modifierPriority;
     }
 
@@ -180,7 +180,7 @@ public class Insert implements Statement {
 
         sql.append("INSERT ");
         if(modifierPriority != null){
-            sql.append(modifierPriority + " ");
+            sql.append(modifierPriority.name()).append(" ");
         }
         if(modifierIgnore){
             sql.append("IGNORE ");

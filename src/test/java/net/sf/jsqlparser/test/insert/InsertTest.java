@@ -159,8 +159,17 @@ public class InsertTest {
     }
 
     @Test
-    public void testModifierPriority() throws JSQLParserException {
+    public void testModifierPriority1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT DELAYED INTO kvPair (value, key) VALUES (?, ?)");
+    }
+    
+    @Test
+    public void testModifierPriority2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT LOW_PRIORITY INTO kvPair (value, key) VALUES (?, ?)");
+    }
+    
+    @Test
+    public void testModifierPriority3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT HIGH_PRIORITY INTO kvPair (value, key) VALUES (?, ?)");
     }
 }
