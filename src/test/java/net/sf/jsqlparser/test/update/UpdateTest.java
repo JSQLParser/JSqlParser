@@ -70,4 +70,26 @@ public class UpdateTest {
     public void testUpdateIssue167_SingleQuotes() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET NAME = 'Customer 2', ADDRESS = 'Address \\' ddad2', AUTH_KEY = 'samplekey' WHERE ID = 2");
     }
+
+	@Test
+	public void testUpdateWithLimit() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = 'thing' WHERE id = 1 LIMIT 10");
+	}
+
+	@Test
+	public void testUpdateWithOrderBy() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = 'thing' WHERE id = 1 ORDER BY col");
+	}
+
+	@Test
+	public void testUpdateWithOrderByAndLimit() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = 'thing' WHERE id = 1 ORDER BY col LIMIT 10");
+	}
+
+	@Test(expected = JSQLParserException.class)
+	public void testUpdateDoesNotAllowLimitOffset() throws JSQLParserException {
+		String statement = "UPDATE table1 A SET A.columna = 'XXX' WHERE A.cod_table = 'YYY' LIMIT 3,4";
+		parserManager.parse(new StringReader(statement));
+	}
+
 }
