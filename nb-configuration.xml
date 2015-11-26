@@ -14,6 +14,5 @@
 		Any value defined here will override the pom.xml file value but is only applicable to the current project.
 		-->
         <netbeans.compile.on.save>none</netbeans.compile.on.save>
-        <netbeans.hint.jdkPlatform>JDK_1.7</netbeans.hint.jdkPlatform>
     </properties>
 </project-shared-configuration>
