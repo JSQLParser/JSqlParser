@@ -145,7 +145,7 @@ public class CreateTable implements Statement {
             sql += " (";
 
             sql += PlainSelect.getStringList(columnDefinitions, true, false);
-            if (indexes != null && indexes.size() != 0) {
+            if (indexes != null && !indexes.isEmpty()) {
                 sql += ", ";
                 sql += PlainSelect.getStringList(indexes);
             }
