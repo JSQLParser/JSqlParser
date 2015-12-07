@@ -28,6 +28,7 @@ public class TableFunction implements FromItem {
 
     private String name;
     private ExpressionList parameters;
+    private Alias alias;
 
     /**
      * The name of he procedure, i.e. "UNWIND_TOP"
@@ -62,22 +63,21 @@ public class TableFunction implements FromItem {
 
     @Override
     public Alias getAlias() {
-        throw new UnsupportedOperationException();
+        return alias;
     }
 
     @Override
     public void setAlias(Alias alias) {
-        throw new UnsupportedOperationException();
+        this.alias = alias;
     }
 
     @Override
     public Pivot getPivot() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public void setPivot(Pivot pivot) {
-        throw new UnsupportedOperationException();
     }
     
     @Override
@@ -90,9 +90,11 @@ public class TableFunction implements FromItem {
             params = "()";
         }
 
-        String ans = name + "" + params + "";
-
-        return ans;
+        String string = name + "" + params + "";
+        if (alias != null) {
+            string += alias.toString();
+        }
+        return string;
     }
 
 }

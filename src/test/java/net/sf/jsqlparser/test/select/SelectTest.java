@@ -2005,5 +2005,60 @@ public class SelectTest extends TestCase {
         PlainSelect plainSelect = (PlainSelect) ((Select) parsed).getSelectBody();
         assertExpressionCanBeDeparsedAs(plainSelect.getOracleHint(), "--+ HINT\n");
     }
-        
+
+    public void testTableFunctionWithNoParams() throws Exception {
+        final String statement = "SELECT f2 FROM SOME_FUNCTION()";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+
+        assertTrue(plainSelect.getFromItem() instanceof TableFunction);
+        TableFunction fromItem = (TableFunction) plainSelect.getFromItem();
+        assertEquals("SOME_FUNCTION", fromItem.getName());
+        assertNull(fromItem.getParameters());
+        assertNull(fromItem.getAlias());
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    public void testTableFunctionWithParams() throws Exception {
+        final String statement = "SELECT f2 FROM SOME_FUNCTION(1, 'val')";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+
+        assertTrue(plainSelect.getFromItem() instanceof TableFunction);
+        TableFunction fromItem = (TableFunction) plainSelect.getFromItem();
+        assertEquals("SOME_FUNCTION", fromItem.getName());
+
+        // verify params
+        assertNotNull(fromItem.getParameters());
+        List<Expression> expressions = fromItem.getParameters().getExpressions();
+        assertEquals(2, expressions.size());
+
+        Expression firstParam = expressions.get(0);
+        assertNotNull(firstParam);
+        assertTrue(firstParam instanceof LongValue);
+        assertEquals(1l, ((LongValue) firstParam).getValue());
+
+        Expression secondParam = expressions.get(1);
+        assertNotNull(secondParam);
+        assertTrue(secondParam instanceof StringValue);
+        assertEquals("val", ((StringValue) secondParam).getValue());
+
+        assertNull(fromItem.getAlias());
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    public void testTableFunctionWithAlias() throws Exception {
+        final String statement = "SELECT f2 FROM SOME_FUNCTION() AS z";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+
+        assertTrue(plainSelect.getFromItem() instanceof TableFunction);
+        TableFunction fromItem = (TableFunction) plainSelect.getFromItem();
+
+        assertEquals("SOME_FUNCTION", fromItem.getName());
+        assertNull(fromItem.getParameters());
+        assertNotNull(fromItem.getAlias());
+        assertEquals("z", fromItem.getAlias().getName());
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
 }
