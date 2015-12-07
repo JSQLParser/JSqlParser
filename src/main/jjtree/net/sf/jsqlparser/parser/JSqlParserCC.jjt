@@ -1100,6 +1100,9 @@ FromItem FromItem():
 					")"
 				)
 				|
+				LOOKAHEAD(TableFunction())
+				fromItem=TableFunction()
+				|
 				fromItem=Table()
                 |
 				fromItem=LateralSubSelect()
@@ -2414,6 +2417,22 @@ MySQLGroupConcat MySQLGroupConcat():{
     }
 }
 
+TableFunction TableFunction():
+{
+    TableFunction retval = new TableFunction();
+    String procName = null;
+    ExpressionList expressionList = null;
+}
+{
+    procName=RelObjectNameExt()
+    "(" [ expressionList=SimpleExpressionList() ] ")"
+
+    {
+        retval.setParameters(expressionList);
+        retval.setName(procName);
+        return retval;
+    }
+}
 
 SubSelect SubSelect():
 {

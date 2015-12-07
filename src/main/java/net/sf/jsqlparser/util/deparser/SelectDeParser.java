@@ -420,4 +420,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     public void visit(AllColumns allColumns) {
         buffer.append('*');
     }
+
+    @Override
+    public void visit(TableFunction tableFunction) {
+        buffer.append(tableFunction.toString());
+    }
 }
