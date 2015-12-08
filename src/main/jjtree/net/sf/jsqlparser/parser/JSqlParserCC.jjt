@@ -2419,19 +2419,14 @@ MySQLGroupConcat MySQLGroupConcat():{
 
 TableFunction TableFunction():
 {
-    TableFunction retval = new TableFunction();
-    String procName = null;
-    ExpressionList expressionList = null;
+    Alias alias = null;
+    Function function;
+    TableFunction functionItem;
 }
 {
-    procName=RelObjectNameExt()
-    "(" [ expressionList=SimpleExpressionList() ] ")"
-
-    {
-        retval.setParameters(expressionList);
-        retval.setName(procName);
-        return retval;
-    }
+    function=Function() { functionItem = new TableFunction(); functionItem.setFunction(function); }
+             [alias=Alias() { functionItem.setAlias(alias); }]
+    { return functionItem; }
 }
 
 SubSelect SubSelect():

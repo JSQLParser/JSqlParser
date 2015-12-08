@@ -21,54 +21,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-
-public class TableFunction implements FromItem {
-
-    private String name;
-    private ExpressionList parameters;
-    private Alias alias;
-
-    /**
-     * The name of he procedure, i.e. "UNWIND_TOP"
-     *
-     * @return the name of he procedure
-     */
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String string) {
-        name = string;
-    }
-
-    /**
-     * The list of parameters of the tableFunction (if any, else null)
-     *
-     * @return the list of parameters of the tableFunction (if any, else null)
-     */
-    public ExpressionList getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(ExpressionList list) {
-        parameters = list;
-    }
+public class TableFunction extends FunctionItem implements FromItem {
 
     @Override
     public void accept(FromItemVisitor fromItemVisitor) {
         fromItemVisitor.visit(this);
-    }
-
-    @Override
-    public Alias getAlias() {
-        return alias;
-    }
-
-    @Override
-    public void setAlias(Alias alias) {
-        this.alias = alias;
     }
 
     @Override
@@ -79,22 +36,4 @@ public class TableFunction implements FromItem {
     @Override
     public void setPivot(Pivot pivot) {
     }
-    
-    @Override
-    public String toString() {
-        String params;
-
-        if (parameters != null) {
-            params = parameters.toString();
-        }else {
-            params = "()";
-        }
-
-        String string = name + "" + params + "";
-        if (alias != null) {
-            string += alias.toString();
-        }
-        return string;
-    }
-
 }

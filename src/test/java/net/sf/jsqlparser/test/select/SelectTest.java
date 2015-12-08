@@ -2013,8 +2013,10 @@ public class SelectTest extends TestCase {
 
         assertTrue(plainSelect.getFromItem() instanceof TableFunction);
         TableFunction fromItem = (TableFunction) plainSelect.getFromItem();
-        assertEquals("SOME_FUNCTION", fromItem.getName());
-        assertNull(fromItem.getParameters());
+        Function function = fromItem.getFunction();
+        assertNotNull(function);
+        assertEquals("SOME_FUNCTION", function.getName());
+        assertNull(function.getParameters());
         assertNull(fromItem.getAlias());
         assertStatementCanBeDeparsedAs(select, statement);
     }
@@ -2026,11 +2028,13 @@ public class SelectTest extends TestCase {
 
         assertTrue(plainSelect.getFromItem() instanceof TableFunction);
         TableFunction fromItem = (TableFunction) plainSelect.getFromItem();
-        assertEquals("SOME_FUNCTION", fromItem.getName());
+        Function function = fromItem.getFunction();
+        assertNotNull(function);
+        assertEquals("SOME_FUNCTION", function.getName());
 
         // verify params
-        assertNotNull(fromItem.getParameters());
-        List<Expression> expressions = fromItem.getParameters().getExpressions();
+        assertNotNull(function.getParameters());
+        List<Expression> expressions = function.getParameters().getExpressions();
         assertEquals(2, expressions.size());
 
         Expression firstParam = expressions.get(0);
@@ -2054,9 +2058,11 @@ public class SelectTest extends TestCase {
 
         assertTrue(plainSelect.getFromItem() instanceof TableFunction);
         TableFunction fromItem = (TableFunction) plainSelect.getFromItem();
+        Function function = fromItem.getFunction();
+        assertNotNull(function);
 
-        assertEquals("SOME_FUNCTION", fromItem.getName());
-        assertNull(fromItem.getParameters());
+        assertEquals("SOME_FUNCTION", function.getName());
+        assertNull(function.getParameters());
         assertNotNull(fromItem.getAlias());
         assertEquals("z", fromItem.getAlias().getName());
         assertStatementCanBeDeparsedAs(select, statement);
