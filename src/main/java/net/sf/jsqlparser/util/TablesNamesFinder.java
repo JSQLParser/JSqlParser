@@ -640,4 +640,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(OracleHint hint) {
     }
 
+    @Override
+    public void visit(TableFunction valuesList) {
+    }
+
 }
