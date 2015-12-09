@@ -2425,7 +2425,7 @@ TableFunction TableFunction():
 }
 {
     function=Function() { functionItem = new TableFunction(); functionItem.setFunction(function); }
-             [alias=Alias() { functionItem.setAlias(alias); }]
+             [LOOKAHEAD(2) alias=Alias() { functionItem.setAlias(alias); }]
     { return functionItem; }
 }
 
