@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2015 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,36 +21,19 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.schema.Table;
+public class TableFunction extends FunctionItem implements FromItem {
 
-public class FromItemVisitorAdapter implements FromItemVisitor{
     @Override
-    public void visit(Table table) {
-
+    public void accept(FromItemVisitor fromItemVisitor) {
+        fromItemVisitor.visit(this);
     }
 
     @Override
-    public void visit(SubSelect subSelect) {
-
+    public Pivot getPivot() {
+        return null;
     }
 
     @Override
-    public void visit(SubJoin subjoin) {
-
-    }
-
-    @Override
-    public void visit(LateralSubSelect lateralSubSelect) {
-
-    }
-
-    @Override
-    public void visit(ValuesList valuesList) {
-
-    }
-
-    @Override
-    public void visit(TableFunction valuesList) {
-
+    public void setPivot(Pivot pivot) {
     }
 }

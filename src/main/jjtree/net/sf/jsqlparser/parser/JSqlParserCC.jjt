@@ -1100,6 +1100,9 @@ FromItem FromItem():
 					")"
 				)
 				|
+				LOOKAHEAD(TableFunction())
+				fromItem=TableFunction()
+				|
 				fromItem=Table()
                 |
 				fromItem=LateralSubSelect()
@@ -2414,6 +2417,17 @@ MySQLGroupConcat MySQLGroupConcat():{
     }
 }
 
+TableFunction TableFunction():
+{
+    Alias alias = null;
+    Function function;
+    TableFunction functionItem;
+}
+{
+    function=Function() { functionItem = new TableFunction(); functionItem.setFunction(function); }
+             [alias=Alias() { functionItem.setAlias(alias); }]
+    { return functionItem; }
+}
 
 SubSelect SubSelect():
 {
