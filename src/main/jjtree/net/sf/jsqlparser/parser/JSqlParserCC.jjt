@@ -2753,6 +2753,8 @@ String CreateParameter():
 			|
             tk=<K_DELETE> { retval = tk.image; } 
             |
+            tk=<K_UPDATE> { retval = tk.image; }
+            |
 			"=" { retval = "="; }
 			|
 			retval=AList()

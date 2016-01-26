@@ -176,6 +176,10 @@ public class CreateTableTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE test (id long, fkey long references another_table (id))");
     }
 
+    public void testCreateTableMySqlOnUpdateCurrentTimestamp() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE test (applied timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)");
+    }
+
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
 		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
