@@ -34,6 +34,9 @@ import net.sf.jsqlparser.statement.Statements;
  * @author toben
  */
 public final class CCJSqlParserUtil {
+	
+	private CCJSqlParserUtil() {}
+	
 	public static Statement parse(Reader statementReader) throws JSQLParserException {
 		CCJSqlParser parser = new CCJSqlParser(statementReader);
 		try {
@@ -122,6 +125,4 @@ public final class CCJSqlParserUtil {
 		} 
 	}
 
-	private CCJSqlParserUtil() {
-	}
 }

@@ -44,8 +44,12 @@ public class Alter implements Statement {
     private ForeignKeyIndex fkIndex = null;
 	private String operation;
     private String constraintName;
-
+    private boolean onDeleteRestrict;
+    private boolean onDeleteSetNull;
     private boolean onDeleteCascade;
+    private List<String> fkColumns;
+    private String fkSourceTable;
+    private List<String> fkSourceColumns;
 
     public boolean isOnDeleteCascade() {
         return onDeleteCascade;
@@ -55,8 +59,6 @@ public class Alter implements Statement {
         this.onDeleteCascade = onDeleteCascade;
     }
 
-    private boolean onDeleteRestrict;
-
     public boolean isOnDeleteRestrict() {
         return onDeleteRestrict;
     }
@@ -64,8 +66,6 @@ public class Alter implements Statement {
     public void setOnDeleteRestrict(boolean onDeleteRestrict) {
         this.onDeleteRestrict = onDeleteRestrict;
     }
-
-    private boolean onDeleteSetNull;
 
     public boolean isOnDeleteSetNull() {
         return onDeleteSetNull;
@@ -75,8 +75,6 @@ public class Alter implements Statement {
         this.onDeleteSetNull = onDeleteSetNull;
     }
 
-    private List<String> fkColumns;
-
     public List<String> getFkColumns() {
         return fkColumns;
     }
@@ -84,8 +82,6 @@ public class Alter implements Statement {
     public void setFkColumns(List<String> fkColumns) {
         this.fkColumns = fkColumns;
     }
-
-    private String fkSourceTable;
 
     public String getFkSourceTable() {
         return fkSourceTable;
@@ -102,8 +98,6 @@ public class Alter implements Statement {
     public void setOperation(String operation) {
         this.operation = operation;
     }
-
-    private List<String> fkSourceColumns;
 
     public List<String> getFkSourceColumns() {
         return fkSourceColumns;
