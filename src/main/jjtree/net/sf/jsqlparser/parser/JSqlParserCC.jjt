@@ -166,6 +166,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_VALUES:"VALUES">
 |   <K_ESCAPE:"ESCAPE">
 |   <K_PRIMARY:"PRIMARY">
+|   <K_FULLTEXT:"FULLTEXT">
 |   <K_NATURAL:"NATURAL">
 |   <K_REPLACE:"REPLACE">
 |   <K_BETWEEN:"BETWEEN">
@@ -2590,7 +2591,7 @@ CreateTable CreateTable():
 				)
 				|
 				LOOKAHEAD(3) ( {tk=null;}
-					 [ tk=<K_UNIQUE> ] tk2=<K_KEY>
+					 [ tk=<K_UNIQUE> ] [ tk=<K_FULLTEXT> ] tk2=<K_KEY>
 						sk3=RelObjectName()
 						colNames=ColumnsNamesList()
 						{
