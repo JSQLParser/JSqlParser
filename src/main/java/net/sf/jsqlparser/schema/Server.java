@@ -35,7 +35,6 @@ public final class Server implements MultiPartName {
         if (serverAndInstanceName != null) {
             final Matcher matcher = SERVER_PATTERN.matcher(serverAndInstanceName);
             if (!matcher.find()) {
-                //throw new IllegalArgumentException(String.format("%s is not a valid database reference", serverAndInstanceName));
                 simpleName = serverAndInstanceName;
             } else {
                 setServerName(matcher.group(1));

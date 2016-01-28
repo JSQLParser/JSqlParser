@@ -318,7 +318,6 @@ public class PlainSelect implements SelectBody {
                     }
                 }
             }
-            // sql += getFormatedList(joins, "", false, false);
             if (where != null) {
                 sql.append(" WHERE ").append(where);
             }

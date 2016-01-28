@@ -37,7 +37,6 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  */
 public class AnalyticExpression implements Expression {
 
-    //private List<Column> partitionByColumns;
     private ExpressionList partitionExpressionList;
     private List<OrderByElement> orderByElements;
     private String name;
