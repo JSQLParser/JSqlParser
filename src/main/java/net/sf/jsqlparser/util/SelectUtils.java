@@ -24,6 +24,7 @@ package net.sf.jsqlparser.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -45,6 +46,8 @@ import net.sf.jsqlparser.statement.select.WithItem;
  * @author toben
  */
 public final class SelectUtils {
+
+	private static final String NOT_SUPPORTED_YET = "Not supported yet.";
 
 	private SelectUtils() {
 	}
@@ -113,12 +116,12 @@ public final class SelectUtils {
 
 			@Override
 			public void visit(SetOperationList setOpList) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
 			}
 
 			@Override
 			public void visit(WithItem withItem) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
 			}
 		});
 	}
@@ -145,7 +148,7 @@ public final class SelectUtils {
 			joins.add(join);
 			return join;
 		}
-		throw new UnsupportedOperationException("Not supported yet.");
+		throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
 	}
     
     /**
@@ -163,12 +166,12 @@ public final class SelectUtils {
 
 			@Override
 			public void visit(SetOperationList setOpList) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
 			}
 
 			@Override
 			public void visit(WithItem withItem) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
 			}
 		});
     }

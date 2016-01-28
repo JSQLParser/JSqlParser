@@ -38,7 +38,8 @@ import java.util.Iterator;
  */
 public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
-    private StringBuilder buffer;
+    private static final String NOT = " NOT ";
+	private StringBuilder buffer;
     private SelectVisitor selectVisitor;
     private boolean useBracketsInExprList = true;
 
@@ -119,7 +120,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
         if (expression.isNot()) {
-            buffer.append(" NOT ");
+            buffer.append(NOT);
         }
         expression.getLeftExpression().accept(this);
         if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_RIGHT) {
@@ -250,7 +251,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(Parenthesis parenthesis) {
         if (parenthesis.isNot()) {
-            buffer.append(" NOT ");
+            buffer.append(NOT);
         }
 
         buffer.append("(");
@@ -273,7 +274,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     private void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
         if (binaryExpression.isNot()) {
-            buffer.append(" NOT ");
+            buffer.append(NOT);
         }
         binaryExpression.getLeftExpression().accept(this);
         buffer.append(operator);
