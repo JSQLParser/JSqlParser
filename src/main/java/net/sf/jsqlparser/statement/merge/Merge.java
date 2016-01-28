@@ -36,6 +36,12 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 public class Merge implements Statement {
 
     private Table table;
+    private Table usingTable;
+    private SubSelect usingSelect;
+    private Alias usingAlias;
+    private Expression onCondition;
+    private MergeInsert mergeInsert;
+    private MergeUpdate mergeUpdate;
 
     public Table getTable() {
         return table;
@@ -45,8 +51,6 @@ public class Merge implements Statement {
         table = name;
     }
 
-    private Table usingTable;
-
     public Table getUsingTable() {
         return usingTable;
     }
@@ -54,8 +58,6 @@ public class Merge implements Statement {
     public void setUsingTable(Table usingTable) {
         this.usingTable = usingTable;
     }
-
-    private SubSelect usingSelect;
 
     public SubSelect getUsingSelect() {
         return usingSelect;
@@ -68,8 +70,6 @@ public class Merge implements Statement {
         }
     }
 
-    private Alias usingAlias;
-
     public Alias getUsingAlias() {
         return usingAlias;
     }
@@ -77,8 +77,6 @@ public class Merge implements Statement {
     public void setUsingAlias(Alias usingAlias) {
         this.usingAlias = usingAlias;
     }
-
-    private Expression onCondition;
 
     public Expression getOnCondition() {
         return onCondition;
@@ -88,8 +86,6 @@ public class Merge implements Statement {
         this.onCondition = onCondition;
     }
 
-    private MergeInsert mergeInsert;
-
     public MergeInsert getMergeInsert() {
         return mergeInsert;
     }
@@ -97,8 +93,6 @@ public class Merge implements Statement {
     public void setMergeInsert(MergeInsert insert) {
         this.mergeInsert = insert;
     }
-
-    private MergeUpdate mergeUpdate;
 
     public MergeUpdate getMergeUpdate() {
         return mergeUpdate;

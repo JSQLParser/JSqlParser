@@ -32,15 +32,15 @@ public class OracleHint implements Expression {
 
     private static final Pattern SINGLE_LINE = Pattern.compile("--\\+ *([^ ].*[^ ])");
     private static final Pattern MULTI_LINE = Pattern.compile("\\/\\*\\+ *([^ ].*[^ ]) *\\*+\\/", Pattern.MULTILINE | Pattern.DOTALL);
-    
+
+    private String value;
+    private boolean singleLine = false;
+
     public static boolean isHintMatch(String comment) {
         return SINGLE_LINE.matcher(comment).find() || 
                MULTI_LINE.matcher(comment).find();
     }
     
-    private String value;
-    private boolean singleLine = false;
-
     public final void setComment(String comment) {
         Matcher m;
         {

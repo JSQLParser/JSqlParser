@@ -33,6 +33,8 @@ public class MergeUpdate {
 
     private List<Column> columns = null;
     private List<Expression> values = null;
+    private Expression whereCondition;
+    private Expression deleteWhereCondition;
 
     public List<Column> getColumns() {
         return columns;
@@ -50,8 +52,6 @@ public class MergeUpdate {
         this.values = values;
     }
 
-    private Expression whereCondition;
-
     public Expression getWhereCondition() {
         return whereCondition;
     }
@@ -59,8 +59,6 @@ public class MergeUpdate {
     public void setWhereCondition(Expression whereCondition) {
         this.whereCondition = whereCondition;
     }
-
-    private Expression deleteWhereCondition;
 
     public Expression getDeleteWhereCondition() {
         return deleteWhereCondition;
