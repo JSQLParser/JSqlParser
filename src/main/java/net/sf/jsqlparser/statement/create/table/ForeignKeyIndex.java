@@ -32,6 +32,8 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class ForeignKeyIndex extends NamedConstraint {
 	private Table table;
 	private List<String> referencedColumnNames;
+	private String onDeleteReferenceOption;
+	private String onUpdateReferenceOption;
 
 	public Table getTable() {
 		return table;
@@ -49,9 +51,33 @@ public class ForeignKeyIndex extends NamedConstraint {
 		this.referencedColumnNames = referencedColumnNames;
 	}
 
+	public String getOnDeleteReferenceOption() {
+		return onDeleteReferenceOption;
+	}
+
+	public void setOnDeleteReferenceOption(String onDeleteReferenceOption) {
+		this.onDeleteReferenceOption = onDeleteReferenceOption;
+	}
+
+	public String getOnUpdateReferenceOption() {
+		return onUpdateReferenceOption;
+	}
+
+	public void setOnUpdateReferenceOption(String onUpdateReferenceOption) {
+		this.onUpdateReferenceOption = onUpdateReferenceOption;
+	}
+
 	@Override
 	public String toString() {
+		String referenceOptions = "";
+		if(onDeleteReferenceOption != null) {
+			referenceOptions += " ON DELETE " + onDeleteReferenceOption;
+		}
+		if(onUpdateReferenceOption != null) {
+			referenceOptions += " ON UPDATE " + onUpdateReferenceOption;
+		}
 		return super.toString()
-				+ " REFERENCES " + table + PlainSelect.getStringList(getReferencedColumnNames(), true, true);
+				+ " REFERENCES " + table + PlainSelect.getStringList(getReferencedColumnNames(), true, true)
+				+ referenceOptions;
 	}
 }
