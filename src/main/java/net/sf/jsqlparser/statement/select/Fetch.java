@@ -65,6 +65,6 @@ public class Fetch {
 
 	@Override
 	public String toString() {
-		return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " " + (fetchJdbcParameter ? "?" : rowCount + "") + " "+ fetchParam + " ONLY";
+		return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " " + (fetchJdbcParameter ? "?" : Long.toString(rowCount)) + " " + fetchParam + " ONLY";
 	}
 }

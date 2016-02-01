@@ -46,7 +46,7 @@ public class LikeExpression extends BinaryExpression {
 
 	@Override
 	public String getStringExpression() {
-		return ((not) ? "NOT " : "") + (caseInsensitive?"ILIKE":"LIKE");
+		return (not ? "NOT " : "") + (caseInsensitive?"ILIKE":"LIKE");
 	}
 
 	@Override
