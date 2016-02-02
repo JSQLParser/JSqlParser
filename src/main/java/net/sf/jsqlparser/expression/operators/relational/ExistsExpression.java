@@ -51,7 +51,7 @@ public class ExistsExpression implements Expression {
 	}
 
 	public String getStringExpression() {
-		return ((not) ? "NOT " : "") + "EXISTS";
+		return (not ? "NOT " : "") + "EXISTS";
 	}
 
 	@Override
