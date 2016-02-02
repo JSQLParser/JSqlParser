@@ -2071,4 +2071,8 @@ public class SelectTest extends TestCase {
     public void testIssue151_tableFunction() throws JSQLParserException {
 		assertSqlCanBeParsedAndDeparsed("SELECT * FROM tables a LEFT JOIN getdata() b ON a.id = b.id");
 	}
+    
+    public void testIssue217_keywordSeparator() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT Separator");
+    }
 }
