@@ -94,7 +94,7 @@ public class TablesNamesFinderTest {
 						assertEquals("stm num:" + numSt, tablesArray[i], tableListRetr.get(i));
 					}
 				} catch (Exception e) {
-					throw new TestException("error at stm num: " + numSt, e);
+					throw new TestException("error at stm num: " + numSt + " in file " + resPath, e);
 				}
 				numSt++;
 			}

@@ -228,7 +228,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MATCHED: "MATCHED">
 |   <K_CASCADE: "CASCADE">
 |   <K_RESTRICT: "RESTRICT">
-|   <K_NO_ACTION: "NO ACTION">
+|   <K_NO:"NO">
+|   <K_ACTION: "ACTION">
 |   <K_DUPLICATE: "DUPLICATE">
 |	<K_LOW_PRIORITY : "LOW_PRIORITY">
 |	<K_DELAYED : "DELAYED">
@@ -666,7 +667,7 @@ String RelObjectName() :
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_VALUE> | tk=<K_XML>
       | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>
       | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_VALUES> | tk=<K_PERCENT> | tk=<K_PRIOR>
-	  | tk=<K_SEPARATOR>
+	  | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION>
       )
 
     { return tk.image; }
@@ -2032,7 +2033,7 @@ Expression PrimaryExpression():
 
     | LOOKAHEAD([sign="+" | sign="-"] "(" SubSelect() ")")     [sign="+" | sign="-"] "(" retval=SubSelect() ")"
 
-	| LOOKAHEAD(3)   [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
+	| LOOKAHEAD([sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")")   [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
 
 	| token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 
@@ -2592,12 +2593,12 @@ CreateTable CreateTable():
 				)
 				|
 				LOOKAHEAD(3) ( {tk=null;}
-					 [ tk=<K_UNIQUE> ] [ tk=<K_FULLTEXT> ] tk2=<K_KEY>
+					 [ tk=<K_UNIQUE> ] [ tk3=<K_FULLTEXT> ] tk2=<K_KEY>
 						sk3=RelObjectName()
 						colNames=ColumnsNamesList()
 						{
 							index = new Index();
-							index.setType((tk!=null?tk.image + " ":"") + tk2.image);
+							index.setType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + tk2.image);
 							index.setName(sk3);
 							index.setColumnsNames(colNames);
 							indexes.add(index);
@@ -2621,8 +2622,8 @@ CreateTable CreateTable():
 							fkIndex.setReferencedColumnNames(colNames);
 							indexes.add(fkIndex);
 						}
-                        [LOOKAHEAD(2) (<K_ON> <K_DELETE> (<K_CASCADE> {fkIndex.setOnDeleteReferenceOption("CASCADE");}|<K_NO_ACTION> {fkIndex.setOnDeleteReferenceOption("NO ACTION");}))]
-                        [LOOKAHEAD(2) (<K_ON> <K_UPDATE> (<K_CASCADE> {fkIndex.setOnUpdateReferenceOption("CASCADE");}|<K_NO_ACTION> {fkIndex.setOnUpdateReferenceOption("NO ACTION");}))]
+                        [LOOKAHEAD(2) (<K_ON> <K_DELETE> (<K_CASCADE> {fkIndex.setOnDeleteReferenceOption("CASCADE");}|<K_NO> <K_ACTION> {fkIndex.setOnDeleteReferenceOption("NO ACTION");}))]
+                        [LOOKAHEAD(2) (<K_ON> <K_UPDATE> (<K_CASCADE> {fkIndex.setOnUpdateReferenceOption("CASCADE");}|<K_NO> <K_ACTION> {fkIndex.setOnUpdateReferenceOption("NO ACTION");}))]
 				)
 				|
 				(
