@@ -2855,6 +2855,7 @@ Alter Alter():
 	ColDataType dataType;
     List<String> columnNames = null;
     ForeignKeyIndex fkIndex = null;
+    NamedConstraint index = null;
     Table fkTable = null;
     Token alterDrop = null;
 }
@@ -2889,13 +2890,13 @@ Alter Alter():
         )
         |
         (
-            {
-                fkIndex = new ForeignKeyIndex();
-            }
-            <K_CONSTRAINT> sk3=RelObjectName() {fkIndex.setName(sk3);}
-            tk=<K_FOREIGN> tk2=<K_KEY>
+            <K_CONSTRAINT> sk3=RelObjectName() 
+
+            ( ( tk=<K_FOREIGN> tk2=<K_KEY> 
                 columnNames=ColumnsNamesList()
                 {
+                    fkIndex = new ForeignKeyIndex();
+                    fkIndex.setName(sk3);
                     fkIndex.setType(tk.image + " " + tk2.image);
                     fkIndex.setColumnsNames(columnNames);
                 }
@@ -2903,8 +2904,20 @@ Alter Alter():
                 {
                     fkIndex.setTable(fkTable);
                     fkIndex.setReferencedColumnNames(columnNames);
-                    alter.setFkIndex(fkIndex);
+                    alter.setIndex(fkIndex);
                 }
+            )
+            |
+            ( tk=<K_PRIMARY> tk2=<K_KEY> 
+                columnNames=ColumnsNamesList()
+                {
+                    index = new NamedConstraint();
+                    index.setName(sk3);
+                    index.setType(tk.image + " " + tk2.image);
+                    index.setColumnsNames(columnNames);
+                    alter.setIndex(index);
+                }
+            ) )
         )
         )
     )

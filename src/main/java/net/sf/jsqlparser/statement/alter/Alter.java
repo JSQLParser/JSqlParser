@@ -26,7 +26,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
-import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
+import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
@@ -41,7 +41,7 @@ public class Alter implements Statement {
     private List<String> pkColumns;
     private List<String> ukColumns;
     private String ukName;
-    private ForeignKeyIndex fkIndex = null;
+    private Index index = null;
 	private String operation;
     private String constraintName;
     private boolean onDeleteRestrict;
@@ -168,12 +168,12 @@ public class Alter implements Statement {
         statementVisitor.visit(this);
     }
 
-    public ForeignKeyIndex getFkIndex() {
-        return fkIndex;
+    public Index getIndex() {
+        return index;
     }
 
-    public void setFkIndex(ForeignKeyIndex fkIndex) {
-        this.fkIndex = fkIndex;
+    public void setIndex(Index index) {
+        this.index = index;
     }
 
     @Override
@@ -201,8 +201,8 @@ public class Alter implements Statement {
             } else if (isOnDeleteSetNull()) {
                 b.append(" ON DELETE SET NULL");
             }
-		} else if (fkIndex != null) {
-			b.append(fkIndex);
+		} else if (index != null) {
+			b.append(index);
 		}
 		return b.toString();
     }
