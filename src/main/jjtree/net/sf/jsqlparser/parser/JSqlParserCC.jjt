@@ -1505,7 +1505,7 @@ Expression Expression() #Expression :
 }
 {
 	(
-	LOOKAHEAD(OrExpression())
+	LOOKAHEAD(3)
 		retval=OrExpression()
 		|
 		"(" retval=Expression() ")" {retval = new Parenthesis(retval); }
@@ -1662,7 +1662,7 @@ Expression InExpression() :
 	Expression leftExpression = null;
 }
 {
-	( LOOKAHEAD(1) "(" (
+	( LOOKAHEAD(3) "(" (
 			LOOKAHEAD(SimpleExpressionList()) leftItemsList = SimpleExpressionList() { result.setLeftItemsList(leftItemsList); }
 			|
 			leftExpression=SimpleExpression()
@@ -1673,7 +1673,7 @@ Expression InExpression() :
 		leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
         [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
 	)
-    [<K_NOT> { result.setNot(true); } ] <K_IN> "(" (LOOKAHEAD(SubSelect()) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")"
+    [<K_NOT> { result.setNot(true); } ] <K_IN> "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")"
 	{
 		result.setRightItemsList(rightItemsList);
 		return result;
@@ -1839,7 +1839,7 @@ Expression SimpleExpression():
 }
 {
   (
-		LOOKAHEAD(BitwiseAndOr())
+		LOOKAHEAD(2)
 		retval=BitwiseAndOr()
 		|
 		"(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
@@ -1883,11 +1883,11 @@ Expression BitwiseAndOr():
 {
     leftExpression=ConcatExpression()  { result = leftExpression; }
     (
-    	LOOKAHEAD(2) (
+    	(
     					"|" { result = new BitwiseOr(); }
     				  	|
     				  	"&" { result = new BitwiseAnd(); }
-    				  )
+    	)
 
     						rightExpression=ConcatExpression()
 
@@ -1911,7 +1911,7 @@ Expression AdditiveExpression():
 {
     leftExpression=MultiplicativeExpression()  { result = leftExpression; }
     (
-    	LOOKAHEAD(2) ("+" { result = new Addition(); }
+    	("+" { result = new Addition(); }
     								| "-" { result = new Subtraction(); } )
 
         rightExpression=MultiplicativeExpression()
@@ -1934,7 +1934,7 @@ Expression MultiplicativeExpression():
 }
 {
 	(
-	LOOKAHEAD(BitwiseXor())
+	LOOKAHEAD(2)
 	    leftExpression=BitwiseXor()
 	    |
 	    "(" leftExpression=ConcatExpression() ")" {leftExpression = new Parenthesis(leftExpression); }
@@ -1947,7 +1947,7 @@ Expression MultiplicativeExpression():
     				)
 
 				(
-				LOOKAHEAD(BitwiseXor())
+				LOOKAHEAD(2)
     						rightExpression=BitwiseXor()
 						    |
 						    "(" rightExpression=ConcatExpression() ")" {rightExpression = new Parenthesis(rightExpression); }
@@ -2031,9 +2031,9 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(["+" | "-"] Column())         [sign="+" | sign="-"] retval=Column()
 
-    | LOOKAHEAD([sign="+" | sign="-"] "(" SubSelect() ")")     [sign="+" | sign="-"] "(" retval=SubSelect() ")"
+	| LOOKAHEAD(["+" | "-"] "(" BitwiseAndOr() ")") [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
 
-	| LOOKAHEAD([sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")")   [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
+    | LOOKAHEAD(["+" | "-"] "(" SubSelect() ")") [sign="+" | sign="-"] "(" retval=SubSelect() ")" 
 
 	| token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 
