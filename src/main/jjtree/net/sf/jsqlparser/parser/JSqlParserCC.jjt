@@ -1839,10 +1839,10 @@ Expression SimpleExpression():
 }
 {
   (
-		LOOKAHEAD(2)
+		//LOOKAHEAD(2)
 		retval=BitwiseAndOr()
-		|
-		"(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
+		//|
+		//"(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
 
   )
 
@@ -1934,10 +1934,10 @@ Expression MultiplicativeExpression():
 }
 {
 	(
-	LOOKAHEAD(2)
+	//LOOKAHEAD(2)
 	    leftExpression=BitwiseXor()
-	    |
-	    "(" leftExpression=ConcatExpression() ")" {leftExpression = new Parenthesis(leftExpression); }
+	  //  |
+	  //  "(" leftExpression=ConcatExpression() ")" {leftExpression = new Parenthesis(leftExpression); }
 	)
       { result = leftExpression; }
     (
@@ -1947,10 +1947,10 @@ Expression MultiplicativeExpression():
     				)
 
 				(
-				LOOKAHEAD(2)
+				//LOOKAHEAD(2)
     						rightExpression=BitwiseXor()
-						    |
-						    "(" rightExpression=ConcatExpression() ")" {rightExpression = new Parenthesis(rightExpression); }
+					//	    |
+					//	    "(" rightExpression=ConcatExpression() ")" {rightExpression = new Parenthesis(rightExpression); }
 				)
 
 		{
