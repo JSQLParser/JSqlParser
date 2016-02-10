@@ -77,7 +77,7 @@ public class Drop implements Statement {
 		String sql = "DROP " + type + " "
            + (ifExists?"IF EXISTS ":"") + name.toString();
 
-		if (parameters != null && parameters.size() > 0) {
+		if (parameters != null && !parameters.isEmpty()) {
 			sql += " " + PlainSelect.getStringList(parameters);
 		}
 
