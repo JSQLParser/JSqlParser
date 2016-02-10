@@ -13,6 +13,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 ## News
 
+* Please test the actual **0.9.5-SNAPSHOT**. It includes some grammar refactorings which eventually results in parse tree changes.
 * Version **0.9.4** released.
 * Please test the actual SNAPSHOT, if there are problems using the extended identifier token.
 * Version **0.9.3** released.
@@ -38,6 +39,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.5
 
+* improved parenthesis parsing performance within expressions (#215)
 * support for **ALTER TABLE mytable ADD CONSTRAING name PRIMARY KEY (col)**
 * support for **INSERT LOW_PRIORITY INTO**
 * support for **ORDER BY** and **LIMIT** in **UPDATE** and **DELETE** statements
