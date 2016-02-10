@@ -132,7 +132,7 @@ public class CreateTable implements Statement {
 
     @Override
     public String toString() {
-        String sql = "";
+        String sql;
         String createOps = PlainSelect.getStringList(createOptionsStrings, false, false);
 
         sql = "CREATE " + (unlogged ? "UNLOGGED " : "") + 

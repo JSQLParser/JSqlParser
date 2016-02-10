@@ -55,6 +55,8 @@ public class RegExpMatchOperator extends BinaryExpression {
 				return "!~";
 			case NOT_MATCH_CASEINSENSITIVE:
 				return "!~*";
+			default:
+				break;
 		}
 		return null;
 	}
