@@ -912,7 +912,7 @@ SelectItem SelectItem():
     |
 	LOOKAHEAD(AllTableColumns()) selectItem=AllTableColumns()
 	|
-	LOOKAHEAD(SelectExpressionItem()) selectItem=SelectExpressionItem() 
+	selectItem=SelectExpressionItem() 
 	)
 	{
 		return selectItem;
@@ -2033,7 +2033,7 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(["+" | "-"] "(" BitwiseAndOr() ")") [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
 
-    | LOOKAHEAD(["+" | "-"] "(" SubSelect() ")") [sign="+" | sign="-"] "(" retval=SubSelect() ")" 
+    | LOOKAHEAD(3) [sign="+" | sign="-"] "(" retval=SubSelect() ")" 
 
 	| token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 
@@ -2709,7 +2709,7 @@ CreateView CreateView():
 	[ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
 	<K_AS>
 	(
-      LOOKAHEAD(SelectBody()) select=SelectBody() { createView.setSelectBody(select); }
+      LOOKAHEAD(3) select=SelectBody() { createView.setSelectBody(select); }
 	  |
 	  "(" select=SelectBody() ")" { createView.setSelectBody(select); }
     )
