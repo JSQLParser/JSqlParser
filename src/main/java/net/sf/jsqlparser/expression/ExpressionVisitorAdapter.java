@@ -419,10 +419,8 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         for (Column col : pivot.getForColumns()) {
             col.accept(this);
         }
-        if (pivot.getInSelect() != null) {
-            if (selectVisitor != null) {
-                pivot.getInSelect().accept(selectVisitor);
-            }
+        if (pivot.getInSelect() != null && selectVisitor != null) {
+            pivot.getInSelect().accept(selectVisitor);
         }
     }
 

@@ -43,20 +43,16 @@ public class OracleHint implements Expression {
     
     public final void setComment(String comment) {
         Matcher m;
-        {
-            m = SINGLE_LINE.matcher(comment);
-            if (m.find()) {
-                this.value = m.group(1);
-                this.singleLine = true;
-                return;
-            }
+        m = SINGLE_LINE.matcher(comment);
+        if (m.find()) {
+            this.value = m.group(1);
+            this.singleLine = true;
+            return;
         }
-        {
-            m = MULTI_LINE.matcher(comment);
-            if (m.find()) {
-                this.value = m.group(1);
-                this.singleLine = false;
-            }
+        m = MULTI_LINE.matcher(comment);
+        if (m.find()) {
+            this.value = m.group(1);
+            this.singleLine = false;
         }
     }
     
