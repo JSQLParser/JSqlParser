@@ -1963,6 +1963,10 @@ public class SelectTest extends TestCase {
 	public void testIssue77_singleQuoteEscape2() throws JSQLParserException {
 		assertSqlCanBeParsedAndDeparsed("SELECT 'test\\'' FROM dual");
 	}
+    
+    public void testIssue223_singleQuoteEscape() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("SELECT '\\'test\\''");
+	}
         
     public void testOracleHint() throws JSQLParserException {
         assertOracleHintExists("SELECT /*+ SOMEHINT */ * FROM mytable", true, "SOMEHINT");

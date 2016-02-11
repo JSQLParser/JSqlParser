@@ -172,4 +172,9 @@ public class InsertTest {
     public void testModifierPriority3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT HIGH_PRIORITY INTO kvPair (value, key) VALUES (?, ?)");
     }
+    
+    @Test
+    public void testIssue223() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO user VALUES (2001, '\\'Clark\\'', 'Kent')");
+    }
 }
