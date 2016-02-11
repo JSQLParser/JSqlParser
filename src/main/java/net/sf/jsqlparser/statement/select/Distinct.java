@@ -48,7 +48,7 @@ public class Distinct {
 	public String toString() {
 		String sql = "DISTINCT";
 
-		if (onSelectItems != null && onSelectItems.size() > 0) {
+		if (onSelectItems != null && !onSelectItems.isEmpty()) {
 			sql += " ON (" + PlainSelect.getStringList(onSelectItems) + ")";
 		}
 
