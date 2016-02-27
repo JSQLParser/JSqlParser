@@ -827,12 +827,15 @@ SetOperationList SetOperationList():
 	SelectBody select = null;
 	List<SelectBody> selects = new ArrayList<SelectBody>();
 	List<SetOperation> operations = new ArrayList<SetOperation>();
+    List<Boolean> brackets = new ArrayList<Boolean>();
+    boolean bracket;
 }
 {
 	(
 
 		(
-			(("(" select=SelectBody() ")") | select=PlainSelect() ) {selects.add(select);}
+			(("(" select=SelectBody() ")" { bracket=true;} ) 
+                    | select=PlainSelect() { bracket=false;} ) {selects.add(select);brackets.add(bracket); }
 			(
 				((<K_UNION> { UnionOp union = new UnionOp();operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
 				| <K_INTERSECT> { operations.add(new IntersectOp()); }
@@ -840,7 +843,7 @@ SetOperationList SetOperationList():
 				| <K_EXCEPT> { operations.add(new ExceptOp()); }
 				)
 
-				(("(" select=SelectBody() ")") | select=PlainSelect() ) {selects.add(select);}
+				(("(" select=SelectBody() ")" { bracket=true;} ) | select=PlainSelect() { bracket=false;} ) {selects.add(select);brackets.add(bracket);}
 			)+
 		)
 
@@ -851,7 +854,7 @@ SetOperationList SetOperationList():
 	)
 
 	{
-		list.setOpsAndSelects(selects,operations);
+		list.setBracketsOpsAndSelects(brackets,selects,operations);
 		return list;
 	}
 }

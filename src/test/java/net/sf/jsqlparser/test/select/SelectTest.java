@@ -591,9 +591,9 @@ public class SelectTest extends TestCase {
 
         // use brakets for toString
         // use standard limit syntax
-        String statementToString = "(SELECT * FROM mytable WHERE mytable.col = 9) UNION "
-                + "(SELECT * FROM mytable3 WHERE mytable3.col = ?) UNION "
-                + "(SELECT * FROM mytable2 LIMIT 4 OFFSET 3)";
+        String statementToString = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
+                + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION "
+                + "SELECT * FROM mytable2 LIMIT 4 OFFSET 3";
         assertStatementCanBeDeparsedAs(select, statementToString);
     }
 
@@ -1399,7 +1399,7 @@ public class SelectTest extends TestCase {
 
         stmt = "SELECT * FROM a INTERSECT SELECT * FROM b";
         Statement parsed = parserManager.parse(new StringReader(stmt));
-        assertStatementCanBeDeparsedAs(parsed, "(SELECT * FROM a) INTERSECT (SELECT * FROM b)");
+        assertStatementCanBeDeparsedAs(parsed, "SELECT * FROM a INTERSECT SELECT * FROM b");
     }
 
     public void testProblemSqlExcept() throws Exception {
@@ -1408,7 +1408,7 @@ public class SelectTest extends TestCase {
 
         stmt = "SELECT * FROM a EXCEPT SELECT * FROM b";
         Statement parsed = parserManager.parse(new StringReader(stmt));
-        assertStatementCanBeDeparsedAs(parsed, "(SELECT * FROM a) EXCEPT (SELECT * FROM b)");
+        assertStatementCanBeDeparsedAs(parsed, "SELECT * FROM a EXCEPT SELECT * FROM b");
     }
 
     public void testProblemSqlMinus() throws Exception {
@@ -1417,7 +1417,7 @@ public class SelectTest extends TestCase {
 
         stmt = "SELECT * FROM a MINUS SELECT * FROM b";
         Statement parsed = parserManager.parse(new StringReader(stmt));
-        assertStatementCanBeDeparsedAs(parsed, "(SELECT * FROM a) MINUS (SELECT * FROM b)");
+        assertStatementCanBeDeparsedAs(parsed, "SELECT * FROM a MINUS SELECT * FROM b");
     }
 
     public void testProblemSqlCombinedSets() throws Exception {

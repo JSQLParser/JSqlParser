@@ -56,12 +56,12 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             buffer.append("(");
         }
         buffer.append("SELECT ");
-        
+
         OracleHint hint = plainSelect.getOracleHint();
         if (hint != null) {
             buffer.append(hint).append(" ");
         }
-        
+
         Skip skip = plainSelect.getSkip();
         if (skip != null) {
             buffer.append(skip).append(" ");
@@ -71,7 +71,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         if (first != null) {
             buffer.append(first).append(" ");
         }
-        
+
         if (plainSelect.getDistinct() != null) {
             buffer.append("DISTINCT ");
             if (plainSelect.getDistinct().getOnSelectItems() != null) {
@@ -257,8 +257,6 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         buffer.append("))");
     }
 
-
-
     public void deparseOffset(Offset offset) {
         // OFFSET offset
         // or OFFSET offset (ROW | ROWS)
@@ -372,13 +370,17 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             if (i != 0) {
                 buffer.append(' ').append(list.getOperations().get(i - 1)).append(' ');
             }
-            buffer.append("(");
-            SelectBody select = list.getSelects().get(i);
-            select.accept(this);
-            buffer.append(")");
+            boolean brackets = list.getBrackets() == null || list.getBrackets().get(i);
+            if (brackets) {
+                buffer.append("(");
+            }
+            list.getSelects().get(i).accept(this);
+            if (brackets) {
+                buffer.append(")");
+            }
         }
         if (list.getOrderByElements() != null) {
-            new OrderByDeParser(expressionVisitor,buffer).deParse(list.getOrderByElements());
+            new OrderByDeParser(expressionVisitor, buffer).deParse(list.getOrderByElements());
         }
 
         if (list.getLimit() != null) {
