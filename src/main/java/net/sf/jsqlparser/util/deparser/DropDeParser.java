@@ -32,29 +32,29 @@ public class DropDeParser {
 
     private StringBuilder buffer;
 
-	public DropDeParser(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public DropDeParser(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 
-	public void deParse(Drop drop) {
-		buffer.append("DROP ");
+    public void deParse(Drop drop) {
+        buffer.append("DROP ");
         buffer.append(drop.getType());
         if (drop.isIfExists())
             buffer.append(" IF EXISTS");
 
-		buffer.append(" ").append(drop.getName());
+        buffer.append(" ").append(drop.getName());
         
-        if (drop.getParameters() != null && drop.getParameters().size() > 0) {
-			buffer.append(" ").append(PlainSelect.getStringList(drop.getParameters()));
-		}
-	}
+        if (drop.getParameters() != null && !drop.getParameters().isEmpty()) {
+            buffer.append(" ").append(PlainSelect.getStringList(drop.getParameters()));
+        }
+    }
 
-	public StringBuilder getBuffer() {
-		return buffer;
-	}
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
 
-	public void setBuffer(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 
 }
