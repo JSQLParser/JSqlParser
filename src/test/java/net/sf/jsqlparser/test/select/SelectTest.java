@@ -2111,4 +2111,12 @@ public class SelectTest extends TestCase {
     public void testIssue230_cascadeKeyword() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT t.cascade AS cas FROM t");
     }
+    
+    public void testBooleanValue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT col FROM t WHERE a");
+    }
+    
+    public void testBooleanValue2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT col FROM t WHERE 3<5 and a");
+    }
 }

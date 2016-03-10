@@ -1581,7 +1581,8 @@ Expression Condition():
 {
 	(LOOKAHEAD(SQLCondition()) result=SQLCondition()
 	| LOOKAHEAD(RegularCondition()) result=RegularCondition()
-	| result=Function()
+	| LOOKAHEAD(Function()) result=Function()
+    | result=Column()
 	)
 
 	{ return result; }
