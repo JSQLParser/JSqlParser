@@ -39,6 +39,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.5
 
+* introduced first support for boolean valued column conditions
+
+~~~
+SELECT * FROM mytable WHERE mytable.boolValue;
+~~~
+
 * improved parenthesis parsing performance within expressions (#215)
 * support for **ALTER TABLE mytable ADD CONSTRAING name PRIMARY KEY (col)**
 * support for **INSERT LOW_PRIORITY INTO**
