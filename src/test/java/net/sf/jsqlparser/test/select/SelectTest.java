@@ -2117,6 +2117,6 @@ public class SelectTest extends TestCase {
     }
     
     public void testBooleanValue2() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT col FROM t WHERE 3<5 and a");
+        assertSqlCanBeParsedAndDeparsed("SELECT col FROM t WHERE 3 < 5 AND a");
     }
 }
