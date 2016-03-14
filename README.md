@@ -13,6 +13,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 ## News
 
+* Version **0.9.5** released.
 * Please test the actual **0.9.5-SNAPSHOT**. It includes some grammar refactorings which eventually results in parse tree changes.
 * Version **0.9.4** released.
 * Please test the actual SNAPSHOT, if there are problems using the extended identifier token.
@@ -37,38 +38,7 @@ To help JSqlParsers development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 0.9.5
-
-* introduced first support for boolean valued column conditions
-
-~~~
-SELECT * FROM mytable WHERE mytable.boolValue;
-~~~
-
-* improved parenthesis parsing performance within expressions (#215)
-* support for **ALTER TABLE mytable ADD CONSTRAING name PRIMARY KEY (col)**
-* support for **INSERT LOW_PRIORITY INTO**
-* support for **ORDER BY** and **LIMIT** in **UPDATE** and **DELETE** statements
-
-~~~
-UPDATE tablename SET ... ORDER BY col;
-UPDATE tablename SET ... ORDER BY col LIMIT 10;
-UPDATE table1 A SET ... LIMIT 10;
-DELETE FROM tablename LIMIT 5;
-DELETE FROM tablename ORDER BY col;
-DELETE FROM tablename ORDER BY col LIMIT 10;
-~~~
-
-* support for **INSERT ... ON DUPLICATE KEY UPDATE**
-* improved support for **ALTER TABLE** statements
-* first Oracle hint support for **SELECT** statements 
-* first **ALTER TABLE FOREIGN KEY** support
-* first **MERGE** support
-* first version of escaped single quotes support
-
-~~~
-select '\'' 
-~~~
+## Extensions in the latest SNAPSHOT version 0.9.6
 
 ## Extensions of JSqlParser releases
 
@@ -109,7 +79,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>0.9.4</version>
+	<version>0.9.5</version>
 </dependency>
 ```
 
