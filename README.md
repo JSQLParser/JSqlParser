@@ -40,6 +40,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.6
 
+* allowed negative interval expressions like **INTERVAL -420 MINUTES**.
+
 ## Extensions of JSqlParser releases
 
 * [Release Notes](https://github.com/JSQLParser/JSqlParser/releases)
