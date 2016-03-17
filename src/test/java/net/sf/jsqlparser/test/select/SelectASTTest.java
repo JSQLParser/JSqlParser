@@ -18,7 +18,6 @@
  */
 package net.sf.jsqlparser.test.select;
 
-import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserTreeConstants;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -30,17 +29,17 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
 /**
  *
  * @author toben
  */
-public class SelectASTTest extends TestCase {
-
-    public SelectASTTest(String name) {
-        super(name);
-    }
+public class SelectASTTest {
     
+    @Test
     public void testSelectASTColumn() throws JSQLParserException {
         String sql = "SELECT  a,  b FROM  mytable  order by   b,  c";
         StringBuilder b = new StringBuilder(sql);
@@ -63,9 +62,9 @@ public class SelectASTTest extends TestCase {
         assertEquals("SELECT  *,  * FROM  mytable  order by   #,  #", b.toString());
     }
     
+    @Test
     public void testSelectASTNode() throws JSQLParserException {
         String sql = "SELECT  a,  b FROM  mytable  order by   b,  c";
-        StringBuilder b = new StringBuilder(sql);
         SimpleNode node = (SimpleNode) CCJSqlParserUtil.parseAST(sql);
         node.dump("*");
         assertEquals(CCJSqlParserTreeConstants.JJTSTATEMENT, node.getId());

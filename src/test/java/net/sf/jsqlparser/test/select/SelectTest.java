@@ -782,7 +782,7 @@ public class SelectTest extends TestCase {
         plainSelect = (PlainSelect) ((Select) parserManager.parse(new StringReader(statement + whereToString)))
                 .getSelectBody();
 
-        assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
+        assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString.trim());
         assertEquals(statement + whereToString, plainSelect.toString());
     }
 
@@ -2118,5 +2118,9 @@ public class SelectTest extends TestCase {
     
     public void testBooleanValue2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT col FROM t WHERE 3 < 5 AND a");
+    }
+    
+    public void testNotWithoutParenthesisIssue234() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM \"Persons\" WHERE NOT \"F_NAME\" = 'John'");
     }
 }
