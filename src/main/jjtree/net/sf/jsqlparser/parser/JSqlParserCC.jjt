@@ -2119,10 +2119,11 @@ JsonExpression JsonExpression() : {
 IntervalExpression IntervalExpression() : {
 	IntervalExpression interval = new IntervalExpression();
 	Token token;
+	boolean signed = false;
 }
 {
-	<K_INTERVAL> (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL>) 
-    { interval.setParameter(token.image); }
+	<K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL>) 
+    { interval.setParameter((signed?"-":"") + token.image); }
     [ LOOKAHEAD(2) token = <S_IDENTIFIER> { interval.setIntervalType(token.image); } ]
 	{
 		return interval;

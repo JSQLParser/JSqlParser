@@ -1609,6 +1609,11 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT '2008-12-31 23:59:59' + INTERVAL 1 SECOND";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+    
+    public void testInterval5_Issue228() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ADDDATE(timeColumn1, INTERVAL 420 MINUTES) AS timeColumn1 FROM tbl");
+        assertSqlCanBeParsedAndDeparsed("SELECT ADDDATE(timeColumn1, INTERVAL -420 MINUTES) AS timeColumn1 FROM tbl");
+    }
      
     public void testMultiValueIn() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE (a, b, c) IN (SELECT a, b, c FROM mytable2)";
