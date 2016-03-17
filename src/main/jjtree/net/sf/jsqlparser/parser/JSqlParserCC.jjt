@@ -582,10 +582,10 @@ Statement Merge() : {
 }
 {
     <K_MERGE> <K_INTO> table=TableWithAlias() { merge.setTable(table); }
-    <K_USING> "(" 
+    <K_USING> 
         ( table=Table() { merge.setUsingTable(table); } 
-            | select=SubSelect() { merge.setUsingSelect(select); } )
-    ")" [ alias = Alias() { merge.setUsingAlias(alias); } ] <K_ON> 
+            | "(" select=SubSelect() { merge.setUsingSelect(select); } ")" )
+     [ alias = Alias() { merge.setUsingAlias(alias); } ] <K_ON> 
        "(" condition = Condition() { merge.setOnCondition(condition); } ")"
 
     [ LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]

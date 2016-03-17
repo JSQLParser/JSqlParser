@@ -112,13 +112,13 @@ public class Merge implements Statement {
         StringBuilder b = new StringBuilder();
         b.append("MERGE INTO ");
         b.append(table);
-        b.append(" USING (");
+        b.append(" USING ");
         if (usingTable != null) {
             b.append(usingTable.toString());
         } else if (usingSelect != null) {
-            b.append(usingSelect.toString());
+            b.append("(").append(usingSelect.toString()).append(")");
         }
-        b.append(")");
+        
         if (usingAlias != null) {
             b.append(usingAlias.toString());
         }

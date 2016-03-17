@@ -50,4 +50,16 @@ public class MergeTest {
         
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
+    
+    @Test
+    public void testMergeIssue232() throws JSQLParserException {
+        String sql = "MERGE INTO xyz using dual " +
+                        "ON ( custom_id = ? ) " +
+                        "WHEN matched THEN " +
+                        "UPDATE SET abc = sysdate " +
+                        "WHEN NOT matched THEN " +
+                        "INSERT (custom_id) VALUES (?)";
+                        
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
 }
