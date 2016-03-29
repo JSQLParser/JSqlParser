@@ -2119,4 +2119,13 @@ public class SelectTest extends TestCase {
     public void testBooleanValue2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT col FROM t WHERE 3 < 5 AND a");
     }
+    
+    public void testSpeedTestIssue235() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM tbl WHERE (ROUND((((((period_diff(date_format(tbl.CD, '%Y%m'), date_format(SUBTIME(CURRENT_TIMESTAMP(), 25200), '%Y%m')) + month(SUBTIME(CURRENT_TIMESTAMP(), 25200))) - MONTH('2012-02-01')) - 1) / 3) - ROUND((((month(SUBTIME(CURRENT_TIMESTAMP(),25200)) - MONTH('2012-02-01')) - 1) / 3)))) = -3)", true);
+    }
+    
+    public void testSpeedTestIssue235_2() throws IOException, JSQLParserException {
+        String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-issue-235.txt"));
+        assertSqlCanBeParsedAndDeparsed(stmt, true);
+    }
 }

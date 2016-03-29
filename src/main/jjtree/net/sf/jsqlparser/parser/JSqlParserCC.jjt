@@ -2023,15 +2023,15 @@ Expression PrimaryExpression():
 
     | LOOKAHEAD([sign="+" | sign="-"] JsonExpression()) [sign="+" | sign="-"] retval=JsonExpression()
 
-	| LOOKAHEAD(["+" | "-"] Function())       [sign="+" | sign="-"] retval=Function()
+	| LOOKAHEAD(["+" | "-"] Function()) [sign="+" | sign="-"] retval=Function()
 
-	| LOOKAHEAD(["+" | "-"] <S_DOUBLE>)       [sign="+" | sign="-"] token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
+	| LOOKAHEAD(2) [sign="+" | sign="-"] token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
 
-	| LOOKAHEAD(["+" | "-"] <S_LONG>)         [sign="+" | sign="-"] token=<S_LONG> { retval = new LongValue(token.image); }
+	| LOOKAHEAD(2) [sign="+" | sign="-"] token=<S_LONG> { retval = new LongValue(token.image); }
 
-    | LOOKAHEAD(["+" | "-"] <S_HEX>)          [sign="+" | sign="-"] token=<S_HEX>  { retval = new HexValue(token.image); }
+    | LOOKAHEAD(2) [sign="+" | sign="-"] token=<S_HEX>  { retval = new HexValue(token.image); }
 
-	| LOOKAHEAD(["+" | "-"] CastExpression()) [sign="+" | sign="-"] retval=CastExpression()
+	| LOOKAHEAD(2) [sign="+" | sign="-"] retval=CastExpression()
 
 	| LOOKAHEAD(["+" | "-"] Column())         [sign="+" | sign="-"] retval=Column()
 
