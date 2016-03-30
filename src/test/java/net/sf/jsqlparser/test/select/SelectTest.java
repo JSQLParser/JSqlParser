@@ -2128,4 +2128,24 @@ public class SelectTest extends TestCase {
     public void testNotWithoutParenthesisIssue234() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM \"Persons\" WHERE NOT \"F_NAME\" = 'John'");
     }
+
+    public void testWhere_1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable where 1");
+    }
+
+    public void testWhere_0() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable where 0");
+    }
+
+    public void testWhere_true() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable where true");
+    }
+
+    public void testWhere_false() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable where false");
+    }
+
+    public void testWhere_keyword_field_name() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT l.end from lessons l");
+    }
 }
