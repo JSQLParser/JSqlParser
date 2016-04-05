@@ -13,6 +13,8 @@ import org.apache.commons.io.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
 
@@ -879,7 +881,7 @@ public class SelectTest extends TestCase {
                 (((TimeValue) ((GreaterThan) plainSelect.getWhere()).getRightExpression()).getValue()).toString());
         assertStatementCanBeDeparsedAs(select, statement);
     }
-    
+
     public void testBetweenDate() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE col BETWEEN {d '2015-09-19'} AND {d '2015-09-24'}");
     }
@@ -1604,17 +1606,17 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT 5 + INTERVAL '3' day";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-    
+
     public void testInterval4() throws JSQLParserException {
         String stmt = "SELECT '2008-12-31 23:59:59' + INTERVAL 1 SECOND";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-    
+
     public void testInterval5_Issue228() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ADDDATE(timeColumn1, INTERVAL 420 MINUTES) AS timeColumn1 FROM tbl");
         assertSqlCanBeParsedAndDeparsed("SELECT ADDDATE(timeColumn1, INTERVAL -420 MINUTES) AS timeColumn1 FROM tbl");
     }
-     
+
     public void testMultiValueIn() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE (a, b, c) IN (SELECT a, b, c FROM mytable2)";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -1766,7 +1768,7 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT last_name, employee_id, manager_id, LEVEL FROM employees CONNECT BY PRIOR employee_id = manager_id START WITH employee_id = 100 ORDER SIBLINGS BY last_name";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-    
+
     public void testOracleHierarchicalQueryIssue196() throws JSQLParserException {
         String stmt = "SELECT num1, num2, level FROM carol_tmp START WITH num2 = 1008 CONNECT BY num2 = PRIOR num1 ORDER BY level DESC";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -1802,7 +1804,7 @@ public class SelectTest extends TestCase {
         final String stmt = "SELECT open FROM tableName";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-    
+
     public void testReservedKeyword3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable1 t JOIN mytable2 AS prior ON t.id = prior.id");
     }
@@ -1856,7 +1858,7 @@ public class SelectTest extends TestCase {
     public void testSelectInnerWith() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (WITH actor AS (SELECT 'a' aid FROM DUAL) SELECT aid FROM actor)");
     }
-    
+
     public void testSelectWithinGroup() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT LISTAGG(col1, '##') WITHIN GROUP (ORDER BY col1) FROM table1");
     }
@@ -1944,68 +1946,68 @@ public class SelectTest extends TestCase {
     public void testIssue160_signedParameter2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE -? = 5");
     }
-    
+
     public void testIssue162_doubleUserVar() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @@SPID AS ID, SYSTEM_USER AS \"Login Name\", USER AS \"User Name\"");
     }
-	
-	public void testIssue167_singleQuoteEscape() throws JSQLParserException {
+
+    public void testIssue167_singleQuoteEscape() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT 'a'");
-		assertSqlCanBeParsedAndDeparsed("SELECT ''''");
-		assertSqlCanBeParsedAndDeparsed("SELECT '\\''");
-		assertSqlCanBeParsedAndDeparsed("SELECT 'ab''ab'");
-		assertSqlCanBeParsedAndDeparsed("SELECT 'ab\\'ab'");
+        assertSqlCanBeParsedAndDeparsed("SELECT ''''");
+        assertSqlCanBeParsedAndDeparsed("SELECT '\\''");
+        assertSqlCanBeParsedAndDeparsed("SELECT 'ab''ab'");
+        assertSqlCanBeParsedAndDeparsed("SELECT 'ab\\'ab'");
     }
-	
-	/**
-	 * These are accepted due to reading one backslash and a double quote.
-	 */
-	public void testIssue167_singleQuoteEscape2() throws JSQLParserException {
-		assertSqlCanBeParsedAndDeparsed("SELECT '\\'''");
-		assertSqlCanBeParsedAndDeparsed("SELECT '\\\\''");
-	}
-	
-	public void testIssue77_singleQuoteEscape2() throws JSQLParserException {
-		assertSqlCanBeParsedAndDeparsed("SELECT 'test\\'' FROM dual");
-	}
-    
+
+    /**
+     * These are accepted due to reading one backslash and a double quote.
+     */
+    public void testIssue167_singleQuoteEscape2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT '\\'''");
+        assertSqlCanBeParsedAndDeparsed("SELECT '\\\\''");
+    }
+
+    public void testIssue77_singleQuoteEscape2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 'test\\'' FROM dual");
+    }
+
     public void testIssue223_singleQuoteEscape() throws JSQLParserException {
-		assertSqlCanBeParsedAndDeparsed("SELECT '\\'test\\''");
-	}
-        
+        assertSqlCanBeParsedAndDeparsed("SELECT '\\'test\\''");
+    }
+
     public void testOracleHint() throws JSQLParserException {
         assertOracleHintExists("SELECT /*+ SOMEHINT */ * FROM mytable", true, "SOMEHINT");
         assertOracleHintExists("SELECT /*+ MORE HINTS POSSIBLE */ * FROM mytable", true, "MORE HINTS POSSIBLE");
         assertOracleHintExists("SELECT /*+   MORE\nHINTS\t\nPOSSIBLE  */ * FROM mytable", true, "MORE\nHINTS\t\nPOSSIBLE");
         assertOracleHintExists("SELECT /*+ leading(sn di md sh ot) cardinality(ot 1000) */ c, b FROM mytable", true, "leading(sn di md sh ot) cardinality(ot 1000)");
-        assertOracleHintExists("SELECT /*+ ORDERED INDEX (b, jl_br_balances_n1) USE_NL (j b) \n" +
-                "           USE_NL (glcc glf) USE_MERGE (gp gsb) */\n" +
-                " b.application_id\n" +
-                "FROM  jl_br_journals j,\n" +
-                "      po_vendors p", true, "ORDERED INDEX (b, jl_br_balances_n1) USE_NL (j b) \n" +
-                "           USE_NL (glcc glf) USE_MERGE (gp gsb)");
-        assertOracleHintExists("SELECT /*+ROWID(emp)*/ /*+ THIS IS NOT HINT! ***/ * \n" +
-                "FROM emp \n" +
-                "WHERE rowid > 'AAAAtkAABAAAFNTAAA' AND empno = 155", false, "ROWID(emp)");
-        assertOracleHintExists("SELECT /*+ INDEX(patients sex_index) use sex_index because there are few\n" +
-                "   male patients  */ name, height, weight\n" +
-                "FROM patients\n" +
-                "WHERE sex = 'm'", true, "INDEX(patients sex_index) use sex_index because there are few\n   male patients");
-        assertOracleHintExists("SELECT /*+INDEX_COMBINE(emp sal_bmi hiredate_bmi)*/ * \n" +
-                "FROM emp  \n" +
-                "WHERE sal < 50000 AND hiredate < '01-JAN-1990'", true, "INDEX_COMBINE(emp sal_bmi hiredate_bmi)");
-        assertOracleHintExists("SELECT --+ CLUSTER \n" +
-                "emp.ename, deptno\n" +
-                "FROM emp, dept\n" +
-                "WHERE deptno = 10 \n" +
-                "AND emp.deptno = dept.deptno", true, "CLUSTER");
+        assertOracleHintExists("SELECT /*+ ORDERED INDEX (b, jl_br_balances_n1) USE_NL (j b) \n"
+                + "           USE_NL (glcc glf) USE_MERGE (gp gsb) */\n"
+                + " b.application_id\n"
+                + "FROM  jl_br_journals j,\n"
+                + "      po_vendors p", true, "ORDERED INDEX (b, jl_br_balances_n1) USE_NL (j b) \n"
+                + "           USE_NL (glcc glf) USE_MERGE (gp gsb)");
+        assertOracleHintExists("SELECT /*+ROWID(emp)*/ /*+ THIS IS NOT HINT! ***/ * \n"
+                + "FROM emp \n"
+                + "WHERE rowid > 'AAAAtkAABAAAFNTAAA' AND empno = 155", false, "ROWID(emp)");
+        assertOracleHintExists("SELECT /*+ INDEX(patients sex_index) use sex_index because there are few\n"
+                + "   male patients  */ name, height, weight\n"
+                + "FROM patients\n"
+                + "WHERE sex = 'm'", true, "INDEX(patients sex_index) use sex_index because there are few\n   male patients");
+        assertOracleHintExists("SELECT /*+INDEX_COMBINE(emp sal_bmi hiredate_bmi)*/ * \n"
+                + "FROM emp  \n"
+                + "WHERE sal < 50000 AND hiredate < '01-JAN-1990'", true, "INDEX_COMBINE(emp sal_bmi hiredate_bmi)");
+        assertOracleHintExists("SELECT --+ CLUSTER \n"
+                + "emp.ename, deptno\n"
+                + "FROM emp, dept\n"
+                + "WHERE deptno = 10 \n"
+                + "AND emp.deptno = dept.deptno", true, "CLUSTER");
         assertOracleHintExists("SELECT --+ CLUSTER \n --+ some other comment, not hint\n /* even more comments */ * from dual", false, "CLUSTER");
         assertOracleHintExists("(SELECT * from t1) UNION (select /*+ CLUSTER */ * from dual)", true, null, "CLUSTER");
         assertOracleHintExists("(SELECT * from t1) UNION (select /*+ CLUSTER */ * from dual) UNION (select * from dual)", true, null, "CLUSTER", null);
         assertOracleHintExists("(SELECT --+ HINT1 HINT2 HINT3\n * from t1) UNION (select /*+ HINT4 HINT5 */ * from dual)", true, "HINT1 HINT2 HINT3", "HINT4 HINT5");
 
     }
-    
+
     public void testOracleHintExpression() throws JSQLParserException {
         String statement = "SELECT --+ HINT\n * FROM tab1";
         Statement parsed = parserManager.parse(new StringReader(statement));
@@ -2076,56 +2078,85 @@ public class SelectTest extends TestCase {
         assertEquals("z", fromItem.getAlias().getName());
         assertStatementCanBeDeparsedAs(select, statement);
     }
-    
+
     public void testIssue151_tableFunction() throws JSQLParserException {
-		assertSqlCanBeParsedAndDeparsed("SELECT * FROM tables a LEFT JOIN getdata() b ON a.id = b.id");
-	}
-    
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM tables a LEFT JOIN getdata() b ON a.id = b.id");
+    }
+
     public void testIssue217_keywordSeparator() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT Separator");
     }
-    
+
     public void testIssue215_possibleEndlessParsing() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT (CASE WHEN ((value LIKE '%t1%') OR (value LIKE '%t2%')) THEN 't1s' WHEN ((((((((((((((((((((((((((((value LIKE '%t3%') OR (value LIKE '%t3%')) OR (value LIKE '%t3%')) OR (value LIKE '%t4%')) OR (value LIKE '%t4%')) OR (value LIKE '%t5%')) OR (value LIKE '%t6%')) OR (value LIKE '%t6%')) OR (value LIKE '%t7%')) OR (value LIKE '%t7%')) OR (value LIKE '%t7%')) OR (value LIKE '%t8%')) OR (value LIKE '%t8%')) OR (value LIKE '%CTO%')) OR (value LIKE '%cto%')) OR (value LIKE '%Cto%')) OR (value LIKE '%t9%')) OR (value LIKE '%t9%')) OR (value LIKE '%COO%')) OR (value LIKE '%coo%')) OR (value LIKE '%Coo%')) OR (value LIKE '%t10%')) OR (value LIKE '%t10%')) OR (value LIKE '%CIO%')) OR (value LIKE '%cio%')) OR (value LIKE '%Cio%')) OR (value LIKE '%t11%')) OR (value LIKE '%t11%')) THEN 't' WHEN ((((value LIKE '%t12%') OR (value LIKE '%t12%')) OR (value LIKE '%VP%')) OR (value LIKE '%vp%')) THEN 'Vice t12s' WHEN ((((((value LIKE '% IT %') OR (value LIKE '%t13%')) OR (value LIKE '%t13%')) OR (value LIKE '% it %')) OR (value LIKE '%tech%')) OR (value LIKE '%Tech%')) THEN 'IT' WHEN ((((value LIKE '%Analyst%') OR (value LIKE '%t14%')) OR (value LIKE '%Analytic%')) OR (value LIKE '%analytic%')) THEN 'Analysts' WHEN ((value LIKE '%Manager%') OR (value LIKE '%manager%')) THEN 't15' ELSE 'Other' END) FROM tab1");
     }
-    
+
     public void testIssue215_possibleEndlessParsing2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT (CASE WHEN ((value LIKE '%t1%') OR (value LIKE '%t2%')) THEN 't1s' ELSE 'Other' END) FROM tab1");
     }
-    
+
     public void testIssue215_possibleEndlessParsing3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE ((((((((((((((((((((((((((((value LIKE '%t3%') OR (value LIKE '%t3%')) OR (value LIKE '%t3%')) OR (value LIKE '%t4%')) OR (value LIKE '%t4%')) OR (value LIKE '%t5%')) OR (value LIKE '%t6%')) OR (value LIKE '%t6%')) OR (value LIKE '%t7%')) OR (value LIKE '%t7%')) OR (value LIKE '%t7%')) OR (value LIKE '%t8%')) OR (value LIKE '%t8%')) OR (value LIKE '%CTO%')) OR (value LIKE '%cto%')) OR (value LIKE '%Cto%')) OR (value LIKE '%t9%')) OR (value LIKE '%t9%')) OR (value LIKE '%COO%')) OR (value LIKE '%coo%')) OR (value LIKE '%Coo%')) OR (value LIKE '%t10%')) OR (value LIKE '%t10%')) OR (value LIKE '%CIO%')) OR (value LIKE '%cio%')) OR (value LIKE '%Cio%')) OR (value LIKE '%t11%')) OR (value LIKE '%t11%'))");
     }
-    
+
     public void testIssue215_possibleEndlessParsing4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE ((value LIKE '%t3%') OR (value LIKE '%t3%'))");
-    } 
-    
+    }
+
     public void testIssue215_possibleEndlessParsing5() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE ((((((value LIKE '%t3%') OR (value LIKE '%t3%')) OR (value LIKE '%t3%')) OR (value LIKE '%t4%')) OR (value LIKE '%t4%')) OR (value LIKE '%t5%'))");
     }
-    
+
     public void testIssue215_possibleEndlessParsing6() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (((((((((((((value LIKE '%t3%') OR (value LIKE '%t3%')) OR (value LIKE '%t3%')) OR (value LIKE '%t4%')) OR (value LIKE '%t4%')) OR (value LIKE '%t5%')) OR (value LIKE '%t6%')) OR (value LIKE '%t6%')) OR (value LIKE '%t7%')) OR (value LIKE '%t7%')) OR (value LIKE '%t7%')) OR (value LIKE '%t8%')) OR (value LIKE '%t8%'))");
     }
-    
+
     public void testIssue215_possibleEndlessParsing7() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (((((((((((((((((((((value LIKE '%t3%') OR (value LIKE '%t3%')) OR (value LIKE '%t3%')) OR (value LIKE '%t4%')) OR (value LIKE '%t4%')) OR (value LIKE '%t5%')) OR (value LIKE '%t6%')) OR (value LIKE '%t6%')) OR (value LIKE '%t7%')) OR (value LIKE '%t7%')) OR (value LIKE '%t7%')) OR (value LIKE '%t8%')) OR (value LIKE '%t8%')) OR (value LIKE '%CTO%')) OR (value LIKE '%cto%')) OR (value LIKE '%Cto%')) OR (value LIKE '%t9%')) OR (value LIKE '%t9%')) OR (value LIKE '%COO%')) OR (value LIKE '%coo%')) OR (value LIKE '%Coo%'))");
     }
-    
+
     public void testIssue230_cascadeKeyword() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT t.cascade AS cas FROM t");
     }
-    
+
     public void testBooleanValue() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT col FROM t WHERE a");
     }
-    
+
     public void testBooleanValue2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT col FROM t WHERE 3 < 5 AND a");
     }
-    
+
     public void testNotWithoutParenthesisIssue234() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM \"Persons\" WHERE NOT \"F_NAME\" = 'John'");
+    }
+
+    public void testWhereIssue240_1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE 1");
+    }
+
+    public void testWhereIssue240_0() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE 0");
+    }
+    
+    public void testWhereIssue240_notBoolean() {
+        try {
+            CCJSqlParserUtil.parse("SELECT count(*) FROM mytable WHERE 5");
+            fail("should not be parsed");
+        } catch (JSQLParserException ex) {
+            
+        }
+    }
+
+    public void testWhereIssue240_true() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE true");
+    }
+
+    public void testWhereIssue240_false() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE false");
+    }
+   
+    public void testWhereIssue241KeywordEnd() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT l.end FROM lessons l");
     }
 }
