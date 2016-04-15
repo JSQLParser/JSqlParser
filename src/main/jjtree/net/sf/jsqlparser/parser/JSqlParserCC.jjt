@@ -283,7 +283,7 @@ Statement SingleStatement() :
 	(
     stm = Select()
     |
-    stm =  Update()
+    stm = Update()
     |
     stm = Insert()
     |
@@ -291,7 +291,8 @@ Statement SingleStatement() :
     |
     stm = Replace()
     |
-	stm = Alter()
+    LOOKAHEAD(2)
+	stm = AlterTable()
     |
     stm = Merge()
 	|
@@ -303,6 +304,8 @@ Statement SingleStatement() :
     |
 	LOOKAHEAD(2)
 	stm = CreateView()
+	|
+    stm = AlterView()
 	|
     stm = Drop()
     |
@@ -2712,12 +2715,24 @@ CreateView CreateView():
 	<K_VIEW> view=Table() { createView.setView(view); }
 	[ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
 	<K_AS>
-	(
-      LOOKAHEAD(3) select=SelectBody() { createView.setSelectBody(select); }
-	  |
-	  "(" select=SelectBody() ")" { createView.setSelectBody(select); }
-    )
+	select=SelectBody() { createView.setSelectBody(select); }
 	{ return createView; }
+}
+
+AlterView AlterView():
+{
+	AlterView alterView = new AlterView();
+	Table view = null;
+	SelectBody select = null;
+	List<String> columnNames = null;
+}
+{
+	<K_ALTER>
+	<K_VIEW> view=Table() { alterView.setView(view); }
+	[ columnNames = ColumnsNamesList() { alterView.setColumnNames(columnNames); } ]
+	<K_AS>
+	select=SelectBody() { alterView.setSelectBody(select); }
+	{ return alterView; }
 }
 
 String CreateParameter():
@@ -2849,7 +2864,7 @@ Truncate Truncate():
 	}
 }
 
-Alter Alter():
+Alter AlterTable():
 {
 	Alter alter = new Alter();
 	Table table;

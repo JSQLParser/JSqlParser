@@ -24,6 +24,7 @@ package net.sf.jsqlparser.statement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
@@ -109,5 +110,9 @@ public class StatementVisitorAdapter implements StatementVisitor {
     @Override
     public void visit(Merge merge) {
         
+    }
+
+    @Override
+    public void visit(AlterView alterView) {
     }
 }
