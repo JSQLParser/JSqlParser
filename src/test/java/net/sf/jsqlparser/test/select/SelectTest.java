@@ -2168,4 +2168,8 @@ public class SelectTest extends TestCase {
         String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-issue-235.txt"));
         assertSqlCanBeParsedAndDeparsed(stmt, true);
     }
+    
+    public void testCastVarCharMaxIssue245() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST('foo' AS NVARCHAR (MAX))");
+    }
 }
