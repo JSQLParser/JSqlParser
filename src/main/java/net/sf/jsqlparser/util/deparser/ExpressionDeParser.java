@@ -38,7 +38,7 @@ import java.util.Iterator;
  */
 public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
-    private static final String NOT = " NOT ";
+    private static final String NOT = "NOT ";
 	private StringBuilder buffer;
     private SelectVisitor selectVisitor;
     private boolean useBracketsInExprList = true;
