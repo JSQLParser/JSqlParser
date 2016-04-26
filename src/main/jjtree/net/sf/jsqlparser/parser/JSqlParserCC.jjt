@@ -95,10 +95,7 @@ PARSER_END(CCJSqlParser)
 
 SKIP:
 {
-    " "
-|   "\t"
-|   "\r"
-|   "\n"
+    <WHITESPACE: " " | "\t" | "\r" | "\n">
 }
 
 TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
@@ -235,6 +232,14 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_DELAYED : "DELAYED">
 |	<K_HIGH_PRIORITY : "HIGH_PRIORITY">
 |	<K_IGNORE : "IGNORE">
+}
+
+TOKEN : /* Operators */
+{
+	<OP_GREATERTHANEQUALS: ">" (<WHITESPACE>)* "=">
+|	<OP_MINORTHANEQUALS: "<" (<WHITESPACE>)* "=">
+|	<OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
+|	<OP_NOTEQUALSBANG: "!=">
 }
 
 TOKEN : /* Numeric Constants */
@@ -1611,14 +1616,14 @@ Expression RegularCondition():
 
 	[ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
 
-	(
+	( LOOKAHEAD(2)
 	">" { result = new GreaterThan(); }
 	| "<" { result = new MinorThan(); }
 	| "=" { result = new EqualsTo(); }
-	| ">=" { result = new GreaterThanEquals(); }
-	| "<=" { result = new MinorThanEquals(); }
-	| "<>" { result = new NotEqualsTo(); }
-    | "!=" { result = new NotEqualsTo("!="); }
+	| token=<OP_GREATERTHANEQUALS> { result = new GreaterThanEquals(token.image); }
+	| token=<OP_MINORTHANEQUALS> { result = new MinorThanEquals(token.image); }
+	| token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }
+	| token=<OP_NOTEQUALSBANG> { result = new NotEqualsTo(token.image); }
 	| "@@" { result = new Matches(); }
 	| "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
 	| <K_REGEXP> [ <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
