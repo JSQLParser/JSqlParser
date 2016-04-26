@@ -2160,6 +2160,19 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT l.end FROM lessons l");
     }
     
+    public void testSpeedTestIssue235() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM tbl WHERE (ROUND((((((period_diff(date_format(tbl.CD, '%Y%m'), date_format(SUBTIME(CURRENT_TIMESTAMP(), 25200), '%Y%m')) + month(SUBTIME(CURRENT_TIMESTAMP(), 25200))) - MONTH('2012-02-01')) - 1) / 3) - ROUND((((month(SUBTIME(CURRENT_TIMESTAMP(),25200)) - MONTH('2012-02-01')) - 1) / 3)))) = -3)", true);
+    }
+    
+    public void testSpeedTestIssue235_2() throws IOException, JSQLParserException {
+        String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-issue-235.txt"));
+        assertSqlCanBeParsedAndDeparsed(stmt, true);
+    }
+    
+    public void testCastVarCharMaxIssue245() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST('foo' AS NVARCHAR (MAX))");
+    }
+    
     public void testNestedFunctionCallIssue253() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT (replace_regex(replace_regex(replace_regex(get_json_string(a_column, 'value'), '\\n', ' '), '\\r', ' '), '\\\\', '\\\\\\\\')) FROM a_table WHERE b_column = 'value'");
     }
