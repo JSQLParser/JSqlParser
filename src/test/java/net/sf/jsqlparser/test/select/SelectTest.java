@@ -1964,7 +1964,7 @@ public class SelectTest extends TestCase {
      */
     public void testIssue167_singleQuoteEscape2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT '\\'''");
-        assertSqlCanBeParsedAndDeparsed("SELECT '\\\\''");
+        assertSqlCanBeParsedAndDeparsed("SELECT '\\\\\\''");
     }
 
     public void testIssue77_singleQuoteEscape2() throws JSQLParserException {
@@ -2158,5 +2158,13 @@ public class SelectTest extends TestCase {
    
     public void testWhereIssue241KeywordEnd() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT l.end FROM lessons l");
+    }
+    
+    public void testNestedFunctionCallIssue253() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT (replace_regex(replace_regex(replace_regex(get_json_string(a_column, 'value'), '\\n', ' '), '\\r', ' '), '\\\\', '\\\\\\\\')) FROM a_table WHERE b_column = 'value'");
+    }
+    
+    public void testEscapedBackslashIssue253() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT replace_regex('test', '\\\\', '\\\\\\\\')");
     }
 }
