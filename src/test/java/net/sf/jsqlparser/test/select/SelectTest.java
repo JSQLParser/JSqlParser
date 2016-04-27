@@ -1830,6 +1830,10 @@ public class SelectTest extends TestCase {
     public void testSelectForUpdate() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM user_table FOR UPDATE");
     }
+    
+    public void testSelectForUpdate2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM emp WHERE empno = ? FOR UPDATE");
+    }
 
     public void testSelectJoin() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT pg_class.relname, pg_attribute.attname, pg_constraint.conname "
