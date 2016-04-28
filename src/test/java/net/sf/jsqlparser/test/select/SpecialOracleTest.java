@@ -20,17 +20,23 @@ package net.sf.jsqlparser.test.select;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.parser.TokenMgrError;
-
 import static net.sf.jsqlparser.test.TestUtils.*;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.assertTrue;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * Tries to parse and deparse all statments in
@@ -43,10 +49,19 @@ import org.junit.Test;
  *
  * @author toben
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SpecialOracleTest {
 
     private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/test/oracle-tests");
     private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
+    private static final Set<String> EXCEPTION_FILES = new HashSet<String>(Arrays.asList("groupby07.sql"));
+
+    private static Set<String> testedExceptions = null;
+    
+    @BeforeClass
+    public static void setup() {
+    	testedExceptions = new HashSet<String>();
+    }
 
     @Test
     public void testAllSqlsParseDeparse() throws IOException {
@@ -57,26 +72,46 @@ public class SpecialOracleTest {
         for (File file : sqlTestFiles) {
             if (file.isFile()) {
                 count++;
-                LOG.log(Level.INFO, "testing {0}", file.getName());
-                String sql = FileUtils.readFileToString(file);
-                try {
-                    assertSqlCanBeParsedAndDeparsed(sql, true);
-                    success++;
-                    LOG.info("   -> SUCCESS");
-                } catch (JSQLParserException ex) {
-                    //LOG.log(Level.SEVERE, null, ex);
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
-                } catch (TokenMgrError ex) {
-                    //LOG.log(Level.SEVERE, null, ex);
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
-                } catch (Exception ex) {
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
-                }
-            }
+                String filename = file.getName();
+                if(EXCEPTION_FILES.contains(filename)) {
+    				LOG.log(Level.INFO, "skipping {0}, is an exception to be tested separately", filename);
+                } else {
+					LOG.log(Level.INFO, "testing {0}", filename);
+                	String sql = FileUtils.readFileToString(file);
+                	try {
+	                    assertSqlCanBeParsedAndDeparsed(sql, true);
+                    	success++;
+                    	LOG.info("   -> SUCCESS");
+                	} catch (JSQLParserException ex) {
+                    	//LOG.log(Level.SEVERE, null, ex);
+                    	LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
+                	} catch (TokenMgrError ex) {
+                    	//LOG.log(Level.SEVERE, null, ex);
+                    	LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
+                	} catch (Exception ex) {
+	                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
+                	}
+            	}
+        	}
         }
 
         LOG.log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
         assertTrue(success >= 130);
+    }
+
+    @Test
+    public void testExceptionGroupBy07() throws Exception {
+        // This particular file has 'misordered' having and group by clauses.  This is valid in Oracle, but requires a
+        // bit of special test handling, since the parser will 'correct' the order for us (upon 'deparsing').
+    	Pattern swapHavingGroupBy = Pattern.compile("^(.*)\\b(having.*)\\b(group by.*)\\b(order by.*)$",Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    	
+    	String filename = "groupby07.sql";
+    	testedExceptions.add(filename);
+    	File file = new File(SQLS_DIR,filename);
+        String sql = FileUtils.readFileToString(file);
+        Statement parsed = CCJSqlParserUtil.parse(sql);
+        sql = swapHavingGroupBy.matcher(sql).replaceFirst("$1$3$2$4"); // Swaps the 'having' and 'group by', as the parser will swap these around when deparsing.
+        assertStatementCanBeDeparsedAs(parsed, sql, true);
     }
 
     @Test
@@ -151,5 +186,12 @@ public class SpecialOracleTest {
         System.out.println(statement.toString());
         
         assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+    
+    @Test // Named "zzz" to be executed last (see @FixMethodOrder annotation on this class).
+    public void zzztestAllExceptionsHandled() throws Exception {
+    	Set<String> tmp = new HashSet<String>(EXCEPTION_FILES);
+    	tmp.removeAll(testedExceptions);
+    	assertTrue("Some 'exception' SQL files were not tested separately -- still remaining: " + tmp, tmp.isEmpty());
     }
 }

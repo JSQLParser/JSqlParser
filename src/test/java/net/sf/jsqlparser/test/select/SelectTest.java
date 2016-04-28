@@ -818,6 +818,19 @@ public class SelectTest extends TestCase {
         assertTrue(plainSelect.getHaving() instanceof InExpression);
         assertStatementCanBeDeparsedAs(select, statement);
     }
+    
+    // Oracle allows us to 'mis-order' the having and group by clauses.
+    public void testHavingAndGroupByBackwards() throws JSQLParserException {
+    	String selectFromWhere = "SELECT MAX(tab1.b) FROM tab1 WHERE a > 34";
+    	String groupBy = "GROUP BY tab1.b";
+    	String having = "HAVING MAX(tab1.b) > 56";
+        String statement = selectFromWhere + " " + having + " " + groupBy;
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertTrue(plainSelect.getHaving() instanceof GreaterThan);
+        // NOTE: Expected SQL is in a different order than that passed in -- the parser 'corrects' the ordering.
+        assertStatementCanBeDeparsedAs(select, selectFromWhere + " " + groupBy + " " + having);
+    }
 
     public void testExists() throws JSQLParserException {
         String statement = "SELECT * FROM tab1 WHERE ";
