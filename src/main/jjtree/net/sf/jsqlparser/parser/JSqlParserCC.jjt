@@ -590,7 +590,7 @@ Statement Merge() : {
         ( table=Table() { merge.setUsingTable(table); } 
             | "(" select=SubSelect() { merge.setUsingSelect(select); } ")" )
      [ alias = Alias() { merge.setUsingAlias(alias); } ] <K_ON> 
-       "(" condition = Condition() { merge.setOnCondition(condition); } ")"
+       "(" condition = Expression() { merge.setOnCondition(condition); } ")"
 
     [ LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
  
@@ -616,8 +616,8 @@ MergeUpdate MergeUpdateClause() : {
 
         { mu.setColumns(columns); mu.setValues(expList); }
 
-        [ <K_WHERE> condition = Condition() { mu.setWhereCondition(condition); }]
-        [ <K_DELETE> <K_WHERE> condition = Condition() { mu.setDeleteWhereCondition(condition); } ]
+        [ <K_WHERE> condition = Expression() { mu.setWhereCondition(condition); }]
+        [ <K_DELETE> <K_WHERE> condition = Expression() { mu.setDeleteWhereCondition(condition); } ]
 
         { return mu; }
 }
