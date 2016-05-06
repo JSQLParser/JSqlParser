@@ -21,20 +21,16 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
-import net.sf.jsqlparser.expression.ExpressionVisitor;
+public abstract class ComparisonOperator extends OldOracleJoinBinaryExpression {
 
-public class GreaterThanEquals extends ComparisonOperator {
+    private final String operator;
 
-	public GreaterThanEquals() {
-		super(">=");
-	}
+    public ComparisonOperator(String operator) {
+        this.operator = operator;
+    }
 
-	public GreaterThanEquals(String operator) {
-		super(operator);
-	}
-
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public String getStringExpression() {
+        return operator;
+    }
 }

@@ -25,6 +25,7 @@ import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.util.deparser.*;
 
 import java.io.*;
+import java.util.regex.Pattern;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.TestCase.assertEquals;
@@ -41,6 +42,8 @@ import org.junit.Test;
  * @author toben
  */
 public class TestUtils {
+
+    private static final Pattern SQL_COMMENT_PATTERN = Pattern.compile("(--.*$)|(/\\*.*?\\*/)",Pattern.MULTILINE);
 
     public static void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(statement, false);
@@ -72,8 +75,9 @@ public class TestUtils {
         assertEquals(buildSqlString(statement, laxDeparsingCheck), 
                 buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
     }
-
+    
     public static String buildSqlString(String sql, boolean laxDeparsingCheck) {
+    	sql = SQL_COMMENT_PATTERN.matcher(sql).replaceAll("");
         if (laxDeparsingCheck) {
             return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
         } else {

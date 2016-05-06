@@ -24,6 +24,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.parser.TokenMgrError;
+
 import static net.sf.jsqlparser.test.TestUtils.*;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.assertTrue;
@@ -63,6 +66,9 @@ public class SpecialOracleTest {
                 } catch (JSQLParserException ex) {
                     //LOG.log(Level.SEVERE, null, ex);
                     LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
+                } catch (TokenMgrError ex) {
+                    //LOG.log(Level.SEVERE, null, ex);
+                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
                 } catch (Exception ex) {
                     LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
                 }
@@ -70,7 +76,7 @@ public class SpecialOracleTest {
         }
 
         LOG.log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
-        assertTrue(success >= 129);
+        assertTrue(success >= 130);
     }
 
     @Test
@@ -88,5 +94,62 @@ public class SpecialOracleTest {
                 LOG.log(Level.SEVERE, null, ex);
             }
         }
+    }
+        
+    @Test
+    public void testOperatorsWithSpaces() throws Exception {
+    	String sql;
+    	Statement statement;
+    	
+    	// First, the regular way (normal for most databases).
+    	sql = "SELECT\n"
+        		+ "    Something\n"
+        		+ "FROM\n"
+        		+ "    Sometable\n"
+				+ "WHERE\n"
+				+ "    Somefield >= Somevalue\n"
+				+ "    AND Somefield <= Somevalue\n"
+				+ "    AND Somefield <> Somevalue\n"
+				+ "    AND Somefield != Somevalue\n";
+
+        statement = CCJSqlParserUtil.parse(sql);
+        
+        System.out.println(statement.toString());
+        
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+        
+        // Second, the special crap Oracle lets you get away with.
+        sql = "SELECT\n"
+        		+ "    Something\n"
+        		+ "FROM\n"
+        		+ "    Sometable\n"
+				+ "WHERE\n"
+				+ "    Somefield > = Somevalue\n"
+				+ "    AND Somefield < = Somevalue\n"
+				+ "    AND Somefield < > Somevalue\n";
+        
+        // Note, we do not (currently) test the "!=" with spaces in between -- Postgresql deals with this as two operators, "factorial" and "equals".
+
+        statement = CCJSqlParserUtil.parse(sql);
+        
+        System.out.println(statement.toString());
+        
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+        
+        // And then with multiple whitespace
+        sql = "SELECT\n"
+        		+ "    Something\n"
+        		+ "FROM\n"
+        		+ "    Sometable\n"
+				+ "WHERE\n"
+				+ "    Somefield > \t = Somevalue\n"
+				+ "    AND Somefield <   = Somevalue\n"
+				+ "    AND Somefield <\t\t> Somevalue\n";
+
+        statement = CCJSqlParserUtil.parse(sql);
+        
+        System.out.println(statement.toString());
+        
+        assertSqlCanBeParsedAndDeparsed(sql, true);
     }
 }
