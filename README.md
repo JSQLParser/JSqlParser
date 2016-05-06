@@ -45,6 +45,7 @@ Also I would like to know about needed examples or documentation stuff.
 * allowed negative interval expressions like **INTERVAL -420 MINUTES**.
 * support for **ALTER VIEW** statements
 * improved merge statement
+* support for non standard syntax *>  =*, *<  =* and *<  >* (with whitespaces between)
 
 ## Extensions of JSqlParser releases
 
