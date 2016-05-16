@@ -2184,4 +2184,8 @@ public class SelectTest extends TestCase {
     public void testEscapedBackslashIssue253() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT replace_regex('test', '\\\\', '\\\\\\\\')");
     }
+    
+    public void testKeywordTableIssue261() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT column_value FROM table(VARCHAR_LIST_TYPE())");
+    }
 }

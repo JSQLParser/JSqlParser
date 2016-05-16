@@ -677,6 +677,7 @@ String RelObjectName() :
       | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>
       | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_VALUES> | tk=<K_PERCENT> | tk=<K_PRIOR>
 	  | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
+      | tk=<K_TABLE>
       )
 
     { return tk.image; }
