@@ -42,6 +42,12 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.6
 
+* improved **top** expression
+
+```java
+SELECT TOP (? + 1) * FROM MyTable
+```
+
 * allowed negative interval expressions like **INTERVAL -420 MINUTES**.
 * support for **ALTER VIEW** statements
 * improved merge statement

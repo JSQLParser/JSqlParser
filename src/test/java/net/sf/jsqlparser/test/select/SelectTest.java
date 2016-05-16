@@ -398,12 +398,12 @@ public class SelectTest extends TestCase {
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(3, ((PlainSelect) select.getSelectBody()).getTop().getRowCount());
+        assertEquals(3, ((LongValue)((PlainSelect) select.getSelectBody()).getTop().getExpression()).getValue());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "select top 5 foo from bar";
         select = (Select) parserManager.parse(new StringReader(statement));
-        assertEquals(5, ((PlainSelect) select.getSelectBody()).getTop().getRowCount());
+        assertEquals(5, ((LongValue)((PlainSelect) select.getSelectBody()).getTop().getExpression()).getValue());
     }
 
     public void testTopWithParenthesis() throws JSQLParserException {
@@ -415,8 +415,7 @@ public class SelectTest extends TestCase {
         final PlainSelect selectBody = (PlainSelect) select.getSelectBody();
 
         final Top top = selectBody.getTop();
-        assertEquals(5, top.getRowCount());
-        assertFalse(top.isRowCountJdbcParameter());
+        assertEquals("5", top.getExpression().toString());
         assertTrue(top.hasParenthesis());
         assertTrue(top.isPercentage());
 
@@ -2187,5 +2186,13 @@ public class SelectTest extends TestCase {
     
     public void testKeywordTableIssue261() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT column_value FROM table(VARCHAR_LIST_TYPE())");
+    }
+    
+    public void testTopExpressionIssue243() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT TOP (? + 1) * FROM MyTable");
+    }
+    
+    public void testTopExpressionIssue243_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT TOP (CAST(? AS INT)) * FROM MyTable");
     }
 }

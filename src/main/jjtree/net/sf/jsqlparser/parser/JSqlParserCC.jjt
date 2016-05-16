@@ -1439,17 +1439,17 @@ Top Top():
 {
 	Top top = new Top();
 	Token token = null;
+    Expression expr = null;
 }
 {
 	<K_TOP>
 	(
-	 	token=<S_LONG>                      { top.setRowCount(Long.parseLong(token.image)); }
+	 	token=<S_LONG>                      { top.setExpression(new LongValue(token.image)); }
 	   |
-	 	"?"                                 { top.setRowCountJdbcParameter(true);}
+	 	"?"                                 { top.setExpression(new JdbcParameter()); }
 	   |
 	   "("
-            ( token=<S_LONG>                { top.setRowCount(Long.parseLong(token.image)); }
-              | "?"                         { top.setRowCountJdbcParameter(true);} )
+            expr=AdditiveExpression()   { top.setExpression(expr); }
             { top.setParenthesis(true);}
        ")"
 	) [ LOOKAHEAD(2) <K_PERCENT>            { top.setPercentage(true); } ] 
