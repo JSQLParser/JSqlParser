@@ -39,6 +39,7 @@ public class Join {
 	private boolean inner = false;
 	private boolean simple = false;
 	private boolean cross = false;
+	private boolean semi = false;
 	private FromItem rightItem;
 	private Expression onExpression;
 	private List<Column> usingColumns;
@@ -81,6 +82,15 @@ public class Join {
 	public void setOuter(boolean b) {
 		outer = b;
 	}
+
+	/**
+	 * Whether is a "SEMI" join
+	 *
+	 * @return true if is a "SEMI" join
+	 */
+	public boolean isSemi() { return semi; }
+
+	public void setSemi(boolean b) { semi = b; }
 
 	/**
 	 * Whether is a "LEFT" join
@@ -199,6 +209,8 @@ public class Join {
 				type += "OUTER ";
 			} else if (isInner()) {
 				type += "INNER ";
+			} else if (isSemi()) {
+				type += "SEMI ";
 			}
 
 			return type + "JOIN " + rightItem + ((onExpression != null) ? " ON " + onExpression + "" : "")

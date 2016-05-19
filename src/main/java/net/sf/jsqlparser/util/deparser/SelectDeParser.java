@@ -338,6 +338,8 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
                 buffer.append(" OUTER");
             } else if (join.isInner()) {
                 buffer.append(" INNER");
+            } else if (join.isSemi()) {
+                buffer.append(" SEMI");
             }
 
             buffer.append(" JOIN ");
