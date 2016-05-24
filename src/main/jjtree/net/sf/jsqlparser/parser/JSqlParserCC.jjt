@@ -232,6 +232,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_DELAYED : "DELAYED">
 |	<K_HIGH_PRIORITY : "HIGH_PRIORITY">
 |	<K_IGNORE : "IGNORE">
+|   <K_SEMI : "SEMI">
 }
 
 TOKEN : /* Operators */
@@ -1224,9 +1225,9 @@ Join JoinerExpression():
 	List<Column> columns = null;
 }
 {
-    [   
-           ( <K_LEFT> { join.setLeft(true); }
-  		   | <K_RIGHT> { join.setRight(true); }
+    [
+  		<K_LEFT> { join.setLeft(true); } [ <K_SEMI> { join.setSemi(true); } | <K_OUTER> { join.setOuter(true); } ]
+  		|  ( <K_RIGHT> { join.setRight(true); }
   		   | <K_FULL> { join.setFull(true); } 
            ) [ <K_OUTER> { join.setOuter(true); } ]
         | <K_INNER> { join.setInner(true); }
