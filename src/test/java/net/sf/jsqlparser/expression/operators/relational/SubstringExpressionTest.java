@@ -43,13 +43,47 @@ public class SubstringExpressionTest {
 	 * Test of {@link SubstringExpression#toString()}
 	 */
 	@Test
-	public void testToString() {
+	public void testToStringDefault() {
 		String str = subStrExpr.toString();
 
 		String regEx = "(?i)SUBSTRING\\([ \\r\\n\\t]*"
 				+ sourceVal
 				+ "[ \\r\\n\\t]+FROM[ \\r\\n\\t]+"
 				+ fromVal
+				+ "[ \\r\\n\\t]+FOR+[ \\r\\n\\t]+"
+				+ forVal
+				+ "[ \\r\\n\\t]*\\)";
+
+		assertTrue(str.matches(regEx));
+	}
+
+	/**
+	 * Test of {@link SubstringExpression#toString()} only with FROM parameter
+	 */
+	@Test
+	public void testToStringOnlyFrom() {
+		subStrExpr.setForExpression(null);
+		String str = subStrExpr.toString();
+
+		String regEx = "(?i)SUBSTRING\\([ \\r\\n\\t]*"
+				+ sourceVal
+				+ "[ \\r\\n\\t]+FROM[ \\r\\n\\t]+"
+				+ fromVal
+				+ "[ \\r\\n\\t]*\\)";
+
+		assertTrue(str.matches(regEx));
+	}
+
+	/**
+	 * Test of {@link SubstringExpression#toString()} only with FOR parameter
+	 */
+	@Test
+	public void testToStringOnlyFor() {
+		subStrExpr.setFromExpression(null);
+		String str = subStrExpr.toString();
+
+		String regEx = "(?i)SUBSTRING\\([ \\r\\n\\t]*"
+				+ sourceVal
 				+ "[ \\r\\n\\t]+FOR+[ \\r\\n\\t]+"
 				+ forVal
 				+ "[ \\r\\n\\t]*\\)";
