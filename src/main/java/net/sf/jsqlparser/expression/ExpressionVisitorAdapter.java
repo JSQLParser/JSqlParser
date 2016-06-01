@@ -457,7 +457,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
     
     @Override
-    public void visit(PostgreSQLFromForExpression postgreSQLFromForExpression) {
+    public void visit(SubstringExpression substringExpression) {
     	
     }
         

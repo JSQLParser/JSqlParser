@@ -653,10 +653,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
     
     @Override
-    public void visit(PostgreSQLFromForExpression postgreSQLFromForExpression) {
-    	postgreSQLFromForExpression.getSourceExpression().accept(this);
-    	postgreSQLFromForExpression.getFromExpression().accept(this);
-    	postgreSQLFromForExpression.getForExpression().accept(this);
+    public void visit(SubstringExpression substringExpression) {
+    	substringExpression.getSourceExpression().accept(this);
+    	substringExpression.getFromExpression().accept(this);
+    	substringExpression.getForExpression().accept(this);
     }
 
 }

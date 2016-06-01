@@ -5,8 +5,8 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.*;
 import static net.sf.jsqlparser.test.TestUtils.*;
 
-public class PostgreSQLFromForExpressionTest extends TestCase {
-    public PostgreSQLFromForExpressionTest(String arg0) {
+public class SubstringExpressionTest extends TestCase {
+    public SubstringExpressionTest(String arg0) {
         super(arg0);
     }
     

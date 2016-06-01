@@ -1718,9 +1718,9 @@ Expression Between() :
 	}
 }
 
-Expression PostgreSQLFromForExpression() :
+Expression SubstringExpression() :
 {
-	PostgreSQLFromForExpression result = new PostgreSQLFromForExpression();
+	SubstringExpression result = new SubstringExpression();
 	Expression sourceExpr = null;
 	Expression fromExpr = null;
 	Expression forExpr = null;
@@ -2054,7 +2054,7 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(ExtractExpression()) retval=ExtractExpression()
 
-	| LOOKAHEAD(PostgreSQLFromForExpression()) retval=PostgreSQLFromForExpression()
+	| LOOKAHEAD(SubstringExpression()) retval=SubstringExpression()
 
     | retval=MySQLGroupConcat()
 
