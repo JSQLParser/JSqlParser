@@ -1728,13 +1728,15 @@ Expression SubstringExpression() :
 {
 	<K_SUBSTR>
 	"("
-		sourceExpr=SimpleExpression() { result.setSourceExpression(sourceExpr); }
-		<K_FROM>
-		fromExpr=SimpleExpression() { result.setFromExpression(fromExpr); }
-		<K_FOR>
-		forExpr=SimpleExpression() { result.setForExpression(forExpr); }
+		sourceExpr=SimpleExpression()
+		[<K_FROM> fromExpr=SimpleExpression()]
+		[<K_FOR> forExpr=SimpleExpression()]
 	")"
 	{
+		result.setSourceExpression(sourceExpr);
+		result.setFromExpression(fromExpr);
+		result.setForExpression(forExpr);
+
 		return result;
 	}
 }
