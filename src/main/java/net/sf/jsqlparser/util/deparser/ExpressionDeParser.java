@@ -578,6 +578,8 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     
     @Override
     public void visit(PostgreSQLFromForExpression postgreSQLFromForExpression) {
+    	buffer.append("SUBSTRING(");
+    	
     	postgreSQLFromForExpression.getSourceExpression().accept(this);
     	
     	if (postgreSQLFromForExpression.hasFromExpression()) {
@@ -589,6 +591,8 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     		buffer.append(" FOR ");
     		postgreSQLFromForExpression.getForExpression().accept(this);
     	}
+    	
+    	buffer.append(")");
     }
     
 }

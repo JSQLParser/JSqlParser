@@ -233,6 +233,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_HIGH_PRIORITY : "HIGH_PRIORITY">
 |	<K_IGNORE : "IGNORE">
 |   <K_SEMI : "SEMI">
+|   <K_SUBSTR : "SUBSTRING">
 }
 
 TOKEN : /* Operators */
@@ -678,7 +679,7 @@ String RelObjectName() :
       | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>
       | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_VALUES> | tk=<K_PERCENT> | tk=<K_PRIOR>
 	  | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
-      | tk=<K_TABLE>
+      | tk=<K_TABLE> | tk=<K_SUBSTR>
       )
 
     { return tk.image; }
@@ -1720,19 +1721,20 @@ Expression Between() :
 Expression PostgreSQLFromForExpression() :
 {
 	PostgreSQLFromForExpression result = new PostgreSQLFromForExpression();
-	Expression sourceExpression = null;
-	Expression fromExpression = null;
-	Expression forExpression = null;
+	Expression sourceExpr = null;
+	Expression fromExpr = null;
+	Expression forExpr = null;
 }
 {
-	sourceExpression=SimpleExpression()
-		//TODO: [ <K_FROM> fromExpression=SimpleExpression() ] [ <K_FOR> forExpression=SimpleExpression() ]
-	    <K_FROM> fromExpression=SimpleExpression() <K_FOR> forExpression=SimpleExpression()
-
+	<K_SUBSTR>
+	"("
+		sourceExpr=SimpleExpression() { result.setSourceExpression(sourceExpr); }
+		<K_FROM>
+		fromExpr=SimpleExpression() { result.setFromExpression(fromExpr); }
+		<K_FOR>
+		forExpr=SimpleExpression() { result.setForExpression(forExpr); }
+	")"
 	{
-		result.setSourceExpression(sourceExpression);
-		result.setFromExpression(fromExpression);
-		result.setForExpression(forExpression);
 		return result;
 	}
 }
@@ -2051,6 +2053,8 @@ Expression PrimaryExpression():
     | LOOKAHEAD(WithinGroupExpression()) retval=WithinGroupExpression()
 
 	| LOOKAHEAD(ExtractExpression()) retval=ExtractExpression()
+
+	| LOOKAHEAD(PostgreSQLFromForExpression()) retval=PostgreSQLFromForExpression()
 
     | retval=MySQLGroupConcat()
 
@@ -2416,7 +2420,6 @@ Function Function():
 	Function retval = new Function();
 	String funcName = null;
 	String tmp = null;
-	Expression fromForExpression = null;
 	ExpressionList expressionList = null;
     KeepExpression keep = null;
 }
@@ -2426,7 +2429,7 @@ Function Function():
 	funcName=RelObjectNameExt()
 
     [ "." tmp=RelObjectNameExt() { funcName+= "." + tmp; } ["." tmp=RelObjectNameExt() { funcName+= "." + tmp; }]]
-    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] ( LOOKAHEAD(PostgreSQLFromForExpression()) fromForExpression=PostgreSQLFromForExpression() | LOOKAHEAD(SimpleExpressionList())expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }) ] ")"
+    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] (expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }) ] ")"
 
     [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]
 
@@ -2434,13 +2437,6 @@ Function Function():
 
     ["}"]
     {
-		if (fromForExpression != null)
-		{
-			List<Expression> expressions = new ArrayList<Expression>();
-			expressions.add(fromForExpression);
-			expressionList = new ExpressionList();
-			expressionList.setExpressions(expressions);
-		}
 	    retval.setParameters(expressionList);
 	    retval.setName(funcName);
         retval.setKeep(keep);

@@ -69,8 +69,11 @@ public class PostgreSQLFromForExpression implements Expression {
 
 	@Override
 	public String toString() {
-		return sourceExpression + (fromExpression != null ? " FROM " + fromExpression : "")
-				+ (forExpression != null ? " FOR " + forExpression : "");
+		return
+				"SUBSTRING(" + sourceExpression
+				+ (fromExpression != null ? " FROM " + fromExpression : "")
+				+ (forExpression != null ? " FOR " + forExpression : "")
+				+ ")";
 	}
 
 }
