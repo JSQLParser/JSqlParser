@@ -457,18 +457,23 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
-    public void visit(SubstringExpression substringExpression) {
+    public void visit(SubstringExpression substrExpr) {
 
     }
 
 
     @Override
-    public void visit(CurrentTimestampExpression currentTimestampExpression) {
+    public void visit(CurrentTimestampExpression currTimestampExpr) {
 
     }
 
     @Override
-    public void visit(CurrentDateExpression currentDateExpression) {
+    public void visit(CurrentTimeExpression currTimeExpr) {
+
+    }
+
+    @Override
+    public void visit(CurrentDateExpression currDateExpr) {
 
     }
 
