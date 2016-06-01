@@ -577,19 +577,19 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     }
 
     @Override
-    public void visit(SubstringExpression substringExpression) {
+    public void visit(SubstringExpression substrExpr) {
     	buffer.append("SUBSTRING(");
 
-    	substringExpression.getSourceExpression().accept(this);
+    	substrExpr.getSourceExpression().accept(this);
 
-    	if (substringExpression.hasFromExpression()) {
+    	if (substrExpr.hasFromExpression()) {
     		buffer.append(" FROM ");
-    		substringExpression.getFromExpression().accept(this);
+    		substrExpr.getFromExpression().accept(this);
     	}
 
-    	if (substringExpression.hasForExpression()) {
+    	if (substrExpr.hasForExpression()) {
     		buffer.append(" FOR ");
-    		substringExpression.getForExpression().accept(this);
+    		substrExpr.getForExpression().accept(this);
     	}
 
     	buffer.append(")");
@@ -597,13 +597,18 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
 
     @Override
-    public void visit(CurrentTimestampExpression currentTimestampExpression) {
-        buffer.append(currentTimestampExpression.toString());
+    public void visit(CurrentTimestampExpression currTimestampExpr) {
+        buffer.append(currTimestampExpr.toString());
     }
 
     @Override
-    public void visit(CurrentDateExpression currentDateExpression) {
-        buffer.append(currentDateExpression.toString());
+    public void visit(CurrentTimeExpression currTimeExpr) {
+        buffer.append(currTimeExpr.toString());
+    }
+
+    @Override
+    public void visit(CurrentDateExpression currDateExpr) {
+        buffer.append(currDateExpr.toString());
     }
 
 }

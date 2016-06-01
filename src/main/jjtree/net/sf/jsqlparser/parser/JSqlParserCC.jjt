@@ -235,6 +235,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SEMI : "SEMI">
 |   <K_SUBSTR : "SUBSTRING">
 |   <K_CURRENT_TIMESTAMP_KEY : "CURRENT_TIMESTAMP" ( "()" )?>
+|   <K_CURRENT_TIME_KEY : "CURRENT_TIME" ( "()" )?>
 |   <K_CURRENT_DATE_KEY : "CURRENT_DATE" ( "()" )?>
 }
 
@@ -2076,6 +2077,7 @@ Expression PrimaryExpression():
 
     // support timestamp expressions
 	| token=<K_CURRENT_TIMESTAMP_KEY> { retval = new CurrentTimestampExpression(token.image); }
+	| token=<K_CURRENT_TIME_KEY> { retval = new CurrentTimeExpression(token.image); }
 	| token=<K_CURRENT_DATE_KEY> { retval = new CurrentDateExpression(token.image); }
 
 	| LOOKAHEAD(["+" | "-"] Column())         [sign="+" | sign="-"] retval=Column()
@@ -2824,6 +2826,8 @@ String CreateParameter():
             tk=<K_UPDATE> { retval = tk.image; }
             |
             tk=<K_CURRENT_TIMESTAMP_KEY> { retval = new CurrentTimestampExpression(tk.image).toString(); }
+            |
+			tk=<K_CURRENT_TIME_KEY> { retval = new CurrentTimeExpression(tk.image).toString(); }
             |
 			tk=<K_CURRENT_DATE_KEY> { retval = new CurrentDateExpression(tk.image).toString(); }
             |
