@@ -455,5 +455,15 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(OracleHint hint) {
 
     }
-        
+
+    @Override
+    public void visit(CurrentTimestampExpression currentTimestampExpression) {
+
+    }
+
+    @Override
+    public void visit(CurrentDateExpression currentDateExpression) {
+
+    }
+
 }
