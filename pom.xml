@@ -166,6 +166,7 @@
                     <localCheckout>true</localCheckout>
                     <pushChanges>false</pushChanges>
                     <mavenExecutorId>forked-path</mavenExecutorId>
+                    <arguments>-Drelease.deployment.url=${release.deployment.url}</arguments>
                 </configuration>
                 <dependencies>
                     <dependency>
