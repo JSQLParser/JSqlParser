@@ -165,7 +165,11 @@ public interface ExpressionVisitor {
     void visit(RowConstructor rowConstructor);
     
     void visit(OracleHint hint);
-    
+
     void visit(SubstringExpression substringExpression);
-    
+
+    void visit(CurrentTimestampExpression currentTimestampExpression);
+
+	void visit(CurrentDateExpression currentDateExpressionExpression);
+
 }

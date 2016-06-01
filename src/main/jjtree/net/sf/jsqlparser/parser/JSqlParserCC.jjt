@@ -234,6 +234,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_IGNORE : "IGNORE">
 |   <K_SEMI : "SEMI">
 |   <K_SUBSTR : "SUBSTRING">
+|   <K_CURRENT_TIMESTAMP_KEY : "CURRENT_TIMESTAMP" ( "()" )?>
+|   <K_CURRENT_DATE_KEY : "CURRENT_DATE" ( "()" )?>
 }
 
 TOKEN : /* Operators */
@@ -2072,6 +2074,10 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(2) [sign="+" | sign="-"] retval=CastExpression()
 
+    // support timestamp expressions
+	| token=<K_CURRENT_TIMESTAMP_KEY> { retval = new CurrentTimestampExpression(token.image); }
+	| token=<K_CURRENT_DATE_KEY> { retval = new CurrentDateExpression(token.image); }
+
 	| LOOKAHEAD(["+" | "-"] Column())         [sign="+" | sign="-"] retval=Column()
 
 	| LOOKAHEAD(["+" | "-"] "(" BitwiseAndOr() ")") [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
@@ -2816,6 +2822,10 @@ String CreateParameter():
             tk=<K_DELETE> { retval = tk.image; } 
             |
             tk=<K_UPDATE> { retval = tk.image; }
+            |
+            tk=<K_CURRENT_TIMESTAMP_KEY> { retval = new CurrentTimestampExpression(tk.image).toString(); }
+            |
+			tk=<K_CURRENT_DATE_KEY> { retval = new CurrentDateExpression(tk.image).toString(); }
             |
 			"=" { retval = "="; }
 			|

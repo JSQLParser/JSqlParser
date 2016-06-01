@@ -644,6 +644,14 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
+    public void visit(CurrentTimestampExpression currentTimestampExpression) {
+    }
+
+    @Override
+    public void visit(CurrentDateExpression currentDateExpression) {
+    }
+
+    @Override
     public void visit(TableFunction valuesList) {
     }
 
