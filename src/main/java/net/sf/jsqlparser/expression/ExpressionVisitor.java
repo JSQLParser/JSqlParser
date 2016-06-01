@@ -166,10 +166,12 @@ public interface ExpressionVisitor {
     
     void visit(OracleHint hint);
 
-    void visit(SubstringExpression substringExpression);
+    void visit(SubstringExpression substrExpr);
 
-    void visit(CurrentTimestampExpression currentTimestampExpression);
+    void visit(CurrentTimestampExpression currTimestampExpr);
 
-	void visit(CurrentDateExpression currentDateExpressionExpression);
+	void visit(CurrentTimeExpression currTimeExpr);
+
+	void visit(CurrentDateExpression currDateExpr);
 
 }

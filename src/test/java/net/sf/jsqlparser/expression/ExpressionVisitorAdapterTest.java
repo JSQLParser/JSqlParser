@@ -152,6 +152,25 @@ public class ExpressionVisitorAdapterTest {
     }
 
     @Test
+    public void testCurrentTimeExpression() throws JSQLParserException{
+        final List<String> columnList = new ArrayList<String>();
+        Select select = (Select) CCJSqlParserUtil.parse( "select * from foo where bar < CURRENT_TIME" );
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        Expression where = plainSelect.getWhere();
+        where.accept(new ExpressionVisitorAdapter() {
+
+            @Override
+            public void visit(Column column) {
+                super.visit(column);
+                columnList.add(column.getColumnName());
+            }
+        });
+
+        assertEquals(1, columnList.size());
+        assertEquals("bar", columnList.get(0));
+    }
+
+    @Test
     public void testCurrentDateExpression() throws JSQLParserException{
         final List<String> columnList = new ArrayList<String>();
         Select select = (Select) CCJSqlParserUtil.parse( "select * from foo where bar < CURRENT_DATE" );

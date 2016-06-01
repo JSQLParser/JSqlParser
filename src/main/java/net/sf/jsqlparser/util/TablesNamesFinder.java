@@ -644,14 +644,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(CurrentTimestampExpression currentTimestampExpression) {
-    }
-
-    @Override
-    public void visit(CurrentDateExpression currentDateExpression) {
-    }
-
-    @Override
     public void visit(TableFunction valuesList) {
     }
 
@@ -665,6 +657,18 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     	substringExpression.getSourceExpression().accept(this);
     	substringExpression.getFromExpression().accept(this);
     	substringExpression.getForExpression().accept(this);
+    }
+
+    @Override
+    public void visit(CurrentTimestampExpression currTimestampExpr) {
+    }
+
+    @Override
+    public void visit(CurrentTimeExpression currTimeExpr) {
+    }
+
+    @Override
+    public void visit(CurrentDateExpression currDateExpr) {
     }
 
 }
