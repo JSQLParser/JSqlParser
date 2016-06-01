@@ -576,4 +576,23 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         buffer.append(hint.toString());
     }
     
+    @Override
+    public void visit(SubstringExpression substringExpression) {
+    	buffer.append("SUBSTRING(");
+    	
+    	substringExpression.getSourceExpression().accept(this);
+    	
+    	if (substringExpression.hasFromExpression()) {
+    		buffer.append(" FROM ");
+    		substringExpression.getFromExpression().accept(this);
+    	}
+    	
+    	if (substringExpression.hasForExpression()) {
+    		buffer.append(" FOR ");
+    		substringExpression.getForExpression().accept(this);
+    	}
+    	
+    	buffer.append(")");
+    }
+    
 }

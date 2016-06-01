@@ -233,6 +233,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_HIGH_PRIORITY : "HIGH_PRIORITY">
 |	<K_IGNORE : "IGNORE">
 |   <K_SEMI : "SEMI">
+|   <K_SUBSTR : "SUBSTRING">
 }
 
 TOKEN : /* Operators */
@@ -678,7 +679,7 @@ String RelObjectName() :
       | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>
       | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_VALUES> | tk=<K_PERCENT> | tk=<K_PRIOR>
 	  | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
-      | tk=<K_TABLE>
+      | tk=<K_TABLE> | tk=<K_SUBSTR>
       )
 
     { return tk.image; }
@@ -1717,6 +1718,29 @@ Expression Between() :
 	}
 }
 
+Expression SubstringExpression() :
+{
+	SubstringExpression result = new SubstringExpression();
+	Expression sourceExpr = null;
+	Expression fromExpr = null;
+	Expression forExpr = null;
+}
+{
+	<K_SUBSTR>
+	"("
+		sourceExpr=SimpleExpression()
+		[<K_FROM> fromExpr=SimpleExpression()]
+		[<K_FOR> forExpr=SimpleExpression()]
+	")"
+	{
+		result.setSourceExpression(sourceExpr);
+		result.setFromExpression(fromExpr);
+		result.setForExpression(forExpr);
+
+		return result;
+	}
+}
+
 Expression LikeExpression() :
 {
 	LikeExpression result = new LikeExpression();
@@ -2031,6 +2055,8 @@ Expression PrimaryExpression():
     | LOOKAHEAD(WithinGroupExpression()) retval=WithinGroupExpression()
 
 	| LOOKAHEAD(ExtractExpression()) retval=ExtractExpression()
+
+	| LOOKAHEAD(SubstringExpression()) retval=SubstringExpression()
 
     | retval=MySQLGroupConcat()
 
