@@ -1717,6 +1717,26 @@ Expression Between() :
 	}
 }
 
+Expression PostgreSQLFromForExpression() :
+{
+	PostgreSQLFromForExpression result = new PostgreSQLFromForExpression();
+	Expression sourceExpression = null;
+	Expression fromExpression = null;
+	Expression forExpression = null;
+}
+{
+	sourceExpression=SimpleExpression()
+		//TODO: [ <K_FROM> fromExpression=SimpleExpression() ] [ <K_FOR> forExpression=SimpleExpression() ]
+	    <K_FROM> fromExpression=SimpleExpression() <K_FOR> forExpression=SimpleExpression()
+
+	{
+		result.setSourceExpression(sourceExpression);
+		result.setFromExpression(fromExpression);
+		result.setForExpression(forExpression);
+		return result;
+	}
+}
+
 Expression LikeExpression() :
 {
 	LikeExpression result = new LikeExpression();
@@ -2396,6 +2416,7 @@ Function Function():
 	Function retval = new Function();
 	String funcName = null;
 	String tmp = null;
+	Expression fromForExpression = null;
 	ExpressionList expressionList = null;
     KeepExpression keep = null;
 }
@@ -2405,7 +2426,7 @@ Function Function():
 	funcName=RelObjectNameExt()
 
     [ "." tmp=RelObjectNameExt() { funcName+= "." + tmp; } ["." tmp=RelObjectNameExt() { funcName+= "." + tmp; }]]
-    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] (expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }) ] ")"
+    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] ( LOOKAHEAD(PostgreSQLFromForExpression()) fromForExpression=PostgreSQLFromForExpression() | LOOKAHEAD(SimpleExpressionList())expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }) ] ")"
 
     [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]
 
@@ -2413,6 +2434,13 @@ Function Function():
 
     ["}"]
     {
+		if (fromForExpression != null)
+		{
+			List<Expression> expressions = new ArrayList<Expression>();
+			expressions.add(fromForExpression);
+			expressionList = new ExpressionList();
+			expressionList.setExpressions(expressions);
+		}
 	    retval.setParameters(expressionList);
 	    retval.setName(funcName);
         retval.setKeep(keep);

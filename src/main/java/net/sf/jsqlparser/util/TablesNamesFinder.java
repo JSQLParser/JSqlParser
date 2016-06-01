@@ -651,5 +651,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(AlterView alterView) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET); 
     }
+    
+    @Override
+    public void visit(PostgreSQLFromForExpression postgreSQLFromForExpression) {
+    	postgreSQLFromForExpression.getSourceExpression().accept(this);
+    	postgreSQLFromForExpression.getFromExpression().accept(this);
+    	postgreSQLFromForExpression.getForExpression().accept(this);
+    }
 
 }
