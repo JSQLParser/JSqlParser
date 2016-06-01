@@ -28,12 +28,15 @@ public class SubstringExpressionTest {
 
 		Expression sourceExpr = Mockito.mock(Expression.class);
 		Mockito.when(sourceExpr.toString()).thenReturn(sourceVal);
+		subStrExpr.setSourceExpression(sourceExpr);
 
 		Expression fromExpr = Mockito.mock(Expression.class);
 		Mockito.when(fromExpr.toString()).thenReturn(Integer.toString(fromVal));
+		subStrExpr.setFromExpression(fromExpr);
 
 		Expression forExpr = Mockito.mock(Expression.class);
 		Mockito.when(forExpr.toString()).thenReturn(Integer.toString(forVal));
+		subStrExpr.setForExpression(forExpr);
 	}
 
 	/**
@@ -43,13 +46,13 @@ public class SubstringExpressionTest {
 	public void testToString() {
 		String str = subStrExpr.toString();
 
-		String regEx = "SUBSTRING\\([ \\r\\n\\t]*"
+		String regEx = "(?i)SUBSTRING\\([ \\r\\n\\t]*"
 				+ sourceVal
 				+ "[ \\r\\n\\t]+FROM[ \\r\\n\\t]+"
 				+ fromVal
 				+ "[ \\r\\n\\t]+FOR+[ \\r\\n\\t]+"
 				+ forVal
-				+ "[ \\r\\n\\t]*\\)/i";
+				+ "[ \\r\\n\\t]*\\)";
 
 		assertTrue(str.matches(regEx));
 	}
