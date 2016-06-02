@@ -21,11 +21,11 @@
  */
 package net.sf.jsqlparser.expression;
 
-public class CurrentTimestampExpression implements Expression {
+public class TimeKeyExpression implements Expression {
 
     private String stringValue;
 
-    public CurrentTimestampExpression(final String value) {
+    public TimeKeyExpression(final String value) {
         this.stringValue = value;
     }
 

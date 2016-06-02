@@ -595,20 +595,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     	buffer.append(")");
     }
 
-
     @Override
-    public void visit(CurrentTimestampExpression currTimestampExpr) {
-        buffer.append(currTimestampExpr.toString());
-    }
-
-    @Override
-    public void visit(CurrentTimeExpression currTimeExpr) {
-        buffer.append(currTimeExpr.toString());
-    }
-
-    @Override
-    public void visit(CurrentDateExpression currDateExpr) {
-        buffer.append(currDateExpr.toString());
+    public void visit(TimeKeyExpression timeKeyExpression) {
+        buffer.append(timeKeyExpression.toString());
     }
 
 }

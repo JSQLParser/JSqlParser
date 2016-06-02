@@ -660,15 +660,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(CurrentTimestampExpression currTimestampExpr) {
-    }
-
-    @Override
-    public void visit(CurrentTimeExpression currTimeExpr) {
-    }
-
-    @Override
-    public void visit(CurrentDateExpression currDateExpr) {
+    public void visit(TimeKeyExpression timeKeyExpression) {
     }
 
 }

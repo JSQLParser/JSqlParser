@@ -168,10 +168,6 @@ public interface ExpressionVisitor {
 
     void visit(SubstringExpression substrExpr);
 
-    void visit(CurrentTimestampExpression currTimestampExpr);
-
-	void visit(CurrentTimeExpression currTimeExpr);
-
-	void visit(CurrentDateExpression currDateExpr);
+    void visit(TimeKeyExpression timeKeyExpression);
 
 }
