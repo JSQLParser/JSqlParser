@@ -692,7 +692,22 @@ String RelObjectNameExt():
   String result=null;
 } 
 {
-    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> )
+    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>)
+    {
+        if (tk!=null) result=tk.image;
+        return result;
+    }
+}
+
+/*
+Extended usage of object names - part 2.
+*/
+String RelObjectNameExt2():
+{ Token tk = null;
+  String result=null;
+} 
+{
+    ( result=RelObjectNameExt() | tk=<K_TOP>)
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -2093,13 +2108,13 @@ JdbcNamedParameter JdbcNamedParameter() : {
 
 UserVariable UserVariable() : {
     UserVariable var = new UserVariable();
-	Token token;
+	String varName;
 }
 {
     ("@" | "@@" { var.setDoubleAdd(true);} )
-    token=<S_IDENTIFIER> 
+    varName=RelObjectNameExt2() 
     { 
-        var.setName(token.image); 
+        var.setName(varName); 
         return var; 
     }
 }

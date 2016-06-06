@@ -2195,4 +2195,8 @@ public class SelectTest extends TestCase {
     public void testTopExpressionIssue243_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT TOP (CAST(? AS INT)) * FROM MyTable");
     }
+    
+    public void testKeywordTop() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT @top");
+    }
 }
