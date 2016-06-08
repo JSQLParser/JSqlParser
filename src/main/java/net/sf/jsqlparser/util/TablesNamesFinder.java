@@ -652,4 +652,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET); 
     }
 
+    @Override
+    public void visit(TimeKeyExpression timeKeyExpression) {
+    }
 }

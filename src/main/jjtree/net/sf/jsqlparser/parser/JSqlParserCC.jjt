@@ -233,6 +233,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_HIGH_PRIORITY : "HIGH_PRIORITY">
 |	<K_IGNORE : "IGNORE">
 |   <K_SEMI : "SEMI">
+|   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
 }
 
 TOKEN : /* Operators */
@@ -2046,6 +2047,9 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(2) [sign="+" | sign="-"] retval=CastExpression()
 
+    // support timestamp expressions
+	| token=<K_TIME_KEY_EXPR> { retval = new TimeKeyExpression(token.image); }
+
 	| LOOKAHEAD(["+" | "-"] Column())         [sign="+" | sign="-"] retval=Column()
 
 	| LOOKAHEAD(["+" | "-"] "(" BitwiseAndOr() ")") [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
@@ -2790,6 +2794,8 @@ String CreateParameter():
             tk=<K_DELETE> { retval = tk.image; } 
             |
             tk=<K_UPDATE> { retval = tk.image; }
+            |
+            tk=<K_TIME_KEY_EXPR> { retval = new TimeKeyExpression(tk.image).toString(); }
             |
 			"=" { retval = "="; }
 			|

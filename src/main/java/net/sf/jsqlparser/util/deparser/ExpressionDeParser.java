@@ -575,5 +575,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     public void visit(OracleHint hint) {
         buffer.append(hint.toString());
     }
-    
+
+    @Override
+    public void visit(TimeKeyExpression timeKeyExpression) {
+        buffer.append(timeKeyExpression.toString());
+    }
+
 }
