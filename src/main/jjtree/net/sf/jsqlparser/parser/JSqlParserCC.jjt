@@ -234,7 +234,12 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_IGNORE : "IGNORE">
 |   <K_SEMI : "SEMI">
 |   <K_SUBSTR : "SUBSTRING">
+<<<<<<< HEAD
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
+=======
+|   <K_CURRENT_TIMESTAMP_KEY : "CURRENT_TIMESTAMP" ( "()" )?>
+|   <K_CURRENT_DATE_KEY : "CURRENT_DATE" ( "()" )?>
+>>>>>>> parent of 4926d34... Merge remote-tracking branch 'origin/master'
 }
 
 TOKEN : /* Operators */

@@ -662,5 +662,4 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(TimeKeyExpression timeKeyExpression) {
     }
-
 }

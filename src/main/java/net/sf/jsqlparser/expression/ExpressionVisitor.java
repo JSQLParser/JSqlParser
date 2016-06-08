@@ -166,7 +166,7 @@ public interface ExpressionVisitor {
     
     void visit(OracleHint hint);
 
-    void visit(SubstringExpression substrExpr);
+    void visit(SubstringExpression substringExpression);
 
     void visit(TimeKeyExpression timeKeyExpression);
 

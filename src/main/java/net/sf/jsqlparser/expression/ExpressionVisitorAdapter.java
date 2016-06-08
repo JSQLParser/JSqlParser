@@ -457,10 +457,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
-    public void visit(SubstringExpression substrExpr) {
+    public void visit(SubstringExpression substringExpression) {
 
     }
-
 
     @Override
     public void visit(TimeKeyExpression timeKeyExpression) {
