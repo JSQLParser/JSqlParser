@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>de.conterra.sql</groupId>
+    <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
     <version>0.9.6-SNAPSHOT</version>
     <name>JSQLParser library</name>
@@ -48,21 +48,19 @@
 
     <distributionManagement>
         <repository>
-            <id>ct-dist-releases-file</id>
-            <name>repository for sdi.suite releases</name>
-            <url>${release.deployment.url}</url>
+            <id>sonatype-nexus-staging</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
         <snapshotRepository>
-            <id>ct-dist-snapshots-file</id>
-            <name>repository for sdi.suite snapshots</name>
-            <url>${snapshot.deployment.url}</url>
+            <id>sonatype-nexus-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 
     <scm>
-        <connection>scm:git:https://github.com/conterra/JSqlParser.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:conterra/JSqlParser.git</developerConnection>
-        <url>https://github.com/conterra/JSqlParser.git</url>
+        <connection>scm:git:https://github.com/JSQLParser/JSqlParser.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:JSQLParser/JSqlParser.git</developerConnection>
+        <url>https://github.com/JSQLParser/JSqlParser.git</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -77,8 +75,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                     <showWarnings>true</showWarnings>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
