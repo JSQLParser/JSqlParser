@@ -44,7 +44,6 @@ import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
-import net.sf.jsqlparser.expression.operators.relational.SubstringExpression;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.schema.Column;
@@ -165,8 +164,6 @@ public interface ExpressionVisitor {
     void visit(RowConstructor rowConstructor);
     
     void visit(OracleHint hint);
-
-    void visit(SubstringExpression substringExpression);
 
     void visit(TimeKeyExpression timeKeyExpression);
 

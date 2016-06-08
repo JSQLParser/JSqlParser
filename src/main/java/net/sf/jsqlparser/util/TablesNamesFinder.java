@@ -651,13 +651,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(AlterView alterView) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET); 
     }
-    
-    @Override
-    public void visit(SubstringExpression substringExpression) {
-    	substringExpression.getSourceExpression().accept(this);
-    	substringExpression.getFromExpression().accept(this);
-    	substringExpression.getForExpression().accept(this);
-    }
 
     @Override
     public void visit(TimeKeyExpression timeKeyExpression) {
