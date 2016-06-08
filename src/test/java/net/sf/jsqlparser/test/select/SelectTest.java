@@ -1499,21 +1499,21 @@ public class SelectTest extends TestCase {
     }
 
     public void testAdditionalLettersGerman() throws JSQLParserException {
-        String stmt = "SELECT col\u00E4, col\u00F6, col\u00FC FROM testtable\u00E4\u00F6\u00FC";
+        String stmt = "SELECT colä, colö, colü FROM testtableäöü";
         assertSqlCanBeParsedAndDeparsed(stmt);
 
-        stmt = "SELECT col\u00C4, col\u00D6, col\u00DC FROM testtable\u00C4\u00D6\u00DC";
+        stmt = "SELECT colA, colÖ, colÜ FROM testtableÄÖÜ";
         assertSqlCanBeParsedAndDeparsed(stmt);
 
-        stmt = "SELECT \u00C4col FROM testtable\u00C4\u00D6\u00DC";
+        stmt = "SELECT Äcol FROM testtableÄÖÜ";
         assertSqlCanBeParsedAndDeparsed(stmt);
 
-        stmt = "SELECT \u00DFcol\u00DF FROM testtable\u00DF";
+        stmt = "SELECT ßcolß FROM testtableß";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
     public void testAdditionalLettersSpanish() throws JSQLParserException {
-        String stmt = "SELECT * FROM a\u00F1os";
+        String stmt = "SELECT * FROM años";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
