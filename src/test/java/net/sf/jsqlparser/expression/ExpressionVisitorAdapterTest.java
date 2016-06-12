@@ -24,6 +24,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import org.junit.After;
@@ -130,5 +131,42 @@ public class ExpressionVisitorAdapterTest {
         assertEquals(singleLine, holder[0].isSingleLine());
         assertEquals(hint, holder[0].getValue());
     }
-    
+
+    @Test
+    public void testCurrentTimestampExpression() throws JSQLParserException{
+        final List<String> columnList = new ArrayList<String>();
+        Select select = (Select) CCJSqlParserUtil.parse( "select * from foo where bar < CURRENT_TIMESTAMP" );
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        Expression where = plainSelect.getWhere();
+        where.accept(new ExpressionVisitorAdapter() {
+
+            @Override
+            public void visit(Column column) {
+                super.visit(column);
+                columnList.add(column.getColumnName());
+            }
+        });
+
+        assertEquals(1, columnList.size());
+        assertEquals("bar", columnList.get(0));
+    }
+
+    @Test
+    public void testCurrentDateExpression() throws JSQLParserException{
+        final List<String> columnList = new ArrayList<String>();
+        Select select = (Select) CCJSqlParserUtil.parse( "select * from foo where bar < CURRENT_DATE" );
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        Expression where = plainSelect.getWhere();
+        where.accept(new ExpressionVisitorAdapter() {
+
+            @Override
+            public void visit(Column column) {
+                super.visit(column);
+                columnList.add(column.getColumnName());
+            }
+        });
+
+        assertEquals(1, columnList.size());
+        assertEquals("bar", columnList.get(0));
+    }
 }
