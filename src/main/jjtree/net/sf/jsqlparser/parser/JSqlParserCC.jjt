@@ -370,6 +370,7 @@ Update Update():
 	Limit limit = null;
 	List<OrderByElement> orderByElements;
 	boolean useColumnsBrackets = false;
+	List<SelectExpressionItem> returning = null;
 }
 {
     <K_UPDATE> table=TableWithAlias() { tables.add(table); } 
@@ -398,6 +399,12 @@ Update Update():
 
    [ orderByElements = OrderByElements() { update.setOrderByElements(orderByElements); } ]
    [ limit = PlainLimit() { update.setLimit(limit); } ]
+   [ <K_RETURNING> (
+              "*" { update.setReturningAllColumns(true); }
+              | returning=ListExpressionItem()
+              )
+       ]
+
    {
    		update.setColumns(columns);
    		update.setExpressions(expList);
@@ -406,6 +413,7 @@ Update Update():
 		update.setJoins(joins);
 		update.setSelect(select);
 		update.setUseColumnsBrackets(useColumnsBrackets);
+		update.setReturningExpressionList(returning);
 		return update;
    }
 }

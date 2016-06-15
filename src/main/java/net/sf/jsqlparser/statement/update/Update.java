@@ -34,6 +34,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
 /**
  * The update statement.
@@ -51,6 +52,8 @@ public class Update implements Statement {
 	private boolean useSelect = false;
 	private List<OrderByElement> orderByElements;
 	private Limit limit;
+	private boolean returningAllColumns = false;
+	private List<SelectExpressionItem> returningExpressionList = null;
 
 	@Override
 	public void accept(StatementVisitor statementVisitor) {
@@ -157,6 +160,22 @@ public class Update implements Statement {
 		return limit;
 	}
 
+	public boolean isReturningAllColumns() {
+		return returningAllColumns;
+	}
+
+	public void setReturningAllColumns(boolean returningAllColumns) {
+		this.returningAllColumns = returningAllColumns;
+	}
+
+	public List<SelectExpressionItem> getReturningExpressionList() {
+		return returningExpressionList;
+	}
+
+	public void setReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
+		this.returningExpressionList = returningExpressionList;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder("UPDATE ");
@@ -210,6 +229,13 @@ public class Update implements Statement {
 		if (limit != null) {
 			b.append(limit);
 		}
+
+		if (isReturningAllColumns()) {
+			b.append(" RETURNING *");
+		} else if (getReturningExpressionList() != null) {
+			b.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
+		}
+
 		return b.toString();
 	}
 }
