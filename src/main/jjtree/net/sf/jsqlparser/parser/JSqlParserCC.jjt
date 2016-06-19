@@ -182,6 +182,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_FOREIGN:"FOREIGN">
 |	<K_CONSTRAINT:"CONSTRAINT">
 |	<K_REFERENCES:"REFERENCES">
+|   <K_CHECK:"CHECK">
 |	<K_CHARACTER:"CHARACTER">
 |	<K_VARYING:"VARYING">
 |	<K_START:"START">
@@ -1537,6 +1538,20 @@ First First():
 	}
 }
 
+
+Expression MandatoryExpression() #Expression :
+{
+	Expression retval = null;
+}
+{
+	(
+	LOOKAHEAD(3) retval=OrExpression() | "(" retval=MandatoryExpression() ")" {retval = new Parenthesis(retval); }
+	)
+
+    { return retval; }
+}
+
+
 Expression Expression() #Expression :
 {
 	Expression retval = null;
@@ -2572,6 +2587,7 @@ CreateTable CreateTable():
 	String parameter = null;
 	Table fkTable = null;
     Select select = null;
+    CheckConstraint checkCs = null;
 }
 {
 	<K_CREATE>
@@ -2650,7 +2666,7 @@ CreateTable CreateTable():
 						}
 				)
 				|
-				(
+				LOOKAHEAD(3)(
 					{
 						fkIndex = new ForeignKeyIndex();
 					}
@@ -2670,6 +2686,17 @@ CreateTable CreateTable():
                         [LOOKAHEAD(2) (<K_ON> <K_DELETE> (<K_CASCADE> {fkIndex.setOnDeleteReferenceOption("CASCADE");}|<K_NO> <K_ACTION> {fkIndex.setOnDeleteReferenceOption("NO ACTION");}))]
                         [LOOKAHEAD(2) (<K_ON> <K_UPDATE> (<K_CASCADE> {fkIndex.setOnUpdateReferenceOption("CASCADE");}|<K_NO> <K_ACTION> {fkIndex.setOnUpdateReferenceOption("NO ACTION");}))]
 				)
+				|
+             	LOOKAHEAD(3)(
+                    [<K_CONSTRAINT>  sk3 = RelObjectName()]
+                    {Expression exp = null;}
+                    <K_CHECK>  ("(" exp = Expression() ")")* {
+                       checkCs = new CheckConstraint();
+                       checkCs.setName(sk3);
+                       checkCs.setExpression(exp);
+                       indexes.add(checkCs);
+                       }
+                )
 				|
 				(
 					columnName=RelObjectName()
@@ -2951,7 +2978,7 @@ Alter AlterTable():
         (
             <K_CONSTRAINT> sk3=RelObjectName() 
 
-            ( ( tk=<K_FOREIGN> tk2=<K_KEY> 
+            ( ( tk=<K_FOREIGN> tk2=<K_KEY>
                 columnNames=ColumnsNamesList()
                 {
                     fkIndex = new ForeignKeyIndex();
@@ -2976,7 +3003,16 @@ Alter AlterTable():
                     index.setColumnsNames(columnNames);
                     alter.setIndex(index);
                 }
-            ) )
+            )
+            |
+            (
+                <K_CHECK>  {Expression exp = null;} ("(" exp = Expression() ")")* {
+                CheckConstraint checkCs = new CheckConstraint();
+                checkCs.setName(sk3);
+                checkCs.setExpression(exp);
+                alter.setIndex(checkCs);
+            }
+           ) )
         )
         )
     )

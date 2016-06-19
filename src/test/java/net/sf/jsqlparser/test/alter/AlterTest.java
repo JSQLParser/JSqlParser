@@ -65,4 +65,9 @@ public class AlterTest extends TestCase {
     public void testAlterTablePK() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE `Author` ADD CONSTRAINT `AuthorPK` PRIMARY KEY (`ID`)");
     }
+
+    public void testAlterTableCheckConstraint() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE `Author` ADD CONSTRAINT name_not_empty CHECK (`NAME` <> '')");
+    }
+
 }
