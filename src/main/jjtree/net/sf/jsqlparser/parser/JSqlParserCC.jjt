@@ -1539,19 +1539,6 @@ First First():
 }
 
 
-Expression MandatoryExpression() #Expression :
-{
-	Expression retval = null;
-}
-{
-	(
-	LOOKAHEAD(3) retval=OrExpression() | "(" retval=MandatoryExpression() ")" {retval = new Parenthesis(retval); }
-	)
-
-    { return retval; }
-}
-
-
 Expression Expression() #Expression :
 {
 	Expression retval = null;
