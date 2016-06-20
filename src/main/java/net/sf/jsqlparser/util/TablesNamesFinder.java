@@ -56,7 +56,7 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor, StatementVisitor {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
-	private List<String> tables;
+    private List<String> tables;
     /**
      * There are special names, that are not table names but are parsed as
      * tables. These names are collected here and are not included in the tables
@@ -228,6 +228,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Function function) {
+        ExpressionList exprList = function.getParameters();
+        if (exprList != null) {
+            visit(exprList);
+        }
     }
 
     @Override
@@ -326,7 +330,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         for (Expression expression : expressionList.getExpressions()) {
             expression.accept(this);
         }
-
     }
 
     @Override
@@ -576,17 +579,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Drop drop) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); 
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
     public void visit(Truncate truncate) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); 
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
     public void visit(CreateIndex createIndex) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); 
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
@@ -599,12 +602,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(CreateView createView) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); 
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
     public void visit(Alter alter) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); 
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
@@ -619,7 +622,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(SetStatement set) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); 
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
@@ -649,7 +652,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(AlterView alterView) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); 
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
+    @Override
+    public void visit(TimeKeyExpression timeKeyExpression) {
+    }
 }

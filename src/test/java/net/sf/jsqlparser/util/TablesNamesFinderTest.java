@@ -363,5 +363,15 @@ public class TablesNamesFinderTest {
 		List<String> tableList = tablesNamesFinder.getTableList(selectStatement);
 		assertEquals(0, tableList.size());
 	}
-        
+    
+    @Test
+	public void testGetTableListIssue284() throws Exception {
+		String sql = "SELECT NVL( (SELECT 1 FROM DUAL), 1) AS A FROM TEST1";
+		Select selectStatement = (Select) CCJSqlParserUtil.parse(sql);
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(selectStatement);
+		assertEquals(2, tableList.size());
+        assertTrue(tableList.contains("DUAL"));
+        assertTrue(tableList.contains("TEST1"));
+	}
 }

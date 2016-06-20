@@ -182,6 +182,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_FOREIGN:"FOREIGN">
 |	<K_CONSTRAINT:"CONSTRAINT">
 |	<K_REFERENCES:"REFERENCES">
+|   <K_CHECK:"CHECK">
 |	<K_CHARACTER:"CHARACTER">
 |	<K_VARYING:"VARYING">
 |	<K_START:"START">
@@ -233,6 +234,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_HIGH_PRIORITY : "HIGH_PRIORITY">
 |	<K_IGNORE : "IGNORE">
 |   <K_SEMI : "SEMI">
+|   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
 }
 
 TOKEN : /* Operators */
@@ -369,6 +371,7 @@ Update Update():
 	Limit limit = null;
 	List<OrderByElement> orderByElements;
 	boolean useColumnsBrackets = false;
+	List<SelectExpressionItem> returning = null;
 }
 {
     <K_UPDATE> table=TableWithAlias() { tables.add(table); } 
@@ -397,6 +400,12 @@ Update Update():
 
    [ orderByElements = OrderByElements() { update.setOrderByElements(orderByElements); } ]
    [ limit = PlainLimit() { update.setLimit(limit); } ]
+   [ <K_RETURNING> (
+              "*" { update.setReturningAllColumns(true); }
+              | returning=ListExpressionItem()
+              )
+       ]
+
    {
    		update.setColumns(columns);
    		update.setExpressions(expList);
@@ -405,6 +414,7 @@ Update Update():
 		update.setJoins(joins);
 		update.setSelect(select);
 		update.setUseColumnsBrackets(useColumnsBrackets);
+		update.setReturningExpressionList(returning);
 		return update;
    }
 }
@@ -692,7 +702,22 @@ String RelObjectNameExt():
   String result=null;
 } 
 {
-    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> )
+    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>)
+    {
+        if (tk!=null) result=tk.image;
+        return result;
+    }
+}
+
+/*
+Extended usage of object names - part 2.
+*/
+String RelObjectNameExt2():
+{ Token tk = null;
+  String result=null;
+} 
+{
+    ( result=RelObjectNameExt() | tk=<K_TOP>)
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -1513,6 +1538,7 @@ First First():
 	}
 }
 
+
 Expression Expression() #Expression :
 {
 	Expression retval = null;
@@ -2046,6 +2072,9 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(2) [sign="+" | sign="-"] retval=CastExpression()
 
+    // support timestamp expressions
+	| token=<K_TIME_KEY_EXPR> { retval = new TimeKeyExpression(token.image); }
+
 	| LOOKAHEAD(["+" | "-"] Column())         [sign="+" | sign="-"] retval=Column()
 
 	| LOOKAHEAD(["+" | "-"] "(" BitwiseAndOr() ")") [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
@@ -2093,13 +2122,13 @@ JdbcNamedParameter JdbcNamedParameter() : {
 
 UserVariable UserVariable() : {
     UserVariable var = new UserVariable();
-	Token token;
+	String varName;
 }
 {
     ("@" | "@@" { var.setDoubleAdd(true);} )
-    token=<S_IDENTIFIER> 
+    varName=RelObjectNameExt2() 
     { 
-        var.setName(token.image); 
+        var.setName(varName); 
         return var; 
     }
 }
@@ -2545,6 +2574,7 @@ CreateTable CreateTable():
 	String parameter = null;
 	Table fkTable = null;
     Select select = null;
+    CheckConstraint checkCs = null;
 }
 {
 	<K_CREATE>
@@ -2623,7 +2653,7 @@ CreateTable CreateTable():
 						}
 				)
 				|
-				(
+				LOOKAHEAD(3)(
 					{
 						fkIndex = new ForeignKeyIndex();
 					}
@@ -2643,6 +2673,17 @@ CreateTable CreateTable():
                         [LOOKAHEAD(2) (<K_ON> <K_DELETE> (<K_CASCADE> {fkIndex.setOnDeleteReferenceOption("CASCADE");}|<K_NO> <K_ACTION> {fkIndex.setOnDeleteReferenceOption("NO ACTION");}))]
                         [LOOKAHEAD(2) (<K_ON> <K_UPDATE> (<K_CASCADE> {fkIndex.setOnUpdateReferenceOption("CASCADE");}|<K_NO> <K_ACTION> {fkIndex.setOnUpdateReferenceOption("NO ACTION");}))]
 				)
+				|
+             	LOOKAHEAD(3)(
+                    [<K_CONSTRAINT>  sk3 = RelObjectName()]
+                    {Expression exp = null;}
+                    <K_CHECK>  ("(" exp = Expression() ")")* {
+                       checkCs = new CheckConstraint();
+                       checkCs.setName(sk3);
+                       checkCs.setExpression(exp);
+                       indexes.add(checkCs);
+                       }
+                )
 				|
 				(
 					columnName=RelObjectName()
@@ -2791,6 +2832,8 @@ String CreateParameter():
             |
             tk=<K_UPDATE> { retval = tk.image; }
             |
+            tk=<K_TIME_KEY_EXPR> { retval = new TimeKeyExpression(tk.image).toString(); }
+            |
 			"=" { retval = "="; }
 			|
 			retval=AList()
@@ -2922,7 +2965,7 @@ Alter AlterTable():
         (
             <K_CONSTRAINT> sk3=RelObjectName() 
 
-            ( ( tk=<K_FOREIGN> tk2=<K_KEY> 
+            ( ( tk=<K_FOREIGN> tk2=<K_KEY>
                 columnNames=ColumnsNamesList()
                 {
                     fkIndex = new ForeignKeyIndex();
@@ -2947,7 +2990,16 @@ Alter AlterTable():
                     index.setColumnsNames(columnNames);
                     alter.setIndex(index);
                 }
-            ) )
+            )
+            |
+            (
+                <K_CHECK>  {Expression exp = null;} ("(" exp = Expression() ")")* {
+                CheckConstraint checkCs = new CheckConstraint();
+                checkCs.setName(sk3);
+                checkCs.setExpression(exp);
+                alter.setIndex(checkCs);
+            }
+           ) )
         )
         )
     )
