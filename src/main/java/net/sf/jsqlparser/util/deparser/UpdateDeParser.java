@@ -74,7 +74,9 @@ public class UpdateDeParser implements OrderByVisitor {
         if (!update.isUseSelect()) {
             for (int i = 0; i < update.getColumns().size(); i++) {
                 Column column = update.getColumns().get(i);
-                buffer.append(column.getFullyQualifiedName()).append(" = ");
+                column.accept(expressionVisitor);
+                
+                buffer.append(" = ");
 
                 Expression expression = update.getExpressions().get(i);
                 expression.accept(expressionVisitor);
@@ -91,7 +93,7 @@ public class UpdateDeParser implements OrderByVisitor {
                     buffer.append(", ");
                 }
                 Column column = update.getColumns().get(i);
-                buffer.append(column.getFullyQualifiedName());
+                column.accept(expressionVisitor);
             }
             if (update.isUseColumnsBrackets()) {
                 buffer.append(")");
