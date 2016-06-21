@@ -581,4 +581,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         buffer.append(timeKeyExpression.toString());
     }
 
+    @Override
+    public void visit(DateTimeLiteralExpression literal) {
+        buffer.append(literal.toString());
+    }
+
 }

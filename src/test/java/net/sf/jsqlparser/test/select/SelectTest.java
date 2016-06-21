@@ -2199,4 +2199,8 @@ public class SelectTest extends TestCase {
     public void testFunctionIssue284() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT NVL((SELECT 1 FROM DUAL), 1) AS A FROM TEST1");
     }
+    
+    public void testFunctionDateTimeValues() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab1 WHERE a > TIMESTAMP '2004-04-30 04:05:34.56'");
+    }
 }

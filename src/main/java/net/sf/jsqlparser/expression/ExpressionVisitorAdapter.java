@@ -461,4 +461,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     }
 
+    @Override
+    public void visit(DateTimeLiteralExpression literal) {
+    
+    }
+
 }

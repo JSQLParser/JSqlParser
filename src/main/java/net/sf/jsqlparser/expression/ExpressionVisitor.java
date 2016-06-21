@@ -167,4 +167,6 @@ public interface ExpressionVisitor {
 
     void visit(TimeKeyExpression timeKeyExpression);
 
+    void visit(DateTimeLiteralExpression literal);
+
 }
