@@ -8,7 +8,7 @@
     <organization>
         <name>JSQLParser</name>
     </organization>
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
     <url>https://github.com/JSQLParser/JSqlParser</url>
 
     <licenses>
@@ -230,6 +230,12 @@
                         </excludes>
                     </instrumentation>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>3.0.1</version>
+                <extensions>true</extensions>
             </plugin>
         </plugins>
     </build>
