@@ -39,7 +39,7 @@ import java.util.Iterator;
 public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     private static final String NOT = "NOT ";
-	private StringBuilder buffer;
+    private StringBuilder buffer = new StringBuilder();
     private SelectVisitor selectVisitor;
     private boolean useBracketsInExprList = true;
 
@@ -111,12 +111,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(DoubleValue doubleValue) {
         buffer.append(doubleValue.toString());
-	}
+    }
 
-	@Override
-	public void visit(HexValue hexValue) {
-		buffer.append(hexValue.toString());
-	}
+    @Override
+    public void visit(HexValue hexValue) {
+        buffer.append(hexValue.toString());
+    }
 
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
         if (expression.isNot()) {
@@ -285,7 +285,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(SubSelect subSelect) {
         buffer.append("(");
-        subSelect.getSelectBody().accept(selectVisitor);
+        if (selectVisitor != null) {
+            subSelect.getSelectBody().accept(selectVisitor);
+        }
         buffer.append(")");
     }
 
@@ -570,7 +572,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         }
         buffer.append(")");
     }
-    
+
     @Override
     public void visit(OracleHint hint) {
         buffer.append(hint.toString());
