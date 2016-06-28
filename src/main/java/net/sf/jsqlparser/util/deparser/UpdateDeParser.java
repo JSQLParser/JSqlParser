@@ -25,6 +25,7 @@ import java.util.Iterator;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -40,8 +41,8 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
  */
 public class UpdateDeParser implements OrderByVisitor {
 
-    private StringBuilder buffer;
-    private ExpressionVisitor expressionVisitor;
+    private StringBuilder buffer = new StringBuilder();
+    private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
     private SelectVisitor selectVisitor;
 
     /**

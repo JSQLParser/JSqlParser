@@ -306,7 +306,7 @@ Statement SingleStatement() :
     |
     stm = Merge()
 	|
-    LOOKAHEAD(3)
+    LOOKAHEAD(CreateIndex())
     stm = CreateIndex()
     |
 	LOOKAHEAD(2)
@@ -2589,9 +2589,11 @@ CreateTable CreateTable():
 }
 {
 	<K_CREATE>
-	// TODO:
-//	[ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } ]
     [ <K_UNLOGGED> { createTable.setUnlogged(true); } ]
+
+    /* [ [ (tk=<K_GLOBAL> | tk=<K_LOCAL>) {createOptions.add(tk.image);} ] 
+       ( tk=<K_TEMPORARY> | tk=<K_TEMP> ) {createOptions.add(tk.image);}] */
+
 	(parameter = CreateParameter() { createOptions.add(parameter); })*
 
 	<K_TABLE> 

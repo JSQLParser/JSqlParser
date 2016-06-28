@@ -203,6 +203,10 @@ public class CreateTableTest extends TestCase {
     public void testCreateTableIssue270_1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE item (i_item_sk integer NOT NULL, i_item_id character (16))");
     }
+    
+    public void testCreateTempTableIssue293() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE GLOBAL TEMPORARY TABLE T1 (PROCESSID VARCHAR (32))");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
