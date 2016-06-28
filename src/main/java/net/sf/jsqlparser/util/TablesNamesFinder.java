@@ -58,9 +58,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
     private List<String> tables;
     /**
-     * There are special names, that are not table names but are parsed as
-     * tables. These names are collected here and are not included in the tables
-     * - names anymore.
+     * There are special names, that are not table names but are parsed as tables. These names are
+     * collected here and are not included in the tables - names anymore.
      */
     private List<String> otherItemNames;
 
@@ -246,7 +245,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(InExpression inExpression) {
-        inExpression.getLeftExpression().accept(this);
+        if (inExpression.getLeftExpression() != null) {
+            inExpression.getLeftExpression().accept(this);
+        } else if (inExpression.getLeftItemsList() != null) {
+            inExpression.getLeftItemsList().accept(this);
+        }
         inExpression.getRightItemsList().accept(this);
     }
 
@@ -661,6 +664,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(DateTimeLiteralExpression literal) {
-        
+
     }
 }

@@ -374,4 +374,15 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("DUAL"));
         assertTrue(tableList.contains("TEST1"));
 	}
+    
+    @Test
+    public void testUpdateGetTableListIssue295() throws JSQLParserException {
+        Update statement = (Update) CCJSqlParserUtil.parse("UPDATE component SET col = 0 WHERE (component_id,ver_num) IN (SELECT component_id,ver_num FROM component_temp)");
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		List<String> tableList = tablesNamesFinder.getTableList(statement);
+		assertEquals(2, tableList.size());
+        assertTrue(tableList.contains("component"));
+        assertTrue(tableList.contains("component_temp"));
+        
+    }
 }
