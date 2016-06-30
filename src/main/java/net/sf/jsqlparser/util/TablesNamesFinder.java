@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.alter.Alter;
@@ -58,9 +59,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
     private List<String> tables;
     /**
-     * There are special names, that are not table names but are parsed as
-     * tables. These names are collected here and are not included in the tables
-     * - names anymore.
+     * There are special names, that are not table names but are parsed as tables. These names are
+     * collected here and are not included in the tables - names anymore.
      */
     private List<String> otherItemNames;
 
@@ -70,45 +70,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      * @param delete
      * @return
      */
-    public List<String> getTableList(Delete delete) {
+    public List<String> getTableList(Statement statement) {
         init();
-        delete.accept(this);
-        return tables;
-    }
-
-    /**
-     * Main entry for this Tool class. A list of found tables is returned.
-     *
-     * @param insert
-     * @return
-     */
-    public List<String> getTableList(Insert insert) {
-        init();
-        insert.accept(this);
-        return tables;
-    }
-
-    /**
-     * Main entry for this Tool class. A list of found tables is returned.
-     *
-     * @param replace
-     * @return
-     */
-    public List<String> getTableList(Replace replace) {
-        init();
-        replace.accept(this);
-        return tables;
-    }
-
-    /**
-     * Main entry for this Tool class. A list of found tables is returned.
-     *
-     * @param select
-     * @return
-     */
-    public List<String> getTableList(Select select) {
-        init();
-        select.accept(this);
+        statement.accept(this);
         return tables;
     }
 
@@ -128,17 +92,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      * @param update
      * @return
      */
-    public List<String> getTableList(Update update) {
-        init();
-        update.accept(this);
-        return tables;
-    }
-
-    public List<String> getTableList(CreateTable create) {
-        init();
-        create.accept(this);
-        return tables;
-    }
 
     public List<String> getTableList(Expression expr) {
         init();
@@ -246,7 +199,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(InExpression inExpression) {
-        inExpression.getLeftExpression().accept(this);
+        if (inExpression.getLeftExpression() != null) {
+            inExpression.getLeftExpression().accept(this);
+        } else if (inExpression.getLeftItemsList() != null) {
+            inExpression.getLeftItemsList().accept(this);
+        }
         inExpression.getRightItemsList().accept(this);
     }
 
@@ -639,7 +596,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Merge merge) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        tables.add(merge.getTable().getName());
+        if (merge.getUsingTable() != null) {
+            merge.getUsingTable().accept(this);
+        } else if (merge.getUsingSelect() != null) {
+            merge.getUsingSelect().accept((FromItemVisitor) this);
+        }
     }
 
     @Override
@@ -661,6 +623,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(DateTimeLiteralExpression literal) {
-        
+
     }
 }
