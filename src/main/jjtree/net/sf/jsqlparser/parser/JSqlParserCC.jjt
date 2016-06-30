@@ -1877,11 +1877,7 @@ Expression SimpleExpression():
 }
 {
   (
-		//LOOKAHEAD(2)
 		retval=BitwiseAndOr()
-		//|
-		//"(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
-
   )
 
    {
