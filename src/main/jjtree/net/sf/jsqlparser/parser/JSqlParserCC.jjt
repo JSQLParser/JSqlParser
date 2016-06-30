@@ -1545,13 +1545,7 @@ Expression Expression() #Expression :
 	Expression retval = null;
 }
 {
-	(
-	LOOKAHEAD(3)
-		retval=OrExpression()
-		|
-		"(" retval=Expression() ")" {retval = new Parenthesis(retval); }
-
-	)
+	retval=OrExpression()
 
     { return retval; }
 }
