@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2016 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -21,24 +21,21 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
 /**
- * Combines ANY and SOME expressions.
- * @author toben
+ * An array literal is a list of simple expressions
+ * <p>
+ * This shows up in Postgres SQL as
+ * <pre>
+ * ARRAY[val1, val2, val3, ...]
+ * </pre>
  */
-public class AnyComparisonExpression implements AnyExpression {
+public class ArrayLiteral implements Expression {
 
-	private final SubSelect subSelect;
-    private final AnyType anyType;
-   
-	public AnyComparisonExpression(AnyType anyType, SubSelect subSelect) {
-        this.anyType = anyType;
-		this.subSelect = subSelect;
-	}
+	private ExpressionList list;
 
-	public SubSelect getSubSelect() {
-		return subSelect;
+	public ArrayLiteral() {
 	}
 
 	@Override
@@ -46,12 +43,16 @@ public class AnyComparisonExpression implements AnyExpression {
 		expressionVisitor.visit(this);
 	}
 
-    public AnyType getAnyType() {
-        return anyType;
-    }
-    
-    @Override
-    public String toString() {
-        return anyType.name() + " " + subSelect.toString();
-    }
+	public ExpressionList getList() {
+		return list;
+	}
+
+	public void setList(ExpressionList list) {
+		this.list = list;
+	}
+
+	@Override
+	public String toString() {
+		return "ARRAY["+list.toString()+"]";
+	}
 }

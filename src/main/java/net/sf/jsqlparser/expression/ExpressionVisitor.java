@@ -121,7 +121,11 @@ public interface ExpressionVisitor {
 
 	void visit(AllComparisonExpression allComparisonExpression);
 
+	void visit(AllArrayExpression allArrayExpression);
+
 	void visit(AnyComparisonExpression anyComparisonExpression);
+
+	void visit(AnyArrayExpression anyArrayExpression);
 
 	void visit(Concat concat);
 
@@ -168,5 +172,8 @@ public interface ExpressionVisitor {
     void visit(TimeKeyExpression timeKeyExpression);
 
     void visit(DateTimeLiteralExpression literal);
+
+	void visit(ArrayLiteral arrayLiteral);
+
 
 }

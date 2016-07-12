@@ -389,6 +389,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     }
 
     @Override
+    public void visit(ArrayLiteral array) {
+        buffer.append(array.toString());
+    }
+
+    @Override
     public void visit(CaseExpression caseExpression) {
         buffer.append("CASE ");
         Expression switchExp = caseExpression.getSwitchExpression();
@@ -427,9 +432,24 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     }
 
     @Override
+    public void visit(AllArrayExpression allArrayExpression) {
+        buffer.append("ALL (");
+        allArrayExpression.getArray().accept((ExpressionVisitor) this);
+	buffer.append(")");
+    }
+
+    @Override
     public void visit(AnyComparisonExpression anyComparisonExpression) {
         buffer.append(anyComparisonExpression.getAnyType().name()).append(" ");
         anyComparisonExpression.getSubSelect().accept((ExpressionVisitor) this);
+    }
+
+    @Override
+    public void visit(AnyArrayExpression anyArrayExpression) {
+       
+       buffer.append("ANY (");
+        anyArrayExpression.getArray().accept((ExpressionVisitor) this);
+	buffer.append(")");
     }
 
     @Override

@@ -301,6 +301,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(TimeValue timeValue) {
     }
 
+    @Override
+    public void visit(ArrayLiteral array) {
+       array.getList().accept(this);
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -325,8 +330,18 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
+    public void visit(AllArrayExpression allArrayExpression) {
+        allArrayExpression.getArray().accept(this);
+    }
+
+    @Override
     public void visit(AnyComparisonExpression anyComparisonExpression) {
         anyComparisonExpression.getSubSelect().getSelectBody().accept(this);
+    }
+
+    @Override
+    public void visit(AnyArrayExpression anyArrayExpression) {
+        anyArrayExpression.getArray().accept(this);
     }
 
     @Override

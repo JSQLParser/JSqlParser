@@ -108,6 +108,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(ArrayLiteral array) {
+
+    }
+
+    @Override
     public void visit(Parenthesis parenthesis) {
         parenthesis.getExpression().accept(this);
     }
@@ -248,7 +253,17 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(AllArrayExpression expr) {
+
+    }
+
+    @Override
     public void visit(AnyComparisonExpression expr) {
+
+    }
+
+    @Override
+    public void visit(AnyArrayExpression expr) {
 
     }
 

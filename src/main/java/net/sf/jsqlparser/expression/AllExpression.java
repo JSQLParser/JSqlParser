@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2016 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -21,37 +21,7 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.statement.select.SubSelect;
+public interface AllExpression extends Expression {
 
-/**
- * Combines ANY and SOME expressions.
- * @author toben
- */
-public class AnyComparisonExpression implements AnyExpression {
-
-	private final SubSelect subSelect;
-    private final AnyType anyType;
-   
-	public AnyComparisonExpression(AnyType anyType, SubSelect subSelect) {
-        this.anyType = anyType;
-		this.subSelect = subSelect;
-	}
-
-	public SubSelect getSubSelect() {
-		return subSelect;
-	}
-
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
-
-    public AnyType getAnyType() {
-        return anyType;
-    }
-    
-    @Override
-    public String toString() {
-        return anyType.name() + " " + subSelect.toString();
-    }
+	void accept(ExpressionVisitor ExpressionVisitor);
 }
