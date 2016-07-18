@@ -238,6 +238,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
 }
 
+TOKEN : /* Stuff */
+{
+	<ST_SEMICOLON : ";" >
+}
+
 TOKEN : /* Operators */
 {
 	<OP_GREATERTHANEQUALS: ">" (<WHITESPACE>)* "=">
@@ -280,7 +285,7 @@ Statement Statement() #Statement:
 { Statement stm; } 
 {
     stm = SingleStatement()
-    [";"]
+    [<ST_SEMICOLON>]
     <EOF>
     { 
         return stm; 
@@ -333,10 +338,9 @@ Statements Statements() #Statements :
   List<Statement> list = new ArrayList<Statement>();
   Statement stm; }
 {
-	(";")*
+	(<ST_SEMICOLON>)*
     stm = SingleStatement() { list.add(stm); }
-    ( (";") [ stm = SingleStatement() { list.add(stm); } ] )*
-
+    ( <ST_SEMICOLON> [ stm = SingleStatement() { list.add(stm); } ] )*
     <EOF>
 
     {
