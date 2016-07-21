@@ -756,7 +756,7 @@ String RelObjectNameExt():
   String result=null;
 } 
 {
-    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> | <K_DOUBLE> )
+    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> | <K_DOUBLE>)
     {
         if (tk!=null) result=tk.image;
         return result;
