@@ -65,9 +65,13 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
         StringBuilder fqn = new StringBuilder();
 
         if (table != null) {
-            fqn.append(table.getFullyQualifiedName());
+            if (table.getAlias() != null) {
+                fqn.append(table.getAlias().getName());
+            } else {
+                fqn.append(table.getFullyQualifiedName());
+            }
         }
-        if (fqn.length()>0) {
+        if (fqn.length() > 0) {
             fqn.append('.');
         }
         if (columnName != null) {
