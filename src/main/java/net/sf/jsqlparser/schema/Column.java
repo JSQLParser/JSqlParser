@@ -21,66 +21,72 @@
  */
 package net.sf.jsqlparser.schema;
 
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * A column. It can have the table name it belongs to.
  */
-public class Column implements Expression {
+public final class Column extends ASTNodeAccessImpl implements Expression, MultiPartName {
 
-	private String columnName = "";
-	private Table table;
+    private Table table;
+    private String columnName;
 
-	public Column() {
-	}
+    public Column() {
+    }
 
-	public Column(Table table, String columnName) {
-		this.table = table;
-		this.columnName = columnName;
-	}
+    public Column(Table table, String columnName) {
+        setTable(table);
+        setColumnName(columnName);
+    }
 
-	public String getColumnName() {
-		return columnName;
-	}
+    public Column(String columnName) {
+        this(null, columnName);
+    }
 
-	public Table getTable() {
-		return table;
-	}
+    public Table getTable() {
+        return table;
+    }
 
-	public void setColumnName(String string) {
-		columnName = string;
-	}
+    public void setTable(Table table) {
+        this.table = table;
+    }
 
-	public void setTable(Table table) {
-		this.table = table;
-	}
+    public String getColumnName() {
+        return columnName;
+    }
 
-	/**
-	 * @return the name of the column, prefixed with 'tableName' and '.'
-	 */
-	public String getWholeColumnName() {
+    public void setColumnName(String string) {
+        columnName = string;
+    }
 
-		String columnWholeName = null;
-		String tableWholeName = table.getWholeTableName();
+    @Override
+    public String getFullyQualifiedName() {
+        StringBuilder fqn = new StringBuilder();
 
-		if (tableWholeName != null && tableWholeName.length() != 0) {
-			columnWholeName = tableWholeName + "." + columnName;
-		} else {
-			columnWholeName = columnName;
-		}
+        if (table != null) {
+            if (table.getAlias() != null) {
+                fqn.append(table.getAlias().getName());
+            } else {
+                fqn.append(table.getFullyQualifiedName());
+            }
+        }
+        if (fqn.length() > 0) {
+            fqn.append('.');
+        }
+        if (columnName != null) {
+            fqn.append(columnName);
+        }
+        return fqn.toString();
+    }
 
-		return columnWholeName;
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	}
-
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
-
-	@Override
-	public String toString() {
-		return getWholeColumnName();
-	}
+    @Override
+    public String toString() {
+        return getFullyQualifiedName();
+    }
 }

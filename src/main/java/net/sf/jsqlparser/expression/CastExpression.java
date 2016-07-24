@@ -24,14 +24,14 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
 /**
- *
+ * 
  * @author tw
  */
 public class CastExpression implements Expression {
 
 	private Expression leftExpression;
 	private ColDataType type;
-	private boolean useCastKeyword;
+	private boolean useCastKeyword = true;
 
 	public ColDataType getType() {
 		return type;

@@ -25,13 +25,18 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.Statements;
 
 /**
  * Toolfunctions to start and use JSqlParser.
  * @author toben
  */
 public final class CCJSqlParserUtil {
+	
+	private CCJSqlParserUtil() {}
+	
 	public static Statement parse(Reader statementReader) throws JSQLParserException {
 		CCJSqlParser parser = new CCJSqlParser(statementReader);
 		try {
@@ -45,6 +50,16 @@ public final class CCJSqlParserUtil {
 		CCJSqlParser parser = new CCJSqlParser(new StringReader(sql));
 		try {
 			return parser.Statement();
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
+	}
+    
+    public static Node parseAST(String sql) throws JSQLParserException {
+		CCJSqlParser parser = new CCJSqlParser(new StringReader(sql));
+		try {
+            parser.Statement();
+			return parser.jjtree.rootNode();
 		} catch (Exception ex) {
 			throw new JSQLParserException(ex);
 		} 
@@ -67,7 +82,47 @@ public final class CCJSqlParserUtil {
 			throw new JSQLParserException(ex);
 		} 
 	}
-
-	private CCJSqlParserUtil() {
+	
+	/**
+	 * Parse an expression.
+	 * @param expression
+	 * @return
+	 * @throws JSQLParserException 
+	 */
+	public static Expression parseExpression(String expression) throws JSQLParserException {
+		CCJSqlParser parser = new CCJSqlParser(new StringReader(expression));
+		try {
+			return parser.SimpleExpression();
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
 	}
+    
+    /**
+	 * Parse an conditional expression. This is the expression after a where clause.
+	 * @param condExpr
+	 * @return
+	 * @throws JSQLParserException 
+	 */
+	public static Expression parseCondExpression(String condExpr) throws JSQLParserException {
+		CCJSqlParser parser = new CCJSqlParser(new StringReader(condExpr));
+		try {
+			return parser.Expression();
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
+	}
+    
+    /**
+     * Parse a statement list.
+     */
+    public static Statements parseStatements(String sqls) throws JSQLParserException {
+		CCJSqlParser parser = new CCJSqlParser(new StringReader(sqls));
+		try {
+			return parser.Statements();
+		} catch (Exception ex) {
+			throw new JSQLParserException(ex);
+		} 
+	}
+
 }

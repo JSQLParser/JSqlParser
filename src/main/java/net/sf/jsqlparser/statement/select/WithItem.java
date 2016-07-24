@@ -28,59 +28,69 @@ import java.util.List;
  */
 public class WithItem implements SelectBody {
 
-	private String name;
-	private List<SelectItem> withItemList;
-	private SelectBody selectBody;
+    private String name;
+    private List<SelectItem> withItemList;
+    private SelectBody selectBody;
+    private boolean recursive;
 
-	/**
-	 * The name of this WITH item (for example, "myWITH" in "WITH myWITH AS
-	 * (SELECT A,B,C))"
-	 *
-	 * @return the name of this WITH
-	 */
-	public String getName() {
-		return name;
-	}
+    /**
+     * The name of this WITH item (for example, "myWITH" in "WITH myWITH AS
+     * (SELECT A,B,C))"
+     *
+     * @return the name of this WITH
+     */
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	/**
-	 * The {@link SelectBody} of this WITH item is the part after the "AS"
-	 * keyword
-	 *
-	 * @return {@link SelectBody} of this WITH item
-	 */
-	public SelectBody getSelectBody() {
-		return selectBody;
-	}
+    public boolean isRecursive() {
+        return recursive;
+    }
 
-	public void setSelectBody(SelectBody selectBody) {
-		this.selectBody = selectBody;
-	}
+    public void setRecursive(boolean recursive) {
+        this.recursive = recursive;
+    }
 
-	/**
-	 * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH
-	 * mywith (A,B,C) AS ...")
-	 *
-	 * @return a list of {@link SelectItem}s
-	 */
-	public List<SelectItem> getWithItemList() {
-		return withItemList;
-	}
+    /**
+     * The {@link SelectBody} of this WITH item is the part after the "AS"
+     * keyword
+     *
+     * @return {@link SelectBody} of this WITH item
+     */
+    public SelectBody getSelectBody() {
+        return selectBody;
+    }
 
-	public void setWithItemList(List<SelectItem> withItemList) {
-		this.withItemList = withItemList;
-	}
+    public void setSelectBody(SelectBody selectBody) {
+        this.selectBody = selectBody;
+    }
 
-	@Override
-	public String toString() {
-		return name + ((withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "")
-				+ " AS (" + selectBody + ")";
-	}
+    /**
+     * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH
+     * mywith (A,B,C) AS ...")
+     *
+     * @return a list of {@link SelectItem}s
+     */
+    public List<SelectItem> getWithItemList() {
+        return withItemList;
+    }
 
-	public void accept(SelectVisitor visitor) {
-		visitor.visit(this);
-	}
+    public void setWithItemList(List<SelectItem> withItemList) {
+        this.withItemList = withItemList;
+    }
+
+    @Override
+    public String toString() {
+        return (recursive ? "RECURSIVE " : "") + name + ((withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "")
+                + " AS (" + selectBody + ")";
+    }
+
+    @Override
+    public void accept(SelectVisitor visitor) {
+        visitor.visit(this);
+    }
 }

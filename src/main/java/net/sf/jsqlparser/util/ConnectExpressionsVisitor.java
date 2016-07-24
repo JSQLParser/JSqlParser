@@ -21,18 +21,10 @@
  */
 package net.sf.jsqlparser.util;
 
-import java.util.LinkedList;
-import java.util.List;
-import net.sf.jsqlparser.expression.BinaryExpression;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SelectItemVisitor;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.statement.select.*;
+
+import java.util.*;
 
 /**
  * Connect all selected expressions with a binary expression. Out of select a,b
@@ -45,7 +37,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 public abstract class ConnectExpressionsVisitor implements SelectVisitor, SelectItemVisitor {
 
 	private String alias = "expr";
-	private List<SelectExpressionItem> itemsExpr = new LinkedList<SelectExpressionItem>();
+	private final List<SelectExpressionItem> itemsExpr = new LinkedList<SelectExpressionItem>();
 
 	public ConnectExpressionsVisitor() {
 	}
@@ -86,12 +78,12 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
 			plainSelect.getSelectItems().add(sei);
 		}
 
-		((SelectExpressionItem) plainSelect.getSelectItems().get(0)).setAlias(alias);
+		((SelectExpressionItem) plainSelect.getSelectItems().get(0)).setAlias(new Alias(alias));
 	}
 
 	@Override
 	public void visit(SetOperationList setOpList) {
-		for (PlainSelect select : setOpList.getPlainSelects()) {
+		for (SelectBody select : setOpList.getSelects()) {
 			select.accept(this);
 		}
 	}
@@ -101,12 +93,12 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
 	}
 
 	@Override
-	public void visit(AllColumns allColumns) {
+	public void visit(AllTableColumns allTableColumns) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 	@Override
-	public void visit(AllTableColumns allTableColumns) {
+	public void visit(AllColumns allColumns) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 

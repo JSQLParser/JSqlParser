@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
+
 /**
  * A lateral subselect followed by an alias.
  *
@@ -29,7 +31,7 @@ package net.sf.jsqlparser.statement.select;
 public class LateralSubSelect implements FromItem {
 
 	private SubSelect subSelect;
-	private String alias;
+	private Alias alias;
     private Pivot pivot;
 
 	public void setSubSelect(SubSelect subSelect) {
@@ -46,19 +48,21 @@ public class LateralSubSelect implements FromItem {
 	}
 
 	@Override
-	public String getAlias() {
+	public Alias getAlias() {
 		return alias;
 	}
 
 	@Override
-	public void setAlias(String alias) {
+	public void setAlias(Alias alias) {
 		this.alias = alias;
 	}
 
+	@Override
     public Pivot getPivot() {
         return pivot;
     }
 
+	@Override
     public void setPivot(Pivot pivot) {
         this.pivot = pivot;
     }
@@ -67,6 +71,6 @@ public class LateralSubSelect implements FromItem {
 	public String toString() {
 		return "LATERAL" + subSelect.toString() +
                 ((pivot != null) ? " "+pivot : "") +
-                ((alias != null) ? " AS " + alias : "");
+                ((alias != null) ? alias.toString() : "");
 	}
 }

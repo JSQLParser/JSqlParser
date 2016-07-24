@@ -21,19 +21,20 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Function;
 
 public class FunctionItem {
 
     private Function function;
-    private String alias;
+    private Alias alias;
 
-    public String getAlias() {
+    public Alias getAlias() {
         return alias;
     }
 
-    public void setAlias(String string) {
-        alias = string;
+    public void setAlias(Alias alias) {
+        this.alias = alias;
     }
 
     public Function getFunction() {
@@ -46,6 +47,6 @@ public class FunctionItem {
 
     @Override
     public String toString() {
-        return function + ((alias != null) ? " AS " + alias : "");
+        return function + ((alias != null) ? alias.toString() : "");
     }
 }

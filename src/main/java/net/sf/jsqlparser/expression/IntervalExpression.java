@@ -27,6 +27,7 @@ package net.sf.jsqlparser.expression;
  */
 public class IntervalExpression implements Expression {
 	private String parameter = null;
+    private String intervalType = null;
 
 	public String getParameter() {
 		return parameter;
@@ -35,10 +36,18 @@ public class IntervalExpression implements Expression {
 	public void setParameter(String parameter) {
 		this.parameter = parameter;
 	}
+
+    public String getIntervalType() {
+        return intervalType;
+    }
+
+    public void setIntervalType(String intervalType) {
+        this.intervalType = intervalType;
+    }
 	
 	@Override
 	public String toString() {
-		return "INTERVAL " + parameter;
+		return "INTERVAL " + parameter + (intervalType!=null?" " + intervalType:"");
 	}
 
 	@Override

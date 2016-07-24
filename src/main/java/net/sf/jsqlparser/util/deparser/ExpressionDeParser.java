@@ -26,7 +26,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
-import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
@@ -38,63 +38,65 @@ import java.util.Iterator;
  */
 public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
-	private StringBuilder buffer;
-	private SelectVisitor selectVisitor;
-	private boolean useBracketsInExprList = true;
+    private static final String NOT = "NOT ";
+    private StringBuilder buffer = new StringBuilder();
+    private SelectVisitor selectVisitor;
+    private boolean useBracketsInExprList = true;
 
-	public ExpressionDeParser() {
-	}
+    public ExpressionDeParser() {
+    }
 
-	/**
-	 * @param selectVisitor a SelectVisitor to de-parse SubSelects. It has to
-	 * share the same<br> StringBuilder as this object in order to work, as:
-	 *
-	 * <pre>
-	 * <code>
-	 * StringBuilder myBuf = new StringBuilder();
-	 * MySelectDeparser selectDeparser = new  MySelectDeparser();
-	 * selectDeparser.setBuffer(myBuf);
-	 * ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeparser, myBuf);
-	 * </code>
-	 * </pre>
-	 * @param buffer the buffer that will be filled with the expression
-	 */
-	public ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer) {
-		this.selectVisitor = selectVisitor;
-		this.buffer = buffer;
-	}
+    /**
+     * @param selectVisitor a SelectVisitor to de-parse SubSelects. It has to
+     * share the same<br> StringBuilder as this object in order to work, as:
+     *
+     * <pre>
+     * <code>
+     * StringBuilder myBuf = new StringBuilder();
+     * MySelectDeparser selectDeparser = new  MySelectDeparser();
+     * selectDeparser.setBuffer(myBuf);
+     * ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeparser, myBuf);
+     * </code>
+     * </pre>
+     *
+     * @param buffer the buffer that will be filled with the expression
+     */
+    public ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer) {
+        this.selectVisitor = selectVisitor;
+        this.buffer = buffer;
+    }
 
-	public StringBuilder getBuffer() {
-		return buffer;
-	}
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
 
-	public void setBuffer(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 
-	@Override
-	public void visit(Addition addition) {
-		visitBinaryExpression(addition, " + ");
-	}
+    @Override
+    public void visit(Addition addition) {
+        visitBinaryExpression(addition, " + ");
+    }
 
-	@Override
-	public void visit(AndExpression andExpression) {
-		visitBinaryExpression(andExpression, " AND ");
-	}
+    @Override
+    public void visit(AndExpression andExpression) {
+        visitBinaryExpression(andExpression, " AND ");
+    }
 
-	@Override
-	public void visit(Between between) {
-		between.getLeftExpression().accept(this);
-		if (between.isNot()) {
-			buffer.append(" NOT");
-		}
+    @Override
+    public void visit(Between between) {
+        between.getLeftExpression().accept(this);
+        if (between.isNot()) {
+            buffer.append(" NOT");
+        }
 
-		buffer.append(" BETWEEN ");
-		between.getBetweenExpressionStart().accept(this);
-		buffer.append(" AND ");
-		between.getBetweenExpressionEnd().accept(this);
+        buffer.append(" BETWEEN ");
+        between.getBetweenExpressionStart().accept(this);
+        buffer.append(" AND ");
+        between.getBetweenExpressionEnd().accept(this);
 
-	}
+    }
 
     @Override
     public void visit(EqualsTo equalsTo) {
@@ -102,379 +104,488 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     }
 
     @Override
-	public void visit(Division division) {
-		visitBinaryExpression(division, " / ");
+    public void visit(Division division) {
+        visitBinaryExpression(division, " / ");
+    }
 
-	}
+    @Override
+    public void visit(DoubleValue doubleValue) {
+        buffer.append(doubleValue.toString());
+    }
 
-	@Override
-	public void visit(DoubleValue doubleValue) {
-		buffer.append(doubleValue.toString());
+    @Override
+    public void visit(HexValue hexValue) {
+        buffer.append(hexValue.toString());
+    }
 
-	}
-
-	public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
-		if (expression.isNot()) {
-			buffer.append(" NOT ");
-		}
+    public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
+        if (expression.isNot()) {
+            buffer.append(NOT);
+        }
         expression.getLeftExpression().accept(this);
-		if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_RIGHT) {
-			buffer.append("(+)");
-		}
-		buffer.append(operator);
+        if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_RIGHT) {
+            buffer.append("(+)");
+        }
+        buffer.append(operator);
         expression.getRightExpression().accept(this);
-		if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_LEFT) {
-			buffer.append("(+)");
-		}
-	}
+        if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_LEFT) {
+            buffer.append("(+)");
+        }
+    }
 
-	@Override
-	public void visit(GreaterThan greaterThan) {
+    @Override
+    public void visit(GreaterThan greaterThan) {
         visitOldOracleJoinBinaryExpression(greaterThan, " > ");
-	}
+    }
 
-	@Override
-	public void visit(GreaterThanEquals greaterThanEquals) {
+    @Override
+    public void visit(GreaterThanEquals greaterThanEquals) {
         visitOldOracleJoinBinaryExpression(greaterThanEquals, " >= ");
 
-	}
+    }
 
-	@Override
-	public void visit(InExpression inExpression) {
-		if (inExpression.getLeftExpression() == null) {
-			inExpression.getLeftItemsList().accept(this);
-		} else {
-			inExpression.getLeftExpression().accept(this);
+    @Override
+    public void visit(InExpression inExpression) {
+        if (inExpression.getLeftExpression() == null) {
+            inExpression.getLeftItemsList().accept(this);
+        } else {
+            inExpression.getLeftExpression().accept(this);
             if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
                 buffer.append("(+)");
             }
-		}
-		if (inExpression.isNot()) {
-			buffer.append(" NOT");
-		}
-		buffer.append(" IN ");
+        }
+        if (inExpression.isNot()) {
+            buffer.append(" NOT");
+        }
+        buffer.append(" IN ");
 
-		inExpression.getRightItemsList().accept(this);
-	}
+        inExpression.getRightItemsList().accept(this);
+    }
 
-	@Override
-	public void visit(InverseExpression inverseExpression) {
-		buffer.append("-");
-		inverseExpression.getExpression().accept(this);
-	}
+    @Override
+    public void visit(SignedExpression signedExpression) {
+        buffer.append(signedExpression.getSign());
+        signedExpression.getExpression().accept(this);
+    }
 
-	@Override
-	public void visit(IsNullExpression isNullExpression) {
-		isNullExpression.getLeftExpression().accept(this);
-		if (isNullExpression.isNot()) {
-			buffer.append(" IS NOT NULL");
-		} else {
-			buffer.append(" IS NULL");
-		}
-	}
+    @Override
+    public void visit(IsNullExpression isNullExpression) {
+        isNullExpression.getLeftExpression().accept(this);
+        if (isNullExpression.isNot()) {
+            buffer.append(" IS NOT NULL");
+        } else {
+            buffer.append(" IS NULL");
+        }
+    }
 
-	@Override
-	public void visit(JdbcParameter jdbcParameter) {
-		buffer.append("?");
+    @Override
+    public void visit(JdbcParameter jdbcParameter) {
+        buffer.append("?");
+        if (jdbcParameter.getIndex() != null) {
+            buffer.append(jdbcParameter.getIndex());
+        }
 
-	}
+    }
 
-	@Override
-	public void visit(LikeExpression likeExpression) {
-		visitBinaryExpression(likeExpression, " LIKE ");
-		String escape = likeExpression.getEscape();
-		if (escape != null) {
-			buffer.append(" ESCAPE '").append(escape).append('\'');
-		}
-	}
+    @Override
+    public void visit(LikeExpression likeExpression) {
+        visitBinaryExpression(likeExpression, likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE ");
+        String escape = likeExpression.getEscape();
+        if (escape != null) {
+            buffer.append(" ESCAPE '").append(escape).append('\'');
+        }
+    }
 
-	@Override
-	public void visit(ExistsExpression existsExpression) {
-		if (existsExpression.isNot()) {
-			buffer.append("NOT EXISTS ");
-		} else {
-			buffer.append("EXISTS ");
-		}
-		existsExpression.getRightExpression().accept(this);
-	}
+    @Override
+    public void visit(ExistsExpression existsExpression) {
+        if (existsExpression.isNot()) {
+            buffer.append("NOT EXISTS ");
+        } else {
+            buffer.append("EXISTS ");
+        }
+        existsExpression.getRightExpression().accept(this);
+    }
 
-	@Override
-	public void visit(LongValue longValue) {
-		buffer.append(longValue.getStringValue());
+    @Override
+    public void visit(LongValue longValue) {
+        buffer.append(longValue.getStringValue());
 
-	}
+    }
 
-	@Override
-	public void visit(MinorThan minorThan) {
+    @Override
+    public void visit(MinorThan minorThan) {
         visitOldOracleJoinBinaryExpression(minorThan, " < ");
 
-	}
+    }
 
-	@Override
-	public void visit(MinorThanEquals minorThanEquals) {
+    @Override
+    public void visit(MinorThanEquals minorThanEquals) {
         visitOldOracleJoinBinaryExpression(minorThanEquals, " <= ");
 
-	}
+    }
 
-	@Override
-	public void visit(Multiplication multiplication) {
-		visitBinaryExpression(multiplication, " * ");
+    @Override
+    public void visit(Multiplication multiplication) {
+        visitBinaryExpression(multiplication, " * ");
 
-	}
+    }
 
-	@Override
-	public void visit(NotEqualsTo notEqualsTo) {
-        visitOldOracleJoinBinaryExpression(notEqualsTo, " <> ");
+    @Override
+    public void visit(NotEqualsTo notEqualsTo) {
+        visitOldOracleJoinBinaryExpression(notEqualsTo, " " + notEqualsTo.getStringExpression() + " ");
 
-	}
+    }
 
-	@Override
-	public void visit(NullValue nullValue) {
-		buffer.append("NULL");
+    @Override
+    public void visit(NullValue nullValue) {
+        buffer.append(nullValue.toString());
 
-	}
+    }
 
-	@Override
-	public void visit(OrExpression orExpression) {
-		visitBinaryExpression(orExpression, " OR ");
+    @Override
+    public void visit(OrExpression orExpression) {
+        visitBinaryExpression(orExpression, " OR ");
 
-	}
+    }
 
-	@Override
-	public void visit(Parenthesis parenthesis) {
-		if (parenthesis.isNot()) {
-			buffer.append(" NOT ");
-		}
+    @Override
+    public void visit(Parenthesis parenthesis) {
+        if (parenthesis.isNot()) {
+            buffer.append(NOT);
+        }
 
-		buffer.append("(");
-		parenthesis.getExpression().accept(this);
-		buffer.append(")");
+        buffer.append("(");
+        parenthesis.getExpression().accept(this);
+        buffer.append(")");
 
-	}
+    }
 
-	@Override
-	public void visit(StringValue stringValue) {
-		buffer.append("'").append(stringValue.getValue()).append("'");
+    @Override
+    public void visit(StringValue stringValue) {
+        buffer.append("'").append(stringValue.getValue()).append("'");
 
-	}
+    }
 
-	@Override
-	public void visit(Subtraction subtraction) {
-		visitBinaryExpression(subtraction, " - ");
+    @Override
+    public void visit(Subtraction subtraction) {
+        visitBinaryExpression(subtraction, " - ");
 
-	}
+    }
 
-	private void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
-		if (binaryExpression.isNot()) {
-			buffer.append(" NOT ");
-		}
-		binaryExpression.getLeftExpression().accept(this);
-		buffer.append(operator);
-		binaryExpression.getRightExpression().accept(this);
+    private void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
+        if (binaryExpression.isNot()) {
+            buffer.append(NOT);
+        }
+        binaryExpression.getLeftExpression().accept(this);
+        buffer.append(operator);
+        binaryExpression.getRightExpression().accept(this);
 
-	}
+    }
 
-	@Override
-	public void visit(SubSelect subSelect) {
-		buffer.append("(");
-		subSelect.getSelectBody().accept(selectVisitor);
-		buffer.append(")");
-	}
+    @Override
+    public void visit(SubSelect subSelect) {
+        buffer.append("(");
+        if (selectVisitor != null) {
+            subSelect.getSelectBody().accept(selectVisitor);
+        }
+        buffer.append(")");
+    }
 
-	@Override
-	public void visit(Column tableColumn) {
-		String tableName = tableColumn.getTable().getAlias();
-		if (tableName == null) {
-			tableName = tableColumn.getTable().getWholeTableName();
-		}
-		if (tableName != null) {
-			buffer.append(tableName).append(".");
-		}
+    @Override
+    public void visit(Column tableColumn) {
+        final Table table = tableColumn.getTable();
+        String tableName = null;
+        if (table != null) {
+            if (table.getAlias() != null) {
+                tableName = table.getAlias().getName();
+            } else {
+                tableName = table.getFullyQualifiedName();
+            }
+        }
+        if (tableName != null && !tableName.isEmpty()) {
+            buffer.append(tableName).append(".");
+        }
 
-		buffer.append(tableColumn.getColumnName());
-	}
+        buffer.append(tableColumn.getColumnName());
+    }
 
-	@Override
-	public void visit(Function function) {
-		if (function.isEscaped()) {
-			buffer.append("{fn ");
-		}
+    @Override
+    public void visit(Function function) {
+        if (function.isEscaped()) {
+            buffer.append("{fn ");
+        }
 
-		buffer.append(function.getName());
-		if (function.isAllColumns()) {
-			buffer.append("(*)");
-		} else if (function.getParameters() == null) {
-			buffer.append("()");
-		} else {
-			boolean oldUseBracketsInExprList = useBracketsInExprList;
-			if (function.isDistinct()) {
-				useBracketsInExprList = false;
-				buffer.append("(DISTINCT ");
-			}
-			visit(function.getParameters());
-			useBracketsInExprList = oldUseBracketsInExprList;
-			if (function.isDistinct()) {
-				buffer.append(")");
-			}
-		}
+        buffer.append(function.getName());
+        if (function.isAllColumns() && function.getParameters() == null) {
+            buffer.append("(*)");
+        } else if (function.getParameters() == null) {
+            buffer.append("()");
+        } else {
+            boolean oldUseBracketsInExprList = useBracketsInExprList;
+            if (function.isDistinct()) {
+                useBracketsInExprList = false;
+                buffer.append("(DISTINCT ");
+            } else if (function.isAllColumns()) {
+                useBracketsInExprList = false;
+                buffer.append("(ALL ");
+            }
+            visit(function.getParameters());
+            useBracketsInExprList = oldUseBracketsInExprList;
+            if (function.isDistinct() || function.isAllColumns()) {
+                buffer.append(")");
+            }
+        }
 
-		if (function.isEscaped()) {
-			buffer.append("}");
-		}
+        if (function.getAttribute() != null) {
+            buffer.append(".").append(function.getAttribute());
+        }
+        if (function.getKeep() != null) {
+            buffer.append(" ").append(function.getKeep());
+        }
 
-	}
+        if (function.isEscaped()) {
+            buffer.append("}");
+        }
+    }
 
-	@Override
-	public void visit(ExpressionList expressionList) {
-		if (useBracketsInExprList) {
-			buffer.append("(");
-		}
-		for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
-			Expression expression = iter.next();
-			expression.accept(this);
-			if (iter.hasNext()) {
-				buffer.append(", ");
-			}
-		}
-		if (useBracketsInExprList) {
-			buffer.append(")");
-		}
-	}
+    @Override
+    public void visit(ExpressionList expressionList) {
+        if (useBracketsInExprList) {
+            buffer.append("(");
+        }
+        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
+            Expression expression = iter.next();
+            expression.accept(this);
+            if (iter.hasNext()) {
+                buffer.append(", ");
+            }
+        }
+        if (useBracketsInExprList) {
+            buffer.append(")");
+        }
+    }
 
-	public SelectVisitor getSelectVisitor() {
-		return selectVisitor;
-	}
+    public SelectVisitor getSelectVisitor() {
+        return selectVisitor;
+    }
 
-	public void setSelectVisitor(SelectVisitor visitor) {
-		selectVisitor = visitor;
-	}
+    public void setSelectVisitor(SelectVisitor visitor) {
+        selectVisitor = visitor;
+    }
 
-	@Override
-	public void visit(DateValue dateValue) {
-		buffer.append("{d '").append(dateValue.getValue().toString()).append("'}");
-	}
+    @Override
+    public void visit(DateValue dateValue) {
+        buffer.append("{d '").append(dateValue.getValue().toString()).append("'}");
+    }
 
-	@Override
-	public void visit(TimestampValue timestampValue) {
-		buffer.append("{ts '").append(timestampValue.getValue().toString()).append("'}");
-	}
+    @Override
+    public void visit(TimestampValue timestampValue) {
+        buffer.append("{ts '").append(timestampValue.getValue().toString()).append("'}");
+    }
 
-	@Override
-	public void visit(TimeValue timeValue) {
-		buffer.append("{t '").append(timeValue.getValue().toString()).append("'}");
-	}
+    @Override
+    public void visit(TimeValue timeValue) {
+        buffer.append("{t '").append(timeValue.getValue().toString()).append("'}");
+    }
 
-	@Override
-	public void visit(CaseExpression caseExpression) {
-		buffer.append("CASE ");
-		Expression switchExp = caseExpression.getSwitchExpression();
-		if (switchExp != null) {
-			switchExp.accept(this);
-			buffer.append(" ");
-		}
+    @Override
+    public void visit(CaseExpression caseExpression) {
+        buffer.append("CASE ");
+        Expression switchExp = caseExpression.getSwitchExpression();
+        if (switchExp != null) {
+            switchExp.accept(this);
+            buffer.append(" ");
+        }
 
         for (Expression exp : caseExpression.getWhenClauses()) {
             exp.accept(this);
         }
 
-		Expression elseExp = caseExpression.getElseExpression();
-		if (elseExp != null) {
-			buffer.append("ELSE ");
-			elseExp.accept(this);
-			buffer.append(" ");
-		}
+        Expression elseExp = caseExpression.getElseExpression();
+        if (elseExp != null) {
+            buffer.append("ELSE ");
+            elseExp.accept(this);
+            buffer.append(" ");
+        }
 
-		buffer.append("END");
-	}
+        buffer.append("END");
+    }
 
-	@Override
-	public void visit(WhenClause whenClause) {
-		buffer.append("WHEN ");
-		whenClause.getWhenExpression().accept(this);
-		buffer.append(" THEN ");
-		whenClause.getThenExpression().accept(this);
-		buffer.append(" ");
-	}
+    @Override
+    public void visit(WhenClause whenClause) {
+        buffer.append("WHEN ");
+        whenClause.getWhenExpression().accept(this);
+        buffer.append(" THEN ");
+        whenClause.getThenExpression().accept(this);
+        buffer.append(" ");
+    }
 
-	@Override
-	public void visit(AllComparisonExpression allComparisonExpression) {
-		buffer.append(" ALL ");
-		allComparisonExpression.getSubSelect().accept((ExpressionVisitor) this);
-	}
+    @Override
+    public void visit(AllComparisonExpression allComparisonExpression) {
+        buffer.append("ALL ");
+        allComparisonExpression.getSubSelect().accept((ExpressionVisitor) this);
+    }
 
-	@Override
-	public void visit(AnyComparisonExpression anyComparisonExpression) {
-		buffer.append(" ANY ");
-		anyComparisonExpression.getSubSelect().accept((ExpressionVisitor) this);
-	}
+    @Override
+    public void visit(AnyComparisonExpression anyComparisonExpression) {
+        buffer.append(anyComparisonExpression.getAnyType().name()).append(" ");
+        anyComparisonExpression.getSubSelect().accept((ExpressionVisitor) this);
+    }
 
-	@Override
-	public void visit(Concat concat) {
-		visitBinaryExpression(concat, " || ");
-	}
+    @Override
+    public void visit(Concat concat) {
+        visitBinaryExpression(concat, " || ");
+    }
 
-	@Override
-	public void visit(Matches matches) {
+    @Override
+    public void visit(Matches matches) {
         visitOldOracleJoinBinaryExpression(matches, " @@ ");
-	}
+    }
 
-	@Override
-	public void visit(BitwiseAnd bitwiseAnd) {
-		visitBinaryExpression(bitwiseAnd, " & ");
-	}
+    @Override
+    public void visit(BitwiseAnd bitwiseAnd) {
+        visitBinaryExpression(bitwiseAnd, " & ");
+    }
 
-	@Override
-	public void visit(BitwiseOr bitwiseOr) {
-		visitBinaryExpression(bitwiseOr, " | ");
-	}
+    @Override
+    public void visit(BitwiseOr bitwiseOr) {
+        visitBinaryExpression(bitwiseOr, " | ");
+    }
 
-	@Override
-	public void visit(BitwiseXor bitwiseXor) {
-		visitBinaryExpression(bitwiseXor, " ^ ");
-	}
+    @Override
+    public void visit(BitwiseXor bitwiseXor) {
+        visitBinaryExpression(bitwiseXor, " ^ ");
+    }
 
-	@Override
-	public void visit(CastExpression cast) {
-		if (cast.isUseCastKeyword()) {
-			buffer.append("CAST(");
-			buffer.append(cast.getLeftExpression());
-			buffer.append(" AS ");
-			buffer.append(cast.getType());
-			buffer.append(")");
-		} else {
-			buffer.append(cast.getLeftExpression());
-			buffer.append("::");
-			buffer.append(cast.getType());
-		}
-	}
+    @Override
+    public void visit(CastExpression cast) {
+        if (cast.isUseCastKeyword()) {
+            buffer.append("CAST(");
+            buffer.append(cast.getLeftExpression());
+            buffer.append(" AS ");
+            buffer.append(cast.getType());
+            buffer.append(")");
+        } else {
+            buffer.append(cast.getLeftExpression());
+            buffer.append("::");
+            buffer.append(cast.getType());
+        }
+    }
 
-	@Override
-	public void visit(Modulo modulo) {
-		visitBinaryExpression(modulo, " % ");
-	}
+    @Override
+    public void visit(Modulo modulo) {
+        visitBinaryExpression(modulo, " % ");
+    }
 
-	@Override
-	public void visit(AnalyticExpression aexpr) {
-		buffer.append(aexpr.toString());
-	}
+    @Override
+    public void visit(AnalyticExpression aexpr) {
+        buffer.append(aexpr.toString());
+    }
 
-	@Override
-	public void visit(ExtractExpression eexpr) {
-		buffer.append(eexpr.toString());
-	}
+    @Override
+    public void visit(ExtractExpression eexpr) {
+        buffer.append("EXTRACT(").append(eexpr.getName());
+        buffer.append(" FROM ");
+        eexpr.getExpression().accept(this);
+        buffer.append(')');
+    }
 
-	@Override
-	public void visit(MultiExpressionList multiExprList) {
-		for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
-			it.next().accept(this);
-			if (it.hasNext()) {
-				buffer.append(", ");
-			}
-		}
-	}
+    @Override
+    public void visit(MultiExpressionList multiExprList) {
+        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
+            it.next().accept(this);
+            if (it.hasNext()) {
+                buffer.append(", ");
+            }
+        }
+    }
 
-	@Override
-	public void visit(IntervalExpression iexpr) {
-		buffer.append(iexpr.toString());
-	}
+    @Override
+    public void visit(IntervalExpression iexpr) {
+        buffer.append(iexpr.toString());
+    }
+
+    @Override
+    public void visit(JdbcNamedParameter jdbcNamedParameter) {
+        buffer.append(jdbcNamedParameter.toString());
+    }
+
+    @Override
+    public void visit(OracleHierarchicalExpression oexpr) {
+        buffer.append(oexpr.toString());
+    }
+
+    @Override
+    public void visit(RegExpMatchOperator rexpr) {
+        visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ");
+    }
+
+    @Override
+    public void visit(RegExpMySQLOperator rexpr) {
+        visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ");
+    }
+
+    @Override
+    public void visit(JsonExpression jsonExpr) {
+        buffer.append(jsonExpr.toString());
+    }
+
+    @Override
+    public void visit(WithinGroupExpression wgexpr) {
+        buffer.append(wgexpr.toString());
+    }
+
+    @Override
+    public void visit(UserVariable var) {
+        buffer.append(var.toString());
+    }
+
+    @Override
+    public void visit(NumericBind bind) {
+        buffer.append(bind.toString());
+    }
+
+    @Override
+    public void visit(KeepExpression aexpr) {
+        buffer.append(aexpr.toString());
+    }
+
+    @Override
+    public void visit(MySQLGroupConcat groupConcat) {
+        buffer.append(groupConcat.toString());
+    }
+
+    @Override
+    public void visit(RowConstructor rowConstructor) {
+        if (rowConstructor.getName() != null) {
+            buffer.append(rowConstructor.getName());
+        }
+        buffer.append("(");
+        boolean first = true;
+        for (Expression expr : rowConstructor.getExprList().getExpressions()) {
+            if (first) {
+                first = false;
+            } else {
+                buffer.append(", ");
+            }
+            expr.accept(this);
+        }
+        buffer.append(")");
+    }
+
+    @Override
+    public void visit(OracleHint hint) {
+        buffer.append(hint.toString());
+    }
+
+    @Override
+    public void visit(TimeKeyExpression timeKeyExpression) {
+        buffer.append(timeKeyExpression.toString());
+    }
+
+    @Override
+    public void visit(DateTimeLiteralExpression literal) {
+        buffer.append(literal.toString());
+    }
+
 }

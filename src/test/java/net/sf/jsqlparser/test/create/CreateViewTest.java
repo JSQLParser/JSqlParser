@@ -51,7 +51,7 @@ public class CreateViewTest extends TestCase {
 	
 	public void testCreateView5() throws JSQLParserException {
 		String statement = "CREATE VIEW myview AS (SELECT * FROM mytab)";
-		String statement2 = "CREATE VIEW myview AS SELECT * FROM mytab";
+		String statement2 = "CREATE VIEW myview AS (SELECT * FROM mytab)";
 		CreateView createView = (CreateView) parserManager.parse(new StringReader(statement));
 		assertFalse(createView.isOrReplace());
 		assertEquals("myview", createView.getView().getName());

@@ -26,6 +26,7 @@ import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 
 import java.util.Iterator;
 import java.util.List;
+import net.sf.jsqlparser.expression.Alias;
 
 /**
  * This is a container for a values item within a select statement. It holds
@@ -35,7 +36,7 @@ import java.util.List;
  */
 public class ValuesList implements FromItem {
 
-	private String alias;
+	private Alias alias;
 	private MultiExpressionList multiExpressionList;
 	private boolean noBrackets = false;
 	private List<String> columnNames;
@@ -53,12 +54,12 @@ public class ValuesList implements FromItem {
 	}
 
 	@Override
-	public String getAlias() {
+	public Alias getAlias() {
 		return alias;
 	}
 
 	@Override
-	public void setAlias(String alias) {
+	public void setAlias(Alias alias) {
 		this.alias = alias;
 	}
 
@@ -100,7 +101,7 @@ public class ValuesList implements FromItem {
 		}
 		b.append(")");
 		if (alias != null) {
-			b.append(" AS ").append(alias);
+			b.append(alias.toString());
 
 			if (columnNames != null) {
 				b.append("(");

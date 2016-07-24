@@ -32,77 +32,115 @@ import java.util.List;
  */
 public class SetOperationList implements SelectBody {
 
-	private List<PlainSelect> plainSelects;
-	private List<SetOperation> operations;
-	private List<OrderByElement> orderByElements;
-	private Limit limit;
+    private List<SelectBody> selects;
+    private List<Boolean> brackets;
+    private List<SetOperation> operations;
+    private List<OrderByElement> orderByElements;
+    private Limit limit;
+    private Offset offset;
+    private Fetch fetch;
 
-	@Override
-	public void accept(SelectVisitor selectVisitor) {
-		selectVisitor.visit(this);
-	}
+    @Override
+    public void accept(SelectVisitor selectVisitor) {
+        selectVisitor.visit(this);
+    }
 
-	public List<OrderByElement> getOrderByElements() {
-		return orderByElements;
-	}
+    public List<OrderByElement> getOrderByElements() {
+        return orderByElements;
+    }
 
-	public List<PlainSelect> getPlainSelects() {
-		return plainSelects;
-	}
+    public List<SelectBody> getSelects() {
+        return selects;
+    }
 
-	public List<SetOperation> getOperations() {
-		return operations;
-	}
+    public List<SetOperation> getOperations() {
+        return operations;
+    }
 
-	public void setOrderByElements(List<OrderByElement> orderByElements) {
-		this.orderByElements = orderByElements;
-	}
+    public List<Boolean> getBrackets() {
+        return brackets;
+    }
 
-	public void setOpsAndSelects(List<PlainSelect> select, List<SetOperation> ops) {
-		plainSelects = select;
-		operations = ops;
+    public void setBrackets(List<Boolean> brackets) {
+        this.brackets = brackets;
+    }
 
-		if (select.size() - 1 != ops.size()) {
-			throw new IllegalArgumentException("list sizes are not valid");
-		}
-	}
+    public void setOrderByElements(List<OrderByElement> orderByElements) {
+        this.orderByElements = orderByElements;
+    }
 
-	public Limit getLimit() {
-		return limit;
-	}
+    public void setBracketsOpsAndSelects(List<Boolean> brackets, List<SelectBody> select, List<SetOperation> ops) {
+        selects = select;
+        operations = ops;
+        this.brackets = brackets;
 
-	public void setLimit(Limit limit) {
-		this.limit = limit;
-	}
+        if (select.size() - 1 != ops.size() || select.size() != brackets.size()) {
+            throw new IllegalArgumentException("list sizes are not valid");
+        }
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder buffer = new StringBuilder();
+    public Limit getLimit() {
+        return limit;
+    }
 
-		for (int i = 0; i < plainSelects.size(); i++) {
-			if (i != 0) {
-				buffer.append(" ").append(operations.get(i - 1).toString()).append(" ");
-			}
-			buffer.append("(").append(plainSelects.get(i).toString()).append(")");
-		}
+    public void setLimit(Limit limit) {
+        this.limit = limit;
+    }
 
-		if (orderByElements != null) {
-			buffer.append(PlainSelect.orderByToString(orderByElements));
-		}
-		if (limit != null) {
-			buffer.append(limit.toString());
-		}
-		return buffer.toString();
-	}
+    public Offset getOffset() {
+        return offset;
+    }
 
-	/**
-	 * list of set operations.
-	 */
-	public enum SetOperationType {
+    public void setOffset(Offset offset) {
+        this.offset = offset;
+    }
 
-		INTERSECT,
-		EXCEPT,
-		MINUS,
-		UNION
-	}
+    public Fetch getFetch() {
+        return fetch;
+    }
+
+    public void setFetch(Fetch fetch) {
+        this.fetch = fetch;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+
+        for (int i = 0; i < selects.size(); i++) {
+            if (i != 0) {
+                buffer.append(" ").append(operations.get(i - 1).toString()).append(" ");
+            }
+            if (brackets==null || brackets.get(i)) {
+                buffer.append("(").append(selects.get(i).toString()).append(")");
+            } else {
+                buffer.append(selects.get(i).toString());
+            }
+        }
+
+        if (orderByElements != null) {
+            buffer.append(PlainSelect.orderByToString(orderByElements));
+        }
+        if (limit != null) {
+            buffer.append(limit.toString());
+        }
+        if (offset != null) {
+            buffer.append(offset.toString());
+        }
+        if (fetch != null) {
+            buffer.append(fetch.toString());
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * list of set operations.
+     */
+    public enum SetOperationType {
+
+        INTERSECT,
+        EXCEPT,
+        MINUS,
+        UNION
+    }
 }

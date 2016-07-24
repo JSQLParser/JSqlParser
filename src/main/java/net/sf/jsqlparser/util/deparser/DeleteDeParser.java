@@ -22,6 +22,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.statement.delete.Delete;
 
 /**
@@ -30,9 +31,12 @@ import net.sf.jsqlparser.statement.delete.Delete;
  */
 public class DeleteDeParser {
 
-	private StringBuilder buffer;
-    private ExpressionVisitor expressionVisitor;
+	private StringBuilder buffer = new StringBuilder();
+    private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
 
+    public DeleteDeParser() {
+    }
+    
 	/**
 	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
 	 * expressions. It has to share the same<br>
@@ -53,10 +57,17 @@ public class DeleteDeParser {
 	}
 
 	public void deParse(Delete delete) {
-		buffer.append("DELETE FROM ").append(delete.getTable().getWholeTableName());
+		buffer.append("DELETE FROM ").append(delete.getTable().getFullyQualifiedName());
 		if (delete.getWhere() != null) {
 			buffer.append(" WHERE ");
 			delete.getWhere().accept(expressionVisitor);
+		}
+
+		if(delete.getOrderByElements()!=null){
+			new OrderByDeParser(expressionVisitor, buffer).deParse(delete.getOrderByElements());
+		}
+		if (delete.getLimit() != null) {
+			new LimitDeparser(buffer).deParse(delete.getLimit());
 		}
 
 	}

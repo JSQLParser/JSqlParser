@@ -32,6 +32,7 @@ public class Limit {
 	private boolean rowCountJdbcParameter = false;
 	private boolean offsetJdbcParameter = false;
 	private boolean limitAll;
+    private boolean limitNull = false;
 
 	public long getOffset() {
 		return offset;
@@ -76,14 +77,23 @@ public class Limit {
 		limitAll = b;
 	}
 
+    /**
+     * @return true if the limit is "LIMIT NULL [OFFSET ...])
+     */
+    public boolean isLimitNull() { return limitNull; }
+
+    public void setLimitNull(boolean b) { limitNull = b; }
+
 	@Override
 	public String toString() {
 		String retVal = "";
-		if (rowCount > 0 || rowCountJdbcParameter) {
-			retVal += " LIMIT " + (rowCountJdbcParameter ? "?" : rowCount + "");
+		if (limitNull) {
+            retVal += " LIMIT NULL";
+        } else if (rowCount >= 0 || rowCountJdbcParameter) {
+			retVal += " LIMIT " + (rowCountJdbcParameter ? "?" : Long.toString(rowCount));
 		}
 		if (offset > 0 || offsetJdbcParameter) {
-			retVal += " OFFSET " + (offsetJdbcParameter ? "?" : offset + "");
+			retVal += " OFFSET " + (offsetJdbcParameter ? "?" : Long.toString(offset));
 		}
 		return retVal;
 	}

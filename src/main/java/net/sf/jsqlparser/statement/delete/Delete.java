@@ -25,11 +25,26 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+
+import java.util.List;
 
 public class Delete implements Statement {
 
 	private Table table;
 	private Expression where;
+	private Limit limit;
+	private List<OrderByElement> orderByElements;
+
+	public List<OrderByElement> getOrderByElements() {
+		return orderByElements;
+	}
+
+	public void setOrderByElements(List<OrderByElement> orderByElements) {
+		this.orderByElements = orderByElements;
+	}
 
 	@Override
 	public void accept(StatementVisitor statementVisitor) {
@@ -52,8 +67,19 @@ public class Delete implements Statement {
 		where = expression;
 	}
 
+	public Limit getLimit() {
+		return limit;
+	}
+
+	public void setLimit(Limit limit) {
+		this.limit = limit;
+	}
+
 	@Override
 	public String toString() {
-		return "DELETE FROM " + table + ((where != null) ? " WHERE " + where : "");
+		return "DELETE FROM " + table +
+				((where != null) ? " WHERE " + where : "") +
+				(orderByElements!=null? PlainSelect.orderByToString(orderByElements):"") +
+				(limit != null ? limit : "");
 	}
 }

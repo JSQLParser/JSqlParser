@@ -21,10 +21,11 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 import java.util.List;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * Analytic function. The name of the function is variable but the parameters
@@ -36,50 +37,60 @@ import java.util.List;
  */
 public class AnalyticExpression implements Expression {
 
-	private List<Column> partitionByColumns;
-	private List<OrderByElement> orderByElements;
-	private String name;
-	private Expression expression;
+    private ExpressionList partitionExpressionList;
+    private List<OrderByElement> orderByElements;
+    private String name;
+    private Expression expression;
     private Expression offset;
     private Expression defaultValue;
-	private boolean allColumns = false;
+    private boolean allColumns = false;
+    private WindowElement windowElement;
+    private KeepExpression keep = null;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	public List<OrderByElement> getOrderByElements() {
-		return orderByElements;
-	}
+    public List<OrderByElement> getOrderByElements() {
+        return orderByElements;
+    }
 
-	public void setOrderByElements(List<OrderByElement> orderByElements) {
-		this.orderByElements = orderByElements;
-	}
+    public void setOrderByElements(List<OrderByElement> orderByElements) {
+        this.orderByElements = orderByElements;
+    }
 
-	public List<Column> getPartitionByColumns() {
-		return partitionByColumns;
-	}
+    public KeepExpression getKeep() {
+        return keep;
+    }
 
-	public void setPartitionByColumns(List<Column> partitionByColumns) {
-		this.partitionByColumns = partitionByColumns;
-	}
+    public void setKeep(KeepExpression keep) {
+        this.keep = keep;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public ExpressionList getPartitionExpressionList() {
+        return partitionExpressionList;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
+        this.partitionExpressionList = partitionExpressionList;
+    }
 
-	public Expression getExpression() {
-		return expression;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setExpression(Expression expression) {
-		this.expression = expression;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
 
     public Expression getOffset() {
         return offset;
@@ -97,62 +108,74 @@ public class AnalyticExpression implements Expression {
         this.defaultValue = defaultValue;
     }
 
-    @Override
-	public String toString() {
-		StringBuilder b = new StringBuilder();
+    public WindowElement getWindowElement() {
+        return windowElement;
+    }
 
-		b.append(name).append("(");
-		if (expression != null) {
-			b.append(expression.toString());
+    public void setWindowElement(WindowElement windowElement) {
+        this.windowElement = windowElement;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+
+        b.append(name).append("(");
+        if (expression != null) {
+            b.append(expression.toString());
             if (offset != null) {
                 b.append(", ").append(offset.toString());
                 if (defaultValue != null) {
                     b.append(", ").append(defaultValue.toString());
                 }
             }
-		} else if (isAllColumns()) {
-			b.append("*");
-		}
-		b.append(") OVER (");
-		
-		toStringPartitionBy(b);
-		toStringOrderByElements(b);
+        } else if (isAllColumns()) {
+            b.append("*");
+        }
+        b.append(") ");
+        if (keep != null) {
+            b.append(keep.toString()).append(" ");
+        }
+        b.append("OVER (");
 
-		b.append(")");
+        toStringPartitionBy(b);
+        toStringOrderByElements(b);
 
-		return b.toString();
-	}
+        b.append(")");
 
-	public boolean isAllColumns() {
-		return allColumns;
-	}
+        return b.toString();
+    }
 
-	public void setAllColumns(boolean allColumns) {
-		this.allColumns = allColumns;
-	}
+    public boolean isAllColumns() {
+        return allColumns;
+    }
 
-	private void toStringPartitionBy(StringBuilder b) {
-		if (partitionByColumns != null && !partitionByColumns.isEmpty()) {
-			b.append("PARTITION BY ");
-			for (int i = 0; i < partitionByColumns.size(); i++) {
-				if (i > 0) {
-					b.append(", ");
-				}
-				b.append(partitionByColumns.get(i).toString());
-			}
-			b.append(" ");
-		}
-	}
+    public void setAllColumns(boolean allColumns) {
+        this.allColumns = allColumns;
+    }
 
-	private void toStringOrderByElements(StringBuilder b) {
-		if (orderByElements != null && !orderByElements.isEmpty()) {
-			b.append("ORDER BY ");
-			for (int i = 0; i < orderByElements.size(); i++) {
-				if (i > 0) {
-					b.append(", ");
-				}
-				b.append(orderByElements.get(i).toString());
-			}
-		}
-	}
+    private void toStringPartitionBy(StringBuilder b) {
+        if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
+            b.append("PARTITION BY ");
+            b.append(PlainSelect.getStringList(partitionExpressionList.getExpressions(), true, false));
+            b.append(" ");
+        }
+    }
+
+    private void toStringOrderByElements(StringBuilder b) {
+        if (orderByElements != null && !orderByElements.isEmpty()) {
+            b.append("ORDER BY ");
+            for (int i = 0; i < orderByElements.size(); i++) {
+                if (i > 0) {
+                    b.append(", ");
+                }
+                b.append(orderByElements.get(i).toString());
+            }
+
+            if (windowElement != null) {
+                b.append(' ');
+                b.append(windowElement);
+            }
+        }
+    }
 }

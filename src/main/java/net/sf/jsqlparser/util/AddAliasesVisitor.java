@@ -21,17 +21,11 @@
  */
 package net.sf.jsqlparser.util;
 
-import java.util.LinkedList;
-import java.util.List;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SelectItemVisitor;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.schema.*;
+import net.sf.jsqlparser.statement.select.*;
+
+import java.util.*;
 
 /**
  * Add aliases to every column and expression selected by a select - statement.
@@ -43,6 +37,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
  */
 public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
+	private static final String NOT_SUPPORTED_YET = "Not supported yet.";
 	private List<String> aliases = new LinkedList<String>();
 	private boolean firstRun = true;
 	private int counter = 0;
@@ -64,26 +59,21 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
 	@Override
 	public void visit(SetOperationList setOpList) {
-		for (PlainSelect select : setOpList.getPlainSelects()) {
+		for (SelectBody select : setOpList.getSelects()) {
 			select.accept(this);
 		}
 	}
 
 	@Override
-	public void visit(AllColumns allColumns) {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	@Override
 	public void visit(AllTableColumns allTableColumns) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
 	}
 
 	@Override
 	public void visit(SelectExpressionItem selectExpressionItem) {
 		if (firstRun) {
 			if (selectExpressionItem.getAlias() != null) {
-				aliases.add(selectExpressionItem.getAlias().toUpperCase());
+				aliases.add(selectExpressionItem.getAlias().getName().toUpperCase());
 			}
 		} else {
 			if (selectExpressionItem.getAlias() == null) {
@@ -92,7 +82,7 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 					String alias = getNextAlias().toUpperCase();
 					if (!aliases.contains(alias)) {
 						aliases.add(alias);
-						selectExpressionItem.setAlias(alias);
+						selectExpressionItem.setAlias(new Alias(alias));
 						break;
 					}
 				}
@@ -121,6 +111,11 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
 	@Override
 	public void visit(WithItem withItem) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public void visit(AllColumns allColumns) {
+		throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
 	}
 }

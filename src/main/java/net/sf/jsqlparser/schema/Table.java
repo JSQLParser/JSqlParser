@@ -21,92 +21,122 @@
  */
 package net.sf.jsqlparser.schema;
 
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.FromItemVisitor;
-import net.sf.jsqlparser.statement.select.IntoTableVisitor;
-import net.sf.jsqlparser.statement.select.Pivot;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.select.*;
 
 /**
  * A table. It can have an alias and the schema name it belongs to.
  */
-public class Table implements FromItem {
+public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName {
 
-	private String schemaName;
-	private String name;
-	private String alias;
+    private Database database;
+    private String schemaName;
+    private String name;
+
+    private Alias alias;
     private Pivot pivot;
 
-	public Table() {
-	}
+    public Table() {
+    }
 
-	public Table(String schemaName, String name) {
-		this.schemaName = schemaName;
-		this.name = name;
-	}
+    public Table(String name) {
+        this.name = name;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public Table(String schemaName, String name) {
+        this.schemaName = schemaName;
+        this.name = name;
+    }
 
-	public String getSchemaName() {
-		return schemaName;
-	}
+    public Table(Database database, String schemaName, String name) {
+        this.database = database;
+        this.schemaName = schemaName;
+        this.name = name;
+    }
 
-	public void setName(String string) {
-		name = string;
-	}
+    public Database getDatabase() {
+        return database;
+    }
 
-	public void setSchemaName(String string) {
-		schemaName = string;
-	}
+    public void setDatabase(Database database) {
+        this.database = database;
+    }
 
-	@Override
-	public String getAlias() {
-		return alias;
-	}
+    public String getSchemaName() {
+        return schemaName;
+    }
 
-	@Override
-	public void setAlias(String string) {
-		alias = string;
-	}
+    public void setSchemaName(String string) {
+        schemaName = string;
+    }
 
-    public String getWholeTableName() {
+    public String getName() {
+        return name;
+    }
 
-		String tableWholeName = null;
-		if (name == null) {
-			return null;
-		}
-		if (schemaName != null) {
-			tableWholeName = schemaName + "." + name;
-		} else {
-			tableWholeName = name;
-		}
+    public void setName(String string) {
+        name = string;
+    }
 
-		return tableWholeName;
+    @Override
+    public Alias getAlias() {
+        return alias;
+    }
 
-	}
+    @Override
+    public void setAlias(Alias alias) {
+        this.alias = alias;
+    }
 
-	@Override
-	public void accept(FromItemVisitor fromItemVisitor) {
-		fromItemVisitor.visit(this);
-	}
+    @Override
+    public String getFullyQualifiedName() {
+        String fqn = "";
 
-	public void accept(IntoTableVisitor intoTableVisitor) {
-		intoTableVisitor.visit(this);
-	}
+        if (database != null) {
+            fqn += database.getFullyQualifiedName();
+        }
+        if (!fqn.isEmpty()) {
+            fqn += ".";
+        }
 
+        if (schemaName != null) {
+            fqn += schemaName;
+        }
+        if (!fqn.isEmpty()) {
+            fqn += ".";
+        }
+
+        if (name != null) {
+            fqn += name;
+        }
+
+        return fqn;
+    }
+
+    @Override
+    public void accept(FromItemVisitor fromItemVisitor) {
+        fromItemVisitor.visit(this);
+    }
+
+    public void accept(IntoTableVisitor intoTableVisitor) {
+        intoTableVisitor.visit(this);
+    }
+
+    @Override
     public Pivot getPivot() {
         return pivot;
     }
 
+    @Override
     public void setPivot(Pivot pivot) {
         this.pivot = pivot;
     }
 
     @Override
-	public String toString() {
-		return getWholeTableName() +
-                ((pivot != null) ? " "+pivot : "") +
-                ((alias != null) ? " AS " + alias : "");
-	}
+    public String toString() {
+        return getFullyQualifiedName()
+               + ((pivot != null) ? " " + pivot : "")
+               + ((alias != null) ? alias.toString() : "");
+    }
 }

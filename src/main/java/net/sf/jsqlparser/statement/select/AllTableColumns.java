@@ -24,7 +24,7 @@ package net.sf.jsqlparser.statement.select;
 /**
  * All the columns of a table (as in "SELECT TableName.* FROM ...")
  */
-import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.schema.*;
 
 public class AllTableColumns implements SelectItem {
 
