@@ -30,8 +30,11 @@ import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.InsertModifierPriority;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
@@ -39,107 +42,160 @@ import net.sf.jsqlparser.statement.select.SubSelect;
  */
 public class InsertDeParser implements ItemsListVisitor {
 
-	private StringBuilder buffer;
+    private StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
 
-	public InsertDeParser() {
-	}
+    public InsertDeParser() {
+    }
 
-	/**
-	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
-	 * {@link net.sf.jsqlparser.expression.Expression}s. It has to share the
-	 * same<br>
-	 * StringBuilder (buffer parameter) as this object in order to work
-	 * @param selectVisitor a {@link SelectVisitor} to de-parse
-	 * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the
-	 * same<br>
-	 * StringBuilder (buffer parameter) as this object in order to work
-	 * @param buffer the buffer that will be filled with the insert
-	 */
-	public InsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
-		this.buffer = buffer;
-		this.expressionVisitor = expressionVisitor;
-		this.selectVisitor = selectVisitor;
-	}
+    /**
+     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
+     * {@link net.sf.jsqlparser.expression.Expression}s. It has to share the
+     * same<br>
+     * StringBuilder (buffer parameter) as this object in order to work
+     * @param selectVisitor a {@link SelectVisitor} to de-parse
+     * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the
+     * same<br>
+     * StringBuilder (buffer parameter) as this object in order to work
+     * @param buffer the buffer that will be filled with the insert
+     */
+    public InsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
+        this.buffer = buffer;
+        this.expressionVisitor = expressionVisitor;
+        this.selectVisitor = selectVisitor;
+    }
 
-	public StringBuilder getBuffer() {
-		return buffer;
-	}
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
 
-	public void setBuffer(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 
-	public void deParse(Insert insert) {
-		buffer.append("INSERT INTO ");
-		buffer.append(insert.getTable().getFullyQualifiedName());
-		if (insert.getColumns() != null) {
-			buffer.append(" (");
-			for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext();) {
-				Column column = iter.next();
-				buffer.append(column.getColumnName());
-				if (iter.hasNext()) {
-					buffer.append(", ");
-				}
-			}
-			buffer.append(")");
-		}
+    public void deParse(Insert insert) {
+        buffer.append("INSERT ");
+        if(insert.getModifierPriority() != null){
+            buffer.append(insert.getModifierPriority()).append(" ");
+        }
+        if(insert.isModifierIgnore()){
+            buffer.append("IGNORE ");
+        }
+        buffer.append("INTO ");
 
-		insert.getItemsList().accept(this);
+        buffer.append(insert.getTable().getFullyQualifiedName());
+        if (insert.getColumns() != null) {
+            buffer.append(" (");
+            for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext();) {
+                Column column = iter.next();
+                buffer.append(column.getColumnName());
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
+            buffer.append(")");
+        }
 
-	}
+        if (insert.getItemsList() != null) {
+            insert.getItemsList().accept(this);
+        }
 
-	@Override
-	public void visit(ExpressionList expressionList) {
-		buffer.append(" VALUES (");
-		for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
-			Expression expression = iter.next();
-			expression.accept(expressionVisitor);
-			if (iter.hasNext()) {
-				buffer.append(", ");
-			}
-		}
-		buffer.append(")");
-	}
+        if (insert.getSelect() != null) {
+            buffer.append(" ");
+            if (insert.isUseSelectBrackets()) {
+                buffer.append("(");
+            }
+            if (insert.getSelect().getWithItemsList() != null) {
+                buffer.append("WITH ");
+                for (WithItem with : insert.getSelect().getWithItemsList()) {
+                    with.accept(selectVisitor);
+                }
+                buffer.append(" ");
+            }
+            insert.getSelect().getSelectBody().accept(selectVisitor);
+            if (insert.isUseSelectBrackets()) {
+                buffer.append(")");
+            }
+        }
 
-	@Override
-	public void visit(MultiExpressionList multiExprList) {
-		buffer.append(" VALUES ");
-		for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
-			buffer.append("(");
-			for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter.hasNext();) {
-				Expression expression = iter.next();
-				expression.accept(expressionVisitor);
-				if (iter.hasNext()) {
-					buffer.append(", ");
-				}
-			}
-			buffer.append(")");
-			if (it.hasNext()) {
-				buffer.append(", ");
-			}
-		}
-	}
+        if(insert.isUseDuplicate()){
+            buffer.append(" ON DUPLICATE KEY UPDATE ");
+            for (int i = 0; i < insert.getDuplicateUpdateColumns().size(); i++) {
+                Column column = insert.getDuplicateUpdateColumns().get(i);
+                buffer.append(column.getFullyQualifiedName()).append(" = ");
 
-	@Override
-	public void visit(SubSelect subSelect) {
-		subSelect.getSelectBody().accept(selectVisitor);
-	}
+                Expression expression = insert.getDuplicateUpdateExpressionList().get(i);
+                expression.accept(expressionVisitor);
+                if (i < insert.getDuplicateUpdateColumns().size() - 1) {
+                    buffer.append(", ");
+                }
+            }
+        }
 
-	public ExpressionVisitor getExpressionVisitor() {
-		return expressionVisitor;
-	}
+        if (insert.isReturningAllColumns()) {
+            buffer.append(" RETURNING *");
+        } else if (insert.getReturningExpressionList() != null) {
+            buffer.append(" RETURNING ");
+            for (Iterator<SelectExpressionItem> iter = insert.getReturningExpressionList().iterator(); iter.hasNext();) {
+                buffer.append(iter.next().toString());
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
+        }
+    }
 
-	public SelectVisitor getSelectVisitor() {
-		return selectVisitor;
-	}
+    @Override
+    public void visit(ExpressionList expressionList) {
+        buffer.append(" VALUES (");
+        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
+            Expression expression = iter.next();
+            expression.accept(expressionVisitor);
+            if (iter.hasNext()) {
+                buffer.append(", ");
+            }
+        }
+        buffer.append(")");
+    }
 
-	public void setExpressionVisitor(ExpressionVisitor visitor) {
-		expressionVisitor = visitor;
-	}
+    @Override
+    public void visit(MultiExpressionList multiExprList) {
+        buffer.append(" VALUES ");
+        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
+            buffer.append("(");
+            for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter.hasNext();) {
+                Expression expression = iter.next();
+                expression.accept(expressionVisitor);
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
+            buffer.append(")");
+            if (it.hasNext()) {
+                buffer.append(", ");
+            }
+        }
+    }
 
-	public void setSelectVisitor(SelectVisitor visitor) {
-		selectVisitor = visitor;
-	}
+    @Override
+    public void visit(SubSelect subSelect) {
+        subSelect.getSelectBody().accept(selectVisitor);
+    }
+
+    public ExpressionVisitor getExpressionVisitor() {
+        return expressionVisitor;
+    }
+
+    public SelectVisitor getSelectVisitor() {
+        return selectVisitor;
+    }
+
+    public void setExpressionVisitor(ExpressionVisitor visitor) {
+        expressionVisitor = visitor;
+    }
+
+    public void setSelectVisitor(SelectVisitor visitor) {
+        selectVisitor = visitor;
+    }
 }

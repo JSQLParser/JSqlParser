@@ -45,6 +45,7 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
+import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
@@ -61,8 +62,10 @@ public interface ExpressionVisitor {
     void visit(JdbcNamedParameter jdbcNamedParameter);
 
 	void visit(DoubleValue doubleValue);
-
+	
 	void visit(LongValue longValue);
+	
+	void visit(HexValue hexValue);
 
 	void visit(DateValue dateValue);
 
@@ -135,6 +138,8 @@ public interface ExpressionVisitor {
 	void visit(Modulo modulo);
 
 	void visit(AnalyticExpression aexpr);
+    
+    void visit(WithinGroupExpression wgexpr);
 
 	void visit(ExtractExpression eexpr);
 
@@ -143,4 +148,25 @@ public interface ExpressionVisitor {
 	void visit(OracleHierarchicalExpression oexpr);
 
 	void visit(RegExpMatchOperator rexpr);
+    
+    void visit(JsonExpression jsonExpr);
+
+	void visit(RegExpMySQLOperator regExpMySQLOperator);
+    
+    void visit(UserVariable var);
+    
+    void visit(NumericBind bind);
+    
+    void visit(KeepExpression aexpr);
+    
+    void visit(MySQLGroupConcat groupConcat);
+    
+    void visit(RowConstructor rowConstructor);
+    
+    void visit(OracleHint hint);
+
+    void visit(TimeKeyExpression timeKeyExpression);
+
+    void visit(DateTimeLiteralExpression literal);
+
 }

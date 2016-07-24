@@ -37,6 +37,7 @@ public class OrderByElement {
     private Expression expression;
     private boolean asc = true;
     private NullOrdering nullOrdering;
+    private boolean ascDesc = false;
 
     public boolean isAsc() {
         return asc;
@@ -52,6 +53,14 @@ public class OrderByElement {
 
     public void setAsc(boolean b) {
         asc = b;
+    }
+    
+    public void setAscDescPresent(boolean b) {
+        ascDesc = b;
+    }
+
+    public boolean isAscDescPresent() {
+        return ascDesc;
     }
 
     public void accept(OrderByVisitor orderByVisitor) {
@@ -70,9 +79,13 @@ public class OrderByElement {
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append(expression.toString());
+        
         if (!asc) {
             b.append(" DESC");
+        } else if (ascDesc) {
+            b.append(" ASC");
         }
+        
         if (nullOrdering != null) {
             b.append(' ');
             b.append(nullOrdering == NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");

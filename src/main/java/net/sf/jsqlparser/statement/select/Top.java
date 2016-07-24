@@ -21,31 +21,23 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Expression;
+
 /**
  * A top clause in the form [TOP (row_count) or TOP row_count]
  */
 public class Top {
 
-    private long rowCount;
-    private boolean rowCountJdbcParameter = false;
     private boolean hasParenthesis = false;
     private boolean isPercentage = false;
+    private Expression expression;
 
-    public long getRowCount() {
-        return rowCount;
+    public Expression getExpression() {
+        return expression;
     }
 
-    // TODO instead of a plain number, an expression should be added, which could be a NumberExpression, a GroupedExpression or a JdbcParameter
-    public void setRowCount(long rowCount) {
-        this.rowCount = rowCount;
-    }
-
-    public boolean isRowCountJdbcParameter() {
-        return rowCountJdbcParameter;
-    }
-
-    public void setRowCountJdbcParameter(boolean rowCountJdbcParameter) {
-        this.rowCountJdbcParameter = rowCountJdbcParameter;
+    public void setExpression(Expression expression) {
+        this.expression = expression;
     }
 
     public boolean hasParenthesis() {
@@ -72,8 +64,7 @@ public class Top {
             result += "(";
         }
 
-        result += rowCountJdbcParameter ? "?"
-                : rowCount;
+        result += expression.toString();
 
         if (hasParenthesis) {
             result += ")";

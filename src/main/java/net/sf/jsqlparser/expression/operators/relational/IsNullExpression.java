@@ -52,6 +52,6 @@ public class IsNullExpression implements Expression {
 
 	@Override
 	public String toString() {
-		return leftExpression + " IS " + ((not) ? "NOT " : "") + "NULL";
+		return leftExpression + " IS " + (not ? "NOT " : "") + "NULL";
 	}
 }

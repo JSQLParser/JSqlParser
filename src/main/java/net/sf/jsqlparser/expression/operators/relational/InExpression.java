@@ -97,7 +97,7 @@ public class InExpression implements Expression, SupportsOldOracleJoinSyntax {
 
 	@Override
 	public String toString() {
-		return (leftExpression == null ? leftItemsList : getLeftExpressionString()) + " " + ((not) ? "NOT " : "") + "IN " + rightItemsList + "";
+		return (leftExpression == null ? leftItemsList : getLeftExpressionString()) + " " + (not ? "NOT " : "") + "IN " + rightItemsList + "";
 	}
 
 	@Override

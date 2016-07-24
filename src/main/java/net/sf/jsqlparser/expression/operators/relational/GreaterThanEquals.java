@@ -23,15 +23,18 @@ package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
-public class GreaterThanEquals extends OldOracleJoinBinaryExpression {
+public class GreaterThanEquals extends ComparisonOperator {
+
+	public GreaterThanEquals() {
+		super(">=");
+	}
+
+	public GreaterThanEquals(String operator) {
+		super(operator);
+	}
 
 	@Override
 	public void accept(ExpressionVisitor expressionVisitor) {
 		expressionVisitor.visit(this);
-	}
-
-	@Override
-	public String getStringExpression() {
-		return ">=";
 	}
 }

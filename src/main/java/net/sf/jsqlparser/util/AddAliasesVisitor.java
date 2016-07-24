@@ -37,6 +37,7 @@ import java.util.*;
  */
 public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
+	private static final String NOT_SUPPORTED_YET = "Not supported yet.";
 	private List<String> aliases = new LinkedList<String>();
 	private boolean firstRun = true;
 	private int counter = 0;
@@ -58,14 +59,14 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
 	@Override
 	public void visit(SetOperationList setOpList) {
-		for (PlainSelect select : setOpList.getPlainSelects()) {
+		for (SelectBody select : setOpList.getSelects()) {
 			select.accept(this);
 		}
 	}
 
 	@Override
 	public void visit(AllTableColumns allTableColumns) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
 	}
 
 	@Override
@@ -110,11 +111,11 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
 	@Override
 	public void visit(WithItem withItem) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override
 	public void visit(AllColumns allColumns) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
 	}
 }

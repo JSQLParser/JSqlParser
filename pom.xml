@@ -2,32 +2,39 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>0.9-SNAPSHOT</version>
+    <version>0.9.6-SNAPSHOT</version>
     <name>JSQLParser library</name>
     <inceptionYear>2004</inceptionYear>
     <organization>
         <name>JSQLParser</name>
     </organization>
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
     <url>https://github.com/JSQLParser/JSqlParser</url>
 
     <licenses>
         <license>
             <name>GNU Library or Lesser General Public License (LGPL) V2.1</name>
             <url>http://www.gnu.org/licenses/lgpl-2.1.html</url>
+            <distribution>repo</distribution>
+        </license>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
         </license>
     </licenses>
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -66,7 +73,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>3.3</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
@@ -83,10 +90,22 @@
                         <id>javacc</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>javacc</goal>
+                            <goal>jjtree-javacc</goal>
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <nodeDefaultVoid>true</nodeDefaultVoid>
+                    <visitor>true</visitor>
+                    <trackTokens>true</trackTokens>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.java.dev.javacc</groupId>
+                        <artifactId>javacc</artifactId>
+                        <version>6.1.2</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -134,7 +153,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.4.2</version>
+                <version>2.5.2</version>
                 <configuration>
                     <localCheckout>true</localCheckout>
                     <pushChanges>false</pushChanges>
@@ -151,7 +170,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
+                <version>2.4</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -164,10 +183,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>2.10.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
+                        <configuration>
+                            <additionalparam>${javadoc.opts}</additionalparam>
+                        </configuration>
                         <goals>
                             <goal>jar</goal>
                         </goals>
@@ -189,6 +211,37 @@
                     <locales>en</locales>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>3.1.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <format>xml</format>
+                    <maxmem>256m</maxmem>
+                    <instrumentation>
+                        <excludes>
+                            <exclude>net/sf/jsqlparser/parser/*.class</exclude>
+                            <exclude>net/sf/jsqlparser/JSQLParserException.class</exclude>
+                        </excludes>
+                    </instrumentation>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>3.0.1</version>
+                <extensions>true</extensions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.15</version>
+            </plugin>
         </plugins>
     </build>
     
@@ -205,7 +258,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>2.10.3</version>
                 <configuration>
                     <aggregate>true</aggregate>
                 </configuration>
@@ -284,14 +337,21 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>doclint-java8-disable</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <javadoc.opts>-Xdoclint:none</javadoc.opts>
+            </properties>
+        </profile>
     </profiles>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <description>
-        JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes.
-        The generated hierarchy can be navigated using the Visitor Pattern.
-</description>
+    <description>JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes.
+        The generated hierarchy can be navigated using the Visitor Pattern.</description>
 </project>

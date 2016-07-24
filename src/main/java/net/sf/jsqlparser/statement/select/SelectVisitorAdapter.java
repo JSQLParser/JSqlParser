@@ -24,12 +24,12 @@ package net.sf.jsqlparser.statement.select;
 public class SelectVisitorAdapter implements SelectVisitor {
     @Override
     public void visit(PlainSelect plainSelect) {
-
+    
     }
 
     @Override
     public void visit(SetOperationList setOpList) {
-
+       
     }
 
     @Override
