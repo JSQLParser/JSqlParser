@@ -42,6 +42,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.6
 
+* support for **SELECT UNIQUE**
 * first support for date literals like **TIMESTAMP'2004-04-30 04:05:34.56'**
 * support for **UPDATE RETURNING**
 * support for scalar time function, like **CURRENT_TIMESTAMP**

@@ -73,7 +73,11 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         }
 
         if (plainSelect.getDistinct() != null) {
-            buffer.append("DISTINCT ");
+            if (plainSelect.getDistinct().isUseUnique()) {
+                buffer.append("UNIQUE ");
+            } else {
+                buffer.append("DISTINCT ");
+            }
             if (plainSelect.getDistinct().getOnSelectItems() != null) {
                 buffer.append("ON (");
                 for (Iterator<SelectItem> iter = plainSelect.getDistinct().getOnSelectItems().iterator(); iter.hasNext();) {

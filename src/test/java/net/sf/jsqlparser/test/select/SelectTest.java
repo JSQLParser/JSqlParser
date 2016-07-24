@@ -2208,4 +2208,8 @@ public class SelectTest extends TestCase {
     public void testFunctionDateTimeValues() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab1 WHERE a > TIMESTAMP '2004-04-30 04:05:34.56'");
     }
+    
+    public void testUniqueInsteadOfDistinctIssue299() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT UNIQUE trunc(timez(ludate)+ 8/24) bus_dt, j.object j_name , timez(j.starttime) START_TIME , timez(j.endtime) END_TIME FROM TEST_1 j", true);
+    }
 }
