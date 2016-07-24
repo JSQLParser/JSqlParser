@@ -13,10 +13,9 @@ import org.apache.commons.io.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 
 public class SelectTest extends TestCase {
 
@@ -398,12 +397,12 @@ public class SelectTest extends TestCase {
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(3, ((LongValue)((PlainSelect) select.getSelectBody()).getTop().getExpression()).getValue());
+        assertEquals(3, ((LongValue) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).getValue());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "select top 5 foo from bar";
         select = (Select) parserManager.parse(new StringReader(statement));
-        assertEquals(5, ((LongValue)((PlainSelect) select.getSelectBody()).getTop().getExpression()).getValue());
+        assertEquals(5, ((LongValue) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).getValue());
     }
 
     public void testTopWithParenthesis() throws JSQLParserException {
@@ -1202,7 +1201,7 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT CAST('test' AS character varying) FROM tabelle1";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-    
+
     public void testCastTypeProblem8() throws JSQLParserException {
         String stmt = "SELECT CAST('123' AS double precision) FROM tabelle1";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -1834,7 +1833,7 @@ public class SelectTest extends TestCase {
     public void testSelectForUpdate() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM user_table FOR UPDATE");
     }
-    
+
     public void testSelectForUpdate2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM emp WHERE empno = ? FOR UPDATE");
     }
@@ -2146,13 +2145,13 @@ public class SelectTest extends TestCase {
     public void testWhereIssue240_0() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE 0");
     }
-    
+
     public void testWhereIssue240_notBoolean() {
         try {
             CCJSqlParserUtil.parse("SELECT count(*) FROM mytable WHERE 5");
             fail("should not be parsed");
         } catch (JSQLParserException ex) {
-            
+
         }
     }
 
@@ -2163,53 +2162,59 @@ public class SelectTest extends TestCase {
     public void testWhereIssue240_false() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE false");
     }
-   
+
     public void testWhereIssue241KeywordEnd() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT l.end FROM lessons l");
     }
-    
+
     public void testSpeedTestIssue235() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM tbl WHERE (ROUND((((((period_diff(date_format(tbl.CD, '%Y%m'), date_format(SUBTIME(CURRENT_TIMESTAMP(), 25200), '%Y%m')) + month(SUBTIME(CURRENT_TIMESTAMP(), 25200))) - MONTH('2012-02-01')) - 1) / 3) - ROUND((((month(SUBTIME(CURRENT_TIMESTAMP(),25200)) - MONTH('2012-02-01')) - 1) / 3)))) = -3)", true);
     }
-    
+
     public void testSpeedTestIssue235_2() throws IOException, JSQLParserException {
         String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-issue-235.txt"));
         assertSqlCanBeParsedAndDeparsed(stmt, true);
     }
-    
+
     public void testCastVarCharMaxIssue245() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST('foo' AS NVARCHAR (MAX))");
     }
-    
+
     public void testNestedFunctionCallIssue253() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT (replace_regex(replace_regex(replace_regex(get_json_string(a_column, 'value'), '\\n', ' '), '\\r', ' '), '\\\\', '\\\\\\\\')) FROM a_table WHERE b_column = 'value'");
     }
-    
+
     public void testEscapedBackslashIssue253() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT replace_regex('test', '\\\\', '\\\\\\\\')");
     }
-    
+
     public void testKeywordTableIssue261() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT column_value FROM table(VARCHAR_LIST_TYPE())");
     }
-    
+
     public void testTopExpressionIssue243() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT TOP (? + 1) * FROM MyTable");
     }
-    
+
     public void testTopExpressionIssue243_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT TOP (CAST(? AS INT)) * FROM MyTable");
     }
-    
+
     public void testFunctionIssue284() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT NVL((SELECT 1 FROM DUAL), 1) AS A FROM TEST1");
     }
-    
+
     public void testFunctionDateTimeValues() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab1 WHERE a > TIMESTAMP '2004-04-30 04:05:34.56'");
     }
-    
+
     public void testUniqueInsteadOfDistinctIssue299() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT UNIQUE trunc(timez(ludate)+ 8/24) bus_dt, j.object j_name , timez(j.starttime) START_TIME , timez(j.endtime) END_TIME FROM TEST_1 j", true);
+    }
+
+    public void testProblemSqlIssue265() throws IOException, JSQLParserException {
+        String sqls = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-with-issue-265.txt"));
+        Statements stmts = CCJSqlParserUtil.parseStatements(sqls);
+        assertEquals(2, stmts.getStatements().size());
     }
 }
