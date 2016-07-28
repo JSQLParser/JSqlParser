@@ -249,6 +249,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
 |   <K_DOUBLE : "DOUBLE">
 |   <K_PRECISION : "PRECISION">
+|   <K_TABLESPACE : "TABLESPACE">
 }
 
 TOKEN : /* Stuff */
@@ -2561,7 +2562,7 @@ CreateIndex CreateIndex():
 	Token columnName;
 	Index index = null;
 	String name = null;
-	String parameter = null;
+	List<String> parameter = new ArrayList<String>();
 }
 {
 	<K_CREATE>
@@ -2571,7 +2572,7 @@ CreateIndex CreateIndex():
 	{
 		index = new Index();
 		index.setName(name);
-		index.setType(parameter);
+		index.setType(parameter.isEmpty()?null:parameter.get(0));
 	}
 
 	<K_ON> table=Table()
@@ -2629,7 +2630,8 @@ CreateTable CreateTable():
 	List colNames = null;
 	Index index = null;
 	ForeignKeyIndex fkIndex = null;
-	String parameter = null;
+	List<String> parameter = new ArrayList<String>();
+    List<String> idxSpec = new ArrayList<String>();
 	Table fkTable = null;
     Select select = null;
     CheckConstraint checkCs = null;
@@ -2641,7 +2643,7 @@ CreateTable CreateTable():
     /* [ [ (tk=<K_GLOBAL> | tk=<K_LOCAL>) {createOptions.add(tk.image);} ] 
        ( tk=<K_TEMPORARY> | tk=<K_TEMP> ) {createOptions.add(tk.image);}] */
 
-	(parameter = CreateParameter() { createOptions.add(parameter); })*
+	(parameter = CreateParameter() { createOptions.addAll(parameter); })*
 
 	<K_TABLE> 
     [ <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
@@ -2655,7 +2657,7 @@ CreateTable CreateTable():
 			columnSpecs = new ArrayList();
 		}
 
-		( parameter=CreateParameter() { columnSpecs.add(parameter); } )*
+		( parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
 
 		{
 			coldef = new ColumnDefinition();
@@ -2693,9 +2695,10 @@ CreateTable CreateTable():
                      | tk=<K_UNIQUE> [ tk2=<K_KEY> ] {index.setType(tk.image + (tk2!=null?" " + tk2.image:""));}
                      )
 						colNames=ColumnsNamesList()
+                        ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
 						{
-							
 							index.setColumnsNames(colNames);
+                            index.setIndexSpec(idxSpec);
 							indexes.add(index);
 						}
 				)
@@ -2753,7 +2756,7 @@ CreateTable CreateTable():
 						columnSpecs = new ArrayList();
 					}
 
-					( 	parameter=CreateParameter() { columnSpecs.add(parameter); } 	)*
+					( 	parameter=CreateParameter() { columnSpecs.addAll(parameter); } 	)*
 
 					{
 						coldef = new ColumnDefinition();
@@ -2768,7 +2771,7 @@ CreateTable CreateTable():
 		)*
 
 		")"
-		( 	parameter=CreateParameter() { tableOptions.add(parameter); } )*
+		( 	parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
         )
         |
         (
@@ -2848,58 +2851,64 @@ AlterView AlterView():
 	{ return alterView; }
 }
 
-String CreateParameter():
+List<String> CreateParameter():
 {
 	String retval = "";
 	Token tk = null;
     Token sign = null;
+    List<String> param = new ArrayList<String>();
 }
 {
 		(
-			tk=<S_IDENTIFIER> { retval = tk.image; }
+			tk=<S_IDENTIFIER> { param.add(tk.image); }
 			|
-			tk=<K_NULL> { retval = tk.image; }
+			tk=<K_NULL> { param.add(tk.image); }
 			|
-			tk=<K_NOT> { retval = tk.image; }
+			tk=<K_NOT> { param.add(tk.image); }
 			|
-			tk=<K_PRIMARY> { retval = tk.image; }
+			tk=<K_PRIMARY> { param.add(tk.image); }
 			|
-			tk=<K_FOREIGN> { retval=tk.image; }
+			tk=<K_FOREIGN> { param.add(tk.image); }
             |
-            tk=<K_REFERENCES> { retval=tk.image; }
+            tk=<K_REFERENCES> { param.add(tk.image); }
             |
-			tk=<K_KEY> { retval = tk.image; }
+			tk=<K_KEY> { param.add(tk.image); }
 			|
-			tk=<S_CHAR_LITERAL> { retval = tk.image; }
+			tk=<S_CHAR_LITERAL> { param.add(tk.image); }
 			|
               ("+" {retval = "+";} | "-" {retval = "-";})?
               (
 			   tk=<S_LONG> { retval += tk.image; }
 			   |
 			   tk=<S_DOUBLE> { retval += tk.image; }
-              )
+              ) 
+              { param.add(retval); }
 			|
-			tk=<K_ON> { retval = tk.image; } 
+			tk=<K_ON> { param.add(tk.image); } 
             |
-			tk=<K_COMMIT> { retval = tk.image; } 
+			tk=<K_COMMIT> { param.add(tk.image); } 
             |
-			tk=<K_ROWS> { retval = tk.image; } 
+			tk=<K_ROWS> { param.add(tk.image); } 
             |
-            tk=<K_UNIQUE> { retval = tk.image; } 
+            tk=<K_UNIQUE> { param.add(tk.image); } 
             |
-            tk=<K_CASCADE> { retval = tk.image; } 
+            tk=<K_CASCADE> { param.add(tk.image); } 
 			|
-            tk=<K_DELETE> { retval = tk.image; } 
+            tk=<K_DELETE> { param.add(tk.image); } 
             |
-            tk=<K_UPDATE> { retval = tk.image; }
+            tk=<K_UPDATE> { param.add(tk.image); }
             |
-            tk=<K_TIME_KEY_EXPR> { retval = new TimeKeyExpression(tk.image).toString(); }
+            tk=<K_TIME_KEY_EXPR> { param.add(new TimeKeyExpression(tk.image).toString()); }
             |
-			"=" { retval = "="; }
+			"=" { param.add("="); }
 			|
-			retval=AList()
+            <K_USING> <K_INDEX> <K_TABLESPACE> retval=RelObjectName() { param.add("USING"); param.add("INDEX"); param.add("TABLESPACE"); param.add(retval); }
+            |
+            <K_TABLESPACE> retval=RelObjectName() { param.add("TABLESPACE"); param.add(retval); }
+            |
+			retval=AList() { param.add(retval); }
 		)
-	{return retval;}
+	{return param;}
 }
 
 String AList():

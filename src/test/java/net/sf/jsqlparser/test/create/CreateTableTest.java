@@ -207,6 +207,14 @@ public class CreateTableTest extends TestCase {
     public void testCreateTempTableIssue293() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE GLOBAL TEMPORARY TABLE T1 (PROCESSID VARCHAR (32))");
     }
+    
+    public void testCreateTableWithTablespaceIssue247() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE TABLE1 (COLUMN1 VARCHAR2 (15), COLUMN2 VARCHAR2 (15), CONSTRAINT P_PK PRIMARY KEY (COLUMN1) USING INDEX TABLESPACE \"T_INDEX\") TABLESPACE \"T_SPACE\"");
+    }
+    
+    public void testCreateTableWithTablespaceIssue247_1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE TABLE1 (COLUMN1 VARCHAR2 (15), COLUMN2 VARCHAR2 (15), CONSTRAINT P_PK PRIMARY KEY (COLUMN1) USING INDEX TABLESPACE \"T_INDEX\")");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));

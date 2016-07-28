@@ -33,6 +33,7 @@ public class Index {
 	private String type;
 	private List<String> columnsNames;
 	private String name;
+    private List<String> idxSpec;
 
 	/**
 	 * A list of strings of all the columns regarding this index
@@ -64,8 +65,17 @@ public class Index {
 		type = string;
 	}
 
+    public List<String> getIndexSpec() {
+        return idxSpec;
+    }
+
+    public void setIndexSpec(List<String> idxSpec) {
+        this.idxSpec = idxSpec;
+    }
+
 	@Override
 	public String toString() {
-		return type + (name != null ? " " + name : "") + " " + PlainSelect.getStringList(columnsNames, true, true);
+        String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
+		return type + (name != null ? " " + name : "") + " " + PlainSelect.getStringList(columnsNames, true, true) + (!"".equals(idxSpecText)?" " + idxSpecText:"");
 	}
 }
