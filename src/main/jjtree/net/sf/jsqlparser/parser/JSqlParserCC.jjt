@@ -3000,22 +3000,23 @@ Alter AlterTable():
     ForeignKeyIndex fkIndex = null;
     NamedConstraint index = null;
     Table fkTable = null;
-    Token alterDrop = null;
 }
 {
 	<K_ALTER> <K_TABLE> table=Table() { alter.setTable(table); } 
     (
-    (alterDrop = <K_ADD>
+    (<K_ADD>
     	{
-    		alter.setOperation(alterDrop.image);
+    		alter.setOperation(AlterOperation.ADD);
     	}
     	  (
         (  <K_COLUMN>
-	       (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) dataType=ColDataType()
-            {
-               alter.setColumnName(tk.image);
-               alter.setDataType(dataType);
-            }
+	       sk3 = RelObjectName() dataType=ColDataType()
+            { alter.addColDataType(sk3, dataType); }
+        )
+        |
+        (  
+            "(" sk3 = RelObjectName() dataType = ColDataType() { alter.addColDataType(sk3, dataType); }
+                ("," sk3 = RelObjectName() dataType = ColDataType() { alter.addColDataType(sk3, dataType); } )* ")"
         )
         |
         ( <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alter.setPkColumns(columnNames); } )
@@ -3074,9 +3075,9 @@ Alter AlterTable():
         )
     )
     |
-    (alterDrop = <K_DROP>
+    (<K_DROP>
       {
-    		alter.setOperation(alterDrop.image);
+    		alter.setOperation(AlterOperation.DROP);
     	}
     	 (
 			 (  <K_COLUMN>

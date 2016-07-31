@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -37,12 +38,15 @@ public class Alter implements Statement {
 
     private Table table;
     private String columnName;
-    private ColDataType dataType;
+    //private ColDataType dataType;
+
+    private List<ColumnDataType> colDataTypeList;
+
     private List<String> pkColumns;
     private List<String> ukColumns;
     private String ukName;
     private Index index = null;
-	private String operation;
+    private AlterOperation operation;
     private String constraintName;
     private boolean onDeleteRestrict;
     private boolean onDeleteSetNull;
@@ -91,11 +95,22 @@ public class Alter implements Statement {
         this.fkSourceTable = fkSourceTable;
     }
 
-    public String getOperation() {
+    public List<ColumnDataType> getColDataTypeList() {
+        return colDataTypeList;
+    }
+
+    public void addColDataType(String columnName, ColDataType colDataType) {
+        if (colDataTypeList == null) {
+            colDataTypeList = new ArrayList<ColumnDataType>();
+        }
+        colDataTypeList.add(new ColumnDataType(columnName, colDataType));
+    }
+
+    public AlterOperation getOperation() {
         return operation;
     }
 
-    public void setOperation(String operation) {
+    public void setOperation(AlterOperation operation) {
         this.operation = operation;
     }
 
@@ -129,14 +144,6 @@ public class Alter implements Statement {
 
     public void setConstraintName(final String constraintName) {
         this.constraintName = constraintName;
-    }
-
-    public ColDataType getDataType() {
-        return dataType;
-    }
-
-    public void setDataType(ColDataType dataType) {
-        this.dataType = dataType;
     }
 
     public List<String> getPkColumns() {
@@ -182,8 +189,13 @@ public class Alter implements Statement {
         b.append("ALTER TABLE ").append(table.getFullyQualifiedName()).append(" ").append(operation).append(" ");
         if (columnName != null) {
             b.append("COLUMN ").append(columnName);
-            if (dataType != null) {
-                b.append(" ").append(dataType.toString());
+        } else if (colDataTypeList != null) {
+            if (colDataTypeList.size() > 1) {
+                b.append("(");
+            } else b.append("COLUMN ");
+            b.append(PlainSelect.getStringList(colDataTypeList));
+            if (colDataTypeList.size() > 1) {
+                b.append(")");
             }
         } else if (constraintName != null) {
             b.append("CONSTRAINT ").append(constraintName);
@@ -193,7 +205,7 @@ public class Alter implements Statement {
             b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
             b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).append(") REFERENCES ").append(fkSourceTable).append(" (").append(
-				PlainSelect.getStringList(fkSourceColumns)).append(")");
+                    PlainSelect.getStringList(fkSourceColumns)).append(")");
             if (isOnDeleteCascade()) {
                 b.append(" ON DELETE CASCADE");
             } else if (isOnDeleteRestrict()) {
@@ -201,9 +213,33 @@ public class Alter implements Statement {
             } else if (isOnDeleteSetNull()) {
                 b.append(" ON DELETE SET NULL");
             }
-		} else if (index != null) {
-			b.append(index);
-		}
-		return b.toString();
+        } else if (index != null) {
+            b.append(index);
+        }
+        return b.toString();
+    }
+
+    public class ColumnDataType {
+
+        private final String columnName;
+        private final ColDataType colDataType;
+
+        public ColumnDataType(String columnName, ColDataType colDataType) {
+            this.columnName = columnName;
+            this.colDataType = colDataType;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+        public ColDataType getColDataType() {
+            return colDataType;
+        }
+
+        @Override
+        public String toString() {
+            return columnName + " " + colDataType;
+        }
     }
 }

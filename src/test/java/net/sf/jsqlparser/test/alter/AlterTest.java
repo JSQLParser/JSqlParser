@@ -1,14 +1,13 @@
 package net.sf.jsqlparser.test.alter;
 
 
+import java.util.List;
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import net.sf.jsqlparser.statement.alter.Alter.ColumnDataType;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
 public class AlterTest extends TestCase {
@@ -22,8 +21,10 @@ public class AlterTest extends TestCase {
 		assertTrue(stmt instanceof Alter);
 		Alter alter = (Alter)stmt;
 		assertEquals("mytable",alter.getTable().getFullyQualifiedName());
-		assertEquals("mycolumn", alter.getColumnName());
-		assertEquals("varchar (255)", alter.getDataType().toString());
+        List<ColumnDataType> list = alter.getColDataTypeList();
+        assertNotNull(list);
+		assertEquals("mycolumn", list.get(0).getColumnName());
+		assertEquals("varchar (255)", list.get(0).getColDataType().toString());
 	}
     
     public void testAlterTablePrimaryKey() throws JSQLParserException {
@@ -70,4 +71,11 @@ public class AlterTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE `Author` ADD CONSTRAINT name_not_empty CHECK (`NAME` <> '')");
     }
 
+    public void testAlterTableAddColumn2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD (col1 integer, col2 integer)");
+    }
+    
+    public void testAlterTableAddColumn3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN mycolumn varchar (255)");
+    }
 }
