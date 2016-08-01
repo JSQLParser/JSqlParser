@@ -34,8 +34,12 @@ public class LongValue implements Expression {
 		if (val.charAt(0) == '+') {
 			val = val.substring(1);
 		}
-		this.value = Long.parseLong(val);
-        this.stringValue = val;
+		try {
+		        this.value = Long.parseLong(val);
+		} catch (NumberFormatException e) {
+		        throw new NumberFormatException("Passed value does not contain a parsable long value");
+		}
+		this.stringValue = val;
 	}
 	
 	public LongValue(long value) {
