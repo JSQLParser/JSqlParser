@@ -2733,7 +2733,13 @@ CreateTable CreateTable():
 							fkIndex.setReferencedColumnNames(colNames);
 							indexes.add(fkIndex);
 						}
-                        [LOOKAHEAD(2) (<K_ON> <K_DELETE> (<K_CASCADE> {fkIndex.setOnDeleteReferenceOption("CASCADE");}|<K_NO> <K_ACTION> {fkIndex.setOnDeleteReferenceOption("NO ACTION");}))]
+                        [LOOKAHEAD(2) (<K_ON> <K_DELETE> 
+                                  (<K_CASCADE> {fkIndex.setOnDeleteReferenceOption("CASCADE");}
+                                   |
+                                   <K_NO> <K_ACTION> {fkIndex.setOnDeleteReferenceOption("NO ACTION");}
+                                   |
+                                   <K_SET> <K_NULL> {fkIndex.setOnDeleteReferenceOption("SET NULL");}
+                                    ))]
                         [LOOKAHEAD(2) (<K_ON> <K_UPDATE> (<K_CASCADE> {fkIndex.setOnUpdateReferenceOption("CASCADE");}|<K_NO> <K_ACTION> {fkIndex.setOnUpdateReferenceOption("NO ACTION");}))]
 				)
 				|

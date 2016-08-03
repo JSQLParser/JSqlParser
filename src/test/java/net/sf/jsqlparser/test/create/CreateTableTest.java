@@ -215,6 +215,10 @@ public class CreateTableTest extends TestCase {
     public void testCreateTableWithTablespaceIssue247_1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE TABLE1 (COLUMN1 VARCHAR2 (15), COLUMN2 VARCHAR2 (15), CONSTRAINT P_PK PRIMARY KEY (COLUMN1) USING INDEX TABLESPACE \"T_INDEX\")");
     }
+    
+    public void testOnDeleteSetNull() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE inventory (inventory_id INT PRIMARY KEY, product_id INT, CONSTRAINT fk_inv_product_id FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE SET NULL)");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
