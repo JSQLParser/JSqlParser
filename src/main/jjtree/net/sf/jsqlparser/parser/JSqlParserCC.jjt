@@ -965,7 +965,7 @@ List<WithItem> WithList():
  	{ return withItemsList; }
 }
 
-WithItem WithItem():
+WithItem WithItem() #WithItem:
 {
 	WithItem with = new WithItem();
 	String name = null;
@@ -2387,7 +2387,7 @@ CastExpression CastExpression():
     }
 }
 
-Expression CaseWhenExpression():
+Expression CaseWhenExpression() #CaseWhenExpression:
 {
 	CaseExpression caseExp = new CaseExpression();
 	Expression switchExp = null;
@@ -2479,7 +2479,7 @@ Execute Execute(): {
     }
 }
 
-Function Function():
+Function Function() #Function:
 {
 	Function retval = new Function();
 	String funcName = null;
@@ -2539,7 +2539,7 @@ TableFunction TableFunction():
     { return functionItem; }
 }
 
-SubSelect SubSelect():
+SubSelect SubSelect() #SubSelect:
 {
 	SelectBody selectBody = null;
     SubSelect subSelect = new SubSelect();
