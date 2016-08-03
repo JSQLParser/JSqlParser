@@ -1397,6 +1397,10 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) = tabelle2.b AND tabelle1.b(+) IN ('A', 'B')";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+    
+    public void testOracleJoinIssue318() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM TBL_A, TBL_B, TBL_C WHERE TBL_A.ID(+) = TBL_B.ID AND TBL_C.ROOM(+) = TBL_B.ROOM");
+    }
 
     public void testProblemSqlIntersect() throws Exception {
         String stmt = "(SELECT * FROM a) INTERSECT (SELECT * FROM b)";
