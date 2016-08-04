@@ -141,6 +141,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(SubSelect subSelect) {
+        if (subSelect.getWithItemsList() != null) {
+            for (WithItem withItem : subSelect.getWithItemsList()) {
+                withItem.accept(this);
+            }
+        }
         subSelect.getSelectBody().accept(this);
     }
 
