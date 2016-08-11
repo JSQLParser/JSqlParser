@@ -2994,10 +2994,9 @@ Truncate Truncate():
 	}
 }
 
-Alter AlterTable():
+AlterExpression AlterExpression():
 {
-	Alter alter = new Alter();
-	Table table;
+	AlterExpression alterExp = new AlterExpression();
 	Token tk;
 	Token tk2 = null;
     String sk3 = null;
@@ -3008,39 +3007,39 @@ Alter AlterTable():
     Table fkTable = null;
 }
 {
-	<K_ALTER> <K_TABLE> table=Table() { alter.setTable(table); } 
+
     (
     (<K_ADD>
     	{
-    		alter.setOperation(AlterOperation.ADD);
+    		alterExp.setOperation(AlterOperation.ADD);
     	}
     	  (
         (  <K_COLUMN>
 	       sk3 = RelObjectName() dataType=ColDataType()
-            { alter.addColDataType(sk3, dataType); }
-        )
-        |
-        (  
-            "(" sk3 = RelObjectName() dataType = ColDataType() { alter.addColDataType(sk3, dataType); }
-                ("," sk3 = RelObjectName() dataType = ColDataType() { alter.addColDataType(sk3, dataType); } )* ")"
-        )
-        |
-        ( <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alter.setPkColumns(columnNames); } )
-        |
-        ( <K_UNIQUE> <K_KEY> (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) columnNames=ColumnsNamesList() { alter.setUkName(tk.image); alter.setUkColumns(columnNames); } )
-        |
-//following two choices regarding foreign keys should be merged
-        ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alter.setFkColumns(columnNames); }
-             <K_REFERENCES> tk=<S_IDENTIFIER> columnNames=ColumnsNamesList() 
-                    { alter.setFkSourceTable(tk.image); alter.setFkSourceColumns(columnNames); }
-            [<K_ON> <K_DELETE>
-                            (<K_CASCADE> { alter.setOnDeleteCascade(true); }
-                            | <K_RESTRICT> { alter.setOnDeleteRestrict(true); }
-                            | <K_SET> <K_NULL> { alter.setOnDeleteSetNull(true); } ) ]
+            { alterExp.addColDataType(sk3, dataType); }
         )
         |
         (
-            <K_CONSTRAINT> sk3=RelObjectName() 
+            "(" sk3 = RelObjectName() dataType = ColDataType() { alterExp.addColDataType(sk3, dataType); }
+                ("," sk3 = RelObjectName() dataType = ColDataType() { alterExp.addColDataType(sk3, dataType); } )* ")"
+        )
+        |
+        ( <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); } )
+        |
+        ( <K_UNIQUE> <K_KEY> (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) columnNames=ColumnsNamesList() { alterExp.setUkName(tk.image); alterExp.setUkColumns(columnNames); } )
+        |
+//following two choices regarding foreign keys should be merged
+        ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); }
+             <K_REFERENCES> tk=<S_IDENTIFIER> columnNames=ColumnsNamesList()
+                    { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
+            [<K_ON> <K_DELETE>
+                            (<K_CASCADE> { alterExp.setOnDeleteCascade(true); }
+                            | <K_RESTRICT> { alterExp.setOnDeleteRestrict(true); }
+                            | <K_SET> <K_NULL> { alterExp.setOnDeleteSetNull(true); } ) ]
+        )
+        |
+        (
+            <K_CONSTRAINT> sk3=RelObjectName()
 
             ( ( tk=<K_FOREIGN> tk2=<K_KEY>
                 columnNames=ColumnsNamesList()
@@ -3054,18 +3053,18 @@ Alter AlterTable():
                 {
                     fkIndex.setTable(fkTable);
                     fkIndex.setReferencedColumnNames(columnNames);
-                    alter.setIndex(fkIndex);
+                    alterExp.setIndex(fkIndex);
                 }
             )
             |
-            ( tk=<K_PRIMARY> tk2=<K_KEY> 
+            ( tk=<K_PRIMARY> tk2=<K_KEY>
                 columnNames=ColumnsNamesList()
                 {
                     index = new NamedConstraint();
                     index.setName(sk3);
                     index.setType(tk.image + " " + tk2.image);
                     index.setColumnsNames(columnNames);
-                    alter.setIndex(index);
+                    alterExp.setIndex(index);
                 }
             )
             |
@@ -3074,7 +3073,7 @@ Alter AlterTable():
                 CheckConstraint checkCs = new CheckConstraint();
                 checkCs.setName(sk3);
                 checkCs.setExpression(exp);
-                alter.setIndex(checkCs);
+                alterExp.setIndex(checkCs);
             }
            ) )
         )
@@ -3083,25 +3082,45 @@ Alter AlterTable():
     |
     (<K_DROP>
       {
-    		alter.setOperation(AlterOperation.DROP);
+    		alterExp.setOperation(AlterOperation.DROP);
     	}
     	 (
 			 (  <K_COLUMN>
 			 (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>)
 					 {
-							alter.setColumnName(tk.image);
+							alterExp.setColumnName(tk.image);
 					 }
 			 )
 			 |
        (  <K_CONSTRAINT>
        (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>)
            {
-              alter.setConstraintName(tk.image);
+              alterExp.setConstraintName(tk.image);
            }
        )
        )
     )
     )
+
+    {
+        return alterExp;
+    }
+}
+
+
+Alter AlterTable():
+{
+	Alter alter = new Alter();
+	Table table;
+    AlterExpression alterExp;
+
+}
+{
+	<K_ALTER> <K_TABLE> table=Table() { alter.setTable(table); }
+	 ( alterExp=AlterExpression() { alter.addAlterExpression(alterExp); }
+	   ("," alterExp=AlterExpression() { alter.addAlterExpression(alterExp); } )*
+	 )
+
     {
 		return alter;
 	}
