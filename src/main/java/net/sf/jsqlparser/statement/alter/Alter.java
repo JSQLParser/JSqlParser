@@ -23,13 +23,11 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.create.table.ColDataType;
-import net.sf.jsqlparser.statement.create.table.Index;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  *
@@ -39,7 +37,7 @@ public class Alter implements Statement {
 
     private Table table;
 
-    private ArrayList<AlterExpression> alterExpressions;
+    private List<AlterExpression> alterExpressions;
 
     public Table getTable() {
         return table;
@@ -56,11 +54,11 @@ public class Alter implements Statement {
         alterExpressions.add(alterExpression);
     }
 
-    public ArrayList<AlterExpression> getAlterExpressions() {
+    public List<AlterExpression> getAlterExpressions() {
         return alterExpressions;
     }
 
-    public void setAlterExpressions(ArrayList<AlterExpression> alterExpressions) {
+    public void setAlterExpressions(List<AlterExpression> alterExpressions) {
         this.alterExpressions = alterExpressions;
     }
 
