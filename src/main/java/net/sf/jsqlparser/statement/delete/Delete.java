@@ -25,6 +25,8 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -34,6 +36,8 @@ import java.util.List;
 public class Delete implements Statement {
 
 	private Table table;
+	private List<Table> tables;
+	private List<Join> joins;
 	private Expression where;
 	private Limit limit;
 	private List<OrderByElement> orderByElements;
@@ -75,11 +79,58 @@ public class Delete implements Statement {
 		this.limit = limit;
 	}
 
+	
+	public List<Table> getTables() {
+		return tables;
+	}
+
+	public void setTables(List<Table> tables) {
+		this.tables = tables;
+	}
+
+	public List<Join> getJoins() {
+		return joins;
+	}
+
+	public void setJoins(List<Join> joins) {
+		this.joins = joins;
+	}
+
 	@Override
 	public String toString() {
-		return "DELETE FROM " + table +
-				((where != null) ? " WHERE " + where : "") +
-				(orderByElements!=null? PlainSelect.orderByToString(orderByElements):"") +
-				(limit != null ? limit : "");
+		StringBuilder b = new StringBuilder("DELETE");
+	
+		if( tables != null && tables.size() > 0){
+			b.append(" ");
+			for(Table t : tables){
+				b.append(t.toString());
+			}
+		}
+		
+		b.append(" FROM ");
+		b.append(table);
+		
+		if (joins != null) {
+			for (Join join : joins) {
+				if (join.isSimple()) {
+					b.append(", ").append(join);
+				} else {
+					b.append(" ").append(join);
+				}
+			}
+		}
+		
+		if( where != null ){
+			b.append(" WHERE ").append(where);
+		}
+		
+		if(orderByElements!=null){
+			b.append(PlainSelect.orderByToString(orderByElements));
+		}
+		
+		if(limit != null){
+			b.append(limit);
+		}
+		return b.toString();
 	}
 }

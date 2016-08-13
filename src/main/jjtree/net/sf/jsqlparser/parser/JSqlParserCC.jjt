@@ -631,16 +631,23 @@ Delete Delete():
 {
 	Delete delete = new Delete();
 	Table table = null;
+	List<Table> tables = new ArrayList<Table>();
+	List<Join> joins = null;
 	Expression where = null;
 	Limit limit = null;
 	List<OrderByElement> orderByElements;
 }
 {
-    <K_DELETE> [<K_FROM>] table=TableWithAlias()
+    <K_DELETE> [table=TableWithAlias() { tables.add(table); } 
+          ("," table=TableWithAlias() { tables.add(table); } )*] [<K_FROM>]
+    [ table=TableWithAlias()      joins=JoinsList() ]
     [where=WhereClause() { delete.setWhere(where); } ]
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]
     {
+      	delete.setTables(tables);
+		if (joins != null && joins.size() > 0)
+			delete.setJoins(joins);
     	delete.setTable(table);
     	return delete;
     }
