@@ -638,9 +638,12 @@ Delete Delete():
 	List<OrderByElement> orderByElements;
 }
 {
-    <K_DELETE> [table=TableWithAlias() { tables.add(table); } 
-          ("," table=TableWithAlias() { tables.add(table); } )*] [<K_FROM>]
-    [ table=TableWithAlias()      joins=JoinsList() ]
+    <K_DELETE> [LOOKAHEAD(2) (table=TableWithAlias() { tables.add(table); } 
+          ("," table=TableWithAlias() { tables.add(table); } )* 
+    <K_FROM> | <K_FROM>)]
+
+    [ table=TableWithAlias()
+      joins=JoinsList() ]
     [where=WhereClause() { delete.setWhere(where); } ]
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]

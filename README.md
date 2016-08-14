@@ -42,6 +42,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.6
 
+* support for delete with join table
 * support for Alter with multiple ADD/DROP expressions
 * support for **ON DELETE SET NULL** for create table
 * added AST node support for subselect, withitem, function, case when
