@@ -5,16 +5,16 @@
  * Copyright (C) 2004 - 2013 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
+ *
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
@@ -47,6 +47,7 @@ import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.PostgreSQLFromForExpression;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
+import net.sf.jsqlparser.expression.operators.relational.TeradataTrimExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
@@ -63,9 +64,9 @@ public interface ExpressionVisitor {
     void visit(JdbcNamedParameter jdbcNamedParameter);
 
 	void visit(DoubleValue doubleValue);
-	
+
 	void visit(LongValue longValue);
-	
+
 	void visit(HexValue hexValue);
 
 	void visit(DateValue dateValue);
@@ -139,7 +140,7 @@ public interface ExpressionVisitor {
 	void visit(Modulo modulo);
 
 	void visit(AnalyticExpression aexpr);
-    
+
     void visit(WithinGroupExpression wgexpr);
 
 	void visit(ExtractExpression eexpr);
@@ -167,5 +168,9 @@ public interface ExpressionVisitor {
     void visit(OracleHint hint);
 
 	void visit(PostgreSQLFromForExpression postgreSQLFromForExpression);
+
+	void visit(TeradataTrimExpression teradataTrimExpression);
+
+	void visit(TeradataCastExpression teradataCastExpression);
 
 }
