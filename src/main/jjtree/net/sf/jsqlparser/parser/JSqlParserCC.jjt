@@ -28,7 +28,7 @@ options{
     DEBUG_TOKEN_MANAGER=false;
 //  FORCE_LA_CHECK=true;
     UNICODE_INPUT=true;
-    MODERN=true;
+//  JAVA_TEMPLATE_TYPE="modern"; //this produces invalid java code
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -2980,30 +2980,44 @@ Alter Alter():
 	}
 }
 
-Expression TeradataTrimExpression() :
+Expression TeradataTrimExpression():
 {
 	TeradataTrimExpression result = new TeradataTrimExpression();
-	TeradataTrimExpression.Direction direction = null;
-	Expression removalCharExpression = null;
+	String direction = null;
+	Token removalCharString = null;
 	Expression targetStringExpression = null;
 	Expression collationNameExpression = null;
 }
 {
-	<K_TRIM> "("
-	[LOOKAHEAD(3) [ <K_LEADING> {direction = TeradataTrimExpression.Direction.LEADING;}
-					| <K_TRAILING> {direction = TeradataTrimExpression.Direction.TRAILING;}
-					| <K_BOTH> {direction = TeradataTrimExpression.Direction.BOTH;} ]
-	  [ removalCharExpression=SimpleExpression() ]
-	  <K_FROM>
-	]
-	targetStringExpression=SimpleExpression()
+	<K_TRIM>
+	"("
+	(direction=TrimDirection() (<K_FROM> targetStringExpression=SimpleExpression()
+								|removalCharString=<S_CHAR_LITERAL> <K_FROM> targetStringExpression=SimpleExpression()
+								)
+	|LOOKAHEAD(2) removalCharString=<S_CHAR_LITERAL> <K_FROM> targetStringExpression=SimpleExpression()
+	|targetStringExpression=SimpleExpression()
+	)
 	[ <K_COLLATE> collationNameExpression=SimpleExpression() ]
 	")"
 	{
 		result.setDirection(direction);
-		result.setRemovalCharExpression(removalCharExpression);
+		result.setRemovalCharString(removalCharString == null ? null : new StringValue(removalCharString.image).getValue());
 		result.setTargetStringExpression(targetStringExpression);
 		result.setCollationNameExpression(collationNameExpression);
 		return result;
+	}
+}
+
+String TrimDirection():
+{
+	Token direction = null;
+}
+{
+	  direction = <K_LEADING> {return direction.image;}
+	| direction = <K_TRAILING> {return direction.image;}
+	| direction = <K_BOTH> {return direction.image;}
+
+	{
+		return null;
 	}
 }

@@ -663,10 +663,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 			buffer.append(" ");
 			needFrom = true;
 		}
-		if(teradataTrimExpression.getRemovalCharExpression() != null)
+		if(teradataTrimExpression.getRemovalCharString() != null)
 		{
-			teradataTrimExpression.getRemovalCharExpression().accept(this);
-			buffer.append(" ");
+			buffer.append("'" + teradataTrimExpression.getRemovalCharString() + "' ");
 			needFrom = true;
 		}
 		if(needFrom)

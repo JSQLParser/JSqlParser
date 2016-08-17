@@ -1,3 +1,24 @@
+/*
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2016 JSQLParser
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ *
+ * You should have received a copy of the GNU General Lesser Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.Expression;
@@ -5,15 +26,8 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class TeradataTrimExpression implements Expression
 {
-	public enum Direction
-	{
-		LEADING,
-		TRAILING,
-		BOTH
-	}
-
-	Direction direction;
-	Expression removalCharExpression = null;
+	String direction = "";
+	String removalCharString = "";
 	Expression targetStringExpression = null;
 	Expression collationNameExpression = null;
 
@@ -30,11 +44,11 @@ public class TeradataTrimExpression implements Expression
 		{
 			sb.append(direction + " ");
 		}
-		if(removalCharExpression != null)
+		if(removalCharString != null)
 		{
-			sb.append(removalCharExpression + " ");
+			sb.append("'" + removalCharString + "' ");
 		}
-		if(direction != null || removalCharExpression != null)
+		if(direction != null || removalCharString != null)
 		{
 			sb.append("FROM ");
 		}
@@ -47,14 +61,14 @@ public class TeradataTrimExpression implements Expression
 		return sb.toString();
 	}
 
-	public Expression getRemovalCharExpression()
+	public String getRemovalCharString()
 	{
-		return removalCharExpression;
+		return removalCharString;
 	}
 
-	public void setRemovalCharExpression(Expression removalCharExpression)
+	public void setRemovalCharString(String removalCharExpression)
 	{
-		this.removalCharExpression = removalCharExpression;
+		this.removalCharString = removalCharExpression;
 	}
 
 	public Expression getTargetStringExpression()
@@ -77,12 +91,12 @@ public class TeradataTrimExpression implements Expression
 		this.collationNameExpression = collationNameExpression;
 	}
 
-	public Direction getDirection()
+	public String getDirection()
 	{
 		return direction;
 	}
 
-	public void setDirection(Direction direction)
+	public void setDirection(String direction)
 	{
 		this.direction = direction;
 	}

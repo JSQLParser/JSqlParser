@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>0.9.5-SNAPSHOT</version>
+    <version>0.9.5-teradata1</version>
     <name>JSQLParser library</name>
     <inceptionYear>2004</inceptionYear>
     <organization>
@@ -233,7 +233,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <reporting>
         <plugins>
             <plugin>
