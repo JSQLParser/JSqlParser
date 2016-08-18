@@ -407,25 +407,29 @@ public class PlainSelect implements SelectBody {
      * @return comma separated list of the elements in the list
      */
     public static String getStringList(List<?> list, boolean useComma, boolean useBrackets) {
-        String ans = "";
+        StringBuilder ans=new StringBuilder();
+//        String ans = "";
         String comma = ",";
         if (!useComma) {
             comma = "";
         }
         if (list != null) {
             if (useBrackets) {
-                ans += "(";
+                ans.append("(");
+//                ans += "(";
             }
 
             for (int i = 0; i < list.size(); i++) {
-                ans += "" + list.get(i) + ((i < list.size() - 1) ? comma + " " : "");
+                ans.append(list.get(i)).append(((i < list.size() - 1) ? comma + " " : ""));
+//                ans += "" + list.get(i) + ((i < list.size() - 1) ? comma + " " : "");
             }
 
             if (useBrackets) {
-                ans += ")";
+                ans.append(")");
+//                ans += ")";
             }
         }
 
-        return ans;
+        return ans.toString();
     }
 }
