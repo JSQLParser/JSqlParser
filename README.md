@@ -15,6 +15,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 ## News
 
+* Version **0.9.6** released.
 * Version **0.9.5** released.
 * Please test the actual **0.9.5-SNAPSHOT**. It includes some grammar refactorings which eventually results in parse tree changes.
 * Version **0.9.4** released.
@@ -40,28 +41,8 @@ To help JSqlParsers development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 0.9.6
+## Extensions in the latest SNAPSHOT version 0.9.7
 
-* support for delete with join table
-* support for Alter with multiple ADD/DROP expressions
-* support for **ON DELETE SET NULL** for create table
-* added AST node support for subselect, withitem, function, case when
-* first support for **TABLESPACE** within **CREATE TABLE**
-* support for **SELECT UNIQUE**
-* first support for date literals like **TIMESTAMP'2004-04-30 04:05:34.56'**
-* support for **UPDATE RETURNING**
-* support for scalar time function, like **CURRENT_TIMESTAMP**
-* support for **LEFT SEMI JOIN**
-* improved **top** expression
-
-```java
-SELECT TOP (? + 1) * FROM MyTable
-```
-
-* allowed negative interval expressions like **INTERVAL -420 MINUTES**.
-* support for **ALTER VIEW** statements
-* improved merge statement
-* support for non standard syntax *>  =*, *<  =* and *<  >* (with whitespaces between)
 
 ## Extensions of JSqlParser releases
 
@@ -102,7 +83,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>0.9.5</version>
+	<version>0.9.6</version>
 </dependency>
 ```
 
