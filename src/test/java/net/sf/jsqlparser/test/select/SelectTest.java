@@ -2221,4 +2221,12 @@ public class SelectTest extends TestCase {
         Statements stmts = CCJSqlParserUtil.parseStatements(sqls);
         assertEquals(2, stmts.getStatements().size());
     }
+    
+    public void testProblemSqlIssue330() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) FROM C_Invoice WHERE IsSOTrx='Y' AND (Processed='N' OR Updated>(current_timestamp - CAST('90 days' AS interval))) AND C_Invoice.AD_Client_ID IN(0,1010016) AND C_Invoice.AD_Org_ID IN(0,1010053,1010095,1010094)", true);
+    }
+    
+    public void testProblemSqlIssue330_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST('90 days' AS interval)");
+    }
 }

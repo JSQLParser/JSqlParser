@@ -2820,9 +2820,9 @@ ColDataType ColDataType():
 {
 	( tk=<K_CHARACTER> [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 	| tk=<K_DOUBLE> [tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-	| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> ) { colDataType.setDataType(tk.image); } )
+	| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_INTERVAL> ) { colDataType.setDataType(tk.image); } )
 
-	[LOOKAHEAD(2) "(" ( (tk=<S_LONG> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER>) { argumentsStringList.add(tk.image); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
+	[LOOKAHEAD(2) "(" ( (tk=<S_LONG> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> ) { argumentsStringList.add(tk.image); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
     [( "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
     [<K_CHARACTER> <K_SET> tk=<S_IDENTIFIER> { colDataType.setCharacterSet(tk.image); } ]
 
