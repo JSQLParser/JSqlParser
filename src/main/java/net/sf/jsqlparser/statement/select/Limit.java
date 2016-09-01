@@ -86,15 +86,18 @@ public class Limit {
 
 	@Override
 	public String toString() {
-		String retVal = "";
+		String retVal = " LIMIT ";
 		if (limitNull) {
-            retVal += " LIMIT NULL";
-        } else if (rowCount >= 0 || rowCountJdbcParameter) {
-			retVal += " LIMIT " + (rowCountJdbcParameter ? "?" : Long.toString(rowCount));
-		}
-		if (offset > 0 || offsetJdbcParameter) {
-			retVal += " OFFSET " + (offsetJdbcParameter ? "?" : Long.toString(offset));
-		}
+            retVal += "NULL";
+        } else {
+            if (offset > 0 || offsetJdbcParameter) {
+                retVal += (offsetJdbcParameter ? "?" : Long.toString(offset)) + ", ";
+    		}
+            if ( rowCount >= 0 || rowCountJdbcParameter) {
+                retVal += (rowCountJdbcParameter ? "?" : Long.toString(rowCount));
+            }
+        }
+		
 		return retVal;
 	}
 }

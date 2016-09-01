@@ -32,21 +32,20 @@ public class LimitDeparser {
     }
 
     public void deParse(Limit limit) {
-        if (limit.isRowCountJdbcParameter()) {
-            buffer.append(" LIMIT ");
-            buffer.append("?");
-        } else if (limit.getRowCount() >= 0) {
-            buffer.append(" LIMIT ");
-            buffer.append(limit.getRowCount());
-        } else if (limit.isLimitNull()) {
-            buffer.append(" LIMIT NULL");
+        buffer.append(" LIMIT ");
+        if (limit.isLimitNull()) {
+            buffer.append("NULL");
+        } else {
+            if (limit.isOffsetJdbcParameter()) {
+                buffer.append("?, ");
+            } else if (limit.getOffset() != 0) {
+                buffer.append(limit.getOffset()).append(", ");
+            }
+            
+            if (limit.isRowCountJdbcParameter()) {
+                buffer.append("?");
+            } else if (limit.getRowCount() >= 0) {
+                buffer.append(limit.getRowCount());
+            }
         }
-
-        if (limit.isOffsetJdbcParameter()) {
-            buffer.append(" OFFSET ?");
-        } else if (limit.getOffset() != 0) {
-            buffer.append(" OFFSET ").append(limit.getOffset());
-        }
-    }
-
-}
+    }}

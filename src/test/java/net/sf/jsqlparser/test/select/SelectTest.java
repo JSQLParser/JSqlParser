@@ -579,7 +579,7 @@ public class SelectTest extends TestCase {
 
     public void testUnion() throws JSQLParserException {
         String statement = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
-                + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION " + "SELECT * FROM mytable2 LIMIT 3,4";
+                + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION " + "SELECT * FROM mytable2 LIMIT 3, 4";
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
         SetOperationList setList = (SetOperationList) select.getSelectBody();
@@ -593,9 +593,31 @@ public class SelectTest extends TestCase {
         // use standard limit syntax
         String statementToString = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
                 + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION "
-                + "SELECT * FROM mytable2 LIMIT 4 OFFSET 3";
+                + "SELECT * FROM mytable2 LIMIT 3, 4";
         assertStatementCanBeDeparsedAs(select, statementToString);
     }
+    
+    public void testUnion2() throws JSQLParserException {
+        String statement = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
+                + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION " + "SELECT * FROM mytable2 LIMIT 3 OFFSET 4";
+
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        SetOperationList setList = (SetOperationList) select.getSelectBody();
+        assertEquals(3, setList.getSelects().size());
+        assertEquals("mytable", ((Table) ((PlainSelect) setList.getSelects().get(0)).getFromItem()).getName());
+        assertEquals("mytable3", ((Table) ((PlainSelect) setList.getSelects().get(1)).getFromItem()).getName());
+        assertEquals("mytable2", ((Table) ((PlainSelect) setList.getSelects().get(2)).getFromItem()).getName());
+        assertEquals(0, ((PlainSelect) setList.getSelects().get(2)).getLimit().getOffset());
+        assertEquals(4, ((PlainSelect) setList.getSelects().get(2)).getOffset().getOffset());
+
+        // use brakets for toString
+        // use standard limit syntax
+        String statementToString = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
+                + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION "
+                + "SELECT * FROM mytable2 LIMIT 3 OFFSET 4";
+        assertStatementCanBeDeparsedAs(select, statementToString);
+    }
+    
 
     public void testDistinct() throws JSQLParserException {
         String statement = "SELECT DISTINCT ON (myid) myid, mycol FROM mytable WHERE mytable.col = 9";
