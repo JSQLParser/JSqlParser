@@ -109,4 +109,24 @@ public class AlterTest extends TestCase {
 		assertEquals("integer", col2DataTypes.get(0).getColDataType().toString());
     }
 
+    public void testAlterTableAddColumnWithZone() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 timestamp with time zone");
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 timestamp without time zone");
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 date with time zone");
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 date without time zone");
+
+        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable ADD COLUMN col1 timestamp with time zone");
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExps = alter.getAlterExpressions();
+        AlterExpression col1Exp = alterExps.get(0);
+        List<ColumnDataType> col1DataTypes = col1Exp.getColDataTypeList();
+        assertEquals("timestamp with time zone", col1DataTypes.get(0).getColDataType().toString());
+    }
+
+    public void testAlterTableAddColumnKeywordTypes() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 xml");
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 interval");
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 bit varying");
+    }
+
 }

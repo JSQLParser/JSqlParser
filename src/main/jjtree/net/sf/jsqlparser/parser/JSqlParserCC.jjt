@@ -146,6 +146,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SOME:"SOME">
 |   <K_FULL:"FULL">
 |   <K_WITH:"WITH">
+|   <K_WITHOUT:"WITHOUT">
 |   <K_TABLE:"TABLE">
 |   <K_VIEW:"VIEW">
 |   <K_WHERE:"WHERE">
@@ -195,6 +196,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_REFERENCES:"REFERENCES">
 |   <K_CHECK:"CHECK">
 |	<K_CHARACTER:"CHARACTER">
+|   <K_BIT:"BIT">
 |	<K_VARYING:"VARYING">
 |	<K_START:"START">
 |	<K_CONNECT:"CONNECT">
@@ -246,6 +248,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_IGNORE : "IGNORE">
 |   <K_SEMI : "SEMI">
 |   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
+|   <K_ZONE:"ZONE">
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
 |   <K_DOUBLE : "DOUBLE">
 |   <K_PRECISION : "PRECISION">
@@ -263,6 +266,11 @@ TOKEN : /* Operators */
 |	<OP_MINORTHANEQUALS: "<" (<WHITESPACE>)* "=">
 |	<OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
 |	<OP_NOTEQUALSBANG: "!=">
+}
+
+TOKEN : /* Date/Time with time zones */
+{
+    <DT_ZONE: <K_DATETIMELITERAL> <WHITESPACE> (<K_WITH> | <K_WITHOUT>) <WHITESPACE> "TIME" <WHITESPACE> <K_ZONE>>
 }
 
 TOKEN : /* Numeric Constants */
@@ -2818,9 +2826,9 @@ ColDataType ColDataType():
     List<Integer> array = new ArrayList<Integer>();
 }
 {
-	( tk=<K_CHARACTER> [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
+	( (tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 	| tk=<K_DOUBLE> [tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-	| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_INTERVAL> ) { colDataType.setDataType(tk.image); } )
+	| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> ) { colDataType.setDataType(tk.image); })
 
 	[LOOKAHEAD(2) "(" ( (tk=<S_LONG> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> ) { argumentsStringList.add(tk.image); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
     [( "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
