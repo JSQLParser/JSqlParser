@@ -220,6 +220,26 @@ public class CreateTableTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE inventory (inventory_id INT PRIMARY KEY, product_id INT, CONSTRAINT fk_inv_product_id FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE SET NULL)");
     }
 
+	public void testColumnCheck() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("CREATE TABLE table1 (col1 INTEGER CHECK (col1 > 100))");
+	}
+
+	public void testTableReferenceWithSchema() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("CREATE TABLE table1 (col1 INTEGER REFERENCES schema1.table1)");
+	}
+
+	public void testNamedColumnConstraint() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("CREATE TABLE foo (col1 integer CONSTRAINT no_null NOT NULL)");
+	}
+
+	public void testColumnConstraintWith() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("CREATE TABLE foo (col1 integer) WITH (fillfactor=70)");
+	}
+
+	public void testExcludeWhereConstraint() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("CREATE TABLE foo (col1 integer, EXCLUDE WHERE (col1 > 100))");
+	}
+
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
 		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();

@@ -253,6 +253,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DOUBLE : "DOUBLE">
 |   <K_PRECISION : "PRECISION">
 |   <K_TABLESPACE : "TABLESPACE">
+|   <K_EXCLUDE : "EXCLUDE">
 }
 
 TOKEN : /* Stuff */
@@ -2653,6 +2654,7 @@ CreateTable CreateTable():
 	Table fkTable = null;
     Select select = null;
     CheckConstraint checkCs = null;
+    ExcludeConstraint excludeC = null;
 }
 {
 	<K_CREATE>
@@ -2771,6 +2773,13 @@ CreateTable CreateTable():
                        indexes.add(checkCs);
                        }
                 )
+                |
+                    tk=<K_EXCLUDE> {excludeC = new ExcludeConstraint(); Expression exp = null;}
+                    (tk2=<K_WHERE>
+                        ("(" exp = Expression() ")")* {excludeC.setExpression(exp);})
+                    {
+                        indexes.add(excludeC);
+                    }
 				|
 				(
 					columnName=RelObjectName()
@@ -2879,12 +2888,16 @@ List<String> CreateParameter():
 {
 	String retval = "";
 	Token tk = null;
-    Token sign = null;
+    Token tk2 = null;
+    StringBuilder identifier = new StringBuilder("");
+    Expression exp = null;
     List<String> param = new ArrayList<String>();
 }
 {
 		(
-			tk=<S_IDENTIFIER> { param.add(tk.image); }
+            ((tk=<S_IDENTIFIER> { identifier.append(tk.image); }
+                ["." tk2=<S_IDENTIFIER> { identifier.append("."); identifier.append(tk2.image); }])
+                { param.add(identifier.toString()); })
 			|
 			tk=<K_NULL> { param.add(tk.image); }
 			|
@@ -2925,12 +2938,23 @@ List<String> CreateParameter():
             tk=<K_TIME_KEY_EXPR> { param.add(new TimeKeyExpression(tk.image).toString()); }
             |
 			"=" { param.add("="); }
-			|
-            <K_USING> <K_INDEX> <K_TABLESPACE> retval=RelObjectName() { param.add("USING"); param.add("INDEX"); param.add("TABLESPACE"); param.add(retval); }
+            |
+            LOOKAHEAD(3) <K_USING> <K_INDEX> <K_TABLESPACE> retval=RelObjectName() { param.add("USING"); param.add("INDEX"); param.add("TABLESPACE"); param.add(retval); }
             |
             <K_TABLESPACE> retval=RelObjectName() { param.add("TABLESPACE"); param.add(retval); }
             |
 			retval=AList() { param.add(retval); }
+			|
+            <K_CHECK>  ("(" exp = Expression() ")") { param.add("CHECK"); param.add("(" + exp.toString() + ")");}
+            |
+            tk=<K_CONSTRAINT> { param.add(tk.image); }
+            |
+            tk=<K_WITH> { param.add(tk.image); }
+            |
+            tk=<K_EXCLUDE> { param.add(tk.image); }
+            |
+            tk=<K_WHERE> { param.add(tk.image); }
+
 		)
 	{return param;}
 }
@@ -2939,11 +2963,13 @@ String AList():
 {
 	StringBuilder retval = new StringBuilder("(");
 	Token tk = null;
+	Token tk2 = null;
 }
 {
 	 "("
 
-	 ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER>) { retval.append(tk.image); } ["," {retval.append(",");}] )*
+	 ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER>) { retval.append(tk.image); }
+	   [("," {retval.append(",");} | "=" {retval.append("=");})] )*
 
 	")"
 	{
