@@ -74,7 +74,6 @@ import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
 import net.sf.jsqlparser.statement.merge.*;
-
 import java.util.*;
 
 /**
@@ -1729,6 +1728,15 @@ Expression RegularCondition():
 	| "~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
 	| "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
 	| "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
+
+        | "@>" { result = new JsonOperator("@>"); }
+        | "<@" { result = new JsonOperator("<@"); }
+        | "?" { result = new JsonOperator("?"); }
+        | "?|" { result = new JsonOperator("?|"); }
+        | "?&" { result = new JsonOperator("?&"); }
+        | "||" { result = new JsonOperator("||"); }
+        | "-" { result = new JsonOperator("-"); }
+        | "-#" { result = new JsonOperator("-#"); }
 	)
 
 	( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; } 
@@ -2228,7 +2236,12 @@ JsonExpression JsonExpression() : {
   Token token;
 }
 {
-    column=Column() ("->" token=<S_CHAR_LITERAL> {result.addIdent(token.image);} )+
+    column=Column() (
+        "->" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"->");} | 
+        "->>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"->>");} |
+        "#>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>");} |
+        "#>>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>>");}
+    )+
     { 
         result.setColumn(column);
         return result; 

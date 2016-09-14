@@ -53,6 +53,7 @@ public class JsonExpression  implements Expression {
     private Column column;
     
     private List<String> idents = new ArrayList<String>();
+    private List<String> operators = new ArrayList<String>();
     
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
@@ -73,18 +74,27 @@ public class JsonExpression  implements Expression {
 
     public void setIdents(List<String> idents) {
         this.idents = idents;
+        operators = new ArrayList<String>();
+        for (String ident : idents) {
+            operators.add("->");
+        }
     }
     
     public void addIdent(String ident) {
+        addIdent(ident, "->");
+    }
+    
+    public void addIdent(String ident, String operator) {
         idents.add(ident);
+        operators.add(operator);
     }
     
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append(column.toString());
-        for (String ident : idents) {
-            b.append("->").append(ident);
+        for (int i=0; i<idents.size(); i++){
+            b.append(operators.get(i)).append(idents.get(i));
         }
         return b.toString();
     }
