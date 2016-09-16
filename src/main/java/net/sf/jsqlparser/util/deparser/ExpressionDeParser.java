@@ -29,7 +29,7 @@ import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
-
+import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import java.util.Iterator;
 
 /**
@@ -528,6 +528,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(JsonExpression jsonExpr) {
         buffer.append(jsonExpr.toString());
+    }
+    
+    @Override
+    public void visit(JsonOperator jsonExpr) {
+        visitBinaryExpression(jsonExpr, " " + jsonExpr.getStringExpression() + " ");
     }
 
     @Override

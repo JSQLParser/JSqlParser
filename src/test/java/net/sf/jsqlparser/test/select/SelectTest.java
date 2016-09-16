@@ -1850,6 +1850,24 @@ public class SelectTest extends TestCase {
 
     public void testJsonExpression() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT data->'images'->'thumbnail'->'url' AS thumb FROM instagram");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM sales WHERE sale->'items'->>'description' = 'milk'");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM sales WHERE sale->'items'->>'quantity' = 12::TEXT");
+        //assertSqlCanBeParsedAndDeparsed("SELECT * FROM sales WHERE CAST(sale->'items'->>'quantity' AS integer)  = 2");
+        assertSqlCanBeParsedAndDeparsed("SELECT SUM(CAST(sale->'items'->>'quantity' AS integer)) AS total_quantity_sold FROM sales");
+        assertSqlCanBeParsedAndDeparsed("SELECT sale->>'items' FROM sales");
+        assertSqlCanBeParsedAndDeparsed("SELECT json_typeof(sale->'items'), json_typeof(sale->'items'->'quantity') FROM sales");
+        
+        
+        //The following staments can be parsed but not deparsed
+        for (String statement : new String[]{
+            "SELECT doc->'site_name' FROM websites WHERE doc @> '{\"tags\":[{\"term\":\"paris\"}, {\"term\":\"food\"}]}'",
+            "SELECT * FROM sales where sale ->'items' @> '[{\"count\":0}]'",
+            "SELECT * FROM sales where sale ->'items' ? 'name'",
+            "SELECT * FROM sales where sale ->'items' -# 'name'"
+        }){
+            Select select = (Select) parserManager.parse(new StringReader(statement));
+            assertStatementCanBeDeparsedAs(select, statement, true);
+        }
     }
 
     public void testSelectInto1() throws JSQLParserException {
