@@ -1978,7 +1978,7 @@ Expression ConcatExpression():
 }
 {
     leftExpression=AdditiveExpression()  { result = leftExpression; }
-    (
+    (LOOKAHEAD(2)
     	"||"
     	rightExpression=AdditiveExpression()
 		{
@@ -2029,7 +2029,7 @@ Expression AdditiveExpression():
 }
 {
     leftExpression=MultiplicativeExpression()  { result = leftExpression; }
-    (
+    ( LOOKAHEAD(2)
     	("+" { result = new Addition(); }
     								| "-" { result = new Subtraction(); } )
 
