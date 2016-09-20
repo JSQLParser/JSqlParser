@@ -2273,4 +2273,8 @@ public class SelectTest extends TestCase {
 //    public void testKeywordOrderAsColumnnameIssue333() throws JSQLParserException {
 //        assertSqlCanBeParsedAndDeparsed("SELECT choice.response_choice_id AS uuid, choice.digit AS digit, choice.text_response AS textResponse, choice.voice_prompt AS voicePrompt, choice.action AS action, choice.contribution AS contribution, choice.order_num AS order, choice.description AS description, choice.is_join_conference AS joinConference, choice.voice_prompt_language_code AS voicePromptLanguageCode, choice.text_response_language_code AS textResponseLanguageCode, choice.description_language_code AS descriptionLanguageCode, choice.rec_phrase AS recordingPhrase FROM response_choices choice WHERE choice.presentation_id = ? ORDER BY choice.order_num", true);
 //    }
+    
+    public void testProblemKeywordCommitIssue341() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT id, commit FROM table1");
+    }
 }
