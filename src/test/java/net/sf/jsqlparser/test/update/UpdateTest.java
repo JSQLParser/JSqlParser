@@ -108,4 +108,8 @@ public class UpdateTest {
 		parserManager.parse(new StringReader(statement));
 	}
 
+    @Test
+	public void testUpdateWithFunctions() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = SUBSTRING(col2, 1, 2)");
+	}
 }
