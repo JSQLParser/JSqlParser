@@ -235,6 +235,13 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         visitOldOracleJoinBinaryExpression(notEqualsTo, " " + notEqualsTo.getStringExpression() + " ");
 
     }
+    
+    /*Added by Mathew on November 21st 2016*/
+    @Override
+     public void visit(DoubleAnd doubleAnd) {
+         visitOldOracleJoinBinaryExpression(doubleAnd, " " + doubleAnd.getStringExpression() + " ");
+
+     }
 
     @Override
     public void visit(NullValue nullValue) {

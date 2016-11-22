@@ -44,6 +44,7 @@ import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;//Added by mathew on 21st Nov 2016
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
@@ -109,6 +110,8 @@ public interface ExpressionVisitor {
 	void visit(MinorThanEquals minorThanEquals);
 
 	void visit(NotEqualsTo notEqualsTo);
+	
+	void visit(DoubleAnd doubleAnd);//Added by mathew on 21st Nov 2016
 
 	void visit(Column tableColumn);
 

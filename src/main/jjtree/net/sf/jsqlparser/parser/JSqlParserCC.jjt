@@ -266,6 +266,7 @@ TOKEN : /* Operators */
 |	<OP_MINORTHANEQUALS: "<" (<WHITESPACE>)* "=">
 |	<OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
 |	<OP_NOTEQUALSBANG: "!=">
+| 	<OP_DOUBLEAND: "&&"> /*added by mathew on 21st Nov 2016*/
 }
 
 TOKEN : /* Date/Time with time zones */
@@ -1333,7 +1334,9 @@ Join JoinerExpression():
   		   | <K_FULL> { join.setFull(true); } 
            ) [ <K_OUTER> { join.setOuter(true); } ]
         | <K_INNER> { join.setInner(true); }
-        | <K_NATURAL> { join.setNatural(true); }
+        | <K_NATURAL> { join.setNatural(true); }  
+        [(<K_LEFT> { join.setLeft(true); } | <K_RIGHT> { join.setRight(true); }| <K_FULL> { join.setFull(true); })  <K_OUTER> { join.setOuter(true); } ]
+        /* line above added by mathew on 21 Nov 2016*/
 		| <K_CROSS> { join.setCross(true); } 
     ]
 
@@ -1723,6 +1726,7 @@ Expression RegularCondition():
 	| token=<OP_MINORTHANEQUALS> { result = new MinorThanEquals(token.image); }
 	| token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }
 	| token=<OP_NOTEQUALSBANG> { result = new NotEqualsTo(token.image); }
+	| token=<OP_DOUBLEAND> { result = new DoubleAnd(token.image); }
 	| "@@" { result = new Matches(); }
 	| "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
 	| <K_REGEXP> [ <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
