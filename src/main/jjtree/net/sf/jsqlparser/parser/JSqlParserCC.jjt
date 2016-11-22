@@ -267,6 +267,8 @@ TOKEN : /* Operators */
 |	<OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
 |	<OP_NOTEQUALSBANG: "!=">
 | 	<OP_DOUBLEAND: "&&"> /*added by mathew on 21st Nov 2016*/
+| 	<OP_CONTAINS: "&>"> /*added by mathew on 21st Nov 2016*/
+| 	<OP_CONTAINEDBY: "<&"> /*added by mathew on 21st Nov 2016*/
 }
 
 TOKEN : /* Date/Time with time zones */
@@ -1727,6 +1729,8 @@ Expression RegularCondition():
 	| token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }
 	| token=<OP_NOTEQUALSBANG> { result = new NotEqualsTo(token.image); }
 	| token=<OP_DOUBLEAND> { result = new DoubleAnd(token.image); }
+	| token=<OP_CONTAINS> { result = new DoubleAnd(token.image); }
+	| token=<OP_CONTAINEDBY> { result = new DoubleAnd(token.image); }
 	| "@@" { result = new Matches(); }
 	| "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
 	| <K_REGEXP> [ <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }

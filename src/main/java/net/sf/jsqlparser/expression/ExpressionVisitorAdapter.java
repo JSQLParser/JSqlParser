@@ -210,6 +210,19 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(DoubleAnd expr) {
         visitBinaryExpression(expr);
     }
+    
+    /*Added by mathew on 21st Nov 2016*/
+    @Override
+    public void visit(Contains expr) {
+        visitBinaryExpression(expr);
+    }
+
+    /*Added by mathew on 21st Nov 2016*/
+    @Override
+    public void visit(ContainedBy expr) {
+        visitBinaryExpression(expr);
+    }
+
 
     @Override
     public void visit(Column column) {
