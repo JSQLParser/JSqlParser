@@ -44,6 +44,8 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;//Added by mathew on 21st Nov 2016
+import net.sf.jsqlparser.expression.operators.relational.Contains;//Added by mathew on 21st Nov 2016
+import net.sf.jsqlparser.expression.operators.relational.ContainedBy;//Added by mathew on 21st Nov 2016
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.schema.Column;
@@ -127,6 +129,10 @@ public interface ExpressionVisitor {
 	void visit(NotEqualsTo notEqualsTo);
 
 	void visit(DoubleAnd doubleAnd);//Added by mathew on 21st Nov 2016
+	
+	void visit(Contains contains);//Added by mathew on 21st Nov 2016
+
+	void visit(ContainedBy containedBy);//Added by mathew on 21st Nov 2016
 
     void visit(ParenthesedSelect selectBody);
 

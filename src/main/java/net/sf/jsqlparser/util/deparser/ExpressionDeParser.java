@@ -408,6 +408,20 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
          visitOldOracleJoinBinaryExpression(doubleAnd, " " + doubleAnd.getStringExpression() + " ");
 
      }
+    
+    /*Added by Mathew on November 21st 2016*/
+    @Override
+     public void visit(Contains contains) {
+         visitOldOracleJoinBinaryExpression(contains, " " + contains.getStringExpression() + " ");
+
+     }
+    
+    /*Added by Mathew on November 21st 2016*/
+    @Override
+     public void visit(ContainedBy containedBy) {
+         visitOldOracleJoinBinaryExpression(containedBy, " " + containedBy.getStringExpression() + " ");
+
+     }
 
     @Override
     public void visit(NullValue nullValue) {
