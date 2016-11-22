@@ -254,6 +254,12 @@ public class ExpressionVisitorAdapter
     public void visit(NotEqualsTo expr) {
         visitBinaryExpression(expr);
     }
+    
+    /*Added by mathew on 21st Nov 2016*/
+    @Override
+    public void visit(DoubleAnd expr) {
+        visitBinaryExpression(expr);
+    }
 
     @Override
     public void visit(Column column) {

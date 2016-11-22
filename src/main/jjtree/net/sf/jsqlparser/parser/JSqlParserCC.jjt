@@ -182,7 +182,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_COMMENT:"COMMENT">
 |   <K_CONFLICT:"CONFLICT">
 |   <K_CONNECT:"CONNECT">
-|   <K_CONNECT_BY_ROOT: "CONNECT_BY_ROOT"> 
+|   <K_CONNECT_BY_ROOT: "CONNECT_BY_ROOT">
 |   <K_CONSTRAINT:"CONSTRAINT">
 |   <K_CONVERT:"CONVERT">
 |   <K_COSTS: "COSTS">
@@ -413,8 +413,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_THEN:"THEN">
 |   <K_TEMP:"TEMP">
 |   <K_TEMPORARY:"TEMPORARY">
-|   <K_TIME_KEY_EXPR : ( 
-                         ("CURRENT" ( "_" | (" ")+ ) "TIMESTAMP") 
+|   <K_TIME_KEY_EXPR : (
+                         ("CURRENT" ( "_" | (" ")+ ) "TIMESTAMP")
                          | ("CURRENT" ( "_" | (" ")+ ) "TIME")
                          | ("CURRENT" ( "_" | (" ")+ ) "DATE")
                        ) ( "()" )?>
@@ -482,10 +482,13 @@ TOKEN : /* Statement Separators */
 TOKEN : /* Operators */
 {
     <OP_GREATERTHANEQUALS: ">" (<WHITESPACE>)* "=">
-|    <OP_MINORTHANEQUALS: "<" (<WHITESPACE>)* "=">
-|    <OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
-|    <OP_NOTEQUALSBANG: "!" (<WHITESPACE>)* "=">
-|    <OP_CONCAT: "|" (<WHITESPACE>)* "|">
+|   <OP_MINORTHANEQUALS: "<" (<WHITESPACE>)* "=">
+|   <OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
+|   <OP_NOTEQUALSBANG: "!" (<WHITESPACE>)* "=">
+|	<OP_NOTEQUALSBANG: "!=">
+|   <OP_CONCAT: "|" (<WHITESPACE>)* "|">
+|	<OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
+| 	<OP_DOUBLEAND: "&&"> /*added by mathew on 21st Nov 2016*/
 }
 
 TOKEN : /* Date/Time with time zones */
@@ -600,7 +603,7 @@ TOKEN:
 
 
 Statement Statement() #Statement:
-{   
+{
     IfElseStatement ifElseStatement = null;
     Statement stm = null;
     Statement stm2 = null;
@@ -609,10 +612,10 @@ Statement Statement() #Statement:
 {
     try {
         (
-            <K_IF> condition=Condition() 
+            <K_IF> condition=Condition()
             ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
             [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
-            [ LOOKAHEAD(2) 
+            [ LOOKAHEAD(2)
                 <K_ELSE> ( stm2 = SingleStatement() | stm2 = Block() ) {  ifElseStatement.setElseStatement(stm2);  }
                 [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForElseStatement(true); }]
             ]
@@ -641,7 +644,7 @@ Statement Statement() #Statement:
 }
 
 Statement SingleStatement() :
-{ 
+{
     Statement stm = null;
     List<WithItem> with = null;
 }
@@ -752,7 +755,7 @@ Block Block() #Block : {
             error_skipto(ST_SEMICOLON);
         } else {
             throw e;
-        }           
+        }
     }
 
     {
@@ -778,9 +781,9 @@ Statements Statements() #Statements: {
     try {
         (
             (
-                 <K_IF> condition=Condition() 
+                 <K_IF> condition=Condition()
                  ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
-                 [ LOOKAHEAD(2) 
+                 [ LOOKAHEAD(2)
                      [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
                      <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
                  ]
@@ -789,7 +792,7 @@ Statements Statements() #Statements: {
             )
             |
             (
-                 stm = SingleStatement() 
+                 stm = SingleStatement()
                  | stm = Block()
 
                  [ LOOKAHEAD(2)  <ST_SEMICOLON> ]
@@ -974,11 +977,11 @@ RenameTableStatement RenameTableStatement(): {
     Token token;
 }
 {
-    <K_RENAME> 
+    <K_RENAME>
     [ LOOKAHEAD(2) <K_TABLE> { usingTableKeyword = true; } ]
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { usesIfExistsKeyword = true; } ]
     oldName = Table()
-    [ ( 
+    [ (
         <K_WAIT> token=<S_LONG> { waitDirective = "WAIT " + token.image; }
         |
         <K_NOWAIT>  { waitDirective = "NOWAIT"; }
@@ -986,8 +989,8 @@ RenameTableStatement RenameTableStatement(): {
     <K_TO>
     newName = Table()
 
-    { 
-        renameTableStatement = new RenameTableStatement(oldName, newName, usingTableKeyword, usesIfExistsKeyword, waitDirective); 
+    {
+        renameTableStatement = new RenameTableStatement(oldName, newName, usingTableKeyword, usesIfExistsKeyword, waitDirective);
     }
 
     (
@@ -1000,7 +1003,7 @@ RenameTableStatement RenameTableStatement(): {
         }
     )*
 
-    { 
+    {
         return renameTableStatement;
     }
 }
@@ -1013,21 +1016,21 @@ PurgeStatement PurgeStatement(): {
     Token userToken = null;
 }
 {
-    <K_PURGE> 
+    <K_PURGE>
     (
         <K_TABLE> table=Table() { purgeStatement = new PurgeStatement(table); }
-        | 
+        |
         <K_INDEX> index=Index() { purgeStatement = new PurgeStatement(index); }
         |
         <K_RECYCLEBIN> { purgeStatement = new PurgeStatement(PurgeObjectType.RECYCLEBIN); }
         |
         <K_DBA_RECYCLEBIN> { purgeStatement = new PurgeStatement(PurgeObjectType.DBA_RECYCLEBIN); }
         |
-        <K_TABLESPACE> tableSpaceToken=<S_IDENTIFIER> [ <K_USER> userToken=<S_IDENTIFIER> ] { 
+        <K_TABLESPACE> tableSpaceToken=<S_IDENTIFIER> [ <K_USER> userToken=<S_IDENTIFIER> ] {
             purgeStatement = new PurgeStatement(
                 PurgeObjectType.TABLESPACE
                 , tableSpaceToken.image
-                , userToken!=null ? userToken.image : null); 
+                , userToken!=null ? userToken.image : null);
             }
     )
 
@@ -1747,7 +1750,7 @@ The following tokens are allowed as Names for Schema, Table, Column and Aliases
 String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
-    ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> 
+    ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR>
        | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOCK" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONFLICT" | tk="CONVERT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATABASE" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GUARD" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MEMBER" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGISTER" | tk="RENAME" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TO" | tk="TRIGGER" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
@@ -3377,19 +3380,21 @@ Expression RegularCondition() #RegularCondition:
 
     [ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
 
-    ( LOOKAHEAD(2)
-    ">" { result = new GreaterThan(); }
-    | "<" { result = new MinorThan(); }
-    | "=" { result = new EqualsTo(); }
-    | token=<OP_GREATERTHANEQUALS> { result = new GreaterThanEquals(token.image); }
-    | token=<OP_MINORTHANEQUALS> { result = new MinorThanEquals(token.image); }
-    | token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }
-    | token=<OP_NOTEQUALSBANG> { result = new NotEqualsTo(token.image); }
-    | "@@" { result = new Matches(); }
-    | "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
-    | "~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
-    | "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
-    | "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
+	( LOOKAHEAD(2)
+	">" { result = new GreaterThan(); }
+	| "<" { result = new MinorThan(); }
+	| "=" { result = new EqualsTo(); }
+	| token=<OP_GREATERTHANEQUALS> { result = new GreaterThanEquals(token.image); }
+	| token=<OP_MINORTHANEQUALS> { result = new MinorThanEquals(token.image); }
+	| token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }
+	| token=<OP_NOTEQUALSBANG> { result = new NotEqualsTo(token.image); }
+	| token=<OP_DOUBLEAND> { result = new DoubleAnd(token.image); }
+	| "@@" { result = new Matches(); }
+	| "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
+	| <K_REGEXP> [ <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
+	| "~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
+	| "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
+	| "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
 
         | "@>" { result = new JsonOperator("@>"); }
         | "<@" { result = new JsonOperator("<@"); }
@@ -5076,9 +5081,9 @@ XMLSerializeExpr XMLSerializeExpr(): {
    ColDataType dataType;
 }
 {
-    <K_XMLSERIALIZE> 
-        "(" <K_XMLAGG> 
-                "(" <K_XMLTEXT> 
+    <K_XMLSERIALIZE>
+        "(" <K_XMLAGG>
+                "(" <K_XMLTEXT>
                         "(" expression=SimpleExpression() ")"
                 [ orderByElements=OrderByElements() ]
         ")"
@@ -5161,7 +5166,7 @@ List<Index.ColumnParams> ColumnNamesWithParamsList() : {
 
 Index Index(): {
     List<String> name;
-} 
+}
 {
     name= RelObjectNameList() { return new Index().withName(name).withType(""); }
 }
@@ -5321,8 +5326,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     <K_TABLE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
     table=Table()
-    [ LOOKAHEAD(2) ( 
-        LOOKAHEAD(3) 
+    [ LOOKAHEAD(2) (
+        LOOKAHEAD(3)
             ("(" tableColumn=RelObjectName() { columns.add(tableColumn); } ("," tableColumn=RelObjectName() { columns.add(tableColumn); } )* ")")
         |
             ("("
@@ -5534,8 +5539,8 @@ ColDataType ColDataType():
 			| tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> | tk=<K_BINARY> | tk=<K_JSON> | tk=<K_STRING> )
                         [ "." (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) ]
 		    { if (tk2!=null) colDataType.setDataType(tk.image + "." + tk2.image); else colDataType.setDataType(tk.image); }
-		| tk=<K_UNSIGNED>  [LOOKAHEAD(2) tk2=<S_IDENTIFIER>] 
-                    { if (tk2!=null) colDataType.setDataType(tk.image + " " + tk2.image); else colDataType.setDataType(tk.image); } 
+		| tk=<K_UNSIGNED>  [LOOKAHEAD(2) tk2=<S_IDENTIFIER>]
+                    { if (tk2!=null) colDataType.setDataType(tk.image + " " + tk2.image); else colDataType.setDataType(tk.image); }
 		| LOOKAHEAD(2) tk=<K_SIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
 		| tk=<K_SIGNED> { colDataType.setDataType(tk.image);}
     )
@@ -6266,12 +6271,12 @@ AlterExpression AlterExpression():
           tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }
       )
       |
-      tokens = captureRest() { 
+      tokens = captureRest() {
                     alterExp.setOperation(AlterOperation.UNSPECIFIC);
                     StringBuilder optionalSpecifier = new StringBuilder();
                     int i=0;
 
-                    for (String s: tokens) 
+                    for (String s: tokens)
                         if (! (s.equals(";") || s.equals("\n\n\n")) ) {
                             if (i>0)
                                 optionalSpecifier.append( " " );
@@ -6366,18 +6371,18 @@ AlterSession AlterSession():
 }
 {
     <K_SESSION> (
-        ( 
+        (
            <K_ADVISE>   ( <K_COMMIT> { operation = AlterSessionOperation.ADVISE_COMMIT; }
                         | <K_ROLLBACK> { operation = AlterSessionOperation.ADVISE_ROLLBACK; }
                         | <K_NOTHING> { operation = AlterSessionOperation.ADVISE_NOTHING; }
                         )
         )
         |
-        ( 
+        (
             <K_CLOSE> <K_DATABASE> <K_LINK> { operation = AlterSessionOperation.CLOSE_DATABASE_LINK; }
         )
-        |   
-        (   
+        |
+        (
             <K_ENABLE>  ( <K_COMMIT> <K_IN> <K_PROCEDURE> { operation = AlterSessionOperation.ENABLE_COMMIT_IN_PROCEDURE; }
                         | <K_GUARD> { operation = AlterSessionOperation.ENABLE_GUARD; }
                         | <K_PARALLEL> ( <K_DML> { operation = AlterSessionOperation.ENABLE_PARALLEL_DML; }
@@ -6388,7 +6393,7 @@ AlterSession AlterSession():
                         )
         )
         |
-        (   
+        (
             <K_DISABLE> ( <K_COMMIT> <K_IN> <K_PROCEDURE> { operation = AlterSessionOperation.DISABLE_COMMIT_IN_PROCEDURE; }
                         | <K_GUARD> { operation = AlterSessionOperation.DISABLE_GUARD; }
                         | <K_PARALLEL> ( <K_DML> { operation = AlterSessionOperation.DISABLE_PARALLEL_DML; }
@@ -6399,19 +6404,19 @@ AlterSession AlterSession():
                         )
         )
         |
-        (   
+        (
             <K_FORCE> <K_PARALLEL> ( <K_DML> { operation = AlterSessionOperation.FORCE_PARALLEL_DML; }
                                    | <K_DDL> { operation = AlterSessionOperation.FORCE_PARALLEL_DDL; }
                                    | <K_QUERY> { operation = AlterSessionOperation.FORCE_PARALLEL_QUERY; }
                                    )
         )
         |
-        (   
+        (
             <K_SET> { operation = AlterSessionOperation.SET; }
         )
     )
 
-    (   ( token = <S_CHAR_LITERAL> 
+    (   ( token = <S_CHAR_LITERAL>
             | token = <S_IDENTIFIER>
             | token = "="
             | token = <S_LONG>
@@ -6432,37 +6437,37 @@ AlterSystemStatement AlterSystemStatement():
 }
 {
     <K_SYSTEM> (
-        ( 
+        (
            "ARCHIVE" "LOG" { operation = AlterSystemOperation.ARCHIVE_LOG; }
         )
         |
-        ( 
+        (
             "CHECKPOINT" { operation = AlterSystemOperation.CHECKPOINT; }
         )
         |
-        ( 
+        (
             "DUMP" "ACTIVE" "SESSION" "HISTORY" { operation = AlterSystemOperation.DUMP_ACTIVE_SESSION_HISTORY; }
         )
-        |   
-        (   
-            <K_ENABLE>  ( 
+        |
+        (
+            <K_ENABLE>  (
                             "DISTRIBUTED RECOVERY" { operation = AlterSystemOperation.ENABLE_DISTRIBUTED_RECOVERY; }
                             | "RESTRICTED SESSION" { operation = AlterSystemOperation.ENABLE_DISTRIBUTED_RECOVERY; }
                         )
         )
         |
-        (   
-            <K_DISABLE> ( 
+        (
+            <K_DISABLE> (
                             "DISTRIBUTED RECOVERY" { operation = AlterSystemOperation.DISABLE_DISTRIBUTED_RECOVERY; }
                             | "RESTRICTED SESSION" { operation = AlterSystemOperation.DISABLE_RESTRICTED_SESSION; }
                         )
         )
         |
-        ( 
+        (
             "FLUSH" { operation = AlterSystemOperation.FLUSH; }
         )
         |
-        ( 
+        (
             "DISCONNECT" "SESSION" { operation = AlterSystemOperation.DISCONNECT_SESSION; }
         )
         |
@@ -6470,19 +6475,19 @@ AlterSystemStatement AlterSystemStatement():
             "KILL SESSION" { operation = AlterSystemOperation.KILL_SESSION; }
         )
         |
-        ( 
+        (
             "SWITCH" { operation = AlterSystemOperation.SWITCH; }
         )
         |
-        ( 
+        (
             "SUSPEND" { operation = AlterSystemOperation.SUSPEND; }
         )
         |
-        ( 
+        (
             "RESUME" { operation = AlterSystemOperation.RESUME; }
         )
         |
-        ( 
+        (
             "QUIESCE" "RESTRICTED" { operation = AlterSystemOperation.QUIESCE; }
         )
         |
@@ -6490,19 +6495,19 @@ AlterSystemStatement AlterSystemStatement():
             "UNQUIESCE" { operation = AlterSystemOperation.UNQUIESCE; }
         )
         |
-        ( 
+        (
             "SHUTDOWN" { operation = AlterSystemOperation.SHUTDOWN; }
         )
         |
-        ( 
+        (
             "REGISTER" { operation = AlterSystemOperation.REGISTER; }
         )
         |
-        ( 
+        (
             "SET" { operation = AlterSystemOperation.SET; }
         )
         |
-        ( 
+        (
             "RESET" { operation = AlterSystemOperation.RESET; }
         )
     )
@@ -6552,14 +6557,14 @@ RollbackStatement RollbackStatement():
     <K_ROLLBACK> { rollbackStatement = new RollbackStatement(); }
     [ <K_WORK> { rollbackStatement.setUsingWorkKeyword(true); } ]
     [   (
-            <K_TO> [ <K_SAVEPOINT> { rollbackStatement.setUsingSavepointKeyword(true); }]  
+            <K_TO> [ <K_SAVEPOINT> { rollbackStatement.setUsingSavepointKeyword(true); }]
                 token=<S_IDENTIFIER> { rollbackStatement.setSavepointName(token.image); }
         )
         |
         (
             <K_FORCE> token=<S_CHAR_LITERAL> { rollbackStatement.setForceDistributedTransactionIdentifier(token.image); }
         ) ]
-    
+
     {
         return rollbackStatement;
     }
