@@ -74,6 +74,7 @@ import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
 import net.sf.jsqlparser.statement.merge.*;
+import net.sf.jsqlparser.util.WithTransformation;
 import java.util.*;
 
 /**
@@ -846,8 +847,11 @@ Select Select():
 }
 
 SelectBody SelectBody():
-{ SelectBody selectBody = null; }
+{ SelectBody selectBody = null; 
+	List<WithItem> with = null;
+}
 {
+    [ with=WithList() {  } ]
 	(
 		LOOKAHEAD(SetOperationList())
 		    selectBody = SetOperationList()
@@ -856,7 +860,12 @@ SelectBody SelectBody():
         |
         ( "(" selectBody = PlainSelect() { ((PlainSelect)selectBody).setUseBrackets(true); } ")" )
 	)
-	{ return selectBody; }
+	{ 
+	if(with!=null){
+		selectBody=new WithTransformation(selectBody,with).getSelectBody();
+	}
+	return selectBody; 
+	}
 }
 
 PlainSelect PlainSelect():
