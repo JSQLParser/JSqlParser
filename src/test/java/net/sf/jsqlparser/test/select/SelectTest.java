@@ -2277,4 +2277,8 @@ public class SelectTest extends TestCase {
     public void testProblemKeywordCommitIssue341() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT id, commit FROM table1");
     }
+    
+    public void testProblemSqlIssue352() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed( "SELECT @rowNO from (SELECT @rowNO from dual) r", true);
+    }
 }
