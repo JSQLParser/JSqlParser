@@ -174,10 +174,6 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         }
     }
 
-    public void visit(Column column) {
-        buffer.append(column.getFullyQualifiedName());
-    }
-
     @Override
     public void visit(AllTableColumns allTableColumns) {
         buffer.append(allTableColumns.getTable().getFullyQualifiedName()).append(".*");
@@ -360,7 +356,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             buffer.append(" USING (");
             for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator.hasNext();) {
                 Column column = iterator.next();
-                buffer.append(column.getFullyQualifiedName());
+                buffer.append(column.toString());
                 if (iterator.hasNext()) {
                     buffer.append(", ");
                 }

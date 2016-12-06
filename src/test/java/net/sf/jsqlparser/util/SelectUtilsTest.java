@@ -122,4 +122,13 @@ public class SelectUtilsTest {
         assertEquals("SELECT tab1.col1, tab1.col2, tab1.col3, tab2.b1, tab2.b2 FROM mytable1 AS tab1 LEFT JOIN mytable2 AS tab2 ON tab1.col1 = tab2.b1",
                     select.toString());
     }
+    
+    public void testTableAliasIssue311_2() {
+        Table table1 = new Table("mytable1");
+        table1.setAlias(new Alias("tab1"));
+
+        Column col = new Column(table1, "col1");
+        assertEquals("tab1.col1", col.toString());
+        assertEquals("mytable.col1", col.getFullyQualifiedName());
+    }
 }
