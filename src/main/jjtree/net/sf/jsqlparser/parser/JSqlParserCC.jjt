@@ -236,7 +236,14 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SEMI : "SEMI">
 |   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
-      |   <K_ARRAY : "ARRAY" (<WHITESPACE>)* "["> 
+      |   <K_ARRAY : "ARRAY"> : START_ARRAY_LIST
+      | <K_DOUBLE: "DOUBLE" >
+      | <K_PRECISION: "PRECISION" >
+}
+
+<START_ARRAY_LIST> TOKEN:
+{
+   <LBRACKET: "["> :DEFAULT
 }
 
 TOKEN : /* Operators */
@@ -704,7 +711,7 @@ String RelObjectNameExt():
   String result=null;
 } 
 {
-    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>)
+    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> | tk=<K_DOUBLE> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -2517,7 +2524,7 @@ ArrayLiteral ArrayLiteral():
    ExpressionList list = null;
 }
 {
-   <K_ARRAY> list=SimpleExpressionList() "]" 
+   <K_ARRAY> <LBRACKET> list=SimpleExpressionList() "]" 
    { 
       array.setList(list); 
       return array;
@@ -2771,6 +2778,7 @@ ColDataType ColDataType():
 }
 {
 	( tk=<K_CHARACTER> [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
+	| tk=<K_DOUBLE> [tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 	| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> ) { colDataType.setDataType(tk.image); } )
 
 	[LOOKAHEAD(2) "(" ( (tk=<S_LONG> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER>) { argumentsStringList.add(tk.image); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
