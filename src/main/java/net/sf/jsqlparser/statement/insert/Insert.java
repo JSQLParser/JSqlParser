@@ -197,17 +197,19 @@ public class Insert implements Statement {
 
         if (itemsList != null) {
             sql.append(itemsList);
+        }else {
+            if (useSelectBrackets) {
+                sql.append("(");
+            }
+            if (select != null) {
+                sql.append(select);
+            }
+            if (useSelectBrackets) {
+                sql.append(")");
+            }
         }
 
-        if (useSelectBrackets) {
-            sql.append("(");
-        }
-        if (select != null) {
-            sql.append(select);
-        }
-        if (useSelectBrackets) {
-            sql.append(")");
-        }
+
 
         if (useDuplicate){
             sql.append(" ON DUPLICATE KEY UPDATE ");

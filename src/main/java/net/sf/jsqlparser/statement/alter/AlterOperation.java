@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2014 JSQLParser
+ * Copyright (C) 2004 - 2016 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,8 +19,8 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
- /*
- * Copyright (C) 2014 JSQLParser.
+/*
+ * Copyright (C) 2016 JSQLParser.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,20 +37,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package net.sf.jsqlparser.statement.create.table;
-
-import net.sf.jsqlparser.statement.select.PlainSelect;
+package net.sf.jsqlparser.statement.alter;
 
 /**
  *
  * @author toben
  */
-public class NamedConstraint extends Index {
-
-    @Override
-    public String toString() {
-        String idxSpecText = PlainSelect.getStringList(getIndexSpec(), false, false);
-        return (getName() != null ? "CONSTRAINT " + getName() + " " : "")
-                + getType() + " " + PlainSelect.getStringList(getColumnsNames(), true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
-    }
+public enum AlterOperation {
+    ADD, DROP;
 }

@@ -1,0 +1,122 @@
+// -----------------------------------------------------------------------------------------------------------------------
+// MERGE requests test
+//
+// The requests must have the following format:
+// #begin
+// <MERGE request>
+// #end
+// <isValid flag>: true if this request is valid
+//
+// If the request is valid:
+// <selected columns concerning by the select clause prefixed by the table>: for example: my_table.id
+// <selected table concerning by the from clause, eventually suffixed by an alias>: for example: my_table, my_table.my_alias, my_table
+// <selected columns concerning by the where clause prefixed by the table>: for example: my_table.id
+// <request type>: either CACHEABLE, UNCACHEABLE or UNIQUE_CACHEABLE
+//
+// If the request is not valid:
+// <error message>
+//
+// do not add empty line between the lines defining a test
+// line beginning by a // are ignored except in a test
+// -----------------------------------------------------------------------------------------------------------------------
+
+//1
+#begin
+MERGE INTO TEST_TABLE1 A
+USING
+(WITH
+    ALL_SID AS (
+        SELECT
+        TS.SID
+
+        FROM
+        TEST_TABLE2 TG
+        LEFT JOIN
+        TEST_TABLE3 TS
+        ON TG.GID=TS.GID
+
+        WHERE
+        TG.GID IN (
+            SELECT
+            DISTINCT GID
+
+            FROM
+            TEST_TABLE4
+
+            WHERE
+            LOGDAY > TRUNC(SYSDATE-90)
+        )
+    ),
+
+    VIRTUAL_SPLIT AS (
+        SELECT
+        VIRTUAL_SID,
+        MEMBER_SID
+
+        FROM
+        ALL_SID,
+        TEST_TABLE5
+
+        WHERE
+        ALL_SID.SID=TEST_TABLE5.VIRTUAL_SID
+    ),
+
+    ALL_CFS AS (
+        SELECT
+        DISTINCT SID AS SID
+
+        FROM (
+            SELECT
+            SID
+            FROM
+            ALL_SID
+            WHERE
+            SID NOT IN (
+                SELECT
+                VIRTUAL_SID
+                FROM
+                VIRTUAL_SPLIT
+            ) UNION ALL
+            SELECT
+            MEMBER_SID AS SID
+            FROM
+            VIRTUAL_SPLIT
+        )
+    )
+
+    SELECT
+    INV.SID,
+
+    CASE
+    WHEN
+    CF.SID IS NULL
+    THEN
+    0
+    ELSE
+    1
+    END AS FOCUS_MARK
+
+    FROM
+    TEST_TABLE1 INV
+    LEFT JOIN
+    ALL_CFS CF
+    ON INV.SID=CF.SID
+) B
+ON (
+    A.SID=B.SID
+)
+
+WHEN
+MATCHED
+
+THEN
+UPDATE
+SET
+A.FOCUS_REMARK = B.FOCUS_MARK,
+A.UPDATE_TIME = SYSDATE
+#end
+true
+?
+TEST_TABLE1 TEST_TABLE2 TEST_TABLE3 TEST_TABLE4 TEST_TABLE5
+?
+?

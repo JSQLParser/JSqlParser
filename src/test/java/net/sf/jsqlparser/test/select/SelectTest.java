@@ -13,10 +13,9 @@ import org.apache.commons.io.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 
 public class SelectTest extends TestCase {
 
@@ -398,12 +397,12 @@ public class SelectTest extends TestCase {
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(3, ((LongValue)((PlainSelect) select.getSelectBody()).getTop().getExpression()).getValue());
+        assertEquals(3, ((LongValue) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).getValue());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "select top 5 foo from bar";
         select = (Select) parserManager.parse(new StringReader(statement));
-        assertEquals(5, ((LongValue)((PlainSelect) select.getSelectBody()).getTop().getExpression()).getValue());
+        assertEquals(5, ((LongValue) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).getValue());
     }
 
     public void testTopWithParenthesis() throws JSQLParserException {
@@ -580,7 +579,7 @@ public class SelectTest extends TestCase {
 
     public void testUnion() throws JSQLParserException {
         String statement = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
-                + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION " + "SELECT * FROM mytable2 LIMIT 3,4";
+                + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION " + "SELECT * FROM mytable2 LIMIT 3, 4";
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
         SetOperationList setList = (SetOperationList) select.getSelectBody();
@@ -594,9 +593,31 @@ public class SelectTest extends TestCase {
         // use standard limit syntax
         String statementToString = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
                 + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION "
-                + "SELECT * FROM mytable2 LIMIT 4 OFFSET 3";
+                + "SELECT * FROM mytable2 LIMIT 3, 4";
         assertStatementCanBeDeparsedAs(select, statementToString);
     }
+    
+    public void testUnion2() throws JSQLParserException {
+        String statement = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
+                + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION " + "SELECT * FROM mytable2 LIMIT 3 OFFSET 4";
+
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        SetOperationList setList = (SetOperationList) select.getSelectBody();
+        assertEquals(3, setList.getSelects().size());
+        assertEquals("mytable", ((Table) ((PlainSelect) setList.getSelects().get(0)).getFromItem()).getName());
+        assertEquals("mytable3", ((Table) ((PlainSelect) setList.getSelects().get(1)).getFromItem()).getName());
+        assertEquals("mytable2", ((Table) ((PlainSelect) setList.getSelects().get(2)).getFromItem()).getName());
+        assertEquals(0, ((PlainSelect) setList.getSelects().get(2)).getLimit().getOffset());
+        assertEquals(4, ((PlainSelect) setList.getSelects().get(2)).getOffset().getOffset());
+
+        // use brakets for toString
+        // use standard limit syntax
+        String statementToString = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
+                + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION "
+                + "SELECT * FROM mytable2 LIMIT 3 OFFSET 4";
+        assertStatementCanBeDeparsedAs(select, statementToString);
+    }
+    
 
     public void testDistinct() throws JSQLParserException {
         String statement = "SELECT DISTINCT ON (myid) myid, mycol FROM mytable WHERE mytable.col = 9";
@@ -1203,6 +1224,11 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
+    public void testCastTypeProblem8() throws JSQLParserException {
+        String stmt = "SELECT CAST('123' AS double precision) FROM tabelle1";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
     public void testCaseElseAddition() throws JSQLParserException {
         String stmt = "SELECT CASE WHEN 1 + 3 > 20 THEN 0 ELSE 1000 + 1 END AS d FROM dual";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -1392,6 +1418,10 @@ public class SelectTest extends TestCase {
     public void testOracleJoin4() throws JSQLParserException {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) = tabelle2.b AND tabelle1.b(+) IN ('A', 'B')";
         assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+    
+    public void testOracleJoinIssue318() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM TBL_A, TBL_B, TBL_C WHERE TBL_A.ID(+) = TBL_B.ID AND TBL_C.ROOM(+) = TBL_B.ROOM");
     }
 
     public void testProblemSqlIntersect() throws Exception {
@@ -1820,6 +1850,24 @@ public class SelectTest extends TestCase {
 
     public void testJsonExpression() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT data->'images'->'thumbnail'->'url' AS thumb FROM instagram");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM sales WHERE sale->'items'->>'description' = 'milk'");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM sales WHERE sale->'items'->>'quantity' = 12::TEXT");
+        //assertSqlCanBeParsedAndDeparsed("SELECT * FROM sales WHERE CAST(sale->'items'->>'quantity' AS integer)  = 2");
+        assertSqlCanBeParsedAndDeparsed("SELECT SUM(CAST(sale->'items'->>'quantity' AS integer)) AS total_quantity_sold FROM sales");
+        assertSqlCanBeParsedAndDeparsed("SELECT sale->>'items' FROM sales");
+        assertSqlCanBeParsedAndDeparsed("SELECT json_typeof(sale->'items'), json_typeof(sale->'items'->'quantity') FROM sales");
+        
+        
+        //The following staments can be parsed but not deparsed
+        for (String statement : new String[]{
+            "SELECT doc->'site_name' FROM websites WHERE doc @> '{\"tags\":[{\"term\":\"paris\"}, {\"term\":\"food\"}]}'",
+            "SELECT * FROM sales where sale ->'items' @> '[{\"count\":0}]'",
+            "SELECT * FROM sales where sale ->'items' ? 'name'",
+            "SELECT * FROM sales where sale ->'items' -# 'name'"
+        }){
+            Select select = (Select) parserManager.parse(new StringReader(statement));
+            assertStatementCanBeDeparsedAs(select, statement, true);
+        }
     }
 
     public void testSelectInto1() throws JSQLParserException {
@@ -1829,7 +1877,7 @@ public class SelectTest extends TestCase {
     public void testSelectForUpdate() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM user_table FOR UPDATE");
     }
-    
+
     public void testSelectForUpdate2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM emp WHERE empno = ? FOR UPDATE");
     }
@@ -2141,13 +2189,13 @@ public class SelectTest extends TestCase {
     public void testWhereIssue240_0() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE 0");
     }
-    
+
     public void testWhereIssue240_notBoolean() {
         try {
             CCJSqlParserUtil.parse("SELECT count(*) FROM mytable WHERE 5");
             fail("should not be parsed");
         } catch (JSQLParserException ex) {
-            
+
         }
     }
 
@@ -2158,49 +2206,79 @@ public class SelectTest extends TestCase {
     public void testWhereIssue240_false() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE false");
     }
-   
+
     public void testWhereIssue241KeywordEnd() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT l.end FROM lessons l");
     }
-    
+
     public void testSpeedTestIssue235() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM tbl WHERE (ROUND((((((period_diff(date_format(tbl.CD, '%Y%m'), date_format(SUBTIME(CURRENT_TIMESTAMP(), 25200), '%Y%m')) + month(SUBTIME(CURRENT_TIMESTAMP(), 25200))) - MONTH('2012-02-01')) - 1) / 3) - ROUND((((month(SUBTIME(CURRENT_TIMESTAMP(),25200)) - MONTH('2012-02-01')) - 1) / 3)))) = -3)", true);
     }
-    
+
     public void testSpeedTestIssue235_2() throws IOException, JSQLParserException {
         String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-issue-235.txt"));
         assertSqlCanBeParsedAndDeparsed(stmt, true);
     }
-    
+
     public void testCastVarCharMaxIssue245() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST('foo' AS NVARCHAR (MAX))");
     }
-    
+
     public void testNestedFunctionCallIssue253() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT (replace_regex(replace_regex(replace_regex(get_json_string(a_column, 'value'), '\\n', ' '), '\\r', ' '), '\\\\', '\\\\\\\\')) FROM a_table WHERE b_column = 'value'");
     }
-    
+
     public void testEscapedBackslashIssue253() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT replace_regex('test', '\\\\', '\\\\\\\\')");
     }
-    
+
     public void testKeywordTableIssue261() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT column_value FROM table(VARCHAR_LIST_TYPE())");
     }
-    
+
     public void testTopExpressionIssue243() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT TOP (? + 1) * FROM MyTable");
     }
-    
+
     public void testTopExpressionIssue243_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT TOP (CAST(? AS INT)) * FROM MyTable");
     }
-    
+
     public void testFunctionIssue284() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT NVL((SELECT 1 FROM DUAL), 1) AS A FROM TEST1");
     }
-    
+
     public void testFunctionDateTimeValues() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab1 WHERE a > TIMESTAMP '2004-04-30 04:05:34.56'");
+    }
+
+    public void testUniqueInsteadOfDistinctIssue299() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT UNIQUE trunc(timez(ludate)+ 8/24) bus_dt, j.object j_name , timez(j.starttime) START_TIME , timez(j.endtime) END_TIME FROM TEST_1 j", true);
+    }
+
+    public void testProblemSqlIssue265() throws IOException, JSQLParserException {
+        String sqls = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-with-issue-265.txt"));
+        Statements stmts = CCJSqlParserUtil.parseStatements(sqls);
+        assertEquals(2, stmts.getStatements().size());
+    }
+    
+    public void testProblemSqlIssue330() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) FROM C_Invoice WHERE IsSOTrx='Y' AND (Processed='N' OR Updated>(current_timestamp - CAST('90 days' AS interval))) AND C_Invoice.AD_Client_ID IN(0,1010016) AND C_Invoice.AD_Org_ID IN(0,1010053,1010095,1010094)", true);
+    }
+    
+    public void testProblemSqlIssue330_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST('90 days' AS interval)");
+    }
+//    won't fix due to lookahead impact on parser    
+//    public void testKeywordOrderAsColumnnameIssue333() throws JSQLParserException {
+//        assertSqlCanBeParsedAndDeparsed("SELECT choice.response_choice_id AS uuid, choice.digit AS digit, choice.text_response AS textResponse, choice.voice_prompt AS voicePrompt, choice.action AS action, choice.contribution AS contribution, choice.order_num AS order, choice.description AS description, choice.is_join_conference AS joinConference, choice.voice_prompt_language_code AS voicePromptLanguageCode, choice.text_response_language_code AS textResponseLanguageCode, choice.description_language_code AS descriptionLanguageCode, choice.rec_phrase AS recordingPhrase FROM response_choices choice WHERE choice.presentation_id = ? ORDER BY choice.order_num", true);
+//    }
+    
+    public void testProblemKeywordCommitIssue341() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT id, commit FROM table1");
+    }
+    
+    public void testProblemIsIssue331() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT C_DocType.C_DocType_ID,NULL,COALESCE(C_DocType_Trl.Name,C_DocType.Name) AS Name,C_DocType.IsActive FROM C_DocType LEFT JOIN C_DocType_TRL ON (C_DocType.C_DocType_ID=C_DocType_Trl.C_DocType_ID AND C_DocType_Trl.AD_Language='es_AR') WHERE C_DocType.AD_Client_ID=1010016 AND C_DocType.AD_Client_ID IN (0,1010016) AND C_DocType.c_doctype_id in ( select c_doctype2.c_doctype_id from c_doctype as c_doctype2 where substring( c_doctype2.printname,6, length(c_doctype2.printname) ) = ( select letra from c_letra_comprobante as clc where clc.c_letra_comprobante_id = 1010039) ) AND ( (1010094!=0 AND C_DocType.ad_org_id = 1010094) OR 1010094=0 ) ORDER BY 3 LIMIT 2000", true);
     }
 }

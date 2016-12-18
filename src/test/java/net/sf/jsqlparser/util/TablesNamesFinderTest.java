@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.OracleHint;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -37,6 +38,11 @@ public class TablesNamesFinderTest {
     @Test
     public void testMoreComplexExamples() throws Exception {
         runTestOnResource("complex-select-requests.txt");
+    }
+
+    @Test
+    public void testComplexMergeExamples() throws Exception {
+        runTestOnResource("complex-merge-requests.txt");
     }
 
     private void runTestOnResource(String resPath) throws Exception {
@@ -79,7 +85,7 @@ public class TablesNamesFinderTest {
                 String whereCols = getLine(in);
                 String type = getLine(in);
                 try {
-                    Select select = (Select) pm.parse(new StringReader(query));
+                    Statement statement = pm.parse(new StringReader(query));
                     StringTokenizer tokenizer = new StringTokenizer(tables, " ");
                     List tablesList = new ArrayList();
                     while (tokenizer.hasMoreTokens()) {
@@ -88,7 +94,7 @@ public class TablesNamesFinderTest {
 
                     String[] tablesArray = (String[]) tablesList.toArray(new String[tablesList.size()]);
 
-                    List<String> tableListRetr = tablesNamesFinder.getTableList(select);
+                    List<String> tableListRetr = tablesNamesFinder.getTableList(statement);
                     assertEquals("stm num:" + numSt, tablesArray.length, tableListRetr.size());
 
                     for (int i = 0; i < tablesArray.length; i++) {

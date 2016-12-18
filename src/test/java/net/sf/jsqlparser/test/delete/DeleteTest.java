@@ -1,14 +1,15 @@
 package net.sf.jsqlparser.test.delete;
 
-import java.io.StringReader;
 import static junit.framework.Assert.assertEquals;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
+import java.io.StringReader;
+
+import org.junit.Test;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.delete.Delete;
-import org.junit.Test;
-
-import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class DeleteTest {
 
@@ -52,5 +53,22 @@ public class DeleteTest {
 		String stmt = "DELETE FROM tablename WHERE a = 1 AND b = 1 ORDER BY col LIMIT 10";
 		assertSqlCanBeParsedAndDeparsed(stmt);
 	}
-
+	
+	@Test
+	public void testDeleteFromTableUsingInnerJoinToAnotherTable() throws JSQLParserException {
+		String stmt = "DELETE Table1 FROM Table1 INNER JOIN Table2 ON Table1.ID = Table2.ID";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	@Test
+	public void testDeleteFromTableUsingLeftJoinToAnotherTable() throws JSQLParserException {
+		String stmt = "DELETE g FROM Table1 AS g LEFT JOIN Table2 ON Table1.ID = Table2.ID";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
+	
+	@Test
+	public void testDeleteFromTableUsingInnerJoinToAnotherTableWithAlias() throws JSQLParserException {
+		String stmt = "DELETE gc FROM guide_category AS gc LEFT JOIN guide AS g ON g.id_guide = gc.id_guide WHERE g.title IS NULL LIMIT 5";
+		assertSqlCanBeParsedAndDeparsed(stmt);
+	}
 }

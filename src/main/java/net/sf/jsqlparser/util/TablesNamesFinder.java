@@ -50,7 +50,7 @@ import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.truncate.Truncate;
-
+import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 /**
  * Find all used tables within an select statement.
  */
@@ -141,6 +141,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(SubSelect subSelect) {
+        if (subSelect.getWithItemsList() != null) {
+            for (WithItem withItem : subSelect.getWithItemsList()) {
+                withItem.accept(this);
+            }
+        }
         subSelect.getSelectBody().accept(this);
     }
 
@@ -442,6 +447,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(JsonExpression jsonExpr) {
     }
 
+    @Override
+    public void visit(JsonOperator jsonExpr) {
+    }
+    
     @Override
     public void visit(AllColumns allColumns) {
     }

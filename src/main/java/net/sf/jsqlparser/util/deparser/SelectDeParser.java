@@ -73,7 +73,11 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         }
 
         if (plainSelect.getDistinct() != null) {
-            buffer.append("DISTINCT ");
+            if (plainSelect.getDistinct().isUseUnique()) {
+                buffer.append("UNIQUE ");
+            } else {
+                buffer.append("DISTINCT ");
+            }
             if (plainSelect.getDistinct().getOnSelectItems() != null) {
                 buffer.append("ON (");
                 for (Iterator<SelectItem> iter = plainSelect.getDistinct().getOnSelectItems().iterator(); iter.hasNext();) {
@@ -168,10 +172,6 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         if (plainSelect.isUseBrackets()) {
             buffer.append(")");
         }
-    }
-
-    public void visit(Column column) {
-        buffer.append(column.getFullyQualifiedName());
     }
 
     @Override
@@ -356,7 +356,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             buffer.append(" USING (");
             for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator.hasNext();) {
                 Column column = iterator.next();
-                buffer.append(column.getFullyQualifiedName());
+                buffer.append(column.toString());
                 if (iterator.hasNext()) {
                     buffer.append(", ");
                 }

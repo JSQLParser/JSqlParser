@@ -35,6 +35,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.OrderByVisitor;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
  * string) an {@link net.sf.jsqlparser.statement.update.Update}
@@ -43,7 +44,10 @@ public class UpdateDeParser implements OrderByVisitor {
 
     private StringBuilder buffer = new StringBuilder();
     private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
-    private SelectVisitor selectVisitor;
+    private SelectVisitor selectVisitor = new SelectVisitorAdapter();
+
+    public UpdateDeParser() {
+    }
 
     /**
      * @param expressionVisitor a {@link ExpressionVisitor} to de-parse

@@ -19,9 +19,11 @@
 package net.sf.jsqlparser.test.select;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserDefaultVisitor;
 import net.sf.jsqlparser.parser.CCJSqlParserTreeConstants;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.SimpleNode;
+import net.sf.jsqlparser.parser.Token;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -38,35 +40,63 @@ import org.junit.Test;
  * @author toben
  */
 public class SelectASTTest {
-    
+
     @Test
     public void testSelectASTColumn() throws JSQLParserException {
         String sql = "SELECT  a,  b FROM  mytable  order by   b,  c";
         StringBuilder b = new StringBuilder(sql);
         Statement stmt = CCJSqlParserUtil.parse(sql);
-        Select select = (Select)stmt;
-        PlainSelect ps = (PlainSelect)select.getSelectBody();
+        Select select = (Select) stmt;
+        PlainSelect ps = (PlainSelect) select.getSelectBody();
         for (SelectItem item : ps.getSelectItems()) {
-            SelectExpressionItem sei = (SelectExpressionItem)item;
-            Column c = (Column)sei.getExpression();
+            SelectExpressionItem sei = (SelectExpressionItem) item;
+            Column c = (Column) sei.getExpression();
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
-            b.setCharAt(astNode.jjtGetFirstToken().beginColumn-1, '*');
+            b.setCharAt(astNode.jjtGetFirstToken().beginColumn - 1, '*');
         }
         for (OrderByElement item : ps.getOrderByElements()) {
-            Column c = (Column)item.getExpression();
+            Column c = (Column) item.getExpression();
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
-            b.setCharAt(astNode.jjtGetFirstToken().beginColumn-1, '#');
+            b.setCharAt(astNode.jjtGetFirstToken().beginColumn - 1, '#');
         }
         assertEquals("SELECT  *,  * FROM  mytable  order by   #,  #", b.toString());
     }
-    
+
     @Test
     public void testSelectASTNode() throws JSQLParserException {
         String sql = "SELECT  a,  b FROM  mytable  order by   b,  c";
         SimpleNode node = (SimpleNode) CCJSqlParserUtil.parseAST(sql);
         node.dump("*");
         assertEquals(CCJSqlParserTreeConstants.JJTSTATEMENT, node.getId());
+    }
+
+    private Token subSelectStart;
+    private Token subSelectEnd;
+    
+    @Test
+    public void testSelectASTNodeSubSelect() throws JSQLParserException {
+        String sql = "SELECT * FROM  mytable  where 0<(select count(*) from mytable2)";
+        SimpleNode node = (SimpleNode) CCJSqlParserUtil.parseAST(sql);
+        node.dump("*");
+        assertEquals(CCJSqlParserTreeConstants.JJTSTATEMENT, node.getId());
+        node.jjtAccept(new CCJSqlParserDefaultVisitor() {
+            @Override
+            public Object visit(SimpleNode node, Object data) {
+                if (node.getId() == CCJSqlParserTreeConstants.JJTSUBSELECT) {
+                    subSelectStart = node.jjtGetFirstToken();
+                    subSelectEnd = node.jjtGetLastToken();
+                    return super.visit(node, data);
+                } else {
+                    return super.visit(node, data);
+                }
+            }
+        }, null);
+        
+        assertNotNull(subSelectStart);
+        assertNotNull(subSelectEnd);
+        assertEquals(34, subSelectStart.beginColumn);
+        assertEquals(62, subSelectEnd.endColumn);
     }
 }

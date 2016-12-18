@@ -18,24 +18,26 @@
  */
 package net.sf.jsqlparser.test;
 
-import net.sf.jsqlparser.*;
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.parser.*;
-import net.sf.jsqlparser.statement.*;
-import net.sf.jsqlparser.util.deparser.*;
-
-import java.io.*;
-import java.util.regex.Pattern;
-
-import static junit.framework.Assert.assertEquals;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SetOperationList;
+
+import java.io.StringReader;
+import java.util.regex.Pattern;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
+import net.sf.jsqlparser.util.deparser.SelectDeParser;
+import net.sf.jsqlparser.util.deparser.StatementDeParser;
 
 /**
  *
@@ -79,7 +81,7 @@ public class TestUtils {
     public static String buildSqlString(String sql, boolean laxDeparsingCheck) {
     	sql = SQL_COMMENT_PATTERN.matcher(sql).replaceAll("");
         if (laxDeparsingCheck) {
-            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
+            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([!/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
         } else {
             return sql;
         }
