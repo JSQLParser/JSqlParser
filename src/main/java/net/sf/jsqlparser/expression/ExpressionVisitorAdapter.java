@@ -213,8 +213,10 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     @Override
     public void visit(SubSelect subSelect) {
         if (selectVisitor != null) {
-            for (WithItem item : subSelect.getWithItemsList()) {
-                item.accept(selectVisitor);
+            if (subSelect.getWithItemsList() != null) {
+                for (WithItem item : subSelect.getWithItemsList()) {
+                    item.accept(selectVisitor);
+                }
             }
             subSelect.getSelectBody().accept(selectVisitor);
         }
