@@ -1691,6 +1691,7 @@ Expression Condition():
 	(LOOKAHEAD(SQLCondition()) result=SQLCondition()
 	| LOOKAHEAD(RegularCondition()) result=RegularCondition()
 	| LOOKAHEAD(Function()) result=Function()
+	| <K_NOT> result=Column() { result = new NotExpression(result); }
     | result=Column()
 	| LOOKAHEAD({ "0".equals(getToken(1).image) || "1".equals(getToken(1).image) }) token=<S_LONG> { result = new LongValue(token.image); }
 	)
@@ -2433,8 +2434,8 @@ Expression CaseWhenExpression() #CaseWhenExpression:
     	    ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
              [<K_ELSE> elseExp=SimpleExpression()]
 		|
-		    switchExp=PrimaryExpression()
-             ( clause=WhenThenValue() { whenClauses.add(clause); } )*
+		    (LOOKAHEAD(RegularCondition()) switchExp=RegularCondition() | switchExp=BitwiseAndOr())
+             ( clause=WhenThenValue() { whenClauses.add(clause); } )+
              [<K_ELSE> elseExp=SimpleExpression()]
 	)
     <K_END>
