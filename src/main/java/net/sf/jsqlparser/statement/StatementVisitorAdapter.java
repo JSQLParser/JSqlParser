@@ -35,6 +35,7 @@ import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.upsert.Upsert;
 
 public class StatementVisitorAdapter implements StatementVisitor {
     @Override
@@ -110,6 +111,11 @@ public class StatementVisitorAdapter implements StatementVisitor {
     @Override
     public void visit(Merge merge) {
         
+    }
+
+    @Override
+    public void visit(Upsert upsert) {
+
     }
 
     @Override
