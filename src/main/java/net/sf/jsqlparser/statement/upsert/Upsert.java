@@ -1,4 +1,4 @@
-package net.sf.jsqlparser.test.upsert;
+package net.sf.jsqlparser.statement.upsert;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;

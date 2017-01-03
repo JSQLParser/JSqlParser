@@ -41,7 +41,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
-import net.sf.jsqlparser.test.upsert.Upsert;
+import net.sf.jsqlparser.statement.upsert.Upsert;
 
 public class StatementDeParser implements StatementVisitor {
 

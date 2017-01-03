@@ -7,7 +7,7 @@ import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.*;
-import net.sf.jsqlparser.test.upsert.Upsert;
+import net.sf.jsqlparser.statement.upsert.Upsert;
 
 import java.util.Iterator;
 

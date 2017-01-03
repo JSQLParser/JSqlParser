@@ -51,7 +51,7 @@ import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
-import net.sf.jsqlparser.test.upsert.Upsert;
+import net.sf.jsqlparser.statement.upsert.Upsert;
 
 /**
  * Find all used tables within an select statement.

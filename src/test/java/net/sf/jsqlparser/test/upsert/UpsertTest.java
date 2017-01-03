@@ -2,6 +2,7 @@ package net.sf.jsqlparser.test.upsert;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.statement.upsert.Upsert;
 import org.junit.Test;
 
 import java.io.StringReader;

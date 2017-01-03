@@ -36,7 +36,7 @@ import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
 import net.sf.jsqlparser.statement.drop.*;
 import net.sf.jsqlparser.statement.insert.*;
-import net.sf.jsqlparser.test.upsert.*;
+import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.replace.*;
 import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.select.*;
