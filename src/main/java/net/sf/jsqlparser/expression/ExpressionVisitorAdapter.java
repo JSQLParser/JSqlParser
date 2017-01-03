@@ -213,8 +213,10 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     @Override
     public void visit(SubSelect subSelect) {
         if (selectVisitor != null) {
-            for (WithItem item : subSelect.getWithItemsList()) {
-                item.accept(selectVisitor);
+            if (subSelect.getWithItemsList() != null) {
+                for (WithItem item : subSelect.getWithItemsList()) {
+                    item.accept(selectVisitor);
+                }
             }
             subSelect.getSelectBody().accept(selectVisitor);
         }
@@ -337,6 +339,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         for (ExpressionList list : multiExprList.getExprList()) {
             visit(list);
         }
+    }
+
+    @Override
+    public void visit(NotExpression notExpr) {
+        notExpr.getExpression().accept(this);
     }
 
     protected void visitBinaryExpression(BinaryExpression expr) {

@@ -68,6 +68,7 @@ import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
 import net.sf.jsqlparser.statement.drop.*;
 import net.sf.jsqlparser.statement.insert.*;
+import net.sf.jsqlparser.test.upsert.*;
 import net.sf.jsqlparser.statement.replace.*;
 import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.select.*;
@@ -170,6 +171,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXISTS:"EXISTS">
 |   <K_HAVING:"HAVING">
 |   <K_INSERT:"INSERT">
+|   <K_UPSERT:"UPSERT">
 |   <K_UPDATE:"UPDATE">
 |   <K_VALUES:"VALUES">
 |   <K_ESCAPE:"ESCAPE">
@@ -210,13 +212,13 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_LAST: "LAST">
 |   <K_ROWS: "ROWS">
 |   <K_RANGE: "RANGE">
-|   <K_UNBOUNDED: "UNBOUNDED"> 
+|   <K_UNBOUNDED: "UNBOUNDED">
 |   <K_PRECEDING: "PRECEDING">
 |   <K_FOLLOWING: "FOLLOWING">
 |   <K_CURRENT: "CURRENT">
-|   <K_ROW: "ROW"> 
-|   <K_RETURNING: "RETURNING"> 
-|   <K_BINARY: "BINARY">  
+|   <K_ROW: "ROW">
+|   <K_RETURNING: "RETURNING">
+|   <K_BINARY: "BINARY">
 |   <K_REGEXP: "REGEXP">
 |   <K_UNLOGGED: "UNLOGGED">
 |   <K_EXEC: "EXEC">
@@ -303,22 +305,22 @@ TOKEN:
 |   < #ESC: "\\" ["n","t","b","r","f","\\","'","\""] >
 }
 
-Statement Statement() #Statement: 
-{ Statement stm; } 
+Statement Statement() #Statement:
+{ Statement stm; }
 {
 	try {
 		stm = SingleStatement()
 		[<ST_SEMICOLON>]
 		<EOF>
-		{ 
-			return stm; 
+		{
+			return stm;
 		}
     } catch (ParseException e) {
         if (errorRecovery) {
             parseErrors.add(e);
 			error_skipto(ST_SEMICOLON);
         }
-        else 
+        else
             throw e;
     }
 }
@@ -333,6 +335,8 @@ Statement SingleStatement() :
 		stm = Update()
 		|
 		stm = Insert()
+    |
+    stm = Upsert()
 		|
 		stm = Delete()
 		|
@@ -367,13 +371,13 @@ Statement SingleStatement() :
             parseErrors.add(e);
 			error_skipto(ST_SEMICOLON);
         }
-        else 
+        else
             throw e;
 	}
 	{ return stm; }
 }
 
-Statements Statements() #Statements : 
+Statements Statements() #Statements :
 { Statements stmts = new Statements();
   List<Statement> list = new ArrayList<Statement>();
   Statement stm; }
@@ -388,7 +392,7 @@ Statements Statements() #Statements :
             parseErrors.add(e);
 			error_skipto(ST_SEMICOLON);
         }
-        else 
+        else
             throw e;
     }
     {
@@ -437,9 +441,9 @@ Update Update():
 	List<SelectExpressionItem> returning = null;
 }
 {
-    <K_UPDATE> table=TableWithAlias() { tables.add(table); } 
+    <K_UPDATE> table=TableWithAlias() { tables.add(table); }
           ("," table=TableWithAlias() { tables.add(table); } )*
-    <K_SET> 
+    <K_SET>
     (
 	LOOKAHEAD(3) tableColumn=Column() "=" value=SimpleExpression() { columns.add(tableColumn); expList.add(value); }
 		("," tableColumn=Column() "=" value=SimpleExpression() { columns.add(tableColumn); expList.add(value); } )*
@@ -635,6 +639,87 @@ Insert Insert():
     }
 }
 
+
+Upsert Upsert():
+{
+  Upsert upsert = new Upsert();
+  Table table=null;
+  Column tableColumn=null;
+  List<Column> columns= new ArrayList<Column>();
+  List<Expression> primaryExpList = new ArrayList<Expression>();
+  ItemsList itemsList = null;
+  Expression exp = null;
+  MultiExpressionList multiExpr = null;
+  List<SelectExpressionItem> returning = null;
+  Select select = null;
+  boolean useSelectBrackets = false;
+  boolean useDuplicate = false;
+  List<Column> duplicateUpdateColumns = null;
+  List<Expression> duplicateUpdateExpressionList = null;
+  Token tk = null;
+
+}
+{
+    <K_UPSERT>
+    [<K_INTO>] table=Table()
+
+    [LOOKAHEAD(2) "(" tableColumn =Column() { columns.add(tableColumn);} ("," tableColumn
+      =Column() {columns.add(tableColumn); } )* ")"]
+  (
+    LOOKAHEAD(2) [<K_VALUES>|<K_VALUE>] "(" exp=SimpleExpression() { primaryExpList.add(exp); }
+      ("," exp=SimpleExpression() {primaryExpList.add(exp); })* ")" { itemsList= new ExpressionList(primaryExpList); }
+    ("," "(" exp=SimpleExpression() {
+              if (multiExpr==null) {
+                multiExpr=new MultiExpressionList();
+                multiExpr.addExpressionList((ExpressionList)itemsList);
+                itemsList = multiExpr;
+              }
+              primaryExpList = new ArrayList<Expression>();
+              primaryExpList.add(exp); }
+            ("," exp=SimpleExpression() { primaryExpList.add(exp); } )* ")" { multiExpr.addExpressionList(primaryExpList); } )*
+    |
+    (
+          LOOKAHEAD(2) "(" {useSelectBrackets=true;}
+            { upsert.setUseValues(false); }
+            ")"
+          |
+          { upsert.setUseValues(false); }
+          select = Select()
+      )
+
+  )
+
+    [ <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
+      { useDuplicate = true; }
+    tableColumn=Column() "=" exp=SimpleExpression()
+      {
+          duplicateUpdateColumns = new ArrayList<Column>();
+          duplicateUpdateExpressionList = new ArrayList<Expression>();
+          duplicateUpdateColumns.add(tableColumn);
+          duplicateUpdateExpressionList.add(exp);
+      }
+      ("," tableColumn=Column() "=" exp=SimpleExpression()
+        { duplicateUpdateColumns.add(tableColumn);
+        duplicateUpdateExpressionList.add(exp); } )*]
+
+      {
+        upsert.setItemsList(itemsList);
+        upsert.setUseBrackets(useSelectBrackets);
+        upsert.setSelect(select);
+        upsert.setTable(table);
+        if (columns.size() > 0) {
+          upsert.setColumns(columns);
+        }
+
+        upsert.setUseDuplicate(useDuplicate);
+        upsert.setDuplicateUpdateColumns(duplicateUpdateColumns);
+        upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
+
+        return upsert;
+      }
+
+}
+
 Delete Delete():
 {
 	Delete delete = new Delete();
@@ -646,8 +731,8 @@ Delete Delete():
 	List<OrderByElement> orderByElements;
 }
 {
-    <K_DELETE> [LOOKAHEAD(2) (table=TableWithAlias() { tables.add(table); } 
-          ("," table=TableWithAlias() { tables.add(table); } )* 
+    <K_DELETE> [LOOKAHEAD(2) (table=TableWithAlias() { tables.add(table); }
+          ("," table=TableWithAlias() { tables.add(table); } )*
     <K_FROM> | <K_FROM>)]
 
     [ table=TableWithAlias()
@@ -675,19 +760,19 @@ Statement Merge() : {
 }
 {
     <K_MERGE> <K_INTO> table=TableWithAlias() { merge.setTable(table); }
-    <K_USING> 
-        ( table=Table() { merge.setUsingTable(table); } 
+    <K_USING>
+        ( table=Table() { merge.setUsingTable(table); }
             | "(" select=SubSelect() { merge.setUsingSelect(select); } ")" )
-     [ alias = Alias() { merge.setUsingAlias(alias); } ] <K_ON> 
+     [ alias = Alias() { merge.setUsingAlias(alias); } ] <K_ON>
        "(" condition = Expression() { merge.setOnCondition(condition); } ")"
 
     [ LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
- 
+
     [ insert = MergeInsertClause() { merge.setMergeInsert(insert); } ]
-    
+
     { return merge; }
 }
-    
+
 MergeUpdate MergeUpdateClause() : {
     MergeUpdate mu = new MergeUpdate();
     List<Column> columns = new ArrayList<Column>();
@@ -697,11 +782,11 @@ MergeUpdate MergeUpdateClause() : {
     Expression condition;
 }
 {
-  <K_WHEN> <K_MATCHED> <K_THEN>  <K_UPDATE> 
-    <K_SET> 
-     col = Column() "=" exp = SimpleExpression() 
-            { columns.add(col); expList.add(exp); } 
-        ("," col = Column() "=" exp = SimpleExpression() { columns.add(col); expList.add(exp); } )* 
+  <K_WHEN> <K_MATCHED> <K_THEN>  <K_UPDATE>
+    <K_SET>
+     col = Column() "=" exp = SimpleExpression()
+            { columns.add(col); expList.add(exp); }
+        ("," col = Column() "=" exp = SimpleExpression() { columns.add(col); expList.add(exp); } )*
 
         { mu.setColumns(columns); mu.setValues(expList); }
 
@@ -719,9 +804,9 @@ MergeInsert MergeInsertClause() : {
     Expression exp;
 }
 {
-    <K_WHEN> <K_NOT> <K_MATCHED> <K_THEN> 
-        <K_INSERT> "(" col=Column() { columns.add(col); } ("," col=Column() { columns.add(col); } )* ")"  <K_VALUES> 
-           "(" exp=SimpleExpression() { expList.add(exp); } ("," exp=SimpleExpression() { expList.add(exp); } )* ")" 
+    <K_WHEN> <K_NOT> <K_MATCHED> <K_THEN>
+        <K_INSERT> "(" col=Column() { columns.add(col); } ("," col=Column() { columns.add(col); } )* ")"  <K_VALUES>
+           "(" exp=SimpleExpression() { expList.add(exp); } ("," exp=SimpleExpression() { expList.add(exp); } )* ")"
     {
         mi.setColumns(columns);
         mi.setValues(expList);
@@ -755,13 +840,13 @@ String RelObjectName() :
 {	Token tk = null; }
 {
 	(tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>
-      | tk=<K_CAST> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> 
-      | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE> 
+      | tk=<K_CAST> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING>
+      | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE>
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_VALUE> | tk=<K_XML>
       | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>
       | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_VALUES> | tk=<K_PERCENT> | tk=<K_PRIOR>
 	  | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
-      | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT>
+      | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
       )
 
     { return tk.image; }
@@ -773,7 +858,7 @@ Extended usage of object names.
 String RelObjectNameExt():
 { Token tk = null;
   String result=null;
-} 
+}
 {
     ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> | <K_DOUBLE>)
     {
@@ -788,7 +873,7 @@ Extended usage of object names - part 2.
 String RelObjectNameExt2():
 { Token tk = null;
   String result=null;
-} 
+}
 {
     ( result=RelObjectNameExt() | tk=<K_TOP>)
     {
@@ -918,7 +1003,7 @@ PlainSelect PlainSelect():
 	[LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);	} ]
 	[LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);	} ]
 
-    [ <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); } 
+    [ <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
         [ <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ] ]
 
 	{
@@ -947,7 +1032,7 @@ SetOperationList SetOperationList():
 	(
 
 		(
-			(("(" select=SelectBody() ")" { bracket=true;} ) 
+			(("(" select=SelectBody() ")" { bracket=true;} )
                     | select=PlainSelect() { bracket=false;} ) {selects.add(select);brackets.add(bracket); }
 			(
 				((<K_UNION> { UnionOp union = new UnionOp();operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
@@ -1028,7 +1113,7 @@ SelectItem SelectItem():
     |
 	LOOKAHEAD(AllTableColumns()) selectItem=AllTableColumns()
 	|
-	selectItem=SelectExpressionItem() 
+	selectItem=SelectExpressionItem()
 	)
 	{
 		return selectItem;
@@ -1330,19 +1415,19 @@ Join JoinerExpression():
     [
   		<K_LEFT> { join.setLeft(true); } [ <K_SEMI> { join.setSemi(true); } | <K_OUTER> { join.setOuter(true); } ]
   		|  ( <K_RIGHT> { join.setRight(true); }
-  		   | <K_FULL> { join.setFull(true); } 
+  		   | <K_FULL> { join.setFull(true); }
            ) [ <K_OUTER> { join.setOuter(true); } ]
         | <K_INNER> { join.setInner(true); }
         | <K_NATURAL> { join.setNatural(true); }
-		| <K_CROSS> { join.setCross(true); } 
+		| <K_CROSS> { join.setCross(true); }
     ]
 
-  	    ( <K_JOIN> | "," { join.setSimple(true); } ) 
+  	    ( <K_JOIN> | "," { join.setSimple(true); } )
 
         right=FromItem()
 
 
-    [ 
+    [
 	LOOKAHEAD(2) (( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); } )
 		|
 		( <K_USING> "(" tableColumn=Column() { columns = new ArrayList(); columns.add(tableColumn); }
@@ -1351,7 +1436,7 @@ Join JoinerExpression():
   	]
   {
   	join.setRightItem(right);
-    return join; 
+    return join;
   }
 }
 
@@ -1376,8 +1461,8 @@ OracleHierarchicalExpression OracleHierarchicalQueryClause():
                 { result.setConnectExpression(expr); }
 			|
 				<K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
-                { 
-                    result.setConnectExpression(expr); 
+                {
+                    result.setConnectExpression(expr);
                     result.setConnectFirst(true);
                 }
 				[ <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);} ]
@@ -1432,9 +1517,9 @@ OrderByElement OrderByElement():
 {
 	columnReference = SimpleExpression()
     [ ( <K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )) { orderByElement.setAscDescPresent(true); }  ]
-    [<K_NULLS> ( 
-        <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }  | 
-        <K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  }  
+    [<K_NULLS> (
+        <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }  |
+        <K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  }
         )?
     ]
 	{
@@ -1528,7 +1613,7 @@ Fetch Fetch():
 			 	 (<K_FIRST> { fetch.setFetchParamFirst(true); } | <K_NEXT>)
 				 (token=<S_LONG> { fetch.setRowCount(Long.parseLong(token.image)); }
 				 | "?" { fetch.setFetchJdbcParameter(true); } )
-				 (<K_ROWS> { fetch.setFetchParam("ROWS"); } | <K_ROW>) 
+				 (<K_ROWS> { fetch.setFetchParam("ROWS"); } | <K_ROW>)
 				 <K_ONLY>
 
 		)
@@ -1555,7 +1640,7 @@ Top Top():
             expr=AdditiveExpression()   { top.setExpression(expr); }
             { top.setParenthesis(true);}
        ")"
-	) [ LOOKAHEAD(2) <K_PERCENT>            { top.setPercentage(true); } ] 
+	) [ LOOKAHEAD(2) <K_PERCENT>            { top.setPercentage(true); } ]
 	{
 		return top;
 	}
@@ -1740,7 +1825,7 @@ Expression RegularCondition():
         | "-#" { result = new JsonOperator("-#"); }
 	)
 
-	( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; } 
+	( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; }
       | rightExpression=ComparisonItem() )
 
 	[ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
@@ -1949,7 +2034,7 @@ Expression AnyComparisonExpression() :
 	SubSelect subselect = null;
 }
 {
- (<K_ANY> { anyType = AnyType.ANY; } | <K_SOME> { anyType = AnyType.SOME; } ) 
+ (<K_ANY> { anyType = AnyType.ANY; } | <K_SOME> { anyType = AnyType.SOME; } )
  "(" subselect=SubSelect() ")" { retval = new AnyComparisonExpression(anyType, subselect); }
    {
       return retval;
@@ -2005,6 +2090,7 @@ Expression BitwiseAndOr():
     	(
     					"|" { result = new BitwiseOr(); }
     				  	|
+    				  	"&" { result = new BitwiseAnd(); }
     				  	"&" { result = new BitwiseAnd(); }
     	)
 
@@ -2157,7 +2243,7 @@ Expression PrimaryExpression():
 
 	| LOOKAHEAD(["+" | "-"] "(" BitwiseAndOr() ")") [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
 
-    | LOOKAHEAD(3) [sign="+" | sign="-"] "(" retval=SubSelect() ")" 
+    | LOOKAHEAD(3) [sign="+" | sign="-"] "(" retval=SubSelect() ")"
 
 	| token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 
@@ -2203,10 +2289,10 @@ UserVariable UserVariable() : {
 }
 {
     ("@" | "@@" { var.setDoubleAdd(true);} )
-    varName=RelObjectNameExt2() 
-    { 
-        var.setName(varName); 
-        return var; 
+    varName=RelObjectNameExt2()
+    {
+        var.setName(varName);
+        return var;
     }
 }
 
@@ -2215,10 +2301,10 @@ NumericBind NumericBind() : {
 	Token token;
 }
 {
-    ":" token=<S_LONG> 
-    { 
-        var.setBindId(Integer.valueOf(token.image)); 
-        return var; 
+    ":" token=<S_LONG>
+    {
+        var.setBindId(Integer.valueOf(token.image));
+        return var;
     }
 }
 
@@ -2227,7 +2313,7 @@ DateTimeLiteralExpression DateTimeLiteralExpression() : {
     Token t;
 } {
     t=<K_DATETIMELITERAL>  { expr.setType(DateTimeLiteralExpression.DateTime.valueOf(t.image.toUpperCase())); }
-    
+
     t=<S_CHAR_LITERAL> { expr.setValue(t.image); return expr; }
 }
 
@@ -2238,14 +2324,14 @@ JsonExpression JsonExpression() : {
 }
 {
     column=Column() (
-        "->" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"->");} | 
+        "->" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"->");} |
         "->>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"->>");} |
         "#>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>");} |
         "#>>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>>");}
     )+
-    { 
+    {
         result.setColumn(column);
-        return result; 
+        return result;
     }
 }
 
@@ -2255,7 +2341,7 @@ IntervalExpression IntervalExpression() : {
 	boolean signed = false;
 }
 {
-	<K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL>) 
+	<K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL>)
     { interval.setParameter((signed?"-":"") + token.image); }
     [ LOOKAHEAD(2) token = <S_IDENTIFIER> { interval.setIntervalType(token.image); } ]
 	{
@@ -2271,15 +2357,15 @@ WithinGroupExpression WithinGroupExpression() :
     ExpressionList exprList;
 }
 {
-    token = <S_IDENTIFIER> "(" exprList = SimpleExpressionList() ")" 
+    token = <S_IDENTIFIER> "(" exprList = SimpleExpressionList() ")"
       <K_WITHIN> <K_GROUP>
     "(" orderByElements = OrderByElements() ")"
 
-    { 
+    {
         result.setName(token.image);
         result.setExprList(exprList);
         result.setOrderByElements(orderByElements);
-        return result; 
+        return result;
     }
 }
 
@@ -2313,14 +2399,14 @@ AnalyticExpression AnalyticExpression() :
 }
 {
 	token=<S_IDENTIFIER> { retval.setName(token.image); }
-	    "(" [ expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } ] ")" 
+	    "(" [ expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } ] ")"
 
     [ keep=KeepExpression() ]
 
     <K_OVER> "("
         [<K_PARTITION> <K_BY> expressionList=SimpleExpressionList() ]
         [olist=OrderByElements() [windowElement = WindowElement() ] ]
-        
+
 	{
 		retval.setExpression(expr);
 		retval.setOffset(offset);
@@ -2345,14 +2431,14 @@ WindowElement WindowElement():
 {
     (<K_ROWS> { windowElement.setType(WindowElement.Type.ROWS); }  |  <K_RANGE> { windowElement.setType(WindowElement.Type.RANGE); } )
     ( (
-      <K_BETWEEN> { windowElement.setRange(range); } 
-      offset = WindowOffset() { range.setStart(offset); } 
+      <K_BETWEEN> { windowElement.setRange(range); }
+      offset = WindowOffset() { range.setStart(offset); }
       <K_AND> offset = WindowOffset() { range.setEnd(offset); }
       )
-    | 
-      offset = WindowOffset() { windowElement.setOffset(offset); } 
+    |
+      offset = WindowOffset() { windowElement.setOffset(offset); }
     )
- 
+
     {
         return windowElement;
     }
@@ -2365,24 +2451,24 @@ WindowOffset WindowOffset():
 }
 {
     (
-  
+
         <K_UNBOUNDED> (<K_PRECEDING> { offset.setType(WindowOffset.Type.PRECEDING); return offset; } |
    									 <K_FOLLOWING> { offset.setType(WindowOffset.Type.FOLLOWING); return offset; } )
-    ) 
+    )
     |
-    ( <K_CURRENT> <K_ROW> { offset.setType(WindowOffset.Type.CURRENT); return offset;} ) 
+    ( <K_CURRENT> <K_ROW> { offset.setType(WindowOffset.Type.CURRENT); return offset;} )
     |
     ( expr = SimpleExpression() {
-        offset.setType(WindowOffset.Type.EXPR); 
-        offset.setExpression(expr); 
-        } 
+        offset.setType(WindowOffset.Type.EXPR);
+        offset.setExpression(expr);
+        }
         (<K_PRECEDING> { offset.setType(WindowOffset.Type.PRECEDING); } | <K_FOLLOWING> { offset.setType(WindowOffset.Type.FOLLOWING);  } )
     )
-  
+
     {
         return offset;
     }
-} 
+}
 
 ExtractExpression ExtractExpression() :
 {
@@ -2849,7 +2935,7 @@ ColDataType ColDataType():
 }
 {
 	( (tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-	| tk=<K_DOUBLE> [tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
+	| tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 	| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> ) { colDataType.setDataType(tk.image); })
 
 	[LOOKAHEAD(2) "(" ( (tk=<S_LONG> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> ) { argumentsStringList.add(tk.image); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]

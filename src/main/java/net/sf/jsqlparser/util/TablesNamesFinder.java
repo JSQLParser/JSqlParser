@@ -51,6 +51,8 @@ import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
+import net.sf.jsqlparser.test.upsert.Upsert;
+
 /**
  * Find all used tables within an select statement.
  */
@@ -280,6 +282,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(Subtraction subtraction) {
         visitBinaryExpression(subtraction);
+    }
+
+    @Override
+    public void visit(NotExpression notExpr) {
+        notExpr.getExpression().accept(this);
     }
 
     public void visitBinaryExpression(BinaryExpression binaryExpression) {
@@ -610,6 +617,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
             merge.getUsingTable().accept(this);
         } else if (merge.getUsingSelect() != null) {
             merge.getUsingSelect().accept((FromItemVisitor) this);
+        }
+    }
+
+    @Override
+    public void visit(Upsert upsert) {
+        tables.add(upsert.getTable().getName());
+        if (upsert.getItemsList() != null) {
+            upsert.getItemsList().accept(this);
+        }
+        if (upsert.getSelect() != null) {
+            visit(upsert.getSelect());
         }
     }
 
