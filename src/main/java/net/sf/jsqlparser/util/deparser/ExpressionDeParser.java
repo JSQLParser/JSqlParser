@@ -118,6 +118,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         buffer.append(hexValue.toString());
     }
 
+    @Override
+    public void visit(NotExpression notExpr) {
+        buffer.append(NOT);
+        notExpr.getExpression().accept(this);
+    }
+
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
         if (expression.isNot()) {
             buffer.append(NOT);

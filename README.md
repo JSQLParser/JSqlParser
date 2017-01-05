@@ -43,6 +43,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.7
 
+* introduced NOT without parenthesis for column only conditions
+* introduced more complex expressions within CASE - statements
 * improved Postgresql JSON - support
 * integrated some Postgresql create table contraints
 
