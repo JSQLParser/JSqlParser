@@ -317,6 +317,44 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
+    public void testLimit3() throws JSQLParserException {
+        String statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ?1, 2";
+
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertEquals(2, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
+        assertEquals(1, (int)((PlainSelect) select.getSelectBody()).getLimit().getOffsetJdbcParameter().getIndex());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 1, ?2";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        assertEquals(1, ((PlainSelect) select.getSelectBody()).getLimit().getOffset());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().getOffsetJdbcParameter() != null);
+        assertEquals(2, (int)((PlainSelect) select.getSelectBody()).getLimit().getRowCountJdbcParameter().getIndex());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ?1, ?2";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        assertEquals(0, ((PlainSelect) select.getSelectBody()).getLimit().getOffset());
+        assertEquals(1, (int)((PlainSelect) select.getSelectBody()).getLimit().getOffsetJdbcParameter().getIndex());
+        assertEquals(2, (int)((PlainSelect) select.getSelectBody()).getLimit().getRowCountJdbcParameter().getIndex());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 1, ?";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        assertEquals(1, ((PlainSelect) select.getSelectBody()).getLimit().getOffset());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().getOffsetJdbcParameter() != null);
+        assertNull(((PlainSelect) select.getSelectBody()).getLimit().getRowCountJdbcParameter().getIndex());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ?, ?";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        assertEquals(0, ((PlainSelect) select.getSelectBody()).getLimit().getOffset());
+        assertNull(((PlainSelect) select.getSelectBody()).getLimit().getOffsetJdbcParameter().getIndex());
+        assertNull(((PlainSelect) select.getSelectBody()).getLimit().getRowCountJdbcParameter().getIndex());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+    }
+
     public void testLimitSqlServer1() throws JSQLParserException {
         String statement = "SELECT * FROM mytable WHERE mytable.col = 9 ORDER BY mytable.id OFFSET 3 ROWS FETCH NEXT 5 ROWS ONLY";
 

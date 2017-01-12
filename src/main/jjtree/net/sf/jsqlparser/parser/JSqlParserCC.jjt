@@ -1457,13 +1457,15 @@ Limit LimitWithOffset():
 					 (
 					 	token=<S_LONG> { limit.setOffset(Long.parseLong(token.image)); }
 					 	|
-					 	"?" { limit.setOffsetJdbcParameter(true);}
+					 	"?" { limit.setOffsetJdbcParameter(new JdbcParameter()); } [ LOOKAHEAD(2) token = <S_LONG> { limit.getOffsetJdbcParameter().setIndex(Integer.valueOf(token.image)); } ]
 
 					 )
 					 ","
 
 				(
-				token=<S_LONG> { limit.setRowCount(Long.parseLong(token.image)); } | "?" { limit.setRowCountJdbcParameter(true);}
+				token=<S_LONG> { limit.setRowCount(Long.parseLong(token.image)); }
+				|
+				 "?" { limit.setRowCountJdbcParameter(new JdbcParameter()); } [ LOOKAHEAD(2) token = <S_LONG> { limit.getRowCountJdbcParameter().setIndex(Integer.valueOf(token.image)); } ]
 				)
 			|
 			limit = PlainLimit()
@@ -1485,7 +1487,7 @@ Limit PlainLimit():
 	 (
 	 	token=<S_LONG> { limit.setRowCount(Long.parseLong(token.image)); }
 	 	|
-	 	"?" { limit.setRowCountJdbcParameter(true);}
+	 	"?" { limit.setRowCountJdbcParameter(new JdbcParameter()); } [ LOOKAHEAD(2) token = <S_LONG> { limit.getRowCountJdbcParameter().setIndex(Integer.valueOf(token.image)); } ]
 	 	|
 	 	<K_ALL> { limit.setLimitAll(true);}
 	 	|
