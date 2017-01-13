@@ -21,7 +21,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.Expression;
 
 /**
  * A limit clause in the form [LIMIT {[offset,] row_count) | (row_count | ALL)
@@ -29,51 +29,25 @@ import net.sf.jsqlparser.expression.JdbcParameter;
  */
 public class Limit {
 
-	private long offset;
-	private long rowCount;
-	private JdbcParameter rowCountJdbcParameter;
-	private JdbcParameter offsetJdbcParameter;
+	private Expression rowCount;
+	private Expression offset;
 	private boolean limitAll;
     private boolean limitNull = false;
 
-	public long getOffset() {
+	public Expression getOffset() {
 		return offset;
 	}
 
-	public long getRowCount() {
+	public Expression getRowCount() {
 		return rowCount;
 	}
 
-	public void setOffset(long l) {
+	public void setOffset(Expression l) {
 		offset = l;
 	}
 
-	public void setRowCount(long l) {
+	public void setRowCount(Expression l) {
 		rowCount = l;
-	}
-
-	public JdbcParameter getRowCountJdbcParameter() {
-		return rowCountJdbcParameter;
-	}
-
-	public void setRowCountJdbcParameter(JdbcParameter rowCountJdbcParameter) {
-		this.rowCountJdbcParameter = rowCountJdbcParameter;
-	}
-
-	public JdbcParameter getOffsetJdbcParameter() {
-		return offsetJdbcParameter;
-	}
-
-	public void setOffsetJdbcParameter(JdbcParameter offsetJdbcParameter) {
-		this.offsetJdbcParameter = offsetJdbcParameter;
-	}
-
-	public boolean isRowCountJdbcParameter(){
-		return null != this.rowCountJdbcParameter;
-	}
-
-	public boolean isOffsetJdbcParameter(){
-		return null != this.offsetJdbcParameter;
 	}
 
 	/**
@@ -100,11 +74,11 @@ public class Limit {
 		if (limitNull) {
             retVal += "NULL";
         } else {
-            if (offset > 0 || null != offsetJdbcParameter) {
-                retVal += (null != offsetJdbcParameter ? offsetJdbcParameter : Long.toString(offset)) + ", ";
+            if (null != offset) {
+                retVal += offset + ", ";
     		}
-            if ( rowCount >= 0 || null != rowCountJdbcParameter) {
-                retVal += (null !=rowCountJdbcParameter ? rowCountJdbcParameter : Long.toString(rowCount));
+            if (null != rowCount) {
+                retVal += rowCount;
             }
         }
 		
