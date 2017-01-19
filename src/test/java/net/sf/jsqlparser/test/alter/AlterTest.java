@@ -10,6 +10,7 @@ import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 
 public class AlterTest extends TestCase {
 
@@ -28,8 +29,20 @@ public class AlterTest extends TestCase {
 		assertEquals("mycolumn", colDataTypes.get(0).getColumnName());
 		assertEquals("varchar (255)", colDataTypes.get(0).getColDataType().toString());
 	}
-    
-    public void testAlterTablePrimaryKey() throws JSQLParserException {
+
+	public void testAlterTableAddColumn_ColumnKeyWordImplicit() throws JSQLParserException {
+		Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable ADD mycolumn varchar (255)");
+		assertTrue(stmt instanceof Alter);
+		Alter alter = (Alter)stmt;
+		assertEquals("mytable",alter.getTable().getFullyQualifiedName());
+		AlterExpression alterExp = alter.getAlterExpressions().get(0);
+		assertNotNull(alterExp);
+		List<ColumnDataType> colDataTypes = alterExp.getColDataTypeList();
+		assertEquals("mycolumn", colDataTypes.get(0).getColumnName());
+		assertEquals("varchar (255)", colDataTypes.get(0).getColDataType().toString());
+	}
+
+	public void testAlterTablePrimaryKey() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id)");
     }
 
@@ -108,6 +121,42 @@ public class AlterTest extends TestCase {
 		assertEquals("varchar (255)", col1DataTypes.get(0).getColDataType().toString());
 		assertEquals("integer", col2DataTypes.get(0).getColDataType().toString());
     }
+
+	public void testAlterTableAddColumn5() throws JSQLParserException {
+		Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable ADD col1 timestamp (3)");
+
+		// COLUMN keyword appears in deparsed statement
+		assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE mytable ADD COLUMN col1 timestamp (3)");
+
+		Alter alter = (Alter) stmt;
+		List<AlterExpression> alterExps = alter.getAlterExpressions();
+		AlterExpression col1Exp = alterExps.get(0);
+		List<ColumnDataType> col1DataTypes = col1Exp.getColDataTypeList();
+		assertEquals("col1", col1DataTypes.get(0).getColumnName());
+		assertEquals("timestamp (3)", col1DataTypes.get(0).getColDataType().toString());
+	}
+
+	public void testAlterTableAddColumn6() throws JSQLParserException {
+		final String sql = "ALTER TABLE mytable ADD COLUMN col1 timestamp (3) not null";
+		Statement stmt = CCJSqlParserUtil.parse(sql);
+		assertStatementCanBeDeparsedAs(stmt, sql);
+		Alter alter = (Alter) stmt;
+		List<AlterExpression> alterExps = alter.getAlterExpressions();
+		AlterExpression col1Exp = alterExps.get(0);
+		assertEquals("not", col1Exp.getColDataTypeList().get(0).getColumnSpecs().get(0));
+		assertEquals("null", col1Exp.getColDataTypeList().get(0).getColumnSpecs().get(1));
+	}
+
+	public void testAlterTableModifyColumn1() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals MODIFY (col1 integer, col2 number (8, 2))");
+	}
+
+	public void testAlterTableModifyColumn2() throws JSQLParserException {
+		Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable modify col1 timestamp (6)");
+
+		// COLUMN keyword appears in deparsed statement, modify becomes all caps
+		assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE mytable MODIFY COLUMN col1 timestamp (6)");
+	}
 
     public void testAlterTableAddColumnWithZone() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 timestamp with time zone");
