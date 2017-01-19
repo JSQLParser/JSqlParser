@@ -3091,7 +3091,7 @@ AlterExpression AlterExpression():
     (
     ((<K_ADD>    { alterExp.setOperation(AlterOperation.ADD); } | <K_MODIFY> { alterExp.setOperation(AlterOperation.MODIFY); })
     	  (
-        (  (<K_COLUMN>)*
+        (  (<K_COLUMN>)?
             alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
         )
         |

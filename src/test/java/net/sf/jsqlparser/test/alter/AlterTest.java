@@ -4,11 +4,14 @@ package net.sf.jsqlparser.test.alter;
 import java.util.List;
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
+import net.sf.jsqlparser.statement.alter.AlterOperation;
+
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 
@@ -87,12 +90,34 @@ public class AlterTest extends TestCase {
 	}
 
     public void testAlterTableDropConstraint() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test DROP CONSTRAINT YYY");
+		final String sql = "ALTER TABLE test DROP CONSTRAINT YYY";
+		Statement stmt = CCJSqlParserUtil.parse(sql);
+		assertStatementCanBeDeparsedAs(stmt, sql);
+		AlterExpression alterExpression = ((Alter) stmt).getAlterExpressions().get(0);
+		assertEquals(alterExpression.getConstraintName(), "YYY");
     }
 
     public void testAlterTablePK() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE `Author` ADD CONSTRAINT `AuthorPK` PRIMARY KEY (`ID`)");
+		final String sql = "ALTER TABLE `Author` ADD CONSTRAINT `AuthorPK` PRIMARY KEY (`ID`)";
+		Statement stmt = CCJSqlParserUtil.parse(sql);
+		assertStatementCanBeDeparsedAs(stmt, sql);
+		AlterExpression alterExpression = ((Alter) stmt).getAlterExpressions().get(0);
+		assertNull(alterExpression.getConstraintName());
+		// TODO: should this pass? ==>		assertEquals(alterExpression.getPkColumns().get(0), "ID");
+		assertEquals(alterExpression.getIndex().getColumnsNames().get(0), "`ID`");
     }
+
+	public void testAlterTableFK() throws JSQLParserException {
+	    String sql = "ALTER TABLE `Novels` ADD FOREIGN KEY (AuthorID) REFERENCES Author (ID)";
+		Statement stmt = CCJSqlParserUtil.parse(sql);
+		assertStatementCanBeDeparsedAs(stmt, sql);
+		AlterExpression alterExpression = ((Alter) stmt).getAlterExpressions().get(0);
+		assertEquals(alterExpression.getFkColumns().size(), 1);
+		assertEquals(alterExpression.getFkColumns().get(0), "AuthorID");
+		assertEquals(alterExpression.getFkSourceTable(), "Author");
+		assertEquals(alterExpression.getFkSourceColumns().size(), 1);
+		assertEquals(alterExpression.getFkSourceColumns().get(0), "ID");
+	}
 
     public void testAlterTableCheckConstraint() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE `Author` ADD CONSTRAINT name_not_empty CHECK (`NAME` <> '')");
@@ -156,6 +181,8 @@ public class AlterTest extends TestCase {
 
 		// COLUMN keyword appears in deparsed statement, modify becomes all caps
 		assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE mytable MODIFY COLUMN col1 timestamp (6)");
+
+		assertEquals(AlterOperation.MODIFY, ((Alter) stmt).getAlterExpressions().get(0).getOperation());
 	}
 
     public void testAlterTableAddColumnWithZone() throws JSQLParserException {
