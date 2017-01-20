@@ -48,6 +48,7 @@ Also I would like to know about needed examples or documentation stuff.
 * improved Postgresql JSON - support
 * integrated some Postgresql create table contraints
 * support for ~~alter table modify~~ statements
+* allowed more types of expressions after limit and top.
 
 ## Extensions of JSqlParser releases
 
