@@ -47,6 +47,7 @@ Also I would like to know about needed examples or documentation stuff.
 * introduced more complex expressions within CASE - statements
 * improved Postgresql JSON - support
 * integrated some Postgresql create table contraints
+* support for ~~alter table modify~~ statements
 
 ## Extensions of JSqlParser releases
 
