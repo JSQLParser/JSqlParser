@@ -36,15 +36,11 @@ public class LimitDeparser {
         if (limit.isLimitNull()) {
             buffer.append("NULL");
         } else {
-            if (null != limit.getOffsetJdbcParameter()) {
-                buffer.append(limit.getOffsetJdbcParameter()).append(", ");
-            } else if (limit.getOffset() != 0) {
+            if (null != limit.getOffset()) {
                 buffer.append(limit.getOffset()).append(", ");
             }
             
-            if (null != limit.getRowCountJdbcParameter()) {
-                buffer.append(limit.getRowCountJdbcParameter());
-            } else if (limit.getRowCount() >= 0) {
+            if (null != limit.getRowCount()) {
                 buffer.append(limit.getRowCount());
             }
         }
