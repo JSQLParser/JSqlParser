@@ -496,7 +496,7 @@ Replace Replace():
 	Expression exp = null;
 }
 {
-    <K_REPLACE> [<K_INTO>] table=Table()
+    <K_REPLACE> [<K_INTO> { replace.setUseIntoTables(true); }] table=Table()
 
     (
 		(
