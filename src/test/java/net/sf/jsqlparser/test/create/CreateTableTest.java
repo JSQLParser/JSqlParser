@@ -239,6 +239,10 @@ public class CreateTableTest extends TestCase {
 	public void testExcludeWhereConstraint() throws JSQLParserException {
 		assertSqlCanBeParsedAndDeparsed("CREATE TABLE foo (col1 integer, EXCLUDE WHERE (col1 > 100))");
 	}
+    
+    public void testTimestampWithoutTimezone() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE abc.tabc (transaction_date TIMESTAMP WITHOUT TIME ZONE)");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
