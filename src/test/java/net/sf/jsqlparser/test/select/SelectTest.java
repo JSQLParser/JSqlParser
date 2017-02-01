@@ -15,7 +15,6 @@ import java.io.*;
 import java.util.*;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
-import net.sf.jsqlparser.util.TablesNamesFinder;
 
 public class SelectTest extends TestCase {
 
@@ -2439,5 +2438,9 @@ public class SelectTest extends TestCase {
     public void testProblemInNotInProblemIssue379() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT rank FROM DBObjects WHERE rank NOT IN (0, 1)");
         assertSqlCanBeParsedAndDeparsed("SELECT rank FROM DBObjects WHERE rank IN (0, 1)");
+    }
+    
+    public void testProblemLargeNumbersIssue390() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM student WHERE student_no = 20161114000000035001");
     }
 }
