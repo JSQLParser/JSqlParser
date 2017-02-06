@@ -204,6 +204,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_SIBLINGS:"SIBLINGS">
 |	<K_ALTER:"ALTER">
 |	<K_ADD:"ADD">
+|	<K_MODIFY: "MODIFY">
 |	<K_COLUMN:"COLUMN">
 |   <K_NULLS: "NULLS">
 |   <K_FIRST: "FIRST">
@@ -495,7 +496,7 @@ Replace Replace():
 	Expression exp = null;
 }
 {
-    <K_REPLACE> [<K_INTO>] table=Table()
+    <K_REPLACE> [<K_INTO> { replace.setUseIntoTables(true); }] table=Table()
 
     (
 		(
@@ -3060,6 +3061,24 @@ Truncate Truncate():
 	}
 }
 
+
+AlterExpression.ColumnDataType AlterExpressionColumnDataType():
+{
+	String columnName = null;
+	ColDataType dataType = null;
+	List<String> columnSpecs = null;
+	List<String> parameter = null;
+}
+{
+	columnName = RelObjectName()
+	dataType = ColDataType() { columnSpecs = new ArrayList(); }
+    ( parameter = CreateParameter() { columnSpecs.addAll(parameter); } )*
+	{
+		return new AlterExpression.ColumnDataType(columnName, dataType, columnSpecs);
+	}
+}
+
+
 AlterExpression AlterExpression():
 {
 	AlterExpression alterExp = new AlterExpression();
@@ -3071,23 +3090,20 @@ AlterExpression AlterExpression():
     ForeignKeyIndex fkIndex = null;
     NamedConstraint index = null;
     Table fkTable = null;
+    AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
 }
 {
 
     (
-    (<K_ADD>
-    	{
-    		alterExp.setOperation(AlterOperation.ADD);
-    	}
+    ((<K_ADD>    { alterExp.setOperation(AlterOperation.ADD); } | <K_MODIFY> { alterExp.setOperation(AlterOperation.MODIFY); })
     	  (
-        (  <K_COLUMN>
-	       sk3 = RelObjectName() dataType=ColDataType()
-            { alterExp.addColDataType(sk3, dataType); }
+        (  (LOOKAHEAD(2) <K_COLUMN>)?
+            alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
         )
         |
         (
-            "(" sk3 = RelObjectName() dataType = ColDataType() { alterExp.addColDataType(sk3, dataType); }
-                ("," sk3 = RelObjectName() dataType = ColDataType() { alterExp.addColDataType(sk3, dataType); } )* ")"
+            "(" alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
+                ("," alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); } )* ")"
         )
         |
         ( <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); } )

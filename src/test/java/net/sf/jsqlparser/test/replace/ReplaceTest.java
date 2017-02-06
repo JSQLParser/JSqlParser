@@ -70,4 +70,9 @@ public class ReplaceTest {
     public void testProblemReplaceParseDeparse() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed("REPLACE a_table (ID, A, B) SELECT A_ID, A, B FROM b_table", false);
     }
+    
+    @Test
+    public void testProblemMissingIntoIssue389() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("REPLACE INTO mytable (key, data) VALUES (1, \"aaa\")");
+    }
 }
