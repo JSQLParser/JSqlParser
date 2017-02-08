@@ -28,7 +28,7 @@ import org.junit.Test;
 
 public class TablesNamesFinderTest {
 
-    static CCJSqlParserManager pm = new CCJSqlParserManager();
+    private static CCJSqlParserManager pm = new CCJSqlParserManager();
 
     @Test
     public void testRUBiSTableList() throws Exception {
@@ -61,14 +61,14 @@ public class TablesNamesFinderTest {
                     continue;
                 }
 
-                if (!line.equals("#begin")) {
+                if (!"#begin".equals(line)) {
                     break;
                 }
                 line = getLine(in);
                 StringBuilder buf = new StringBuilder(line);
                 while (true) {
                     line = getLine(in);
-                    if (line.equals("#end")) {
+                    if ("#end".equals(line)) {
                         break;
                     }
                     buf.append("\n");

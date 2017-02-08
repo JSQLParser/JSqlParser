@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class InsertTest {
 
-	CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     @Test
 	public void testRegularInsert() throws JSQLParserException {

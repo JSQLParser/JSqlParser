@@ -10,7 +10,7 @@ import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class DropTest extends TestCase {
     
-    CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    private CCJSqlParserManager parserManager = new CCJSqlParserManager();
     
     public DropTest(String arg0) {
         super(arg0);

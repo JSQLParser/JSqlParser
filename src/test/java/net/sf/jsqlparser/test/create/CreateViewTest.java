@@ -14,7 +14,7 @@ import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class CreateViewTest extends TestCase {
 
-	CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	public CreateViewTest(String arg0) {
 		super(arg0);

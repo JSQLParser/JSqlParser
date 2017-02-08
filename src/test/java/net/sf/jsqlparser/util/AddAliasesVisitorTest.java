@@ -35,7 +35,8 @@ public class AddAliasesVisitorTest {
 	@After
 	public void tearDown() {
 	}
-	CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    
+	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	/**
 	 * Test of visit method, of class AddAliasesVisitor.

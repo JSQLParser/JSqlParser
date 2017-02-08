@@ -17,7 +17,7 @@ import org.junit.Test;
 
 public class UpdateTest {
 
-	static CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private static CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     @Test
 	public void testUpdate() throws JSQLParserException {

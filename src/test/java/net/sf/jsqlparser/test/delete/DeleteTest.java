@@ -13,7 +13,7 @@ import net.sf.jsqlparser.statement.delete.Delete;
 
 public class DeleteTest {
 
-	CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	@Test
 	public void testDelete() throws JSQLParserException {

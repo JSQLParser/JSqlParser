@@ -18,7 +18,7 @@ import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class SelectTest extends TestCase {
 
-    CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     public SelectTest(String arg0) {
         super(arg0);
