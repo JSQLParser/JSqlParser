@@ -1,8 +1,6 @@
 package net.sf.jsqlparser.test.create;
 
 import java.io.StringReader;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
 
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;

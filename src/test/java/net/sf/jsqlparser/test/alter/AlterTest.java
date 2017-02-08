@@ -4,7 +4,6 @@ package net.sf.jsqlparser.test.alter;
 import java.util.List;
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;

@@ -20,13 +20,11 @@
 package net.sf.jsqlparser.statement.execute;
 
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.statement.StatementVisitor;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import static net.sf.jsqlparser.test.TestUtils.*;
 
 /**

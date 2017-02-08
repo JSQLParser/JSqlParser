@@ -22,13 +22,11 @@
 package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.Join;

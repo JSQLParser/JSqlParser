@@ -21,12 +21,9 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
-import java.util.ArrayList;
-import java.util.List;
 
 
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * Table Exclusion Constraint
