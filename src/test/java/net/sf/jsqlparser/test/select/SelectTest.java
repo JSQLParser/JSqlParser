@@ -2443,4 +2443,12 @@ public class SelectTest extends TestCase {
     public void testProblemLargeNumbersIssue390() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM student WHERE student_no = 20161114000000035001");
     }
+    
+    public void testKeyWorkInsertIssue393() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT insert(\"aaaabbb\", 4, 4, \"****\")");
+    }
+    
+    public void testKeyWorkReplaceIssue393() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT replace(\"aaaabbb\", 4, 4, \"****\")");
+    }
 }
