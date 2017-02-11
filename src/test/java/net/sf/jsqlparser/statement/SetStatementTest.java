@@ -57,4 +57,13 @@ public class SetStatementTest {
         assertSqlCanBeParsedAndDeparsed("SET statement_timeout = 0");
     }
     
+    @Test
+    public void testIssue373() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SET deferred_name_resolution true");
+    }
+    
+    @Test
+    public void testIssue373_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SET tester 5");
+    }
 }

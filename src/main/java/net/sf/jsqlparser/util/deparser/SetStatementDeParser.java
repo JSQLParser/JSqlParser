@@ -27,39 +27,42 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class SetStatementDeParser {
 
-	private StringBuilder buffer;
-	private ExpressionVisitor expressionVisitor;
+    private StringBuilder buffer;
+    private ExpressionVisitor expressionVisitor;
 
-	/**
-	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
-	 * expressions. It has to share the same<br>
-	 * StringBuilder (buffer parameter) as this object in order to work
-	 * @param buffer the buffer that will be filled with the select
-	 */
-	public SetStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
-		this.buffer = buffer;
-		this.expressionVisitor = expressionVisitor;
-	}
+    /**
+     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
+     * expressions. It has to share the same<br>
+     * StringBuilder (buffer parameter) as this object in order to work
+     * @param buffer the buffer that will be filled with the select
+     */
+    public SetStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+        this.buffer = buffer;
+        this.expressionVisitor = expressionVisitor;
+    }
 
-	public StringBuilder getBuffer() {
-		return buffer;
-	}
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
 
-	public void setBuffer(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 
-	public void deParse(SetStatement set) {
-		buffer.append("SET ").append(set.getName());
-		buffer.append(" = ");
+    public void deParse(SetStatement set) {
+        buffer.append("SET ").append(set.getName());
+        if (set.isUseEqual()) {
+            buffer.append(" =");
+        }
+        buffer.append(" ");
         set.getExpression().accept(expressionVisitor);
-	}
+    }
 
-	public ExpressionVisitor getExpressionVisitor() {
-		return expressionVisitor;
-	}
+    public ExpressionVisitor getExpressionVisitor() {
+        return expressionVisitor;
+    }
 
-	public void setExpressionVisitor(ExpressionVisitor visitor) {
-		expressionVisitor = visitor;
-	}
+    public void setExpressionVisitor(ExpressionVisitor visitor) {
+        expressionVisitor = visitor;
+    }
 }

@@ -411,11 +411,12 @@ void error_skipto(int kind) {
 SetStatement Set(): {
     String name;
     Expression value;
+    boolean useEqual = false;
 }
 {
-    <K_SET> name = RelObjectNameExt() "=" value=SimpleExpression()
+    <K_SET> name = RelObjectNameExt() ["=" { useEqual=true; } ] value=SimpleExpression()
     {
-        return new SetStatement(name,value);
+        return new SetStatement(name,value).setUseEqual(useEqual);
     }
 }
 
