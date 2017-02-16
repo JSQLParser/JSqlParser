@@ -1,8 +1,6 @@
 package net.sf.jsqlparser.test.create;
 
 import java.io.StringReader;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
 
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
@@ -14,7 +12,7 @@ import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class CreateViewTest extends TestCase {
 
-	CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	public CreateViewTest(String arg0) {
 		super(arg0);

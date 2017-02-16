@@ -42,7 +42,7 @@ public class MemoryTest {
 		 * "wct_workflows.workflow_id    UNION SELECT * FROM interm2  ,  wct_workflow_docs  WHERE  " +
 		 * "interm2.id  =  wct_workflow_docs.document_id  ORDER BY  id  ,  date  DESC              ");
 		 */
-		String longQuery = new String("select * from k where ID > 4");
+		String longQuery = "select * from k where ID > 4";
 
 		/*
 		 * String longQuery = "select  *  from  (  SELECT  intermediate.id  as  id  ,  intermediate.date  as          "

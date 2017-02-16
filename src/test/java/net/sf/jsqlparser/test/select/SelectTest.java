@@ -15,11 +15,10 @@ import java.io.*;
 import java.util.*;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
-import net.sf.jsqlparser.util.TablesNamesFinder;
 
 public class SelectTest extends TestCase {
 
-    CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     public SelectTest(String arg0) {
         super(arg0);
@@ -2439,5 +2438,17 @@ public class SelectTest extends TestCase {
     public void testProblemInNotInProblemIssue379() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT rank FROM DBObjects WHERE rank NOT IN (0, 1)");
         assertSqlCanBeParsedAndDeparsed("SELECT rank FROM DBObjects WHERE rank IN (0, 1)");
+    }
+    
+    public void testProblemLargeNumbersIssue390() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM student WHERE student_no = 20161114000000035001");
+    }
+    
+    public void testKeyWorkInsertIssue393() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT insert(\"aaaabbb\", 4, 4, \"****\")");
+    }
+    
+    public void testKeyWorkReplaceIssue393() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT replace(\"aaaabbb\", 4, 4, \"****\")");
     }
 }

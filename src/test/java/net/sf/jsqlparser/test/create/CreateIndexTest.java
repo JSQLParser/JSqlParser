@@ -13,7 +13,7 @@ import static net.sf.jsqlparser.test.TestUtils.*;
  */
 public class CreateIndexTest extends TestCase {
 
-	CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	public CreateIndexTest(String arg0) {
 		super(arg0);

@@ -21,8 +21,6 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.schema.*;
-
 /**
  * All the columns (as in "SELECT * FROM ...")
  */

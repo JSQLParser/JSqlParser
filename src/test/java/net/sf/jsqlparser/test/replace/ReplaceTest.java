@@ -18,7 +18,7 @@ import org.junit.Test;
 
 public class ReplaceTest {
 
-	private static CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private static final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 
     @Test
