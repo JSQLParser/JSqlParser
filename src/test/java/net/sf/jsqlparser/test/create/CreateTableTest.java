@@ -20,7 +20,7 @@ import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class CreateTableTest extends TestCase {
 
-	CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	public CreateTableTest(String arg0) {
 		super(arg0);
@@ -239,6 +239,10 @@ public class CreateTableTest extends TestCase {
 	public void testExcludeWhereConstraint() throws JSQLParserException {
 		assertSqlCanBeParsedAndDeparsed("CREATE TABLE foo (col1 integer, EXCLUDE WHERE (col1 > 100))");
 	}
+    
+    public void testTimestampWithoutTimezone() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE abc.tabc (transaction_date TIMESTAMP WITHOUT TIME ZONE)");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
@@ -252,14 +256,14 @@ public class CreateTableTest extends TestCase {
 					break;
 				}
 
-				if (!line.equals("#begin")) {
+				if (!"#begin".equals(line)) {
 					break;
 				}
 				line = getLine(in);
 				StringBuilder buf = new StringBuilder(line);
 				while (true) {
 					line = getLine(in);
-					if (line.equals("#end")) {
+					if ("#end".equals(line)) {
 						break;
 					}
 					buf.append("\n");
@@ -276,7 +280,7 @@ public class CreateTableTest extends TestCase {
 				try {
 					CreateTable createTable = (CreateTable) parserManager.parse(new StringReader(query));
 					String[] colsList = null;
-					if (cols.equals("null")) {
+					if ("null".equals(cols)) {
 						colsList = new String[0];
 					} else {
 						StringTokenizer tokenizer = new StringTokenizer(cols, " ");
@@ -351,7 +355,6 @@ public class CreateTableTest extends TestCase {
 		while (true) {
 			line = in.readLine();
 			if (line != null) {
-				line.trim();
 				if ((line.length() != 0)
 						&& ((line.length() < 2) || (line.length() >= 2)
 						&& !(line.charAt(0) == '/' && line.charAt(1) == '/'))) {

@@ -21,55 +21,54 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.math.BigInteger;
+
 /**
- * Every number without a point or an exponential format is a LongValue
+ * Every number without a point or an exponential format is a LongValue.
  */
 public class LongValue implements Expression {
 
-	private long value;
-	private String stringValue;
+    private String stringValue;
 
-	public LongValue(final String value) {
-		String val = value;
-		if (val.charAt(0) == '+') {
-			val = val.substring(1);
-		}
-		try {
-		        this.value = Long.parseLong(val);
-		} catch (NumberFormatException e) {
-		        throw new NumberFormatException("Passed value does not contain a parsable long value");
-		}
-		this.stringValue = val;
-	}
-	
-	public LongValue(long value) {
-		this.value=value;
-		stringValue = String.valueOf(value);
-	}
+    public LongValue(final String value) {
+        String val = value;
+        if (val.charAt(0) == '+') {
+            val = val.substring(1);
+        }
+        this.stringValue = val;
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    public LongValue(long value) {
+        stringValue = String.valueOf(value);
+    }
 
-	public long getValue() {
-		return value;
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	public void setValue(long d) {
-		value = d;
-	}
+    public long getValue() {
+        return Long.valueOf(stringValue);
+    }
+    
+    public BigInteger getBigIntegerValue() {
+        return new BigInteger(stringValue);
+    }
 
-	public String getStringValue() {
-		return stringValue;
-	}
+    public void setValue(long d) {
+        stringValue = String.valueOf(d);
+    }
 
-	public void setStringValue(String string) {
-		stringValue = string;
-	}
+    public String getStringValue() {
+        return stringValue;
+    }
 
-	@Override
-	public String toString() {
-		return getStringValue();
-	}
+    public void setStringValue(String string) {
+        stringValue = string;
+    }
+
+    @Override
+    public String toString() {
+        return getStringValue();
+    }
 }

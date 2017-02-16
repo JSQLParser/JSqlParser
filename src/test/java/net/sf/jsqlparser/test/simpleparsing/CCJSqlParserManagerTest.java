@@ -63,9 +63,6 @@ public class CCJSqlParserManagerTest extends TestCase {
 		while (true) {
 			line = in.readLine();
 			if (line != null) {
-				line.trim();
-				// if ((line.length() != 0) && ((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/'
-				// && line.charAt(1) == '/')))
 				if (((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/' && line.charAt(1) == '/'))) {
 					break;
 				}

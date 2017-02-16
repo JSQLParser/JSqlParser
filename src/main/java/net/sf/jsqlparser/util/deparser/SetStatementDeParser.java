@@ -23,7 +23,6 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.SetStatement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class SetStatementDeParser {
 

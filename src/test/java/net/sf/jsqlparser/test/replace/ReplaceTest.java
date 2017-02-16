@@ -18,7 +18,7 @@ import org.junit.Test;
 
 public class ReplaceTest {
 
-	private static CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private static final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 
     @Test
@@ -69,5 +69,10 @@ public class ReplaceTest {
     @Test
     public void testProblemReplaceParseDeparse() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed("REPLACE a_table (ID, A, B) SELECT A_ID, A, B FROM b_table", false);
+    }
+    
+    @Test
+    public void testProblemMissingIntoIssue389() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("REPLACE INTO mytable (key, data) VALUES (1, \"aaa\")");
     }
 }

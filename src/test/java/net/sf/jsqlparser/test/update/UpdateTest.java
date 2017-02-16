@@ -17,7 +17,7 @@ import org.junit.Test;
 
 public class UpdateTest {
 
-	static CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private static CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     @Test
 	public void testUpdate() throws JSQLParserException {
@@ -108,4 +108,8 @@ public class UpdateTest {
 		parserManager.parse(new StringReader(statement));
 	}
 
+    @Test
+	public void testUpdateWithFunctions() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = SUBSTRING(col2, 1, 2)");
+	}
 }

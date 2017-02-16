@@ -78,10 +78,10 @@ public class TestUtils {
                 buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
     }
     
-    public static String buildSqlString(String sql, boolean laxDeparsingCheck) {
-    	sql = SQL_COMMENT_PATTERN.matcher(sql).replaceAll("");
+    public static String buildSqlString(final String originalSql, boolean laxDeparsingCheck) {
+    	String sql = SQL_COMMENT_PATTERN.matcher(originalSql).replaceAll("");
         if (laxDeparsingCheck) {
-            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
+            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([!/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
         } else {
             return sql;
         }

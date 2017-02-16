@@ -21,49 +21,33 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Expression;
+
 /**
  * A limit clause in the form [LIMIT {[offset,] row_count) | (row_count | ALL)
  * OFFSET offset}]
  */
 public class Limit {
 
-	private long offset;
-	private long rowCount;
-	private boolean rowCountJdbcParameter = false;
-	private boolean offsetJdbcParameter = false;
+	private Expression rowCount;
+	private Expression offset;
 	private boolean limitAll;
     private boolean limitNull = false;
 
-	public long getOffset() {
+	public Expression getOffset() {
 		return offset;
 	}
 
-	public long getRowCount() {
+	public Expression getRowCount() {
 		return rowCount;
 	}
 
-	public void setOffset(long l) {
+	public void setOffset(Expression l) {
 		offset = l;
 	}
 
-	public void setRowCount(long l) {
+	public void setRowCount(Expression l) {
 		rowCount = l;
-	}
-
-	public boolean isOffsetJdbcParameter() {
-		return offsetJdbcParameter;
-	}
-
-	public boolean isRowCountJdbcParameter() {
-		return rowCountJdbcParameter;
-	}
-
-	public void setOffsetJdbcParameter(boolean b) {
-		offsetJdbcParameter = b;
-	}
-
-	public void setRowCountJdbcParameter(boolean b) {
-		rowCountJdbcParameter = b;
 	}
 
 	/**
@@ -90,11 +74,11 @@ public class Limit {
 		if (limitNull) {
             retVal += "NULL";
         } else {
-            if (offset > 0 || offsetJdbcParameter) {
-                retVal += (offsetJdbcParameter ? "?" : Long.toString(offset)) + ", ";
+            if (null != offset) {
+                retVal += offset + ", ";
     		}
-            if ( rowCount >= 0 || rowCountJdbcParameter) {
-                retVal += (rowCountJdbcParameter ? "?" : Long.toString(rowCount));
+            if (null != rowCount) {
+                retVal += rowCount;
             }
         }
 		

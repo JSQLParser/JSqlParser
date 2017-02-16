@@ -22,7 +22,6 @@
 package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.*;
 
 import java.util.*;

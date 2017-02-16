@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class InsertTest {
 
-	CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     @Test
 	public void testRegularInsert() throws JSQLParserException {
@@ -176,5 +176,10 @@ public class InsertTest {
     @Test
     public void testIssue223() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO user VALUES (2001, '\\'Clark\\'', 'Kent')");
+    }
+    
+    @Test
+    public void testKeywordPrecisionIssue363() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO test (user_id, precision) VALUES (1, '111')");
     }
 }

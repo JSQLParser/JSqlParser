@@ -282,6 +282,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         visitBinaryExpression(subtraction);
     }
 
+    @Override
+    public void visit(NotExpression notExpr) {
+        notExpr.getExpression().accept(this);
+    }
+
     public void visitBinaryExpression(BinaryExpression binaryExpression) {
         binaryExpression.getLeftExpression().accept(this);
         binaryExpression.getRightExpression().accept(this);

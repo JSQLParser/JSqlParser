@@ -27,6 +27,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -106,10 +107,14 @@ public class AlterExpression {
     }
 
     public void addColDataType(String columnName, ColDataType colDataType) {
+        addColDataType(new ColumnDataType(columnName, colDataType, null));
+    }
+
+    public void addColDataType(ColumnDataType columnDataType) {
         if (colDataTypeList == null) {
             colDataTypeList = new ArrayList<ColumnDataType>();
         }
-        colDataTypeList.add(new ColumnDataType(columnName, colDataType));
+        colDataTypeList.add(columnDataType);
     }
 
     public List<String> getFkSourceColumns() {
@@ -208,14 +213,16 @@ public class AlterExpression {
         return b.toString();
     }
 
-    public class ColumnDataType {
+    public static class ColumnDataType {
 
         private final String columnName;
         private final ColDataType colDataType;
+        private final List<String> columnSpecs;
 
-        public ColumnDataType(String columnName, ColDataType colDataType) {
+        public ColumnDataType(String columnName, ColDataType colDataType, List<String> columnSpecs) {
             this.columnName = columnName;
             this.colDataType = colDataType;
+            this.columnSpecs = columnSpecs;
         }
 
         public String getColumnName() {
@@ -226,9 +233,24 @@ public class AlterExpression {
             return colDataType;
         }
 
+        public List<String> getColumnSpecs() {
+            if (columnSpecs == null) {
+                return Collections.emptyList();
+            }
+            return Collections.unmodifiableList(columnSpecs);
+        }
+
         @Override
         public String toString() {
-            return columnName + " " + colDataType;
+            return columnName + " " + colDataType + parametersToString();
+        }
+
+        private String parametersToString()
+        {
+            if (columnSpecs == null || columnSpecs.isEmpty()) {
+                return "";
+            }
+            return " " + PlainSelect.getStringList(columnSpecs, false, false);
         }
     }
 

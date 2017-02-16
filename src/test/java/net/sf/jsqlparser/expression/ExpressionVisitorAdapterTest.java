@@ -27,13 +27,14 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -169,4 +170,19 @@ public class ExpressionVisitorAdapterTest {
         assertEquals(1, columnList.size());
         assertEquals("bar", columnList.get(0));
     }
+
+    @Test
+    public void testSubSelectExpressionProblem() throws JSQLParserException {
+        Select select = (Select) CCJSqlParserUtil.parse( "SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE t2.col2 = t1.col1)" );
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        Expression where = plainSelect.getWhere();
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        adapter.setSelectVisitor(new SelectVisitorAdapter());
+        try {
+            where.accept(adapter);
+        } catch (NullPointerException npe){
+            fail();
+        }
+    }
+
 }

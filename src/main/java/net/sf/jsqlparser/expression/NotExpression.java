@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2017 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -19,23 +19,34 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-package net.sf.jsqlparser.statement.select;
+package net.sf.jsqlparser.expression;
 
 /**
- * All the columns (as in "SELECT * FROM ...")
+ * It represents a "-" or "+" before an expression
  */
-public class AllColumns implements SelectItem {
+public class NotExpression implements Expression {
 
-    public AllColumns() {
-    }
+	private Expression expression;
 
-    @Override
-    public void accept(SelectItemVisitor selectItemVisitor) {
-        selectItemVisitor.visit(this);
-    }
+	public NotExpression(Expression expression) {
+		setExpression(expression);
+	}
+    
+	public Expression getExpression() {
+		return expression;
+	}
 
-    @Override
-    public String toString() {
-        return "*";
-    }
+	public final void setExpression(Expression expression) {
+		this.expression = expression;
+	}
+
+	@Override
+	public void accept(ExpressionVisitor expressionVisitor) {
+		expressionVisitor.visit(this);
+	}
+
+	@Override
+	public String toString() {
+		return "NOT " + expression.toString();
+	}
 }

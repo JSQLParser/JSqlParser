@@ -18,7 +18,7 @@ import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class SelectTest extends TestCase {
 
-    CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     public SelectTest(String arg0) {
         super(arg0);
@@ -221,9 +221,11 @@ public class SelectTest extends TestCase {
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(3, ((PlainSelect) select.getSelectBody()).getLimit().getOffset());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isRowCountJdbcParameter());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isOffsetJdbcParameter());
+        Expression offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        Expression rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+
+        assertEquals(3, ((LongValue)offset).getValue());
+        assertTrue(rowCount instanceof JdbcParameter);
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
 
         // toString uses standard syntax
@@ -242,8 +244,11 @@ public class SelectTest extends TestCase {
                 + "(SELECT * FROM mytable2 WHERE mytable2.col = 9 OFFSET ?) LIMIT 3, 4";
         select = (Select) parserManager.parse(new StringReader(statement));
         SetOperationList setList = (SetOperationList) select.getSelectBody();
-        assertEquals(3, setList.getLimit().getOffset());
-        assertEquals(4, setList.getLimit().getRowCount());
+        offset = setList.getLimit().getOffset();
+        rowCount = setList.getLimit().getRowCount();
+
+        assertEquals(3, ((LongValue)offset).getValue());
+        assertEquals(4, ((LongValue)rowCount).getValue());
 
         // toString uses standard syntax
         statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
@@ -262,9 +267,11 @@ public class SelectTest extends TestCase {
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(3, ((PlainSelect) select.getSelectBody()).getLimit().getOffset());
-        assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isRowCountJdbcParameter());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isOffsetJdbcParameter());
+        Expression offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        Expression rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+
+        assertEquals(3, ((LongValue)offset).getValue());
+        assertNull(((JdbcParameter)rowCount).getIndex());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitNull());
 
@@ -274,18 +281,24 @@ public class SelectTest extends TestCase {
 
         statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT NULL OFFSET 3";
         select = (Select) parserManager.parse(new StringReader(statement));
-        assertEquals(-1, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isRowCountJdbcParameter());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isOffsetJdbcParameter());
+        offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+
+        assertNull(offset);
+        assertNull(rowCount);
+        assertEquals(3, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
         assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isLimitNull());
         assertSqlCanBeParsedAndDeparsed(statement);
 
         statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 0 OFFSET 3";
         select = (Select) parserManager.parse(new StringReader(statement));
-        assertEquals(0, ((PlainSelect) select.getSelectBody()).getLimit().getRowCount());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isRowCountJdbcParameter());
-        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isOffsetJdbcParameter());
+        offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+
+        assertNull(offset);
+        assertEquals(0, ((LongValue)rowCount).getValue());
+        assertEquals(3, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitNull());
         assertSqlCanBeParsedAndDeparsed(statement);
@@ -302,8 +315,8 @@ public class SelectTest extends TestCase {
                 + "(SELECT * FROM mytable2 WHERE mytable2.col = 9 OFFSET ?) LIMIT 3, 4";
         select = (Select) parserManager.parse(new StringReader(statement));
         SetOperationList setList = (SetOperationList) select.getSelectBody();
-        assertEquals(3, setList.getLimit().getOffset());
-        assertEquals(4, setList.getLimit().getRowCount());
+        assertEquals(3, ((LongValue)(setList.getLimit().getOffset())).getValue());
+        assertEquals(4, ((LongValue)(setList.getLimit().getRowCount())).getValue());
 
         // toString uses standard syntax
         statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
@@ -314,6 +327,96 @@ public class SelectTest extends TestCase {
                 + "(SELECT * FROM mytable2 WHERE mytable2.col = 9 OFFSET ?) UNION ALL "
                 + "(SELECT * FROM mytable3 WHERE mytable4.col = 9 OFFSET ?) LIMIT 4 OFFSET 3";
         assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    public void testLimit3() throws JSQLParserException {
+        String statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ?1, 2";
+
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        Expression offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        Expression rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+
+        assertEquals(1, (int)((JdbcParameter)offset).getIndex());
+        assertEquals(2, ((LongValue)rowCount).getValue());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 1, ?2";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+        assertEquals(1, ((LongValue)offset).getValue());
+        assertEquals(2, (int)((JdbcParameter)rowCount).getIndex());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ?1, ?2";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+        assertEquals(2, (int)(((JdbcParameter)rowCount).getIndex()));
+        assertEquals(1, (int)((JdbcParameter)offset).getIndex());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 1, ?";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+        assertEquals(1, ((LongValue)offset).getValue());
+        assertNull(((JdbcParameter)rowCount).getIndex());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ?, ?";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+        assertNull(((JdbcParameter)offset).getIndex());
+        assertNull(((JdbcParameter)rowCount).getIndex());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+    }
+
+    public void testLimit4() throws JSQLParserException {
+        String statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT :some_name, 2";
+
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        Expression offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        Expression rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+
+        assertEquals("some_name", ((JdbcNamedParameter)offset).getName());
+        assertEquals(2, ((LongValue)rowCount).getValue());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 1, :some_name";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+        assertEquals(1, ((LongValue)offset).getValue());
+        assertEquals("some_name", ((JdbcNamedParameter)rowCount).getName());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT :name1, :name2";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+        assertEquals("name2", (((JdbcNamedParameter)rowCount).getName()));
+        assertEquals("name1", ((JdbcNamedParameter)offset).getName());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ?1, :name1";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+        assertEquals(1, (int)(((JdbcParameter)offset).getIndex()));
+        assertEquals("name1", (((JdbcNamedParameter)rowCount).getName()));
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT :name1, ?1";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+        assertEquals(1, (int)(((JdbcParameter)rowCount).getIndex()));
+        assertEquals("name1", (((JdbcNamedParameter)offset).getName()));
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
     }
 
     public void testLimitSqlServer1() throws JSQLParserException {
@@ -423,6 +526,23 @@ public class SelectTest extends TestCase {
         assertEquals(secondColumnName, selectItems.get(1).toString());
 
         assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    public void testTopWithJdbcParameter() throws JSQLParserException {
+        String statement = "SELECT TOP ?1 * FROM mytable WHERE mytable.col = 9";
+
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        assertEquals(1, (int)((JdbcParameter) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).getIndex());
+        assertStatementCanBeDeparsedAs(select, statement);
+
+        statement = "select top :name1 foo from bar";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        assertEquals("name1", ((JdbcNamedParameter) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).getName());
+
+        statement = "select top ? foo from bar";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        assertNull(((JdbcParameter) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).getIndex());
     }
 
     public void testSkip() throws JSQLParserException {
@@ -586,7 +706,7 @@ public class SelectTest extends TestCase {
         assertEquals("mytable", ((Table) ((PlainSelect) setList.getSelects().get(0)).getFromItem()).getName());
         assertEquals("mytable3", ((Table) ((PlainSelect) setList.getSelects().get(1)).getFromItem()).getName());
         assertEquals("mytable2", ((Table) ((PlainSelect) setList.getSelects().get(2)).getFromItem()).getName());
-        assertEquals(3, ((PlainSelect) setList.getSelects().get(2)).getLimit().getOffset());
+        assertEquals(3, (((LongValue)(((PlainSelect) setList.getSelects().get(2)).getLimit().getOffset())).getValue()));
 
         // use brakets for toString
         // use standard limit syntax
@@ -606,7 +726,8 @@ public class SelectTest extends TestCase {
         assertEquals("mytable", ((Table) ((PlainSelect) setList.getSelects().get(0)).getFromItem()).getName());
         assertEquals("mytable3", ((Table) ((PlainSelect) setList.getSelects().get(1)).getFromItem()).getName());
         assertEquals("mytable2", ((Table) ((PlainSelect) setList.getSelects().get(2)).getFromItem()).getName());
-        assertEquals(0, ((PlainSelect) setList.getSelects().get(2)).getLimit().getOffset());
+        assertEquals(3, (((LongValue)(((PlainSelect) setList.getSelects().get(2)).getLimit().getRowCount())).getValue()));
+        assertNull((((PlainSelect) setList.getSelects().get(2)).getLimit().getOffset()));
         assertEquals(4, ((PlainSelect) setList.getSelects().get(2)).getOffset().getOffset());
 
         // use brakets for toString
@@ -939,6 +1060,14 @@ public class SelectTest extends TestCase {
                 "END) FROM tab1";
         assertSqlCanBeParsedAndDeparsed(statement);
 
+    }
+    
+    public void testIssue371SimplifiedCase() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASE col + 4 WHEN 2 THEN 1 ELSE 0 END");
+    }
+    
+    public void testIssue371SimplifiedCase2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASE col > 4 WHEN true THEN 1 ELSE 0 END");
     }
 
     public void testReplaceAsFunction() throws JSQLParserException {
@@ -2275,5 +2404,51 @@ public class SelectTest extends TestCase {
     
     public void testProblemKeywordCommitIssue341() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT id, commit FROM table1");
+    }
+    
+    public void testProblemSqlIssue352() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed( "SELECT @rowNO from (SELECT @rowNO from dual) r", true);
+    }
+    
+    public void testProblemIsIssue331() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT C_DocType.C_DocType_ID,NULL,COALESCE(C_DocType_Trl.Name,C_DocType.Name) AS Name,C_DocType.IsActive FROM C_DocType LEFT JOIN C_DocType_TRL ON (C_DocType.C_DocType_ID=C_DocType_Trl.C_DocType_ID AND C_DocType_Trl.AD_Language='es_AR') WHERE C_DocType.AD_Client_ID=1010016 AND C_DocType.AD_Client_ID IN (0,1010016) AND C_DocType.c_doctype_id in ( select c_doctype2.c_doctype_id from c_doctype as c_doctype2 where substring( c_doctype2.printname,6, length(c_doctype2.printname) ) = ( select letra from c_letra_comprobante as clc where clc.c_letra_comprobante_id = 1010039) ) AND ( (1010094!=0 AND C_DocType.ad_org_id = 1010094) OR 1010094=0 ) ORDER BY 3 LIMIT 2000", true);
+    }
+    
+    public void testProblemIssue375() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select n.nspname, c.relname, a.attname, a.atttypid, t.typname, a.attnum, a.attlen, a.atttypmod, a.attnotnull, c.relhasrules, c.relkind, c.oid, pg_get_expr(d.adbin, d.adrelid), case t.typtype when 'd' then t.typbasetype else 0 end, t.typtypmod, c.relhasoids from (((pg_catalog.pg_class c inner join pg_catalog.pg_namespace n on n.oid = c.relnamespace and c.relname = 'business' and n.nspname = 'public') inner join pg_catalog.pg_attribute a on (not a.attisdropped) and a.attnum > 0 and a.attrelid = c.oid) inner join pg_catalog.pg_type t on t.oid = a.atttypid) left outer join pg_attrdef d on a.atthasdef and d.adrelid = a.attrelid and d.adnum = a.attnum order by n.nspname, c.relname, attnum", true);
+    }
+    
+    public void testProblemIssue375Simplified() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select * from (((pg_catalog.pg_class c inner join pg_catalog.pg_namespace n on n.oid = c.relnamespace and c.relname = 'business' and n.nspname = 'public') inner join pg_catalog.pg_attribute a on (not a.attisdropped) and a.attnum > 0 and a.attrelid = c.oid) inner join pg_catalog.pg_type t on t.oid = a.atttypid) left outer join pg_attrdef d on a.atthasdef and d.adrelid = a.attrelid and d.adnum = a.attnum order by n.nspname, c.relname, attnum", true);
+    }
+    
+    public void testProblemIssue375Simplified2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select * from (pg_catalog.pg_class c inner join pg_catalog.pg_namespace n on n.oid = c.relnamespace and c.relname = 'business' and n.nspname = 'public') inner join pg_catalog.pg_attribute a on (not a.attisdropped) and a.attnum > 0 and a.attrelid = c.oid", true);
+    }
+    
+//    public void testProblemIssue377() throws Exception {
+//        try {
+//            assertSqlCanBeParsedAndDeparsed("select 'yelp'::name as pktable_cat, n2.nspname as pktable_schem, c2.relname as pktable_name, a2.attname as pkcolumn_name, 'yelp'::name as fktable_cat, n1.nspname as fktable_schem, c1.relname as fktable_name, a1.attname as fkcolumn_name, i::int2 as key_seq, case ref.confupdtype when 'c' then 0::int2 when 'n' then 2::int2 when 'd' then 4::int2 when 'r' then 1::int2 else 3::int2 end as update_rule, case ref.confdeltype when 'c' then 0::int2 when 'n' then 2::int2 when 'd' then 4::int2 when 'r' then 1::int2 else 3::int2 end as delete_rule, ref.conname as fk_name, cn.conname as pk_name, case when ref.condeferrable then case when ref.condeferred then 5::int2 else 6::int2 end else 7::int2 end as deferrablity from ((((((( (select cn.oid, conrelid, conkey, confrelid, confkey, generate_series(array_lower(conkey, 1), array_upper(conkey, 1)) as i, confupdtype, confdeltype, conname, condeferrable, condeferred from pg_catalog.pg_constraint cn, pg_catalog.pg_class c, pg_catalog.pg_namespace n where contype = 'f' and conrelid = c.oid and relname = 'business' and n.oid = c.relnamespace and n.nspname = 'public' ) ref inner join pg_catalog.pg_class c1 on c1.oid = ref.conrelid) inner join pg_catalog.pg_namespace n1 on n1.oid = c1.relnamespace) inner join pg_catalog.pg_attribute a1 on a1.attrelid = c1.oid and a1.attnum = conkey[i]) inner join pg_catalog.pg_class c2 on c2.oid = ref.confrelid) inner join pg_catalog.pg_namespace n2 on n2.oid = c2.relnamespace) inner join pg_catalog.pg_attribute a2 on a2.attrelid = c2.oid and a2.attnum = confkey[i]) left outer join pg_catalog.pg_constraint cn on cn.conrelid = ref.confrelid and cn.contype = 'p') order by ref.oid, ref.i", true);
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//            throw ex;
+//        }
+//    }
+    
+    public void testProblemInNotInProblemIssue379() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT rank FROM DBObjects WHERE rank NOT IN (0, 1)");
+        assertSqlCanBeParsedAndDeparsed("SELECT rank FROM DBObjects WHERE rank IN (0, 1)");
+    }
+    
+    public void testProblemLargeNumbersIssue390() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM student WHERE student_no = 20161114000000035001");
+    }
+    
+    public void testKeyWorkInsertIssue393() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT insert(\"aaaabbb\", 4, 4, \"****\")");
+    }
+    
+    public void testKeyWorkReplaceIssue393() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT replace(\"aaaabbb\", 4, 4, \"****\")");
     }
 }

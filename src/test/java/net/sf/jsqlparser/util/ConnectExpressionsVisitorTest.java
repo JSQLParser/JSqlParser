@@ -38,7 +38,8 @@ public class ConnectExpressionsVisitorTest {
 	@After
 	public void tearDown() {
 	}
-	CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    
+	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	@Test
 	public void testVisit_PlainSelect_concat() throws JSQLParserException {
