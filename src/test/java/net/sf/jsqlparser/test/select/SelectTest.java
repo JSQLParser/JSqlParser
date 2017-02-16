@@ -15,6 +15,7 @@ import java.io.*;
 import java.util.*;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 
 public class SelectTest extends TestCase {
 
@@ -632,7 +633,7 @@ public class SelectTest extends TestCase {
         final First limit = selectBody.getFirst();
         assertNull(limit.getRowCount());
         assertNotNull(limit.getJdbcParameter());
-        assertFalse(limit.getJdbcParameter().isUseFixedIndex());
+        assertNull(limit.getJdbcParameter().getIndex());
         assertEquals(First.Keyword.LIMIT, limit.getKeyword());
 
         final List<SelectItem> selectItems = selectBody.getSelectItems();

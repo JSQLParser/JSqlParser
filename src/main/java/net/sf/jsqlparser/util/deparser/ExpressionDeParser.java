@@ -187,7 +187,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(JdbcParameter jdbcParameter) {
         buffer.append("?");
-        if (jdbcParameter.isUseFixedIndex()) {
+        if (jdbcParameter.getIndex() != null) {
             buffer.append(jdbcParameter.getIndex());
         }
 
