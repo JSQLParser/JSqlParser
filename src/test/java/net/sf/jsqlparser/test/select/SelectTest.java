@@ -15,7 +15,6 @@ import java.io.*;
 import java.util.*;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
-import net.sf.jsqlparser.util.TablesNamesFinder;
 
 public class SelectTest extends TestCase {
 
@@ -272,7 +271,8 @@ public class SelectTest extends TestCase {
         Expression rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
 
         assertEquals(3, ((LongValue)offset).getValue());
-        assertNull(((JdbcParameter)rowCount).getIndex());
+        assertNotNull(((JdbcParameter)rowCount).getIndex());
+        assertFalse(((JdbcParameter)rowCount).isUseFixedIndex());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitNull());
 
@@ -363,15 +363,18 @@ public class SelectTest extends TestCase {
         offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
         rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
         assertEquals(1, ((LongValue)offset).getValue());
-        assertNull(((JdbcParameter)rowCount).getIndex());
+        assertNotNull(((JdbcParameter)rowCount).getIndex());
+        assertFalse(((JdbcParameter)rowCount).isUseFixedIndex());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
 
         statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ?, ?";
         select = (Select) parserManager.parse(new StringReader(statement));
         offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
         rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
-        assertNull(((JdbcParameter)offset).getIndex());
-        assertNull(((JdbcParameter)rowCount).getIndex());
+        assertNotNull(((JdbcParameter)offset).getIndex());
+        assertFalse(((JdbcParameter)offset).isUseFixedIndex());
+        assertNotNull(((JdbcParameter)rowCount).getIndex());
+        assertFalse(((JdbcParameter)rowCount).isUseFixedIndex());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
     }
 
@@ -543,7 +546,8 @@ public class SelectTest extends TestCase {
 
         statement = "select top ? foo from bar";
         select = (Select) parserManager.parse(new StringReader(statement));
-        assertNull(((JdbcParameter) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).getIndex());
+        assertNotNull(((JdbcParameter) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).getIndex());
+        assertFalse(((JdbcParameter) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).isUseFixedIndex());
     }
 
     public void testSkip() throws JSQLParserException {
@@ -633,7 +637,8 @@ public class SelectTest extends TestCase {
         final First limit = selectBody.getFirst();
         assertNull(limit.getRowCount());
         assertNotNull(limit.getJdbcParameter());
-        assertNull(limit.getJdbcParameter().getIndex());
+        assertNotNull(limit.getJdbcParameter().getIndex());
+        assertFalse(limit.getJdbcParameter().isUseFixedIndex());
         assertEquals(First.Keyword.LIMIT, limit.getKeyword());
 
         final List<SelectItem> selectItems = selectBody.getSelectItems();
@@ -653,6 +658,7 @@ public class SelectTest extends TestCase {
         final Skip skip = selectBody.getSkip();
         assertNotNull(skip.getJdbcParameter());
         assertNotNull(skip.getJdbcParameter().getIndex());
+        assertTrue(skip.getJdbcParameter().isUseFixedIndex());
         assertEquals((int) 1, (int) skip.getJdbcParameter().getIndex());
         assertNull(skip.getVariable());
         final First first = selectBody.getFirst();
