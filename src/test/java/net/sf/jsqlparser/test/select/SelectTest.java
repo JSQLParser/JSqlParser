@@ -2451,4 +2451,12 @@ public class SelectTest extends TestCase {
     public void testKeyWorkReplaceIssue393() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT replace(\"aaaabbb\", 4, 4, \"****\")");
     }
+
+    public void testCaseExpressionAsConditionIssue200() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1 WHERE CASE WHEN t1.a = 1 THEN t1.b = 2 ELSE t1.b = 3 END");
+    }
+
+    public void testCaseExpressionNestedConditionIssue200() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1 WHERE CASE WHEN t1.a = 1 THEN CASE WHEN t1.b = 2 THEN t1.c = 3 ELSE t1.c = 5 END ELSE t1.b = 3 END");
+    }
 }
