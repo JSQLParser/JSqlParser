@@ -2454,4 +2454,8 @@ public class SelectTest extends TestCase {
     public void testCaseExpressionHoldsAndIssue200() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1 WHERE CASE WHEN t1.a = 1 THEN '2017-02-27' NOT IN ('2017-02-19', '2017-02-26', '2017-02-12', '2017-02-05') AND '2017-02-27' BETWEEN to_date AND from_date END");
     }
+    
+    public void testCaseExpressionWithMoreCondsIssue200() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1 WHERE t2.name = t1.leave_type AND t2.is_lwp = 1 AND t1.docstatus = 1 AND t1.employee = 'EMP-0001' AND CASE WHEN t1.a = 1 THEN '2017-02-27' NOT IN ('2017-02-19', '2017-02-26', '2017-02-12', '2017-02-05') AND '2017-02-27' BETWEEN to_date AND from_date WHEN t2.include_holiday THEN '2017-02-27' BETWEEN from_date AND to_date END");
+    }
 }
