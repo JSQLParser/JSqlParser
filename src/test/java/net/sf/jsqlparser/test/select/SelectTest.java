@@ -2318,15 +2318,6 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE 0");
     }
 
-    public void testWhereIssue240_notBoolean() {
-        try {
-            CCJSqlParserUtil.parse("SELECT count(*) FROM mytable WHERE 5");
-            fail("should not be parsed");
-        } catch (JSQLParserException ex) {
-
-        }
-    }
-
     public void testWhereIssue240_true() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE true");
     }
@@ -2458,5 +2449,9 @@ public class SelectTest extends TestCase {
 
     public void testCaseExpressionNestedConditionIssue200() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1 WHERE CASE WHEN t1.a = 1 THEN CASE WHEN t1.b = 2 THEN t1.c = 3 ELSE t1.c = 5 END ELSE t1.b = 3 END");
+    }
+
+    public void testCaseExpressionHoldsAndIssue200() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1 WHERE CASE WHEN t1.a = 1 THEN '2017-02-27' NOT IN ('2017-02-19', '2017-02-26', '2017-02-12', '2017-02-05') AND '2017-02-27' BETWEEN to_date AND from_date END");
     }
 }

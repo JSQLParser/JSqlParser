@@ -1701,9 +1701,8 @@ Expression Condition():
 	(LOOKAHEAD(RegularCondition()) result=RegularCondition()
 	| LOOKAHEAD(SQLCondition()) result=SQLCondition()
 	| LOOKAHEAD(Function()) result=Function()
-	| <K_NOT> result=Column() { result = new NotExpression(result); }
-    | result=Column()
-	| LOOKAHEAD({ "0".equals(getToken(1).image) || "1".equals(getToken(1).image) }) token=<S_LONG> { result = new LongValue(token.image); }
+	| <K_NOT> result=SimpleExpression() { result = new NotExpression(result); }
+    | result=SimpleExpression()
 	)
 
 	{ return result; }
@@ -2179,6 +2178,8 @@ Expression PrimaryExpression():
 
 	| "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
+	| retval = Column()
+
 	| retval = IntervalExpression()
 )
 
@@ -2443,19 +2444,11 @@ Expression CaseWhenExpression() #CaseWhenExpression:
 	<K_CASE>
 	(
     	    ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
-             [<K_ELSE> (
-				LOOKAHEAD(RegularCondition()) elseExp=RegularCondition()
-				| LOOKAHEAD(SQLCondition()) elseExp=SQLCondition()
-				| elseExp=SimpleExpression()
-			)]
+             [<K_ELSE> elseExp=Expression()]
 		|
 		    (LOOKAHEAD(RegularCondition()) switchExp=RegularCondition() | switchExp=BitwiseAndOr())
              ( clause=WhenThenValue() { whenClauses.add(clause); } )+
-             [<K_ELSE>  (
-				LOOKAHEAD(RegularCondition()) elseExp=RegularCondition()
-				| LOOKAHEAD(SQLCondition()) elseExp=SQLCondition()
-				| elseExp=SimpleExpression()
-			)]
+             [<K_ELSE> elseExp=Expression()]
 	)
     <K_END>
     {
@@ -2473,11 +2466,7 @@ WhenClause WhenThenSearchCondition():
 	Expression thenExp = null;
 }
 {
-	<K_WHEN> whenExp=Expression() <K_THEN> (
-		LOOKAHEAD(RegularCondition()) thenExp=RegularCondition()
-		| LOOKAHEAD(SQLCondition()) thenExp=SQLCondition()
-		| thenExp=SimpleExpression()
-	)
+	<K_WHEN> whenExp=Expression() <K_THEN> thenExp=Expression()
 	{
 	   whenThen.setWhenExpression(whenExp);
 	   whenThen.setThenExpression(thenExp);
@@ -2492,11 +2481,7 @@ WhenClause WhenThenValue():
 	Expression thenExp = null;
 }
 {
-	<K_WHEN> whenExp=PrimaryExpression() <K_THEN> (
-		LOOKAHEAD(RegularCondition()) thenExp=RegularCondition()
-		| LOOKAHEAD(SQLCondition()) thenExp=SQLCondition()
-		| thenExp=SimpleExpression()
-	)
+	<K_WHEN> whenExp=PrimaryExpression() <K_THEN> thenExp=Expression()
 	{
 	   whenThen.setWhenExpression(whenExp);
 	   whenThen.setThenExpression(thenExp);
