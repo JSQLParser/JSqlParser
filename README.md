@@ -44,6 +44,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.7
 
+* support getting jdbc parameter index
 * Removed limitation of LongValue to accept only java.util.Long parsable values.
 * introduced NOT without parenthesis for column only conditions
 * introduced more complex expressions within CASE - statements
