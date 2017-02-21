@@ -2451,4 +2451,12 @@ public class SelectTest extends TestCase {
     public void testKeyWorkReplaceIssue393() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT replace(\"aaaabbb\", 4, 4, \"****\")");
     }
+    
+//    public void testSubSelectFailsIssue394() throws JSQLParserException {
+//        assertSqlCanBeParsedAndDeparsed("select aa.* , t.* from accenter.all aa, (select a.* from pacioli.emc_plan a) t");
+//    }
+//    
+//    public void testSubSelectFailsIssue394_2() throws JSQLParserException {
+//        assertSqlCanBeParsedAndDeparsed("select * from all");
+//    }
 }
