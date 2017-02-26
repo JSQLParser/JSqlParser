@@ -27,6 +27,15 @@ package net.sf.jsqlparser.expression;
 public class JdbcParameter implements Expression {
 
     private Integer index;
+    private boolean useFixedIndex = false;
+
+    public JdbcParameter() {
+    }
+
+    public JdbcParameter(Integer index, boolean useFixedIndex) {
+        this.index = index;
+        this.useFixedIndex = useFixedIndex;
+    }
 
     public Integer getIndex() {
         return index;
@@ -36,6 +45,14 @@ public class JdbcParameter implements Expression {
         this.index = index;
     }
 
+    public boolean isUseFixedIndex() {
+        return useFixedIndex;
+    }
+
+    public void setUseFixedIndex(boolean useFixedIndex) {
+        this.useFixedIndex = useFixedIndex;
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
@@ -43,6 +60,6 @@ public class JdbcParameter implements Expression {
 
     @Override
     public String toString() {
-        return "?" + (index == null ? "" : index);
+        return useFixedIndex ? "?" + index : "?";
     }
 }
