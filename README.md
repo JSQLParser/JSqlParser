@@ -16,6 +16,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 ## News
 
+* Version **0.9.7** released.
 * Version **0.9.6** released.
 * Version **0.9.5** released.
 * Please test the actual **0.9.5-SNAPSHOT**. It includes some grammar refactorings which eventually results in parse tree changes.
@@ -42,16 +43,8 @@ To help JSqlParsers development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 0.9.7
+## Extensions in the latest SNAPSHOT version 0.9.8
 
-* support getting jdbc parameter index
-* Removed limitation of LongValue to accept only java.util.Long parsable values.
-* introduced NOT without parenthesis for column only conditions
-* introduced more complex expressions within CASE - statements
-* improved Postgresql JSON - support
-* integrated some Postgresql create table contraints
-* support for ~~alter table modify~~ statements
-* allowed more types of expressions after limit and top.
 
 ## Extensions of JSqlParser releases
 
