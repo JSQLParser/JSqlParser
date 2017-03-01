@@ -42,6 +42,7 @@ public class Merge implements Statement {
     private Expression onCondition;
     private MergeInsert mergeInsert;
     private MergeUpdate mergeUpdate;
+    private boolean insertFirst = false;
 
     public Table getTable() {
         return table;
@@ -107,6 +108,14 @@ public class Merge implements Statement {
         statementVisitor.visit(this);
     }
 
+    public boolean isInsertFirst() {
+        return insertFirst;
+    }
+
+    public void setInsertFirst(boolean insertFirst) {
+        this.insertFirst = insertFirst;
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -118,7 +127,7 @@ public class Merge implements Statement {
         } else if (usingSelect != null) {
             b.append("(").append(usingSelect.toString()).append(")");
         }
-        
+
         if (usingAlias != null) {
             b.append(usingAlias.toString());
         }
@@ -126,12 +135,20 @@ public class Merge implements Statement {
         b.append(onCondition);
         b.append(")");
 
+        if (insertFirst) {
+            if (mergeInsert != null) {
+                b.append(mergeInsert.toString());
+            }
+        }
+
         if (mergeUpdate != null) {
             b.append(mergeUpdate.toString());
         }
 
-        if (mergeInsert != null) {
-            b.append(mergeInsert.toString());
+        if (!insertFirst) {
+            if (mergeInsert != null) {
+                b.append(mergeInsert.toString());
+            }
         }
 
         return b.toString();

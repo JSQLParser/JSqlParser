@@ -684,9 +684,18 @@ Statement Merge() : {
      [ alias = Alias() { merge.setUsingAlias(alias); } ] <K_ON> 
        "(" condition = Expression() { merge.setOnCondition(condition); } ")"
 
-    [ LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
+	[
+		( LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); }
+		  [ insert = MergeInsertClause() { merge.setMergeInsert(insert); } ]
+        | insert = MergeInsertClause() { merge.setMergeInsert(insert); merge.setInsertFirst(true); }
+          [ update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
+		)
+	]
+
+
+    /*[ LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
  
-    [ insert = MergeInsertClause() { merge.setMergeInsert(insert); } ]
+    [ insert = MergeInsertClause() { merge.setMergeInsert(insert); } ]*/
     
     { return merge; }
 }
