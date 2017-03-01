@@ -29,8 +29,8 @@ import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
- * string) a {@link net.sf.jsqlparser.statement.create.table.CreateTable}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
+ * {@link net.sf.jsqlparser.statement.create.table.CreateTable}
  */
 public class CreateTableDeParser {
 
@@ -48,7 +48,8 @@ public class CreateTableDeParser {
         if (createTable.isUnlogged()) {
             buffer.append("UNLOGGED ");
         }
-        String params = PlainSelect.getStringList(createTable.getCreateOptionsStrings(), false, false);
+        String params = PlainSelect.
+                getStringList(createTable.getCreateOptionsStrings(), false, false);
         if (!"".equals(params)) {
             buffer.append(params).append(' ');
         }
@@ -59,11 +60,19 @@ public class CreateTableDeParser {
         }
         buffer.append(createTable.getTable().getFullyQualifiedName());
         if (createTable.getSelect() != null) {
-            buffer.append(" AS ").append(createTable.getSelect().toString());
+            buffer.append(" AS ");
+            if (createTable.isSelectParenthesis()) {
+                buffer.append("(");
+            }
+            buffer.append(createTable.getSelect().toString());
+            if (createTable.isSelectParenthesis()) {
+                buffer.append(")");
+            }
         } else {
             if (createTable.getColumnDefinitions() != null) {
                 buffer.append(" (");
-                for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
+                for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.
+                        hasNext();) {
                     ColumnDefinition columnDefinition = iter.next();
                     buffer.append(columnDefinition.getColumnName());
                     buffer.append(" ");

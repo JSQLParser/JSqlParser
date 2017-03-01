@@ -41,6 +41,7 @@ public class CreateTable implements Statement {
     private List<ColumnDefinition> columnDefinitions;
     private List<Index> indexes;
     private Select select;
+    private boolean selectParenthesis;
     private boolean ifNotExists = false;
 
     @Override
@@ -117,8 +118,9 @@ public class CreateTable implements Statement {
         return select;
     }
 
-    public void setSelect(Select select) {
+    public void setSelect(Select select, boolean parenthesis) {
         this.select = select;
+        this.selectParenthesis = parenthesis;
     }
 
     public boolean isIfNotExists() {
@@ -127,6 +129,14 @@ public class CreateTable implements Statement {
 
     public void setIfNotExists(boolean ifNotExists) {
         this.ifNotExists = ifNotExists;
+    }
+
+    public boolean isSelectParenthesis() {
+        return selectParenthesis;
+    }
+
+    public void setSelectParenthesis(boolean selectParenthesis) {
+        this.selectParenthesis = selectParenthesis;
     }
 
     @Override
@@ -139,7 +149,7 @@ public class CreateTable implements Statement {
                 "TABLE " + (ifNotExists?"IF NOT EXISTS ":"") + table;
 
         if (select != null) {
-            sql += " AS " + select.toString();
+            sql += " AS " + (selectParenthesis?"(":"") + select.toString() + (selectParenthesis?")":"");
         } else {
             sql += " (";
 

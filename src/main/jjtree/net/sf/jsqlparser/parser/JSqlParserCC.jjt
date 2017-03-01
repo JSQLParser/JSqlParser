@@ -2834,7 +2834,8 @@ CreateTable CreateTable():
         )
         |
         (
-        <K_AS> select = Select() { createTable.setSelect(select); }
+        <K_AS> ( LOOKAHEAD("(" Select() ")") "(" select = Select() { createTable.setSelect(select, true); } ")"
+                 | select = Select() { createTable.setSelect(select, false); } )
         )
 	]
 

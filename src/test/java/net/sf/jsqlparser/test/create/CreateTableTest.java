@@ -243,6 +243,14 @@ public class CreateTableTest extends TestCase {
     public void testTimestampWithoutTimezone() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE abc.tabc (transaction_date TIMESTAMP WITHOUT TIME ZONE)");
     }
+    
+    public void testCreateUnitonIssue402() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE temp.abc AS SELECT sku FROM temp.a UNION SELECT sku FROM temp.b");
+    }
+    
+    public void testCreateUnitonIssue402_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE temp.abc AS (SELECT sku FROM temp.a UNION SELECT sku FROM temp.b)");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
