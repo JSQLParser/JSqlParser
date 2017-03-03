@@ -376,6 +376,16 @@ public class SelectTest extends TestCase {
         assertNotNull(((JdbcParameter)rowCount).getIndex());
         assertFalse(((JdbcParameter)rowCount).isUseFixedIndex());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ?1";
+        select = (Select) parserManager.parse(new StringReader(statement));
+
+        offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+
+        assertNull(offset);
+        assertEquals(1, ((JdbcParameter)rowCount).getIndex().intValue());
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
     }
 
     public void testLimit4() throws JSQLParserException {
@@ -420,6 +430,14 @@ public class SelectTest extends TestCase {
         rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
         assertEquals(1, (int)(((JdbcParameter)rowCount).getIndex()));
         assertEquals("name1", (((JdbcNamedParameter)offset).getName()));
+        assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT :param_name";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
+        rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
+        assertNull(offset);
+        assertEquals("param_name", (((JdbcNamedParameter)rowCount).getName()));
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
     }
 
