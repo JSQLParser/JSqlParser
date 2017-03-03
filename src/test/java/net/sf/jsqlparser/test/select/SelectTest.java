@@ -497,6 +497,11 @@ public class SelectTest extends TestCase {
         assertTrue(((PlainSelect) select.getSelectBody()).getFetch().isFetchJdbcParameter());
         assertStatementCanBeDeparsedAs(select, statement);
     }
+    
+    public void testLimitPR404() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ?1");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE mytable.col = 9 LIMIT :param_name");
+    }
 
     public void testTop() throws JSQLParserException {
         String statement = "SELECT TOP 3 * FROM mytable WHERE mytable.col = 9";

@@ -1463,7 +1463,7 @@ Limit LimitWithOffset():
 }
 {
 	(
-			LOOKAHEAD(3)
+			LOOKAHEAD(5)
 				// mysql-> LIMIT offset,row_count
 				<K_LIMIT>
 					 (
