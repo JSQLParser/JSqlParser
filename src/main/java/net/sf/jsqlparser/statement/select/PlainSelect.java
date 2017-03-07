@@ -52,7 +52,7 @@ public class PlainSelect implements SelectBody {
 	return useBrackets;
     }
 
-    public void setUseBrackets(final boolean useBrackets) {
+    public void setUseBrackets(boolean useBrackets) {
 	this.useBrackets = useBrackets;
     }
 
@@ -83,26 +83,26 @@ public class PlainSelect implements SelectBody {
 	return where;
     }
 
-    public void setFromItem(final FromItem item) {
+    public void setFromItem(FromItem item) {
 	fromItem = item;
     }
 
-    public void setIntoTables(final List<Table> intoTables) {
+    public void setIntoTables(List<Table> intoTables) {
 	this.intoTables = intoTables;
     }
 
-    public void setSelectItems(final List<SelectItem> list) {
+    public void setSelectItems(List<SelectItem> list) {
 	selectItems = list;
     }
 
-    public void addSelectItems(final SelectItem... items) {
+    public void addSelectItems(SelectItem... items) {
 	if (selectItems == null) {
 	    selectItems = new ArrayList<SelectItem>();
 	}
 	Collections.addAll(selectItems, items);
     }
 
-    public void setWhere(final Expression where) {
+    public void setWhere(Expression where) {
 	this.where = where;
     }
 
@@ -115,12 +115,12 @@ public class PlainSelect implements SelectBody {
 	return joins;
     }
 
-    public void setJoins(final List<Join> list) {
+    public void setJoins(List<Join> list) {
 	joins = list;
     }
 
     @Override
-    public void accept(final SelectVisitor selectVisitor) {
+    public void accept(SelectVisitor selectVisitor) {
 	selectVisitor.visit(this);
     }
 
@@ -128,7 +128,7 @@ public class PlainSelect implements SelectBody {
 	return orderByElements;
     }
 
-    public void setOrderByElements(final List<OrderByElement> orderByElements) {
+    public void setOrderByElements(List<OrderByElement> orderByElements) {
 	this.orderByElements = orderByElements;
     }
 
@@ -136,7 +136,7 @@ public class PlainSelect implements SelectBody {
 	return limit;
     }
 
-    public void setLimit(final Limit limit) {
+    public void setLimit(Limit limit) {
 	this.limit = limit;
     }
 
@@ -144,7 +144,7 @@ public class PlainSelect implements SelectBody {
 	return offset;
     }
 
-    public void setOffset(final Offset offset) {
+    public void setOffset(Offset offset) {
 	this.offset = offset;
     }
 
@@ -152,7 +152,7 @@ public class PlainSelect implements SelectBody {
 	return fetch;
     }
 
-    public void setFetch(final Fetch fetch) {
+    public void setFetch(Fetch fetch) {
 	this.fetch = fetch;
     }
 
@@ -162,7 +162,7 @@ public class PlainSelect implements SelectBody {
      * @param wait
      *            the {@link Wait} for this SELECT
      */
-    public void setWait(final Wait wait) {
+    public void setWait(Wait wait) {
 	this.wait = wait;
     }
 
@@ -179,7 +179,7 @@ public class PlainSelect implements SelectBody {
 	return top;
     }
 
-    public void setTop(final Top top) {
+    public void setTop(Top top) {
 	this.top = top;
     }
 
@@ -187,7 +187,7 @@ public class PlainSelect implements SelectBody {
 	return skip;
     }
 
-    public void setSkip(final Skip skip) {
+    public void setSkip(Skip skip) {
 	this.skip = skip;
     }
 
@@ -195,7 +195,7 @@ public class PlainSelect implements SelectBody {
 	return first;
     }
 
-    public void setFirst(final First first) {
+    public void setFirst(First first) {
 	this.first = first;
     }
 
@@ -203,7 +203,7 @@ public class PlainSelect implements SelectBody {
 	return distinct;
     }
 
-    public void setDistinct(final Distinct distinct) {
+    public void setDistinct(Distinct distinct) {
 	this.distinct = distinct;
     }
 
@@ -211,7 +211,7 @@ public class PlainSelect implements SelectBody {
 	return having;
     }
 
-    public void setHaving(final Expression expression) {
+    public void setHaving(Expression expression) {
 	having = expression;
     }
 
@@ -225,11 +225,11 @@ public class PlainSelect implements SelectBody {
 	return groupByColumnReferences;
     }
 
-    public void setGroupByColumnReferences(final List<Expression> list) {
+    public void setGroupByColumnReferences(List<Expression> list) {
 	groupByColumnReferences = list;
     }
 
-    public void addGroupByColumnReference(final Expression expr) {
+    public void addGroupByColumnReference(Expression expr) {
 	if (groupByColumnReferences == null) {
 	    groupByColumnReferences = new ArrayList<Expression>();
 	}
@@ -240,7 +240,7 @@ public class PlainSelect implements SelectBody {
 	return oracleHierarchical;
     }
 
-    public void setOracleHierarchical(final OracleHierarchicalExpression oracleHierarchical) {
+    public void setOracleHierarchical(OracleHierarchicalExpression oracleHierarchical) {
 	this.oracleHierarchical = oracleHierarchical;
     }
 
@@ -248,7 +248,7 @@ public class PlainSelect implements SelectBody {
 	return oracleSiblings;
     }
 
-    public void setOracleSiblings(final boolean oracleSiblings) {
+    public void setOracleSiblings(boolean oracleSiblings) {
 	this.oracleSiblings = oracleSiblings;
     }
 
@@ -256,7 +256,7 @@ public class PlainSelect implements SelectBody {
 	return forUpdate;
     }
 
-    public void setForUpdate(final boolean forUpdate) {
+    public void setForUpdate(boolean forUpdate) {
 	this.forUpdate = forUpdate;
     }
 
@@ -264,7 +264,7 @@ public class PlainSelect implements SelectBody {
 	return forUpdateTable;
     }
 
-    public void setForUpdateTable(final Table forUpdateTable) {
+    public void setForUpdateTable(Table forUpdateTable) {
 	this.forUpdateTable = forUpdateTable;
     }
 
@@ -272,13 +272,13 @@ public class PlainSelect implements SelectBody {
 	return oracleHint;
     }
 
-    public void setOracleHint(final OracleHint oracleHint) {
+    public void setOracleHint(OracleHint oracleHint) {
 	this.oracleHint = oracleHint;
     }
 
     @Override
     public String toString() {
-	final StringBuilder sql = new StringBuilder();
+	StringBuilder sql = new StringBuilder();
 	if (useBrackets) {
 	    sql.append("(");
 	}
@@ -306,7 +306,7 @@ public class PlainSelect implements SelectBody {
 
 	if (intoTables != null) {
 	    sql.append(" INTO ");
-	    for (final Iterator<Table> iter = intoTables.iterator(); iter.hasNext();) {
+	    for (Iterator<Table> iter = intoTables.iterator(); iter.hasNext();) {
 		sql.append(iter.next().toString());
 		if (iter.hasNext()) {
 		    sql.append(", ");
@@ -317,9 +317,9 @@ public class PlainSelect implements SelectBody {
 	if (fromItem != null) {
 	    sql.append(" FROM ").append(fromItem);
 	    if (joins != null) {
-		final Iterator<Join> it = joins.iterator();
+		Iterator<Join> it = joins.iterator();
 		while (it.hasNext()) {
-		    final Join join = it.next();
+		    Join join = it.next();
 		    if (join.isSimple()) {
 			sql.append(", ").append(join);
 		    } else {
@@ -371,20 +371,19 @@ public class PlainSelect implements SelectBody {
 	return sql.toString();
     }
 
-    public static String orderByToString(final List<OrderByElement> orderByElements) {
+    public static String orderByToString(List<OrderByElement> orderByElements) {
 	return orderByToString(false, orderByElements);
     }
 
-    public static String orderByToString(final boolean oracleSiblings, final List<OrderByElement> orderByElements) {
+    public static String orderByToString(boolean oracleSiblings, List<OrderByElement> orderByElements) {
 	return getFormatedList(orderByElements, oracleSiblings ? "ORDER SIBLINGS BY" : "ORDER BY");
     }
 
-    public static String getFormatedList(final List<?> list, final String expression) {
+    public static String getFormatedList(List<?> list, String expression) {
 	return getFormatedList(list, expression, true, false);
     }
 
-    public static String getFormatedList(final List<?> list, final String expression, final boolean useComma,
-	    final boolean useBrackets) {
+    public static String getFormatedList(List<?> list, String expression, boolean useComma, boolean useBrackets) {
 	String sql = getStringList(list, useComma, useBrackets);
 
 	if (sql.length() > 0) {
@@ -408,7 +407,7 @@ public class PlainSelect implements SelectBody {
      *            list of objects with toString methods
      * @return comma separated list of the elements in the list
      */
-    public static String getStringList(final List<?> list) {
+    public static String getStringList(List<?> list) {
 	return getStringList(list, true, false);
     }
 
@@ -424,8 +423,8 @@ public class PlainSelect implements SelectBody {
      *            true if the list has to be enclosed in brackets
      * @return comma separated list of the elements in the list
      */
-    public static String getStringList(final List<?> list, final boolean useComma, final boolean useBrackets) {
-	final StringBuilder ans = new StringBuilder();
+    public static String getStringList(List<?> list, boolean useComma, boolean useBrackets) {
+	StringBuilder ans = new StringBuilder();
 	// String ans = "";
 	String comma = ",";
 	if (!useComma) {
