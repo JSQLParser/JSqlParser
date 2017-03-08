@@ -2486,23 +2486,23 @@ public class SelectTest extends TestCase {
      * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> can be parsed and
      * deparsed
      */
-    public void testForUpdateWait() throws JSQLParserException {
-	assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable FOR UPDATE WAIT 60");
+    public void testForUpdateWaitParseDeparse() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable FOR UPDATE WAIT 60");
     }
 
     /**
      * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> correctly sets a
      * {@link Wait} with the correct timeout value.
      */
-    public void testForUpdateWait_WaitAndTimeout() throws JSQLParserException {
-	String statement = "SELECT * FROM mytable FOR UPDATE WAIT 60";
-	Select select = (Select) parserManager.parse(new StringReader(statement));
-	PlainSelect ps = (PlainSelect) select.getSelectBody();
-	Wait wait = ps.getWait();
-	org.junit.Assert.assertNotNull("wait should not be null", wait);
+    public void testForUpdateWaitWithTimeout() throws JSQLParserException {
+        String statement = "SELECT * FROM mytable FOR UPDATE WAIT 60";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        PlainSelect ps = (PlainSelect) select.getSelectBody();
+        Wait wait = ps.getWait();
+        org.junit.Assert.assertNotNull("wait should not be null", wait);
 
-	long waitTime = wait.getTimeout();
-	org.junit.Assert.assertEquals("wait time should be 60", waitTime, 60L);
+        long waitTime = wait.getTimeout();
+        org.junit.Assert.assertEquals("wait time should be 60", waitTime, 60L);
     }
     
     
