@@ -2499,10 +2499,10 @@ public class SelectTest extends TestCase {
         Select select = (Select) parserManager.parse(new StringReader(statement));
         PlainSelect ps = (PlainSelect) select.getSelectBody();
         Wait wait = ps.getWait();
-        org.junit.Assert.assertNotNull("wait should not be null", wait);
+        assertNotNull("wait should not be null", wait);
 
         long waitTime = wait.getTimeout();
-        org.junit.Assert.assertEquals("wait time should be 60", waitTime, 60L);
+        assertEquals("wait time should be 60", waitTime, 60L);
     }
     
     
