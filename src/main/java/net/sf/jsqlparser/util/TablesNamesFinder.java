@@ -258,6 +258,30 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(NotEqualsTo notEqualsTo) {
         visitBinaryExpression(notEqualsTo);
     }
+    
+    /* Added by Mathew on 21st Nov 2016
+     * 
+     */
+    @Override
+    public void visit(DoubleAnd doubleAnd) {
+        visitBinaryExpression(doubleAnd);
+    }
+    
+    /* Added by Mathew on 21st Nov 2016
+     * 
+     */
+    @Override
+    public void visit(Contains contains) {
+        visitBinaryExpression(contains);
+    }
+    
+    /* Added by Mathew on 21st Nov 2016
+     * 
+     */
+    @Override
+    public void visit(ContainedBy containedBy) {
+        visitBinaryExpression(containedBy);
+    }
 
     @Override
     public void visit(NullValue nullValue) {
