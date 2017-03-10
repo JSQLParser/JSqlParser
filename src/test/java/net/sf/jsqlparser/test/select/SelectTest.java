@@ -2482,30 +2482,6 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT replace(\"aaaabbb\", 4, 4, \"****\")");
     }
     
-    /**
-     * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> can be parsed and
-     * deparsed
-     */
-    public void testForUpdateWaitParseDeparse() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable FOR UPDATE WAIT 60");
-    }
-
-    /**
-     * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> correctly sets a
-     * {@link Wait} with the correct timeout value.
-     */
-    public void testForUpdateWaitWithTimeout() throws JSQLParserException {
-        String statement = "SELECT * FROM mytable FOR UPDATE WAIT 60";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
-        PlainSelect ps = (PlainSelect) select.getSelectBody();
-        Wait wait = ps.getWait();
-        assertNotNull("wait should not be null", wait);
-
-        long waitTime = wait.getTimeout();
-        assertEquals("wait time should be 60", waitTime, 60L);
-    }
-    
-    
 //    public void testSubSelectFailsIssue394() throws JSQLParserException {
 //        assertSqlCanBeParsedAndDeparsed("select aa.* , t.* from accenter.all aa, (select a.* from pacioli.emc_plan a) t");
 //    }
