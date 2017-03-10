@@ -45,6 +45,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.8
 
+* support **FOR UPDATE WAIT**
 
 ## Extensions of JSqlParser releases
 
