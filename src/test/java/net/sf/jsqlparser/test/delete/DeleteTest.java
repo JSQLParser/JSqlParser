@@ -1,6 +1,5 @@
 package net.sf.jsqlparser.test.delete;
 
-import static junit.framework.Assert.assertEquals;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
 import java.io.StringReader;
@@ -10,10 +9,11 @@ import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.delete.Delete;
+import static org.junit.Assert.assertEquals;
 
 public class DeleteTest {
 
-	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	@Test
 	public void testDelete() throws JSQLParserException {

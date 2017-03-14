@@ -2,20 +2,18 @@ package net.sf.jsqlparser.test.drop;
 
 import java.io.StringReader;
 
-import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.drop.Drop;
 import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class DropTest extends TestCase {
+public class DropTest {
     
-    private CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
     
-    public DropTest(String arg0) {
-        super(arg0);
-    }
-    
+    @Test
     public void testDrop() throws JSQLParserException {
         String statement = "DROP TABLE mytab";
         Drop drop = (Drop) parserManager.parse(new StringReader(statement));
@@ -31,12 +29,14 @@ public class DropTest extends TestCase {
         assertEquals(statement, "" + drop);
     }
     
+    @Test
     public void testDrop2() throws JSQLParserException {
         Drop drop = (Drop) parserManager.parse(new StringReader("DROP TABLE \"testtable\""));
         assertEquals("TABLE", drop.getType());
         assertEquals("\"testtable\"", drop.getName().getFullyQualifiedName());
     }
     
+    @Test
     public void testDropIfExists() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP TABLE IF EXISTS my_table");
     }

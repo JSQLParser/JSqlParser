@@ -4,19 +4,15 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 
-import junit.framework.TestCase;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.create.CreateTableTest;
+import org.junit.Test;
 
-public class CCJSqlParserManagerTest extends TestCase {
+public class CCJSqlParserManagerTest {
 
-	public CCJSqlParserManagerTest(String arg0) {
-		super(arg0);
-	}
-
+    @Test
 	public void testParse() throws Exception {
 		CCJSqlParserManager parserManager = new CCJSqlParserManager();
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/simple_parsing.txt")));

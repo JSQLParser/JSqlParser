@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
@@ -16,16 +15,14 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.util.TablesNamesFinder;
+import org.junit.Test;
 
-public class SpeedTest extends TestCase {
+public class SpeedTest {
 
 	private final static int NUM_REPS = 500;
-	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
-	public SpeedTest(String arg0) {
-		super(arg0);
-	}
-
+    @Test
 	public void testSpeed() throws Exception {
 		// all the statements in testfiles/simple_parsing.txt
 		BufferedReader in = new BufferedReader(new InputStreamReader(SpeedTest.class.getResourceAsStream("/simple_parsing.txt")));

@@ -2,23 +2,22 @@ package net.sf.jsqlparser.test.create;
 
 import java.io.StringReader;
 
-import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
 
 /**
  * @author Raymond Augé
  */
-public class CreateIndexTest extends TestCase {
+public class CreateIndexTest {
 
-	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
-	public CreateIndexTest(String arg0) {
-		super(arg0);
-	}
-
+    @Test
 	public void testCreateIndex() throws JSQLParserException {
 		String statement =
 			"CREATE INDEX myindex ON mytab (mycol, mycol2)";
@@ -31,6 +30,7 @@ public class CreateIndexTest extends TestCase {
 		assertEquals(statement, ""+createIndex);
 	}
 
+    @Test
 	public void testCreateIndex2() throws JSQLParserException {
 		String statement =
 			"CREATE mytype INDEX myindex ON mytab (mycol, mycol2)";
@@ -43,6 +43,7 @@ public class CreateIndexTest extends TestCase {
 		assertEquals(statement, ""+createIndex);
 	}
 
+    @Test
 	public void testCreateIndex3() throws JSQLParserException {
 		String statement =
 			"CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2, mycol3)";
@@ -54,6 +55,7 @@ public class CreateIndexTest extends TestCase {
 		assertEquals("mycol3", createIndex.getIndex().getColumnsNames().get(2));
 	}
 
+    @Test
 	public void testCreateIndex4() throws JSQLParserException {
 		String statement =
 			"CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2 (75), mycol3)";
@@ -65,6 +67,7 @@ public class CreateIndexTest extends TestCase {
 		assertEquals("mycol3", createIndex.getIndex().getColumnsNames().get(2));
 	}
 
+    @Test
 	public void testCreateIndex5() throws JSQLParserException {
 		String statement =
 			"CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2 (75), mycol3) mymodifiers";
@@ -76,6 +79,7 @@ public class CreateIndexTest extends TestCase {
 		assertEquals("mycol3", createIndex.getIndex().getColumnsNames().get(2));
 	}
 
+    @Test
 	public void testCreateIndex6() throws JSQLParserException {
 		String stmt= "CREATE INDEX myindex ON mytab (mycol, mycol2)";
 		assertSqlCanBeParsedAndDeparsed(stmt);

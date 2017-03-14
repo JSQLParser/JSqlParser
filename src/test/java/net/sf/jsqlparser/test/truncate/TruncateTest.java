@@ -2,18 +2,16 @@ package net.sf.jsqlparser.test.truncate;
 
 import java.io.StringReader;
 
-import junit.framework.TestCase;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.truncate.Truncate;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TruncateTest extends TestCase {
+public class TruncateTest  {
 
 	private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
-	public TruncateTest(String arg0) {
-		super(arg0);
-	}
-
+    @Test
 	public void testTruncate() throws Exception {
 		String statement = "TRUncATE TABLE myschema.mytab";
 		Truncate truncate = (Truncate) parserManager.parse(new StringReader(statement));

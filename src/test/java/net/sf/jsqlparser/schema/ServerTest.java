@@ -1,5 +1,8 @@
 package net.sf.jsqlparser.schema;
 
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+
 /*
  * #%L
  * JSQLParser library
@@ -22,10 +25,10 @@ package net.sf.jsqlparser.schema;
  * #L%
  */
 
-import junit.framework.*;
 
-public class ServerTest extends TestCase {
+public class ServerTest {
 
+    @Test
     public void testServerNameParsing() throws Exception {
         final String serverName = "LOCALHOST";
 

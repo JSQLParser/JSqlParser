@@ -1,6 +1,5 @@
 package net.sf.jsqlparser.test.select;
 
-import junit.framework.*;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -8,12 +7,16 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * Created by nhanitvn on 5/19/16.
  */
-public class HiveTest extends TestCase {
+public class HiveTest {
 
+    @Test
     public void testLeftSemiJoin() throws Exception {
         String sql;
         Statement statement;
