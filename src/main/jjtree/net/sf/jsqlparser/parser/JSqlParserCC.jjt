@@ -1941,7 +1941,7 @@ Expression ComparisonItem() :
 {
   (
     retval=AllComparisonExpression()
-    | LOOKAHEAD(AnyComparisonExpression()) retval=AnyComparisonExpression()
+    | LOOKAHEAD(3) retval=AnyComparisonExpression()
     | LOOKAHEAD(3) retval=SimpleExpression()
     | retval=RowConstructor()
   )
@@ -2074,10 +2074,7 @@ Expression MultiplicativeExpression():
 }
 {
 	(
-	//LOOKAHEAD(2)
-	    leftExpression=BitwiseXor()
-	  //  |
-	  //  "(" leftExpression=ConcatExpression() ")" {leftExpression = new Parenthesis(leftExpression); }
+      leftExpression=BitwiseXor()
 	)
       { result = leftExpression; }
     (
@@ -2086,12 +2083,7 @@ Expression MultiplicativeExpression():
     								| "%" { result = new Modulo(); }
     				)
 
-				(
-				//LOOKAHEAD(2)
-    						rightExpression=BitwiseXor()
-					//	    |
-					//	    "(" rightExpression=ConcatExpression() ")" {rightExpression = new Parenthesis(rightExpression); }
-				)
+		rightExpression=BitwiseXor()
 
 		{
 			BinaryExpression binExp = (BinaryExpression) result;
@@ -2153,7 +2145,7 @@ Expression PrimaryExpression():
 
     | LOOKAHEAD(WithinGroupExpression()) retval=WithinGroupExpression()
 
-	| LOOKAHEAD(ExtractExpression()) retval=ExtractExpression()
+	| LOOKAHEAD(3) retval=ExtractExpression()
 
     | retval=MySQLGroupConcat()
 
