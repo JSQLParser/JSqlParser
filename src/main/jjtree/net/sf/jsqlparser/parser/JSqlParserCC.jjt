@@ -1683,7 +1683,6 @@ Expression AndExpression() :
 	{ result = left; }
 
 	(
-		LOOKAHEAD(<K_AND>)
  		<K_AND>
 		(
 		LOOKAHEAD(Condition())
@@ -2444,12 +2443,11 @@ Expression CaseWhenExpression() #CaseWhenExpression:
 	<K_CASE>
 	(
     	    ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
-             [<K_ELSE> elseExp=SimpleExpression()]
 		|
 		    (LOOKAHEAD(RegularCondition()) switchExp=RegularCondition() | switchExp=BitwiseAndOr())
              ( clause=WhenThenValue() { whenClauses.add(clause); } )+
-             [<K_ELSE> elseExp=SimpleExpression()]
 	)
+   [<K_ELSE> elseExp=SimpleExpression()]
     <K_END>
     {
     	caseExp.setSwitchExpression(switchExp);
@@ -2466,7 +2464,7 @@ WhenClause WhenThenSearchCondition():
 	Expression thenExp = null;
 }
 {
-	<K_WHEN> whenExp=Expression() <K_THEN> thenExp=SimpleExpression()
+	<K_WHEN> (LOOKAHEAD(Expression()) whenExp=Expression() | whenExp=SimpleExpression()) <K_THEN> thenExp=SimpleExpression()
 	{
 	   whenThen.setWhenExpression(whenExp);
 	   whenThen.setThenExpression(thenExp);
