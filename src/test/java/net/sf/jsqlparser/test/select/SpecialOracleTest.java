@@ -30,6 +30,7 @@ import net.sf.jsqlparser.parser.TokenMgrError;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.assertTrue;
+import org.junit.ComparisonFailure;
 import org.junit.Test;
 
 /**
@@ -70,6 +71,8 @@ public class SpecialOracleTest {
                     //LOG.log(Level.SEVERE, null, ex);
                     LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
                 } catch (Exception ex) {
+                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
+                } catch (ComparisonFailure ex) {
                     LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
                 }
             }

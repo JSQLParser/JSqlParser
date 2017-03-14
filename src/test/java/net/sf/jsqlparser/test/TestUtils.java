@@ -18,8 +18,6 @@
  */
 package net.sf.jsqlparser.test;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
 
 import java.io.StringReader;
 import java.util.regex.Pattern;
@@ -38,6 +36,8 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *

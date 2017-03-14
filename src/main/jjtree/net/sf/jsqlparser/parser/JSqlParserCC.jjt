@@ -858,14 +858,7 @@ Select Select():
 SelectBody SelectBody():
 { SelectBody selectBody = null; }
 {
-	(
-		LOOKAHEAD(SetOperationList())
-		    selectBody = SetOperationList()
-    	|
-	    selectBody = PlainSelect()
-        |
-        ( "(" selectBody = PlainSelect() { ((PlainSelect)selectBody).setUseBrackets(true); } ")" )
-	)
+	selectBody = SetOperationList()
 	{ return selectBody; }
 }
 
@@ -943,7 +936,7 @@ PlainSelect PlainSelect():
 	}
 }
 
-SetOperationList SetOperationList():
+SelectBody SetOperationList():
 {
 	SetOperationList list = new SetOperationList();
 	List<OrderByElement> orderByElements = null;
@@ -970,7 +963,7 @@ SetOperationList SetOperationList():
 				)
 
 				(("(" select=SelectBody() ")" { bracket=true;} ) | select=PlainSelect() { bracket=false;} ) {selects.add(select);brackets.add(bracket);}
-			)+
+			)*
 		)
 
 		[orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
@@ -980,8 +973,14 @@ SetOperationList SetOperationList():
 	)
 
 	{
-		list.setBracketsOpsAndSelects(brackets,selects,operations);
-		return list;
+		if (selects.size()==1 && selects.get(0) instanceof PlainSelect) {
+			if (brackets.get(0)) 
+				((PlainSelect)selects.get(0)).setUseBrackets(true);
+			return selects.get(0);
+		} else {
+			list.setBracketsOpsAndSelects(brackets,selects,operations);
+			return list;
+		}
 	}
 }
 
