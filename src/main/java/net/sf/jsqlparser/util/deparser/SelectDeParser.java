@@ -168,6 +168,10 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             if (plainSelect.getForUpdateTable() != null) {
                 buffer.append(" OF ").append(plainSelect.getForUpdateTable());
             }
+            if (plainSelect.getWait() != null) {
+                // wait's toString will do the formatting for us
+                buffer.append(plainSelect.getWait());
+            }
         }
         if (plainSelect.isUseBrackets()) {
             buffer.append(")");

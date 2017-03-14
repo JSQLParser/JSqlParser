@@ -44,6 +44,8 @@ To help JSqlParsers development you are encouraged to provide
 Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 0.9.8
+
+* support **FOR UPDATE WAIT**
 * support for simple expressions within case when
 * rewrite of SelectBody - production, reduce of needed lookaheads results in huge parser performance improvement
   * please test it due to possible changes in the parse tree

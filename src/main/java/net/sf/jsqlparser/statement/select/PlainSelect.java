@@ -57,7 +57,8 @@ public class PlainSelect implements SelectBody {
     private boolean forUpdate = false;
     private Table forUpdateTable = null;
     private boolean useBrackets = false;
-
+    private Wait wait;
+    
     public boolean isUseBrackets() {
         return useBrackets;
     }
@@ -266,6 +267,25 @@ public class PlainSelect implements SelectBody {
     public void setOracleHint(OracleHint oracleHint) {
         this.oracleHint = oracleHint;
     }
+    
+    /**
+     * Sets the {@link Wait} for this SELECT
+     * 
+     * @param wait
+     *            the {@link Wait} for this SELECT
+     */
+    public void setWait(final Wait wait) {
+        this.wait = wait;
+    }
+
+    /**
+     * Returns the value of the {@link Wait} set for this SELECT
+     * 
+     * @return the value of the {@link Wait} set for this SELECT
+     */
+    public Wait getWait() {
+        return wait;
+    }
 
     @Override
     public String toString() {
@@ -343,6 +363,11 @@ public class PlainSelect implements SelectBody {
 
                 if (forUpdateTable != null) {
                     sql.append(" OF ").append(forUpdateTable);
+                }
+                
+                if (wait != null) {
+                    // Wait's toString will do the formatting for us
+                    sql.append(wait);
                 }
             }
         } else {
