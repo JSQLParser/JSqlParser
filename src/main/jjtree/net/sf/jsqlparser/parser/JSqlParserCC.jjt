@@ -28,6 +28,7 @@ options{
     DEBUG_TOKEN_MANAGER=false;
 //  FORCE_LA_CHECK=true;
     UNICODE_INPUT=true;
+//	JAVA_TEMPLATE_TYPE = "modern";
 }
 
 PARSER_BEGIN(CCJSqlParser)
