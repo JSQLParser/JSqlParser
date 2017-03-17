@@ -31,10 +31,11 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import java.util.Iterator;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
- * string) an {@link net.sf.jsqlparser.expression.Expression}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) an
+ * {@link net.sf.jsqlparser.expression.Expression}
  */
 public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
@@ -47,8 +48,8 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     }
 
     /**
-     * @param selectVisitor a SelectVisitor to de-parse SubSelects. It has to
-     * share the same<br> StringBuilder as this object in order to work, as:
+     * @param selectVisitor a SelectVisitor to de-parse SubSelects. It has to share the same<br>
+     * StringBuilder as this object in order to work, as:
      *
      * <pre>
      * <code>
@@ -292,6 +293,19 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     public void visit(SubSelect subSelect) {
         buffer.append("(");
         if (selectVisitor != null) {
+            if (subSelect.getWithItemsList() != null) {
+                buffer.append("WITH ");
+                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.
+                        hasNext();) {
+                    iter.next().accept(selectVisitor);
+                    if (iter.hasNext()) {
+                        buffer.append(", ");
+                    }
+                    buffer.append(" ");
+                }
+                buffer.append(" ");
+            }
+
             subSelect.getSelectBody().accept(selectVisitor);
         }
         buffer.append(")");
@@ -535,7 +549,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     public void visit(JsonExpression jsonExpr) {
         buffer.append(jsonExpr.toString());
     }
-    
+
     @Override
     public void visit(JsonOperator jsonExpr) {
         visitBinaryExpression(jsonExpr, " " + jsonExpr.getStringExpression() + " ");
