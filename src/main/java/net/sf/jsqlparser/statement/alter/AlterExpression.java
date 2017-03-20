@@ -22,13 +22,13 @@
 package net.sf.jsqlparser.statement.alter;
 
 
-import net.sf.jsqlparser.statement.create.table.ColDataType;
-import net.sf.jsqlparser.statement.create.table.Index;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  *
@@ -53,6 +53,8 @@ public class AlterExpression {
     private List<String> fkColumns;
     private String fkSourceTable;
     private List<String> fkSourceColumns;
+    
+    private List<ConstraintState> constraints;
 
     public AlterOperation getOperation() {
         return operation;
@@ -173,7 +175,15 @@ public class AlterExpression {
         this.index = index;
     }
 
-    @Override
+    public List<ConstraintState> getConstraints() {
+		return constraints;
+	}
+
+	public void setConstraints(List<ConstraintState> constraints) {
+		this.constraints = constraints;
+	}
+
+	@Override
     public String toString() {
 
         StringBuilder b = new StringBuilder();
@@ -193,7 +203,9 @@ public class AlterExpression {
         } else if (constraintName != null) {
             b.append("CONSTRAINT ").append(constraintName);
         } else if (pkColumns != null) {
-            b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(")");
+            b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
+            if(getConstraints()!=null && !getConstraints().isEmpty())
+            	b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
         } else if (ukColumns != null) {
             b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {

@@ -256,6 +256,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TABLESPACE : "TABLESPACE">
 |   <K_EXCLUDE : "EXCLUDE">
 |   <K_WAIT : "WAIT">
+|   <K_DEFERRABLE : "DEFERRABLE">
+|   <K_VALIDATE : "VALIDATE">
+|   <K_NOVALIDATE : "NOVALIDATE">
+|   <K_ENABLE : "ENABLE">
+|   <K_DISABLE : "DISABLE">
 }
 
 TOKEN : /* Stuff */
@@ -3083,6 +3088,32 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
 	}
 }
 
+List<ConstraintState> AlterExpressionConstraintState():
+{
+    List<ConstraintState> retval = new ArrayList<ConstraintState>();
+}
+{
+    (
+        (          <K_DEFERRABLE> {retval.add(new DeferrableConstraint(false));}
+        )
+        |
+        (
+          <K_NOT> <K_DEFERRABLE> {retval.add(new DeferrableConstraint(true));}        ) 
+        |
+        (          <K_VALIDATE> {retval.add(new ValidateConstraint(false));}
+        )        |
+        (          <K_NOVALIDATE> {retval.add(new ValidateConstraint(true));}
+        )        |
+        (          <K_ENABLE> {retval.add(new EnableConstraint(false));}
+        )        |
+        (          <K_DISABLE> {retval.add(new EnableConstraint(true));}
+        )    )*
+    {
+        return retval;
+    }
+}
+
+
 
 AlterExpression AlterExpression():
 {
@@ -3092,6 +3123,7 @@ AlterExpression AlterExpression():
     String sk3 = null;
 	ColDataType dataType;
     List<String> columnNames = null;
+    List<ConstraintState> constraints = null;
     ForeignKeyIndex fkIndex = null;
     NamedConstraint index = null;
     Table fkTable = null;
@@ -3111,7 +3143,7 @@ AlterExpression AlterExpression():
                 ("," alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); } )* ")"
         )
         |
-        ( <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); } )
+        ( <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); } ) constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
         |
         ( <K_UNIQUE> <K_KEY> (tk=<S_IDENTIFIER>	| tk=<S_QUOTED_IDENTIFIER>) columnNames=ColumnsNamesList() { alterExp.setUkName(tk.image); alterExp.setUkColumns(columnNames); } )
         |

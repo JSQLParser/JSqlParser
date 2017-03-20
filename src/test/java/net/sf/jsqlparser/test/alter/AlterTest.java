@@ -1,7 +1,11 @@
 package net.sf.jsqlparser.test.alter;
 
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
+
 import java.util.List;
+
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -10,9 +14,6 @@ import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import net.sf.jsqlparser.statement.alter.AlterOperation;
-
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 
 public class AlterTest extends TestCase {
 
@@ -47,6 +48,30 @@ public class AlterTest extends TestCase {
 	public void testAlterTablePrimaryKey() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id)");
     }
+	
+	public void testAlterTablePrimaryKeyDeferrable() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE");
+	}
+
+	public void testAlterTablePrimaryKeyNotDeferrable() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id) NOT DEFERRABLE");
+	}
+	
+	public void testAlterTablePrimaryKeyValidate() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id) VALIDATE");
+	}
+	
+	public void testAlterTablePrimaryKeyNoValidate() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id) NOVALIDATE");
+	}
+	
+	public void testAlterTablePrimaryKeyDeferrableValidate() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE VALIDATE");
+	}
+	
+	public void testAlterTablePrimaryKeyDeferrableDisableNoValidate() throws JSQLParserException {
+		assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE DISABLE NOVALIDATE");
+	}
 
     public void testAlterTableUniqueKey() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE `schema_migrations` ADD UNIQUE KEY `unique_schema_migrations` (`version`)");
