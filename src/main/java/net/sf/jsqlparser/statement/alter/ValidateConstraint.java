@@ -22,22 +22,22 @@
 package net.sf.jsqlparser.statement.alter;
 
 public class ValidateConstraint implements ConstraintState {
-	private boolean not;
+    private boolean not;
 
-	public ValidateConstraint(boolean not) {
-		this.not = not;
-	}
+    public ValidateConstraint(boolean not) {
+        this.not = not;
+    }
 
-	public boolean isNot() {
-		return not;
-	}
+    public boolean isNot() {
+        return not;
+    }
 
-	public void setNot(boolean not) {
-		this.not = not;
-	}
+    public void setNot(boolean not) {
+        this.not = not;
+    }
 
-	@Override
-	public String toString() {
-		return not ? "NOVALIDATE" : "VALIDATE";
-	}
+    @Override
+    public String toString() {
+        return not ? "NOVALIDATE" : "VALIDATE";
+    }
 }

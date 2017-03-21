@@ -176,14 +176,14 @@ public class AlterExpression {
     }
 
     public List<ConstraintState> getConstraints() {
-		return constraints;
-	}
+        return constraints;
+    }
 
-	public void setConstraints(List<ConstraintState> constraints) {
-		this.constraints = constraints;
-	}
+    public void setConstraints(List<ConstraintState> constraints) {
+        this.constraints = constraints;
+    }
 
-	@Override
+    @Override
     public String toString() {
 
         StringBuilder b = new StringBuilder();
@@ -205,7 +205,7 @@ public class AlterExpression {
         } else if (pkColumns != null) {
             b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
             if(getConstraints()!=null && !getConstraints().isEmpty())
-            	b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
+                b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
         } else if (ukColumns != null) {
             b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
