@@ -19,7 +19,6 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
 package net.sf.jsqlparser.expression;
 
 import java.util.ArrayList;
@@ -30,13 +29,13 @@ import net.sf.jsqlparser.schema.Column;
  *
  * @author toben
  */
-public class JsonExpression  implements Expression {
+public class JsonExpression implements Expression {
 
     private Column column;
-    
+
     private List<String> idents = new ArrayList<String>();
     private List<String> operators = new ArrayList<String>();
-    
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
@@ -65,17 +64,16 @@ public class JsonExpression  implements Expression {
 //    public void addIdent(String ident) {
 //        addIdent(ident, "->");
 //    }
-    
     public void addIdent(String ident, String operator) {
         idents.add(ident);
         operators.add(operator);
     }
-    
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append(column.toString());
-        for (int i=0; i<idents.size(); i++){
+        for (int i = 0; i < idents.size(); i++) {
             b.append(operators.get(i)).append(idents.get(i));
         }
         return b.toString();

@@ -41,201 +41,201 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
  */
 public class Update implements Statement {
 
-	private List<Table> tables;
-	private Expression where;
-	private List<Column> columns;
-	private List<Expression> expressions;
-	private FromItem fromItem;
-	private List<Join> joins;
-	private Select select;
-	private boolean useColumnsBrackets = true;
-	private boolean useSelect = false;
-	private List<OrderByElement> orderByElements;
-	private Limit limit;
-	private boolean returningAllColumns = false;
-	private List<SelectExpressionItem> returningExpressionList = null;
+    private List<Table> tables;
+    private Expression where;
+    private List<Column> columns;
+    private List<Expression> expressions;
+    private FromItem fromItem;
+    private List<Join> joins;
+    private Select select;
+    private boolean useColumnsBrackets = true;
+    private boolean useSelect = false;
+    private List<OrderByElement> orderByElements;
+    private Limit limit;
+    private boolean returningAllColumns = false;
+    private List<SelectExpressionItem> returningExpressionList = null;
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	public List<Table> getTables() {
-		return tables;
-	}
+    public List<Table> getTables() {
+        return tables;
+    }
 
-	public Expression getWhere() {
-		return where;
-	}
+    public Expression getWhere() {
+        return where;
+    }
 
-	public void setTables(List<Table> list) {
-		tables = list;
-	}
+    public void setTables(List<Table> list) {
+        tables = list;
+    }
 
-	public void setWhere(Expression expression) {
-		where = expression;
-	}
+    public void setWhere(Expression expression) {
+        where = expression;
+    }
 
-	/**
-	 * The {@link net.sf.jsqlparser.schema.Column}s in this update (as col1 and
-	 * col2 in UPDATE col1='a', col2='b')
-	 *
-	 * @return a list of {@link net.sf.jsqlparser.schema.Column}s
-	 */
-	public List<Column> getColumns() {
-		return columns;
-	}
+    /**
+     * The {@link net.sf.jsqlparser.schema.Column}s in this update (as col1 and col2 in UPDATE
+     * col1='a', col2='b')
+     *
+     * @return a list of {@link net.sf.jsqlparser.schema.Column}s
+     */
+    public List<Column> getColumns() {
+        return columns;
+    }
 
-	/**
-	 * The {@link Expression}s in this update (as 'a' and 'b' in UPDATE
-	 * col1='a', col2='b')
-	 *
-	 * @return a list of {@link Expression}s
-	 */
-	public List<Expression> getExpressions() {
-		return expressions;
-	}
+    /**
+     * The {@link Expression}s in this update (as 'a' and 'b' in UPDATE col1='a', col2='b')
+     *
+     * @return a list of {@link Expression}s
+     */
+    public List<Expression> getExpressions() {
+        return expressions;
+    }
 
-	public void setColumns(List<Column> list) {
-		columns = list;
-	}
+    public void setColumns(List<Column> list) {
+        columns = list;
+    }
 
-	public void setExpressions(List<Expression> list) {
-		expressions = list;
-	}
+    public void setExpressions(List<Expression> list) {
+        expressions = list;
+    }
 
-	public FromItem getFromItem() {
-		return fromItem;
-	}
+    public FromItem getFromItem() {
+        return fromItem;
+    }
 
-	public void setFromItem(FromItem fromItem) {
-		this.fromItem = fromItem;
-	}
+    public void setFromItem(FromItem fromItem) {
+        this.fromItem = fromItem;
+    }
 
-	public List<Join> getJoins() {
-		return joins;
-	}
+    public List<Join> getJoins() {
+        return joins;
+    }
 
-	public void setJoins(List<Join> joins) {
-		this.joins = joins;
-	}
+    public void setJoins(List<Join> joins) {
+        this.joins = joins;
+    }
 
-	public Select getSelect() {
-	        return select;
-    	}
-	
-    	public void setSelect(Select select) {
-	        this.select = select;
-    	}
-		
-	public boolean isUseColumnsBrackets() {
-	        return useColumnsBrackets;
-    	}
-	
-    	public void setUseColumnsBrackets(boolean useColumnsBrackets) {
-	        this.useColumnsBrackets = useColumnsBrackets;
-    	}
-		
-	public boolean isUseSelect() {
-	        return useSelect;
-    	}
-	
-    	public void setUseSelect(boolean useSelect) {
-	        this.useSelect = useSelect;
-    	}
+    public Select getSelect() {
+        return select;
+    }
 
-	public void setOrderByElements(List<OrderByElement> orderByElements) {
-		this.orderByElements = orderByElements;
-	}
+    public void setSelect(Select select) {
+        this.select = select;
+    }
 
-	public void setLimit(Limit limit) {
-		this.limit = limit;
-	}
+    public boolean isUseColumnsBrackets() {
+        return useColumnsBrackets;
+    }
 
-	public List<OrderByElement> getOrderByElements() {
-		return orderByElements;
-	}
+    public void setUseColumnsBrackets(boolean useColumnsBrackets) {
+        this.useColumnsBrackets = useColumnsBrackets;
+    }
 
-	public Limit getLimit() {
-		return limit;
-	}
+    public boolean isUseSelect() {
+        return useSelect;
+    }
 
-	public boolean isReturningAllColumns() {
-		return returningAllColumns;
-	}
+    public void setUseSelect(boolean useSelect) {
+        this.useSelect = useSelect;
+    }
 
-	public void setReturningAllColumns(boolean returningAllColumns) {
-		this.returningAllColumns = returningAllColumns;
-	}
+    public void setOrderByElements(List<OrderByElement> orderByElements) {
+        this.orderByElements = orderByElements;
+    }
 
-	public List<SelectExpressionItem> getReturningExpressionList() {
-		return returningExpressionList;
-	}
+    public void setLimit(Limit limit) {
+        this.limit = limit;
+    }
 
-	public void setReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
-		this.returningExpressionList = returningExpressionList;
-	}
+    public List<OrderByElement> getOrderByElements() {
+        return orderByElements;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder b = new StringBuilder("UPDATE ");
-		b.append(PlainSelect.getStringList(getTables(), true, false)).append(" SET ");
-		
-		if (!useSelect) {
-			for (int i = 0; i < getColumns().size(); i++) {
-				if (i != 0) {
-					b.append(", ");
-				}
-				b.append(columns.get(i)).append(" = ");
-				b.append(expressions.get(i));
-			}
-		} else {
-			if (useColumnsBrackets) {
-				b.append("(");
-			}
-			for (int i = 0; i < getColumns().size(); i++) {
-				if (i != 0) {
-					b.append(", ");
-				}
-				b.append(columns.get(i));
-			}
-			if (useColumnsBrackets) {
-				b.append(")");
-			}
-			b.append(" = ");
-			b.append("(").append(select).append(")");
-		}
+    public Limit getLimit() {
+        return limit;
+    }
 
-		if (fromItem != null) {
-			b.append(" FROM ").append(fromItem);
-			if (joins != null) {
-				for (Join join : joins) {
-					if (join.isSimple()) {
-						b.append(", ").append(join);
-					} else {
-						b.append(" ").append(join);
-					}
-				}
-			}
-		}
+    public boolean isReturningAllColumns() {
+        return returningAllColumns;
+    }
 
-		if (where != null) {
-			b.append(" WHERE ");
-			b.append(where);
-		}
-		if (orderByElements!=null) {
-			b.append(PlainSelect.orderByToString(orderByElements));
-		}
-		if (limit != null) {
-			b.append(limit);
-		}
+    public void setReturningAllColumns(boolean returningAllColumns) {
+        this.returningAllColumns = returningAllColumns;
+    }
 
-		if (isReturningAllColumns()) {
-			b.append(" RETURNING *");
-		} else if (getReturningExpressionList() != null) {
-			b.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
-		}
+    public List<SelectExpressionItem> getReturningExpressionList() {
+        return returningExpressionList;
+    }
 
-		return b.toString();
-	}
+    public void setReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
+        this.returningExpressionList = returningExpressionList;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder("UPDATE ");
+        b.append(PlainSelect.getStringList(getTables(), true, false)).append(" SET ");
+
+        if (!useSelect) {
+            for (int i = 0; i < getColumns().size(); i++) {
+                if (i != 0) {
+                    b.append(", ");
+                }
+                b.append(columns.get(i)).append(" = ");
+                b.append(expressions.get(i));
+            }
+        } else {
+            if (useColumnsBrackets) {
+                b.append("(");
+            }
+            for (int i = 0; i < getColumns().size(); i++) {
+                if (i != 0) {
+                    b.append(", ");
+                }
+                b.append(columns.get(i));
+            }
+            if (useColumnsBrackets) {
+                b.append(")");
+            }
+            b.append(" = ");
+            b.append("(").append(select).append(")");
+        }
+
+        if (fromItem != null) {
+            b.append(" FROM ").append(fromItem);
+            if (joins != null) {
+                for (Join join : joins) {
+                    if (join.isSimple()) {
+                        b.append(", ").append(join);
+                    } else {
+                        b.append(" ").append(join);
+                    }
+                }
+            }
+        }
+
+        if (where != null) {
+            b.append(" WHERE ");
+            b.append(where);
+        }
+        if (orderByElements != null) {
+            b.append(PlainSelect.orderByToString(orderByElements));
+        }
+        if (limit != null) {
+            b.append(limit);
+        }
+
+        if (isReturningAllColumns()) {
+            b.append(" RETURNING *");
+        } else if (getReturningExpressionList() != null) {
+            b.append(" RETURNING ").append(PlainSelect.
+                    getStringList(getReturningExpressionList(), true, false));
+        }
+
+        return b.toString();
+    }
 }

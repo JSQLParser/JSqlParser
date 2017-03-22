@@ -90,13 +90,15 @@ public class CreateViewDeParserTest {
         selectDeParser.setExpressionVisitor(expressionDeParser);
 
         CreateViewDeParser instance = new CreateViewDeParser(b, selectDeParser);
-        CreateView vc = (CreateView) CCJSqlParserUtil.parse("CREATE VIEW test AS SELECT a, b FROM mytable");
+        CreateView vc = (CreateView) CCJSqlParserUtil.
+                parse("CREATE VIEW test AS SELECT a, b FROM mytable");
         instance.deParse(vc);
 
         assertEquals("CREATE VIEW test AS SELECT a, b FROM mytable", vc.toString());
-        assertEquals("CREATE VIEW test AS SELECT \"a\", \"b\" FROM mytable", instance.getBuffer().toString());
+        assertEquals("CREATE VIEW test AS SELECT \"a\", \"b\" FROM mytable", instance.getBuffer().
+                toString());
     }
-    
+
     @Test
     public void testCreateViewASTNode() throws JSQLParserException {
         String sql = "CREATE VIEW test AS SELECT a, b FROM mytable";
@@ -104,9 +106,10 @@ public class CreateViewDeParserTest {
         SimpleNode node = (SimpleNode) CCJSqlParserUtil.parseAST(sql);
         node.dump("*");
         assertEquals(CCJSqlParserTreeConstants.JJTSTATEMENT, node.getId());
-        
+
         node.jjtAccept(new CCJSqlParserDefaultVisitor() {
             int idxDelta = 0;
+
             @Override
             public Object visit(SimpleNode node, Object data) {
                 if (CCJSqlParserTreeConstants.JJTCOLUMN == node.getId()) {
@@ -115,10 +118,10 @@ public class CreateViewDeParserTest {
                     b.insert(node.jjtGetLastToken().endColumn + idxDelta, '"');
                     idxDelta++;
                 }
-                return super.visit(node, data); 
+                return super.visit(node, data);
             }
         }, null);
-        
+
         assertEquals("CREATE VIEW test AS SELECT \"a\", \"b\" FROM mytable", b.toString());
     }
 }

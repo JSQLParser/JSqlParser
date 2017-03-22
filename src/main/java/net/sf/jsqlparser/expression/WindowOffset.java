@@ -30,7 +30,7 @@ public class WindowOffset {
         CURRENT,
         EXPR
     }
-    
+
     private Expression expression;
     private Type type;
 

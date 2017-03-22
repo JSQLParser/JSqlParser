@@ -30,7 +30,7 @@ public class PivotXml extends Pivot {
     private SelectBody inSelect;
     private boolean inAny = false;
 
-	@Override
+    @Override
     public void accept(PivotVisitor pivotVisitor) {
         pivotVisitor.visit(this);
     }
@@ -54,11 +54,13 @@ public class PivotXml extends Pivot {
     @Override
     public String toString() {
         List<Column> forColumns = getForColumns();
-        String in = inAny ? "ANY" : inSelect == null ? PlainSelect.getStringList(getInItems()) : inSelect.toString();
-        return "PIVOT XML (" +
-                PlainSelect.getStringList(getFunctionItems()) +
-                " FOR " + PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1) +
-                " IN (" + in + "))";
+        String in = inAny ? "ANY" : inSelect == null ? PlainSelect.getStringList(getInItems()) : inSelect.
+                toString();
+        return "PIVOT XML ("
+                + PlainSelect.getStringList(getFunctionItems())
+                + " FOR " + PlainSelect.
+                        getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)
+                + " IN (" + in + "))";
     }
 
 }

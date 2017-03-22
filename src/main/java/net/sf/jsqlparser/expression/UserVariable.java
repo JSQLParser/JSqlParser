@@ -23,30 +23,31 @@ package net.sf.jsqlparser.expression;
 
 /**
  * Simple uservariables like @test.
+ *
  * @author aud
  */
 public class UserVariable implements Expression {
 
-	private String name;
+    private String name;
     private boolean doubleAdd = false;
 
-	/**
-	 * The name of the parameter
-	 *
-	 * @return the name of the parameter
-	 */
-	public String getName() {
-		return name;
-	}
+    /**
+     * The name of the parameter
+     *
+     * @return the name of the parameter
+     */
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
     public boolean isDoubleAdd() {
         return doubleAdd;
@@ -55,11 +56,9 @@ public class UserVariable implements Expression {
     public void setDoubleAdd(boolean doubleAdd) {
         this.doubleAdd = doubleAdd;
     }
-    
-    
 
-	@Override
-	public String toString() {
-		return "@" + (doubleAdd?"@":"") + name;
-	}
+    @Override
+    public String toString() {
+        return "@" + (doubleAdd ? "@" : "") + name;
+    }
 }

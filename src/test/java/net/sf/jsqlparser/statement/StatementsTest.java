@@ -18,22 +18,22 @@ import static org.junit.Assert.*;
  * @author toben
  */
 public class StatementsTest {
-    
+
     public StatementsTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -42,62 +42,62 @@ public class StatementsTest {
     public void testStatements() throws JSQLParserException {
         String sqls = "select * from mytable; select * from mytable2;";
         Statements parseStatements = CCJSqlParserUtil.parseStatements(sqls);
-        
+
         assertEquals("SELECT * FROM mytable;\nSELECT * FROM mytable2;\n", parseStatements.toString());
-        
+
         assertTrue(parseStatements.getStatements().get(0) instanceof Select);
         assertTrue(parseStatements.getStatements().get(1) instanceof Select);
     }
-    
+
     @Test
     public void testStatementsProblem() throws JSQLParserException {
         String sqls = ";;select * from mytable;;select * from mytable2;;;";
         Statements parseStatements = CCJSqlParserUtil.parseStatements(sqls);
-        
+
         assertEquals("SELECT * FROM mytable;\nSELECT * FROM mytable2;\n", parseStatements.toString());
-        
+
         assertTrue(parseStatements.getStatements().get(0) instanceof Select);
         assertTrue(parseStatements.getStatements().get(1) instanceof Select);
     }
-   
+
     @Test
     public void testStatementsErrorRecovery() throws JSQLParserException, ParseException {
         String sqls = "select * from mytable; select * from;";
         CCJSqlParser parser = new CCJSqlParser(new StringReader(sqls));
         parser.setErrorRecovery(true);
         Statements parseStatements = parser.Statements();
-        
+
         assertEquals(2, parseStatements.getStatements().size());
-        
+
         assertTrue(parseStatements.getStatements().get(0) instanceof Select);
         assertNull(parseStatements.getStatements().get(1));
     }
-    
+
     @Test
     public void testStatementsErrorRecovery2() throws JSQLParserException, ParseException {
         String sqls = "select * from1 table;";
         CCJSqlParser parser = new CCJSqlParser(new StringReader(sqls));
         parser.setErrorRecovery(true);
         Statements parseStatements = parser.Statements();
-        
+
         assertEquals(1, parseStatements.getStatements().size());
-        
+
         assertTrue(parseStatements.getStatements().get(0) instanceof Select);
-        assertEquals(1,parser.getParseErrors().size());
+        assertEquals(1, parser.getParseErrors().size());
     }
-    
+
     @Test
     public void testStatementsErrorRecovery3() throws JSQLParserException, ParseException {
         String sqls = "select * from mytable; select * from;select * from mytable2";
         CCJSqlParser parser = new CCJSqlParser(new StringReader(sqls));
         parser.setErrorRecovery(true);
         Statements parseStatements = parser.Statements();
-        
+
         assertEquals(2, parseStatements.getStatements().size());
-        
+
         assertTrue(parseStatements.getStatements().get(0) instanceof Select);
         assertNull(parseStatements.getStatements().get(1));
-        
-        assertEquals(2,parser.getParseErrors().size());
+
+        assertEquals(2, parser.getParseErrors().size());
     }
 }

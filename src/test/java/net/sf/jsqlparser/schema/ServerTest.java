@@ -24,8 +24,6 @@ import org.junit.Test;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
 public class ServerTest {
 
     @Test

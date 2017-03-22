@@ -26,53 +26,53 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
- * string) a {@link net.sf.jsqlparser.statement.create.view.CreateView}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
+ * {@link net.sf.jsqlparser.statement.create.view.CreateView}
  */
 public class CreateViewDeParser {
 
-	private StringBuilder buffer;
+    private StringBuilder buffer;
     private SelectVisitor selectVisitor;
-    
-	/**
-	 * @param buffer the buffer that will be filled with the select
-	 */
-	public CreateViewDeParser(StringBuilder buffer) {
-		SelectDeParser selectDeParser = new SelectDeParser();
+
+    /**
+     * @param buffer the buffer that will be filled with the select
+     */
+    public CreateViewDeParser(StringBuilder buffer) {
+        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
         ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         selectVisitor = selectDeParser;
         this.buffer = buffer;
-	}
+    }
 
     public CreateViewDeParser(StringBuilder buffer, SelectVisitor selectVisitor) {
-		this.buffer = buffer;
+        this.buffer = buffer;
         this.selectVisitor = selectVisitor;
-	}
-    
-	public void deParse(CreateView createView) {
-		buffer.append("CREATE ");
-		if (createView.isOrReplace()) {
-			buffer.append("OR REPLACE ");
-		}
-		if (createView.isMaterialized()) {
-			buffer.append("MATERIALIZED ");
-		}
-		buffer.append("VIEW ").append(createView.getView().getFullyQualifiedName());
-		if (createView.getColumnNames() != null) {
-			buffer.append(PlainSelect.getStringList(createView.getColumnNames(), true, true));
-		}
-		buffer.append(" AS ");
-        
+    }
+
+    public void deParse(CreateView createView) {
+        buffer.append("CREATE ");
+        if (createView.isOrReplace()) {
+            buffer.append("OR REPLACE ");
+        }
+        if (createView.isMaterialized()) {
+            buffer.append("MATERIALIZED ");
+        }
+        buffer.append("VIEW ").append(createView.getView().getFullyQualifiedName());
+        if (createView.getColumnNames() != null) {
+            buffer.append(PlainSelect.getStringList(createView.getColumnNames(), true, true));
+        }
+        buffer.append(" AS ");
+
         createView.getSelectBody().accept(selectVisitor);
-	}
+    }
 
-	public StringBuilder getBuffer() {
-		return buffer;
-	}
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
 
-	public void setBuffer(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 }

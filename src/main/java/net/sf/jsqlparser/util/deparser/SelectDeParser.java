@@ -28,8 +28,8 @@ import net.sf.jsqlparser.statement.select.*;
 import java.util.*;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
- * string) a {@link net.sf.jsqlparser.statement.select.Select}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
+ * {@link net.sf.jsqlparser.statement.select.Select}
  */
 public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
@@ -40,8 +40,8 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     }
 
     /**
-     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
-     * expressions. It has to share the same<br>
+     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share
+     * the same<br>
      * StringBuilder (buffer parameter) as this object in order to work
      * @param buffer the buffer that will be filled with the select
      */
@@ -80,7 +80,8 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             }
             if (plainSelect.getDistinct().getOnSelectItems() != null) {
                 buffer.append("ON (");
-                for (Iterator<SelectItem> iter = plainSelect.getDistinct().getOnSelectItems().iterator(); iter.hasNext();) {
+                for (Iterator<SelectItem> iter = plainSelect.getDistinct().getOnSelectItems().
+                        iterator(); iter.hasNext();) {
                     SelectItem selectItem = iter.next();
                     selectItem.accept(this);
                     if (iter.hasNext()) {
@@ -136,7 +137,8 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
 
         if (plainSelect.getGroupByColumnReferences() != null) {
             buffer.append(" GROUP BY ");
-            for (Iterator<Expression> iter = plainSelect.getGroupByColumnReferences().iterator(); iter.hasNext();) {
+            for (Iterator<Expression> iter = plainSelect.getGroupByColumnReferences().iterator(); iter.
+                    hasNext();) {
                 Expression columnReference = iter.next();
                 columnReference.accept(expressionVisitor);
                 if (iter.hasNext()) {
@@ -151,7 +153,8 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         }
 
         if (plainSelect.getOrderByElements() != null) {
-            new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(), plainSelect.getOrderByElements());
+            new OrderByDeParser(expressionVisitor, buffer).
+                    deParse(plainSelect.isOracleSiblings(), plainSelect.getOrderByElements());
         }
 
         if (plainSelect.getLimit() != null) {
@@ -237,8 +240,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         buffer.append(" PIVOT (")
                 .append(PlainSelect.getStringList(pivot.getFunctionItems()))
                 .append(" FOR ")
-                .append(PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1))
-                .append(" IN ")
+                .append(PlainSelect.
+                        getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)).
+                append(" IN ")
                 .append(PlainSelect.getStringList(pivot.getInItems(), true, true))
                 .append(")");
     }
@@ -249,8 +253,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         buffer.append(" PIVOT XML (")
                 .append(PlainSelect.getStringList(pivot.getFunctionItems()))
                 .append(" FOR ")
-                .append(PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1))
-                .append(" IN (");
+                .append(PlainSelect.
+                        getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)).
+                append(" IN (");
         if (pivot.isInAny()) {
             buffer.append("ANY");
         } else if (pivot.getInSelect() != null) {
@@ -407,7 +412,8 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         }
         buffer.append(withItem.getName());
         if (withItem.getWithItemList() != null) {
-            buffer.append(" ").append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
+            buffer.append(" ").append(PlainSelect.
+                    getStringList(withItem.getWithItemList(), true, true));
         }
         buffer.append(" AS (");
         withItem.getSelectBody().accept(this);

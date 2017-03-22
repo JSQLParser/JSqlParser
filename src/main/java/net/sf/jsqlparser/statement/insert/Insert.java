@@ -34,8 +34,8 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
 /**
- * The insert statement. Every column name in <code>columnNames</code> matches
- * an item in <code>itemsList</code>
+ * The insert statement. Every column name in <code>columnNames</code> matches an item in
+ * <code>itemsList</code>
  */
 public class Insert implements Statement {
 
@@ -179,10 +179,10 @@ public class Insert implements Statement {
         StringBuilder sql = new StringBuilder();
 
         sql.append("INSERT ");
-        if(modifierPriority != null){
+        if (modifierPriority != null) {
             sql.append(modifierPriority.name()).append(" ");
         }
-        if(modifierIgnore){
+        if (modifierIgnore) {
             sql.append("IGNORE ");
         }
         sql.append("INTO ");
@@ -197,7 +197,7 @@ public class Insert implements Statement {
 
         if (itemsList != null) {
             sql.append(itemsList);
-        }else {
+        } else {
             if (useSelectBrackets) {
                 sql.append("(");
             }
@@ -209,9 +209,7 @@ public class Insert implements Statement {
             }
         }
 
-
-
-        if (useDuplicate){
+        if (useDuplicate) {
             sql.append(" ON DUPLICATE KEY UPDATE ");
             for (int i = 0; i < getDuplicateUpdateColumns().size(); i++) {
                 if (i != 0) {
@@ -225,7 +223,8 @@ public class Insert implements Statement {
         if (isReturningAllColumns()) {
             sql.append(" RETURNING *");
         } else if (getReturningExpressionList() != null) {
-            sql.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
+            sql.append(" RETURNING ").append(PlainSelect.
+                    getStringList(getReturningExpressionList(), true, false));
         }
 
         return sql.toString();

@@ -24,13 +24,14 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.JdbcParameter;
 
 /**
- * A FIRST clause in the form [FIRST row_count] the alternative form 
- * [LIMIT row_count] is also supported.
- * 
+ * A FIRST clause in the form [FIRST row_count] the alternative form [LIMIT row_count] is also
+ * supported.
+ *
  * Initial implementation was done for informix special syntax:
  * http://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqls.doc/ids_sqs_0156.htm
  */
 public class First {
+
     public enum Keyword {
         FIRST,
         LIMIT
@@ -64,7 +65,7 @@ public class First {
     public void setKeyword(Keyword keyword) {
         this.keyword = keyword;
     }
-    
+
     public String getVariable() {
         return variable;
     }
@@ -72,16 +73,16 @@ public class First {
     public void setVariable(String variable) {
         this.variable = variable;
     }
-    
+
     @Override
     public String toString() {
         String result = keyword.name() + " ";
 
-        if(rowCount != null) {
+        if (rowCount != null) {
             result += rowCount;
         } else if (jdbcParameter != null) {
             result += jdbcParameter.toString();
-        } else if (variable != null){
+        } else if (variable != null) {
             result += variable;
         }
 

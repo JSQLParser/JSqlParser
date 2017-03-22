@@ -37,9 +37,10 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 
 public class StatementVisitorAdapter implements StatementVisitor {
+
     @Override
     public void visit(Select select) {
-        
+
     }
 
     @Override
@@ -99,17 +100,17 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(Execute execute) {
-        
+
     }
 
     @Override
     public void visit(SetStatement set) {
-        
+
     }
 
     @Override
     public void visit(Merge merge) {
-        
+
     }
 
     @Override

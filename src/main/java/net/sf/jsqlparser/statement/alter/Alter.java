@@ -47,7 +47,7 @@ public class Alter implements Statement {
         this.table = table;
     }
 
-    public void addAlterExpression(AlterExpression alterExpression){
+    public void addAlterExpression(AlterExpression alterExpression) {
         if (alterExpressions == null) {
             alterExpressions = new ArrayList<AlterExpression>();
         }
@@ -75,12 +75,12 @@ public class Alter implements Statement {
 
         Iterator<AlterExpression> altIter = alterExpressions.iterator();
 
-        while (altIter.hasNext()){
+        while (altIter.hasNext()) {
             b.append(altIter.next().toString());
 
             // Need to append whitespace after each ADD or DROP statement
             // but not the last one
-            if (altIter.hasNext()){
+            if (altIter.hasNext()) {
                 b.append(", ");
             }
         }

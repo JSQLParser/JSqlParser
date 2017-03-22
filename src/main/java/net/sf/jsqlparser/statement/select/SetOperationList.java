@@ -24,9 +24,8 @@ package net.sf.jsqlparser.statement.select;
 import java.util.List;
 
 /**
- * A database set operation. This operation consists of a list of plainSelects
- * connected by set operations (UNION,INTERSECT,MINUS,EXCEPT). All these
- * operations have the same priority.
+ * A database set operation. This operation consists of a list of plainSelects connected by set
+ * operations (UNION,INTERSECT,MINUS,EXCEPT). All these operations have the same priority.
  *
  * @author tw
  */
@@ -111,7 +110,7 @@ public class SetOperationList implements SelectBody {
             if (i != 0) {
                 buffer.append(" ").append(operations.get(i - 1).toString()).append(" ");
             }
-            if (brackets==null || brackets.get(i)) {
+            if (brackets == null || brackets.get(i)) {
                 buffer.append("(").append(selects.get(i).toString()).append(")");
             } else {
                 buffer.append(selects.get(i).toString());

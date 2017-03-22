@@ -67,7 +67,7 @@ public class StatementDeParser implements StatementVisitor {
         CreateViewDeParser createViewDeParser = new CreateViewDeParser(buffer);
         createViewDeParser.deParse(createView);
     }
-    
+
     @Override
     public void visit(AlterView alterView) {
         AlterViewDeParser alterViewDeParser = new AlterViewDeParser(buffer);

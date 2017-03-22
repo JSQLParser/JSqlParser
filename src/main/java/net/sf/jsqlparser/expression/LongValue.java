@@ -50,7 +50,7 @@ public class LongValue implements Expression {
     public long getValue() {
         return Long.valueOf(stringValue);
     }
-    
+
     public BigInteger getBigIntegerValue() {
         return new BigInteger(stringValue);
     }

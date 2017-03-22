@@ -34,69 +34,69 @@ import java.util.*;
  */
 public class CreateIndex implements Statement {
 
-	private Table table;
-	private Index index;
+    private Table table;
+    private Index index;
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	/**
-	 * The index to be created
-	 */
-	public Index getIndex() {
-		return index;
-	}
+    /**
+     * The index to be created
+     */
+    public Index getIndex() {
+        return index;
+    }
 
-	public void setIndex(Index index) {
-		this.index = index;
-	}
+    public void setIndex(Index index) {
+        this.index = index;
+    }
 
-	/**
-	 * The table on which the index is to be created
-	 */
-	public Table getTable() {
-		return table;
-	}
+    /**
+     * The table on which the index is to be created
+     */
+    public Table getTable() {
+        return table;
+    }
 
-	public void setTable(Table table) {
-		this.table = table;
-	}
+    public void setTable(Table table) {
+        this.table = table;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder buffer = new StringBuilder();
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
 
-		buffer.append("CREATE ");
+        buffer.append("CREATE ");
 
-		if (index.getType() != null) {
-			buffer.append(index.getType());
-			buffer.append(" ");
-		}
+        if (index.getType() != null) {
+            buffer.append(index.getType());
+            buffer.append(" ");
+        }
 
-		buffer.append("INDEX ");
-		buffer.append(index.getName());
-		buffer.append(" ON ");
-		buffer.append(table.getFullyQualifiedName());
+        buffer.append("INDEX ");
+        buffer.append(index.getName());
+        buffer.append(" ON ");
+        buffer.append(table.getFullyQualifiedName());
 
-		if (index.getColumnsNames() != null) {
-			buffer.append(" (");
+        if (index.getColumnsNames() != null) {
+            buffer.append(" (");
 
-			for (Iterator iter = index.getColumnsNames().iterator(); iter.hasNext() ;) {
-				String columnName = (String)iter.next();
+            for (Iterator iter = index.getColumnsNames().iterator(); iter.hasNext();) {
+                String columnName = (String) iter.next();
 
-				buffer.append(columnName);
+                buffer.append(columnName);
 
-				if (iter.hasNext()) {
-					buffer.append(", ");
-				}
-			}
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
 
-			buffer.append(")");
-		}
+            buffer.append(")");
+        }
 
-		return buffer.toString();
-	}
+        return buffer.toString();
+    }
 
 }

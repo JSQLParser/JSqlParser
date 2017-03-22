@@ -27,8 +27,8 @@ import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.Index;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string)
- * a {@link net.sf.jsqlparser.statement.create.index.CreateIndex}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
+ * {@link net.sf.jsqlparser.statement.create.index.CreateIndex}
  *
  * @author Raymond Augé
  */
@@ -36,48 +36,48 @@ public class CreateIndexDeParser {
 
     private StringBuilder buffer;
 
-	/**
-	 * @param buffer the buffer that will be filled with the create
-	 */
-	public CreateIndexDeParser(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    /**
+     * @param buffer the buffer that will be filled with the create
+     */
+    public CreateIndexDeParser(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 
-	public void deParse(CreateIndex createIndex) {
-		Index index = createIndex.getIndex();
+    public void deParse(CreateIndex createIndex) {
+        Index index = createIndex.getIndex();
 
-		buffer.append("CREATE ");
+        buffer.append("CREATE ");
 
-		if (index.getType() != null) {
-			buffer.append(index.getType());
-			buffer.append(" ");
-		}
+        if (index.getType() != null) {
+            buffer.append(index.getType());
+            buffer.append(" ");
+        }
 
-		buffer.append("INDEX ");
-		buffer.append(index.getName());
-		buffer.append(" ON ");
-		buffer.append(createIndex.getTable().getFullyQualifiedName());
+        buffer.append("INDEX ");
+        buffer.append(index.getName());
+        buffer.append(" ON ");
+        buffer.append(createIndex.getTable().getFullyQualifiedName());
 
-		if (index.getColumnsNames() != null) {
-			buffer.append(" (");
-			for (Iterator iter = index.getColumnsNames().iterator(); iter.hasNext();) {
-				String columnName = (String)iter.next();
-				buffer.append(columnName);
+        if (index.getColumnsNames() != null) {
+            buffer.append(" (");
+            for (Iterator iter = index.getColumnsNames().iterator(); iter.hasNext();) {
+                String columnName = (String) iter.next();
+                buffer.append(columnName);
 
-				if (iter.hasNext()) {
-					buffer.append(", ");
-				}
-			}
-			buffer.append(")");
-		}
-	}
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
+            buffer.append(")");
+        }
+    }
 
-	public StringBuilder getBuffer() {
-		return buffer;
-	}
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
 
-	public void setBuffer(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 
 }

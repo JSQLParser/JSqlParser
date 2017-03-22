@@ -62,11 +62,16 @@ public class CreateTable implements Statement {
 
     /**
      * Whether the table is unlogged or not (PostgreSQL 9.1+ feature)
-     * @return 
+     *
+     * @return
      */
-    public boolean isUnlogged() { return unlogged; }
+    public boolean isUnlogged() {
+        return unlogged;
+    }
 
-    public void setUnlogged(boolean unlogged) { this.unlogged = unlogged; }
+    public void setUnlogged(boolean unlogged) {
+        this.unlogged = unlogged;
+    }
 
     /**
      * A list of {@link ColumnDefinition}s of this table.
@@ -80,8 +85,7 @@ public class CreateTable implements Statement {
     }
 
     /**
-     * A list of options (as simple strings) of this table definition, as
-     * ("TYPE", "=", "MYISAM")
+     * A list of options (as simple strings) of this table definition, as ("TYPE", "=", "MYISAM")
      */
     public List<?> getTableOptionsStrings() {
         return tableOptionsStrings;
@@ -98,13 +102,11 @@ public class CreateTable implements Statement {
     public void setCreateOptionsStrings(List<String> createOptionsStrings) {
         this.createOptionsStrings = createOptionsStrings;
     }
-    
-    
 
     /**
      * A list of {@link Index}es (for example "PRIMARY KEY") of this table.<br>
-     * Indexes created with column definitions (as in mycol INT PRIMARY KEY) are
-     * not inserted into this list.
+     * Indexes created with column definitions (as in mycol INT PRIMARY KEY) are not inserted into
+     * this list.
      */
     public List<Index> getIndexes() {
         return indexes;
@@ -144,12 +146,12 @@ public class CreateTable implements Statement {
         String sql;
         String createOps = PlainSelect.getStringList(createOptionsStrings, false, false);
 
-        sql = "CREATE " + (unlogged ? "UNLOGGED " : "") + 
-                (!"".equals(createOps)?createOps + " ":"") +
-                "TABLE " + (ifNotExists?"IF NOT EXISTS ":"") + table;
+        sql = "CREATE " + (unlogged ? "UNLOGGED " : "")
+                + (!"".equals(createOps) ? createOps + " " : "")
+                + "TABLE " + (ifNotExists ? "IF NOT EXISTS " : "") + table;
 
         if (select != null) {
-            sql += " AS " + (selectParenthesis?"(":"") + select.toString() + (selectParenthesis?")":"");
+            sql += " AS " + (selectParenthesis ? "(" : "") + select.toString() + (selectParenthesis ? ")" : "");
         } else {
             sql += " (";
 

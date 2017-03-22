@@ -22,6 +22,7 @@
 package net.sf.jsqlparser.statement.alter;
 
 public class ValidateConstraint implements ConstraintState {
+
     private boolean not;
 
     public ValidateConstraint(boolean not) {

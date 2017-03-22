@@ -54,7 +54,7 @@ public class OrderByElement {
     public void setAsc(boolean b) {
         asc = b;
     }
-    
+
     public void setAscDescPresent(boolean b) {
         ascDesc = b;
     }
@@ -79,13 +79,13 @@ public class OrderByElement {
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append(expression.toString());
-        
+
         if (!asc) {
             b.append(" DESC");
         } else if (ascDesc) {
             b.append(" ASC");
         }
-        
+
         if (nullOrdering != null) {
             b.append(' ');
             b.append(nullOrdering == NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");

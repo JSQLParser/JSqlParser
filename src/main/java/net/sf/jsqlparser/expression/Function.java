@@ -81,8 +81,8 @@ public class Function implements Expression {
     }
 
     /**
-     * The list of parameters of the function (if any, else null) If the
-     * parameter is "*", allColumns is set to true
+     * The list of parameters of the function (if any, else null) If the parameter is "*",
+     * allColumns is set to true
      *
      * @return the list of parameters of the function (if any, else null)
      */
@@ -149,7 +149,7 @@ public class Function implements Expression {
         if (keep != null) {
             ans += " " + keep.toString();
         }
-        
+
         if (isEscaped) {
             ans = "{fn " + ans + "}";
         }

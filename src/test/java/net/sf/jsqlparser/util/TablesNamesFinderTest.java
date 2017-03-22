@@ -46,7 +46,8 @@ public class TablesNamesFinderTest {
     }
 
     private void runTestOnResource(String resPath) throws Exception {
-        BufferedReader in = new BufferedReader(new InputStreamReader(TablesNamesFinderTest.class.getResourceAsStream(resPath)));
+        BufferedReader in = new BufferedReader(new InputStreamReader(TablesNamesFinderTest.class.
+                getResourceAsStream(resPath)));
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
 
         try {
@@ -92,7 +93,8 @@ public class TablesNamesFinderTest {
                         tablesList.add(tokenizer.nextToken());
                     }
 
-                    String[] tablesArray = (String[]) tablesList.toArray(new String[tablesList.size()]);
+                    String[] tablesArray = (String[]) tablesList.toArray(new String[tablesList.
+                            size()]);
 
                     List<String> tableListRetr = tablesNamesFinder.getTableList(statement);
                     assertEquals("stm num:" + numSt, tablesArray.length, tableListRetr.size());
@@ -383,7 +385,8 @@ public class TablesNamesFinderTest {
 
     @Test
     public void testUpdateGetTableListIssue295() throws JSQLParserException {
-        Update statement = (Update) CCJSqlParserUtil.parse("UPDATE component SET col = 0 WHERE (component_id,ver_num) IN (SELECT component_id,ver_num FROM component_temp)");
+        Update statement = (Update) CCJSqlParserUtil.
+                parse("UPDATE component SET col = 0 WHERE (component_id,ver_num) IN (SELECT component_id,ver_num FROM component_temp)");
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
         List<String> tableList = tablesNamesFinder.getTableList(statement);
         assertEquals(2, tableList.size());
@@ -395,8 +398,8 @@ public class TablesNamesFinderTest {
     public void testGetTableListForMerge() throws Exception {
         String sql = "MERGE INTO employees e  USING hr_records h  ON (e.id = h.emp_id) WHEN MATCHED THEN  UPDATE SET e.address = h.address  WHEN NOT MATCHED THEN    INSERT (id, address) VALUES (h.emp_id, h.address);";
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-                
-        List<String> tableList = tablesNamesFinder.getTableList((Merge)CCJSqlParserUtil.parse(sql));
+
+        List<String> tableList = tablesNamesFinder.getTableList((Merge) CCJSqlParserUtil.parse(sql));
         assertEquals(2, tableList.size());
         assertEquals("employees", (String) tableList.get(0));
         assertEquals("hr_records", (String) tableList.get(1));
@@ -406,7 +409,7 @@ public class TablesNamesFinderTest {
     public void testGetTableListForMergeUsingQuery() throws Exception {
         String sql = "MERGE INTO employees e USING (SELECT * FROM hr_records WHERE start_date > ADD_MONTHS(SYSDATE, -1)) h  ON (e.id = h.emp_id)  WHEN MATCHED THEN  UPDATE SET e.address = h.address WHEN NOT MATCHED THEN INSERT (id, address) VALUES (h.emp_id, h.address)";
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-        List<String> tableList = tablesNamesFinder.getTableList((Merge)CCJSqlParserUtil.parse(sql));
+        List<String> tableList = tablesNamesFinder.getTableList((Merge) CCJSqlParserUtil.parse(sql));
         assertEquals(2, tableList.size());
         assertEquals("employees", (String) tableList.get(0));
         assertEquals("hr_records", (String) tableList.get(1));

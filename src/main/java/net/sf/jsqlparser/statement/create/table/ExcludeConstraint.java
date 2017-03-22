@@ -21,17 +21,14 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
-
-
 import net.sf.jsqlparser.expression.Expression;
 
 /**
- * Table Exclusion Constraint
- * Eg. 'EXCLUDE WHERE (col1 > 100)'
+ * Table Exclusion Constraint Eg. 'EXCLUDE WHERE (col1 > 100)'
  *
  * @author wrobstory
  */
-public class ExcludeConstraint extends Index{
+public class ExcludeConstraint extends Index {
 
     private Expression expression;
 

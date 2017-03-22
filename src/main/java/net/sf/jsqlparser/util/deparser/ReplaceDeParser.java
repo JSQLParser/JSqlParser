@@ -34,8 +34,8 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
- * string) a {@link net.sf.jsqlparser.statement.replace.Replace}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
+ * {@link net.sf.jsqlparser.statement.replace.Replace}
  */
 public class ReplaceDeParser implements ItemsListVisitor {
 
@@ -47,12 +47,11 @@ public class ReplaceDeParser implements ItemsListVisitor {
     }
 
     /**
-     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
-     * expressions. It has to share the same<br>
+     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share
+     * the same<br>
      * StringBuilder (buffer parameter) as this object in order to work
      * @param selectVisitor a {@link SelectVisitor} to de-parse
-     * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the
-     * same<br>
+     * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the same<br>
      * StringBuilder (buffer parameter) as this object in order to work
      * @param buffer the buffer that will be filled with the select
      */

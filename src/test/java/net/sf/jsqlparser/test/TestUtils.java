@@ -18,7 +18,6 @@
  */
 package net.sf.jsqlparser.test;
 
-
 import java.io.StringReader;
 import java.util.regex.Pattern;
 
@@ -45,7 +44,8 @@ import static org.junit.Assert.assertNotNull;
  */
 public class TestUtils {
 
-    private static final Pattern SQL_COMMENT_PATTERN = Pattern.compile("(--.*$)|(/\\*.*?\\*/)",Pattern.MULTILINE);
+    private static final Pattern SQL_COMMENT_PATTERN = Pattern.
+            compile("(--.*$)|(/\\*.*?\\*/)", Pattern.MULTILINE);
 
     public static void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(statement, false);
@@ -55,8 +55,8 @@ public class TestUtils {
      * Tries to parse and deparse the given statement.
      *
      * @param statement
-     * @param laxDeparsingCheck removes all linefeeds from the original and
-     * removes all double spaces. The check is caseinsensitive.
+     * @param laxDeparsingCheck removes all linefeeds from the original and removes all double
+     * spaces. The check is caseinsensitive.
      * @throws JSQLParserException
      */
     public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck) throws JSQLParserException {
@@ -69,24 +69,25 @@ public class TestUtils {
     }
 
     public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement, boolean laxDeparsingCheck) {
-        assertEquals(buildSqlString(statement, laxDeparsingCheck), 
+        assertEquals(buildSqlString(statement, laxDeparsingCheck),
                 buildSqlString(parsed.toString(), laxDeparsingCheck));
 
         StatementDeParser deParser = new StatementDeParser(new StringBuilder());
         parsed.accept(deParser);
-        assertEquals(buildSqlString(statement, laxDeparsingCheck), 
+        assertEquals(buildSqlString(statement, laxDeparsingCheck),
                 buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
     }
-    
+
     public static String buildSqlString(final String originalSql, boolean laxDeparsingCheck) {
-    	String sql = SQL_COMMENT_PATTERN.matcher(originalSql).replaceAll("");
+        String sql = SQL_COMMENT_PATTERN.matcher(originalSql).replaceAll("");
         if (laxDeparsingCheck) {
-            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([!/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
+            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").
+                    replaceAll("\\s*([!/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
         } else {
             return sql;
         }
     }
-    
+
     @Test
     public void testBuildSqlString() {
         assertEquals("select col from test", buildSqlString("   SELECT   col FROM  \r\n \t  TEST \n", true));
@@ -103,7 +104,7 @@ public class TestUtils {
 
         assertEquals(expression, stringBuilder.toString());
     }
-    
+
     public static void assertOracleHintExists(String sql, boolean assertDeparser, String... hints) throws JSQLParserException {
         if (assertDeparser) {
             assertSqlCanBeParsedAndDeparsed(sql, true);
@@ -130,5 +131,5 @@ public class TestUtils {
             }
         }
     }
-    
+
 }

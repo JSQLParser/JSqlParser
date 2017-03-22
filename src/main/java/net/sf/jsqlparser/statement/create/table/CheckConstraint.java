@@ -25,22 +25,23 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 
 /**
- * Table Check Constraint
- * Eg. ' CONSTRAINT less_than_ten CHECK (count < 10) '
- * @author mw
+ * Table Check Constraint Eg. ' CONSTRAINT less_than_ten CHECK (count < 10) ' @au
+ *
+ *
+ * thor mw
  */
 public class CheckConstraint extends NamedConstraint {
+
     private Table table;
     private Expression expression;
 
+    public Table getTable() {
+        return table;
+    }
 
-	public Table getTable() {
-		return table;
-	}
-
-	public void setTable(Table table) {
-		this.table = table;
-	}
+    public void setTable(Table table) {
+        this.table = table;
+    }
 
     public Expression getExpression() {
         return expression;

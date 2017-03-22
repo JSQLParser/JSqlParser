@@ -11,42 +11,40 @@
 package net.sf.jsqlparser.statement.select;
 
 /**
- * A timeout applied to SELECT to specify how long to wait for the row on the
- * lock to be released.
- * 
+ * A timeout applied to SELECT to specify how long to wait for the row on the lock to be released.
+ *
  * @author janmonterrubio
  */
 public class Wait {
+
     private long timeout;
 
     /**
      * Returns the number of seconds specified for the WAIT command
-     * 
+     *
      * @return the number of seconds specified for the WAIT command
      */
     public long getTimeout() {
-	return timeout;
+        return timeout;
     }
 
     /**
      * Sets the number of seconds to WAIT for this {@link Wait}
-     * 
-     * @param timeout
-     *            the number of seconds to WAIT for this {@link Wait}
+     *
+     * @param timeout the number of seconds to WAIT for this {@link Wait}
      */
     public void setTimeout(long timeout) {
-	this.timeout = timeout;
+        this.timeout = timeout;
     }
 
     /**
-     * Returns a String containing the WAIT clause and its timeout, where
-     * TIMEOUT is specified by {@link #getTimeout()}. The returned string will
-     * be:<code>
+     * Returns a String containing the WAIT clause and its timeout, where TIMEOUT is specified by
+     * {@link #getTimeout()}. The returned string will null     be:<code>
      * &quot; WAIT &lt;TIMEOUT&gt;&quot;
      * </code>
      */
     @Override
     public String toString() {
-	return " WAIT " + timeout;
+        return " WAIT " + timeout;
     }
 }

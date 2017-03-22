@@ -26,38 +26,38 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class RegExpMatchOperator extends BinaryExpression {
 
-	private RegExpMatchOperatorType operatorType;
+    private RegExpMatchOperatorType operatorType;
 
-	public RegExpMatchOperator(RegExpMatchOperatorType operatorType) {
-		if (operatorType == null) {
-			throw new NullPointerException();
-		}
-		this.operatorType = operatorType;
-	}
+    public RegExpMatchOperator(RegExpMatchOperatorType operatorType) {
+        if (operatorType == null) {
+            throw new NullPointerException();
+        }
+        this.operatorType = operatorType;
+    }
 
-	public RegExpMatchOperatorType getOperatorType() {
-		return operatorType;
-	}
+    public RegExpMatchOperatorType getOperatorType() {
+        return operatorType;
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String getStringExpression() {
-		switch (operatorType) {
-			case MATCH_CASESENSITIVE:
-				return "~";
-			case MATCH_CASEINSENSITIVE:
-				return "~*";
-			case NOT_MATCH_CASESENSITIVE:
-				return "!~";
-			case NOT_MATCH_CASEINSENSITIVE:
-				return "!~*";
-			default:
-				break;
-		}
-		return null;
-	}
+    @Override
+    public String getStringExpression() {
+        switch (operatorType) {
+            case MATCH_CASESENSITIVE:
+                return "~";
+            case MATCH_CASEINSENSITIVE:
+                return "~*";
+            case NOT_MATCH_CASESENSITIVE:
+                return "!~";
+            case NOT_MATCH_CASEINSENSITIVE:
+                return "!~*";
+            default:
+                break;
+        }
+        return null;
+    }
 }

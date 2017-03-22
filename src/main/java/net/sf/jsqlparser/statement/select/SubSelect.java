@@ -86,7 +86,7 @@ public class SubSelect implements FromItem, Expression, ItemsList {
     public void setUseBrackets(boolean useBrackets) {
         this.useBrackets = useBrackets;
     }
-    
+
     public List<WithItem> getWithItemsList() {
         return withItemsList;
     }
@@ -103,8 +103,9 @@ public class SubSelect implements FromItem, Expression, ItemsList {
     @Override
     public String toString() {
         StringBuilder retval = new StringBuilder();
-        if (useBrackets)
+        if (useBrackets) {
             retval.append("(");
+        }
         if (withItemsList != null && !withItemsList.isEmpty()) {
             retval.append("WITH ");
             for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
@@ -117,16 +118,17 @@ public class SubSelect implements FromItem, Expression, ItemsList {
             }
         }
         retval.append(selectBody);
-        if (useBrackets)
+        if (useBrackets) {
             retval.append(")");
-                
+        }
+
         if (pivot != null) {
             retval.append(" ").append(pivot);
         }
         if (alias != null) {
             retval.append(alias.toString());
         }
-        
+
         return retval.toString();
     }
 }

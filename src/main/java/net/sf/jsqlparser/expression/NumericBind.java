@@ -27,7 +27,7 @@ package net.sf.jsqlparser.expression;
  */
 public class NumericBind implements Expression {
 
-	private int bindId;
+    private int bindId;
 
     public int getBindId() {
         return bindId;
@@ -37,13 +37,13 @@ public class NumericBind implements Expression {
         this.bindId = bindId;
     }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return ":" + bindId;
-	}
+    @Override
+    public String toString() {
+        return ":" + bindId;
+    }
 }

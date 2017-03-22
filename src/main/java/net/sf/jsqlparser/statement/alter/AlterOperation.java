@@ -19,7 +19,7 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-/*
+ /*
  * Copyright (C) 2016 JSQLParser.
  *
  * This library is free software; you can redistribute it and/or

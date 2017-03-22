@@ -33,56 +33,56 @@ import net.sf.jsqlparser.statement.select.SelectBody;
  */
 public class AlterView implements Statement {
 
-	private Table view;
-	private SelectBody selectBody;
-	private List<String> columnNames = null;
+    private Table view;
+    private SelectBody selectBody;
+    private List<String> columnNames = null;
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	/**
-	 * In the syntax tree, a view looks and acts just like a Table.
-	 *
-	 * @return The name of the view to be created.
-	 */
-	public Table getView() {
-		return view;
-	}
+    /**
+     * In the syntax tree, a view looks and acts just like a Table.
+     *
+     * @return The name of the view to be created.
+     */
+    public Table getView() {
+        return view;
+    }
 
-	public void setView(Table view) {
-		this.view = view;
-	}
+    public void setView(Table view) {
+        this.view = view;
+    }
 
-	/**
-	 * @return the SelectBody
-	 */
-	public SelectBody getSelectBody() {
-		return selectBody;
-	}
+    /**
+     * @return the SelectBody
+     */
+    public SelectBody getSelectBody() {
+        return selectBody;
+    }
 
-	public void setSelectBody(SelectBody selectBody) {
-		this.selectBody = selectBody;
-	}
+    public void setSelectBody(SelectBody selectBody) {
+        this.selectBody = selectBody;
+    }
 
-	public List<String> getColumnNames() {
-		return columnNames;
-	}
+    public List<String> getColumnNames() {
+        return columnNames;
+    }
 
-	public void setColumnNames(List<String> columnNames) {
-		this.columnNames = columnNames;
-	}
+    public void setColumnNames(List<String> columnNames) {
+        this.columnNames = columnNames;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sql = new StringBuilder("ALTER ");
-		sql.append("VIEW ");
-		sql.append(view);
-		if (columnNames != null) {
-			sql.append(PlainSelect.getStringList(columnNames, true, true));
-		}
-		sql.append(" AS ").append(selectBody);
-		return sql.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder sql = new StringBuilder("ALTER ");
+        sql.append("VIEW ");
+        sql.append(view);
+        if (columnNames != null) {
+            sql.append(PlainSelect.getStringList(columnNames, true, true));
+        }
+        sql.append(" AS ").append(selectBody);
+        return sql.toString();
+    }
 }

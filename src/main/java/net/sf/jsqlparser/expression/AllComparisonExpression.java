@@ -25,21 +25,21 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 
 public class AllComparisonExpression implements Expression {
 
-	private final SubSelect subSelect;
+    private final SubSelect subSelect;
 
-	public AllComparisonExpression(SubSelect subSelect) {
-		this.subSelect = subSelect;
-	}
+    public AllComparisonExpression(SubSelect subSelect) {
+        this.subSelect = subSelect;
+    }
 
-	public SubSelect getSubSelect() {
-		return subSelect;
-	}
+    public SubSelect getSubSelect() {
+        return subSelect;
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
-    
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
+
     @Override
     public String toString() {
         return "ALL " + subSelect.toString();

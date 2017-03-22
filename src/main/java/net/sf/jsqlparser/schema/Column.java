@@ -64,11 +64,12 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
     public String getFullyQualifiedName() {
         return getName(false);
     }
-    
+
     /**
      * Get name with out without using aliases.
+     *
      * @param aliases
-     * @return 
+     * @return
      */
     public String getName(boolean aliases) {
         StringBuilder fqn = new StringBuilder();

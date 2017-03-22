@@ -27,28 +27,28 @@ package net.sf.jsqlparser.expression;
  */
 public class JdbcNamedParameter implements Expression {
 
-	private String name;
+    private String name;
 
-	/**
-	 * The name of the parameter
-	 *
-	 * @return the name of the parameter
-	 */
-	public String getName() {
-		return name;
-	}
+    /**
+     * The name of the parameter
+     *
+     * @return the name of the parameter
+     */
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return ":" + name;
-	}
+    @Override
+    public String toString() {
+        return ":" + name;
+    }
 }

@@ -25,15 +25,16 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
 /**
  * Rowconstructor.
+ *
  * @author tw
  */
 public class RowConstructor implements Expression {
 
-	private ExpressionList exprList;
+    private ExpressionList exprList;
     private String name = null;
 
-	public RowConstructor() {
-	}
+    public RowConstructor() {
+    }
 
     public ExpressionList getExprList() {
         return exprList;
@@ -51,13 +52,13 @@ public class RowConstructor implements Expression {
         this.name = name;
     }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return (name !=null ? name : "") + exprList.toString();
-	}
+    @Override
+    public String toString() {
+        return (name != null ? name : "") + exprList.toString();
+    }
 }

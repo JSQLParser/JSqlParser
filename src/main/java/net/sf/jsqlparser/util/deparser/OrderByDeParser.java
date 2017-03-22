@@ -21,7 +21,6 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
@@ -34,16 +33,15 @@ public class OrderByDeParser {
     private final ExpressionVisitor expressionVisitor;
 
     public OrderByDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
-        this.expressionVisitor= expressionVisitor;
+        this.expressionVisitor = expressionVisitor;
         this.buffer = buffer;
     }
 
-    public void deParse( List<OrderByElement> orderByElementList) {
+    public void deParse(List<OrderByElement> orderByElementList) {
         deParse(false, orderByElementList);
     }
 
-
-    public void deParse(boolean oracleSiblings, List<OrderByElement> orderByElementList){
+    public void deParse(boolean oracleSiblings, List<OrderByElement> orderByElementList) {
         if (oracleSiblings) {
             buffer.append(" ORDER SIBLINGS BY ");
         } else {
@@ -59,7 +57,7 @@ public class OrderByDeParser {
         }
     }
 
-    public void deParseElement(OrderByElement orderBy){
+    public void deParseElement(OrderByElement orderBy) {
         orderBy.getExpression().accept(expressionVisitor);
         if (!orderBy.isAsc()) {
             buffer.append(" DESC");
@@ -68,7 +66,8 @@ public class OrderByDeParser {
         }
         if (orderBy.getNullOrdering() != null) {
             buffer.append(' ');
-            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
+            buffer.
+                    append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
         }
     }
 }

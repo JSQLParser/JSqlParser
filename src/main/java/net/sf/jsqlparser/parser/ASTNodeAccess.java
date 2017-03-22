@@ -19,7 +19,7 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-/*
+ /*
  * Copyright (C) 2015 JSQLParser.
  *
  * This library is free software; you can redistribute it and/or
@@ -44,6 +44,8 @@ package net.sf.jsqlparser.parser;
  * @author toben
  */
 public interface ASTNodeAccess {
+
     SimpleNode getASTNode();
+
     void setASTNode(SimpleNode node);
 }

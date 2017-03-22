@@ -21,7 +21,6 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +52,7 @@ public class AlterExpression {
     private List<String> fkColumns;
     private String fkSourceTable;
     private List<String> fkSourceColumns;
-    
+
     private List<ConstraintState> constraints;
 
     public AlterOperation getOperation() {
@@ -195,7 +194,9 @@ public class AlterExpression {
         } else if (getColDataTypeList() != null) {
             if (colDataTypeList.size() > 1) {
                 b.append("(");
-            } else b.append("COLUMN ");
+            } else {
+                b.append("COLUMN ");
+            }
             b.append(PlainSelect.getStringList(colDataTypeList));
             if (colDataTypeList.size() > 1) {
                 b.append(")");
@@ -204,12 +205,15 @@ public class AlterExpression {
             b.append("CONSTRAINT ").append(constraintName);
         } else if (pkColumns != null) {
             b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
-            if(getConstraints()!=null && !getConstraints().isEmpty())
+            if (getConstraints() != null && !getConstraints().isEmpty()) {
                 b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
+            }
         } else if (ukColumns != null) {
-            b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
+            b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.
+                    getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
-            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).append(") REFERENCES ").append(fkSourceTable).append(" (").append(
+            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).
+                    append(") REFERENCES ").append(fkSourceTable).append(" (").append(
                     PlainSelect.getStringList(fkSourceColumns)).append(")");
             if (isOnDeleteCascade()) {
                 b.append(" ON DELETE CASCADE");
@@ -257,8 +261,7 @@ public class AlterExpression {
             return columnName + " " + colDataType + parametersToString();
         }
 
-        private String parametersToString()
-        {
+        private String parametersToString() {
             if (columnSpecs == null || columnSpecs.isEmpty()) {
                 return "";
             }

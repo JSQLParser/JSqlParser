@@ -25,16 +25,16 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class MinorThanEquals extends ComparisonOperator {
 
-	public MinorThanEquals() {
-		super("<=");
-	}
+    public MinorThanEquals() {
+        super("<=");
+    }
 
-	public MinorThanEquals(String operator) {
-		super(operator);
-	}
+    public MinorThanEquals(String operator) {
+        super(operator);
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 }

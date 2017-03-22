@@ -27,38 +27,39 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class ExecuteDeParser {
 
-	private StringBuilder buffer;
-	private ExpressionVisitor expressionVisitor;
+    private StringBuilder buffer;
+    private ExpressionVisitor expressionVisitor;
 
-	/**
-	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
-	 * expressions. It has to share the same<br>
-	 * StringBuilder (buffer parameter) as this object in order to work
-	 * @param buffer the buffer that will be filled with the select
-	 */
-	public ExecuteDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
-		this.buffer = buffer;
-		this.expressionVisitor = expressionVisitor;
-	}
+    /**
+     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share
+     * the same<br>
+     * StringBuilder (buffer parameter) as this object in order to work
+     * @param buffer the buffer that will be filled with the select
+     */
+    public ExecuteDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+        this.buffer = buffer;
+        this.expressionVisitor = expressionVisitor;
+    }
 
-	public StringBuilder getBuffer() {
-		return buffer;
-	}
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
 
-	public void setBuffer(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 
-	public void deParse(Execute execute) {
-		buffer.append("EXECUTE ").append(execute.getName());
-		buffer.append(" ").append(PlainSelect.getStringList(execute.getExprList().getExpressions(), true, false));
-	}
+    public void deParse(Execute execute) {
+        buffer.append("EXECUTE ").append(execute.getName());
+        buffer.append(" ").append(PlainSelect.
+                getStringList(execute.getExprList().getExpressions(), true, false));
+    }
 
-	public ExpressionVisitor getExpressionVisitor() {
-		return expressionVisitor;
-	}
+    public ExpressionVisitor getExpressionVisitor() {
+        return expressionVisitor;
+    }
 
-	public void setExpressionVisitor(ExpressionVisitor visitor) {
-		expressionVisitor = visitor;
-	}
+    public void setExpressionVisitor(ExpressionVisitor visitor) {
+        expressionVisitor = visitor;
+    }
 }

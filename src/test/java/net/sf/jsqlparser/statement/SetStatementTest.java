@@ -31,37 +31,36 @@ import org.junit.Test;
  * @author toben
  */
 public class SetStatementTest {
-    
+
     public SetStatementTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
 
-   
     @Test
     public void testSimpleSet() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET statement_timeout = 0");
     }
-    
+
     @Test
     public void testIssue373() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET deferred_name_resolution true");
     }
-    
+
     @Test
     public void testIssue373_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET tester 5");

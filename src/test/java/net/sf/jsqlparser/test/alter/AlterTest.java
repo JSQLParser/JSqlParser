@@ -1,6 +1,5 @@
 package net.sf.jsqlparser.test.alter;
 
-
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 
@@ -22,10 +21,11 @@ public class AlterTest extends TestCase {
     }
 
     public void testAlterTableAddColumn() throws JSQLParserException {
-        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable ADD COLUMN mycolumn varchar (255)");
+        Statement stmt = CCJSqlParserUtil.
+                parse("ALTER TABLE mytable ADD COLUMN mycolumn varchar (255)");
         assertTrue(stmt instanceof Alter);
-        Alter alter = (Alter)stmt;
-        assertEquals("mytable",alter.getTable().getFullyQualifiedName());
+        Alter alter = (Alter) stmt;
+        assertEquals("mytable", alter.getTable().getFullyQualifiedName());
         AlterExpression alterExp = alter.getAlterExpressions().get(0);
         assertNotNull(alterExp);
         List<ColumnDataType> colDataTypes = alterExp.getColDataTypeList();
@@ -36,8 +36,8 @@ public class AlterTest extends TestCase {
     public void testAlterTableAddColumn_ColumnKeyWordImplicit() throws JSQLParserException {
         Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable ADD mycolumn varchar (255)");
         assertTrue(stmt instanceof Alter);
-        Alter alter = (Alter)stmt;
-        assertEquals("mytable",alter.getTable().getFullyQualifiedName());
+        Alter alter = (Alter) stmt;
+        assertEquals("mytable", alter.getTable().getFullyQualifiedName());
         AlterExpression alterExp = alter.getAlterExpressions().get(0);
         assertNotNull(alterExp);
         List<ColumnDataType> colDataTypes = alterExp.getColDataTypeList();
@@ -48,7 +48,7 @@ public class AlterTest extends TestCase {
     public void testAlterTablePrimaryKey() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id)");
     }
-    
+
     public void testAlterTablePrimaryKeyDeferrable() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE");
     }
@@ -56,19 +56,19 @@ public class AlterTest extends TestCase {
     public void testAlterTablePrimaryKeyNotDeferrable() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id) NOT DEFERRABLE");
     }
-    
+
     public void testAlterTablePrimaryKeyValidate() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id) VALIDATE");
     }
-    
+
     public void testAlterTablePrimaryKeyNoValidate() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id) NOVALIDATE");
     }
-    
+
     public void testAlterTablePrimaryKeyDeferrableValidate() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE VALIDATE");
     }
-    
+
     public void testAlterTablePrimaryKeyDeferrableDisableNoValidate() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE DISABLE NOVALIDATE");
     }
@@ -104,8 +104,9 @@ public class AlterTest extends TestCase {
     public void testAlterTableDropColumn2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable DROP COLUMN col1, DROP COLUMN col2");
 
-        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable DROP COLUMN col1, DROP COLUMN col2");
-        Alter alter = (Alter)stmt;
+        Statement stmt = CCJSqlParserUtil.
+                parse("ALTER TABLE mytable DROP COLUMN col1, DROP COLUMN col2");
+        Alter alter = (Alter) stmt;
         List<AlterExpression> alterExps = alter.getAlterExpressions();
         AlterExpression col1Exp = alterExps.get(0);
         AlterExpression col2Exp = alterExps.get(1);
@@ -158,8 +159,9 @@ public class AlterTest extends TestCase {
     public void testAlterTableAddColumn4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 varchar (255), ADD COLUMN col2 integer");
 
-        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable ADD COLUMN col1 varchar (255), ADD COLUMN col2 integer");
-        Alter alter = (Alter)stmt;
+        Statement stmt = CCJSqlParserUtil.
+                parse("ALTER TABLE mytable ADD COLUMN col1 varchar (255), ADD COLUMN col2 integer");
+        Alter alter = (Alter) stmt;
         List<AlterExpression> alterExps = alter.getAlterExpressions();
         AlterExpression col1Exp = alterExps.get(0);
         AlterExpression col2Exp = alterExps.get(1);
@@ -206,7 +208,8 @@ public class AlterTest extends TestCase {
         // COLUMN keyword appears in deparsed statement, modify becomes all caps
         assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE mytable MODIFY COLUMN col1 timestamp (6)");
 
-        assertEquals(AlterOperation.MODIFY, ((Alter) stmt).getAlterExpressions().get(0).getOperation());
+        assertEquals(AlterOperation.MODIFY, ((Alter) stmt).getAlterExpressions().get(0).
+                getOperation());
     }
 
     public void testAlterTableAddColumnWithZone() throws JSQLParserException {
@@ -215,7 +218,8 @@ public class AlterTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 date with time zone");
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 date without time zone");
 
-        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable ADD COLUMN col1 timestamp with time zone");
+        Statement stmt = CCJSqlParserUtil.
+                parse("ALTER TABLE mytable ADD COLUMN col1 timestamp with time zone");
         Alter alter = (Alter) stmt;
         List<AlterExpression> alterExps = alter.getAlterExpressions();
         AlterExpression col1Exp = alterExps.get(0);

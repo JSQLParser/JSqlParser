@@ -74,7 +74,7 @@ public class SelectASTTest {
 
     private Token subSelectStart;
     private Token subSelectEnd;
-    
+
     @Test
     public void testSelectASTNodeSubSelect() throws JSQLParserException {
         String sql = "SELECT * FROM  mytable  where 0<(select count(*) from mytable2)";
@@ -93,7 +93,7 @@ public class SelectASTTest {
                 }
             }
         }, null);
-        
+
         assertNotNull(subSelectStart);
         assertNotNull(subSelectEnd);
         assertEquals(34, subSelectStart.beginColumn);

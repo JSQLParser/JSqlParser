@@ -33,86 +33,86 @@ import net.sf.jsqlparser.statement.select.SelectBody;
  */
 public class CreateView implements Statement {
 
-	private Table view;
-	private SelectBody selectBody;
-	private boolean orReplace = false;
-	private List<String> columnNames = null;
-	private boolean materialized = false;
+    private Table view;
+    private SelectBody selectBody;
+    private boolean orReplace = false;
+    private List<String> columnNames = null;
+    private boolean materialized = false;
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	/**
-	 * In the syntax tree, a view looks and acts just like a Table.
-	 *
-	 * @return The name of the view to be created.
-	 */
-	public Table getView() {
-		return view;
-	}
+    /**
+     * In the syntax tree, a view looks and acts just like a Table.
+     *
+     * @return The name of the view to be created.
+     */
+    public Table getView() {
+        return view;
+    }
 
-	public void setView(Table view) {
-		this.view = view;
-	}
+    public void setView(Table view) {
+        this.view = view;
+    }
 
-	/**
-	 * @return was "OR REPLACE" specified?
-	 */
-	public boolean isOrReplace() {
-		return orReplace;
-	}
+    /**
+     * @return was "OR REPLACE" specified?
+     */
+    public boolean isOrReplace() {
+        return orReplace;
+    }
 
-	/**
-	 * @param orReplace was "OR REPLACE" specified?
-	 */
-	public void setOrReplace(boolean orReplace) {
-		this.orReplace = orReplace;
-	}
+    /**
+     * @param orReplace was "OR REPLACE" specified?
+     */
+    public void setOrReplace(boolean orReplace) {
+        this.orReplace = orReplace;
+    }
 
-	/**
-	 * @return the SelectBody
-	 */
-	public SelectBody getSelectBody() {
-		return selectBody;
-	}
+    /**
+     * @return the SelectBody
+     */
+    public SelectBody getSelectBody() {
+        return selectBody;
+    }
 
-	public void setSelectBody(SelectBody selectBody) {
-		this.selectBody = selectBody;
-	}
+    public void setSelectBody(SelectBody selectBody) {
+        this.selectBody = selectBody;
+    }
 
-	public List<String> getColumnNames() {
-		return columnNames;
-	}
+    public List<String> getColumnNames() {
+        return columnNames;
+    }
 
-	public void setColumnNames(List<String> columnNames) {
-		this.columnNames = columnNames;
-	}
+    public void setColumnNames(List<String> columnNames) {
+        this.columnNames = columnNames;
+    }
 
-	public boolean isMaterialized() {
-		return materialized;
-	}
+    public boolean isMaterialized() {
+        return materialized;
+    }
 
-	public void setMaterialized(boolean materialized) {
-		this.materialized = materialized;
-	}
+    public void setMaterialized(boolean materialized) {
+        this.materialized = materialized;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sql = new StringBuilder("CREATE ");
-		if (isOrReplace()) {
-			sql.append("OR REPLACE ");
-		}
-		if (isMaterialized()) {
-			sql.append("MATERIALIZED ");
-		}
-		sql.append("VIEW ");
-		sql.append(view);
-		if (columnNames != null) {
-			sql.append(PlainSelect.getStringList(columnNames, true, true));
-		}
-		sql.append(" AS ").append(selectBody);
-		return sql.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder sql = new StringBuilder("CREATE ");
+        if (isOrReplace()) {
+            sql.append("OR REPLACE ");
+        }
+        if (isMaterialized()) {
+            sql.append("MATERIALIZED ");
+        }
+        sql.append("VIEW ");
+        sql.append(view);
+        if (columnNames != null) {
+            sql.append(PlainSelect.getStringList(columnNames, true, true));
+        }
+        sql.append(" AS ").append(selectBody);
+        return sql.toString();
+    }
 }

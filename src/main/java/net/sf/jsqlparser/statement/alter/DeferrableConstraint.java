@@ -22,6 +22,7 @@
 package net.sf.jsqlparser.statement.alter;
 
 public class DeferrableConstraint implements ConstraintState {
+
     private boolean not;
 
     public DeferrableConstraint(boolean not) {
@@ -39,7 +40,7 @@ public class DeferrableConstraint implements ConstraintState {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        if(not) {
+        if (not) {
             b.append("NOT ");
         }
         b.append("DEFERRABLE");

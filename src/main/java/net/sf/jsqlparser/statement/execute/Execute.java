@@ -50,7 +50,7 @@ public class Execute implements Statement {
     public void setExprList(ExpressionList exprList) {
         this.exprList = exprList;
     }
-    
+
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
@@ -58,7 +58,8 @@ public class Execute implements Statement {
 
     @Override
     public String toString() {
-        return "EXECUTE " + name + " " + PlainSelect.getStringList(exprList.getExpressions(), true, false);
+        return "EXECUTE " + name + " " + PlainSelect.
+                getStringList(exprList.getExpressions(), true, false);
     }
 
 }

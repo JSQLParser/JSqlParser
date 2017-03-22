@@ -23,7 +23,8 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.schema.Table;
 
-public class FromItemVisitorAdapter implements FromItemVisitor{
+public class FromItemVisitorAdapter implements FromItemVisitor {
+
     @Override
     public void visit(Table table) {
 

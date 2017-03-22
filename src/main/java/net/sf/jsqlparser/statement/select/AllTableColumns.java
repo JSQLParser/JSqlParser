@@ -28,30 +28,30 @@ import net.sf.jsqlparser.schema.*;
 
 public class AllTableColumns implements SelectItem {
 
-	private Table table;
+    private Table table;
 
-	public AllTableColumns() {
-	}
+    public AllTableColumns() {
+    }
 
-	public AllTableColumns(Table tableName) {
-		this.table = tableName;
-	}
+    public AllTableColumns(Table tableName) {
+        this.table = tableName;
+    }
 
-	public Table getTable() {
-		return table;
-	}
+    public Table getTable() {
+        return table;
+    }
 
-	public void setTable(Table table) {
-		this.table = table;
-	}
+    public void setTable(Table table) {
+        this.table = table;
+    }
 
-	@Override
-	public void accept(SelectItemVisitor selectItemVisitor) {
-		selectItemVisitor.visit(this);
-	}
+    @Override
+    public void accept(SelectItemVisitor selectItemVisitor) {
+        selectItemVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return table + ".*";
-	}
+    @Override
+    public String toString() {
+        return table + ".*";
+    }
 }

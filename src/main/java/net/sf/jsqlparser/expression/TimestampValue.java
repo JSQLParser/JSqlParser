@@ -28,27 +28,27 @@ import java.sql.Timestamp;
  */
 public class TimestampValue implements Expression {
 
-	private Timestamp value;
+    private Timestamp value;
 
-	public TimestampValue(String value) {
-		this.value = Timestamp.valueOf(value.substring(1, value.length() - 1));
-	}
+    public TimestampValue(String value) {
+        this.value = Timestamp.valueOf(value.substring(1, value.length() - 1));
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	public Timestamp getValue() {
-		return value;
-	}
+    public Timestamp getValue() {
+        return value;
+    }
 
-	public void setValue(Timestamp d) {
-		value = d;
-	}
+    public void setValue(Timestamp d) {
+        value = d;
+    }
 
-	@Override
-	public String toString() {
-		return "{ts '" + value + "'}";
-	}
+    @Override
+    public String toString() {
+        return "{ts '" + value + "'}";
+    }
 }

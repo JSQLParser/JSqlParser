@@ -22,41 +22,40 @@
 package net.sf.jsqlparser.statement.select;
 
 /**
- * An offset clause in the form OFFSET offset
- * or in the form OFFSET offset (ROW | ROWS)
+ * An offset clause in the form OFFSET offset or in the form OFFSET offset (ROW | ROWS)
  */
 public class Offset {
 
-	private long offset;
-	private boolean offsetJdbcParameter = false;
-	private String offsetParam = null;
+    private long offset;
+    private boolean offsetJdbcParameter = false;
+    private String offsetParam = null;
 
-	public long getOffset() {
-		return offset;
-	}
+    public long getOffset() {
+        return offset;
+    }
 
-	public String getOffsetParam() {
-		return offsetParam;
-	}
+    public String getOffsetParam() {
+        return offsetParam;
+    }
 
-	public void setOffset(long l) {
-		offset = l;
-	}
+    public void setOffset(long l) {
+        offset = l;
+    }
 
-	public void setOffsetParam(String s) {
-		offsetParam = s;
-	}
+    public void setOffsetParam(String s) {
+        offsetParam = s;
+    }
 
-	public boolean isOffsetJdbcParameter() {
-		return offsetJdbcParameter;
-	}
+    public boolean isOffsetJdbcParameter() {
+        return offsetJdbcParameter;
+    }
 
-	public void setOffsetJdbcParameter(boolean b) {
-		offsetJdbcParameter = b;
-	}
+    public void setOffsetJdbcParameter(boolean b) {
+        offsetJdbcParameter = b;
+    }
 
-	@Override
-	public String toString() {
-		return " OFFSET " + (offsetJdbcParameter ? "?" : offset) + (offsetParam != null ? " "+offsetParam : "");
-	}
+    @Override
+    public String toString() {
+        return " OFFSET " + (offsetJdbcParameter ? "?" : offset) + (offsetParam != null ? " " + offsetParam : "");
+    }
 }

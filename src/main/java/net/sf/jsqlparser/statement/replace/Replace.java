@@ -65,8 +65,8 @@ public class Replace implements Statement {
     }
 
     /**
-     * A list of {@link net.sf.jsqlparser.schema.Column}s either from a "REPLACE
-     * mytab (col1, col2) [...]" or a "REPLACE mytab SET col1=exp1, col2=exp2".
+     * A list of {@link net.sf.jsqlparser.schema.Column}s either from a "REPLACE mytab (col1, col2)
+     * [...]" or a "REPLACE mytab SET col1=exp1, col2=exp2".
      *
      * @return a list of {@link net.sf.jsqlparser.schema.Column}s
      */
@@ -75,9 +75,8 @@ public class Replace implements Statement {
     }
 
     /**
-     * An {@link ItemsList} (either from a "REPLACE mytab VALUES (exp1,exp2)" or
-     * a "REPLACE mytab SELECT * FROM mytab2") it is null in case of a "REPLACE
-     * mytab SET col1=exp1, col2=exp2"
+     * An {@link ItemsList} (either from a "REPLACE mytab VALUES (exp1,exp2)" or a "REPLACE mytab
+     * SELECT * FROM mytab2") it is null in case of a "REPLACE mytab SET col1=exp1, col2=exp2"
      */
     public ItemsList getItemsList() {
         return itemsList;
@@ -92,8 +91,8 @@ public class Replace implements Statement {
     }
 
     /**
-     * A list of {@link net.sf.jsqlparser.expression.Expression}s (from a
-     * "REPLACE mytab SET col1=exp1, col2=exp2"). <br>
+     * A list of {@link net.sf.jsqlparser.expression.Expression}s (from a "REPLACE mytab SET
+     * col1=exp1, col2=exp2"). <br>
      * it is null in case of a "REPLACE mytab (col1, col2) [...]"
      */
     public List<Expression> getExpressions() {

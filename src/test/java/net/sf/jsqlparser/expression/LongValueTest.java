@@ -31,22 +31,22 @@ import static org.junit.Assert.*;
  * @author tw
  */
 public class LongValueTest {
-    
+
     public LongValueTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -54,23 +54,23 @@ public class LongValueTest {
     @Test
     public void testSimpleNumber() {
         LongValue value = new LongValue("123");
-        
+
         assertEquals("123", value.getStringValue());
         assertEquals(123L, value.getValue());
         assertEquals(new BigInteger("123"), value.getBigIntegerValue());
     }
-    
+
     @Test
     public void testLargeNumber() {
         final String largeNumber = "20161114000000035001";
         LongValue value = new LongValue(largeNumber);
-        
+
         assertEquals(largeNumber, value.getStringValue());
         try {
             value.getValue();
             fail("should not work");
         } catch (Exception e) {
-            
+
         }
         assertEquals(new BigInteger(largeNumber), value.getBigIntegerValue());
     }

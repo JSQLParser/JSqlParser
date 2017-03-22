@@ -29,39 +29,39 @@ import net.sf.jsqlparser.expression.Expression;
  */
 public class SelectExpressionItem implements SelectItem {
 
-	private Expression expression;
-	private Alias alias;
+    private Expression expression;
+    private Alias alias;
 
-	public SelectExpressionItem() {
-	}
+    public SelectExpressionItem() {
+    }
 
-	public SelectExpressionItem(Expression expression) {
-		this.expression = expression;
-	}
-	
-	public Alias getAlias() {
-		return alias;
-	}
+    public SelectExpressionItem(Expression expression) {
+        this.expression = expression;
+    }
 
-	public Expression getExpression() {
-		return expression;
-	}
+    public Alias getAlias() {
+        return alias;
+    }
 
-	public void setAlias(Alias alias) {
-		this.alias = alias;
-	}
+    public Expression getExpression() {
+        return expression;
+    }
 
-	public void setExpression(Expression expression) {
-		this.expression = expression;
-	}
+    public void setAlias(Alias alias) {
+        this.alias = alias;
+    }
 
-	@Override
-	public void accept(SelectItemVisitor selectItemVisitor) {
-		selectItemVisitor.visit(this);
-	}
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
 
-	@Override
-	public String toString() {
-		return expression + ((alias != null) ? alias.toString() : "");
-	}
+    @Override
+    public void accept(SelectItemVisitor selectItemVisitor) {
+        selectItemVisitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return expression + ((alias != null) ? alias.toString() : "");
+    }
 }

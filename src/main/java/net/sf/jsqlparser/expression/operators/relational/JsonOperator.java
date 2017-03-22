@@ -25,21 +25,20 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class JsonOperator extends BinaryExpression {
-    
+
     private String op; //"@>"
-    
-    public JsonOperator(String op){
+
+    public JsonOperator(String op) {
         this.op = op;
     }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String getStringExpression() {
-		return op;
-	}
+    @Override
+    public String getStringExpression() {
+        return op;
+    }
 }
-

@@ -51,6 +51,7 @@ public class NamedConstraint extends Index {
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(getIndexSpec(), false, false);
         return (getName() != null ? "CONSTRAINT " + getName() + " " : "")
-                + getType() + " " + PlainSelect.getStringList(getColumnsNames(), true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
+                + getType() + " " + PlainSelect.getStringList(getColumnsNames(), true, true) + (!"".
+                equals(idxSpecText) ? " " + idxSpecText : "");
     }
 }

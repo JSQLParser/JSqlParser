@@ -22,6 +22,7 @@
 package net.sf.jsqlparser.statement.alter;
 
 public class EnableConstraint implements ConstraintState {
+
     private boolean disable;
 
     public EnableConstraint(boolean disable) {

@@ -26,33 +26,33 @@ package net.sf.jsqlparser.expression;
  */
 public class DoubleValue implements Expression {
 
-	private double value;
-	private String stringValue;
+    private double value;
+    private String stringValue;
 
-	public DoubleValue(final String value) {
-		String val = value;
-		if (val.charAt(0) == '+') {
-			val = val.substring(1);
-		}
-		this.value = Double.parseDouble(val);
-		this.stringValue = val;
-	}
+    public DoubleValue(final String value) {
+        String val = value;
+        if (val.charAt(0) == '+') {
+            val = val.substring(1);
+        }
+        this.value = Double.parseDouble(val);
+        this.stringValue = val;
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	public double getValue() {
-		return value;
-	}
+    public double getValue() {
+        return value;
+    }
 
-	public void setValue(double d) {
-		value = d;
-	}
+    public void setValue(double d) {
+        value = d;
+    }
 
-	@Override
-	public String toString() {
-		return stringValue;
-	}
+    @Override
+    public String toString() {
+        return stringValue;
+    }
 }

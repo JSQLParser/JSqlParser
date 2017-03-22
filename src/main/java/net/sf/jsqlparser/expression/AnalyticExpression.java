@@ -28,10 +28,10 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
- * Analytic function. The name of the function is variable but the parameters
- * following the special analytic function path. e.g. row_number() over (order
- * by test). Additional there can be an expression for an analytical aggregate
- * like sum(col) or the "all collumns" wildcard like count(*).
+ * Analytic function. The name of the function is variable but the parameters following the special
+ * analytic function path. e.g. row_number() over (order by test). Additional there can be an
+ * expression for an analytical aggregate like sum(col) or the "all collumns" wildcard like
+ * count(*).
  *
  * @author tw
  */
@@ -157,7 +157,8 @@ public class AnalyticExpression implements Expression {
     private void toStringPartitionBy(StringBuilder b) {
         if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
             b.append("PARTITION BY ");
-            b.append(PlainSelect.getStringList(partitionExpressionList.getExpressions(), true, false));
+            b.append(PlainSelect.
+                    getStringList(partitionExpressionList.getExpressions(), true, false));
             b.append(" ");
         }
     }

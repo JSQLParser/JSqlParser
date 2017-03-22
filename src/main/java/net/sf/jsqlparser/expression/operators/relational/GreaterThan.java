@@ -25,12 +25,12 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class GreaterThan extends ComparisonOperator {
 
-	public GreaterThan() {
-		super(">");
-	}
-	
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    public GreaterThan() {
+        super(">");
+    }
+
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 }

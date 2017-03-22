@@ -26,28 +26,28 @@ package net.sf.jsqlparser.expression;
  */
 public class HexValue implements Expression {
 
-	private String stringValue;
+    private String stringValue;
 
-	public HexValue(final String value) {
-		String val = value;
-		this.stringValue = val;
-	}
+    public HexValue(final String value) {
+        String val = value;
+        this.stringValue = val;
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	public String getValue() {
-		return stringValue;
-	}
+    public String getValue() {
+        return stringValue;
+    }
 
-	public void setValue(String d) {
-		stringValue = d;
-	}
+    public void setValue(String d) {
+        stringValue = d;
+    }
 
-	@Override
-	public String toString() {
-		return stringValue;
-	}
+    @Override
+    public String toString() {
+        return stringValue;
+    }
 }

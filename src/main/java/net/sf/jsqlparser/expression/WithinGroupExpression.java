@@ -32,9 +32,9 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 public class WithinGroupExpression implements Expression {
 
     private String name;
-    
+
     private List<OrderByElement> orderByElements;
-    
+
     private ExpressionList exprList;
 
     public String getName() {
