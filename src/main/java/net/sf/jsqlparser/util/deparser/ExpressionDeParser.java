@@ -522,7 +522,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(IntervalExpression iexpr) {
-        buffer.append(iexpr.toString());
+        buffer.append("INTERVAL ");
+        iexpr.getParameter().accept(this);
+        if(iexpr.getIntervalType() != null) {
+            buffer.append(" ").append(iexpr.getIntervalType());
+        }
     }
 
     @Override

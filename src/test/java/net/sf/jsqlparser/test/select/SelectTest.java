@@ -1852,7 +1852,7 @@ public class SelectTest extends TestCase {
         assertTrue(sub.getRightExpression() instanceof IntervalExpression);
         IntervalExpression iexpr = (IntervalExpression) sub.getRightExpression();
 
-        assertEquals("'45 MINUTE'", iexpr.getParameter());
+        assertEquals("'45 MINUTE'", iexpr.getParameter().toString());
     }
 
     public void testInterval3() throws JSQLParserException {

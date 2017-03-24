@@ -314,6 +314,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(IntervalExpression expr) {
+        expr.getParameter().accept(this);
     }
 
     @Override

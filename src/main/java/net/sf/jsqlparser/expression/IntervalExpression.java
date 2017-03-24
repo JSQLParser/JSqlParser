@@ -27,14 +27,14 @@ package net.sf.jsqlparser.expression;
  */
 public class IntervalExpression implements Expression {
 
-    private String parameter = null;
+    private Expression parameter = null;
     private String intervalType = null;
 
-    public String getParameter() {
+    public Expression getParameter() {
         return parameter;
     }
 
-    public void setParameter(String parameter) {
+    public void setParameter(Expression parameter) {
         this.parameter = parameter;
     }
 

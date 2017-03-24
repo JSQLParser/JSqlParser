@@ -2272,12 +2272,13 @@ JsonExpression JsonExpression() : {
 
 IntervalExpression IntervalExpression() : {
     IntervalExpression interval = new IntervalExpression();
+    Expression item;
     Token token;
     boolean signed = false;
 }
 {
-    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL>) 
-    { interval.setParameter((signed?"-":"") + token.image); }
+    <K_INTERVAL> (item = PrimaryExpression())
+    { interval.setParameter(item); }
     [ LOOKAHEAD(2) token = <S_IDENTIFIER> { interval.setIntervalType(token.image); } ]
     {
         return interval;
@@ -3095,20 +3096,30 @@ List<ConstraintState> AlterExpressionConstraintState():
 }
 {
     (
-        (          <K_DEFERRABLE> {retval.add(new DeferrableConstraint(false));}
+        (
+          <K_DEFERRABLE> {retval.add(new DeferrableConstraint(false));}
         )
         |
         (
-          <K_NOT> <K_DEFERRABLE> {retval.add(new DeferrableConstraint(true));}        ) 
+          <K_NOT> <K_DEFERRABLE> {retval.add(new DeferrableConstraint(true));}
+        ) 
         |
-        (          <K_VALIDATE> {retval.add(new ValidateConstraint(false));}
-        )        |
-        (          <K_NOVALIDATE> {retval.add(new ValidateConstraint(true));}
-        )        |
-        (          <K_ENABLE> {retval.add(new EnableConstraint(false));}
-        )        |
-        (          <K_DISABLE> {retval.add(new EnableConstraint(true));}
-        )    )*
+        (
+          <K_VALIDATE> {retval.add(new ValidateConstraint(false));}
+        )
+        |
+        (
+          <K_NOVALIDATE> {retval.add(new ValidateConstraint(true));}
+        )
+        |
+        (
+          <K_ENABLE> {retval.add(new EnableConstraint(false));}
+        )
+        |
+        (
+          <K_DISABLE> {retval.add(new EnableConstraint(true));}
+        )
+    )*
     {
         return retval;
     }
