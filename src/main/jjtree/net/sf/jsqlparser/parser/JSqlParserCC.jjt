@@ -2558,7 +2558,7 @@ Function Function() #Function:
         retval.setKeep(keep);
         return retval;
     }
-}
+} 
 
 MySQLGroupConcat MySQLGroupConcat():{
     MySQLGroupConcat retval = new MySQLGroupConcat();
@@ -3095,20 +3095,30 @@ List<ConstraintState> AlterExpressionConstraintState():
 }
 {
     (
-        (          <K_DEFERRABLE> {retval.add(new DeferrableConstraint(false));}
+        (
+          <K_DEFERRABLE> {retval.add(new DeferrableConstraint(false));}
         )
         |
         (
-          <K_NOT> <K_DEFERRABLE> {retval.add(new DeferrableConstraint(true));}        ) 
+          <K_NOT> <K_DEFERRABLE> {retval.add(new DeferrableConstraint(true));}
+        ) 
         |
-        (          <K_VALIDATE> {retval.add(new ValidateConstraint(false));}
-        )        |
-        (          <K_NOVALIDATE> {retval.add(new ValidateConstraint(true));}
-        )        |
-        (          <K_ENABLE> {retval.add(new EnableConstraint(false));}
-        )        |
-        (          <K_DISABLE> {retval.add(new EnableConstraint(true));}
-        )    )*
+        (
+          <K_VALIDATE> {retval.add(new ValidateConstraint(false));}
+        )
+        |
+        (
+          <K_NOVALIDATE> {retval.add(new ValidateConstraint(true));}
+        )
+        |
+        (
+          <K_ENABLE> {retval.add(new EnableConstraint(false));}
+        )
+        |
+        (
+          <K_DISABLE> {retval.add(new EnableConstraint(true));}
+        )
+    )*
     {
         return retval;
     }
