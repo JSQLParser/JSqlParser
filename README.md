@@ -15,7 +15,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 
 ## News
-
+* Released first major version **1.0** of JSqlParser. 
 * Please test the actual **0.9.8-SNAPSHOT**. It includes includes grammar refactorings or changes which eventually results in parse tree changes.
 * Version **0.9.7** released.
 * Version **0.9.6** released.
@@ -44,12 +44,7 @@ To help JSqlParsers development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 0.9.8
-
-* support **FOR UPDATE WAIT**
-* support for simple expressions within **case when**
-* rewrite of **SelectBody** - production, reduce of needed lookaheads results in huge parser performance improvements at least in some cases
-  * please test it due to possible changes in the parse tree
+## Extensions in the latest SNAPSHOT version 1.1
 
 ## Extensions of JSqlParser releases
 
@@ -90,7 +85,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>0.9.6</version>
+	<version>1.0</version>
 </dependency>
 ```
 
