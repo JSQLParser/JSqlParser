@@ -348,9 +348,6 @@
 		</profile>
 		<profile>
 			<id>check.sources</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
 			<build>
 				<plugins>
 					<plugin>
@@ -368,6 +365,8 @@
 						</executions>
 						<configuration>
 							<logViolationsToConsole>true</logViolationsToConsole>
+							<includeTestSourceDirectory>true</includeTestSourceDirectory>
+							<excludes>target/**</excludes>
 							<checkstyleRules>
 								<module name="Checker">
 									<module name="FileTabCharacter" />
