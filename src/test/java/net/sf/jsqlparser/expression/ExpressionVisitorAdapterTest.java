@@ -40,7 +40,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- *
+ * 
  * @author tw
  */
 public class ExpressionVisitorAdapterTest {
