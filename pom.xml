@@ -348,11 +348,14 @@
 		</profile>
 		<profile>
 			<id>check.sources</id>
+			<!-- 
+			Travis does not work with this CheckStyle configuration.
 			<activation>
 			<property>
 				<name>!skipCheckSources</name>
 			</property>
 			</activation>
+			-->
 			<build>
 				<plugins>
 					<plugin>
