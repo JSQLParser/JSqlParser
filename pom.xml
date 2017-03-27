@@ -371,7 +371,9 @@
 						<configuration>
 							<logViolationsToConsole>true</logViolationsToConsole>
 							<includeTestSourceDirectory>true</includeTestSourceDirectory>
-							<sourceDirectories>src</sourceDirectories>
+							<sourceDirectories>
+								<sourceDirectory>src</sourceDirectory>
+							</sourceDirectories>
 							<checkstyleRules>
 								<module name="Checker">
 									<module name="FileTabCharacter" />
