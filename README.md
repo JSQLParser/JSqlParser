@@ -46,6 +46,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.1
 
+* checkstyle integration to force first souce code conventions (linefeeds, spaces instead of tabs)
+
 ## Extensions of JSqlParser releases
 
 * [Release Notes](https://github.com/JSQLParser/JSqlParser/releases)

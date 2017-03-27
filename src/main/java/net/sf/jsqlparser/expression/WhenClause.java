@@ -31,11 +31,6 @@ public class WhenClause implements Expression {
     private Expression whenExpression;
     private Expression thenExpression;
 
-    /*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.jsqlparser.expression.Expression#accept(net.sf.jsqlparser.expression.ExpressionVisitor)
-     */
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
