@@ -388,6 +388,7 @@
 										<module name="ConstantName" />
 										<module name="EmptyStatement" />
 										<module name="NeedBraces" />
+										<module name="UnnecessaryParentheses" />
 									</module>
 								</module>
 							</checkstyleRules>

@@ -60,8 +60,8 @@ public class CCJSqlParserManagerTest {
         while (true) {
             line = in.readLine();
             if (line != null) {
-                if (((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/' && line.
-                        charAt(1) == '/'))) {
+                if ((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/' && line.
+                        charAt(1) == '/')) {
                     break;
                 }
             } else {
