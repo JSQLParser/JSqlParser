@@ -18,12 +18,12 @@ import org.junit.Test;
 
 public class ReplaceTest {
 
-    private static final CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    private static final CCJSqlParserManager PARSER_MANAGER = new CCJSqlParserManager();
 
     @Test
     public void testReplaceSyntax1() throws JSQLParserException {
         String statement = "REPLACE mytable SET col1='as', col2=?, col3=565";
-        Replace replace = (Replace) parserManager.parse(new StringReader(statement));
+        Replace replace = (Replace) PARSER_MANAGER.parse(new StringReader(statement));
         assertEquals("mytable", replace.getTable().getName());
         assertEquals(3, replace.getColumns().size());
         assertEquals("col1", ((Column) replace.getColumns().get(0)).getColumnName());
@@ -39,7 +39,7 @@ public class ReplaceTest {
     @Test
     public void testReplaceSyntax2() throws JSQLParserException {
         String statement = "REPLACE mytable (col1, col2, col3) VALUES ('as', ?, 565)";
-        Replace replace = (Replace) parserManager.parse(new StringReader(statement));
+        Replace replace = (Replace) PARSER_MANAGER.parse(new StringReader(statement));
         assertEquals("mytable", replace.getTable().getName());
         assertEquals(3, replace.getColumns().size());
         assertEquals("col1", ((Column) replace.getColumns().get(0)).getColumnName());
@@ -56,15 +56,13 @@ public class ReplaceTest {
     @Test
     public void testReplaceSyntax3() throws JSQLParserException {
         String statement = "REPLACE mytable (col1, col2, col3) SELECT * FROM mytable3";
-        Replace replace = (Replace) parserManager.parse(new StringReader(statement));
+        Replace replace = (Replace) PARSER_MANAGER.parse(new StringReader(statement));
         assertEquals("mytable", replace.getTable().getName());
         assertEquals(3, replace.getColumns().size());
         assertEquals("col1", ((Column) replace.getColumns().get(0)).getColumnName());
         assertEquals("col2", ((Column) replace.getColumns().get(1)).getColumnName());
         assertEquals("col3", ((Column) replace.getColumns().get(2)).getColumnName());
         assertTrue(replace.getItemsList() instanceof SubSelect);
-        // TODO:
-        // assertEquals(statement, ""+replace);
     }
 
     @Test

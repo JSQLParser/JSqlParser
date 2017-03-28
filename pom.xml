@@ -375,7 +375,7 @@
 							<logViolationsToConsole>true</logViolationsToConsole>
 							<includeTestSourceDirectory>true</includeTestSourceDirectory>
 							<sourceDirectories>
-								<sourceDirectory>src</sourceDirectory>
+								<sourceDirectory>./src/java</sourceDirectory>
 							</sourceDirectories>
 							<checkstyleRules>
 								<module name="Checker">
@@ -384,9 +384,21 @@
 										<property name="format" value="(?s:(\r\n|\r).*)"/>
 										<property name="message" value="CRLF and CR line endings are prohibited, but this file uses them."/>
 									</module>
+									<module name="TreeWalker">
+										<module name="ConstantName" />
+										<module name="EmptyStatement" />
+										<module name="NeedBraces" />
+									</module>
 								</module>
 							</checkstyleRules>
 						</configuration>
+						<dependencies>
+							<dependency>
+								<groupId>com.puppycrawl.tools</groupId>
+								<artifactId>checkstyle</artifactId>
+								<version>7.6.1</version>
+							</dependency>
+						</dependencies>
 					</plugin>
 				</plugins>
 			</build>
