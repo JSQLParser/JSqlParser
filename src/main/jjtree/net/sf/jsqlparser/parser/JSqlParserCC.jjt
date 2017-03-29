@@ -29,6 +29,7 @@ options{
 //  FORCE_LA_CHECK=true;
     UNICODE_INPUT=true;
 //	JAVA_TEMPLATE_TYPE = "modern";
+	JDK_VERSION = "1.6";
 }
 
 PARSER_BEGIN(CCJSqlParser)
