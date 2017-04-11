@@ -95,7 +95,9 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(Statements stmts) {
-
+        for (Statement statement : stmts.getStatements()) {
+            statement.accept(this);
+        }
     }
 
     @Override
