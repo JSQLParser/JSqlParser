@@ -205,9 +205,6 @@ public class AlterExpression {
             b.append("CONSTRAINT ").append(constraintName);
         } else if (pkColumns != null) {
             b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
-            if (getConstraints() != null && !getConstraints().isEmpty()) {
-                b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
-            }
         } else if (ukColumns != null) {
             b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.
                     getStringList(ukColumns)).append(")");
@@ -224,6 +221,9 @@ public class AlterExpression {
             }
         } else if (index != null) {
             b.append(index);
+        }
+        if (getConstraints() != null && !getConstraints().isEmpty()) {
+            b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
         }
 
         return b.toString();

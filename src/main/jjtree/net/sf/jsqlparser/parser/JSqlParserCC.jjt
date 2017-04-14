@@ -3186,6 +3186,7 @@ AlterExpression AlterExpression():
                     fkIndex.setReferencedColumnNames(columnNames);
                     alterExp.setIndex(fkIndex);
                 }
+                constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
             )
             |
             ( tk=<K_PRIMARY> tk2=<K_KEY>
@@ -3197,6 +3198,7 @@ AlterExpression AlterExpression():
                     index.setColumnsNames(columnNames);
                     alterExp.setIndex(index);
                 }
+                constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
             )
             |
             (
