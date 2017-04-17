@@ -825,6 +825,7 @@ public class SelectTest extends TestCase {
             parserManager.parse(new StringReader(statement));
             fail("sould not work");
         } catch (JSQLParserException ex) {
+            //expected to fail
         }
     }
 
@@ -2418,7 +2419,7 @@ public class SelectTest extends TestCase {
             CCJSqlParserUtil.parse("SELECT count(*) FROM mytable WHERE 5");
             fail("should not be parsed");
         } catch (JSQLParserException ex) {
-
+            //expected to fail
         }
     }
 

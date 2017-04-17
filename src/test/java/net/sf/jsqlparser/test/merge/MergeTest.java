@@ -167,7 +167,7 @@ public class MergeTest {
             assertSqlCanBeParsedAndDeparsed("MERGE INTO a USING dual ON (col3 = ? AND col1 = ? AND col2 = ?) WHEN MATCHED THEN UPDATE SET col4 = col4 + ? WHEN NOT MATCHED THEN INSERT (col1, col2, col3, col4) VALUES (?, ?, ?, ?) WHEN MATCHED THEN UPDATE SET col4 = col4 + ?");
             fail("syntaxerror parsed");
         } catch (JSQLParserException ex) {
-
+            //expected to fail
         }
     }
 }

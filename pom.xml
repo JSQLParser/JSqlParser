@@ -374,9 +374,7 @@
 						<configuration>
 							<logViolationsToConsole>true</logViolationsToConsole>
 							<includeTestSourceDirectory>true</includeTestSourceDirectory>
-							<sourceDirectories>
-								<sourceDirectory>./src/java</sourceDirectory>
-							</sourceDirectories>
+                            <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
 							<checkstyleRules>
 								<module name="Checker">
 									<module name="FileTabCharacter" />
@@ -387,10 +385,21 @@
 									</module>
 									-->
 									<module name="TreeWalker">
+                                        <module name="AvoidNestedBlocks"/>
 										<module name="ConstantName" />
+                                        <module name="EmptyCatchBlock" />
 										<module name="EmptyStatement" />
+                                        <module name="MissingOverride"/>
+                                        <module name="MultipleVariableDeclarations"/>
+                                        <module name="ParameterAssignment"/>
+                                        <module name="StringLiteralEquality"/>
+                                        <module name="RedundantImport"/>
+                                        <module name="UnusedImports"/>
+                                        
 										<module name="NeedBraces" />
 										<module name="UnnecessaryParentheses" />
+                                        <module name="LeftCurly"/>
+                                        <module name="RightCurly"/>
 									</module>
 								</module>
 							</checkstyleRules>

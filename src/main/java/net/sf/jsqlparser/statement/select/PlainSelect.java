@@ -443,7 +443,7 @@ public class PlainSelect implements SelectBody {
             }
 
             for (int i = 0; i < list.size(); i++) {
-                ans.append(list.get(i)).append(((i < list.size() - 1) ? comma + " " : ""));
+                ans.append(list.get(i)).append((i < list.size() - 1) ? comma + " " : "");
 //                ans += "" + list.get(i) + ((i < list.size() - 1) ? comma + " " : "");
             }
 
