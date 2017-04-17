@@ -54,12 +54,15 @@ Also I would like to know about needed examples or documentation stuff.
 * Modifications before GitHubs release tagging are listed in the [Older Releases](https://github.com/JSQLParser/JSqlParser/wiki/Older-Releases) page.
 
 
-
-## BUILDING from the sources
+## Building from the sources
 
 As the project is a Maven project, building is rather simple by running:
 
-	mvn package
+	`mvn package`
+    
+The project requires the following to build:
+- Maven 
+- JDK 1.7 or later. The jar will target JDK 1.6, but the version of the maven-compiler-plugin that JsqlParser uses requires JDK 1.7+
 
 This will produce the jsqlparser-VERSION.jar file in the target/ directory.
 
