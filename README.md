@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/JSQLParser/JSqlParser.svg?branch=master)](https://travis-ci.org/JSQLParser/JSqlParser)   [![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/00b2d91995764ae4805b55627aca8d39)](https://www.codacy.com/app/wumpz/JSqlParser?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=JSQLParser/JSqlParser&amp;utm_campaign=Badge_Grade)
 
-[![PayPal donate button](http://img.shields.io/paypal/donate.png?color=yellow)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=64CCN9JJANZXA "Help this JSqlParser version using Paypal")  
+[![PayPal donate button](http://img.shields.io/paypal/donate.png?color=blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=64CCN9JJANZXA "Help this JSqlParser version using Paypal")  
 
 [![Gitter](https://badges.gitter.im/JSQLParser/JSqlParser.svg)](https://gitter.im/JSQLParser/JSqlParser?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
@@ -15,6 +15,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 
 ## News
+* JSqlParser has now a build in checkstyle configuration to introduce source code conventions.
 * Released first major version **1.0** of JSqlParser. 
 * Please test the actual **0.9.8-SNAPSHOT**. It includes includes grammar refactorings or changes which eventually results in parse tree changes.
 * Version **0.9.7** released.
@@ -46,7 +47,9 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.1
 
-* checkstyle integration to force first souce code conventions (linefeeds, spaces instead of tabs)
+* checkstyle integration to force first souce code conventions
+  * checkstyle is activated by default, it can be deactivated by an environment property **skipCheckSources**
+  * pull requests should follow this style settings
 
 ## Extensions of JSqlParser releases
 
@@ -62,6 +65,9 @@ As the project is a Maven project, building is rather simple by running:
 	mvn package
 
 This will produce the jsqlparser-VERSION.jar file in the target/ directory.
+
+**To build this project without using Maven, one has to build the parser by JavaCC using the CLI options it provids.**
+
 
 ## Maven Repository
 
