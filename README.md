@@ -58,7 +58,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 As the project is a Maven project, building is rather simple by running:
 
-	`mvn package`
+	mvn package
     
 The project requires the following to build:
 - Maven 
