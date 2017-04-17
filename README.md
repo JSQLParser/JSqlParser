@@ -15,6 +15,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 
 ## News
+* JSqlParser has now a build in checkstyle configuration to introduce source code conventions.
 * Released first major version **1.0** of JSqlParser. 
 * Please test the actual **0.9.8-SNAPSHOT**. It includes includes grammar refactorings or changes which eventually results in parse tree changes.
 * Version **0.9.7** released.
@@ -46,7 +47,9 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.1
 
-* checkstyle integration to force first souce code conventions (linefeeds, spaces instead of tabs)
+* checkstyle integration to force first souce code conventions
+  * checkstyle is activated by default, it can be deactivated by an environment property **skipCheckSources**
+  * pull requests should follow this style settings
 
 ## Extensions of JSqlParser releases
 
