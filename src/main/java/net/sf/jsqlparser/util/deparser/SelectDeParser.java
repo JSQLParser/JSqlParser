@@ -232,6 +232,10 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         if (alias != null) {
             buffer.append(alias);
         }
+        MySQLIndexHint indexHint = tableName.getIndexHint();
+        if (indexHint != null) {
+            buffer.append(indexHint);
+        }
     }
 
     @Override
