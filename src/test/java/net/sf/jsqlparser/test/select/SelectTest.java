@@ -2578,4 +2578,22 @@ public class SelectTest extends TestCase {
 //    public void testSubSelectFailsIssue394_2() throws JSQLParserException {
 //        assertSqlCanBeParsedAndDeparsed("select * from all");
 //    }
+
+    public void testMysqlIndexHints() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 USE INDEX (index1)");
+        assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 IGNORE INDEX (index1)");
+        assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 FORCE INDEX (index1)");
+    }
+
+    public void testMysqlIndexHintsWithJoins() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT column FROM table0 t0 INNER JOIN table1 t1 USE INDEX (index1)");
+        assertSqlCanBeParsedAndDeparsed("SELECT column FROM table0 t0 INNER JOIN table1 t1 IGNORE INDEX (index1)");
+        assertSqlCanBeParsedAndDeparsed("SELECT column FROM table0 t0 INNER JOIN table1 t1 FORCE INDEX (index1)");
+    }
+
+    public void testMysqlMultipleIndexHints() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 USE INDEX (index1,index2)");
+        assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 IGNORE INDEX (index1,index2)");
+        assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 FORCE INDEX (index1,index2)");
+    }
 }

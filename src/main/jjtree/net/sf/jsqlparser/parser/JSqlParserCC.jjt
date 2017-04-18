@@ -263,6 +263,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_NOVALIDATE : "NOVALIDATE">
 |   <K_ENABLE : "ENABLE">
 |   <K_DISABLE : "DISABLE">
+|   <K_USE : "USE">
+|   <K_FORCE : "FORCE">
 }
 
 TOKEN : /* Stuff */
@@ -1077,6 +1079,38 @@ Alias Alias():
    { return new Alias(name,useAs); }
 }
 
+MySQLIndexHint MySQLIndexHint():
+{
+	Token actionToken = null;
+	Token indexToken = null;
+	String indexName = null;
+	List<String> indexNameList = new ArrayList<String>();
+}
+{
+	(actionToken = <K_USE>
+	| actionToken = <K_IGNORE>
+	| actionToken = <K_FORCE> )
+	(indexToken = <K_INDEX>
+	| indexToken = <K_KEY>)
+	"("
+	indexName = Identifier() { indexNameList.add(indexName); }
+	("," indexName= Identifier() { indexNameList.add(indexName); })*
+	")"
+	{
+		return new MySQLIndexHint(actionToken.image, indexToken.image, indexNameList);
+	}
+}
+
+String Identifier():
+{
+	Token tk = null;
+}
+{
+	(tk=<S_IDENTIFIER>
+    | tk=<S_QUOTED_IDENTIFIER>)
+    { return tk.image; }
+}
+
 FunctionItem FunctionItem():
 {
     Alias alias = null;
@@ -1224,6 +1258,7 @@ FromItem FromItem():
     FromItem fromItem = null;
     Pivot pivot = null;
     Alias alias = null;
+    MySQLIndexHint indexHint = null;
 }
 {
     (
@@ -1251,6 +1286,13 @@ FromItem FromItem():
             )
             [(LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot()) { fromItem.setPivot(pivot); } ]
             [ alias=Alias() { fromItem.setAlias(alias); } ]
+            [
+                LOOKAHEAD(2)
+                indexHint=MySQLIndexHint() {
+                    if (fromItem instanceof Table)
+						((Table) fromItem).setHint(indexHint);
+                }
+            ]
         )
     )
     {
