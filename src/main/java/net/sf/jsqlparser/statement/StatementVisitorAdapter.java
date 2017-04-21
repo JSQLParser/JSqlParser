@@ -37,6 +37,10 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 
 public class StatementVisitorAdapter implements StatementVisitor {
+    @Override
+    public void visit(Commit commit) {
+        
+    }
 
     @Override
     public void visit(Select select) {
