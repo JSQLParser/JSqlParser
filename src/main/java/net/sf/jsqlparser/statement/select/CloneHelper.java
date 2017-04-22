@@ -123,7 +123,8 @@ public class CloneHelper {
 		MultipleExpression changed = (MultipleExpression)exp;
 		Expression result = changed.getChild(0);
 		for(int i=1;i<changed.size();i++) {
-			Expression left = result, right = changed.getChild(i);
+			Expression left = result;
+			Expression right = changed.getChild(i);
 			if(isMultiOr)
 				result = new OrExpression(left, right);
 			else
