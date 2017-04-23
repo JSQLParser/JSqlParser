@@ -356,7 +356,7 @@ public class CNFConverter {
             temp1 = child;
             pushNot(-1);
         } else{
-        	/* otherwise there will be one not left to push. 
+            /* otherwise there will be one not left to push. 
              * if the child is not these two types of operators.
              * that means we reach the leaves of the logical part.
              * set a new not operator whose child is the current one
