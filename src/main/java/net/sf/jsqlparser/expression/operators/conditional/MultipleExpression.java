@@ -74,8 +74,9 @@ public abstract class MultipleExpression implements Expression {
         sb.append("(");
         for(int i=0;i<size();i++) {
             sb.append(getChild(i));
-            if(i!=size() - 1)
+            if(i!=size() - 1) {
                 sb.append(" " + getStringExpression() + " ");
+            }
         }
         sb.append(")");
         return sb.toString();
