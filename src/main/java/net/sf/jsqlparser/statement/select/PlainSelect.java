@@ -443,7 +443,7 @@ public class PlainSelect implements SelectBody {
             }
 
             for (int i = 0; i < list.size(); i++) {
-                ans.append(list.get(i)).append(((i < list.size() - 1) ? comma + " " : ""));
+                ans.append(list.get(i)).append((i < list.size() - 1) ? comma + " " : "");
 //                ans += "" + list.get(i) + ((i < list.size() - 1) ? comma + " " : "");
             }
 
@@ -461,9 +461,9 @@ public class PlainSelect implements SelectBody {
      * CNF form. 
      */
     public void changeWhereToCNF() {
-    	CNFConverter cnf = new CNFConverter();
-    	cnf.convert(where);
-    	where = cnf.getRoot();
+        CNFConverter cnf = new CNFConverter();
+        cnf.convert(where);
+        where = cnf.getRoot();
     }
     
     /**
@@ -471,9 +471,9 @@ public class PlainSelect implements SelectBody {
      * CNF form. 
      */
     public void changeHavingToCNF() {
-    	CNFConverter cnf = new CNFConverter();
-    	cnf.convert(having);
-    	having = cnf.getRoot();
+        CNFConverter cnf = new CNFConverter();
+        cnf.convert(having);
+        having = cnf.getRoot();
     }
     
 }
