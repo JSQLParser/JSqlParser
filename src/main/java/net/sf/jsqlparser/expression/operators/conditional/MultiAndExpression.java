@@ -33,21 +33,21 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
  */
 public class MultiAndExpression extends MultipleExpression {
 
-	public MultiAndExpression(List<Expression> childlist) {
-		super(childlist);
-	}
+    public MultiAndExpression(List<Expression> childlist) {
+        super(childlist);
+    }
 
-	/**
-	 * Leave it blank since it is not a part of the expression tree.
-	 */
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		return;
-	}
+    /**
+     * Leave it blank since it is not a part of the expression tree.
+     */
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        return;
+    }
 
-	@Override
-	public String getStringExpression() {
-		return "AND";
-	}
+    @Override
+    public String getStringExpression() {
+        return "AND";
+    }
 
 }

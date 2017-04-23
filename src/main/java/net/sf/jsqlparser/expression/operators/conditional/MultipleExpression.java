@@ -32,53 +32,53 @@ import net.sf.jsqlparser.expression.Expression;
  */
 public abstract class MultipleExpression implements Expression {
 
-	private List<Expression> childlist;
-	
-	public MultipleExpression(List<Expression> childlist) {
-		this.childlist = childlist;
-	}
-	
-	public int size() {
-		return childlist.size();
-	}
-	
-	public List<Expression> getList() {
-		return childlist;
-	}
-	
-	public Expression getChild(int index) {
-		return childlist.get(index);
-	}
-	
-	public Expression removeChild(int index) {
-		return childlist.remove(index);
-	}
-	
-	public void setChild(int index, Expression express) {
-		childlist.set(index, express);
-	}
-	
-	public int getIndex(Expression express) {
-		return childlist.indexOf(express);
-	}
-	
-	public void addChild(int index, Expression express) {
-		childlist.add(index, express);
-	}
-	
-	public abstract String getStringExpression();
-	
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("(");
-		for(int i=0;i<size();i++) {
-			sb.append(getChild(i));
-			if(i!=size() - 1)
-				sb.append(" " + getStringExpression() + " ");
-		}
-		sb.append(")");
-		return sb.toString();
-	}
-	
+    private List<Expression> childlist;
+    
+    public MultipleExpression(List<Expression> childlist) {
+        this.childlist = childlist;
+    }
+    
+    public int size() {
+        return childlist.size();
+    }
+    
+    public List<Expression> getList() {
+        return childlist;
+    }
+    
+    public Expression getChild(int index) {
+        return childlist.get(index);
+    }
+    
+    public Expression removeChild(int index) {
+        return childlist.remove(index);
+    }
+    
+    public void setChild(int index, Expression express) {
+        childlist.set(index, express);
+    }
+    
+    public int getIndex(Expression express) {
+        return childlist.indexOf(express);
+    }
+    
+    public void addChild(int index, Expression express) {
+        childlist.add(index, express);
+    }
+    
+    public abstract String getStringExpression();
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(");
+        for(int i=0;i<size();i++) {
+            sb.append(getChild(i));
+            if(i!=size() - 1)
+                sb.append(" " + getStringExpression() + " ");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+    
 }
