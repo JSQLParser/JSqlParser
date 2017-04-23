@@ -441,7 +441,7 @@ public class CNFConverter {
                     queue.offer(and.getChild(i));
                 }
             }else if(express instanceof MultiOrExpression) {
-            	/* for the multi or operator, the logic is the similar. */
+                /* for the multi or operator, the logic is the similar. */
                 MultiOrExpression or = (MultiOrExpression)express;
                 while(true) {
                     int index = 0;
@@ -457,7 +457,7 @@ public class CNFConverter {
                     if(index==or.size()) {
                         break;
                     }else{
-                    	/* if not, remove the child out and push the child of that child
+                        /* if not, remove the child out and push the child of that child
                          * in the operator, starting from the index where the child 
                          * is removed. */
                         or.removeChild(index);
