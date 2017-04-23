@@ -137,8 +137,7 @@ public class CloneHelper {
             Expression right = changed.getChild(i);
             if(isMultiOr) {
                 result = new OrExpression(left, right);
-            }
-            else {
+            } else {
                 result = new AndExpression(left, right);
             }
         }

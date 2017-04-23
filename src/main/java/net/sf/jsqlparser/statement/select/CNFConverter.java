@@ -331,8 +331,7 @@ public class CNFConverter {
                 temp1 = or.getChild(i);
                 pushNot(i);
             }
-        }
-        else if(temp1 instanceof NotExpression) {
+        }else if(temp1 instanceof NotExpression) {
             handleNot(index);
         }
     }
@@ -356,10 +355,9 @@ public class CNFConverter {
             ((MultipleExpression)temp2).setChild(index, child);
             temp1 = child;
             pushNot(-1);
-        }
-        /* otherwise there will be one not left to push. */
-        else{
-            /* if the child is not these two types of operators.
+        } else{
+        	/* otherwise there will be one not left to push. 
+             * if the child is not these two types of operators.
              * that means we reach the leaves of the logical part.
              * set a new not operator whose child is the current one
              * and connect that operator with the parent and return. */
@@ -426,11 +424,10 @@ public class CNFConverter {
                      * that means this is already valid. jump out of the loop. */
                     if(index==and.size()) {
                         break;
-                    }
+                    }else{
                     /* if not, remove the child out and push the child of that child
                      * in the operator, starting from the index where the child 
                      * is removed. */
-                    else{
                         and.removeChild(index);
                         MultipleExpression order = (MultipleExpression)get;
                         for(int i=0;i<order.size();i++){
@@ -443,9 +440,8 @@ public class CNFConverter {
                 for(int i=0;i<and.size();i++) {
                     queue.offer(and.getChild(i));
                 }
-            }
-            /* for the multi or operator, the logic is the similar. */
-            else if(express instanceof MultiOrExpression) {
+            }else if(express instanceof MultiOrExpression) {
+            	/* for the multi or operator, the logic is the similar. */
                 MultiOrExpression or = (MultiOrExpression)express;
                 while(true) {
                     int index = 0;
@@ -460,11 +456,10 @@ public class CNFConverter {
                      * that means this is already valid. jump out of the loop. */
                     if(index==or.size()) {
                         break;
-                    }
-                    /* if not, remove the child out and push the child of that child
-                     * in the operator, starting from the index where the child 
-                     * is removed. */
-                    else{
+                    }else{
+                    	/* if not, remove the child out and push the child of that child
+                         * in the operator, starting from the index where the child 
+                         * is removed. */
                         or.removeChild(index);
                         MultipleExpression order = (MultipleExpression)get;
                         for(int i=0;i<order.size();i++){
@@ -547,7 +542,9 @@ public class CNFConverter {
      */
     private void pushAnd(Stack<Mule> stack) {
         int level = 0;
-        if(!stack.isEmpty()) level = stack.peek().level;
+        if(!stack.isEmpty()) {
+            level = stack.peek().level;
+        }
         while(!stack.isEmpty()) {
             Mule mule = stack.pop();
             /* we finish a level, uniform the tree by calling gather. */
