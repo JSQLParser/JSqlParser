@@ -176,19 +176,19 @@ import net.sf.jsqlparser.expression.operators.conditional.MultipleExpression;
  *                                       /                \
  *                                   AND                ( )
  *                             /            \            |
- *                           ( )            ( )           part1
- *                            |             |
- *                         OR          part2
- *                    /        \
- *                   OR        NOT
- *              /         \     |
- *            OR          NOT   H
- *        /        \       |
- *       F          H      G
- *    
+ *                           ( )            ( )         part1
+ *                            |              |
+ *                            OR          part2
+ *                        /        \
+ *                       OR        NOT
+ *                  /         \     |
+ *                OR          NOT   H
+ *            /        \       |
+ *           F          H      G
+ *     
  * part1:                                         OR
- *                                             /            \
- *                                            OR            L
+ *                                          /            \
+ *                                         OR            L
  *                                    /          \
  *                                  OR            K
  *                              /        \
@@ -197,14 +197,14 @@ import net.sf.jsqlparser.expression.operators.conditional.MultipleExpression;
  *                        F        H       G
  * 
  * part2:                                        OR
- *                                             /        \
+ *                                         /        \
  *                                        OR          L
  *                                   /          \
  *                                 OR            J
  *                            /          \
  *                          OR           NOT
  *                      /        \        |                            
- *                        F          H       G                                    
+ *                     F          H       G                                    
  * 
  * @author messfish
  *
@@ -250,7 +250,7 @@ public class CNFConverter {
      * return the converted expression.
      * @param express the original expression tree.
      */
-    public void convert(Expression express) {
+    public Expression convert(Expression express) {
         reorder(express);
         pushNotDown();
         /* notice for the gather() function, we do not change the variable
@@ -260,6 +260,7 @@ public class CNFConverter {
         gather();
         pushAndUp();
         changeBack();
+        return root;
     }
     
     /**
@@ -274,7 +275,6 @@ public class CNFConverter {
      * this is the first step that rebuild the expression tree.
      * Use the standard specified in the above class. Traverse the 
      * original tree recursively and rebuild the tree from that.
-     * Note this is a shallow clone. 
      * @param express the original expression tree.
      */
     public void reorder(Expression express) {
@@ -477,7 +477,6 @@ public class CNFConverter {
     }
     
     /**
-     * Generally speaking this could be the last step in the conversion to CNF.
      * First, BFS the tree and gather all the or operators and their parents
      * into a stack. Next, pop them out and push the and operators under the 
      * or operators upwards(if there are). Do this level by level, which means
