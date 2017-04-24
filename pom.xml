@@ -393,6 +393,8 @@
                                         <module name="RedundantImport"/>
                                         <module name="UnusedImports"/>
                                         
+										<module name="WhitespaceAfter"/>
+										
                                         <module name="NeedBraces" />
                                         <module name="UnnecessaryParentheses" />
                                         <module name="LeftCurly"/>
