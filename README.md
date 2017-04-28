@@ -86,7 +86,7 @@ public void setUsingSelect(SubSelect usingSelect) {
 
 This is a valid piece of source code:
 * blocks without braces are not allowed
-* after controll statements (if, while, for) a whitespace is expected
+* after control statements (if, while, for) a whitespace is expected
 * the opening brace should be in the same line as the control statement
 
 ## Maven Repository
