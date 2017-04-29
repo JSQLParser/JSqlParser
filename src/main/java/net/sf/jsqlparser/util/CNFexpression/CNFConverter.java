@@ -283,7 +283,7 @@ public class CNFConverter {
      * original tree recursively and rebuild the tree from that.
      * @param express the original expression tree.
      */
-    public void reorder(Expression express) {
+    private void reorder(Expression express) {
         root = clone.modify(express);
         List<Expression> list = new ArrayList<Expression>();
         list.add(root);
@@ -295,7 +295,7 @@ public class CNFConverter {
      * Since it needs an extra parameter, I will create a new 
      * method to handle this.
      */
-    public void pushNotDown() {
+    private void pushNotDown() {
         /* set the two temp parameters to their staring point. */
         temp1 = root;
         temp2 = dummy;
@@ -413,7 +413,7 @@ public class CNFConverter {
      * where all the same multi operators store in the same odd level
      * of the tree or in the same even level of the tree.
      */
-    public void gather() {
+    private void gather() {
         Queue<Expression> queue = new LinkedList<Expression>();
         queue.offer(temp1);
         while(!queue.isEmpty()) {
@@ -495,7 +495,7 @@ public class CNFConverter {
      * during each level we will call the gather() method to make the tree uniform.
      * When we move out of the stack. The expression tree shall be in CNF form.
      */
-    public void pushAndUp() {
+    private void pushAndUp() {
         Queue<Mule> queue = new LinkedList<Mule>();
         Stack<Mule> stack = new Stack<Mule>();
         Mule root = new Mule(temp2, temp1, 0);
@@ -612,7 +612,7 @@ public class CNFConverter {
      * before the or expression that is attached to the and expression
      * to make the generated result resembles the CNF form.
      */
-    public void changeBack() {
+    private void changeBack() {
         if(!(root instanceof MultiAndExpression)) { 
             return;
         }
