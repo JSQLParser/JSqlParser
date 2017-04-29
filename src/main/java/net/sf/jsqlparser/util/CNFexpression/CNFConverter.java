@@ -371,11 +371,9 @@ public class CNFConverter {
                     !(child instanceof MultiOrExpression)){
                 if (child instanceof LikeExpression) {
                     ((LikeExpression)child).setNot(true);
-                }
-                else if(child instanceof BinaryExpression) {
+                }else if(child instanceof BinaryExpression) {
                     ((BinaryExpression) child).setNot();
-                }
-                else {
+                }else {
                     child = new NotExpression(child);
                 }
                 ((MultipleExpression)temp2).setChild(index, child);

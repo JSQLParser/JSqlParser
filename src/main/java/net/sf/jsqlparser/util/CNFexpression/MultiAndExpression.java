@@ -24,7 +24,6 @@ package net.sf.jsqlparser.util.CNFexpression;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 /**
  * This helper class is mainly used for handling the CNF conversion.
