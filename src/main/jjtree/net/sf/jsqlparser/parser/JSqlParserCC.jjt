@@ -26,6 +26,7 @@ options{
     DEBUG_PARSER=false;
     DEBUG_LOOKAHEAD=false;
     DEBUG_TOKEN_MANAGER=false;
+	CACHE_TOKENS=true;
 //  FORCE_LA_CHECK=true;
     UNICODE_INPUT=true;
 //	JAVA_TEMPLATE_TYPE = "modern";
@@ -798,7 +799,7 @@ String RelObjectNameExt():
   String result=null;
 } 
 {
-    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> | <K_DOUBLE>)
+    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> | tk=<K_DOUBLE> | tk=<K_IF>)
     {
         if (tk!=null) result=tk.image;
         return result;

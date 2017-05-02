@@ -2596,4 +2596,8 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 IGNORE INDEX (index1,index2)");
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 FORCE INDEX (index1,index2)");
     }
+    
+    public void testProblemIssue435() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT if(z, 'a', 'b') AS business_type FROM mytable1");
+    }
 }
