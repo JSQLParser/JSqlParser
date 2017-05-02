@@ -71,6 +71,23 @@ This will produce the jsqlparser-VERSION.jar file in the target/ directory.
 
 **To build this project without using Maven, one has to build the parser by JavaCC using the CLI options it provids.**
 
+## Source Code conventions
+
+Recently a checkstyle process was integrated into the build process. JSqlParser follows the sun java format convention. There are no TABs allowed. Use spaces.
+
+```java
+public void setUsingSelect(SubSelect usingSelect) {
+    this.usingSelect = usingSelect;
+    if (this.usingSelect != null) {
+        this.usingSelect.setUseBrackets(false);
+    }
+}
+```
+
+This is a valid piece of source code:
+* blocks without braces are not allowed
+* after control statements (if, while, for) a whitespace is expected
+* the opening brace should be in the same line as the control statement
 
 ## Maven Repository
 
