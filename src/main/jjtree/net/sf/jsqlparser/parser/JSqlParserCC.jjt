@@ -26,10 +26,10 @@ options{
     DEBUG_PARSER=false;
     DEBUG_LOOKAHEAD=false;
     DEBUG_TOKEN_MANAGER=false;
-	CACHE_TOKENS=true;
+	CACHE_TOKENS=false;
 //  FORCE_LA_CHECK=true;
     UNICODE_INPUT=true;
-//	JAVA_TEMPLATE_TYPE = "modern";
+	JAVA_TEMPLATE_TYPE = "classic";
 	JDK_VERSION = "1.6";
 }
 
