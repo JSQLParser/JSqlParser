@@ -2600,4 +2600,12 @@ public class SelectTest extends TestCase {
     public void testProblemIssue435() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT if(z, 'a', 'b') AS business_type FROM mytable1");
     }
+    
+    public void testNStringSelect() throws Exception {
+      final String statement = "SELECT N'national character' FROM table";
+      Select select = (Select) parserManager.parse(new StringReader(statement));
+
+      assertStatementCanBeDeparsedAs(select, statement);
+  }
+    
 }
