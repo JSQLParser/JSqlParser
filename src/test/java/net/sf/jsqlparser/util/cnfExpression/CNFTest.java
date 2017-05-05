@@ -1,4 +1,4 @@
-package net.sf.jsqlparser.util.CNFexpression;
+package net.sf.jsqlparser.util.cnfExpression;
 
 import static org.junit.Assert.*;
 
