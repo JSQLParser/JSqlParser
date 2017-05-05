@@ -19,7 +19,7 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-package net.sf.jsqlparser.util.CNFexpression;
+package net.sf.jsqlparser.util.cnfExpression;
 
 import java.util.ArrayList;
 import java.util.List;
