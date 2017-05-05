@@ -109,7 +109,7 @@ public class CloneHelper {
      */
     public Expression shallowCopy(Expression express) {
         if(express instanceof MultipleExpression) {
-            MultipleExpression multi = (MultipleExpression)express;
+            MultipleExpression multi = (MultipleExpression) express;
             List<Expression> list = new ArrayList<Expression>();
             for(int i=0; i<multi.size(); i++) {
                 list.add(shallowCopy(multi.getChild(i)));
