@@ -34,7 +34,12 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 
 /**
  * This class handles the conversion from a normal expression tree into
- * the CNF form. Basically it will follow these steps:
+ * the CNF form. 
+ * 
+ * Here is the definition of CNF form: 
+ * https://en.wikipedia.org/wiki/Conjunctive_normal_form
+ * 
+ * Basically it will follow these steps:
  * 
  * To help understanding, I will generate an example:
  * Here is the original tree:
