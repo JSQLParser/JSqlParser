@@ -34,7 +34,7 @@ import net.sf.jsqlparser.expression.NullValue;
  */
 public abstract class MultipleExpression implements Expression {
 
-    private List<Expression> childlist;
+    private final List<Expression> childlist;
     
     public MultipleExpression(List<Expression> childlist) {
         this.childlist = childlist;
@@ -82,7 +82,7 @@ public abstract class MultipleExpression implements Expression {
         for(int i=0; i<size(); i++) {
             sb.append(getChild(i));
             if(i!=size() - 1) {
-                sb.append(" " + getStringExpression() + " ");
+                sb.append(" ").append(getStringExpression()).append(" ");
             }
         }
         sb.append(")");

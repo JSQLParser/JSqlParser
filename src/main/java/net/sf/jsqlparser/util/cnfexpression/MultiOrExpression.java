@@ -30,7 +30,7 @@ import net.sf.jsqlparser.expression.Expression;
  * @author messfish
  *
  */
-public class MultiOrExpression extends MultipleExpression {
+public final class MultiOrExpression extends MultipleExpression {
 
     public MultiOrExpression(List<Expression> childlist) {
         super(childlist);

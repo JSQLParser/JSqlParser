@@ -40,7 +40,7 @@ import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
  * @author messfish
  *
  */
-public class CloneHelper {
+class CloneHelper {
 
     /**
      * This method is used for changing the logical structure of the tree.
