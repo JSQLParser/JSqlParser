@@ -1,17 +1,22 @@
 package net.sf.jsqlparser.util.deparser;
 
-import static org.mockito.ArgumentMatchers.argThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.CustomTypeSafeMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.StringDescription;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -26,7 +31,6 @@ import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -107,9 +111,9 @@ public class StatementDeParserTest {
 
         statementDeParser.visit(insert);
 
-        then(withItem1).should().accept(argThat(isSelectDeParserWithExpressionDeParser(expressionDeParser)));
-        then(withItem2).should().accept(argThat(isSelectDeParserWithExpressionDeParser(expressionDeParser)));
-        then(selectBody).should().accept(argThat(isSelectDeParserWithExpressionDeParser(expressionDeParser)));
+        then(withItem1).should().accept(argThat(is(selectDeParserWithExpressionDeParser(equalTo(expressionDeParser)))));
+        then(withItem2).should().accept(argThat(is(selectDeParserWithExpressionDeParser(equalTo(expressionDeParser)))));
+        then(selectBody).should().accept(argThat(is(selectDeParserWithExpressionDeParser(equalTo(expressionDeParser)))));
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
@@ -150,30 +154,31 @@ public class StatementDeParserTest {
 
         statementDeParser.visit(replace);
 
-        then(itemsList).should().accept(argThat(isReplaceDeParserWithDeParsers(expressionDeParser, isSelectDeParserWithExpressionDeParser(expressionDeParser))));
+        then(itemsList).should().accept(argThat(is(replaceDeParserWithDeParsers(equalTo(expressionDeParser), selectDeParserWithExpressionDeParser(equalTo(expressionDeParser))))));
     }
 
-    private ArgumentMatcher<SelectDeParser> isSelectDeParserWithExpressionDeParser(final ExpressionDeParser expressionDeParser) {
-        return new ArgumentMatcher<SelectDeParser>() {
+    private Matcher<SelectDeParser> selectDeParserWithExpressionDeParser(final Matcher<ExpressionDeParser> expressionDeParserMatcher) {
+        Description description = new StringDescription();
+        description.appendText("select de-parser with expression de-parser ");
+        expressionDeParserMatcher.describeTo(description);
+        return new CustomTypeSafeMatcher<SelectDeParser>(description.toString()) {
             @Override
-            public boolean matches(SelectDeParser argument) {
-                return argument.getExpressionVisitor().equals(expressionDeParser);
+            public boolean matchesSafely(SelectDeParser item) {
+                return expressionDeParserMatcher.matches(item.getExpressionVisitor());
             }
         };
     }
 
-    private ArgumentMatcher<ReplaceDeParser> isReplaceDeParserWithDeParsers(final ExpressionDeParser expressionDeParser, final ArgumentMatcher<SelectDeParser> selectDeParserMatcher) {
-        return new ArgumentMatcher<ReplaceDeParser>() {
+    private Matcher<ReplaceDeParser> replaceDeParserWithDeParsers(final Matcher<ExpressionDeParser> expressionDeParserMatcher, final Matcher<SelectDeParser> selectDeParserMatcher) {
+        Description description = new StringDescription();
+        description.appendText("replace de-parser with expression de-parser ");
+        expressionDeParserMatcher.describeTo(description);
+        description.appendText(" and select de-parser ");
+        selectDeParserMatcher.describeTo(description);
+        return new CustomTypeSafeMatcher<ReplaceDeParser>(description.toString()) {
             @Override
-            public boolean matches(ReplaceDeParser argument) {
-                boolean match = false;
-                if (argument.getExpressionVisitor().equals(expressionDeParser)) {
-                    SelectVisitor selectVisitor = argument.getSelectVisitor();
-                    if (selectVisitor instanceof SelectDeParser) {
-                        match = selectDeParserMatcher.matches((SelectDeParser) selectVisitor);
-                    }
-                }
-                return match;
+            public boolean matchesSafely(ReplaceDeParser item) {
+                return expressionDeParserMatcher.matches(item.getExpressionVisitor()) && selectDeParserMatcher.matches(item.getSelectVisitor());
             }
         };
     }
