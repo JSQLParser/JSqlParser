@@ -2,7 +2,6 @@ package net.sf.jsqlparser.util.deparser;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasToString;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
@@ -44,21 +43,22 @@ public class StatementDeParserTest {
 
     @Test
     public void shouldUseProvidedExpressionDeparserWhenDeParsingDelete() {
-        Delete delete = mock(Delete.class);
-        Table table = mock(Table.class);
+        Delete delete = new Delete();
+        Table table = new Table();
         Expression where = mock(Expression.class);
-        OrderByElement orderByElement1 = mock(OrderByElement.class);
-        OrderByElement orderByElement2 = mock(OrderByElement.class);
+        List<OrderByElement> orderByElements = new ArrayList<OrderByElement>();
+        OrderByElement orderByElement1 = new OrderByElement();
+        OrderByElement orderByElement2 = new OrderByElement();
         Expression orderByElement1Expression = mock(Expression.class);
         Expression orderByElement2Expression = mock(Expression.class);
-        List<OrderByElement> orderByElements = new ArrayList<OrderByElement>();
+
+        delete.setTable(table);
+        delete.setWhere(where);
+        delete.setOrderByElements(orderByElements);
         orderByElements.add(orderByElement1);
         orderByElements.add(orderByElement2);
-        given(delete.getTable()).willReturn(table);
-        given(delete.getWhere()).willReturn(where);
-        given(delete.getOrderByElements()).willReturn(orderByElements);
-        given(orderByElement1.getExpression()).willReturn(orderByElement1Expression);
-        given(orderByElement2.getExpression()).willReturn(orderByElement2Expression);
+        orderByElement1.setExpression(orderByElement1Expression);
+        orderByElement2.setExpression(orderByElement2Expression);
 
         statementDeParser.visit(delete);
 
