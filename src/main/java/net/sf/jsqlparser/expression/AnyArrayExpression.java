@@ -40,6 +40,6 @@ public class AnyArrayExpression implements AnyExpression {
     
     @Override
     public String toString() {
-        return "ANY " + array.toString();
+        return "ANY (" + array.toString()+")";
     }
 }

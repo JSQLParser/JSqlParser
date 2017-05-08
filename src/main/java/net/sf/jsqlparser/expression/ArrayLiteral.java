@@ -53,6 +53,6 @@ public class ArrayLiteral implements Expression {
 
 	@Override
 	public String toString() {
-		return "ARRAY["+list.toString()+"]";
+		return "ARRAY["+list.toStringNoBrackets()+"]";
 	}
 }

@@ -1934,6 +1934,14 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1 WHERE ROW(col1, col2) = (SELECT col3, col4 FROM t2 WHERE id = 10)");
     }
 
+    public void testArrayLiteral1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1 WHERE col1 = ANY (ARRAY[1, 2, 3])");
+    }
+
+    public void testArrayLiteral2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1 WHERE col1 = ALL (ARRAY[\"a\", \"b\", \"c\"])");
+    }
+
     public void testIssue154() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT d.id, d.uuid, d.name, d.amount, d.percentage, d.modified_time FROM discount d LEFT OUTER JOIN discount_category dc ON d.id = dc.discount_id WHERE merchant_id = ? AND deleted = ? AND dc.discount_id IS NULL AND modified_time < ? AND modified_time >= ? ORDER BY modified_time");
     }

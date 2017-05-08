@@ -53,6 +53,10 @@ public class ExpressionList implements ItemsList {
 		itemsListVisitor.visit(this);
 	}
 
+	public String toStringNoBrackets() {
+		return PlainSelect.getStringList(expressions, true, false);
+	}
+
 	@Override
 	public String toString() {
 		return PlainSelect.getStringList(expressions, true, true);

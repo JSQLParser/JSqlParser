@@ -1881,13 +1881,13 @@ Expression AnyComparisonExpression() :
 {
  (<K_ANY> { anyType = AnyType.ANY; } | <K_SOME> { anyType = AnyType.SOME; } ) 
  "(" 
-    (subselect=SubSelect() ")" { retval = new AnyComparisonExpression(anyType, subselect); }
+    (subselect=SubSelect()  { retval = new AnyComparisonExpression(anyType, subselect); }
      |array = ArrayLiteral() { 
        if (anyType == AnyType.SOME)
 	  throw new IllegalStateException("SOME not allowed with ARRAY");
        retval = new AnyArrayExpression(array); 
     } 
-    )
+    ) ")"
    {
       return retval;
    }

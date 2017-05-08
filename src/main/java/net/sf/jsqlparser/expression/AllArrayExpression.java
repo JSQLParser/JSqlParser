@@ -40,6 +40,6 @@ public class AllArrayExpression implements AllExpression {
     
     @Override
     public String toString() {
-        return "ALL " + array.toString();
+        return "ALL (" + array.toString() + ")";
     }
 }
