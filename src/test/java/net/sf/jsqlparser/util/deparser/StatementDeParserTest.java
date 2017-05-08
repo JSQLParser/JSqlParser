@@ -17,13 +17,16 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -111,11 +114,66 @@ public class StatementDeParserTest {
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
 
+    @Test
+    public void shouldUseProvidedExpressionDeParserWhenDeParsingReplaceWithoutItemsList() {
+        Replace replace = new Replace();
+        Table table = new Table();
+        List<Column> columns = new ArrayList<Column>();
+        List<Expression> expressions = new ArrayList<Expression>();
+        Column column1 = new Column();
+        Column column2 = new Column();
+        Expression expression1 = mock(Expression.class);
+        Expression expression2 = mock(Expression.class);
+
+        replace.setTable(table);
+        replace.setColumns(columns);
+        replace.setExpressions(expressions);
+        columns.add(column1);
+        columns.add(column2);
+        expressions.add(expression1);
+        expressions.add(expression2);
+
+        statementDeParser.visit(replace);
+
+        then(expression1).should().accept(expressionDeParser);
+        then(expression2).should().accept(expressionDeParser);
+    }
+
+    @Test
+    public void shouldUseProvidedExpressionDeParserWhenDeParsingReplaceWithItemsList() {
+        Replace replace = new Replace();
+        Table table = new Table();
+        ItemsList itemsList = mock(ItemsList.class);
+
+        replace.setTable(table);
+        replace.setItemsList(itemsList);
+
+        statementDeParser.visit(replace);
+
+        then(itemsList).should().accept(argThat(isReplaceDeParserWithDeParsers(expressionDeParser, isSelectDeParserWithExpressionDeParser(expressionDeParser))));
+    }
+
     private ArgumentMatcher<SelectDeParser> isSelectDeParserWithExpressionDeParser(final ExpressionDeParser expressionDeParser) {
         return new ArgumentMatcher<SelectDeParser>() {
             @Override
             public boolean matches(SelectDeParser argument) {
                 return argument.getExpressionVisitor().equals(expressionDeParser);
+            }
+        };
+    }
+
+    private ArgumentMatcher<ReplaceDeParser> isReplaceDeParserWithDeParsers(final ExpressionDeParser expressionDeParser, final ArgumentMatcher<SelectDeParser> selectDeParserMatcher) {
+        return new ArgumentMatcher<ReplaceDeParser>() {
+            @Override
+            public boolean matches(ReplaceDeParser argument) {
+                boolean match = false;
+                if (argument.getExpressionVisitor().equals(expressionDeParser)) {
+                    SelectVisitor selectVisitor = argument.getSelectVisitor();
+                    if (selectVisitor instanceof SelectDeParser) {
+                        match = selectDeParserMatcher.matches((SelectDeParser) selectVisitor);
+                    }
+                }
+                return match;
             }
         };
     }
