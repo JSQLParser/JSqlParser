@@ -47,6 +47,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.1
 
+* common normal form transformer for expressions (https://en.wikipedia.org/wiki/Conjunctive_normal_form) 
 * checkstyle integration to force first souce code conventions
   * checkstyle is activated by default, it can be deactivated by an environment property **skipCheckSources**
   * pull requests should follow this style settings

@@ -30,7 +30,9 @@ public abstract class BinaryExpression implements Expression {
     private Expression leftExpression;
     private Expression rightExpression;
     private boolean not = false;
-
+    
+    
+    
     public BinaryExpression() {
     }
 
@@ -53,7 +55,11 @@ public abstract class BinaryExpression implements Expression {
     public void setNot() {
         not = true;
     }
-
+    
+    public void removeNot() {
+        not = false;
+    }
+ 
     public boolean isNot() {
         return not;
     }
@@ -64,4 +70,5 @@ public abstract class BinaryExpression implements Expression {
     }
 
     public abstract String getStringExpression();
+    
 }
