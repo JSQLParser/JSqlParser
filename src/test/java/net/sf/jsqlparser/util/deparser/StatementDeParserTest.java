@@ -32,6 +32,7 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.update.Update;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StatementDeParserTest {
@@ -178,6 +179,84 @@ public class StatementDeParserTest {
         then(withItem1).should().accept(selectDeParser);
         then(withItem2).should().accept(selectDeParser);
         then(selectBody).should().accept(selectDeParser);
+    }
+
+    @Test
+    public void shouldUseProvidedDeParsersWhenDeParsingUpdateNotUsingSelect() {
+        Update update = new Update();
+        List<Column> columns = new ArrayList<Column>();
+        List<Expression> expressions = new ArrayList<Expression>();
+        Expression where = mock(Expression.class);
+        List<OrderByElement> orderByElements = new ArrayList<OrderByElement>();
+        Column column1 = new Column();
+        Column column2 = new Column();
+        Expression expression1 = mock(Expression.class);
+        Expression expression2 = mock(Expression.class);
+        OrderByElement orderByElement1 = new OrderByElement();
+        OrderByElement orderByElement2 = new OrderByElement();
+        Expression orderByElement1Expression = mock(Expression.class);
+        Expression orderByElement2Expression = mock(Expression.class);
+
+        update.setColumns(columns);
+        update.setExpressions(expressions);
+        update.setWhere(where);
+        update.setOrderByElements(orderByElements);
+        columns.add(column1);
+        columns.add(column2);
+        expressions.add(expression1);
+        expressions.add(expression2);
+        orderByElements.add(orderByElement1);
+        orderByElements.add(orderByElement2);
+        orderByElement1.setExpression(orderByElement1Expression);
+        orderByElement2.setExpression(orderByElement2Expression);
+
+        statementDeParser.visit(update);
+
+        then(expressionDeParser).should().visit(column1);
+        then(expressionDeParser).should().visit(column2);
+        then(expression1).should().accept(expressionDeParser);
+        then(expression2).should().accept(expressionDeParser);
+        then(where).should().accept(expressionDeParser);
+        then(orderByElement1Expression).should().accept(expressionDeParser);
+        then(orderByElement2Expression).should().accept(expressionDeParser);
+    }
+
+    @Test
+    public void shouldUseProvidedDeParsersWhenDeParsingUpdateUsingSelect() {
+        Update update = new Update();
+        List<Column> columns = new ArrayList<Column>();
+        Select select = new Select();
+        Expression where = mock(Expression.class);
+        List<OrderByElement> orderByElements = new ArrayList<OrderByElement>();
+        Column column1 = new Column();
+        Column column2 = new Column();
+        SelectBody selectBody = mock(SelectBody.class);
+        OrderByElement orderByElement1 = new OrderByElement();
+        OrderByElement orderByElement2 = new OrderByElement();
+        Expression orderByElement1Expression = mock(Expression.class);
+        Expression orderByElement2Expression = mock(Expression.class);
+
+        update.setUseSelect(true);
+        update.setColumns(columns);
+        update.setSelect(select);
+        update.setWhere(where);
+        update.setOrderByElements(orderByElements);
+        columns.add(column1);
+        columns.add(column2);
+        select.setSelectBody(selectBody);
+        orderByElements.add(orderByElement1);
+        orderByElements.add(orderByElement2);
+        orderByElement1.setExpression(orderByElement1Expression);
+        orderByElement2.setExpression(orderByElement2Expression);
+
+        statementDeParser.visit(update);
+
+        then(expressionDeParser).should().visit(column1);
+        then(expressionDeParser).should().visit(column2);
+        then(selectBody).should().accept(selectDeParser);
+        then(where).should().accept(expressionDeParser);
+        then(orderByElement1Expression).should().accept(expressionDeParser);
+        then(orderByElement2Expression).should().accept(expressionDeParser);
     }
 
     private Matcher<ReplaceDeParser> replaceDeParserWithDeParsers(final Matcher<ExpressionDeParser> expressionDeParserMatcher, final Matcher<SelectDeParser> selectDeParserMatcher) {
