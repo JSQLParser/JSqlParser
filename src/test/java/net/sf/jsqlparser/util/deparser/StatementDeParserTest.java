@@ -38,6 +38,9 @@ public class StatementDeParserTest {
     @Mock
     private ExpressionDeParser expressionDeParser;
 
+    @Mock
+    private SelectDeParser selectDeParser;
+
     private StringBuilder buffer;
 
     private StatementDeParser statementDeParser;
@@ -45,11 +48,11 @@ public class StatementDeParserTest {
     @Before
     public void setUp() {
         buffer = new StringBuilder();
-        statementDeParser = new StatementDeParser(expressionDeParser, buffer);
+        statementDeParser = new StatementDeParser(expressionDeParser, selectDeParser, buffer);
     }
 
     @Test
-    public void shouldUseProvidedExpressionDeparserWhenDeParsingDelete() {
+    public void shouldUseProvidedDeparsersWhenDeParsingDelete() {
         Delete delete = new Delete();
         Table table = new Table();
         Expression where = mock(Expression.class);
@@ -75,7 +78,7 @@ public class StatementDeParserTest {
     }
 
     @Test
-    public void shouldUseProvidedExpressionDeparserWhenDeParsingInsert() throws JSQLParserException {
+    public void shouldUseProvidedDeparsersWhenDeParsingInsert() throws JSQLParserException {
         Insert insert = new Insert();
         Table table = new Table();
         List<Column> duplicateUpdateColumns = new ArrayList<Column>();
@@ -111,15 +114,15 @@ public class StatementDeParserTest {
 
         statementDeParser.visit(insert);
 
-        then(withItem1).should().accept(argThat(is(selectDeParserWithExpressionDeParser(equalTo(expressionDeParser)))));
-        then(withItem2).should().accept(argThat(is(selectDeParserWithExpressionDeParser(equalTo(expressionDeParser)))));
-        then(selectBody).should().accept(argThat(is(selectDeParserWithExpressionDeParser(equalTo(expressionDeParser)))));
+        then(withItem1).should().accept(selectDeParser);
+        then(withItem2).should().accept(selectDeParser);
+        then(selectBody).should().accept(selectDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
 
     @Test
-    public void shouldUseProvidedExpressionDeParserWhenDeParsingReplaceWithoutItemsList() {
+    public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithoutItemsList() {
         Replace replace = new Replace();
         Table table = new Table();
         List<Column> columns = new ArrayList<Column>();
@@ -144,7 +147,7 @@ public class StatementDeParserTest {
     }
 
     @Test
-    public void shouldUseProvidedExpressionDeParserWhenDeParsingReplaceWithItemsList() {
+    public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithItemsList() {
         Replace replace = new Replace();
         Table table = new Table();
         ItemsList itemsList = mock(ItemsList.class);
@@ -154,19 +157,7 @@ public class StatementDeParserTest {
 
         statementDeParser.visit(replace);
 
-        then(itemsList).should().accept(argThat(is(replaceDeParserWithDeParsers(equalTo(expressionDeParser), selectDeParserWithExpressionDeParser(equalTo(expressionDeParser))))));
-    }
-
-    private Matcher<SelectDeParser> selectDeParserWithExpressionDeParser(final Matcher<ExpressionDeParser> expressionDeParserMatcher) {
-        Description description = new StringDescription();
-        description.appendText("select de-parser with expression de-parser ");
-        expressionDeParserMatcher.describeTo(description);
-        return new CustomTypeSafeMatcher<SelectDeParser>(description.toString()) {
-            @Override
-            public boolean matchesSafely(SelectDeParser item) {
-                return expressionDeParserMatcher.matches(item.getExpressionVisitor());
-            }
-        };
+        then(itemsList).should().accept(argThat(is(replaceDeParserWithDeParsers(equalTo(expressionDeParser), equalTo(selectDeParser)))));
     }
 
     private Matcher<ReplaceDeParser> replaceDeParserWithDeParsers(final Matcher<ExpressionDeParser> expressionDeParserMatcher, final Matcher<SelectDeParser> selectDeParserMatcher) {

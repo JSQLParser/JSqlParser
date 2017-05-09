@@ -45,14 +45,17 @@ import net.sf.jsqlparser.statement.update.Update;
 public class StatementDeParser implements StatementVisitor {
     private ExpressionDeParser expressionDeParser;
 
+    private SelectDeParser selectDeParser;
+
     private StringBuilder buffer;
 
     public StatementDeParser(StringBuilder buffer) {
-        this(new ExpressionDeParser(), buffer);
+        this(new ExpressionDeParser(), new SelectDeParser(), buffer);
     }
 
-    public StatementDeParser(ExpressionDeParser expressionDeParser, StringBuilder buffer) {
+    public StatementDeParser(ExpressionDeParser expressionDeParser, SelectDeParser selectDeParser, StringBuilder buffer) {
         this.expressionDeParser = expressionDeParser;
+        this.selectDeParser = selectDeParser;
         this.buffer = buffer;
     }
 
@@ -82,7 +85,6 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Delete delete) {
-        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
         expressionDeParser.setSelectVisitor(selectDeParser);
         expressionDeParser.setBuffer(buffer);
@@ -99,7 +101,6 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Insert insert) {
-        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
         expressionDeParser.setSelectVisitor(selectDeParser);
         expressionDeParser.setBuffer(buffer);
@@ -110,7 +111,6 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Replace replace) {
-        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
         expressionDeParser.setSelectVisitor(selectDeParser);
         expressionDeParser.setBuffer(buffer);
