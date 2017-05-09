@@ -160,6 +160,26 @@ public class StatementDeParserTest {
         then(itemsList).should().accept(argThat(is(replaceDeParserWithDeParsers(equalTo(expressionDeParser), equalTo(selectDeParser)))));
     }
 
+    @Test
+    public void shouldUseProvidedDeParsersWhenDeParsingSelect() {
+        Select select = new Select();
+        WithItem withItem1 = spy(new WithItem());
+        WithItem withItem2 = spy(new WithItem());
+        SelectBody selectBody = mock(SelectBody.class);
+        List<WithItem> withItemsList = new ArrayList<WithItem>();
+
+        select.setWithItemsList(withItemsList);
+        select.setSelectBody(selectBody);
+        withItemsList.add(withItem1);
+        withItemsList.add(withItem2);
+
+        statementDeParser.visit(select);
+
+        then(withItem1).should().accept(selectDeParser);
+        then(withItem2).should().accept(selectDeParser);
+        then(selectBody).should().accept(selectDeParser);
+    }
+
     private Matcher<ReplaceDeParser> replaceDeParserWithDeParsers(final Matcher<ExpressionDeParser> expressionDeParserMatcher, final Matcher<SelectDeParser> selectDeParserMatcher) {
         Description description = new StringDescription();
         description.appendText("replace de-parser with expression de-parser ");

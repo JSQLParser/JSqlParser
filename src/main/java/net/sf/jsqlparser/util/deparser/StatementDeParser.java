@@ -121,9 +121,9 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Select select) {
-        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
-        ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         if (select.getWithItemsList() != null && !select.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");
