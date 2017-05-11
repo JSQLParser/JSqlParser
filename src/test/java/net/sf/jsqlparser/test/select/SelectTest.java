@@ -2600,4 +2600,8 @@ public class SelectTest extends TestCase {
     public void testProblemIssue435() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT if(z, 'a', 'b') AS business_type FROM mytable1");
     }
+    
+    public void testProblemIssue445() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT E.ID_NUMBER, row_number() OVER (PARTITION BY E.ID_NUMBER ORDER BY E.DEFINED_UPDATED DESC) rn FROM T_EMPLOYMENT E");
+    }
 }
