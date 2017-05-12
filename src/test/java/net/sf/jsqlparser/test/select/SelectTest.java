@@ -2600,4 +2600,8 @@ public class SelectTest extends TestCase {
     public void testProblemIssue435() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT if(z, 'a', 'b') AS business_type FROM mytable1");
     }
+    
+    public void testProblemIssue437Index() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select count(id) from p_custom_data ignore index(pri) where tenant_id=28257 and entity_id=92609 and delete_flg=0 and ( (dbc_relation_2 = 52701) and (dbc_relation_2 in ( select id from a_order where tenant_id = 28257 and 1=1 ) ) ) order by id desc, id desc", true);
+    }
 }
