@@ -21,9 +21,11 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import java.util.List;
+
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.execute.Execute;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class ExecuteDeParser {
 
@@ -51,8 +53,14 @@ public class ExecuteDeParser {
 
     public void deParse(Execute execute) {
         buffer.append("EXECUTE ").append(execute.getName());
-        buffer.append(" ").append(PlainSelect.
-                getStringList(execute.getExprList().getExpressions(), true, false));
+        List<Expression> expressions = execute.getExprList().getExpressions();
+        for (int i = 0; i < expressions.size(); i++) {
+            if (i > 0) {
+                buffer.append(",");
+            }
+            buffer.append(" ");
+            expressions.get(i).accept(expressionVisitor);
+        }
     }
 
     public ExpressionVisitor getExpressionVisitor() {

@@ -1,6 +1,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
@@ -48,5 +49,26 @@ public class ExecuteDeParserTest {
 
         String actual = buffer.toString();
         assertTrue(actual.matches("EXECUTE " + name + " .*?, .*"));
+    }
+
+    @Test
+    public void shouldUseProvidedExpressionVisitorWhenDeParsingExecute() {
+        Execute execute = new Execute();
+        String name = "name";
+        ExpressionList exprList = new ExpressionList();
+        List<Expression> expressions = new ArrayList<Expression>();
+        Expression expression1 = mock(Expression.class);
+        Expression expression2 = mock(Expression.class);
+
+        execute.setName(name);
+        execute.setExprList(exprList);
+        exprList.setExpressions(expressions);
+        expressions.add(expression1);
+        expressions.add(expression2);
+
+        executeDeParser.deParse(execute);
+
+        then(expression1).should().accept(expressionVisitor);
+        then(expression2).should().accept(expressionVisitor);
     }
 }
