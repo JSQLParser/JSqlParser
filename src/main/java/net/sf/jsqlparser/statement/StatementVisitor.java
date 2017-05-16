@@ -38,7 +38,7 @@ import net.sf.jsqlparser.statement.update.Update;
 
 public interface StatementVisitor {
 
-    void visit(Select select);
+    void visit(Commit commit);
 
     void visit(Delete delete);
 
@@ -69,4 +69,6 @@ public interface StatementVisitor {
     void visit(SetStatement set);
 
     void visit(Merge merge);
+
+    void visit(Select select);
 }

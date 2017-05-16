@@ -374,6 +374,8 @@ Statement SingleStatement() :
         stm = Execute()
         |
         stm = Set()
+        |
+        stm = Commit() 
         )
     } catch (ParseException e) {
         if (errorRecovery) {
@@ -3315,4 +3317,15 @@ Wait Wait():
     {
         return wait;
     }
+}
+
+Commit Commit():
+{
+  Commit commit=new Commit();
+}
+{
+  <K_COMMIT>
+  {
+    return commit;
+  }
 }
