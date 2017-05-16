@@ -188,5 +188,26 @@ public class ExpressionVisitorAdapterTest {
             fail();
         }
     }
+    
+    @Test
+    public void testCaseWithoutElse() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseExpression("CASE WHEN 1 then 0 END");
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        expr.accept(adapter);
+    }
+    
+    @Test
+    public void testCaseWithoutElse2() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseExpression("CASE WHEN 1 then 0 ELSE -1 END");
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        expr.accept(adapter);
+    }
+    
+    @Test
+    public void testCaseWithoutElse3() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseExpression("CASE 3+4 WHEN 1 then 0 END");
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        expr.accept(adapter);
+    }
 
 }

@@ -227,11 +227,15 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(CaseExpression expr) {
-        expr.getSwitchExpression().accept(this);
+        if (expr.getSwitchExpression()!=null) {
+            expr.getSwitchExpression().accept(this);
+        }
         for (Expression x : expr.getWhenClauses()) {
             x.accept(this);
         }
-        expr.getElseExpression().accept(this);
+        if (expr.getElseExpression() != null) {
+            expr.getElseExpression().accept(this);
+        }
     }
 
     @Override
