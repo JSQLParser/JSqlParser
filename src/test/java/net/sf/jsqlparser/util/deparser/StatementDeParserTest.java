@@ -22,10 +22,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -257,6 +259,25 @@ public class StatementDeParserTest {
         then(where).should().accept(expressionDeParser);
         then(orderByElement1Expression).should().accept(expressionDeParser);
         then(orderByElement2Expression).should().accept(expressionDeParser);
+    }
+
+    @Test
+    public void shouldUseProvidedDeParserWhenDeParsingExecute() {
+        Execute execute = new Execute();
+        ExpressionList exprList = new ExpressionList();
+        List<Expression> expressions = new ArrayList<Expression>();
+        Expression expression1 = mock(Expression.class);
+        Expression expression2 = mock(Expression.class);
+
+        execute.setExprList(exprList);
+        exprList.setExpressions(expressions);
+        expressions.add(expression1);
+        expressions.add(expression2);
+
+        statementDeParser.visit(execute);
+
+        then(expression1).should().accept(expressionDeParser);
+        then(expression2).should().accept(expressionDeParser);
     }
 
     private Matcher<ReplaceDeParser> replaceDeParserWithDeParsers(final Matcher<ExpressionDeParser> expressionDeParserMatcher, final Matcher<SelectDeParser> selectDeParserMatcher) {
