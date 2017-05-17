@@ -26,6 +26,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -278,6 +279,17 @@ public class StatementDeParserTest {
 
         then(expression1).should().accept(expressionDeParser);
         then(expression2).should().accept(expressionDeParser);
+    }
+
+    @Test
+    public void shouldUseProvidedDeParserWhenDeParsingSetStatement() {
+        String name = "name";
+        Expression expression = mock(Expression.class);
+        SetStatement setStatement = new SetStatement(name, expression);
+
+        statementDeParser.visit(setStatement);
+
+        then(expression).should().accept(expressionDeParser);
     }
 
     private Matcher<ReplaceDeParser> replaceDeParserWithDeParsers(final Matcher<ExpressionDeParser> expressionDeParserMatcher, final Matcher<SelectDeParser> selectDeParserMatcher) {

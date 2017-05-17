@@ -185,9 +185,9 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(SetStatement set) {
-        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
-        ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
         SetStatementDeParser setStatementDeparser = new SetStatementDeParser(expressionDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         setStatementDeparser.deParse(set);
