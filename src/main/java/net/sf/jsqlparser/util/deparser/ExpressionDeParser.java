@@ -27,10 +27,13 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.*;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import java.util.Iterator;
+import java.util.List;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
@@ -499,7 +502,56 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(AnalyticExpression aexpr) {
-        buffer.append(aexpr.toString());
+        String name = aexpr.getName();
+        Expression expression = aexpr.getExpression();
+        Expression offset = aexpr.getOffset();
+        Expression defaultValue = aexpr.getDefaultValue();
+        boolean isAllColumns = aexpr.isAllColumns();
+        KeepExpression keep = aexpr.getKeep();
+        ExpressionList partitionExpressionList = aexpr.getPartitionExpressionList();
+        List<OrderByElement> orderByElements = aexpr.getOrderByElements();
+        WindowElement windowElement = aexpr.getWindowElement();
+
+        buffer.append(name).append("(");
+        if (expression != null) {
+            buffer.append(expression.toString());
+            if (offset != null) {
+                buffer.append(", ").append(offset.toString());
+                if (defaultValue != null) {
+                    buffer.append(", ").append(defaultValue.toString());
+                }
+            }
+        } else if (isAllColumns) {
+            buffer.append("*");
+        }
+        buffer.append(") ");
+        if (keep != null) {
+            buffer.append(keep.toString()).append(" ");
+        }
+        buffer.append("OVER (");
+
+        if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
+            buffer.append("PARTITION BY ");
+            buffer.append(PlainSelect.
+                    getStringList(partitionExpressionList.getExpressions(), true, false));
+            buffer.append(" ");
+        }
+        if (orderByElements != null && !orderByElements.isEmpty()) {
+            buffer.append("ORDER BY ");
+            for (int i = 0; i < orderByElements.size(); i++) {
+                if (i > 0) {
+                    buffer.append(", ");
+                }
+                buffer.append(orderByElements.get(i).toString());
+            }
+
+            if (windowElement != null) {
+                buffer.append(' ');
+                buffer.append(windowElement);
+            }
+        }
+
+        buffer.append(")");
     }
 
     @Override
