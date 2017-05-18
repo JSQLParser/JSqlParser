@@ -109,6 +109,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     private StringBuilder buffer = new StringBuilder();
     private SelectVisitor selectVisitor;
     private boolean useBracketsInExprList = true;
+    private OrderByDeParser orderByDeParser = new OrderByDeParser();
 
     public ExpressionDeParser() {
     }
@@ -129,8 +130,13 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
      * @param buffer the buffer that will be filled with the expression
      */
     public ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer) {
+        this(selectVisitor, buffer, new OrderByDeParser());
+    }
+
+    ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer, OrderByDeParser orderByDeParser) {
         this.selectVisitor = selectVisitor;
         this.buffer = buffer;
+        this.orderByDeParser = orderByDeParser;
     }
 
     public StringBuilder getBuffer() {
@@ -577,11 +583,13 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
         buffer.append(name).append("(");
         if (expression != null) {
-            buffer.append(expression.toString());
+            expression.accept(this);
             if (offset != null) {
-                buffer.append(", ").append(offset.toString());
+                buffer.append(", ");
+                offset.accept(this);
                 if (defaultValue != null) {
-                    buffer.append(", ").append(defaultValue.toString());
+                    buffer.append(", ");
+                    defaultValue.accept(this);
                 }
             }
         } else if (isAllColumns) {
@@ -589,7 +597,8 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         }
         buffer.append(") ");
         if (keep != null) {
-            buffer.append(keep.toString()).append(" ");
+            keep.accept(this);
+            buffer.append(" ");
         }
         buffer.append("OVER (");
 
@@ -600,17 +609,19 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
                 if (i > 0) {
                     buffer.append(", ");
                 }
-                buffer.append(expressions.get(i));
+                expressions.get(i).accept(this);
             }
             buffer.append(" ");
         }
         if (orderByElements != null && !orderByElements.isEmpty()) {
             buffer.append("ORDER BY ");
+            orderByDeParser.setExpressionVisitor(this);
+            orderByDeParser.setBuffer(buffer);
             for (int i = 0; i < orderByElements.size(); i++) {
                 if (i > 0) {
                     buffer.append(", ");
                 }
-                buffer.append(orderByElements.get(i).toString());
+                orderByDeParser.deParseElement(orderByElements.get(i));
             }
 
             if (windowElement != null) {

@@ -29,8 +29,11 @@ import java.util.List;
 
 public class OrderByDeParser {
 
-    private final StringBuilder buffer;
-    private final ExpressionVisitor expressionVisitor;
+    private StringBuilder buffer;
+    private ExpressionVisitor expressionVisitor;
+
+    OrderByDeParser() {
+    }
 
     public OrderByDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
         this.expressionVisitor = expressionVisitor;
@@ -69,5 +72,13 @@ public class OrderByDeParser {
             buffer.
                     append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
         }
+    }
+
+    void setExpressionVisitor(ExpressionVisitor expressionVisitor) {
+        this.expressionVisitor = expressionVisitor;
+    }
+
+    void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
     }
 }

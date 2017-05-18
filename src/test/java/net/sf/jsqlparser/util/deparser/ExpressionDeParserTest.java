@@ -2,6 +2,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.will;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
@@ -9,7 +10,11 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.Expression;
@@ -19,6 +24,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ExpressionDeParserTest {
     private ExpressionDeParser expressionDeParser;
 
@@ -27,10 +33,13 @@ public class ExpressionDeParserTest {
 
     private StringBuilder buffer;
 
+    @Mock
+    private OrderByDeParser orderByDeParser;
+
     @Before
     public void setUp() {
         buffer = new StringBuilder();
-        expressionDeParser = new ExpressionDeParser(selectVisitor, buffer);
+        expressionDeParser = new ExpressionDeParser(selectVisitor, buffer, orderByDeParser);
     }
 
     @Test
@@ -49,7 +58,7 @@ public class ExpressionDeParserTest {
         analyticExpression.setName("name");
         analyticExpression.setExpression(expression);
 
-        given(expression.toString()).willReturn("expression");
+        will(appendToBuffer("expression")).given(expression).accept(expressionDeParser);
 
         expressionDeParser.visit(analyticExpression);
 
@@ -66,8 +75,8 @@ public class ExpressionDeParserTest {
         analyticExpression.setExpression(expression);
         analyticExpression.setOffset(offset);
 
-        given(expression.toString()).willReturn("expression");
-        given(offset.toString()).willReturn("offset");
+        will(appendToBuffer("expression")).given(expression).accept(expressionDeParser);
+        will(appendToBuffer("offset")).given(offset).accept(expressionDeParser);
 
         expressionDeParser.visit(analyticExpression);
 
@@ -86,9 +95,9 @@ public class ExpressionDeParserTest {
         analyticExpression.setOffset(offset);
         analyticExpression.setDefaultValue(defaultValue);
 
-        given(expression.toString()).willReturn("expression");
-        given(offset.toString()).willReturn("offset");
-        given(defaultValue.toString()).willReturn("default value");
+        will(appendToBuffer("expression")).given(expression).accept(expressionDeParser);
+        will(appendToBuffer("offset")).given(offset).accept(expressionDeParser);
+        will(appendToBuffer("default value")).given(defaultValue).accept(expressionDeParser);
 
         expressionDeParser.visit(analyticExpression);
 
@@ -115,7 +124,7 @@ public class ExpressionDeParserTest {
         analyticExpression.setName("name");
         analyticExpression.setKeep(keep);
 
-        given(keep.toString()).willReturn("keep");
+        will(appendToBuffer("keep")).given(keep).accept(expressionDeParser);
 
         expressionDeParser.visit(analyticExpression);
 
@@ -136,8 +145,8 @@ public class ExpressionDeParserTest {
         partitionExpressions.add(partitionExpression1);
         partitionExpressions.add(partitionExpression2);
 
-        given(partitionExpression1.toString()).willReturn("partition expression 1");
-        given(partitionExpression2.toString()).willReturn("partition expression 2");
+        will(appendToBuffer("partition expression 1")).given(partitionExpression1).accept(expressionDeParser);
+        will(appendToBuffer("partition expression 2")).given(partitionExpression2).accept(expressionDeParser);
 
         expressionDeParser.visit(analyticExpression);
 
@@ -156,8 +165,8 @@ public class ExpressionDeParserTest {
         orderByElements.add(orderByElement1);
         orderByElements.add(orderByElement2);
 
-        given(orderByElement1.toString()).willReturn("order by element 1");
-        given(orderByElement2.toString()).willReturn("order by element 2");
+        will(appendToBuffer("order by element 1")).given(orderByDeParser).deParseElement(orderByElement1);
+        will(appendToBuffer("order by element 2")).given(orderByDeParser).deParseElement(orderByElement2);
 
         expressionDeParser.visit(analyticExpression);
 
@@ -178,12 +187,22 @@ public class ExpressionDeParserTest {
         orderByElements.add(orderByElement1);
         orderByElements.add(orderByElement2);
 
-        given(orderByElement1.toString()).willReturn("order by element 1");
-        given(orderByElement2.toString()).willReturn("order by element 2");
+        will(appendToBuffer("order by element 1")).given(orderByDeParser).deParseElement(orderByElement1);
+        will(appendToBuffer("order by element 2")).given(orderByDeParser).deParseElement(orderByElement2);
         given(windowElement.toString()).willReturn("window element");
 
         expressionDeParser.visit(analyticExpression);
 
         assertEquals("name() OVER (ORDER BY order by element 1, order by element 2 window element)", buffer.toString());
+    }
+
+    private Answer<Void> appendToBuffer(final String string) {
+        return new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                buffer.append(string);
+                return null;
+            }
+        };
     }
 }
