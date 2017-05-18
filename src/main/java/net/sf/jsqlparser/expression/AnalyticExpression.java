@@ -21,11 +21,12 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.statement.select.OrderByElement;
-
 import java.util.List;
+
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
+import net.sf.jsqlparser.util.deparser.SelectDeParser;
 
 /**
  * Analytic function. The name of the function is variable but the parameters following the special
@@ -46,6 +47,15 @@ public class AnalyticExpression implements Expression {
     private boolean allColumns = false;
     private WindowElement windowElement;
     private KeepExpression keep = null;
+    private ExpressionDeParser expressionDeParser;
+
+    public AnalyticExpression() {
+        this(new ExpressionDeParser());
+    }
+
+    AnalyticExpression(ExpressionDeParser expressionDeParser) {
+        this.expressionDeParser = expressionDeParser;
+    }
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
@@ -120,28 +130,12 @@ public class AnalyticExpression implements Expression {
     public String toString() {
         StringBuilder b = new StringBuilder();
 
-        b.append(name).append("(");
-        if (expression != null) {
-            b.append(expression.toString());
-            if (offset != null) {
-                b.append(", ").append(offset.toString());
-                if (defaultValue != null) {
-                    b.append(", ").append(defaultValue.toString());
-                }
-            }
-        } else if (isAllColumns()) {
-            b.append("*");
-        }
-        b.append(") ");
-        if (keep != null) {
-            b.append(keep.toString()).append(" ");
-        }
-        b.append("OVER (");
-
-        toStringPartitionBy(b);
-        toStringOrderByElements(b);
-
-        b.append(")");
+        SelectDeParser selectDeParser = new SelectDeParser();
+        selectDeParser.setBuffer(b);
+        selectDeParser.setExpressionVisitor(expressionDeParser);
+        expressionDeParser.setBuffer(b);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.visit(this);
 
         return b.toString();
     }
@@ -152,31 +146,5 @@ public class AnalyticExpression implements Expression {
 
     public void setAllColumns(boolean allColumns) {
         this.allColumns = allColumns;
-    }
-
-    private void toStringPartitionBy(StringBuilder b) {
-        if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
-            b.append("PARTITION BY ");
-            b.append(PlainSelect.
-                    getStringList(partitionExpressionList.getExpressions(), true, false));
-            b.append(" ");
-        }
-    }
-
-    private void toStringOrderByElements(StringBuilder b) {
-        if (orderByElements != null && !orderByElements.isEmpty()) {
-            b.append("ORDER BY ");
-            for (int i = 0; i < orderByElements.size(); i++) {
-                if (i > 0) {
-                    b.append(", ");
-                }
-                b.append(orderByElements.get(i).toString());
-            }
-
-            if (windowElement != null) {
-                b.append(' ');
-                b.append(windowElement);
-            }
-        }
     }
 }
