@@ -95,7 +95,6 @@ import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSy
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
@@ -596,8 +595,13 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
         if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
             buffer.append("PARTITION BY ");
-            buffer.append(PlainSelect.
-                    getStringList(partitionExpressionList.getExpressions(), true, false));
+            List<Expression> expressions = partitionExpressionList.getExpressions();
+            for (int i = 0; i < expressions.size(); i++) {
+                if (i > 0) {
+                    buffer.append(", ");
+                }
+                buffer.append(expressions.get(i));
+            }
             buffer.append(" ");
         }
         if (orderByElements != null && !orderByElements.isEmpty()) {
