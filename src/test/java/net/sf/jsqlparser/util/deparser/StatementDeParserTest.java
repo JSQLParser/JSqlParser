@@ -45,14 +45,11 @@ public class StatementDeParserTest {
     @Mock
     private SelectDeParser selectDeParser;
 
-    private StringBuilder buffer;
-
     private StatementDeParser statementDeParser;
 
     @Before
     public void setUp() {
-        buffer = new StringBuilder();
-        statementDeParser = new StatementDeParser(expressionDeParser, selectDeParser, buffer);
+        statementDeParser = new StatementDeParser(expressionDeParser, selectDeParser, new StringBuilder());
     }
 
     @Test
