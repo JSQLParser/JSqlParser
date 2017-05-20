@@ -53,7 +53,7 @@ public class StatementDeParserTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeparsersWhenDeParsingDelete() {
         Delete delete = new Delete();
         Table table = new Table();
@@ -80,7 +80,7 @@ public class StatementDeParserTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeparsersWhenDeParsingInsert() throws JSQLParserException {
         Insert insert = new Insert();
         Table table = new Table();
@@ -125,7 +125,7 @@ public class StatementDeParserTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithoutItemsList() {
         Replace replace = new Replace();
         Table table = new Table();
@@ -151,7 +151,7 @@ public class StatementDeParserTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithItemsList() {
         Replace replace = new Replace();
         Table table = new Table();
@@ -166,7 +166,7 @@ public class StatementDeParserTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingSelect() {
         Select select = new Select();
         WithItem withItem1 = spy(new WithItem());
@@ -187,7 +187,7 @@ public class StatementDeParserTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingUpdateNotUsingSelect() {
         Update update = new Update();
         List<Column> columns = new ArrayList<Column>();
@@ -228,7 +228,7 @@ public class StatementDeParserTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingUpdateUsingSelect() {
         Update update = new Update();
         List<Column> columns = new ArrayList<Column>();
@@ -267,7 +267,7 @@ public class StatementDeParserTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParserWhenDeParsingExecute() {
         Execute execute = new Execute();
         ExpressionList exprList = new ExpressionList();
@@ -287,7 +287,7 @@ public class StatementDeParserTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParserWhenDeParsingSetStatement() {
         String name = "name";
         Expression expression = mock(Expression.class);
