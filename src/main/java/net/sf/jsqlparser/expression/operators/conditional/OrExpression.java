@@ -27,18 +27,18 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class OrExpression extends BinaryExpression {
 
-	public OrExpression(Expression leftExpression, Expression rightExpression) {
-		setLeftExpression(leftExpression);
-		setRightExpression(rightExpression);
-	}
+    public OrExpression(Expression leftExpression, Expression rightExpression) {
+        setLeftExpression(leftExpression);
+        setRightExpression(rightExpression);
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String getStringExpression() {
-		return "OR";
-	}
+    @Override
+    public String getStringExpression() {
+        return "OR";
+    }
 }

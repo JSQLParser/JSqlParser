@@ -34,122 +34,120 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
- * string) a {@link net.sf.jsqlparser.statement.replace.Replace}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
+ * {@link net.sf.jsqlparser.statement.replace.Replace}
  */
 public class ReplaceDeParser implements ItemsListVisitor {
 
-	private StringBuilder buffer;
+    private StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
 
-	public ReplaceDeParser() {
-	}
+    public ReplaceDeParser() {
+    }
 
-	/**
-	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
-	 * expressions. It has to share the same<br>
-	 * StringBuilder (buffer parameter) as this object in order to work
-	 * @param selectVisitor a {@link SelectVisitor} to de-parse
-	 * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the
-	 * same<br>
-	 * StringBuilder (buffer parameter) as this object in order to work
-	 * @param buffer the buffer that will be filled with the select
-	 */
-	public ReplaceDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
-		this.buffer = buffer;
-		this.expressionVisitor = expressionVisitor;
-		this.selectVisitor = selectVisitor;
-	}
+    /**
+     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share
+     * the same<br>
+     * StringBuilder (buffer parameter) as this object in order to work
+     * @param selectVisitor a {@link SelectVisitor} to de-parse
+     * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the same<br>
+     * StringBuilder (buffer parameter) as this object in order to work
+     * @param buffer the buffer that will be filled with the select
+     */
+    public ReplaceDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
+        this.buffer = buffer;
+        this.expressionVisitor = expressionVisitor;
+        this.selectVisitor = selectVisitor;
+    }
 
-	public StringBuilder getBuffer() {
-		return buffer;
-	}
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
 
-	public void setBuffer(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 
-	public void deParse(Replace replace) {
-		buffer.append("REPLACE ").append(replace.getTable().getFullyQualifiedName());
-		if (replace.getItemsList() != null) {
-			if (replace.getColumns() != null) {
-				buffer.append(" (");
-				for (int i = 0; i < replace.getColumns().size(); i++) {
-					Column column = replace.getColumns().get(i);
-					buffer.append(column.getFullyQualifiedName());
-					if (i < replace.getColumns().size() - 1) {
-						buffer.append(", ");
-					}
-				}
-				buffer.append(") ");
-			} else {
-				buffer.append(" ");
-			}
+    public void deParse(Replace replace) {
+        buffer.append("REPLACE ");
+        if (replace.isUseIntoTables()) {
+            buffer.append("INTO ");
+        }
+        buffer.append(replace.getTable().getFullyQualifiedName());
+        if (replace.getItemsList() != null) {
+            if (replace.getColumns() != null) {
+                buffer.append(" (");
+                for (int i = 0; i < replace.getColumns().size(); i++) {
+                    Column column = replace.getColumns().get(i);
+                    buffer.append(column.getFullyQualifiedName());
+                    if (i < replace.getColumns().size() - 1) {
+                        buffer.append(", ");
+                    }
+                }
+                buffer.append(") ");
+            } else {
+                buffer.append(" ");
+            }
 
-		} else {
-			buffer.append(" SET ");
-			for (int i = 0; i < replace.getColumns().size(); i++) {
-				Column column = replace.getColumns().get(i);
-				buffer.append(column.getFullyQualifiedName()).append("=");
+        } else {
+            buffer.append(" SET ");
+            for (int i = 0; i < replace.getColumns().size(); i++) {
+                Column column = replace.getColumns().get(i);
+                buffer.append(column.getFullyQualifiedName()).append("=");
 
-				Expression expression = replace.getExpressions().get(i);
-				expression.accept(expressionVisitor);
-				if (i < replace.getColumns().size() - 1) {
-					buffer.append(", ");
-				}
+                Expression expression = replace.getExpressions().get(i);
+                expression.accept(expressionVisitor);
+                if (i < replace.getColumns().size() - 1) {
+                    buffer.append(", ");
+                }
 
-			}
-		}
+            }
+        }
 
         if (replace.getItemsList() != null) {
-			// REPLACE mytab SELECT * FROM mytab2
-			// or VALUES ('as', ?, 565)
+            // REPLACE mytab SELECT * FROM mytab2
+            // or VALUES ('as', ?, 565)
+            replace.getItemsList().accept(this);
+        }
+    }
 
-			if (replace.isUseValues()) {
-				buffer.append(" VALUES");
-			}
+    @Override
+    public void visit(ExpressionList expressionList) {
+        buffer.append("VALUES (");
+        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
+            Expression expression = iter.next();
+            expression.accept(expressionVisitor);
+            if (iter.hasNext()) {
+                buffer.append(", ");
+            }
+        }
+        buffer.append(")");
+    }
 
-			buffer.append(replace.getItemsList());
-		}
-	}
+    @Override
+    public void visit(SubSelect subSelect) {
+        subSelect.getSelectBody().accept(selectVisitor);
+    }
 
-	@Override
-	public void visit(ExpressionList expressionList) {
-		buffer.append(" VALUES (");
-		for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
-			Expression expression = iter.next();
-			expression.accept(expressionVisitor);
-			if (iter.hasNext()) {
-				buffer.append(", ");
-			}
-		}
-		buffer.append(")");
-	}
+    public ExpressionVisitor getExpressionVisitor() {
+        return expressionVisitor;
+    }
 
-	@Override
-	public void visit(SubSelect subSelect) {
-		subSelect.getSelectBody().accept(selectVisitor);
-	}
+    public SelectVisitor getSelectVisitor() {
+        return selectVisitor;
+    }
 
-	public ExpressionVisitor getExpressionVisitor() {
-		return expressionVisitor;
-	}
+    public void setExpressionVisitor(ExpressionVisitor visitor) {
+        expressionVisitor = visitor;
+    }
 
-	public SelectVisitor getSelectVisitor() {
-		return selectVisitor;
-	}
+    public void setSelectVisitor(SelectVisitor visitor) {
+        selectVisitor = visitor;
+    }
 
-	public void setExpressionVisitor(ExpressionVisitor visitor) {
-		expressionVisitor = visitor;
-	}
-
-	public void setSelectVisitor(SelectVisitor visitor) {
-		selectVisitor = visitor;
-	}
-
-	@Override
-	public void visit(MultiExpressionList multiExprList) {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
+    @Override
+    public void visit(MultiExpressionList multiExprList) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

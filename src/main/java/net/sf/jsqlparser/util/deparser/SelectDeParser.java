@@ -28,20 +28,20 @@ import net.sf.jsqlparser.statement.select.*;
 import java.util.*;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
- * string) a {@link net.sf.jsqlparser.statement.select.Select}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
+ * {@link net.sf.jsqlparser.statement.select.Select}
  */
-public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
+public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
-    private StringBuilder buffer;
-    private ExpressionVisitor expressionVisitor;
+    private StringBuilder buffer = new StringBuilder();
+    private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
 
     public SelectDeParser() {
     }
 
     /**
-     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
-     * expressions. It has to share the same<br>
+     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share
+     * the same<br>
      * StringBuilder (buffer parameter) as this object in order to work
      * @param buffer the buffer that will be filled with the select
      */
@@ -56,11 +56,32 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
             buffer.append("(");
         }
         buffer.append("SELECT ");
+
+        OracleHint hint = plainSelect.getOracleHint();
+        if (hint != null) {
+            buffer.append(hint).append(" ");
+        }
+
+        Skip skip = plainSelect.getSkip();
+        if (skip != null) {
+            buffer.append(skip).append(" ");
+        }
+
+        First first = plainSelect.getFirst();
+        if (first != null) {
+            buffer.append(first).append(" ");
+        }
+
         if (plainSelect.getDistinct() != null) {
-            buffer.append("DISTINCT ");
+            if (plainSelect.getDistinct().isUseUnique()) {
+                buffer.append("UNIQUE ");
+            } else {
+                buffer.append("DISTINCT ");
+            }
             if (plainSelect.getDistinct().getOnSelectItems() != null) {
                 buffer.append("ON (");
-                for (Iterator<SelectItem> iter = plainSelect.getDistinct().getOnSelectItems().iterator(); iter.hasNext();) {
+                for (Iterator<SelectItem> iter = plainSelect.getDistinct().getOnSelectItems().
+                        iterator(); iter.hasNext();) {
                     SelectItem selectItem = iter.next();
                     selectItem.accept(this);
                     if (iter.hasNext()) {
@@ -116,7 +137,8 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
 
         if (plainSelect.getGroupByColumnReferences() != null) {
             buffer.append(" GROUP BY ");
-            for (Iterator<Expression> iter = plainSelect.getGroupByColumnReferences().iterator(); iter.hasNext();) {
+            for (Iterator<Expression> iter = plainSelect.getGroupByColumnReferences().iterator(); iter.
+                    hasNext();) {
                 Expression columnReference = iter.next();
                 columnReference.accept(expressionVisitor);
                 if (iter.hasNext()) {
@@ -131,11 +153,12 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         }
 
         if (plainSelect.getOrderByElements() != null) {
-            deparseOrderBy(plainSelect.isOracleSiblings(), plainSelect.getOrderByElements());
+            new OrderByDeParser(expressionVisitor, buffer).
+                    deParse(plainSelect.isOracleSiblings(), plainSelect.getOrderByElements());
         }
 
         if (plainSelect.getLimit() != null) {
-            deparseLimit(plainSelect.getLimit());
+            new LimitDeparser(buffer).deParse(plainSelect.getLimit());
         }
         if (plainSelect.getOffset() != null) {
             deparseOffset(plainSelect.getOffset());
@@ -148,28 +171,14 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
             if (plainSelect.getForUpdateTable() != null) {
                 buffer.append(" OF ").append(plainSelect.getForUpdateTable());
             }
+            if (plainSelect.getWait() != null) {
+                // wait's toString will do the formatting for us
+                buffer.append(plainSelect.getWait());
+            }
         }
         if (plainSelect.isUseBrackets()) {
             buffer.append(")");
         }
-    }
-
-    @Override
-    public void visit(OrderByElement orderBy) {
-        orderBy.getExpression().accept(expressionVisitor);
-        if (!orderBy.isAsc()) {
-            buffer.append(" DESC");
-        } else if (orderBy.isAscDescPresent()) {
-            buffer.append(" ASC");
-        }
-        if (orderBy.getNullOrdering() != null) {
-            buffer.append(' ');
-            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
-        }
-    }
-
-    public void visit(Column column) {
-        buffer.append(column.getFullyQualifiedName());
     }
 
     @Override
@@ -223,6 +232,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         if (alias != null) {
             buffer.append(alias);
         }
+        MySQLIndexHint indexHint = tableName.getIndexHint();
+        if (indexHint != null) {
+            buffer.append(indexHint);
+        }
     }
 
     @Override
@@ -231,8 +244,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         buffer.append(" PIVOT (")
                 .append(PlainSelect.getStringList(pivot.getFunctionItems()))
                 .append(" FOR ")
-                .append(PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1))
-                .append(" IN ")
+                .append(PlainSelect.
+                        getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)).
+                append(" IN ")
                 .append(PlainSelect.getStringList(pivot.getInItems(), true, true))
                 .append(")");
     }
@@ -243,8 +257,9 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         buffer.append(" PIVOT XML (")
                 .append(PlainSelect.getStringList(pivot.getFunctionItems()))
                 .append(" FOR ")
-                .append(PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1))
-                .append(" IN (");
+                .append(PlainSelect.
+                        getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)).
+                append(" IN (");
         if (pivot.isInAny()) {
             buffer.append("ANY");
         } else if (pivot.getInSelect() != null) {
@@ -253,45 +268,6 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
             buffer.append(PlainSelect.getStringList(pivot.getInItems()));
         }
         buffer.append("))");
-    }
-
-    public void deparseOrderBy(List<OrderByElement> orderByElements) {
-        deparseOrderBy(false, orderByElements);
-    }
-
-    public void deparseOrderBy(boolean oracleSiblings, List<OrderByElement> orderByElements) {
-        if (oracleSiblings) {
-            buffer.append(" ORDER SIBLINGS BY ");
-        } else {
-            buffer.append(" ORDER BY ");
-        }
-        for (Iterator<OrderByElement> iter = orderByElements.iterator(); iter.hasNext();) {
-            OrderByElement orderByElement = iter.next();
-            orderByElement.accept(this);
-            if (iter.hasNext()) {
-                buffer.append(", ");
-            }
-        }
-    }
-
-    public void deparseLimit(Limit limit) {
-        // LIMIT n OFFSET skip
-        if (limit.isRowCountJdbcParameter()) {
-            buffer.append(" LIMIT ");
-            buffer.append("?");
-        } else if (limit.getRowCount() >= 0) {
-            buffer.append(" LIMIT ");
-            buffer.append(limit.getRowCount());
-        } else if (limit.isLimitNull()) {
-            buffer.append(" LIMIT NULL");
-        }
-
-        if (limit.isOffsetJdbcParameter()) {
-            buffer.append(" OFFSET ?");
-        } else if (limit.getOffset() != 0) {
-            buffer.append(" OFFSET ").append(limit.getOffset());
-        }
-
     }
 
     public void deparseOffset(Offset offset) {
@@ -375,6 +351,8 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
                 buffer.append(" OUTER");
             } else if (join.isInner()) {
                 buffer.append(" INNER");
+            } else if (join.isSemi()) {
+                buffer.append(" SEMI");
             }
 
             buffer.append(" JOIN ");
@@ -391,7 +369,7 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
             buffer.append(" USING (");
             for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator.hasNext();) {
                 Column column = iterator.next();
-                buffer.append(column.getFullyQualifiedName());
+                buffer.append(column.toString());
                 if (iterator.hasNext()) {
                     buffer.append(", ");
                 }
@@ -407,17 +385,21 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
             if (i != 0) {
                 buffer.append(' ').append(list.getOperations().get(i - 1)).append(' ');
             }
-            buffer.append("(");
-            SelectBody select = list.getSelects().get(i);
-            select.accept(this);
-            buffer.append(")");
+            boolean brackets = list.getBrackets() == null || list.getBrackets().get(i);
+            if (brackets) {
+                buffer.append("(");
+            }
+            list.getSelects().get(i).accept(this);
+            if (brackets) {
+                buffer.append(")");
+            }
         }
         if (list.getOrderByElements() != null) {
-            deparseOrderBy(list.getOrderByElements());
+            new OrderByDeParser(expressionVisitor, buffer).deParse(list.getOrderByElements());
         }
 
         if (list.getLimit() != null) {
-            deparseLimit(list.getLimit());
+            new LimitDeparser(buffer).deParse(list.getLimit());
         }
         if (list.getOffset() != null) {
             deparseOffset(list.getOffset());
@@ -434,7 +416,8 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
         }
         buffer.append(withItem.getName());
         if (withItem.getWithItemList() != null) {
-            buffer.append(" ").append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
+            buffer.append(" ").append(PlainSelect.
+                    getStringList(withItem.getWithItemList(), true, true));
         }
         buffer.append(" AS (");
         withItem.getSelectBody().accept(this);
@@ -454,5 +437,10 @@ public class SelectDeParser implements SelectVisitor, OrderByVisitor, SelectItem
     @Override
     public void visit(AllColumns allColumns) {
         buffer.append('*');
+    }
+
+    @Override
+    public void visit(TableFunction tableFunction) {
+        buffer.append(tableFunction.toString());
     }
 }

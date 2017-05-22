@@ -23,6 +23,7 @@ package net.sf.jsqlparser.statement.insert;
 
 import java.util.List;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -33,8 +34,8 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
 /**
- * The insert statement. Every column name in <code>columnNames</code> matches
- * an item in <code>itemsList</code>
+ * The insert statement. Every column name in <code>columnNames</code> matches an item in
+ * <code>itemsList</code>
  */
 public class Insert implements Statement {
 
@@ -44,6 +45,11 @@ public class Insert implements Statement {
     private boolean useValues = true;
     private Select select;
     private boolean useSelectBrackets = true;
+    private boolean useDuplicate = false;
+    private List<Column> duplicateUpdateColumns;
+    private List<Expression> duplicateUpdateExpressionList;
+    private InsertModifierPriority modifierPriority = null;
+    private boolean modifierIgnore = false;
 
     private boolean returningAllColumns = false;
 
@@ -128,11 +134,58 @@ public class Insert implements Statement {
         this.useSelectBrackets = useSelectBrackets;
     }
 
+    public boolean isUseDuplicate() {
+        return useDuplicate;
+    }
+
+    public void setUseDuplicate(boolean useDuplicate) {
+        this.useDuplicate = useDuplicate;
+    }
+
+    public List<Column> getDuplicateUpdateColumns() {
+        return duplicateUpdateColumns;
+    }
+
+    public void setDuplicateUpdateColumns(List<Column> duplicateUpdateColumns) {
+        this.duplicateUpdateColumns = duplicateUpdateColumns;
+    }
+
+    public List<Expression> getDuplicateUpdateExpressionList() {
+        return duplicateUpdateExpressionList;
+    }
+
+    public void setDuplicateUpdateExpressionList(List<Expression> duplicateUpdateExpressionList) {
+        this.duplicateUpdateExpressionList = duplicateUpdateExpressionList;
+    }
+
+    public InsertModifierPriority getModifierPriority() {
+        return modifierPriority;
+    }
+
+    public void setModifierPriority(InsertModifierPriority modifierPriority) {
+        this.modifierPriority = modifierPriority;
+    }
+
+    public boolean isModifierIgnore() {
+        return modifierIgnore;
+    }
+
+    public void setModifierIgnore(boolean modifierIgnore) {
+        this.modifierIgnore = modifierIgnore;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder();
 
-        sql.append("INSERT INTO ");
+        sql.append("INSERT ");
+        if (modifierPriority != null) {
+            sql.append(modifierPriority.name()).append(" ");
+        }
+        if (modifierIgnore) {
+            sql.append("IGNORE ");
+        }
+        sql.append("INTO ");
         sql.append(table).append(" ");
         if (columns != null) {
             sql.append(PlainSelect.getStringList(columns, true, true)).append(" ");
@@ -144,22 +197,34 @@ public class Insert implements Statement {
 
         if (itemsList != null) {
             sql.append(itemsList);
+        } else {
+            if (useSelectBrackets) {
+                sql.append("(");
+            }
+            if (select != null) {
+                sql.append(select);
+            }
+            if (useSelectBrackets) {
+                sql.append(")");
+            }
         }
 
-        if (useSelectBrackets) {
-            sql.append("(");
-        }
-        if (select != null) {
-            sql.append(select);
-        }
-        if (useSelectBrackets) {
-            sql.append(")");
+        if (useDuplicate) {
+            sql.append(" ON DUPLICATE KEY UPDATE ");
+            for (int i = 0; i < getDuplicateUpdateColumns().size(); i++) {
+                if (i != 0) {
+                    sql.append(", ");
+                }
+                sql.append(duplicateUpdateColumns.get(i)).append(" = ");
+                sql.append(duplicateUpdateExpressionList.get(i));
+            }
         }
 
         if (isReturningAllColumns()) {
             sql.append(" RETURNING *");
         } else if (getReturningExpressionList() != null) {
-            sql.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
+            sql.append(" RETURNING ").append(PlainSelect.
+                    getStringList(getReturningExpressionList(), true, false));
         }
 
         return sql.toString();

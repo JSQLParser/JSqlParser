@@ -29,7 +29,7 @@ import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
  */
 public class IntersectOp extends SetOperation {
 
-	public IntersectOp() {
-		super(SetOperationType.INTERSECT);
-	}
+    public IntersectOp() {
+        super(SetOperationType.INTERSECT);
+    }
 }

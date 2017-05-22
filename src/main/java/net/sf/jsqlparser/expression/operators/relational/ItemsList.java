@@ -22,10 +22,9 @@
 package net.sf.jsqlparser.expression.operators.relational;
 
 /**
- * Values of an "INSERT" statement (for example a SELECT or a list of
- * expressions)
+ * Values of an "INSERT" statement (for example a SELECT or a list of expressions)
  */
 public interface ItemsList {
 
-	void accept(ItemsListVisitor itemsListVisitor);
+    void accept(ItemsListVisitor itemsListVisitor);
 }

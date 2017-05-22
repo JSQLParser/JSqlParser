@@ -26,36 +26,36 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class ExistsExpression implements Expression {
 
-	private Expression rightExpression;
-	private boolean not = false;
+    private Expression rightExpression;
+    private boolean not = false;
 
-	public Expression getRightExpression() {
-		return rightExpression;
-	}
+    public Expression getRightExpression() {
+        return rightExpression;
+    }
 
-	public void setRightExpression(Expression expression) {
-		rightExpression = expression;
-	}
+    public void setRightExpression(Expression expression) {
+        rightExpression = expression;
+    }
 
-	public boolean isNot() {
-		return not;
-	}
+    public boolean isNot() {
+        return not;
+    }
 
-	public void setNot(boolean b) {
-		not = b;
-	}
+    public void setNot(boolean b) {
+        not = b;
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	public String getStringExpression() {
-		return ((not) ? "NOT " : "") + "EXISTS";
-	}
+    public String getStringExpression() {
+        return (not ? "NOT " : "") + "EXISTS";
+    }
 
-	@Override
-	public String toString() {
-		return getStringExpression() + " " + rightExpression.toString();
-	}
+    @Override
+    public String toString() {
+        return getStringExpression() + " " + rightExpression.toString();
+    }
 }

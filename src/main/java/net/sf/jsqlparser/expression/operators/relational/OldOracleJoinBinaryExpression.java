@@ -27,10 +27,10 @@ import static net.sf.jsqlparser.expression.operators.relational.SupportsOldOracl
 public abstract class OldOracleJoinBinaryExpression extends BinaryExpression implements SupportsOldOracleJoinSyntax {
 
     private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
-	
-	private int oraclePriorPosition = NO_ORACLE_PRIOR;
 
-	@Override
+    private int oraclePriorPosition = NO_ORACLE_PRIOR;
+
+    @Override
     public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
         this.oldOracleJoinSyntax = oldOracleJoinSyntax;
         if (oldOracleJoinSyntax < 0 || oldOracleJoinSyntax > 2) {
@@ -40,28 +40,28 @@ public abstract class OldOracleJoinBinaryExpression extends BinaryExpression imp
 
     @Override
     public String toString() {
-        return (isNot() ? "NOT " : "") 
-				+ (oraclePriorPosition == ORACLE_PRIOR_START ? "PRIOR " : "")
-				+ getLeftExpression() 
-				+ (oldOracleJoinSyntax == ORACLE_JOIN_RIGHT ? "(+)" : "") + " " 
-				+ getStringExpression() + " " 
-				+ (oraclePriorPosition == ORACLE_PRIOR_END ? "PRIOR " : "")
-				+ getRightExpression() 
-				+ (oldOracleJoinSyntax == ORACLE_JOIN_LEFT ? "(+)" : "");
+        return (isNot() ? "NOT " : "")
+                + (oraclePriorPosition == ORACLE_PRIOR_START ? "PRIOR " : "")
+                + getLeftExpression()
+                + (oldOracleJoinSyntax == ORACLE_JOIN_RIGHT ? "(+)" : "") + " "
+                + getStringExpression() + " "
+                + (oraclePriorPosition == ORACLE_PRIOR_END ? "PRIOR " : "")
+                + getRightExpression()
+                + (oldOracleJoinSyntax == ORACLE_JOIN_LEFT ? "(+)" : "");
     }
 
-	@Override
+    @Override
     public int getOldOracleJoinSyntax() {
         return oldOracleJoinSyntax;
     }
 
-	@Override
-	public int getOraclePriorPosition() {
-		return oraclePriorPosition;
-	}
+    @Override
+    public int getOraclePriorPosition() {
+        return oraclePriorPosition;
+    }
 
-	@Override
-	public void setOraclePriorPosition(int oraclePriorPosition) {
-		this.oraclePriorPosition = oraclePriorPosition;
-	}
+    @Override
+    public void setOraclePriorPosition(int oraclePriorPosition) {
+        this.oraclePriorPosition = oraclePriorPosition;
+    }
 }

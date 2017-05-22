@@ -23,20 +23,36 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.statement.select.SubSelect;
 
+/**
+ * Combines ANY and SOME expressions.
+ *
+ * @author toben
+ */
 public class AnyComparisonExpression implements Expression {
 
-	private SubSelect subSelect;
+    private final SubSelect subSelect;
+    private final AnyType anyType;
 
-	public AnyComparisonExpression(SubSelect subSelect) {
-		this.subSelect = subSelect;
-	}
+    public AnyComparisonExpression(AnyType anyType, SubSelect subSelect) {
+        this.anyType = anyType;
+        this.subSelect = subSelect;
+    }
 
-	public SubSelect getSubSelect() {
-		return subSelect;
-	}
+    public SubSelect getSubSelect() {
+        return subSelect;
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
+
+    public AnyType getAnyType() {
+        return anyType;
+    }
+
+    @Override
+    public String toString() {
+        return anyType.name() + " " + subSelect.toString();
+    }
 }

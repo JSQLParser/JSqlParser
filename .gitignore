@@ -16,3 +16,5 @@
 
 *.jj~
 *.java~
+*.yml~
+/nbproject/

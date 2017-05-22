@@ -22,46 +22,53 @@
 package net.sf.jsqlparser.expression;
 
 /**
- * A basic class for binary expressions, that is expressions having a left
- * member and a right member which are in turn expressions.
+ * A basic class for binary expressions, that is expressions having a left member and a right member
+ * which are in turn expressions.
  */
 public abstract class BinaryExpression implements Expression {
 
-	private Expression leftExpression;
-	private Expression rightExpression;
-	private boolean not = false;
+    private Expression leftExpression;
+    private Expression rightExpression;
+    private boolean not = false;
+    
+    
+    
+    public BinaryExpression() {
+    }
 
-	public BinaryExpression() {
-	}
+    public Expression getLeftExpression() {
+        return leftExpression;
+    }
 
-	public Expression getLeftExpression() {
-		return leftExpression;
-	}
+    public Expression getRightExpression() {
+        return rightExpression;
+    }
 
-	public Expression getRightExpression() {
-		return rightExpression;
-	}
+    public void setLeftExpression(Expression expression) {
+        leftExpression = expression;
+    }
 
-	public void setLeftExpression(Expression expression) {
-		leftExpression = expression;
-	}
+    public void setRightExpression(Expression expression) {
+        rightExpression = expression;
+    }
 
-	public void setRightExpression(Expression expression) {
-		rightExpression = expression;
-	}
+    public void setNot() {
+        not = true;
+    }
+    
+    public void removeNot() {
+        not = false;
+    }
+ 
+    public boolean isNot() {
+        return not;
+    }
 
-	public void setNot() {
-		not = true;
-	}
+    @Override
+    public String toString() {
+        return (not ? "NOT " : "") + getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
+    }
 
-	public boolean isNot() {
-		return not;
-	}
-
-	@Override
-	public String toString() {
-		return (not ? "NOT " : "") + getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
-	}
-
-	public abstract String getStringExpression();
+    public abstract String getStringExpression();
+    
 }

@@ -46,116 +46,132 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
+import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 public interface ExpressionVisitor {
 
-	void visit(NullValue nullValue);
+    void visit(NullValue nullValue);
 
-	void visit(Function function);
+    void visit(Function function);
 
-	void visit(SignedExpression signedExpression);
+    void visit(SignedExpression signedExpression);
 
-	void visit(JdbcParameter jdbcParameter);
+    void visit(JdbcParameter jdbcParameter);
 
     void visit(JdbcNamedParameter jdbcNamedParameter);
 
-	void visit(DoubleValue doubleValue);
+    void visit(DoubleValue doubleValue);
 
-	void visit(LongValue longValue);
+    void visit(LongValue longValue);
 
-	void visit(DateValue dateValue);
+    void visit(HexValue hexValue);
 
-	void visit(TimeValue timeValue);
+    void visit(DateValue dateValue);
 
-	void visit(TimestampValue timestampValue);
+    void visit(TimeValue timeValue);
 
-	void visit(Parenthesis parenthesis);
+    void visit(TimestampValue timestampValue);
 
-	void visit(StringValue stringValue);
+    void visit(Parenthesis parenthesis);
 
-	void visit(Addition addition);
+    void visit(StringValue stringValue);
 
-	void visit(Division division);
+    void visit(Addition addition);
 
-	void visit(Multiplication multiplication);
+    void visit(Division division);
 
-	void visit(Subtraction subtraction);
+    void visit(Multiplication multiplication);
 
-	void visit(AndExpression andExpression);
+    void visit(Subtraction subtraction);
 
-	void visit(OrExpression orExpression);
+    void visit(AndExpression andExpression);
 
-	void visit(Between between);
+    void visit(OrExpression orExpression);
 
-	void visit(EqualsTo equalsTo);
+    void visit(Between between);
 
-	void visit(GreaterThan greaterThan);
+    void visit(EqualsTo equalsTo);
 
-	void visit(GreaterThanEquals greaterThanEquals);
+    void visit(GreaterThan greaterThan);
 
-	void visit(InExpression inExpression);
+    void visit(GreaterThanEquals greaterThanEquals);
 
-	void visit(IsNullExpression isNullExpression);
+    void visit(InExpression inExpression);
 
-	void visit(LikeExpression likeExpression);
+    void visit(IsNullExpression isNullExpression);
 
-	void visit(MinorThan minorThan);
+    void visit(LikeExpression likeExpression);
 
-	void visit(MinorThanEquals minorThanEquals);
+    void visit(MinorThan minorThan);
 
-	void visit(NotEqualsTo notEqualsTo);
+    void visit(MinorThanEquals minorThanEquals);
 
-	void visit(Column tableColumn);
+    void visit(NotEqualsTo notEqualsTo);
 
-	void visit(SubSelect subSelect);
+    void visit(Column tableColumn);
 
-	void visit(CaseExpression caseExpression);
+    void visit(SubSelect subSelect);
 
-	void visit(WhenClause whenClause);
+    void visit(CaseExpression caseExpression);
 
-	void visit(ExistsExpression existsExpression);
+    void visit(WhenClause whenClause);
 
-	void visit(AllComparisonExpression allComparisonExpression);
+    void visit(ExistsExpression existsExpression);
 
-	void visit(AnyComparisonExpression anyComparisonExpression);
+    void visit(AllComparisonExpression allComparisonExpression);
 
-	void visit(Concat concat);
+    void visit(AnyComparisonExpression anyComparisonExpression);
 
-	void visit(Matches matches);
+    void visit(Concat concat);
 
-	void visit(BitwiseAnd bitwiseAnd);
+    void visit(Matches matches);
 
-	void visit(BitwiseOr bitwiseOr);
+    void visit(BitwiseAnd bitwiseAnd);
 
-	void visit(BitwiseXor bitwiseXor);
+    void visit(BitwiseOr bitwiseOr);
 
-	void visit(CastExpression cast);
+    void visit(BitwiseXor bitwiseXor);
 
-	void visit(Modulo modulo);
+    void visit(CastExpression cast);
 
-	void visit(AnalyticExpression aexpr);
-    
+    void visit(Modulo modulo);
+
+    void visit(AnalyticExpression aexpr);
+
     void visit(WithinGroupExpression wgexpr);
 
-	void visit(ExtractExpression eexpr);
+    void visit(ExtractExpression eexpr);
 
-	void visit(IntervalExpression iexpr);
+    void visit(IntervalExpression iexpr);
 
-	void visit(OracleHierarchicalExpression oexpr);
+    void visit(OracleHierarchicalExpression oexpr);
 
-	void visit(RegExpMatchOperator rexpr);
-    
+    void visit(RegExpMatchOperator rexpr);
+
     void visit(JsonExpression jsonExpr);
 
-	void visit(RegExpMySQLOperator regExpMySQLOperator);
-    
+    void visit(JsonOperator jsonExpr);
+
+    void visit(RegExpMySQLOperator regExpMySQLOperator);
+
     void visit(UserVariable var);
-    
+
     void visit(NumericBind bind);
-    
+
     void visit(KeepExpression aexpr);
-    
+
     void visit(MySQLGroupConcat groupConcat);
+
+    void visit(RowConstructor rowConstructor);
+
+    void visit(OracleHint hint);
+
+    void visit(TimeKeyExpression timeKeyExpression);
+
+    void visit(DateTimeLiteralExpression literal);
+
+    public void visit(NotExpression aThis);
+
 }

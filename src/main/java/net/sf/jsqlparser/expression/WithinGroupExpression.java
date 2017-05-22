@@ -33,6 +33,10 @@ public class WithinGroupExpression implements Expression {
 
     private String name;
 
+    private List<OrderByElement> orderByElements;
+
+    private ExpressionList exprList;
+
     public String getName() {
         return name;
     }
@@ -41,8 +45,6 @@ public class WithinGroupExpression implements Expression {
         this.name = name;
     }
 
-    private List<OrderByElement> orderByElements;
-
     public List<OrderByElement> getOrderByElements() {
         return orderByElements;
     }
@@ -50,8 +52,6 @@ public class WithinGroupExpression implements Expression {
     public void setOrderByElements(List<OrderByElement> orderByElements) {
         this.orderByElements = orderByElements;
     }
-
-    private ExpressionList exprList;
 
     public ExpressionList getExprList() {
         return exprList;

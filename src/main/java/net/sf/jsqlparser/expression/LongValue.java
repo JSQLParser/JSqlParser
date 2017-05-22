@@ -21,51 +21,54 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.math.BigInteger;
+
 /**
- * Every number without a point or an exponential format is a LongValue
+ * Every number without a point or an exponential format is a LongValue.
  */
 public class LongValue implements Expression {
 
-	private long value;
-	private String stringValue;
+    private String stringValue;
 
-	public LongValue(final String value) {
-		String val = value;
-		if (val.charAt(0) == '+') {
-			val = val.substring(1);
-		}
-		this.value = Long.parseLong(val);
+    public LongValue(final String value) {
+        String val = value;
+        if (val.charAt(0) == '+') {
+            val = val.substring(1);
+        }
         this.stringValue = val;
-	}
-	
-	public LongValue(long value) {
-		this.value=value;
-		stringValue = String.valueOf(value);
-	}
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    public LongValue(long value) {
+        stringValue = String.valueOf(value);
+    }
 
-	public long getValue() {
-		return value;
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	public void setValue(long d) {
-		value = d;
-	}
+    public long getValue() {
+        return Long.valueOf(stringValue);
+    }
 
-	public String getStringValue() {
-		return stringValue;
-	}
+    public BigInteger getBigIntegerValue() {
+        return new BigInteger(stringValue);
+    }
 
-	public void setStringValue(String string) {
-		stringValue = string;
-	}
+    public void setValue(long d) {
+        stringValue = String.valueOf(d);
+    }
 
-	@Override
-	public String toString() {
-		return getStringValue();
-	}
+    public String getStringValue() {
+        return stringValue;
+    }
+
+    public void setStringValue(String string) {
+        stringValue = string;
+    }
+
+    @Override
+    public String toString() {
+        return getStringValue();
+    }
 }

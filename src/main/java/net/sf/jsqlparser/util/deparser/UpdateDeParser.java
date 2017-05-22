@@ -21,32 +21,41 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import java.util.Iterator;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.OrderByVisitor;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
- * string) an {@link net.sf.jsqlparser.statement.update.Update}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) an
+ * {@link net.sf.jsqlparser.statement.update.Update}
  */
-public class UpdateDeParser {
+public class UpdateDeParser implements OrderByVisitor {
 
-    private StringBuilder buffer;
-    private ExpressionVisitor expressionVisitor;
-    private SelectVisitor selectVisitor;
+    private StringBuilder buffer = new StringBuilder();
+    private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
+    private SelectVisitor selectVisitor = new SelectVisitorAdapter();
+
+    public UpdateDeParser() {
+    }
 
     /**
-     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
-     * expressions. It has to share the same<br>
+     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share
+     * the same<br>
      * StringBuilder (buffer parameter) as this object in order to work
      * @param selectVisitor a {@link SelectVisitor} to de-parse
-     * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the
-     * same<br>
+     * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the same<br>
      * StringBuilder (buffer parameter) as this object in order to work
      * @param buffer the buffer that will be filled with the select
      */
@@ -65,12 +74,15 @@ public class UpdateDeParser {
     }
 
     public void deParse(Update update) {
-        buffer.append("UPDATE ").append(PlainSelect.getStringList(update.getTables(), true, false)).append(" SET ");
+        buffer.append("UPDATE ").append(PlainSelect.getStringList(update.getTables(), true, false)).
+                append(" SET ");
 
         if (!update.isUseSelect()) {
             for (int i = 0; i < update.getColumns().size(); i++) {
                 Column column = update.getColumns().get(i);
-                buffer.append(column.getFullyQualifiedName()).append(" = ");
+                column.accept(expressionVisitor);
+
+                buffer.append(" = ");
 
                 Expression expression = update.getExpressions().get(i);
                 expression.accept(expressionVisitor);
@@ -87,7 +99,7 @@ public class UpdateDeParser {
                     buffer.append(", ");
                 }
                 Column column = update.getColumns().get(i);
-                buffer.append(column.getFullyQualifiedName());
+                column.accept(expressionVisitor);
             }
             if (update.isUseColumnsBrackets()) {
                 buffer.append(")");
@@ -116,7 +128,25 @@ public class UpdateDeParser {
             buffer.append(" WHERE ");
             update.getWhere().accept(expressionVisitor);
         }
+        if (update.getOrderByElements() != null) {
+            new OrderByDeParser(expressionVisitor, buffer).deParse(update.getOrderByElements());
+        }
+        if (update.getLimit() != null) {
+            new LimitDeparser(buffer).deParse(update.getLimit());
+        }
 
+        if (update.isReturningAllColumns()) {
+            buffer.append(" RETURNING *");
+        } else if (update.getReturningExpressionList() != null) {
+            buffer.append(" RETURNING ");
+            for (Iterator<SelectExpressionItem> iter = update.getReturningExpressionList().
+                    iterator(); iter.hasNext();) {
+                buffer.append(iter.next().toString());
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
+        }
     }
 
     public ExpressionVisitor getExpressionVisitor() {
@@ -125,5 +155,20 @@ public class UpdateDeParser {
 
     public void setExpressionVisitor(ExpressionVisitor visitor) {
         expressionVisitor = visitor;
+    }
+
+    @Override
+    public void visit(OrderByElement orderBy) {
+        orderBy.getExpression().accept(expressionVisitor);
+        if (!orderBy.isAsc()) {
+            buffer.append(" DESC");
+        } else if (orderBy.isAscDescPresent()) {
+            buffer.append(" ASC");
+        }
+        if (orderBy.getNullOrdering() != null) {
+            buffer.append(' ');
+            buffer.
+                    append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
+        }
     }
 }

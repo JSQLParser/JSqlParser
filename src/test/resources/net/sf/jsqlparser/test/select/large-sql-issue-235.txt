@@ -1,0 +1,95 @@
+SELECT
+        'CR' AS `^CR`,
+        (1 - (SUM((CASE 
+            WHEN (`tbl`.`AS` = 'Cancelled') THEN (CASE 
+                WHEN (ROUND((((((period_diff(date_format(`tbl`.`CD`,
+                '%Y%m'),
+                date_format(SUBTIME(CURRENT_TIMESTAMP(),
+                25200),
+                '%Y%m')) + month(SUBTIME(CURRENT_TIMESTAMP(),
+                25200))) - MONTH('2012-02-01')) - 1) / 3) - ROUND((((month(SUBTIME(CURRENT_TIMESTAMP(),
+                25200)) - MONTH('2012-02-01')) - 1) / 3)))) = -3) THEN 1 
+                ELSE 0 
+            END) 
+            ELSE 0 
+        END)) / SUM((CASE 
+            WHEN (`tbl`.`AS` = 'Active') THEN (CASE 
+                WHEN (ROUND((((((period_diff(date_format(`tbl`.`OCD`,
+                '%Y%m'),
+                date_format(SUBTIME(CURRENT_TIMESTAMP(),
+                25200),
+                '%Y%m')) + month(SUBTIME(CURRENT_TIMESTAMP(),
+                25200))) - MONTH('2012-02-01')) - 1) / 3) - ROUND((((month(SUBTIME(CURRENT_TIMESTAMP(),
+                25200)) - MONTH('2012-02-01')) - 1) / 3)))) <= -3) THEN 1 
+                ELSE 0 
+            END) 
+            ELSE 0 
+        END)))) AS `^P3Q TRR`,
+        (1 - (SUM((CASE 
+            WHEN (`tbl`.`AS` = 'Cancelled') THEN (CASE 
+                WHEN (ROUND((((((period_diff(date_format(`tbl`.`CD`,
+                '%Y%m'),
+                date_format(SUBTIME(CURRENT_TIMESTAMP(),
+                25200),
+                '%Y%m')) + month(SUBTIME(CURRENT_TIMESTAMP(),
+                25200))) - MONTH('2012-02-01')) - 1) / 3) - ROUND((((month(SUBTIME(CURRENT_TIMESTAMP(),
+                25200)) - MONTH('2012-02-01')) - 1) / 3)))) = -2) THEN 1 
+                ELSE 0 
+            END) 
+            ELSE 0 
+        END)) / SUM((CASE 
+            WHEN (`tbl`.`AS` = 'Active') THEN (CASE 
+                WHEN (ROUND((((((period_diff(date_format(`tbl`.`OCD`,
+                '%Y%m'),
+                date_format(SUBTIME(CURRENT_TIMESTAMP(),
+                25200),
+                '%Y%m')) + month(SUBTIME(CURRENT_TIMESTAMP(),
+                25200))) - MONTH('2012-02-01')) - 1) / 3) - ROUND((((month(SUBTIME(CURRENT_TIMESTAMP(),
+                25200)) - MONTH('2012-02-01')) - 1) / 3)))) <= -2) THEN 1 
+                ELSE 0 
+            END) 
+            ELSE 0 
+        END)))) AS `^P2Q TRR`,
+        (1 - (SUM((CASE 
+            WHEN (`tbl`.`AS` = 'Cancelled') THEN (CASE 
+                WHEN (ROUND((((((period_diff(date_format(`tbl`.`CD`,
+                '%Y%m'),
+                date_format(SUBTIME(CURRENT_TIMESTAMP(),
+                25200),
+                '%Y%m')) + month(SUBTIME(CURRENT_TIMESTAMP(),
+                25200))) - MONTH('2012-02-01')) - 1) / 3) - ROUND((((month(SUBTIME(CURRENT_TIMESTAMP(),
+                25200)) - MONTH('2012-02-01')) - 1) / 3)))) = -1) THEN 1 
+                ELSE 0 
+            END) 
+            ELSE 0 
+        END)) / SUM((CASE 
+            WHEN (`tbl`.`AS` = 'Active') THEN (CASE 
+                WHEN (ROUND((((((period_diff(date_format(`tbl`.`OCD`,
+                '%Y%m'),
+                date_format(SUBTIME(CURRENT_TIMESTAMP(),
+                25200),
+                '%Y%m')) + month(SUBTIME(CURRENT_TIMESTAMP(),
+                25200))) - MONTH('2012-02-01')) - 1) / 3) - ROUND((((month(SUBTIME(CURRENT_TIMESTAMP(),
+                25200)) - MONTH('2012-02-01')) - 1) / 3)))) <= -1) THEN 1 
+                ELSE 0 
+            END) 
+            ELSE 0 
+        END)))) AS `^PQ TRR`,
+        (1 - (SUM((CASE 
+            WHEN ((ROUND((((((period_diff(date_format(`tbl`.`CD`,
+            '%Y%m'),
+            date_format(SUBTIME(CURRENT_TIMESTAMP(),
+            25200),
+            '%Y%m')) + month(SUBTIME(CURRENT_TIMESTAMP(),
+            25200))) - MONTH('2012-02-01')) - 1) / 3) - ROUND((((month(SUBTIME(CURRENT_TIMESTAMP(),
+            25200)) - MONTH('2012-02-01')) - 1) / 3)))) = 0) 
+            AND (`tbl`.`AS` = 'Cancelled')) THEN 1 
+            ELSE 0 
+        END)) / SUM((CASE 
+            WHEN (`tbl`.`AS` = 'Active') THEN 1 
+            ELSE 0 
+        END)))) AS `^CQ TRR` 
+    FROM
+        `tbl` 
+    GROUP BY
+        'CR' LIMIT 25000

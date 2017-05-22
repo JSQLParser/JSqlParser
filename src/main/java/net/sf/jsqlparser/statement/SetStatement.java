@@ -19,7 +19,7 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-/*
+ /*
  * Copyright (C) 2015 JSQLParser.
  *
  * This library is free software; you can redistribute it and/or
@@ -49,10 +49,20 @@ public class SetStatement implements Statement {
 
     private String name;
     private Expression expression;
+    private boolean useEqual;
 
     public SetStatement(String name, Expression expression) {
         this.name = name;
         this.expression = expression;
+    }
+
+    public boolean isUseEqual() {
+        return useEqual;
+    }
+
+    public SetStatement setUseEqual(boolean useEqual) {
+        this.useEqual = useEqual;
+        return this;
     }
 
     public String getName() {
@@ -73,7 +83,7 @@ public class SetStatement implements Statement {
 
     @Override
     public String toString() {
-        return "SET " + name + " = " + expression.toString();
+        return "SET " + name + (useEqual ? " = " : " ") + expression.toString();
     }
 
     @Override

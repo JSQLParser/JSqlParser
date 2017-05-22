@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
  * @author aalmiray
  */
 public class AdaptersTest {
+
     /**
      * Test extracting JDBC named parameters using adapters
      */
@@ -46,12 +47,15 @@ public class AdaptersTest {
 
                             @Override
                             public void visit(Column column) {
-                                params.push(new Pair<String, String>(column.getColumnName(), params.pop().getRight()));
+                                params.push(new Pair<String, String>(column.getColumnName(), params.
+                                        pop().getRight()));
                             }
 
                             @Override
                             public void visit(JdbcNamedParameter parameter) {
-                                params.push(new Pair<String, String>(params.pop().getLeft(), parameter.getName()));
+                                params.
+                                        push(new Pair<String, String>(params.pop().getLeft(), parameter.
+                                                getName()));
                             }
                         });
                     }
@@ -69,6 +73,7 @@ public class AdaptersTest {
     }
 
     private static class Pair<L, R> {
+
         private final L left;
         private final R right;
 

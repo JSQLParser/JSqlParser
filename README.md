@@ -1,19 +1,30 @@
 # JSqlParser
 
-[![Build Status](https://travis-ci.org/JSQLParser/JSqlParser.svg?branch=master)](https://travis-ci.org/JSQLParser/JSqlParser)
+[![Build Status](https://travis-ci.org/JSQLParser/JSqlParser.svg?branch=master)](https://travis-ci.org/JSQLParser/JSqlParser)   [![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/00b2d91995764ae4805b55627aca8d39)](https://www.codacy.com/app/wumpz/JSqlParser?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=JSQLParser/JSqlParser&amp;utm_campaign=Badge_Grade)
 
-[![Flattr](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=wumpz&url=http%3A%2F%2Fgithub.com%2FJSQLParser%2FJSqlParser)  [![PayPal donate button](http://img.shields.io/paypal/donate.png?color=yellow)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=64CCN9JJANZXA "Help this JSqlParser version using Paypal")  
+[![PayPal donate button](http://img.shields.io/paypal/donate.png?color=blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=64CCN9JJANZXA "Help this JSqlParser version using Paypal")  
+
+[![Gitter](https://badges.gitter.im/JSQLParser/JSqlParser.svg)](https://gitter.im/JSQLParser/JSqlParser?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Look here for more information and examples: https://github.com/JSQLParser/JSqlParser/wiki.
 
 ## License
 
-JSqlParser is licensed under the **LGPL V2.1**.
+JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, Version 2.0**.
 
 
 ## News
-
-Version **0.9.3** released.
+* JSqlParser has now a build in checkstyle configuration to introduce source code conventions.
+* Released first major version **1.0** of JSqlParser. 
+* Please test the actual **0.9.8-SNAPSHOT**. It includes includes grammar refactorings or changes which eventually results in parse tree changes.
+* Version **0.9.7** released.
+* Version **0.9.6** released.
+* Version **0.9.5** released.
+* Please test the actual **0.9.5-SNAPSHOT**. It includes some grammar refactorings which eventually results in parse tree changes.
+* Version **0.9.4** released.
+* Please test the actual SNAPSHOT, if there are problems using the extended identifier token.
+* Version **0.9.3** released.
 
 More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
 
@@ -30,16 +41,16 @@ To help JSqlParsers development you are encouraged to provide
 * bugreports
 * pull requests for new features
 * improvement requests
+* fund new features
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 0.9.4
+## Extensions in the latest SNAPSHOT version 1.1
 
-* support for MySQL **GROUP_CONCAT**
-
-```sql
-GROUP_CONCAT(DISTINCT test_score ORDER BY test_score DESC SEPARATOR ' ')
-```
+* common normal form transformer for expressions (https://en.wikipedia.org/wiki/Conjunctive_normal_form) 
+* checkstyle integration to force first souce code conventions
+  * checkstyle is activated by default, it can be deactivated by an environment property **skipCheckSources**
+  * pull requests should follow this style settings
 
 ## Extensions of JSqlParser releases
 
@@ -47,14 +58,37 @@ GROUP_CONCAT(DISTINCT test_score ORDER BY test_score DESC SEPARATOR ' ')
 * Modifications before GitHubs release tagging are listed in the [Older Releases](https://github.com/JSQLParser/JSqlParser/wiki/Older-Releases) page.
 
 
-
-## BUILDING from the sources
+## Building from the sources
 
 As the project is a Maven project, building is rather simple by running:
 
 	mvn package
+    
+The project requires the following to build:
+- Maven 
+- JDK 1.7 or later. The jar will target JDK 1.6, but the version of the maven-compiler-plugin that JsqlParser uses requires JDK 1.7+
 
 This will produce the jsqlparser-VERSION.jar file in the target/ directory.
+
+**To build this project without using Maven, one has to build the parser by JavaCC using the CLI options it provids.**
+
+## Source Code conventions
+
+Recently a checkstyle process was integrated into the build process. JSqlParser follows the sun java format convention. There are no TABs allowed. Use spaces.
+
+```java
+public void setUsingSelect(SubSelect usingSelect) {
+    this.usingSelect = usingSelect;
+    if (this.usingSelect != null) {
+        this.usingSelect.setUseBrackets(false);
+    }
+}
+```
+
+This is a valid piece of source code:
+* blocks without braces are not allowed
+* after control statements (if, while, for) a whitespace is expected
+* the opening brace should be in the same line as the control statement
 
 ## Maven Repository
 
@@ -80,7 +114,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>0.9</version>
+	<version>1.0</version>
 </dependency>
 ```
 

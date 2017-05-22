@@ -76,7 +76,8 @@ public class ColDataType {
             arraySpec.append("]");
         }
         return dataType
-                + (argumentsStringList != null ? " " + PlainSelect.getStringList(argumentsStringList, true, true) : "")
+                + (argumentsStringList != null ? " " + PlainSelect.
+                                getStringList(argumentsStringList, true, true) : "")
                 + arraySpec.toString()
                 + (characterSet != null ? " CHARACTER SET " + characterSet : "");
     }

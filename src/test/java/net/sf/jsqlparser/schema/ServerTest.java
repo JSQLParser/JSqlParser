@@ -1,5 +1,8 @@
 package net.sf.jsqlparser.schema;
 
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+
 /*
  * #%L
  * JSQLParser library
@@ -21,19 +24,17 @@ package net.sf.jsqlparser.schema;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
+public class ServerTest {
 
-import junit.framework.*;
-
-public class ServerTest extends TestCase {
-
+    @Test
     public void testServerNameParsing() throws Exception {
         final String serverName = "LOCALHOST";
 
         final String fullServerName = String.format("[%s]", serverName);
         final Server server = new Server(fullServerName);
 
-        Assert.assertEquals(serverName, server.getServerName());
-        Assert.assertEquals(fullServerName, server.toString());
+        assertEquals(serverName, server.getServerName());
+        assertEquals(fullServerName, server.toString());
     }
 
     public void testServerNameAndInstanceParsing() throws Exception {
@@ -43,9 +44,9 @@ public class ServerTest extends TestCase {
         final String fullServerName = String.format("[%s\\%s]", serverName, serverInstanceName);
         final Server server = new Server(fullServerName);
 
-        Assert.assertEquals(serverName, server.getServerName());
-        Assert.assertEquals(serverInstanceName, server.getInstanceName());
-        Assert.assertEquals(fullServerName, server.toString());
+        assertEquals(serverName, server.getServerName());
+        assertEquals(serverInstanceName, server.getInstanceName());
+        assertEquals(fullServerName, server.toString());
 
     }
 }

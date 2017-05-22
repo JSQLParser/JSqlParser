@@ -23,5 +23,5 @@ package net.sf.jsqlparser.expression;
 
 public interface Expression {
 
-	void accept(ExpressionVisitor expressionVisitor);
+    void accept(ExpressionVisitor expressionVisitor);
 }
