@@ -44,10 +44,19 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 
 public class StatementDeParser implements StatementVisitor {
+    private ExpressionDeParser expressionDeParser;
+
+    private SelectDeParser selectDeParser;
 
     private StringBuilder buffer;
 
     public StatementDeParser(StringBuilder buffer) {
+        this(new ExpressionDeParser(), new SelectDeParser(), buffer);
+    }
+
+    public StatementDeParser(ExpressionDeParser expressionDeParser, SelectDeParser selectDeParser, StringBuilder buffer) {
+        this.expressionDeParser = expressionDeParser;
+        this.selectDeParser = selectDeParser;
         this.buffer = buffer;
     }
 
@@ -77,9 +86,9 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Delete delete) {
-        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
-        ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         DeleteDeParser deleteDeParser = new DeleteDeParser(expressionDeParser, buffer);
         deleteDeParser.deParse(delete);
@@ -93,9 +102,9 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Insert insert) {
-        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
-        ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         InsertDeParser insertDeParser = new InsertDeParser(expressionDeParser, selectDeParser, buffer);
         insertDeParser.deParse(insert);
@@ -103,9 +112,9 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Replace replace) {
-        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
-        ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         ReplaceDeParser replaceDeParser = new ReplaceDeParser(expressionDeParser, selectDeParser, buffer);
         replaceDeParser.deParse(replace);
@@ -113,9 +122,9 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Select select) {
-        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
-        ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         if (select.getWithItemsList() != null && !select.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");
@@ -137,9 +146,9 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Update update) {
-        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
-        ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
         UpdateDeParser updateDeParser = new UpdateDeParser(expressionDeParser, selectDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         updateDeParser.deParse(update);
@@ -167,9 +176,9 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Execute execute) {
-        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
-        ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
         ExecuteDeParser executeDeParser = new ExecuteDeParser(expressionDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         executeDeParser.deParse(execute);
@@ -177,9 +186,9 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(SetStatement set) {
-        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
-        ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
         SetStatementDeParser setStatementDeparser = new SetStatementDeParser(expressionDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         setStatementDeparser.deParse(set);
