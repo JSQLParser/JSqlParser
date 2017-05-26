@@ -31,6 +31,8 @@ options{
     UNICODE_INPUT=true;
 	JAVA_TEMPLATE_TYPE = "classic";
 	JDK_VERSION = "1.6";
+    TOKEN_EXTENDS ="BaseToken";
+    COMMON_TOKEN_ACTION=true;
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -106,6 +108,21 @@ public class CCJSqlParser {
 }
 
 PARSER_END(CCJSqlParser)
+
+TOKEN_MGR_DECLS : {
+    public void CommonTokenAction(Token t)
+	{
+		t.absoluteBegin = getCurrentTokenAbsolutePosition();
+		t.absoluteEnd = t.absoluteBegin + t.image.length();
+	}
+
+	public int getCurrentTokenAbsolutePosition()
+	{
+		if (input_stream instanceof SimpleCharStream)
+			return ((SimpleCharStream)input_stream).getAbsoluteTokenBegin();
+		return -1;
+	}
+}
 
 SKIP:
 {
