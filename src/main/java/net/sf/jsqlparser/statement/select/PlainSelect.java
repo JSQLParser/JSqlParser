@@ -455,4 +455,25 @@ public class PlainSelect implements SelectBody {
 
         return ans.toString();
     }
+    
+    /**
+     * This method is mainly used to convert the where expression into
+     * CNF form. 
+     */
+    public void changeWhereToCNF() {
+        CNFConverter cnf = new CNFConverter();
+        cnf.convert(where);
+        where = cnf.getRoot();
+    }
+    
+    /**
+     * This method is mainly used to convert the having expression into
+     * CNF form. 
+     */
+    public void changeHavingToCNF() {
+        CNFConverter cnf = new CNFConverter();
+        cnf.convert(having);
+        having = cnf.getRoot();
+    }
+    
 }
