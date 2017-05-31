@@ -386,6 +386,7 @@
                             <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
                             <checkstyleRules>
                                 <module name="Checker">
+                                    <module name="SuppressWarningsFilter" />
                                     <module name="FileTabCharacter" />
                                     <!-- git checkout may change linefeeds on the fly
                                     <module name="RegexpMultiline">
@@ -411,6 +412,8 @@
                                         <module name="UnnecessaryParentheses" />
                                         <module name="LeftCurly"/>
                                         <module name="RightCurly"/>
+                                        
+                                        <module name="SuppressWarningsHolder" />
                                     </module>
                                 </module>
                             </checkstyleRules>

@@ -23,6 +23,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 
+import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
@@ -197,5 +198,10 @@ public class StatementDeParser implements StatementVisitor {
     public void visit(Merge merge) {
         //TODO implementation of a deparser
         buffer.append(merge.toString());
+    }
+    
+    @Override
+    public void visit(Commit commit) {
+        buffer.append(commit.toString());
     }
 }
