@@ -72,5 +72,5 @@ public interface StatementVisitor {
     void visit(Merge merge);
 
     void visit(Upsert upsert);
-	
+
 }

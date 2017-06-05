@@ -120,8 +120,8 @@ public class StatementVisitorAdapter implements StatementVisitor {
     public void visit(AlterView alterView) {
     }
 
-	@Override
-	public void visit(Upsert upsert) {
-	}
-	
+    @Override
+    public void visit(Upsert upsert) {
+    }
+
 }
