@@ -191,13 +191,14 @@ public class StatementDeParser implements StatementVisitor {
         buffer.append(merge.toString());
     }
 
-	@Override
-	public void visit(Upsert upsert) {
-		SelectDeParser selectDeParser = new SelectDeParser();
+    @Override
+    public void visit(Upsert upsert) {
+        SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
         ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         UpsertDeParser upsertDeParser = new UpsertDeParser(expressionDeParser, selectDeParser, buffer);
         upsertDeParser.deParse(upsert);
-	}
+    }
+
 }

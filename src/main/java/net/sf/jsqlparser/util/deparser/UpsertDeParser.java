@@ -41,7 +41,7 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
  */
 public class UpsertDeParser implements ItemsListVisitor {
 
-	private StringBuilder buffer;
+    private StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
 
@@ -87,7 +87,7 @@ public class UpsertDeParser implements ItemsListVisitor {
         }
 
         if (upsert.getItemsList() != null) {
-        	upsert.getItemsList().accept(this);
+            upsert.getItemsList().accept(this);
         }
 
         if (upsert.getSelect() != null) {
