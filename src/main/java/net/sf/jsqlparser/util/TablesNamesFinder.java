@@ -641,15 +641,15 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     }
 
-	@Override
-	public void visit(Upsert upsert) {
-	    tables.add(upsert.getTable().getName());
+    @Override
+    public void visit(Upsert upsert) {
+        tables.add(upsert.getTable().getName());
         if (upsert.getItemsList() != null) {
-        	upsert.getItemsList().accept(this);
+            upsert.getItemsList().accept(this);
         }
         if (upsert.getSelect() != null) {
             visit(upsert.getSelect());
         }
-	}
-     	
+    }
+
 }
