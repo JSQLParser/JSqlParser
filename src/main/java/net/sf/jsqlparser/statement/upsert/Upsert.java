@@ -35,8 +35,8 @@ import net.sf.jsqlparser.statement.select.Select;
 /**
  * The UPSERT INTO statement. This statement is basically the combination of
  * "insert" and "update". That means it will operate inserts if not present
- * and updates otherwise the value in the table. Note the right most part will be
- * either a list of values or a select statement.
+ * and updates otherwise the value in the table. Note the values modified
+ * will be either a list of values or a select statement.
  * 
  * 
  * Here is the documentation of the grammar of this operation:
@@ -57,10 +57,10 @@ public class Upsert implements Statement {
     private boolean useDuplicate = false;
     private List<Column> duplicateUpdateColumns;
     private List<Expression> duplicateUpdateExpressionList;
-	
+
     @Override
     public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);	
+        statementVisitor.visit(this); 
     }
     
     public void setTable(Table name) {
@@ -175,5 +175,5 @@ public class Upsert implements Statement {
         
         return sb.toString();
     }
-	
+
 }
