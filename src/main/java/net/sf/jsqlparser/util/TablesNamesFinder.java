@@ -33,6 +33,7 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.upsert.Upsert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -639,4 +640,16 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(DateTimeLiteralExpression literal) {
 
     }
+
+	@Override
+	public void visit(Upsert upsert) {
+	    tables.add(upsert.getTable().getName());
+        if (upsert.getItemsList() != null) {
+        	upsert.getItemsList().accept(this);
+        }
+        if (upsert.getSelect() != null) {
+            visit(upsert.getSelect());
+        }
+	}
+     	
 }
