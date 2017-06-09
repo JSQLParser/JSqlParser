@@ -36,6 +36,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.upsert.Upsert;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StatementDeParserTest {
@@ -116,14 +117,14 @@ public class StatementDeParserTest {
         withItem2.setSelectBody(withItem2SelectBody);
 
         statementDeParser.visit(insert);
-
+        
         then(withItem1).should().accept(selectDeParser);
         then(withItem2).should().accept(selectDeParser);
         then(selectBody).should().accept(selectDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
-
+    
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithoutItemsList() {
@@ -311,4 +312,50 @@ public class StatementDeParserTest {
             }
         };
     }
+    
+    @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+    public void shouldUseProvidedDeparsersWhenDeParsingUpsert() throws JSQLParserException {
+        Upsert upsert = new Upsert();
+        Table table = new Table();
+        List<Column> duplicateUpdateColumns = new ArrayList<Column>();
+        List<Expression> duplicateUpdateExpressionList = new ArrayList<Expression>();
+        Column duplicateUpdateColumn1 = new Column();
+        Column duplicateUpdateColumn2 = new Column();
+        Expression duplicateUpdateExpression1 = mock(Expression.class);
+        Expression duplicateUpdateExpression2 = mock(Expression.class);
+        Select select = new Select();
+        List<WithItem> withItemsList = new ArrayList<WithItem>();
+        WithItem withItem1 = spy(new WithItem());
+        WithItem withItem2 = spy(new WithItem());
+        SelectBody withItem1SelectBody = mock(SelectBody.class);
+        SelectBody withItem2SelectBody = mock(SelectBody.class);
+        SelectBody selectBody = mock(SelectBody.class);
+
+        upsert.setSelect(select);
+        upsert.setTable(table);
+        upsert.setUseDuplicate(true);
+        upsert.setDuplicateUpdateColumns(duplicateUpdateColumns);
+        upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
+        duplicateUpdateColumns.add(duplicateUpdateColumn1);
+        duplicateUpdateColumns.add(duplicateUpdateColumn2);
+        duplicateUpdateExpressionList.add(duplicateUpdateExpression1);
+        duplicateUpdateExpressionList.add(duplicateUpdateExpression2);
+        upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
+        select.setWithItemsList(withItemsList);
+        select.setSelectBody(selectBody);
+        withItemsList.add(withItem1);
+        withItemsList.add(withItem2);
+        withItem1.setSelectBody(withItem1SelectBody);
+        withItem2.setSelectBody(withItem2SelectBody);
+
+        statementDeParser.visit(upsert);
+
+        then(withItem1).should().accept(selectDeParser);
+        then(withItem2).should().accept(selectDeParser);
+        then(selectBody).should().accept(selectDeParser);
+        then(duplicateUpdateExpression1).should().accept(expressionDeParser);
+        then(duplicateUpdateExpression1).should().accept(expressionDeParser);
+    }
+    
 }
