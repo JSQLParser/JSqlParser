@@ -2619,6 +2619,7 @@ Function Function() #Function:
         retval.setParameters(expressionList);
         retval.setName(funcName);
         retval.setKeep(keep);
+        linkAST(retval,jjtThis);
         return retval;
     }
 } 
