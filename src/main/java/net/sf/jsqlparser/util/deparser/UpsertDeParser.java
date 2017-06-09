@@ -44,7 +44,7 @@ public class UpsertDeParser implements ItemsListVisitor {
     private StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
-
+    
     /**
      * Constructor: this constructor is used to assign the values coming from the
      * arguments to their global values.
