@@ -21,6 +21,7 @@ import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
 import static org.junit.Assert.*;
@@ -414,4 +415,30 @@ public class TablesNamesFinderTest {
         assertEquals("employees", (String) tableList.get(0));
         assertEquals("hr_records", (String) tableList.get(1));
     }
+    
+    @Test
+    public void testUpsertValues() throws Exception {
+        String sql = "UPSERT INTO MY_TABLE1 (a) VALUES (5)";
+        net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+        Upsert insertStatement = (Upsert) statement;
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(insertStatement);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("MY_TABLE1"));
+    }
+    
+    @Test
+    public void testUpsertSelect() throws Exception {
+        String sql = "UPSERT INTO mytable (mycolumn) SELECT mycolumn FROM mytable2";
+        net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+        Upsert insertStatement = (Upsert) statement;
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(insertStatement);
+        assertEquals(2, tableList.size());
+        assertTrue(tableList.contains("mytable"));
+        assertTrue(tableList.contains("mytable2"));
+    }
+    
 }
