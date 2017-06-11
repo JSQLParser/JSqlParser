@@ -1,5 +1,6 @@
 package net.sf.jsqlparser.test.upsert;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.Assert.*;
 
 import java.io.StringReader;
@@ -98,6 +99,63 @@ public class UpsertTest {
         assertFalse(upsert.isUseSelectBrackets());
         assertFalse(upsert.isUseDuplicate());
         assertEquals(statement, "" + upsert);
+    }
+    
+    @Test
+    public void testUpsertMultiRowValue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPSERT INTO mytable (col1, col2) VALUES (a, b), (d, e)");
+    }
+
+    @Test
+    public void testUpsertMultiRowValueDifferent() throws JSQLParserException {
+        try {
+            assertSqlCanBeParsedAndDeparsed("UPSERT INTO mytable (col1, col2) VALUES (a, b), (d, e, c)");
+        } catch (Exception e) {
+            return;
+        }
+        fail("should not work");
+    }
+
+    @Test
+    public void testSimpleUpsert() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPSERT INTO example (num, name, address, tel) VALUES (1, 'name', 'test ', '1234-1234')");
+    }
+
+    @Test
+    public void testUpsertHasSelect() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPSERT INTO mytable (mycolumn) SELECT mycolumn FROM mytable");
+        assertSqlCanBeParsedAndDeparsed("UPSERT INTO mytable (mycolumn) (SELECT mycolumn FROM mytable)");
+    }
+
+    @Test
+    public void testUpsertWithSelect() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPSERT INTO mytable (mycolumn) WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a");
+        assertSqlCanBeParsedAndDeparsed("UPSERT INTO mytable (mycolumn) (WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a)");
+    }
+
+    @Test
+    public void testUpsertWithKeywords() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPSERT INTO kvPair (value, key) VALUES (?, ?)");
+    }
+
+    @Test
+    public void testHexValues() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPSERT INTO TABLE2 VALUES ('1', \"DSDD\", x'EFBFBDC7AB')");
+    }
+
+    @Test
+    public void testHexValues2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPSERT INTO TABLE2 VALUES ('1', \"DSDD\", 0xEFBFBDC7AB)");
+    }
+
+    @Test
+    public void testHexValues3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPSERT INTO TABLE2 VALUES ('1', \"DSDD\", 0xabcde)");
+    }
+
+    @Test
+    public void testDuplicateKey() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPSERT INTO Users0 (UserId, Key, Value) VALUES (51311, 'T_211', 18) ON DUPLICATE KEY UPDATE Value = 18");
     }
     
 }
