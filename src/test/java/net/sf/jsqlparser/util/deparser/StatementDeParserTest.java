@@ -24,7 +24,6 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.SetStatement;
@@ -323,7 +322,6 @@ public class StatementDeParserTest {
         List<Expression> duplicateUpdateExpressionList = new ArrayList<Expression>();
         Column duplicateUpdateColumn1 = new Column();
         Column duplicateUpdateColumn2 = new Column();
-        ExpressionList item1 = mock(ExpressionList.class);
         Expression duplicateUpdateExpression1 = mock(Expression.class);
         Expression duplicateUpdateExpression2 = mock(Expression.class);
         Select select = new Select();
@@ -337,54 +335,6 @@ public class StatementDeParserTest {
         upsert.setSelect(select);
         upsert.setTable(table);
         upsert.setUseDuplicate(true);
-        upsert.setItemsList(item1);
-        upsert.setDuplicateUpdateColumns(duplicateUpdateColumns);
-        upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
-        duplicateUpdateColumns.add(duplicateUpdateColumn1);
-        duplicateUpdateColumns.add(duplicateUpdateColumn2);
-        duplicateUpdateExpressionList.add(duplicateUpdateExpression1);
-        duplicateUpdateExpressionList.add(duplicateUpdateExpression2);
-        upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
-        select.setWithItemsList(withItemsList);
-        select.setSelectBody(selectBody);
-        withItemsList.add(withItem1);
-        withItemsList.add(withItem2);
-        withItem1.setSelectBody(withItem1SelectBody);
-        withItem2.setSelectBody(withItem2SelectBody);
-
-        statementDeParser.visit(upsert);
-
-        then(withItem1).should().accept(selectDeParser);
-        then(withItem2).should().accept(selectDeParser);
-        then(selectBody).should().accept(selectDeParser);
-        then(duplicateUpdateExpression1).should().accept(expressionDeParser);
-        then(duplicateUpdateExpression1).should().accept(expressionDeParser);
-    }
-    
-    @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-    public void shouldUseProvidedDeparsersWhenDeParsingUpsertWithMultiExpressionList() throws JSQLParserException {
-        Upsert upsert = new Upsert();
-        Table table = new Table();
-        List<Column> duplicateUpdateColumns = new ArrayList<Column>();
-        List<Expression> duplicateUpdateExpressionList = new ArrayList<Expression>();
-        Column duplicateUpdateColumn1 = new Column();
-        Column duplicateUpdateColumn2 = new Column();
-        MultiExpressionList item1 = mock(MultiExpressionList.class);
-        Expression duplicateUpdateExpression1 = mock(Expression.class);
-        Expression duplicateUpdateExpression2 = mock(Expression.class);
-        Select select = new Select();
-        List<WithItem> withItemsList = new ArrayList<WithItem>();
-        WithItem withItem1 = spy(new WithItem());
-        WithItem withItem2 = spy(new WithItem());
-        SelectBody withItem1SelectBody = mock(SelectBody.class);
-        SelectBody withItem2SelectBody = mock(SelectBody.class);
-        SelectBody selectBody = mock(SelectBody.class);
-
-        upsert.setSelect(select);
-        upsert.setTable(table);
-        upsert.setUseDuplicate(true);
-        upsert.setItemsList(item1);
         upsert.setDuplicateUpdateColumns(duplicateUpdateColumns);
         upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
         duplicateUpdateColumns.add(duplicateUpdateColumn1);
