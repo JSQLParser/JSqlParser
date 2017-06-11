@@ -322,6 +322,7 @@ public class StatementDeParserTest {
         List<Expression> duplicateUpdateExpressionList = new ArrayList<Expression>();
         Column duplicateUpdateColumn1 = new Column();
         Column duplicateUpdateColumn2 = new Column();
+        ItemsList item = mock(ItemsList.class);
         Expression duplicateUpdateExpression1 = mock(Expression.class);
         Expression duplicateUpdateExpression2 = mock(Expression.class);
         Select select = new Select();
@@ -335,6 +336,7 @@ public class StatementDeParserTest {
         upsert.setSelect(select);
         upsert.setTable(table);
         upsert.setUseDuplicate(true);
+        upsert.setItemsList(item);
         upsert.setDuplicateUpdateColumns(duplicateUpdateColumns);
         upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
         duplicateUpdateColumns.add(duplicateUpdateColumn1);
