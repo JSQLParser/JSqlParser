@@ -23,6 +23,9 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -39,6 +42,7 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
@@ -214,5 +218,13 @@ public class StatementDeParser implements StatementVisitor {
         selectDeParser.setExpressionVisitor(expressionDeParser);
         UpsertDeParser upsertDeParser = new UpsertDeParser(expressionDeParser, selectDeParser, buffer);
         upsertDeParser.deParse(upsert);
+        ItemsList item = upsert.getItemsList();
+        if (item instanceof ExpressionList) {
+            upsertDeParser.visit((ExpressionList) item);
+        } else if (item instanceof MultiExpressionList) {
+            upsertDeParser.visit((MultiExpressionList) item);
+        } else if (item instanceof SubSelect) {
+            upsertDeParser.visit((SubSelect) item);
+        }
     }
 }
