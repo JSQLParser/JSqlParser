@@ -25,6 +25,7 @@ public class UpsertTest {
         String statement ="UPSERT INTO TEST (NAME, ID) VALUES ('foo', 123)";
         Upsert upsert = (Upsert) parserManager.parse(new StringReader(statement));
         assertEquals("TEST", upsert.getTable().getName());
+        assertTrue(upsert.isUseValues());
         assertEquals(2, upsert.getColumns().size());
         assertEquals("NAME", ((Column) upsert.getColumns().get(0)).getColumnName());
         assertEquals("ID", ((Column) upsert.getColumns().get(1)).getColumnName());
@@ -34,6 +35,8 @@ public class UpsertTest {
                         getValue());
         assertEquals(123, ((LongValue) ((ExpressionList) upsert.getItemsList()).getExpressions().
                 get(1)).getValue());
+        assertFalse(upsert.isUseSelectBrackets());
+        assertFalse(upsert.isUseDuplicate());
         assertEquals(statement, "" + upsert);
     }
 
@@ -43,6 +46,7 @@ public class UpsertTest {
         Upsert upsert= (Upsert) parserManager.parse(new StringReader(statement));
         assertEquals("TEST", upsert.getTable().getName());
         assertEquals(2, upsert.getColumns().size());
+        assertTrue(upsert.isUseValues());
         assertEquals("ID", ((Column) upsert.getColumns().get(0)).getColumnName());
         assertEquals("COUNTER", ((Column) upsert.getColumns().get(1)).getColumnName());
         assertEquals(2, ((ExpressionList) upsert.getItemsList()).getExpressions().size());
@@ -54,6 +58,8 @@ public class UpsertTest {
         assertEquals("COUNTER", ((Column) upsert.getDuplicateUpdateColumns().get(0)).getColumnName());
         assertEquals(1, upsert.getDuplicateUpdateExpressionList().size());
         assertEquals("COUNTER + 1", upsert.getDuplicateUpdateExpressionList().get(0).toString());
+        assertFalse(upsert.isUseSelectBrackets());
+        assertTrue(upsert.isUseDuplicate());
         assertEquals(statement, "" + upsert);
     }
 
@@ -63,12 +69,14 @@ public class UpsertTest {
         Upsert upsert= (Upsert) parserManager.parse(new StringReader(statement));
         assertEquals("test.targetTable", upsert.getTable().getFullyQualifiedName());
         assertEquals(2, upsert.getColumns().size());
+        assertFalse(upsert.isUseValues());
         assertEquals("col1", ((Column) upsert.getColumns().get(0)).getColumnName());
         assertEquals("col2", ((Column) upsert.getColumns().get(1)).getColumnName());
         assertNull(upsert.getItemsList());
         assertNotNull(upsert.getSelect());
         assertEquals("test.sourceTable",
                 ((Table) ((PlainSelect) upsert.getSelect().getSelectBody()).getFromItem()).getFullyQualifiedName());
+        assertFalse(upsert.isUseDuplicate());
         assertEquals(statement, "" + upsert);
     }
 
@@ -78,6 +86,7 @@ public class UpsertTest {
         Upsert upsert= (Upsert) parserManager.parse(new StringReader(statement));
         assertEquals("TEST", upsert.getTable().getName());
         assertEquals(3, ((ExpressionList) upsert.getItemsList()).getExpressions().size());
+        assertTrue(upsert.isUseValues());
         assertEquals("foo",
                 ((StringValue) ((ExpressionList) upsert.getItemsList()).getExpressions().get(0)).
                         getValue());
@@ -86,6 +95,8 @@ public class UpsertTest {
                         getValue());
         assertEquals(3, ((LongValue) ((ExpressionList) upsert.getItemsList()).getExpressions().
                 get(2)).getValue());
+        assertFalse(upsert.isUseSelectBrackets());
+        assertFalse(upsert.isUseDuplicate());
         assertEquals(statement, "" + upsert);
     }
     
