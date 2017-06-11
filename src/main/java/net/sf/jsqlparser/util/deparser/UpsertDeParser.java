@@ -75,15 +75,7 @@ public class UpsertDeParser implements ItemsListVisitor {
 
         buffer.append(upsert.getTable().getFullyQualifiedName());
         if (upsert.getColumns() != null) {
-            buffer.append(" (");
-            for (Iterator<Column> iter = upsert.getColumns().iterator(); iter.hasNext();) {
-                Column column = iter.next();
-                buffer.append(column.getColumnName());
-                if (iter.hasNext()) {
-                    buffer.append(", ");
-                }
-            }
-            buffer.append(")");
+            appendColumns(upsert);
         }
 
         if (upsert.getItemsList() != null) {
@@ -91,37 +83,57 @@ public class UpsertDeParser implements ItemsListVisitor {
         }
 
         if (upsert.getSelect() != null) {
-            buffer.append(" ");
-            if (upsert.isUseSelectBrackets()) {
-                buffer.append("(");
-            }
-            if (upsert.getSelect().getWithItemsList() != null) {
-                buffer.append("WITH ");
-                for (WithItem with : upsert.getSelect().getWithItemsList()) {
-                    with.accept(selectVisitor);
-                }
-                buffer.append(" ");
-            }
-            upsert.getSelect().getSelectBody().accept(selectVisitor);
-            if (upsert.isUseSelectBrackets()) {
-                buffer.append(")");
-            }
+            appendSelect(upsert);
         }
 
         if (upsert.isUseDuplicate()) {
-            buffer.append(" ON DUPLICATE KEY UPDATE ");
-            for (int i = 0; i < upsert.getDuplicateUpdateColumns().size(); i++) {
-                Column column = upsert.getDuplicateUpdateColumns().get(i);
-                buffer.append(column.getFullyQualifiedName()).append(" = ");
-
-                Expression expression = upsert.getDuplicateUpdateExpressionList().get(i);
-                expression.accept(expressionVisitor);
-                if (i < upsert.getDuplicateUpdateColumns().size() - 1) {
-                    buffer.append(", ");
-                }
-            }
+            appendDuplicate(upsert);
         }
 
+    }
+    
+    private void appendColumns(Upsert upsert) {
+        buffer.append(" (");
+        for (Iterator<Column> iter = upsert.getColumns().iterator(); iter.hasNext();) {
+            Column column = iter.next();
+            buffer.append(column.getColumnName());
+            if (iter.hasNext()) {
+                buffer.append(", ");
+            }
+        }
+        buffer.append(")");
+    }
+    
+    private void appendSelect(Upsert upsert) {
+        buffer.append(" ");
+        if (upsert.isUseSelectBrackets()) {
+            buffer.append("(");
+        }
+        if (upsert.getSelect().getWithItemsList() != null) {
+            buffer.append("WITH ");
+            for (WithItem with : upsert.getSelect().getWithItemsList()) {
+                with.accept(selectVisitor);
+            }
+            buffer.append(" ");
+        }
+        upsert.getSelect().getSelectBody().accept(selectVisitor);
+        if (upsert.isUseSelectBrackets()) {
+            buffer.append(")");
+        }
+    }
+    
+    private void appendDuplicate(Upsert upsert) {
+        buffer.append(" ON DUPLICATE KEY UPDATE ");
+        for (int i = 0; i < upsert.getDuplicateUpdateColumns().size(); i++) {
+            Column column = upsert.getDuplicateUpdateColumns().get(i);
+            buffer.append(column.getFullyQualifiedName()).append(" = ");
+
+            Expression expression = upsert.getDuplicateUpdateExpressionList().get(i);
+            expression.accept(expressionVisitor);
+            if (i < upsert.getDuplicateUpdateColumns().size() - 1) {
+                buffer.append(", ");
+            }
+        }
     }
 
     @Override
