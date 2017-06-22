@@ -73,6 +73,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
+import net.sf.jsqlparser.expression.operators.relational.Rlike;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -169,6 +170,13 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         buffer.append(" AND ");
         between.getBetweenExpressionEnd().accept(this);
 
+    }
+
+    @Override
+    public void visit(Rlike rlike) {
+        rlike.getLeftExpression().accept(this);
+        buffer.append(" RLIKE ");
+        rlike.getRightExpression().accept(this);
     }
 
     @Override

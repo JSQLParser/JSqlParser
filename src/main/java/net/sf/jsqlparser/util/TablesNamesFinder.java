@@ -72,6 +72,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
+import net.sf.jsqlparser.expression.operators.relational.Rlike;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -241,6 +242,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         between.getLeftExpression().accept(this);
         between.getBetweenExpressionStart().accept(this);
         between.getBetweenExpressionEnd().accept(this);
+    }
+
+    @Override
+    public void visit(Rlike rlike) {
+        rlike.getLeftExpression().accept(this);
+        rlike.getRightExpression().accept(this);
     }
 
     @Override

@@ -156,6 +156,13 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(Rlike expr) {
+        expr.getLeftExpression().accept(this);
+        expr.getRightExpression().accept(this);
+    }
+
+
+    @Override
     public void visit(EqualsTo expr) {
         visitBinaryExpression(expr);
     }
