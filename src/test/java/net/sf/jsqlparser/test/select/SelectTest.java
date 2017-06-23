@@ -983,6 +983,17 @@ public class SelectTest extends TestCase {
         assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
         assertEquals(statement + " " + whereToString, plainSelect.toString());
 
+
+//        whereToString = "(7 * s + 9 / 3) WHERE x RLIKE y ?";
+//        plainSelect = (PlainSelect) ((Select) parserManager.
+//                parse(new StringReader(statement + " " + whereToString)))
+//                .getSelectBody();
+
+//        assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
+        assertEquals(statement + " " + whereToString, plainSelect.toString());
+
+
+
         whereToString = "a / b NOT IN (?, 's''adf', 234.2)";
         plainSelect = (PlainSelect) ((Select) parserManager.
                 parse(new StringReader(statement + " " + whereToString)))
@@ -1105,6 +1116,12 @@ public class SelectTest extends TestCase {
     public void testBetweenDate() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE col BETWEEN {d '2015-09-19'} AND {d '2015-09-24'}");
     }
+
+
+    public void testRlike() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE a RLIKE b");
+    }
+
 
     public void testCase() throws JSQLParserException {
         String statement = "SELECT a, CASE b WHEN 1 THEN 2 END FROM tab1";

@@ -201,6 +201,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_NATURAL:"NATURAL">
 |   <K_REPLACE:"REPLACE">
 |   <K_BETWEEN:"BETWEEN">
+|   <K_RLIKE:"RLIKE">
 |   <K_TRUNCATE:"TRUNCATE">
 |   <K_DISTINCT:"DISTINCT">
 |   <K_INTERSECT:"INTERSECT">
@@ -1944,12 +1945,17 @@ Expression SQLCondition():
     (
     LOOKAHEAD(InExpression()) result=InExpression()
     | LOOKAHEAD(Between()) result=Between()
+    | LOOKAHEAD(Rlike()) result=Rlike()
     | LOOKAHEAD(IsNullExpression()) result=IsNullExpression()
     | LOOKAHEAD(ExistsExpression()) result=ExistsExpression()
     |  result=LikeExpression()
     )
     { return result; }
 }
+
+
+
+
 
 Expression InExpression() :
 {
@@ -1996,6 +2002,25 @@ Expression Between() :
         return result;
     }
 }
+
+
+Expression Rlike() :
+{
+    Rlike result = new Rlike();
+    Expression leftExpression = null;
+    Expression rightExpression = null;
+}
+{
+    leftExpression=SimpleExpression()
+    <K_RLIKE>
+    rightExpression=SimpleExpression()
+    {
+        result.setLeftExpression(leftExpression);
+        result.setRightExpression(rightExpression);
+        return result;
+    }
+}
+
 
 Expression LikeExpression() :
 {
