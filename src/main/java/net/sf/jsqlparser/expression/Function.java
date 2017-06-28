@@ -37,6 +37,8 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private String attribute;
     private KeepExpression keep = null;
 
+    private Expression customExpression;
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
@@ -124,6 +126,15 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         this.keep = keep;
     }
 
+
+    public Expression customExpression() {
+        return customExpression;
+    }
+
+    public void setCustomExpression( Expression customExpression) {
+        this.customExpression = customExpression;
+    }
+
     @Override
     public String toString() {
         String params;
@@ -153,6 +164,10 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
         if (isEscaped) {
             ans = "{fn " + ans + "}";
+        }
+
+        if (customExpression != null) {
+            ans = customExpression.toString();
         }
 
         return ans;
