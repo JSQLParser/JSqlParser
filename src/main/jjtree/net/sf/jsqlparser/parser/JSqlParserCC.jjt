@@ -78,6 +78,7 @@ import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
+import net.sf.jsqlparser.statement.upsert.*;
 import net.sf.jsqlparser.statement.merge.*;
 import java.util.*;
 
@@ -192,6 +193,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_HAVING:"HAVING">
 |   <K_INSERT:"INSERT">
 |   <K_UPDATE:"UPDATE">
+|   <K_UPSERT:"UPSERT">
 |   <K_VALUES:"VALUES">
 |   <K_ESCAPE:"ESCAPE">
 |   <K_PRIMARY:"PRIMARY">
@@ -363,6 +365,8 @@ Statement SingleStatement() :
         stm = Update()
         |
         stm = Insert()
+        |
+        stm = Upsert()
         |
         stm = Delete()
         |
@@ -665,6 +669,84 @@ Insert Insert():
         insert.setModifierPriority(modifierPriority);
         insert.setModifierIgnore(modifierIgnore);
         return insert;
+    }
+}
+
+Upsert Upsert():
+{
+    Upsert upsert = new Upsert();
+    Table table = null;
+    Column tableColumn = null;
+    List<Column> columns = new ArrayList<Column>();
+    List<Expression> primaryExpList = new ArrayList<Expression>();
+    ItemsList itemsList = null;
+    Expression exp = null;
+    MultiExpressionList multiExpr = null;
+    List<SelectExpressionItem> returning = null;
+    Select select = null;
+    boolean useSelectBrackets = false;
+    boolean useDuplicate = false;
+    List<Column> duplicateUpdateColumns = null;
+    List<Expression> duplicateUpdateExpressionList = null;
+    Token tk = null;
+}
+{
+    <K_UPSERT>
+    [<K_INTO>] table=Table()
+
+
+     [LOOKAHEAD(2) "(" tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"  ]
+    (
+        LOOKAHEAD(2) [<K_VALUES> | <K_VALUE>]  "(" exp=SimpleExpression() { primaryExpList.add(exp); }
+                ("," exp=SimpleExpression()  { primaryExpList.add(exp); } )* ")" { itemsList = new ExpressionList(primaryExpList); }
+            ("," "(" exp=SimpleExpression() {
+                    if (multiExpr==null) {
+                        multiExpr=new MultiExpressionList();
+                        multiExpr.addExpressionList((ExpressionList)itemsList);
+                        itemsList = multiExpr;
+                    }
+                    primaryExpList = new ArrayList<Expression>();
+                    primaryExpList.add(exp); }
+                ("," exp=SimpleExpression() { primaryExpList.add(exp); } )* ")" { multiExpr.addExpressionList(primaryExpList); } )*
+
+        |
+
+        (
+            LOOKAHEAD(2) "(" { useSelectBrackets = true; }
+                { upsert.setUseValues(false); }
+                select = Select()
+            ")"
+            |
+            { upsert.setUseValues(false); }
+            select = Select()
+        )
+    )
+
+    [ <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
+        { useDuplicate = true; }
+      tableColumn=Column() "=" exp=SimpleExpression()
+        {
+            duplicateUpdateColumns = new ArrayList<Column>();
+            duplicateUpdateExpressionList = new ArrayList<Expression>();
+            duplicateUpdateColumns.add(tableColumn);
+            duplicateUpdateExpressionList.add(exp);
+        }
+      ("," tableColumn=Column() "=" exp=SimpleExpression()
+        { duplicateUpdateColumns.add(tableColumn);
+        duplicateUpdateExpressionList.add(exp); } )*]
+
+    {
+        upsert.setItemsList(itemsList);
+        upsert.setUseSelectBrackets(useSelectBrackets);
+        upsert.setSelect(select);
+        upsert.setTable(table);
+        if (columns.size() > 0) {
+            upsert.setColumns(columns);
+        }
+        upsert.setUseDuplicate(useDuplicate);
+        upsert.setDuplicateUpdateColumns(duplicateUpdateColumns);
+        upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
+        return upsert;
     }
 }
 
@@ -2619,6 +2701,7 @@ Function Function() #Function:
         retval.setParameters(expressionList);
         retval.setName(funcName);
         retval.setKeep(keep);
+        linkAST(retval,jjtThis);
         return retval;
     }
 } 

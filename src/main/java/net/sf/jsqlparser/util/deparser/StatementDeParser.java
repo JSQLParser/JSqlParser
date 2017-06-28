@@ -42,6 +42,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.upsert.Upsert;
 
 public class StatementDeParser implements StatementVisitor {
     private ExpressionDeParser expressionDeParser;
@@ -203,5 +204,15 @@ public class StatementDeParser implements StatementVisitor {
     @Override
     public void visit(Commit commit) {
         buffer.append(commit.toString());
+    }
+
+    @Override
+    public void visit(Upsert upsert) {
+        selectDeParser.setBuffer(buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
+        selectDeParser.setExpressionVisitor(expressionDeParser);
+        UpsertDeParser upsertDeParser = new UpsertDeParser(expressionDeParser, selectDeParser, buffer);
+        upsertDeParser.deParse(upsert);
     }
 }
