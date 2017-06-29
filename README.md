@@ -15,6 +15,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 
 ## News
+* Released version **1.1** of JSqlParser. 
 * JSqlParser has now a build in checkstyle configuration to introduce source code conventions.
 * Released first major version **1.0** of JSqlParser. 
 * Please test the actual **0.9.8-SNAPSHOT**. It includes includes grammar refactorings or changes which eventually results in parse tree changes.
