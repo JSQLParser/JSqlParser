@@ -1023,6 +1023,8 @@ PlainSelect PlainSelect():
 
     selectItems=SelectItemsList()
 
+    joins=JoinsList()
+
     [intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); } ]
     [ <K_FROM>
       fromItem=FromItem()
