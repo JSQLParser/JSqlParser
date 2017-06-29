@@ -46,14 +46,8 @@ To help JSqlParsers development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 1.1
+## Extensions in the latest SNAPSHOT version 1.2
 
-* support for **UPSERT** syntax
-* absolute token positions in addition to column/line
-* common normal form transformer for expressions (https://en.wikipedia.org/wiki/Conjunctive_normal_form) 
-* checkstyle integration to force first souce code conventions
-  * checkstyle is activated by default, it can be deactivated by an environment property **skipCheckSources**
-  * pull requests should follow this style settings
 
 ## Extensions of JSqlParser releases
 
@@ -117,7 +111,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>1.0</version>
+	<version>1.1</version>
 </dependency>
 ```
 
