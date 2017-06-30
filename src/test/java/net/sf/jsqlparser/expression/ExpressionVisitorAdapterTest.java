@@ -21,10 +21,12 @@ package net.sf.jsqlparser.expression;
 import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
@@ -188,7 +190,31 @@ public class ExpressionVisitorAdapterTest {
             fail();
         }
     }
-    
+
+    @Test
+    public void testJoinWithoutFrom() throws JSQLParserException {
+        Select select = (Select) CCJSqlParserUtil.
+                parse("SELECT * JOIN dimension(arg1, arg2)");
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        plainSelect.setFromItem(new Table("myDataSet"));
+        assertEquals(plainSelect.getJoins().get(0).toString(), "JOIN dimension(arg1, arg2)");
+        assertEquals(plainSelect.toString(), "SELECT * FROM myDataSet JOIN dimension(arg1, arg2)");
+    }
+
+
+    @Test
+    public void testCustomFunction() throws JSQLParserException {
+        Select select = (Select) CCJSqlParserUtil.
+                parse("SELECT * FROM myData WHERE regexp_replace(arg1, arg2) AND y > 3");
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        AndExpression whereAnd = (AndExpression) plainSelect.getWhere();
+        Function whereFunction = (Function) whereAnd.getLeftExpression();
+        Select newExpression = (Select) CCJSqlParserUtil.parse("SELECT * WHERE x > 2");
+        PlainSelect newPlainSelect = (PlainSelect) newExpression.getSelectBody();
+        whereFunction.setCustomExpression(newPlainSelect.getWhere());
+        assertEquals(plainSelect.toString(), "SELECT * FROM myData WHERE x > 2 AND y > 3");
+    }
+
     @Test
     public void testCaseWithoutElse() throws JSQLParserException {
         Expression expr = CCJSqlParserUtil.parseExpression("CASE WHEN 1 then 0 END");
