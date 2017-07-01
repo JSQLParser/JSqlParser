@@ -302,7 +302,7 @@ TOKEN : /* Operators */
 
 TOKEN : /* Date/Time with time zones */
 {
-    <DT_ZONE: <K_DATETIMELITERAL> <WHITESPACE> (<K_WITH> | <K_WITHOUT>) <WHITESPACE> "TIME" <WHITESPACE> <K_ZONE>>
+    <DT_ZONE: <K_DATETIMELITERAL> (<WHITESPACE>)* ("(" <S_LONG> ")")? (<WHITESPACE>)* (<K_WITH> | <K_WITHOUT>) (<WHITESPACE>)+ "TIME" (<WHITESPACE>)+ <K_ZONE>>
 }
 
 TOKEN : /* Numeric Constants */
@@ -2701,6 +2701,7 @@ Function Function() #Function:
         retval.setParameters(expressionList);
         retval.setName(funcName);
         retval.setKeep(keep);
+        linkAST(retval,jjtThis);
         return retval;
     }
 } 

@@ -15,6 +15,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 
 ## News
+* Released version **1.1** of JSqlParser. 
 * JSqlParser has now a build in checkstyle configuration to introduce source code conventions.
 * Released first major version **1.0** of JSqlParser. 
 * Please test the actual **0.9.8-SNAPSHOT**. It includes includes grammar refactorings or changes which eventually results in parse tree changes.
@@ -45,13 +46,8 @@ To help JSqlParsers development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 1.1
+## Extensions in the latest SNAPSHOT version 1.2
 
-* absolute token positions in addition to column/line
-* common normal form transformer for expressions (https://en.wikipedia.org/wiki/Conjunctive_normal_form) 
-* checkstyle integration to force first souce code conventions
-  * checkstyle is activated by default, it can be deactivated by an environment property **skipCheckSources**
-  * pull requests should follow this style settings
 
 ## Extensions of JSqlParser releases
 
@@ -115,7 +111,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>1.0</version>
+	<version>1.1</version>
 </dependency>
 ```
 

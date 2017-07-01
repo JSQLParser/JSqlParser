@@ -22,11 +22,12 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * A function as MAX,COUNT...
  */
-public class Function implements Expression {
+public class Function extends ASTNodeAccessImpl implements Expression {
 
     private String name;
     private ExpressionList parameters;
