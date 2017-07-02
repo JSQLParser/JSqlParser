@@ -302,7 +302,7 @@ TOKEN : /* Operators */
 
 TOKEN : /* Date/Time with time zones */
 {
-    <DT_ZONE: <K_DATETIMELITERAL> (<WHITESPACE>)* ("(" <S_LONG> ")")? (<WHITESPACE>)* (<K_WITH> | <K_WITHOUT>) (<WHITESPACE>)+ "TIME" (<WHITESPACE>)+ <K_ZONE>>
+    <DT_ZONE: <K_DATETIMELITERAL> <WHITESPACE> (<K_WITH> | <K_WITHOUT>) <WHITESPACE> "TIME" <WHITESPACE> <K_ZONE>>
 }
 
 TOKEN : /* Numeric Constants */
@@ -507,9 +507,9 @@ Update Update():
        ]
 
    {
-           update.setColumns(columns);
-           update.setExpressions(expList);
-           update.setTables(tables);
+        update.setColumns(columns);
+        update.setExpressions(expList);
+        update.setTables(tables);
         update.setFromItem(fromItem);
         update.setJoins(joins);
         update.setSelect(select);
@@ -583,13 +583,14 @@ Insert Insert():
     Insert insert = new Insert();
     Table table = null;
     Column tableColumn = null;
-     List<Column> columns = new ArrayList<Column>();
+    List<Column> columns = new ArrayList<Column>();
     List<Expression> primaryExpList = new ArrayList<Expression>();
     ItemsList itemsList = null;
     Expression exp = null;
     MultiExpressionList multiExpr = null;
     List<SelectExpressionItem> returning = null;
     Select select = null;
+    boolean useValues = true;
     boolean useSelectBrackets = false;
     boolean useDuplicate = false;
     List<Column> duplicateUpdateColumns = null;
@@ -597,6 +598,9 @@ Insert Insert():
     Token tk = null;
     InsertModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
+    boolean useSet = false;
+    List<Column> setColumns = new ArrayList<Column>();
+    List<Expression> setExpressionList = new ArrayList<Expression>();
 }
 {
     <K_INSERT>
@@ -633,6 +637,26 @@ Insert Insert():
             { insert.setUseValues(false); }
             select = Select()
         )
+        
+        |
+        
+        <K_SET>  
+        (
+            { 
+                useSet = true; 
+                insert.setUseValues(false);
+            }
+            tableColumn=Column() "=" exp=SimpleExpression()
+            {
+                setColumns = new ArrayList<Column>();
+                setExpressionList = new ArrayList<Expression>();
+                setColumns.add(tableColumn);
+                setExpressionList.add(exp);
+            }
+            ("," tableColumn=Column() "=" exp=SimpleExpression()
+                { setColumns.add(tableColumn);
+                setExpressionList.add(exp); } )*
+        )
     )
 
     [ <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
@@ -668,6 +692,9 @@ Insert Insert():
         insert.setReturningExpressionList(returning);
         insert.setModifierPriority(modifierPriority);
         insert.setModifierIgnore(modifierIgnore);
+        insert.setUseSet(useSet);
+        insert.setSetColumns(setColumns);
+        insert.setSetExpressionList(setExpressionList);
         return insert;
     }
 }
@@ -2701,7 +2728,6 @@ Function Function() #Function:
         retval.setParameters(expressionList);
         retval.setName(funcName);
         retval.setKeep(keep);
-        linkAST(retval,jjtThis);
         return retval;
     }
 } 
