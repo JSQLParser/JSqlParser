@@ -77,7 +77,7 @@ public class SubJoin implements FromItem {
     @Override
     public String toString() {
         return "(" + left + " " + join + ")"
-                + ((pivot != null) ? " " + pivot : "")
-                + ((alias != null) ? alias.toString() : "");
+                + ((alias != null) ? alias.toString() : "")
+                + ((pivot != null) ? " " + pivot : "");
     }
 }

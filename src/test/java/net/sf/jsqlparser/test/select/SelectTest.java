@@ -1928,6 +1928,27 @@ public class SelectTest extends TestCase {
     public void testPivotFunction() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT to_char((SELECT col1 FROM (SELECT times_purchased, state_code FROM customers t) PIVOT (count(state_code) FOR state_code IN ('NY', 'CT', 'NJ', 'FL', 'MO')) ORDER BY times_purchased)) FROM DUAL");
     }
+    
+    public void testPivotWithAlias() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (SELECT * FROM mytable LEFT JOIN mytable2 ON Factor_ID = Id) f PIVOT (max(f.value) FOR f.factoryCode IN (ZD, COD, SW, PH))");
+    }
+    
+    public void testPivotWithAlias2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (SELECT * FROM mytable LEFT JOIN mytable2 ON Factor_ID = Id) f PIVOT (max(f.value) FOR f.factoryCode IN (ZD, COD, SW, PH)) d");
+    }
+    
+    public void testPivotWithAlias3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (SELECT * FROM mytable LEFT JOIN mytable2 ON Factor_ID = Id) PIVOT (max(f.value) FOR f.factoryCode IN (ZD, COD, SW, PH)) d");
+    }
+    
+    public void testPivotWithAlias4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (" +
+            "SELECT a.Station_ID stationId, b.Factor_Code factoryCode, a.Value value" +
+            " FROM T_Data_Real a" +
+            " LEFT JOIN T_Bas_Factor b ON a.Factor_ID = b.Id" +
+            ") f " +
+            "PIVOT (max(f.value) FOR f.factoryCode IN (ZD, COD, SW, PH)) d");
+    }
 
     public void testRegexpLike1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE REGEXP_LIKE(first_name, '^Ste(v|ph)en$')";

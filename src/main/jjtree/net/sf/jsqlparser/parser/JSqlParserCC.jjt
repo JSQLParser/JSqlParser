@@ -1294,6 +1294,7 @@ Pivot Pivot():
     List<Column> forColumns;
     List<SelectExpressionItem> singleInItems = null;
     List<ExpressionListItem> multiInItems = null;
+    Alias alias = null;
 }
 {
     <K_PIVOT> "(" functionItems = PivotFunctionItems() <K_FOR>
@@ -1303,11 +1304,13 @@ Pivot Pivot():
     | multiInItems = PivotMultiInItems() )
     ")"
     ")"
+    [ alias = Alias() ]
     {
         retval.setFunctionItems(functionItems);
         retval.setForColumns(forColumns);
         retval.setSingleInItems(singleInItems);
         retval.setMultiInItems(multiInItems);
+        retval.setAlias(alias);
         return retval;
     }
 }
@@ -1386,8 +1389,8 @@ FromItem FromItem():
                 |
                 fromItem=LateralSubSelect()
             )
-            [(LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot()) { fromItem.setPivot(pivot); } ]
             [ alias=Alias() { fromItem.setAlias(alias); } ]
+			[(LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot()) { fromItem.setPivot(pivot); } ]
             [
                 LOOKAHEAD(2)
                 indexHint=MySQLIndexHint() {

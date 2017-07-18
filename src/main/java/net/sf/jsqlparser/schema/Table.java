@@ -145,8 +145,8 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     @Override
     public String toString() {
         return getFullyQualifiedName()
-                + ((pivot != null) ? " " + pivot : "")
                 + ((alias != null) ? alias.toString() : "")
+                + ((pivot != null) ? " " + pivot : "")
                 + ((hint != null) ? hint.toString() : "");
     }
 }
