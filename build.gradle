@@ -1,0 +1,31 @@
+plugins {
+    id "ca.coglinc.javacc" version "2.4.0"
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'com.github.jsqlparser'
+version = '1.1-SNAPSHOT'
+
+description = """JSQLParser library"""
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+
+
+
+repositories {
+        
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    testCompile group: 'commons-io', name: 'commons-io', version:'2.4'
+    testCompile group: 'junit', name: 'junit', version:'4.12'
+    testCompile group: 'org.hamcrest', name: 'hamcrest-library', version:'1.3'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.7.22'
+}
