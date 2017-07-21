@@ -10,22 +10,26 @@ version = '1.1-SNAPSHOT'
 
 description = """JSQLParser library"""
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
 tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
 }
-
-
-
 
 repositories {
-        
-     maven { url "http://repo.maven.apache.org/maven2" }
+    maven { url "http://repo.maven.apache.org/maven2" }
 }
+
+compileJavacc {
+    arguments = [visitor: 'true']
+}
+
+compileJjtree {
+    arguments = [visitor: 'true', TRACK_TOKENS: 'true']
+}
+
 dependencies {
     testCompile group: 'commons-io', name: 'commons-io', version:'2.4'
     testCompile group: 'junit', name: 'junit', version:'4.12'
     testCompile group: 'org.hamcrest', name: 'hamcrest-library', version:'1.3'
     testCompile group: 'org.mockito', name: 'mockito-core', version:'2.7.22'
+    javacc 'net.java.dev.javacc:javacc:7.0.2'
 }
