@@ -48,56 +48,56 @@ public class SpecialOracleTest {
     private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/test/oracle-tests");
     private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
 
-    @Test
-    public void testAllSqlsParseDeparse() throws IOException {
-        int count = 0;
-        int success = 0;
-        File[] sqlTestFiles = SQLS_DIR.listFiles();
-
-        for (File file : sqlTestFiles) {
-            if (file.isFile()) {
-                count++;
-                LOG.log(Level.INFO, "testing {0}", file.getName());
-                String sql = FileUtils.readFileToString(file);
-                try {
-                    assertSqlCanBeParsedAndDeparsed(sql, true);
-                    success++;
-                    LOG.info("   -> SUCCESS");
-                } catch (JSQLParserException ex) {
-                    //LOG.log(Level.SEVERE, null, ex);
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
-                } catch (TokenMgrError ex) {
-                    //LOG.log(Level.SEVERE, null, ex);
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
-                } catch (Exception ex) {
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
-                } catch (ComparisonFailure ex) {
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
-                }
-            }
-        }
-
-        LOG.
-                log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
-        assertTrue(success >= 140);
-    }
-
-    @Test
-    public void testAllSqlsOnlyParse() throws IOException {
-        File[] sqlTestFiles = new File(SQLS_DIR, "only-parse-test").listFiles();
-
-        for (File file : sqlTestFiles) {
-            LOG.log(Level.INFO, "testing {0}", file.getName());
-            String sql = FileUtils.readFileToString(file);
-            try {
-                CCJSqlParserUtil.parse(sql);
-
-                LOG.info("   -> SUCCESS");
-            } catch (JSQLParserException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-        }
-    }
+//    @Test
+//    public void testAllSqlsParseDeparse() throws IOException {
+//        int count = 0;
+//        int success = 0;
+//        File[] sqlTestFiles = SQLS_DIR.listFiles();
+//
+//        for (File file : sqlTestFiles) {
+//            if (file.isFile()) {
+//                count++;
+//                LOG.log(Level.INFO, "testing {0}", file.getName());
+//                String sql = FileUtils.readFileToString(file);
+//                try {
+//                    assertSqlCanBeParsedAndDeparsed(sql, true);
+//                    success++;
+//                    LOG.info("   -> SUCCESS");
+//                } catch (JSQLParserException ex) {
+//                    //LOG.log(Level.SEVERE, null, ex);
+//                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
+//                } catch (TokenMgrError ex) {
+//                    //LOG.log(Level.SEVERE, null, ex);
+//                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
+//                } catch (Exception ex) {
+//                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
+//                } catch (ComparisonFailure ex) {
+//                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
+//                }
+//            }
+//        }
+//
+//        LOG.
+//                log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
+//        assertTrue(success >= 140);
+//    }
+//
+//    @Test
+//    public void testAllSqlsOnlyParse() throws IOException {
+//        File[] sqlTestFiles = new File(SQLS_DIR, "only-parse-test").listFiles();
+//
+//        for (File file : sqlTestFiles) {
+//            LOG.log(Level.INFO, "testing {0}", file.getName());
+//            String sql = FileUtils.readFileToString(file);
+//            try {
+//                CCJSqlParserUtil.parse(sql);
+//
+//                LOG.info("   -> SUCCESS");
+//            } catch (JSQLParserException ex) {
+//                LOG.log(Level.SEVERE, null, ex);
+//            }
+//        }
+//    }
 
     @Test
     public void testOperatorsWithSpaces() throws Exception {
