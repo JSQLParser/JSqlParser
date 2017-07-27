@@ -88,5 +88,17 @@ public abstract class MultipleExpression implements Expression {
         sb.append(")");
         return sb.toString();
     }
-    
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

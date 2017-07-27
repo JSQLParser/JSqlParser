@@ -55,4 +55,18 @@ public class AnyComparisonExpression implements Expression {
     public String toString() {
         return anyType.name() + " " + subSelect.toString();
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
+
 }

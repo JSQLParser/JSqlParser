@@ -71,4 +71,17 @@ public class LongValue implements Expression {
     public String toString() {
         return getStringValue();
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

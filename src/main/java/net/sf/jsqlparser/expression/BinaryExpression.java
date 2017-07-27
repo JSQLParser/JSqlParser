@@ -68,5 +68,18 @@ public abstract class BinaryExpression implements Expression {
     }
 
     public abstract String getStringExpression();
-    
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
+
 }

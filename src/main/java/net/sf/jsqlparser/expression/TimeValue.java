@@ -51,4 +51,17 @@ public class TimeValue implements Expression {
     public String toString() {
         return "{t '" + value + "'}";
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

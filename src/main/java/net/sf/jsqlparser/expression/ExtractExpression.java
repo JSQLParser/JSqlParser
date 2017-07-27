@@ -57,4 +57,17 @@ public class ExtractExpression implements Expression {
     public String toString() {
         return "EXTRACT(" + name + " FROM " + expression + ')';
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

@@ -55,5 +55,18 @@ public class Rlike implements Expression {
     public String toString() {
         return leftExpression + " RLIKE " + rightExpression;
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }
 

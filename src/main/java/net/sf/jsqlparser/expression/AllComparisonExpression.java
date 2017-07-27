@@ -44,4 +44,18 @@ public class AllComparisonExpression implements Expression {
     public String toString() {
         return "ALL " + subSelect.toString();
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
+
 }

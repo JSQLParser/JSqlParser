@@ -61,4 +61,17 @@ public class RowConstructor implements Expression {
     public String toString() {
         return (name != null ? name : "") + exprList.toString();
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

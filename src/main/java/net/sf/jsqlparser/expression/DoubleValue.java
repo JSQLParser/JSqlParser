@@ -55,4 +55,17 @@ public class DoubleValue implements Expression {
     public String toString() {
         return stringValue;
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

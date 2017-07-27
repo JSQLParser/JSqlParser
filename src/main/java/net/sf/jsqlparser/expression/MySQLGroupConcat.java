@@ -115,4 +115,17 @@ public class MySQLGroupConcat implements Expression {
         b.append(")");
         return b.toString();
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

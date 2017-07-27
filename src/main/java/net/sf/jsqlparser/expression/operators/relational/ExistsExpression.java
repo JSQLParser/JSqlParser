@@ -58,4 +58,17 @@ public class ExistsExpression implements Expression {
     public String toString() {
         return getStringExpression() + " " + rightExpression.toString();
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

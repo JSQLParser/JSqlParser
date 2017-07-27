@@ -61,4 +61,17 @@ public class Parenthesis implements Expression {
     public String toString() {
         return (not ? "NOT " : "") + "(" + expression + ")";
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

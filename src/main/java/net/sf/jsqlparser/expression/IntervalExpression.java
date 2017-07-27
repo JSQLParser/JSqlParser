@@ -55,4 +55,18 @@ public class IntervalExpression implements Expression {
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
+
 }

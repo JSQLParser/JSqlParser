@@ -68,4 +68,17 @@ public class WhenClause implements Expression {
     public String toString() {
         return "WHEN " + whenExpression + " THEN " + thenExpression;
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

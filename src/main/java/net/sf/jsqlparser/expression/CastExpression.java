@@ -70,4 +70,18 @@ public class CastExpression implements Expression {
             return leftExpression + "::" + type.toString();
         }
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
+
 }

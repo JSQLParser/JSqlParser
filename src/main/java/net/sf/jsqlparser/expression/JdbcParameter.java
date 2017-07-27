@@ -62,4 +62,17 @@ public class JdbcParameter implements Expression {
     public String toString() {
         return useFixedIndex ? "?" + index : "?";
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

@@ -46,4 +46,17 @@ public class NumericBind implements Expression {
     public String toString() {
         return ":" + bindId;
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

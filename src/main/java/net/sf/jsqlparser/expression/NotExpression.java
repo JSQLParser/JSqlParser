@@ -49,4 +49,17 @@ public class NotExpression implements Expression {
     public String toString() {
         return "NOT " + expression.toString();
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }

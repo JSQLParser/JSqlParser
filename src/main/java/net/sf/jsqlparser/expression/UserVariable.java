@@ -61,4 +61,17 @@ public class UserVariable implements Expression {
     public String toString() {
         return "@" + (doubleAdd ? "@" : "") + name;
     }
+
+    public String expressionType = "None";
+
+    @Override
+    public void setExpressionType(String inputExpressionType) {
+        expressionType = inputExpressionType;
+    }
+
+    @Override
+    public String getExpressionType() {
+        return expressionType;
+    }
+
 }
