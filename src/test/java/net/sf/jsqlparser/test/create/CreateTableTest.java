@@ -36,7 +36,7 @@ public class CreateTableTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
-    public void testCreateTableAsSelect() throws JSQLParserException {
+    public void testCreateTableAsSelect() throws JSQLParserException, JSQLParserException, JSQLParserException, JSQLParserException {
         String statement = "CREATE TABLE a AS SELECT col1, col2 FROM b";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
@@ -263,6 +263,10 @@ public class CreateTableTest extends TestCase {
                 "creation_date TIMESTAMP (0) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP (0) NOT NULL, " +
                 "last_change_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP (0), " +
                 "CONSTRAINT region_name_unique UNIQUE (region_name))");
+    }
+    
+    public void testCreateTableAsSelect3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE public.sales1 AS (SELECT * FROM public.sales)");
     }
 
     public void testRUBiSCreateList() throws Exception {

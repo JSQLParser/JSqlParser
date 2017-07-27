@@ -93,10 +93,20 @@ public final class CCJSqlParserUtil {
      * @throws JSQLParserException
      */
     public static Expression parseExpression(String expression) throws JSQLParserException {
+        return parseExpression(expression, true);
+    }
+    
+    public static Expression parseExpression(String expression, boolean allowPartialParse) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringReader(expression));
         try {
-            return parser.SimpleExpression();
-        } catch (Exception ex) {
+            Expression expr = parser.SimpleExpression();
+            if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
+                throw new JSQLParserException("could only parse partial expression " + expr.toString());
+            }
+            return expr;
+        } catch (JSQLParserException ex) {
+            throw ex;
+        } catch (ParseException ex) {
             throw new JSQLParserException(ex);
         }
     }
@@ -109,10 +119,27 @@ public final class CCJSqlParserUtil {
      * @throws JSQLParserException
      */
     public static Expression parseCondExpression(String condExpr) throws JSQLParserException {
+        return parseCondExpression(condExpr, true);
+    }
+
+    /**
+     * Parse an conditional expression. This is the expression after a where clause.
+     *
+     * @param condExpr
+     * @param allowPartialParse false: needs the whole string to be processed.
+     * @return
+     */
+    public static Expression parseCondExpression(String condExpr, boolean allowPartialParse) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringReader(condExpr));
         try {
-            return parser.Expression();
-        } catch (Exception ex) {
+            Expression expr = parser.Expression();
+            if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
+                throw new JSQLParserException("could only parse partial expression " + expr.toString());
+            }
+            return expr;
+        } catch (JSQLParserException ex) {
+            throw ex;
+        } catch (ParseException ex) {
             throw new JSQLParserException(ex);
         }
     }

@@ -49,6 +49,7 @@ Also I would like to know about needed examples or documentation stuff.
 ## Extensions in the latest SNAPSHOT version 1.2
 
 * introduced alias for subquery in combination with a pivot definition (this **changes** alias handling within the library for pivot sqls)
+* force the parser to fully parse a String using parseCondExpression or parseExpression
 
 ## Extensions of JSqlParser releases
 

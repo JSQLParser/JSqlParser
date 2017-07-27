@@ -1467,6 +1467,10 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
+    public void testBrackets3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM \"2016\"");
+    }
+
     public void testProblemSqlServer_Modulo_Proz() throws Exception {
         String stmt = "SELECT 5 % 2 FROM A";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -1928,26 +1932,26 @@ public class SelectTest extends TestCase {
     public void testPivotFunction() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT to_char((SELECT col1 FROM (SELECT times_purchased, state_code FROM customers t) PIVOT (count(state_code) FOR state_code IN ('NY', 'CT', 'NJ', 'FL', 'MO')) ORDER BY times_purchased)) FROM DUAL");
     }
-    
+
     public void testPivotWithAlias() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (SELECT * FROM mytable LEFT JOIN mytable2 ON Factor_ID = Id) f PIVOT (max(f.value) FOR f.factoryCode IN (ZD, COD, SW, PH))");
     }
-    
+
     public void testPivotWithAlias2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (SELECT * FROM mytable LEFT JOIN mytable2 ON Factor_ID = Id) f PIVOT (max(f.value) FOR f.factoryCode IN (ZD, COD, SW, PH)) d");
     }
-    
+
     public void testPivotWithAlias3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (SELECT * FROM mytable LEFT JOIN mytable2 ON Factor_ID = Id) PIVOT (max(f.value) FOR f.factoryCode IN (ZD, COD, SW, PH)) d");
     }
-    
+
     public void testPivotWithAlias4() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (" +
-            "SELECT a.Station_ID stationId, b.Factor_Code factoryCode, a.Value value" +
-            " FROM T_Data_Real a" +
-            " LEFT JOIN T_Bas_Factor b ON a.Factor_ID = b.Id" +
-            ") f " +
-            "PIVOT (max(f.value) FOR f.factoryCode IN (ZD, COD, SW, PH)) d");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM ("
+                + "SELECT a.Station_ID stationId, b.Factor_Code factoryCode, a.Value value"
+                + " FROM T_Data_Real a"
+                + " LEFT JOIN T_Bas_Factor b ON a.Factor_ID = b.Id"
+                + ") f "
+                + "PIVOT (max(f.value) FOR f.factoryCode IN (ZD, COD, SW, PH)) d");
     }
 
     public void testRegexpLike1() throws JSQLParserException {
@@ -2142,7 +2146,7 @@ public class SelectTest extends TestCase {
     public void testAnyConditionSubSelect() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT e1.empno, e1.sal FROM emp e1 WHERE e1.sal > ANY (SELECT e2.sal FROM emp e2 WHERE e2.deptno = 10)");
     }
-    
+
     public void testAllConditionSubSelect() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT e1.empno, e1.sal FROM emp e1 WHERE e1.sal > ALL (SELECT e2.sal FROM emp e2 WHERE e2.deptno = 10)");
     }
@@ -2578,8 +2582,8 @@ public class SelectTest extends TestCase {
     }
 
     /**
-     * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> correctly sets a {@link Wait} with the
-     * correct timeout value.
+     * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> correctly sets a {@link Wait} with the correct timeout
+     * value.
      */
     public void testForUpdateWaitWithTimeout() throws JSQLParserException {
         String statement = "SELECT * FROM mytable FOR UPDATE WAIT 60";
@@ -2599,7 +2603,6 @@ public class SelectTest extends TestCase {
 //    public void testSubSelectFailsIssue394_2() throws JSQLParserException {
 //        assertSqlCanBeParsedAndDeparsed("select * from all");
 //    }
-
     public void testMysqlIndexHints() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 USE INDEX (index1)");
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 IGNORE INDEX (index1)");
@@ -2617,15 +2620,15 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 IGNORE INDEX (index1,index2)");
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 FORCE INDEX (index1,index2)");
     }
-    
+
     public void testProblemIssue435() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT if(z, 'a', 'b') AS business_type FROM mytable1");
     }
-    
+
     public void testProblemIssue437Index() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select count(id) from p_custom_data ignore index(pri) where tenant_id=28257 and entity_id=92609 and delete_flg=0 and ( (dbc_relation_2 = 52701) and (dbc_relation_2 in ( select id from a_order where tenant_id = 28257 and 1=1 ) ) ) order by id desc, id desc", true);
     }
-    
+
     public void testProblemIssue445() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT E.ID_NUMBER, row_number() OVER (PARTITION BY E.ID_NUMBER ORDER BY E.DEFINED_UPDATED DESC) rn FROM T_EMPLOYMENT E");
     }
