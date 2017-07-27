@@ -29,6 +29,8 @@ public class ExistsExpression implements Expression {
     private Expression rightExpression;
     private boolean not = false;
 
+    private String expressionType = "None";
+
     public Expression getRightExpression() {
         return rightExpression;
     }
