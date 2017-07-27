@@ -23,5 +23,6 @@ package net.sf.jsqlparser.expression;
 
 public interface Expression {
 
+    String type = "";
     void accept(ExpressionVisitor expressionVisitor);
 }
