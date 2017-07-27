@@ -2022,6 +2022,10 @@ public class SelectTest extends TestCase {
         assertEquals("param2", namedParameter2.getName());
         assertEquals("param3", namedParameter3.getName());
     }
+    
+    public void testNamedParameter3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t WHERE c = :from");
+    }
 
     public void testComplexUnion1() throws IOException, JSQLParserException {
         String stmt = "(SELECT 'abc-' || coalesce(mytab.a::varchar, '') AS a, mytab.b, mytab.c AS st, mytab.d, mytab.e FROM mytab WHERE mytab.del = 0) UNION (SELECT 'cde-' || coalesce(mytab2.a::varchar, '') AS a, mytab2.b, mytab2.bezeichnung AS c, 0 AS d, 0 AS e FROM mytab2 WHERE mytab2.del = 0)";

@@ -915,7 +915,7 @@ String RelObjectNameExt2():
   String result=null;
 } 
 {
-    ( result=RelObjectNameExt() | tk=<K_TOP>)
+    ( result=RelObjectNameExt() | tk=<K_TOP> | tk=<K_FROM> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -2357,10 +2357,10 @@ Expression PrimaryExpression():
 
 JdbcNamedParameter JdbcNamedParameter() : {
     JdbcNamedParameter parameter = new JdbcNamedParameter();
-    Token token;
+    String name;
 }
 {
-    ":" token=<S_IDENTIFIER> { parameter.setName(token.image); }
+    ":" (name=RelObjectNameExt2() { parameter.setName(name); }) 
     {
         return parameter;
     }
