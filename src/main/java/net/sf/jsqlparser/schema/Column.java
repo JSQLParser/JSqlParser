@@ -32,7 +32,7 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
     private Table table;
     private String columnName;
 
-    private String expressionType = "None";
+    public String expressionType = "None";
 
     public Column() {
     }
