@@ -23,5 +23,7 @@ package net.sf.jsqlparser.expression;
 
 public interface Expression {
 
+    String expressionType = "NoneExpression";
+
     void accept(ExpressionVisitor expressionVisitor);
 }

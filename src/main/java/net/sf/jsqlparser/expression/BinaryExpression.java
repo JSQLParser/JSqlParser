@@ -30,8 +30,6 @@ public abstract class BinaryExpression implements Expression {
     private Expression leftExpression;
     private Expression rightExpression;
     private boolean not = false;
-
-    public String expressionType = "None";
     
     public BinaryExpression() {
     }
