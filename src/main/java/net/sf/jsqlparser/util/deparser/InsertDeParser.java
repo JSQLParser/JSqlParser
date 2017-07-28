@@ -115,6 +115,22 @@ public class InsertDeParser implements ItemsListVisitor {
                 buffer.append(")");
             }
         }
+        
+        if (insert.isUseSet()) {
+            buffer.append(" SET ");
+            for (int i = 0; i < insert.getSetColumns().size(); i++) {
+                Column column = insert.getSetColumns().get(i);
+                column.accept(expressionVisitor);
+
+                buffer.append(" = ");
+
+                Expression expression = insert.getSetExpressionList().get(i);
+                expression.accept(expressionVisitor);
+                if (i < insert.getSetColumns().size() - 1) {
+                    buffer.append(", ");
+                }
+            }
+        }
 
         if (insert.isUseDuplicate()) {
             buffer.append(" ON DUPLICATE KEY UPDATE ");
