@@ -13,6 +13,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.Assert.*;
 
@@ -82,6 +83,63 @@ public class InsertTest {
         // toString uses brakets
         String statementToString = "INSERT INTO mytable (col1, col2, col3) SELECT * FROM mytable2";
         assertEquals(statementToString, "" + insert);
+    }
+    
+    @Test
+    public void testInsertFromSet() throws JSQLParserException {
+        String statement = "INSERT INTO mytable SET col1 = 12, col2 = name1 * name2";
+        Insert insert = (Insert) parserManager.parse(new StringReader(statement));
+        assertEquals("mytable", insert.getTable().getName());
+        assertEquals(2, insert.getSetColumns().size());
+        assertEquals("col1", ((Column) insert.getSetColumns().get(0)).getColumnName());
+        assertEquals("col2", ((Column) insert.getSetColumns().get(1)).getColumnName());
+        assertEquals(2, insert.getSetExpressionList().size());
+        assertEquals("12", insert.getSetExpressionList().get(0).toString());
+        assertEquals("name1 * name2", insert.getSetExpressionList().get(1).toString());
+        assertEquals(statement, "" + insert);
+    }
+    
+    @Test
+    public void testInsertValuesWithDuplicateElimination() throws JSQLParserException {
+        String statement = "INSERT INTO TEST (ID, COUNTER) VALUES (123, 0) "
+                + "ON DUPLICATE KEY UPDATE COUNTER = COUNTER + 1";
+        Insert insert = (Insert) parserManager.parse(new StringReader(statement));
+        assertEquals("TEST", insert.getTable().getName());
+        assertEquals(2, insert.getColumns().size());
+        assertTrue(insert.isUseValues());
+        assertEquals("ID", ((Column) insert.getColumns().get(0)).getColumnName());
+        assertEquals("COUNTER", ((Column) insert.getColumns().get(1)).getColumnName());
+        assertEquals(2, ((ExpressionList) insert.getItemsList()).getExpressions().size());
+        assertEquals(123, ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().
+                get(0)).getValue());
+        assertEquals(0, ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().
+                get(1)).getValue());
+        assertEquals(1, insert.getDuplicateUpdateColumns().size());
+        assertEquals("COUNTER", ((Column) insert.getDuplicateUpdateColumns().get(0)).getColumnName());
+        assertEquals(1, insert.getDuplicateUpdateExpressionList().size());
+        assertEquals("COUNTER + 1", insert.getDuplicateUpdateExpressionList().get(0).toString());
+        assertFalse(insert.isUseSelectBrackets());
+        assertTrue(insert.isUseDuplicate());
+        assertEquals(statement, "" + insert);
+    }
+    
+    @Test
+    public void testInsertFromSetWithDuplicateElimination() throws JSQLParserException {
+        String statement = "INSERT INTO mytable SET col1 = 122 "
+                + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'";
+        Insert insert = (Insert) parserManager.parse(new StringReader(statement));
+        assertEquals("mytable", insert.getTable().getName());
+        assertEquals(1, insert.getSetColumns().size());
+        assertEquals("col1", ((Column) insert.getSetColumns().get(0)).getColumnName());
+        assertEquals(1, insert.getSetExpressionList().size());
+        assertEquals("122", insert.getSetExpressionList().get(0).toString());
+        assertEquals(2, insert.getDuplicateUpdateColumns().size());
+        assertEquals("col2", ((Column) insert.getDuplicateUpdateColumns().get(0)).getColumnName());
+        assertEquals("col3", ((Column) insert.getDuplicateUpdateColumns().get(1)).getColumnName());
+        assertEquals(2, insert.getDuplicateUpdateExpressionList().size());
+        assertEquals("col2 + 1", insert.getDuplicateUpdateExpressionList().get(0).toString());
+        assertEquals("'saint'", insert.getDuplicateUpdateExpressionList().get(1).toString());
+        assertEquals(statement, "" + insert);
     }
 
     @Test
@@ -191,4 +249,22 @@ public class InsertTest {
     public void testWithDeparsingIssue406() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("insert into mytab3 (a,b,c) select a,b,c from mytab where exists(with t as (select * from mytab2) select * from t)", true);
     }
+    
+    @Test
+    public void testInsertSetInDeparsing() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable SET col1 = 12, col2 = name1 * name2");
+    }
+    
+    @Test
+    public void testInsertValuesWithDuplicateEliminationInDeparsing() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO TEST (ID, COUNTER) VALUES (123, 0) "
+                + "ON DUPLICATE KEY UPDATE COUNTER = COUNTER + 1");
+    }
+    
+    @Test
+    public void testInsertSetWithDuplicateEliminationInDeparsing() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable SET col1 = 122 "
+                + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'");
+    }
+    
 }
