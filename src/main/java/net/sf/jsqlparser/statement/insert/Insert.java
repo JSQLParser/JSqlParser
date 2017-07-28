@@ -54,6 +54,12 @@ public class Insert implements Statement {
     private boolean returningAllColumns = false;
 
     private List<SelectExpressionItem> returningExpressionList = null;
+    
+    /* these lines of codes are used to handle SET syntax in the insert part. 
+     * the SET syntax is based on this: https://dev.mysql.com/doc/refman/5.6/en/insert.html. */
+    private boolean useSet = false;
+    private List<Column> setColumns;
+    private List<Expression> setExpressionList;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -173,6 +179,30 @@ public class Insert implements Statement {
     public void setModifierIgnore(boolean modifierIgnore) {
         this.modifierIgnore = modifierIgnore;
     }
+    
+    public void setUseSet(boolean useSet) {
+        this.useSet = useSet;
+    }
+    
+    public boolean isUseSet() {
+        return useSet;
+    }
+    
+    public void setSetColumns(List<Column> setColumns) {
+        this.setColumns = setColumns;
+    }
+    
+    public List<Column> getSetColumns() {
+        return setColumns;
+    }
+    
+    public void setSetExpressionList(List<Expression> setExpressionList) {
+        this.setExpressionList = setExpressionList;
+    }
+    
+    public List<Expression> getSetExpressionList() {
+        return setExpressionList;
+    }
 
     @Override
     public String toString() {
@@ -208,6 +238,17 @@ public class Insert implements Statement {
                 sql.append(")");
             }
         }
+        
+        if (useSet) {
+            sql.append("SET ");
+            for (int i = 0; i < getSetColumns().size(); i++) {
+                if (i != 0) {
+                    sql.append(", ");
+                }
+                sql.append(setColumns.get(i)).append(" = ");
+                sql.append(setExpressionList.get(i));
+            }
+        }
 
         if (useDuplicate) {
             sql.append(" ON DUPLICATE KEY UPDATE ");
@@ -229,4 +270,5 @@ public class Insert implements Statement {
 
         return sql.toString();
     }
+    
 }
