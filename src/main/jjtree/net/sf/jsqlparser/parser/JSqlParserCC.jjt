@@ -507,9 +507,9 @@ Update Update():
        ]
 
    {
-        update.setColumns(columns);
-        update.setExpressions(expList);
-        update.setTables(tables);
+           update.setColumns(columns);
+           update.setExpressions(expList);
+           update.setTables(tables);
         update.setFromItem(fromItem);
         update.setJoins(joins);
         update.setSelect(select);
@@ -942,7 +942,7 @@ String RelObjectNameExt2():
   String result=null;
 } 
 {
-    ( result=RelObjectNameExt() | tk=<K_TOP>)
+    ( result=RelObjectNameExt() | tk=<K_TOP> | tk=<K_FROM> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -1321,6 +1321,7 @@ Pivot Pivot():
     List<Column> forColumns;
     List<SelectExpressionItem> singleInItems = null;
     List<ExpressionListItem> multiInItems = null;
+    Alias alias = null;
 }
 {
     <K_PIVOT> "(" functionItems = PivotFunctionItems() <K_FOR>
@@ -1330,11 +1331,13 @@ Pivot Pivot():
     | multiInItems = PivotMultiInItems() )
     ")"
     ")"
+    [ alias = Alias() ]
     {
         retval.setFunctionItems(functionItems);
         retval.setForColumns(forColumns);
         retval.setSingleInItems(singleInItems);
         retval.setMultiInItems(multiInItems);
+        retval.setAlias(alias);
         return retval;
     }
 }
@@ -1413,8 +1416,8 @@ FromItem FromItem():
                 |
                 fromItem=LateralSubSelect()
             )
-            [(LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot()) { fromItem.setPivot(pivot); } ]
             [ alias=Alias() { fromItem.setAlias(alias); } ]
+			[(LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot()) { fromItem.setPivot(pivot); } ]
             [
                 LOOKAHEAD(2)
                 indexHint=MySQLIndexHint() {
@@ -2381,10 +2384,10 @@ Expression PrimaryExpression():
 
 JdbcNamedParameter JdbcNamedParameter() : {
     JdbcNamedParameter parameter = new JdbcNamedParameter();
-    Token token;
+    String name;
 }
 {
-    ":" token=<S_IDENTIFIER> { parameter.setName(token.image); }
+    ":" (name=RelObjectNameExt2() { parameter.setName(name); }) 
     {
         return parameter;
     }
@@ -3455,5 +3458,4 @@ Commit Commit():
   {
     return commit;
   }
-  
 }
