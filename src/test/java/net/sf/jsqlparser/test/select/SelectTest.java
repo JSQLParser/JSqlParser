@@ -2636,4 +2636,8 @@ public class SelectTest extends TestCase {
     public void testProblemIssue445() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT E.ID_NUMBER, row_number() OVER (PARTITION BY E.ID_NUMBER ORDER BY E.DEFINED_UPDATED DESC) rn FROM T_EMPLOYMENT E");
     }
+    
+    public void testProblemIssue485Date() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab WHERE tab.date = :date");
+    }
 }
