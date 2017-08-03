@@ -26,13 +26,8 @@ public interface Expression {
     void setExpressionType(String expression);
     String getExpressionType();
 
-    public class Box<T> {
-        private T t;
-        public void set(T t) { this.t = t; }
-        public T get() { return t; }
-    }
-
-    Box resolvedExpressionType = null;
+    void setLogicalType(Object expression);
+    Object getLogicalType();
 
     void accept(ExpressionVisitor expressionVisitor);
 }

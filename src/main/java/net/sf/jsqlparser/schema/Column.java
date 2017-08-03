@@ -44,6 +44,18 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
         return expressionType;
     }
 
+    public Object logicalType;
+
+    @Override
+    public void setLogicalType(Object inputLogicalType) {
+        logicalType = inputLogicalType;
+    }
+
+    @Override
+    public String getLogicalType() {
+        return expressionType;
+    }
+
 
     public Column() {
     }

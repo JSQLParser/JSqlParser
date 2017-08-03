@@ -124,4 +124,16 @@ public class InExpression implements Expression, SupportsOldOracleJoinSyntax {
         return expressionType;
     }
 
+    public Object logicalType;
+
+    @Override
+    public void setLogicalType(Object inputLogicalType) {
+        logicalType = inputLogicalType;
+    }
+
+    @Override
+    public String getLogicalType() {
+        return expressionType;
+    }
+
 }

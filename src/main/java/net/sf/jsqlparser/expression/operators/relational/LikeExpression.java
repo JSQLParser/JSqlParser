@@ -74,4 +74,5 @@ public class LikeExpression extends BinaryExpression {
     public void setCaseInsensitive(boolean caseInsensitive) {
         this.caseInsensitive = caseInsensitive;
     }
+
 }

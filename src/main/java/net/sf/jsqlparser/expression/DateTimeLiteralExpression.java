@@ -90,5 +90,17 @@ public class DateTimeLiteralExpression implements Expression {
         return expressionType;
     }
 
+    public Object logicalType;
+
+    @Override
+    public void setLogicalType(Object inputLogicalType) {
+        logicalType = inputLogicalType;
+    }
+
+    @Override
+    public String getLogicalType() {
+        return expressionType;
+    }
+
 
 }
