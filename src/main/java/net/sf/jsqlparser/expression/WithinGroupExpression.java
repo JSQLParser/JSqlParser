@@ -23,6 +23,7 @@ package net.sf.jsqlparser.expression;
 
 import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.genericClass;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 /**
@@ -100,16 +101,16 @@ public class WithinGroupExpression implements Expression {
     }
 
 
-    public Object logicalType;
+    public genericClass logicalType = new genericClass();
 
     @Override
     public void setLogicalType(Object inputLogicalType) {
-        logicalType = inputLogicalType;
+        logicalType.setLogicalType(inputLogicalType);
     }
 
     @Override
     public Object getLogicalType() {
-        return expressionType;
+        return logicalType.getLogicalType();
     }
 
 }

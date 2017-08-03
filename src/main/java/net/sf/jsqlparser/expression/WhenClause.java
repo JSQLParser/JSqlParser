@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.genericClass;
+
 /**
  * A clause of following syntax: WHEN condition THEN expression. Which is part of a CaseExpression.
  *
@@ -81,16 +83,16 @@ public class WhenClause implements Expression {
         return expressionType;
     }
 
-    public Object logicalType;
+    public genericClass logicalType = new genericClass();
 
     @Override
     public void setLogicalType(Object inputLogicalType) {
-        logicalType = inputLogicalType;
+        logicalType.setLogicalType(inputLogicalType);
     }
 
     @Override
     public Object getLogicalType() {
-        return expressionType;
+        return logicalType.getLogicalType();
     }
 
 }

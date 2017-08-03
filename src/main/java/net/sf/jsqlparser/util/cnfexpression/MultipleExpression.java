@@ -26,6 +26,7 @@ import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.NullValue;
+import net.sf.jsqlparser.genericClass;
 
 /**
  * This is a helper class that mainly used for handling the CNF conversion.
@@ -101,16 +102,16 @@ public abstract class MultipleExpression implements Expression {
         return expressionType;
     }
 
-    public Object logicalType;
+    public genericClass logicalType = new genericClass();
 
     @Override
     public void setLogicalType(Object inputLogicalType) {
-        logicalType = inputLogicalType;
+        logicalType.setLogicalType(inputLogicalType);
     }
 
     @Override
     public Object getLogicalType() {
-        return expressionType;
+        return logicalType.getLogicalType();
     }
 
 }

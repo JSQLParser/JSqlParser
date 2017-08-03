@@ -41,6 +41,7 @@ package net.sf.jsqlparser.expression;
 
 import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.genericClass;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -128,16 +129,16 @@ public class MySQLGroupConcat implements Expression {
         return expressionType;
     }
 
-    public Object logicalType;
+    public genericClass logicalType = new genericClass();
 
     @Override
     public void setLogicalType(Object inputLogicalType) {
-        logicalType = inputLogicalType;
+        logicalType.setLogicalType(inputLogicalType);
     }
 
     @Override
     public Object getLogicalType() {
-        return expressionType;
+        return logicalType.getLogicalType();
     }
 
 }

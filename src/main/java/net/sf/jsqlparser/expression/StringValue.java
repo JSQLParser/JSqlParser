@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.genericClass;
+
 /**
  * A string as in 'example_string'
  */
@@ -79,16 +81,16 @@ public class StringValue implements Expression {
         return expressionType;
     }
 
-    public Object logicalType;
+    public genericClass logicalType = new genericClass();
 
     @Override
     public void setLogicalType(Object inputLogicalType) {
-        logicalType = inputLogicalType;
+        logicalType.setLogicalType(inputLogicalType);
     }
 
     @Override
     public Object getLogicalType() {
-        return expressionType;
+        return logicalType.getLogicalType();
     }
 
 }
