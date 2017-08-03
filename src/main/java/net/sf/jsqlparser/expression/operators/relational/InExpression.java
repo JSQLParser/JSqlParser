@@ -132,7 +132,7 @@ public class InExpression implements Expression, SupportsOldOracleJoinSyntax {
     }
 
     @Override
-    public String getLogicalType() {
+    public Object getLogicalType() {
         return expressionType;
     }
 

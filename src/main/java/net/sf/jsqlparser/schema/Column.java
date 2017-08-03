@@ -52,7 +52,7 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
     }
 
     @Override
-    public String getLogicalType() {
+    public Object getLogicalType() {
         return expressionType;
     }
 

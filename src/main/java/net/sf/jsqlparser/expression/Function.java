@@ -193,7 +193,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public String getLogicalType() {
+    public Object getLogicalType() {
         return expressionType;
     }
 

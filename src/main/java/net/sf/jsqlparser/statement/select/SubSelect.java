@@ -152,7 +152,7 @@ public class SubSelect implements FromItem, Expression, ItemsList {
     }
 
     @Override
-    public String getLogicalType() {
+    public Object getLogicalType() {
         return expressionType;
     }
 

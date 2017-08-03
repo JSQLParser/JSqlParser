@@ -89,7 +89,7 @@ public abstract class BinaryExpression implements Expression {
     }
 
     @Override
-    public String getLogicalType() {
+    public Object getLogicalType() {
         return expressionType;
     }
 

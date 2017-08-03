@@ -98,9 +98,8 @@ public class DateTimeLiteralExpression implements Expression {
     }
 
     @Override
-    public String getLogicalType() {
+    public Object getLogicalType() {
         return expressionType;
     }
-
 
 }

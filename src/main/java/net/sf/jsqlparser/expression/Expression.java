@@ -21,10 +21,13 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.*;
+
 public interface Expression {
 
     void setExpressionType(String expression);
     String getExpressionType();
+
 
     void setLogicalType(Object expression);
     Object getLogicalType();
