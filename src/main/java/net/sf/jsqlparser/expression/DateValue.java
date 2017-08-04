@@ -54,18 +54,6 @@ public class DateValue implements Expression {
         return "{d '" + value.toString() + "'}";
     }
 
-    public String expressionType = "None";
-
-    @Override
-    public void setExpressionType(String inputExpressionType) {
-        expressionType = inputExpressionType;
-    }
-
-    @Override
-    public String getExpressionType() {
-        return expressionType;
-    }
-
     public genericClass logicalType = new genericClass();
 
     @Override

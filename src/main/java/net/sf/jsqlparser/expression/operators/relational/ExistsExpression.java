@@ -60,18 +60,6 @@ public class ExistsExpression implements Expression {
         return getStringExpression() + " " + rightExpression.toString();
     }
 
-    public String expressionType = "None";
-
-    @Override
-    public void setExpressionType(String inputExpressionType) {
-        expressionType = inputExpressionType;
-    }
-
-    @Override
-    public String getExpressionType() {
-        return expressionType;
-    }
-
     public genericClass logicalType = new genericClass();
 
     @Override

@@ -117,18 +117,6 @@ public class CaseExpression implements Expression {
                 + ((elseExpression != null) ? "ELSE " + elseExpression + " " : "") + "END";
     }
 
-    public String expressionType = "None";
-
-    @Override
-    public void setExpressionType(String inputExpressionType) {
-        expressionType = inputExpressionType;
-    }
-
-    @Override
-    public String getExpressionType() {
-        return expressionType;
-    }
-
     public genericClass logicalType = new genericClass();
 
     @Override

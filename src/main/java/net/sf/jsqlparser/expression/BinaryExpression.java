@@ -32,6 +32,7 @@ public abstract class BinaryExpression implements Expression {
     private Expression leftExpression;
     private Expression rightExpression;
     private boolean not = false;
+    public genericClass logicalType = new genericClass();
     
     public BinaryExpression() {
     }
@@ -70,20 +71,6 @@ public abstract class BinaryExpression implements Expression {
     }
 
     public abstract String getStringExpression();
-
-    public String expressionType = "None";
-
-    @Override
-    public void setExpressionType(String inputExpressionType) {
-        expressionType = inputExpressionType;
-    }
-
-    @Override
-    public String getExpressionType() {
-        return expressionType;
-    }
-
-    public genericClass logicalType = new genericClass();
 
     @Override
     public void setLogicalType(Object inputLogicalType) {

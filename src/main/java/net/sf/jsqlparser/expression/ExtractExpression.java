@@ -60,18 +60,6 @@ public class ExtractExpression implements Expression {
         return "EXTRACT(" + name + " FROM " + expression + ')';
     }
 
-    public String expressionType = "None";
-
-    @Override
-    public void setExpressionType(String inputExpressionType) {
-        expressionType = inputExpressionType;
-    }
-
-    @Override
-    public String getExpressionType() {
-        return expressionType;
-    }
-
     public genericClass logicalType = new genericClass();
 
     @Override
