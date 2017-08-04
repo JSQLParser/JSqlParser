@@ -40,8 +40,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     }
 
     /**
-     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share
-     * the same<br>
+     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share the same<br>
      * StringBuilder (buffer parameter) as this object in order to work
      * @param buffer the buffer that will be filled with the select
      */
@@ -211,26 +210,26 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         }
         subSelect.getSelectBody().accept(this);
         buffer.append(")");
-        Pivot pivot = subSelect.getPivot();
-        if (pivot != null) {
-            pivot.accept(this);
-        }
         Alias alias = subSelect.getAlias();
         if (alias != null) {
             buffer.append(alias.toString());
+        }
+        Pivot pivot = subSelect.getPivot();
+        if (pivot != null) {
+            pivot.accept(this);
         }
     }
 
     @Override
     public void visit(Table tableName) {
         buffer.append(tableName.getFullyQualifiedName());
-        Pivot pivot = tableName.getPivot();
-        if (pivot != null) {
-            pivot.accept(this);
-        }
         Alias alias = tableName.getAlias();
         if (alias != null) {
             buffer.append(alias);
+        }
+        Pivot pivot = tableName.getPivot();
+        if (pivot != null) {
+            pivot.accept(this);
         }
         MySQLIndexHint indexHint = tableName.getIndexHint();
         if (indexHint != null) {
@@ -249,6 +248,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
                 append(" IN ")
                 .append(PlainSelect.getStringList(pivot.getInItems(), true, true))
                 .append(")");
+        if (pivot.getAlias() != null) {
+            buffer.append(pivot.getAlias().toString());
+        }
     }
 
     @Override

@@ -123,11 +123,11 @@ public class SubSelect implements FromItem, Expression, ItemsList {
             retval.append(")");
         }
 
-        if (pivot != null) {
-            retval.append(" ").append(pivot);
-        }
         if (alias != null) {
             retval.append(alias.toString());
+        }
+        if (pivot != null) {
+            retval.append(" ").append(pivot);
         }
 
         return retval.toString();
