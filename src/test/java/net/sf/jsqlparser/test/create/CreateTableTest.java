@@ -268,6 +268,14 @@ public class CreateTableTest extends TestCase {
     public void testCreateTableAsSelect3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE public.sales1 AS (SELECT * FROM public.sales)");
     }
+    
+    public void testQuotedPKColumnsIssue491() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE `FOO` (`ID` INT64, `NAME` STRING (100)) PRIMARY KEY (`ID`)");
+    }
+    
+    public void testQuotedPKColumnsIssue491_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE `FOO` (`ID` INT64, `NAME` STRING (100), PRIMARY KEY (`ID`))");
+    }
 
     public void testRUBiSCreateList() throws Exception {
         BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.

@@ -3105,8 +3105,8 @@ List<String> CreateParameter():
 }
 {
         (
-            ((tk=<S_IDENTIFIER> { identifier.append(tk.image); }
-                ["." tk2=<S_IDENTIFIER> { identifier.append("."); identifier.append(tk2.image); }])
+            (((tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { identifier.append(tk.image); }
+                ["." (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) { identifier.append("."); identifier.append(tk2.image); }])
                 { param.add(identifier.toString()); })
             |
             tk=<K_NULL> { param.add(tk.image); }
@@ -3178,7 +3178,7 @@ String AList():
 {
      "("
 
-     ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER>) { retval.append(tk.image); }
+     ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { retval.append(tk.image); }
        [("," {retval.append(",");} | "=" {retval.append("=");})] )*
 
     ")"
