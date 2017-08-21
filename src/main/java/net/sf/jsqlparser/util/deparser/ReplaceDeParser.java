@@ -148,6 +148,20 @@ public class ReplaceDeParser implements ItemsListVisitor {
 
     @Override
     public void visit(MultiExpressionList multiExprList) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        buffer.append("VALUES ");
+        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
+            buffer.append("(");
+            for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter.hasNext();) {
+                Expression expression = iter.next();
+                expression.accept(expressionVisitor);
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
+            buffer.append(")");
+            if (it.hasNext()) {
+                buffer.append(", ");
+            }
+        }
     }
 }
