@@ -528,6 +528,7 @@ Replace Replace():
 
     List<Column> columns = new ArrayList<Column>();
     List<Expression> expList = new ArrayList<Expression>();
+    MultiExpressionList multiExpr = null;
     ItemsList itemsList = null;
     Expression exp = null;
 }
@@ -549,6 +550,15 @@ Replace Replace():
             (
                 LOOKAHEAD(2) [<K_VALUES> | <K_VALUE>] "(" exp=PrimaryExpression() { expList.add(exp); }
                         ("," exp=PrimaryExpression()  { expList.add(exp); } )* ")" { itemsList = new ExpressionList(expList); }
+                        ("," "(" exp=SimpleExpression() {
+                            if (multiExpr==null) {
+                                multiExpr=new MultiExpressionList();
+                                multiExpr.addExpressionList((ExpressionList)itemsList);
+                                itemsList = multiExpr;
+                            }
+                            expList = new ArrayList<Expression>();
+                            expList.add(exp); }
+                            ("," exp=SimpleExpression() { expList.add(exp); } )* ")" { multiExpr.addExpressionList(expList); } )*
                 |
                     { replace.setUseValues(false); }
                     itemsList=SubSelect()
