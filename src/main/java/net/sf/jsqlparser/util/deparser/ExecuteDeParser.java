@@ -52,7 +52,7 @@ public class ExecuteDeParser {
     }
 
     public void deParse(Execute execute) {
-        buffer.append("EXECUTE ").append(execute.getName());
+        buffer.append(execute.getExecType().name()).append(" ").append(execute.getName());
         List<Expression> expressions = execute.getExprList().getExpressions();
         for (int i = 0; i < expressions.size(); i++) {
             if (i > 0) {

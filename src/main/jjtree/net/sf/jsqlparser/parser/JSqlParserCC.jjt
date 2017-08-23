@@ -285,6 +285,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DISABLE : "DISABLE">
 |   <K_USE : "USE">
 |   <K_FORCE : "FORCE">
+|   <K_CALL : "CALL">
 }
 
 TOKEN : /* Stuff */
@@ -2704,7 +2705,9 @@ Execute Execute(): {
     Execute execute = new Execute();
 }
 {
-    (<K_EXEC> | <K_EXECUTE>)
+    (<K_EXEC> { execute.setExecType(Execute.EXEC_TYPE.EXEC); } 
+        | <K_EXECUTE> { execute.setExecType(Execute.EXEC_TYPE.EXECUTE); } 
+        | <K_CALL> { execute.setExecType(Execute.EXEC_TYPE.CALL); } )
 
     funcName=RelObjectName() { execute.setName(funcName); }
 
