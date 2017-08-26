@@ -299,8 +299,12 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         if (expr.getExpression() != null) {
             expr.getExpression().accept(this);
         }
-        expr.getDefaultValue().accept(this);
-        expr.getOffset().accept(this);
+        if (expr.getDefaultValue() != null) {
+            expr.getDefaultValue().accept(this);
+        }
+        if (expr.getOffset() != null) {
+            expr.getOffset().accept(this);
+        }
         if (expr.getKeep() != null) {
             expr.getKeep().accept(this);
         }
@@ -308,9 +312,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             element.getExpression().accept(this);
         }
 
-        expr.getWindowElement().getRange().getStart().getExpression().accept(this);
-        expr.getWindowElement().getRange().getEnd().getExpression().accept(this);
-        expr.getWindowElement().getOffset().getExpression().accept(this);
+        if (expr.getWindowElement() != null) {
+            expr.getWindowElement().getRange().getStart().getExpression().accept(this);
+            expr.getWindowElement().getRange().getEnd().getExpression().accept(this);
+            expr.getWindowElement().getOffset().getExpression().accept(this);
+        }
     }
 
     @Override
