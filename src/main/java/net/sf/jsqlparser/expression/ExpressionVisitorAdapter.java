@@ -227,7 +227,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(CaseExpression expr) {
-        if (expr.getSwitchExpression()!=null) {
+        if (expr.getSwitchExpression() != null) {
             expr.getSwitchExpression().accept(this);
         }
         for (Expression x : expr.getWhenClauses()) {
@@ -296,7 +296,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(AnalyticExpression expr) {
-        expr.getExpression().accept(this);
+        if (expr.getExpression() != null) {
+            expr.getExpression().accept(this);
+        }
         expr.getDefaultValue().accept(this);
         expr.getOffset().accept(this);
         if (expr.getKeep() != null) {

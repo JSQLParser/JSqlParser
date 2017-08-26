@@ -209,5 +209,12 @@ public class ExpressionVisitorAdapterTest {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         expr.accept(adapter);
     }
+    
+    @Test
+    public void testAnalyticFunctionWithoutExpression502() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseExpression("row_number() over (order by c)");
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        expr.accept(adapter);
+    }
 
 }
