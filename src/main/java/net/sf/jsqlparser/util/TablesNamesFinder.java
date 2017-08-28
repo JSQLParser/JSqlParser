@@ -137,8 +137,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
     private List<String> tables;
     /**
-     * There are special names, that are not table names but are parsed as tables. These names are
-     * collected here and are not included in the tables - names anymore.
+     * There are special names, that are not table names but are parsed as tables. These names are collected here and
+     * are not included in the tables - names anymore.
      */
     private List<String> otherItemNames;
 
@@ -395,6 +395,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      */
     @Override
     public void visit(CaseExpression caseExpression) {
+        if (caseExpression.getSwitchExpression() != null) {
+            caseExpression.getSwitchExpression().accept(this);
+        }
+        if (caseExpression.getWhenClauses() != null) {
+            for (WhenClause when : caseExpression.getWhenClauses()) {
+                when.accept(this);
+            }
+        }
+        if (caseExpression.getElseExpression()!=null) {
+            caseExpression.getElseExpression().accept(this);
+        }
     }
 
     /*
@@ -404,6 +415,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      */
     @Override
     public void visit(WhenClause whenClause) {
+        if (whenClause.getWhenExpression() != null) {
+            whenClause.getWhenExpression().accept(this);
+        }
+        if (whenClause.getThenExpression() != null) {
+            whenClause.getThenExpression().accept(this);
+        }
     }
 
     @Override
@@ -716,10 +733,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(DateTimeLiteralExpression literal) {
 
     }
-    
+
     @Override
     public void visit(Commit commit) {
-        
+
     }
 
     @Override

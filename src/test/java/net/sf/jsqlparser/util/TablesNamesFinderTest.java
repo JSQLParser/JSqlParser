@@ -415,7 +415,7 @@ public class TablesNamesFinderTest {
         assertEquals("employees", (String) tableList.get(0));
         assertEquals("hr_records", (String) tableList.get(1));
     }
-    
+
     @Test
     public void testUpsertValues() throws Exception {
         String sql = "UPSERT INTO MY_TABLE1 (a) VALUES (5)";
@@ -427,7 +427,7 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("MY_TABLE1"));
     }
-    
+
     @Test
     public void testUpsertSelect() throws Exception {
         String sql = "UPSERT INTO mytable (mycolumn) SELECT mycolumn FROM mytable2";
@@ -440,5 +440,34 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("mytable"));
         assertTrue(tableList.contains("mytable2"));
     }
-    
+
+    @Test
+    public void testCaseWhenSubSelect() throws JSQLParserException {
+        String sql = "select case (select count(*) from mytable2) when 1 then 0 else -1 end";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("mytable2"));
+    }
+
+    @Test
+    public void testCaseWhenSubSelect2() throws JSQLParserException {
+        String sql = "select case when (select count(*) from mytable2) = 1 then 0 else -1 end";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("mytable2"));
+    }
+
+    @Test
+    public void testCaseWhenSubSelect3() throws JSQLParserException {
+        String sql = "select case when 1 = 2 then 0 else (select count(*) from mytable2) end";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("mytable2"));
+    }
 }
