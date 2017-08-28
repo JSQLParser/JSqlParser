@@ -27,9 +27,6 @@ package net.sf.jsqlparser.expression;
 public class MySqlSqlCalcFoundRows {
     public static final String DESCRIPTION = "SQL_CALC_FOUND_ROWS";
 
-    public MySqlSqlCalcFoundRows() {
-    }
-
     public String getDescription() {
         return DESCRIPTION;
     }
