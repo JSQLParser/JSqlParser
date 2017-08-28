@@ -487,6 +487,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(ExtractExpression eexpr) {
+        if (eexpr.getExpressions() != null) {
+            eexpr.getExpressions().accept(this);
+        }
     }
 
     @Override
