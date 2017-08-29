@@ -470,4 +470,14 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("mytable2"));
     }
+
+    @Test
+    public void testExtract() throws JSQLParserException {
+        String sql = "SELECT EXTRACT(EPOCH FROM mytable.mycolumn)";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("mytable"));
+    }
 }
