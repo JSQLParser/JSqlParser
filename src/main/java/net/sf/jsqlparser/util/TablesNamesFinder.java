@@ -245,6 +245,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Column tableColumn) {
+        if (tableColumn.getTable() != null) {
+            tableColumn.getTable().accept(this);
+        }
     }
 
     @Override
@@ -487,6 +490,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(ExtractExpression eexpr) {
+        if (eexpr.getExpression() != null) {
+            eexpr.getExpression().accept(this);
+        }
     }
 
     @Override
