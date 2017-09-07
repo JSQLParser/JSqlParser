@@ -2631,7 +2631,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
     CaseExpression caseExp = new CaseExpression();
     Expression switchExp = null;
     WhenClause clause;
-    List whenClauses = new ArrayList();
+    List<WhenClause> whenClauses = new ArrayList<WhenClause>();
     Expression elseExp = null;
 }
 {

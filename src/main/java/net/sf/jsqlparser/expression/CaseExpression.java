@@ -59,7 +59,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class CaseExpression implements Expression {
 
     private Expression switchExpression;
-    private List<Expression> whenClauses;
+    private List<WhenClause> whenClauses;
     private Expression elseExpression;
 
     @Override
@@ -98,14 +98,14 @@ public class CaseExpression implements Expression {
     /**
      * @return Returns the whenClauses.
      */
-    public List<Expression> getWhenClauses() {
+    public List<WhenClause> getWhenClauses() {
         return whenClauses;
     }
 
     /**
      * @param whenClauses The whenClauses to set.
      */
-    public void setWhenClauses(List<Expression> whenClauses) {
+    public void setWhenClauses(List<WhenClause> whenClauses) {
         this.whenClauses = whenClauses;
     }
 
