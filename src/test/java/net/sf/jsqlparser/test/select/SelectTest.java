@@ -2644,4 +2644,9 @@ public class SelectTest extends TestCase {
     public void testGroupByProblemIssue482() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT SUM(orderTotalValue) AS value, MONTH(invoiceDate) AS month, YEAR(invoiceDate) AS year FROM invoice.Invoices WHERE projectID = 1 GROUP BY MONTH(invoiceDate), YEAR(invoiceDate) ORDER BY YEAR(invoiceDate) DESC, MONTH(invoiceDate) DESC");
     }
+    
+    public void testIssue512() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM #tab1");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab#tab1");
+    }
 }
