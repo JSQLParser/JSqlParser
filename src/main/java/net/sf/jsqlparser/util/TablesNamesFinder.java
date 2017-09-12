@@ -96,6 +96,7 @@ import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -748,5 +749,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (upsert.getSelect() != null) {
             visit(upsert.getSelect());
         }
+    }
+
+    @Override
+    public void visit(UseStatement use) {
     }
 }

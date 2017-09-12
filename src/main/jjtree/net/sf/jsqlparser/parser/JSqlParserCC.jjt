@@ -397,6 +397,8 @@ Statement SingleStatement() :
         |
         stm = Set()
         |
+        stm = Use()
+        |
         stm = Commit() 
         )
     } catch (ParseException e) {
@@ -453,6 +455,16 @@ SetStatement Set(): {
     <K_SET> name = RelObjectNameExt() ["=" { useEqual=true; } ] value=SimpleExpression()
     {
         return new SetStatement(name,value).setUseEqual(useEqual);
+    }
+}
+
+UseStatement Use(): {
+    String name;
+}
+{
+    <K_USE> name = RelObjectNameExt()
+    {
+        return new UseStatement(name);
     }
 }
 

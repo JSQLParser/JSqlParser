@@ -75,4 +75,6 @@ public interface StatementVisitor {
 
     void visit(Upsert upsert);
 
+    void visit(UseStatement use);
+
 }
