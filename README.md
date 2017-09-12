@@ -48,6 +48,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.2
 
+* first support for *use* statements
 * first support for *call* statements
 * create table allows now quoted identifiers within primary key definition
 * introduced alias for subquery in combination with a pivot definition (this **changes** alias handling within the library for pivot sqls)
