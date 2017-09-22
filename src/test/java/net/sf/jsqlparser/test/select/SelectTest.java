@@ -2649,4 +2649,11 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM #tab1");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab#tab1");
     }
+    
+    public void testIssue512_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM $tab1");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM #$tab#tab1");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM #$tab1#");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM $#tab1#");
+    }
 }
