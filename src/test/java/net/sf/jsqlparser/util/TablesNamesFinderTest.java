@@ -101,7 +101,7 @@ public class TablesNamesFinderTest {
                     assertEquals("stm num:" + numSt, tablesArray.length, tableListRetr.size());
 
                     for (int i = 0; i < tablesArray.length; i++) {
-                        assertEquals("stm num:" + numSt, tablesArray[i], tableListRetr.get(i));
+                        assertTrue("stm num:" + numSt, tableListRetr.contains(tablesArray[i]));
                     }
                 } catch (Exception e) {
                     throw new TestException("error at stm num: " + numSt + " in file " + resPath, e);
@@ -469,5 +469,13 @@ public class TablesNamesFinderTest {
         List<String> tableList = tablesNamesFinder.getTableList(stmt);
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("mytable2"));
+    }
+    
+    @Test
+    public void testExpressionIssue515() throws JSQLParserException {
+        TablesNamesFinder finder = new TablesNamesFinder();
+        List<String> tableList = finder.getTableList(CCJSqlParserUtil.parseCondExpression("SOME_TABLE.COLUMN = 'A'"));
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("SOME_TABLE"));
     }
 }
