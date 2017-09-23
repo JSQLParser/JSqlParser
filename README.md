@@ -48,6 +48,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.2
 
+* breaking **API** change: merge of *within group* and *over* (window expressions)
 * first support for *use* statements
 * first support for *call* statements
 * create table allows now quoted identifiers within primary key definition
