@@ -2347,7 +2347,7 @@ Expression PrimaryExpression():
 
     | LOOKAHEAD(3) [sign="+" | sign="-"] retval=NumericBind()
 
-    | LOOKAHEAD(3) retval=AnalyticExpression()
+    | LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
 
     | LOOKAHEAD(3) retval=ExtractExpression()
 

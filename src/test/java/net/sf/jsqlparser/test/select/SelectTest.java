@@ -2649,4 +2649,8 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM #tab1");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab#tab1");
     }
+    
+    public void testIssue514() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT listagg(c1, ';') WITHIN GROUP (PARTITION BY 1 ORDER BY 1) col FROM dual");
+    }
 }
