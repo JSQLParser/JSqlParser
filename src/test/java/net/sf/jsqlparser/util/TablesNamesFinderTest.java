@@ -88,14 +88,8 @@ public class TablesNamesFinderTest {
                 String type = getLine(in);
                 try {
                     Statement statement = pm.parse(new StringReader(query));
-                    StringTokenizer tokenizer = new StringTokenizer(tables, " ");
-                    List tablesList = new ArrayList();
-                    while (tokenizer.hasMoreTokens()) {
-                        tablesList.add(tokenizer.nextToken());
-                    }
 
-                    String[] tablesArray = (String[]) tablesList.toArray(new String[tablesList.
-                            size()]);
+                    String[] tablesArray = tables.split("\\s+");
 
                     List<String> tableListRetr = tablesNamesFinder.getTableList(statement);
                     assertEquals("stm num:" + numSt, tablesArray.length, tableListRetr.size());
