@@ -379,14 +379,6 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
-    public void visit(WithinGroupExpression wgexpr) {
-        wgexpr.getExprList().accept(this);
-        for (OrderByElement element : wgexpr.getOrderByElements()) {
-            element.getExpression().accept(this);
-        }
-    }
-
-    @Override
     public void visit(UserVariable var) {
 
     }

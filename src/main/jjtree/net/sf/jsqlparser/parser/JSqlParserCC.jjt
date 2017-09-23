@@ -2347,9 +2347,7 @@ Expression PrimaryExpression():
 
     | LOOKAHEAD(3) [sign="+" | sign="-"] retval=NumericBind()
 
-    | LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
-
-    | LOOKAHEAD(WithinGroupExpression()) retval=WithinGroupExpression()
+    | LOOKAHEAD(3) retval=AnalyticExpression()
 
     | LOOKAHEAD(3) retval=ExtractExpression()
 
@@ -2482,26 +2480,6 @@ IntervalExpression IntervalExpression() : {
     }
 }
 
-WithinGroupExpression WithinGroupExpression() :
-{
-    Token token = null;
-    List<OrderByElement> orderByElements = null;
-    WithinGroupExpression result = new WithinGroupExpression();
-    ExpressionList exprList;
-}
-{
-    token = <S_IDENTIFIER> "(" exprList = SimpleExpressionList() ")" 
-      <K_WITHIN> <K_GROUP>
-    "(" orderByElements = OrderByElements() ")"
-
-    { 
-        result.setName(token.image);
-        result.setExprList(exprList);
-        result.setOrderByElements(orderByElements);
-        return result; 
-    }
-}
-
 KeepExpression KeepExpression() : {
     KeepExpression keep = new KeepExpression();
     Token token;
@@ -2536,7 +2514,10 @@ AnalyticExpression AnalyticExpression() :
 
     [ keep=KeepExpression() ]
 
-    <K_OVER> "("
+    (<K_OVER> {retval.setType(AnalyticType.OVER);} 
+        | <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);} )
+
+    "("
         [<K_PARTITION> <K_BY> expressionList=SimpleExpressionList() ]
         [olist=OrderByElements() [windowElement = WindowElement() ] ]
         
