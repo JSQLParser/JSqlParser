@@ -195,7 +195,7 @@ public class TablesNamesFinderTest {
     
     @Test
     public void testGetTableListFromDeleteWithJoin() throws Exception {
-        String sql = "DELETE FROM MY_TABLE1 JOIN MY_TABLE2";
+        String sql = "DELETE t1, t2 FROM MY_TABLE1 t1 JOIN MY_TABLE2 t2 ON t1.id = t2.id";
         net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
 
         Delete deleteStatement = (Delete) statement;
