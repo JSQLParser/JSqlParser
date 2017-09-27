@@ -192,6 +192,19 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("MY_TABLE1"));
     }
+    
+    @Test
+    public void testGetTableListFromDeleteWithJoin() throws Exception {
+        String sql = "DELETE t1, t2 FROM MY_TABLE1 t1 JOIN MY_TABLE2 t2 ON t1.id = t2.id";
+        net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+        Delete deleteStatement = (Delete) statement;
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(deleteStatement);
+        assertEquals(2, tableList.size());
+        assertTrue(tableList.contains("MY_TABLE1"));
+        assertTrue(tableList.contains("MY_TABLE2"));
+    }
 
     @Test
     public void testGetTableListFromInsert() throws Exception {
@@ -469,5 +482,17 @@ public class TablesNamesFinderTest {
         List<String> tableList = finder.getTableList(CCJSqlParserUtil.parseCondExpression("SOME_TABLE.COLUMN = 'A'"));
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("SOME_TABLE"));
+    }
+    
+    public void testSelectHavingSubquery() throws Exception {
+        String sql = "SELECT * FROM TABLE1 GROUP BY COL1 HAVING SUM(COL2) > (SELECT COUNT(*) FROM TABLE2)";
+        net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+        Select selectStmt = (Select) statement;
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(selectStmt);
+        assertEquals(2, tableList.size());
+        assertTrue(tableList.contains("TABLE1"));
+        assertTrue(tableList.contains("TABLE2"));
     }
 }

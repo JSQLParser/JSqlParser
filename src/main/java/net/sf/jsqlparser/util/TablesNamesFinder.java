@@ -204,6 +204,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (plainSelect.getWhere() != null) {
             plainSelect.getWhere().accept(this);
         }
+          
+        if(plainSelect.getHaving() != null){
+            plainSelect.getHaving().accept(this);
+        }
+        
         if (plainSelect.getOracleHierarchical() != null) {
             plainSelect.getOracleHierarchical().accept(this);
         }
@@ -593,6 +598,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(Delete delete) {
         tables.add(delete.getTable().getName());
+
+        if (delete.getJoins() != null) {
+            for (Join join : delete.getJoins()) {
+                join.getRightItem().accept(this);
+            }
+        }
+
         if (delete.getWhere() != null) {
             delete.getWhere().accept(this);
         }
