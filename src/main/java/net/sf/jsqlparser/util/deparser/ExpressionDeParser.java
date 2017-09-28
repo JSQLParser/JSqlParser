@@ -60,7 +60,6 @@ import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.WindowElement;
-import net.sf.jsqlparser.expression.WithinGroupExpression;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
@@ -600,7 +599,15 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
             keep.accept(this);
             buffer.append(" ");
         }
-        buffer.append("OVER (");
+        
+        switch (aexpr.getType()) {
+            case WITHIN_GROUP:
+                buffer.append("WITHIN GROUP");
+                break;
+            default:
+                buffer.append("OVER");
+        }
+        buffer.append(" (");
 
         if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
             buffer.append("PARTITION BY ");
@@ -684,11 +691,6 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(JsonOperator jsonExpr) {
         visitBinaryExpression(jsonExpr, " " + jsonExpr.getStringExpression() + " ");
-    }
-
-    @Override
-    public void visit(WithinGroupExpression wgexpr) {
-        buffer.append(wgexpr.toString());
     }
 
     @Override

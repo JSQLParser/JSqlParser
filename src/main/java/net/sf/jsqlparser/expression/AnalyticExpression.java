@@ -46,6 +46,7 @@ public class AnalyticExpression implements Expression {
     private boolean allColumns = false;
     private WindowElement windowElement;
     private KeepExpression keep = null;
+    private AnalyticType type = AnalyticType.OVER;
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
@@ -116,6 +117,14 @@ public class AnalyticExpression implements Expression {
         this.windowElement = windowElement;
     }
 
+    public AnalyticType getType() {
+        return type;
+    }
+
+    public void setType(AnalyticType type) {
+        this.type = type;
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -136,7 +145,15 @@ public class AnalyticExpression implements Expression {
         if (keep != null) {
             b.append(keep.toString()).append(" ");
         }
-        b.append("OVER (");
+        
+        switch (type) {
+            case WITHIN_GROUP:
+                b.append("WITHIN GROUP");
+                break;
+            default:
+                b.append("OVER");
+        }
+        b.append(" (");
 
         toStringPartitionBy(b);
         toStringOrderByElements(b);

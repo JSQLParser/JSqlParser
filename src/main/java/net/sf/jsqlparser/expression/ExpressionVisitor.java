@@ -140,8 +140,6 @@ public interface ExpressionVisitor {
 
     void visit(AnalyticExpression aexpr);
 
-    void visit(WithinGroupExpression wgexpr);
-
     void visit(ExtractExpression eexpr);
 
     void visit(IntervalExpression iexpr);

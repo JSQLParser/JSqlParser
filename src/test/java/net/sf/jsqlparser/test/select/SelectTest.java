@@ -2505,6 +2505,11 @@ public class SelectTest extends TestCase {
     public void testFunctionDateTimeValues() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab1 WHERE a > TIMESTAMP '2004-04-30 04:05:34.56'");
     }
+    
+    public void testPR73() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT date_part('day', TIMESTAMP '2001-02-16 20:38:40')");
+        assertSqlCanBeParsedAndDeparsed("SELECT EXTRACT(year FROM DATE '2001-02-16')");
+    }
 
     public void testUniqueInsteadOfDistinctIssue299() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT UNIQUE trunc(timez(ludate)+ 8/24) bus_dt, j.object j_name , timez(j.starttime) START_TIME , timez(j.endtime) END_TIME FROM TEST_1 j", true);
@@ -2655,5 +2660,9 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM #$tab#tab1");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM #$tab1#");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM $#tab1#");
+    }
+    
+    public void testIssue514() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT listagg(c1, ';') WITHIN GROUP (PARTITION BY 1 ORDER BY 1) col FROM dual");
     }
 }
