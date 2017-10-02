@@ -29,10 +29,11 @@ options{
 	CACHE_TOKENS=false;
 //  FORCE_LA_CHECK=true;
     UNICODE_INPUT=true;
-	JAVA_TEMPLATE_TYPE = "classic";
+	JAVA_TEMPLATE_TYPE = "modern";
 	JDK_VERSION = "1.6";
     TOKEN_EXTENDS ="BaseToken";
     COMMON_TOKEN_ACTION=true;
+	LEGACY_EXCEPTION_HANDLING = false;
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -337,15 +338,12 @@ TOKEN:
 }
 
 Statement Statement() #Statement: 
-{ Statement stm; } 
+{ Statement stm = null; } 
 {
     try {
         stm = SingleStatement()
         [<ST_SEMICOLON>]
         <EOF>
-        { 
-            return stm; 
-        }
     } catch (ParseException e) {
         if (errorRecovery) {
             parseErrors.add(e);
@@ -354,6 +352,10 @@ Statement Statement() #Statement:
         else 
             throw e;
     }
+
+	{ 
+		return stm; 
+	}
 }
 
 Statement SingleStatement() :
@@ -2565,19 +2567,20 @@ WindowOffset WindowOffset():
 }
 {
     (
-  
-        <K_UNBOUNDED> (<K_PRECEDING> { offset.setType(WindowOffset.Type.PRECEDING); return offset; } |
-                                        <K_FOLLOWING> { offset.setType(WindowOffset.Type.FOLLOWING); return offset; } )
-    ) 
-    |
-    ( <K_CURRENT> <K_ROW> { offset.setType(WindowOffset.Type.CURRENT); return offset;} ) 
-    |
-    ( expr = SimpleExpression() {
-        offset.setType(WindowOffset.Type.EXPR); 
-        offset.setExpression(expr); 
-        } 
-        (<K_PRECEDING> { offset.setType(WindowOffset.Type.PRECEDING); } | <K_FOLLOWING> { offset.setType(WindowOffset.Type.FOLLOWING);  } )
-    )
+		(
+			<K_UNBOUNDED> (<K_PRECEDING> { offset.setType(WindowOffset.Type.PRECEDING); } |
+											<K_FOLLOWING> { offset.setType(WindowOffset.Type.FOLLOWING); } )
+		) 
+		|
+		( <K_CURRENT> <K_ROW> { offset.setType(WindowOffset.Type.CURRENT); } ) 
+		|
+		( expr = SimpleExpression() {
+			offset.setType(WindowOffset.Type.EXPR); 
+			offset.setExpression(expr); 
+			} 
+			(<K_PRECEDING> { offset.setType(WindowOffset.Type.PRECEDING); } | <K_FOLLOWING> { offset.setType(WindowOffset.Type.FOLLOWING);  } )
+		)
+	)
   
     {
         return offset;
