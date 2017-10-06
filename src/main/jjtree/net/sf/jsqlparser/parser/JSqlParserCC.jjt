@@ -2358,12 +2358,12 @@ Expression PrimaryExpression():
 
     | retval=CaseWhenExpression()
 
-    | LOOKAHEAD(2) "?" { retval = new JdbcParameter(++jdbcParameterIndex, false); } 
-		[ LOOKAHEAD(2) token = <S_LONG> { ((JdbcParameter)retval).setUseFixedIndex(true); ((JdbcParameter)retval).setIndex(Integer.valueOf(token.image)); } ]
+    | "?" { retval = new JdbcParameter(++jdbcParameterIndex, false); } 
+		[ token = <S_LONG> { ((JdbcParameter)retval).setUseFixedIndex(true); ((JdbcParameter)retval).setIndex(Integer.valueOf(token.image)); } ]
 
     | LOOKAHEAD(2) retval=JdbcNamedParameter()
 
-    | LOOKAHEAD(2) retval=UserVariable()
+    | retval=UserVariable()
 
     | LOOKAHEAD(2) retval=NumericBind()
 
@@ -2394,7 +2394,7 @@ Expression PrimaryExpression():
 
     | LOOKAHEAD("(" SimpleExpression() ")") "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
 
-    | LOOKAHEAD(3) "(" retval=SubSelect() ")" 
+    | LOOKAHEAD(3) "(" retval=SubSelect() ")"
 
     | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 
@@ -2699,8 +2699,6 @@ RowConstructor RowConstructor(): {
     ExpressionList list = null;
     RowConstructor rowConstructor = new RowConstructor();
 } {
-    //("(" list =SimpleExpressionListAtLeastTwoItems() ")"
-    //|
     [ <K_ROW> { rowConstructor.setName("ROW");} ]
     "("
         list = SimpleExpressionList()
