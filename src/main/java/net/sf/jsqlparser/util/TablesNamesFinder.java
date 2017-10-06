@@ -61,7 +61,9 @@ import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
@@ -372,6 +374,16 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(NotExpression notExpr) {
         notExpr.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(BitwiseRightShift expr) {
+        visitBinaryExpression(expr);
+    }
+
+    @Override
+    public void visit(BitwiseLeftShift expr) {
+        visitBinaryExpression(expr);
     }
 
     public void visitBinaryExpression(BinaryExpression binaryExpression) {

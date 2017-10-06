@@ -2247,6 +2247,10 @@ Expression BitwiseAndOr():
             "|" { result = new BitwiseOr(); }
             |
             "&" { result = new BitwiseAnd(); }
+			|
+			"<<" { result = new BitwiseLeftShift(); }
+			|
+			">>" { result = new BitwiseRightShift(); }
         )
 
         rightExpression=AdditiveExpression()

@@ -358,6 +358,16 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         notExpr.getExpression().accept(this);
     }
 
+    @Override
+    public void visit(BitwiseRightShift expr) {
+        visitBinaryExpression(expr);
+    }
+
+    @Override
+    public void visit(BitwiseLeftShift expr) {
+        visitBinaryExpression(expr);
+    }
+
     protected void visitBinaryExpression(BinaryExpression expr) {
         expr.getLeftExpression().accept(this);
         expr.getRightExpression().accept(this);

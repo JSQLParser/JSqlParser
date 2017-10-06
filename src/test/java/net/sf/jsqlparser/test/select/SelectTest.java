@@ -2665,4 +2665,9 @@ public class SelectTest extends TestCase {
     public void testIssue514() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT listagg(c1, ';') WITHIN GROUP (PARTITION BY 1 ORDER BY 1) col FROM dual");
     }
+    
+    public void testIssue508LeftRightBitwiseShift() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 << 1");
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 >> 1");
+    }
 }
