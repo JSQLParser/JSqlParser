@@ -908,15 +908,29 @@ MergeInsert MergeInsertClause() : {
 Column Column() #Column :
 {
     String databaseName = null, schemaName = null, tableName = null, columnName = null;
+    String token = null;
 }
 {
-    (
+	columnName = RelObjectName()
+    ( "." [LOOKAHEAD(2) token = RelObjectName()] { tableName = columnName; columnName = token; token = null;} 
+		( "." token = RelObjectName() { schemaName = tableName; tableName = columnName; columnName = token; token = null;} 
+			( "." token = RelObjectName() { databaseName = schemaName; schemaName = tableName; tableName = columnName; columnName = token; } 
+			)?
+		)?
+	)?
+
+    /*(
           LOOKAHEAD(7) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." tableName=RelObjectName() "." columnName=RelObjectName()
         | LOOKAHEAD(5) schemaName=RelObjectName() "." tableName=RelObjectName() "." columnName=RelObjectName()
         | LOOKAHEAD(3) tableName=RelObjectName() "." columnName=RelObjectName()
         | columnName=RelObjectName()
-    )
+    )*/
+
     {
+		if (tableName==null && (databaseName!=null || schemaName!=null)) {
+			throw generateParseException();
+		}
+
         final Database database = new Database(databaseName);
         final Table table = new Table(database, schemaName, tableName);
         Column col = new Column(table, columnName);
@@ -2372,7 +2386,7 @@ Expression PrimaryExpression():
 
     | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
 
-    | LOOKAHEAD(Column()) retval=Column()
+    | retval=Column()
 
     | LOOKAHEAD("(" SimpleExpression() ")") "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
 
