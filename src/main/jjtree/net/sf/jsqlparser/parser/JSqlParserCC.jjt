@@ -3250,7 +3250,7 @@ Drop Drop():
     [<K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
 
     name = Table() { drop.setName(name); }
-    ((tk=<S_IDENTIFIER> | tk=<K_CASCADE>) { dropArgs.add(tk.image); })*
+    ((tk=<S_IDENTIFIER> | tk=<K_CASCADE> | tk=<K_RESTRICT> ) { dropArgs.add(tk.image); })*
 
     {
         if (dropArgs.size() > 0)
@@ -3418,10 +3418,12 @@ AlterExpression AlterExpression():
         }
          (
              (  <K_COLUMN>
-             (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>)
+                (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>)
                      {
                             alterExp.setColumnName(tk.image);
                      }
+                [tk=<K_CASCADE> { alterExp.addParameters(tk.image); } ]
+                  
              )
              |
        (  <K_CONSTRAINT>

@@ -22,6 +22,7 @@
 package net.sf.jsqlparser.statement.alter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,6 +55,7 @@ public class AlterExpression {
     private List<String> fkSourceColumns;
 
     private List<ConstraintState> constraints;
+    private List<String> parameters;
 
     public AlterOperation getOperation() {
         return operation;
@@ -182,6 +184,17 @@ public class AlterExpression {
         this.constraints = constraints;
     }
 
+    public void addParameters(String... params) {
+        if (parameters == null) {
+            parameters = new ArrayList<String>();
+        }
+        parameters.addAll(Arrays.asList(params));
+    }
+
+    public List<String> getParameters() {
+        return parameters;
+    }
+
     @Override
     public String toString() {
 
@@ -224,6 +237,9 @@ public class AlterExpression {
         }
         if (getConstraints() != null && !getConstraints().isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
+        }
+        if (parameters!=null && !parameters.isEmpty()) {
+            b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
         }
 
         return b.toString();
