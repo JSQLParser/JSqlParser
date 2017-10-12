@@ -2022,7 +2022,7 @@ public class SelectTest extends TestCase {
         assertEquals("param2", namedParameter2.getName());
         assertEquals("param3", namedParameter3.getName());
     }
-    
+
     public void testNamedParameter3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM t WHERE c = :from");
     }
@@ -2505,7 +2505,7 @@ public class SelectTest extends TestCase {
     public void testFunctionDateTimeValues() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab1 WHERE a > TIMESTAMP '2004-04-30 04:05:34.56'");
     }
-    
+
     public void testPR73() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT date_part('day', TIMESTAMP '2001-02-16 20:38:40')");
         assertSqlCanBeParsedAndDeparsed("SELECT EXTRACT(year FROM DATE '2001-02-16')");
@@ -2591,8 +2591,8 @@ public class SelectTest extends TestCase {
     }
 
     /**
-     * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> correctly sets a {@link Wait} with the correct timeout
-     * value.
+     * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> correctly sets a {@link Wait} with the
+     * correct timeout value.
      */
     public void testForUpdateWaitWithTimeout() throws JSQLParserException {
         String statement = "SELECT * FROM mytable FOR UPDATE WAIT 60";
@@ -2641,33 +2641,49 @@ public class SelectTest extends TestCase {
     public void testProblemIssue445() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT E.ID_NUMBER, row_number() OVER (PARTITION BY E.ID_NUMBER ORDER BY E.DEFINED_UPDATED DESC) rn FROM T_EMPLOYMENT E");
     }
-    
+
     public void testProblemIssue485Date() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab WHERE tab.date = :date");
     }
-    
+
     public void testGroupByProblemIssue482() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT SUM(orderTotalValue) AS value, MONTH(invoiceDate) AS month, YEAR(invoiceDate) AS year FROM invoice.Invoices WHERE projectID = 1 GROUP BY MONTH(invoiceDate), YEAR(invoiceDate) ORDER BY YEAR(invoiceDate) DESC, MONTH(invoiceDate) DESC");
     }
-    
+
     public void testIssue512() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM #tab1");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab#tab1");
     }
-    
+
     public void testIssue512_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM $tab1");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM #$tab#tab1");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM #$tab1#");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM $#tab1#");
     }
-    
+
     public void testIssue514() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT listagg(c1, ';') WITHIN GROUP (PARTITION BY 1 ORDER BY 1) col FROM dual");
     }
-    
+
     public void testIssue508LeftRightBitwiseShift() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT 1 << 1");
         assertSqlCanBeParsedAndDeparsed("SELECT 1 >> 1");
+    }
+
+    public void testIssue522() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASE mr.required_quantity - mr.quantity_issued WHEN 0 THEN NULL ELSE CASE SIGN(mr.required_quantity) WHEN -1 * SIGN(mr.quantity_issued) THEN mr.required_quantity - mr.quantity_issued ELSE CASE SIGN(ABS(mr.required_quantity) - ABS(mr.quantity_issued)) WHEN -1 THEN NULL ELSE mr.required_quantity - mr.quantity_issued END END END quantity_open FROM mytable", true);
+    }
+
+    public void testIssue522_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT -1 * SIGN(mr.quantity_issued) FROM mytable");
+    }
+
+    public void testIssue522_3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASE SIGN(mr.required_quantity) WHEN -1 * SIGN(mr.quantity_issued) THEN mr.required_quantity - mr.quantity_issued  ELSE 5 END quantity_open FROM mytable", true);
+    }
+
+    public void testIssue522_4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASE a + b WHEN -1 * 5 THEN 1 ELSE CASE b + c WHEN -1 * 6 THEN 2 ELSE 3 END END");
     }
 }

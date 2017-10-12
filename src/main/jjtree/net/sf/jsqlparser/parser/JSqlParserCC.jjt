@@ -2687,7 +2687,7 @@ WhenClause WhenThenValue():
     Expression thenExp = null;
 }
 {
-    <K_WHEN> whenExp=PrimaryExpression() <K_THEN> thenExp=SimpleExpression()
+    <K_WHEN> whenExp=SimpleExpression() <K_THEN> thenExp=SimpleExpression()
     {
        whenThen.setWhenExpression(whenExp);
        whenThen.setThenExpression(thenExp);
