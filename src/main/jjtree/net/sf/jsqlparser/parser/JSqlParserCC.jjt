@@ -132,161 +132,163 @@ SKIP:
 
 TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 {
-    <K_AS: "AS">
-|   <K_BY:"BY">
-|   <K_DO:"DO">
-|   <K_IS:"IS">
-|   <K_IN:"IN">
-|   <K_OR:"OR">
-|   <K_ON:"ON">
+    <K_ACTION: "ACTION">
+|   <K_ADD:"ADD">
 |   <K_ALL:"ALL">
+|   <K_ALTER:"ALTER">
 |   <K_AND:"AND">
 |   <K_ANY:"ANY">
-|   <K_KEY:"KEY">
-|   <K_NOT:"NOT">
-|   <K_SET:"SET">
+|   <K_AS: "AS">
 |   <K_ASC:"ASC">
-|   <K_TOP:"TOP">
-|   <K_PERCENT:"PERCENT">
-|   <K_END:"END">
-|   <K_DESC:"DESC">
-|   <K_INTO:"INTO">
-|   <K_NULL:"NULL">
-|   <K_LIKE:"LIKE">
-|   <K_ILIKE:"ILIKE">
-|   <K_DROP:"DROP">
-|   <K_JOIN:"JOIN">
-|   <K_LEFT:"LEFT">
-|   <K_CROSS:"CROSS">
-|   <K_FROM:"FROM">
-|   <K_OPEN:"OPEN">
-|   <K_CASE:"CASE">
-|   <K_WHEN:"WHEN">
-|   <K_THEN:"THEN">
-|   <K_ELSE:"ELSE">
-|   <K_SOME:"SOME">
-|   <K_FULL:"FULL">
-|   <K_WITH:"WITH">
-|   <K_WITHOUT:"WITHOUT">
-|   <K_TABLE:"TABLE">
-|   <K_VIEW:"VIEW">
-|   <K_WHERE:"WHERE">
-|   <K_FOR:"FOR">
-|   <K_PIVOT:"PIVOT">
-|   <K_XML:"XML">
-|   <K_USING:"USING">
-|   <K_UNION:"UNION">
-|   <K_GROUP:"GROUP">
 |   <K_BEGIN:"BEGIN">
-|   <K_INDEX: "INDEX">
-|   <K_INNER:"INNER">
-|   <K_LIMIT:"LIMIT">
-|   <K_OUTER:"OUTER">
-|   <K_ORDER:"ORDER">
-|   <K_RIGHT:"RIGHT">
-|   <K_VALUE:"VALUE">
-|   <K_DELETE:"DELETE">
-|   <K_CREATE:"CREATE">
-|   <K_SELECT:"SELECT">
-|   <K_OFFSET:"OFFSET">
-|   <K_EXISTS:"EXISTS">
-|   <K_HAVING:"HAVING">
-|   <K_INSERT:"INSERT">
-|   <K_UPDATE:"UPDATE">
-|   <K_UPSERT:"UPSERT">
-|   <K_VALUES:"VALUES">
-|   <K_ESCAPE:"ESCAPE">
-|   <K_PRIMARY:"PRIMARY">
-|   <K_FULLTEXT:"FULLTEXT">
-|   <K_NATURAL:"NATURAL">
-|   <K_REPLACE:"REPLACE">
 |   <K_BETWEEN:"BETWEEN">
-|   <K_TRUNCATE:"TRUNCATE">
-|   <K_DISTINCT:"DISTINCT">
-|   <K_INTERSECT:"INTERSECT">
-|   <K_CAST:"CAST">
-|   <K_EXCEPT:"EXCEPT">
-|   <K_MINUS:"MINUS">
-|   <K_OVER:"OVER">
-|   <K_PARTITION:"PARTITION">
-|   <K_EXTRACT:"EXTRACT">
-|    <K_LATERAL:"LATERAL">
-|    <K_MATERIALIZED:"MATERIALIZED">
-|   <K_INTERVAL:"INTERVAL">
-|    <K_FOREIGN:"FOREIGN">
-|    <K_CONSTRAINT:"CONSTRAINT">
-|    <K_REFERENCES:"REFERENCES">
-|   <K_CHECK:"CHECK">
-|    <K_CHARACTER:"CHARACTER">
-|   <K_BIT:"BIT">
-|    <K_VARYING:"VARYING">
-|    <K_START:"START">
-|    <K_CONNECT:"CONNECT">
-|    <K_PRIOR:"PRIOR">
-|   <K_NOCYCLE:"NOCYCLE">
-|    <K_SIBLINGS:"SIBLINGS">
-|    <K_ALTER:"ALTER">
-|    <K_ADD:"ADD">
-|    <K_MODIFY: "MODIFY">
-|    <K_COLUMN:"COLUMN">
-|   <K_NULLS: "NULLS">
-|   <K_FIRST: "FIRST">
-|   <K_LAST: "LAST">
-|   <K_ROWS: "ROWS">
-|   <K_RANGE: "RANGE">
-|   <K_UNBOUNDED: "UNBOUNDED"> 
-|   <K_PRECEDING: "PRECEDING">
-|   <K_FOLLOWING: "FOLLOWING">
-|   <K_CURRENT: "CURRENT">
-|   <K_ROW: "ROW"> 
-|   <K_RETURNING: "RETURNING"> 
 |   <K_BINARY: "BINARY">  
-|   <K_REGEXP: "REGEXP">
-|   <K_UNLOGGED: "UNLOGGED">
+|   <K_BIT:"BIT">
+|   <K_BY:"BY">
+|   <K_CALL : "CALL">
+|   <K_CASCADE: "CASCADE">
+|   <K_CASE:"CASE">
+|   <K_CAST:"CAST">
+|   <K_CHARACTER:"CHARACTER">
+|   <K_CHECK:"CHECK">
+|   <K_COLUMN:"COLUMN">
+|   <K_COMMIT:"COMMIT">
+|   <K_CONNECT:"CONNECT">
+|   <K_CONSTRAINT:"CONSTRAINT">
+|   <K_CREATE:"CREATE">
+|   <K_CROSS:"CROSS">
+|   <K_CURRENT: "CURRENT">
+|   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
+|   <K_DEFERRABLE : "DEFERRABLE">
+|   <K_DELAYED : "DELAYED">
+|   <K_DELETE:"DELETE">
+|   <K_DESC:"DESC">
+|   <K_DISABLE : "DISABLE">
+|   <K_DISTINCT:"DISTINCT">
+|   <K_DO:"DO">
+|   <K_DOUBLE : "DOUBLE">
+|   <K_DROP:"DROP">
+|   <K_DUPLICATE: "DUPLICATE">
+|   <K_ELSE:"ELSE">
+|   <K_ENABLE : "ENABLE">
+|   <K_END:"END">
+|   <K_ESCAPE:"ESCAPE">
+|   <K_EXCEPT:"EXCEPT">
+|   <K_EXCLUDE : "EXCLUDE">
 |   <K_EXEC: "EXEC">
 |   <K_EXECUTE: "EXECUTE">
+|   <K_EXISTS:"EXISTS">
+|   <K_EXTRACT:"EXTRACT">
 |   <K_FETCH:"FETCH">
-|   <K_NEXT:"NEXT">
-|   <K_ONLY:"ONLY">
-|   <K_COMMIT:"COMMIT">
-|   <K_UNIQUE:"UNIQUE">
-|   <K_WITHIN:"WITHIN">
-|   <K_IF:"IF">
-|   <K_RECURSIVE:"RECURSIVE">
-|   <K_OF:"OF">
-|   <K_KEEP:"KEEP">
+|   <K_FIRST: "FIRST">
+|   <K_FOLLOWING: "FOLLOWING">
+|   <K_FOR:"FOR">
+|   <K_FORCE : "FORCE">
+|   <K_FOREIGN:"FOREIGN">
+|   <K_FROM:"FROM">
+|   <K_FULL:"FULL">
+|   <K_FULLTEXT:"FULLTEXT">
+|   <K_GROUP:"GROUP">
 |   <K_GROUP_CONCAT:"GROUP_CONCAT">
-|   <K_SEPARATOR:"SEPARATOR">
-|   <K_SKIP: "SKIP">
-|   <K_MERGE: "MERGE">
+|   <K_HAVING:"HAVING">
+|   <K_HIGH_PRIORITY : "HIGH_PRIORITY">
+|   <K_IF:"IF">
+|   <K_IGNORE : "IGNORE">
+|   <K_ILIKE:"ILIKE">
+|   <K_IN:"IN">
+|   <K_INDEX: "INDEX">
+|   <K_INNER:"INNER">
+|   <K_INSERT:"INSERT">
+|   <K_INTERSECT:"INTERSECT">
+|   <K_INTERVAL:"INTERVAL">
+|   <K_INTO:"INTO">
+|   <K_IS:"IS">
+|   <K_JOIN:"JOIN">
+|   <K_KEEP:"KEEP">
+|   <K_KEY:"KEY">
+|   <K_LAST: "LAST">
+|   <K_LATERAL:"LATERAL">
+|   <K_LEFT:"LEFT">
+|   <K_LIKE:"LIKE">
+|   <K_LIMIT:"LIMIT">
+|   <K_LOW_PRIORITY : "LOW_PRIORITY">
 |   <K_MATCHED: "MATCHED">
-|   <K_CASCADE: "CASCADE">
-|   <K_RESTRICT: "RESTRICT">
+|   <K_MATERIALIZED:"MATERIALIZED">
+|   <K_MERGE: "MERGE">
+|   <K_MINUS:"MINUS">
+|   <K_MODIFY: "MODIFY">
+|   <K_NATURAL:"NATURAL">
+|   <K_NEXT:"NEXT">
 |   <K_NO:"NO">
-|   <K_ACTION: "ACTION">
-|   <K_DUPLICATE: "DUPLICATE">
-|    <K_LOW_PRIORITY : "LOW_PRIORITY">
-|    <K_DELAYED : "DELAYED">
-|    <K_HIGH_PRIORITY : "HIGH_PRIORITY">
-|    <K_IGNORE : "IGNORE">
-|   <K_SEMI : "SEMI">
-|   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
-|   <K_ZONE:"ZONE">
-|   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
-|   <K_DOUBLE : "DOUBLE">
-|   <K_PRECISION : "PRECISION">
-|   <K_TABLESPACE : "TABLESPACE">
-|   <K_EXCLUDE : "EXCLUDE">
-|   <K_WAIT : "WAIT">
-|   <K_DEFERRABLE : "DEFERRABLE">
-|   <K_VALIDATE : "VALIDATE">
+|   <K_NOCYCLE:"NOCYCLE">
+|   <K_NOT:"NOT">
 |   <K_NOVALIDATE : "NOVALIDATE">
-|   <K_ENABLE : "ENABLE">
-|   <K_DISABLE : "DISABLE">
+|   <K_NULL:"NULL">
+|   <K_NULLS: "NULLS">
+|   <K_OF:"OF">
+|   <K_OFFSET:"OFFSET">
+|   <K_ON:"ON">
+|   <K_ONLY:"ONLY">
+|   <K_OPEN:"OPEN">
+|   <K_OR:"OR">
+|   <K_ORDER:"ORDER">
+|   <K_OUTER:"OUTER">
+|   <K_OVER:"OVER">
+|   <K_PARTITION:"PARTITION">
+|   <K_PERCENT:"PERCENT">
+|   <K_PIVOT:"PIVOT">
+|   <K_PRECEDING: "PRECEDING">
+|   <K_PRECISION : "PRECISION">
+|   <K_PRIMARY:"PRIMARY">
+|   <K_PRIOR:"PRIOR">
+|   <K_RANGE: "RANGE">
+|   <K_RECURSIVE:"RECURSIVE">
+|   <K_REFERENCES:"REFERENCES">
+|   <K_REGEXP: "REGEXP">
+|   <K_REPLACE:"REPLACE">
+|   <K_RESTRICT: "RESTRICT">
+|   <K_RETURNING: "RETURNING"> 
+|   <K_RIGHT:"RIGHT">
+|   <K_ROW: "ROW"> 
+|   <K_ROWS: "ROWS">
+|   <K_SELECT:"SELECT">
+|   <K_SEMI : "SEMI">
+|   <K_SEPARATOR:"SEPARATOR">
+|   <K_SET:"SET">
+|   <K_SIBLINGS:"SIBLINGS">
+|   <K_SKIP: "SKIP">
+|   <K_SOME:"SOME">
+|   <K_START:"START">
+|   <K_TABLE:"TABLE">
+|   <K_TABLESPACE : "TABLESPACE">
+|   <K_THEN:"THEN">
+|   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
+|   <K_TOP:"TOP">
+|   <K_TRUNCATE:"TRUNCATE">
+|   <K_UNBOUNDED: "UNBOUNDED"> 
+|   <K_UNION:"UNION">
+|   <K_UNIQUE:"UNIQUE">
+|   <K_UNLOGGED: "UNLOGGED">
+|   <K_UPDATE:"UPDATE">
+|   <K_UPSERT:"UPSERT">
 |   <K_USE : "USE">
 |   <K_FORCE : "FORCE">
 |   <K_CALL : "CALL">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
+|   <K_USING:"USING">
+|   <K_VALIDATE : "VALIDATE">
+|   <K_VALUE:"VALUE">
+|   <K_VALUES:"VALUES">
+|   <K_VARYING:"VARYING">
+|   <K_VIEW:"VIEW">
+|   <K_WAIT : "WAIT">
+|   <K_WHEN:"WHEN">
+|   <K_WHERE:"WHERE">
+|   <K_WITH:"WITH">
+|   <K_WITHIN:"WITHIN">
+|   <K_WITHOUT:"WITHOUT">
+|   <K_XML:"XML">
+|   <K_ZONE:"ZONE">
 }
 
 TOKEN : /* Stuff */
@@ -330,7 +332,7 @@ SPECIAL_TOKEN:
 TOKEN:
 {
 <S_IDENTIFIER: <LETTER> (<PART_LETTER>)*>
-|   <#LETTER: ["$","A"-"Z","_","a"-"z","\u00a2"-"\u00a5","\u00aa","\u00b5","\u00ba","\u00c0"-"\u00d6","\u00d8"-"\u00f6","\u00f8"-"\u021f","\u0222"-"\u0233","\u0250"-"\u02ad","\u02b0"-"\u02b8","\u02bb"-"\u02c1","\u02d0"-"\u02d1","\u02e0"-"\u02e4","\u02ee","\u037a","\u0386","\u0388"-"\u038a","\u038c","\u038e"-"\u03a1","\u03a3"-"\u03ce","\u03d0"-"\u03d7","\u03da"-"\u03f3","\u0400"-"\u0481","\u048c"-"\u04c4","\u04c7"-"\u04c8","\u04cb"-"\u04cc","\u04d0"-"\u04f5","\u04f8"-"\u04f9","\u0531"-"\u0556","\u0559","\u0561"-"\u0587","\u05d0"-"\u05ea","\u05f0"-"\u05f2","\u0621"-"\u063a","\u0640"-"\u064a","\u0671"-"\u06d3","\u06d5","\u06e5"-"\u06e6","\u06fa"-"\u06fc","\u0710","\u0712"-"\u072c","\u0780"-"\u07a5","\u0905"-"\u0939","\u093d","\u0950","\u0958"-"\u0961","\u0985"-"\u098c","\u098f"-"\u0990","\u0993"-"\u09a8","\u09aa"-"\u09b0","\u09b2","\u09b6"-"\u09b9","\u09dc"-"\u09dd","\u09df"-"\u09e1","\u09f0"-"\u09f3","\u0a05"-"\u0a0a","\u0a0f"-"\u0a10","\u0a13"-"\u0a28","\u0a2a"-"\u0a30","\u0a32"-"\u0a33","\u0a35"-"\u0a36","\u0a38"-"\u0a39","\u0a59"-"\u0a5c","\u0a5e","\u0a72"-"\u0a74","\u0a85"-"\u0a8b","\u0a8d","\u0a8f"-"\u0a91","\u0a93"-"\u0aa8","\u0aaa"-"\u0ab0","\u0ab2"-"\u0ab3","\u0ab5"-"\u0ab9","\u0abd","\u0ad0","\u0ae0","\u0b05"-"\u0b0c","\u0b0f"-"\u0b10","\u0b13"-"\u0b28","\u0b2a"-"\u0b30","\u0b32"-"\u0b33","\u0b36"-"\u0b39","\u0b3d","\u0b5c"-"\u0b5d","\u0b5f"-"\u0b61","\u0b85"-"\u0b8a","\u0b8e"-"\u0b90","\u0b92"-"\u0b95","\u0b99"-"\u0b9a","\u0b9c","\u0b9e"-"\u0b9f","\u0ba3"-"\u0ba4","\u0ba8"-"\u0baa","\u0bae"-"\u0bb5","\u0bb7"-"\u0bb9","\u0c05"-"\u0c0c","\u0c0e"-"\u0c10","\u0c12"-"\u0c28","\u0c2a"-"\u0c33","\u0c35"-"\u0c39","\u0c60"-"\u0c61","\u0c85"-"\u0c8c","\u0c8e"-"\u0c90","\u0c92"-"\u0ca8","\u0caa"-"\u0cb3","\u0cb5"-"\u0cb9","\u0cde","\u0ce0"-"\u0ce1","\u0d05"-"\u0d0c","\u0d0e"-"\u0d10","\u0d12"-"\u0d28","\u0d2a"-"\u0d39","\u0d60"-"\u0d61","\u0d85"-"\u0d96","\u0d9a"-"\u0db1","\u0db3"-"\u0dbb","\u0dbd","\u0dc0"-"\u0dc6","\u0e01"-"\u0e30","\u0e32"-"\u0e33","\u0e3f"-"\u0e46","\u0e81"-"\u0e82","\u0e84","\u0e87"-"\u0e88","\u0e8a","\u0e8d","\u0e94"-"\u0e97","\u0e99"-"\u0e9f","\u0ea1"-"\u0ea3","\u0ea5","\u0ea7","\u0eaa"-"\u0eab","\u0ead"-"\u0eb0","\u0eb2"-"\u0eb3","\u0ebd","\u0ec0"-"\u0ec4","\u0ec6","\u0edc"-"\u0edd","\u0f00","\u0f40"-"\u0f47","\u0f49"-"\u0f6a","\u0f88"-"\u0f8b","\u1000"-"\u1021","\u1023"-"\u1027","\u1029"-"\u102a","\u1050"-"\u1055","\u10a0"-"\u10c5","\u10d0"-"\u10f6","\u1100"-"\u1159","\u115f"-"\u11a2","\u11a8"-"\u11f9","\u1200"-"\u1206","\u1208"-"\u1246","\u1248","\u124a"-"\u124d","\u1250"-"\u1256","\u1258","\u125a"-"\u125d","\u1260"-"\u1286","\u1288","\u128a"-"\u128d","\u1290"-"\u12ae","\u12b0","\u12b2"-"\u12b5","\u12b8"-"\u12be","\u12c0","\u12c2"-"\u12c5","\u12c8"-"\u12ce","\u12d0"-"\u12d6","\u12d8"-"\u12ee","\u12f0"-"\u130e","\u1310","\u1312"-"\u1315","\u1318"-"\u131e","\u1320"-"\u1346","\u1348"-"\u135a","\u13a0"-"\u13f4","\u1401"-"\u166c","\u166f"-"\u1676","\u1681"-"\u169a","\u16a0"-"\u16ea","\u1780"-"\u17b3","\u17db","\u1820"-"\u1877","\u1880"-"\u18a8","\u1e00"-"\u1e9b","\u1ea0"-"\u1ef9","\u1f00"-"\u1f15","\u1f18"-"\u1f1d","\u1f20"-"\u1f45","\u1f48"-"\u1f4d","\u1f50"-"\u1f57","\u1f59","\u1f5b","\u1f5d","\u1f5f"-"\u1f7d","\u1f80"-"\u1fb4","\u1fb6"-"\u1fbc","\u1fbe","\u1fc2"-"\u1fc4","\u1fc6"-"\u1fcc","\u1fd0"-"\u1fd3","\u1fd6"-"\u1fdb","\u1fe0"-"\u1fec","\u1ff2"-"\u1ff4","\u1ff6"-"\u1ffc","\u203f"-"\u2040","\u207f","\u20a0"-"\u20af","\u2102","\u2107","\u210a"-"\u2113","\u2115","\u2119"-"\u211d","\u2124","\u2126","\u2128","\u212a"-"\u212d","\u212f"-"\u2131","\u2133"-"\u2139","\u2160"-"\u2183","\u3005"-"\u3007","\u3021"-"\u3029","\u3031"-"\u3035","\u3038"-"\u303a","\u3041"-"\u3094","\u309d"-"\u309e","\u30a1"-"\u30fe","\u3105"-"\u312c","\u3131"-"\u318e","\u31a0"-"\u31b7","\u3400"-"\u4db5","\u4e00"-"\u9fa5","\ua000"-"\ua48c","\uac00"-"\ud7a3","\uf900"-"\ufa2d","\ufb00"-"\ufb06","\ufb13"-"\ufb17","\ufb1d","\ufb1f"-"\ufb28","\ufb2a"-"\ufb36","\ufb38"-"\ufb3c","\ufb3e","\ufb40"-"\ufb41","\ufb43"-"\ufb44","\ufb46"-"\ufbb1","\ufbd3"-"\ufd3d","\ufd50"-"\ufd8f","\ufd92"-"\ufdc7","\ufdf0"-"\ufdfb","\ufe33"-"\ufe34","\ufe4d"-"\ufe4f","\ufe69","\ufe70"-"\ufe72","\ufe74","\ufe76"-"\ufefc","\uff04","\uff21"-"\uff3a","\uff3f","\uff41"-"\uff5a","\uff65"-"\uffbe","\uffc2"-"\uffc7","\uffca"-"\uffcf","\uffd2"-"\uffd7","\uffda"-"\uffdc","\uffe0"-"\uffe1","\uffe5"-"\uffe6"]>
+|   <#LETTER: ["$","A"-"Z","_","#","a"-"z","\u00a2"-"\u00a5","\u00aa","\u00b5","\u00ba","\u00c0"-"\u00d6","\u00d8"-"\u00f6","\u00f8"-"\u021f","\u0222"-"\u0233","\u0250"-"\u02ad","\u02b0"-"\u02b8","\u02bb"-"\u02c1","\u02d0"-"\u02d1","\u02e0"-"\u02e4","\u02ee","\u037a","\u0386","\u0388"-"\u038a","\u038c","\u038e"-"\u03a1","\u03a3"-"\u03ce","\u03d0"-"\u03d7","\u03da"-"\u03f3","\u0400"-"\u0481","\u048c"-"\u04c4","\u04c7"-"\u04c8","\u04cb"-"\u04cc","\u04d0"-"\u04f5","\u04f8"-"\u04f9","\u0531"-"\u0556","\u0559","\u0561"-"\u0587","\u05d0"-"\u05ea","\u05f0"-"\u05f2","\u0621"-"\u063a","\u0640"-"\u064a","\u0671"-"\u06d3","\u06d5","\u06e5"-"\u06e6","\u06fa"-"\u06fc","\u0710","\u0712"-"\u072c","\u0780"-"\u07a5","\u0905"-"\u0939","\u093d","\u0950","\u0958"-"\u0961","\u0985"-"\u098c","\u098f"-"\u0990","\u0993"-"\u09a8","\u09aa"-"\u09b0","\u09b2","\u09b6"-"\u09b9","\u09dc"-"\u09dd","\u09df"-"\u09e1","\u09f0"-"\u09f3","\u0a05"-"\u0a0a","\u0a0f"-"\u0a10","\u0a13"-"\u0a28","\u0a2a"-"\u0a30","\u0a32"-"\u0a33","\u0a35"-"\u0a36","\u0a38"-"\u0a39","\u0a59"-"\u0a5c","\u0a5e","\u0a72"-"\u0a74","\u0a85"-"\u0a8b","\u0a8d","\u0a8f"-"\u0a91","\u0a93"-"\u0aa8","\u0aaa"-"\u0ab0","\u0ab2"-"\u0ab3","\u0ab5"-"\u0ab9","\u0abd","\u0ad0","\u0ae0","\u0b05"-"\u0b0c","\u0b0f"-"\u0b10","\u0b13"-"\u0b28","\u0b2a"-"\u0b30","\u0b32"-"\u0b33","\u0b36"-"\u0b39","\u0b3d","\u0b5c"-"\u0b5d","\u0b5f"-"\u0b61","\u0b85"-"\u0b8a","\u0b8e"-"\u0b90","\u0b92"-"\u0b95","\u0b99"-"\u0b9a","\u0b9c","\u0b9e"-"\u0b9f","\u0ba3"-"\u0ba4","\u0ba8"-"\u0baa","\u0bae"-"\u0bb5","\u0bb7"-"\u0bb9","\u0c05"-"\u0c0c","\u0c0e"-"\u0c10","\u0c12"-"\u0c28","\u0c2a"-"\u0c33","\u0c35"-"\u0c39","\u0c60"-"\u0c61","\u0c85"-"\u0c8c","\u0c8e"-"\u0c90","\u0c92"-"\u0ca8","\u0caa"-"\u0cb3","\u0cb5"-"\u0cb9","\u0cde","\u0ce0"-"\u0ce1","\u0d05"-"\u0d0c","\u0d0e"-"\u0d10","\u0d12"-"\u0d28","\u0d2a"-"\u0d39","\u0d60"-"\u0d61","\u0d85"-"\u0d96","\u0d9a"-"\u0db1","\u0db3"-"\u0dbb","\u0dbd","\u0dc0"-"\u0dc6","\u0e01"-"\u0e30","\u0e32"-"\u0e33","\u0e3f"-"\u0e46","\u0e81"-"\u0e82","\u0e84","\u0e87"-"\u0e88","\u0e8a","\u0e8d","\u0e94"-"\u0e97","\u0e99"-"\u0e9f","\u0ea1"-"\u0ea3","\u0ea5","\u0ea7","\u0eaa"-"\u0eab","\u0ead"-"\u0eb0","\u0eb2"-"\u0eb3","\u0ebd","\u0ec0"-"\u0ec4","\u0ec6","\u0edc"-"\u0edd","\u0f00","\u0f40"-"\u0f47","\u0f49"-"\u0f6a","\u0f88"-"\u0f8b","\u1000"-"\u1021","\u1023"-"\u1027","\u1029"-"\u102a","\u1050"-"\u1055","\u10a0"-"\u10c5","\u10d0"-"\u10f6","\u1100"-"\u1159","\u115f"-"\u11a2","\u11a8"-"\u11f9","\u1200"-"\u1206","\u1208"-"\u1246","\u1248","\u124a"-"\u124d","\u1250"-"\u1256","\u1258","\u125a"-"\u125d","\u1260"-"\u1286","\u1288","\u128a"-"\u128d","\u1290"-"\u12ae","\u12b0","\u12b2"-"\u12b5","\u12b8"-"\u12be","\u12c0","\u12c2"-"\u12c5","\u12c8"-"\u12ce","\u12d0"-"\u12d6","\u12d8"-"\u12ee","\u12f0"-"\u130e","\u1310","\u1312"-"\u1315","\u1318"-"\u131e","\u1320"-"\u1346","\u1348"-"\u135a","\u13a0"-"\u13f4","\u1401"-"\u166c","\u166f"-"\u1676","\u1681"-"\u169a","\u16a0"-"\u16ea","\u1780"-"\u17b3","\u17db","\u1820"-"\u1877","\u1880"-"\u18a8","\u1e00"-"\u1e9b","\u1ea0"-"\u1ef9","\u1f00"-"\u1f15","\u1f18"-"\u1f1d","\u1f20"-"\u1f45","\u1f48"-"\u1f4d","\u1f50"-"\u1f57","\u1f59","\u1f5b","\u1f5d","\u1f5f"-"\u1f7d","\u1f80"-"\u1fb4","\u1fb6"-"\u1fbc","\u1fbe","\u1fc2"-"\u1fc4","\u1fc6"-"\u1fcc","\u1fd0"-"\u1fd3","\u1fd6"-"\u1fdb","\u1fe0"-"\u1fec","\u1ff2"-"\u1ff4","\u1ff6"-"\u1ffc","\u203f"-"\u2040","\u207f","\u20a0"-"\u20af","\u2102","\u2107","\u210a"-"\u2113","\u2115","\u2119"-"\u211d","\u2124","\u2126","\u2128","\u212a"-"\u212d","\u212f"-"\u2131","\u2133"-"\u2139","\u2160"-"\u2183","\u3005"-"\u3007","\u3021"-"\u3029","\u3031"-"\u3035","\u3038"-"\u303a","\u3041"-"\u3094","\u309d"-"\u309e","\u30a1"-"\u30fe","\u3105"-"\u312c","\u3131"-"\u318e","\u31a0"-"\u31b7","\u3400"-"\u4db5","\u4e00"-"\u9fa5","\ua000"-"\ua48c","\uac00"-"\ud7a3","\uf900"-"\ufa2d","\ufb00"-"\ufb06","\ufb13"-"\ufb17","\ufb1d","\ufb1f"-"\ufb28","\ufb2a"-"\ufb36","\ufb38"-"\ufb3c","\ufb3e","\ufb40"-"\ufb41","\ufb43"-"\ufb44","\ufb46"-"\ufbb1","\ufbd3"-"\ufd3d","\ufd50"-"\ufd8f","\ufd92"-"\ufdc7","\ufdf0"-"\ufdfb","\ufe33"-"\ufe34","\ufe4d"-"\ufe4f","\ufe69","\ufe70"-"\ufe72","\ufe74","\ufe76"-"\ufefc","\uff04","\uff21"-"\uff3a","\uff3f","\uff41"-"\uff5a","\uff65"-"\uffbe","\uffc2"-"\uffc7","\uffca"-"\uffcf","\uffd2"-"\uffd7","\uffda"-"\uffdc","\uffe0"-"\uffe1","\uffe5"-"\uffe6"]>
 |   <#PART_LETTER: ["\u0000"-"\b","\u000e"-"\u001b","$","#","@","0"-"9","A"-"Z","_","a"-"z","\u007f"-"\u009f","\u00a2"-"\u00a5","\u00aa","\u00b5","\u00ba","\u00c0"-"\u00d6","\u00d8"-"\u00f6","\u00f8"-"\u021f","\u0222"-"\u0233","\u0250"-"\u02ad","\u02b0"-"\u02b8","\u02bb"-"\u02c1","\u02d0"-"\u02d1","\u02e0"-"\u02e4","\u02ee","\u0300"-"\u034e","\u0360"-"\u0362","\u037a","\u0386","\u0388"-"\u038a","\u038c","\u038e"-"\u03a1","\u03a3"-"\u03ce","\u03d0"-"\u03d7","\u03da"-"\u03f3","\u0400"-"\u0481","\u0483"-"\u0486","\u048c"-"\u04c4","\u04c7"-"\u04c8","\u04cb"-"\u04cc","\u04d0"-"\u04f5","\u04f8"-"\u04f9","\u0531"-"\u0556","\u0559","\u0561"-"\u0587","\u0591"-"\u05a1","\u05a3"-"\u05b9","\u05bb"-"\u05bd","\u05bf","\u05c1"-"\u05c2","\u05c4","\u05d0"-"\u05ea","\u05f0"-"\u05f2","\u0621"-"\u063a","\u0640"-"\u0655","\u0660"-"\u0669","\u0670"-"\u06d3","\u06d5"-"\u06dc","\u06df"-"\u06e8","\u06ea"-"\u06ed","\u06f0"-"\u06fc","\u070f"-"\u072c","\u0730"-"\u074a","\u0780"-"\u07b0","\u0901"-"\u0903","\u0905"-"\u0939","\u093c"-"\u094d","\u0950"-"\u0954","\u0958"-"\u0963","\u0966"-"\u096f","\u0981"-"\u0983","\u0985"-"\u098c","\u098f"-"\u0990","\u0993"-"\u09a8","\u09aa"-"\u09b0","\u09b2","\u09b6"-"\u09b9","\u09bc","\u09be"-"\u09c4","\u09c7"-"\u09c8","\u09cb"-"\u09cd","\u09d7","\u09dc"-"\u09dd","\u09df"-"\u09e3","\u09e6"-"\u09f3","\u0a02","\u0a05"-"\u0a0a","\u0a0f"-"\u0a10","\u0a13"-"\u0a28","\u0a2a"-"\u0a30","\u0a32"-"\u0a33","\u0a35"-"\u0a36","\u0a38"-"\u0a39","\u0a3c","\u0a3e"-"\u0a42","\u0a47"-"\u0a48","\u0a4b"-"\u0a4d","\u0a59"-"\u0a5c","\u0a5e","\u0a66"-"\u0a74","\u0a81"-"\u0a83","\u0a85"-"\u0a8b","\u0a8d","\u0a8f"-"\u0a91","\u0a93"-"\u0aa8","\u0aaa"-"\u0ab0","\u0ab2"-"\u0ab3","\u0ab5"-"\u0ab9","\u0abc"-"\u0ac5","\u0ac7"-"\u0ac9","\u0acb"-"\u0acd","\u0ad0","\u0ae0","\u0ae6"-"\u0aef","\u0b01"-"\u0b03","\u0b05"-"\u0b0c","\u0b0f"-"\u0b10","\u0b13"-"\u0b28","\u0b2a"-"\u0b30","\u0b32"-"\u0b33","\u0b36"-"\u0b39","\u0b3c"-"\u0b43","\u0b47"-"\u0b48","\u0b4b"-"\u0b4d","\u0b56"-"\u0b57","\u0b5c"-"\u0b5d","\u0b5f"-"\u0b61","\u0b66"-"\u0b6f","\u0b82"-"\u0b83","\u0b85"-"\u0b8a","\u0b8e"-"\u0b90","\u0b92"-"\u0b95","\u0b99"-"\u0b9a","\u0b9c","\u0b9e"-"\u0b9f","\u0ba3"-"\u0ba4","\u0ba8"-"\u0baa","\u0bae"-"\u0bb5","\u0bb7"-"\u0bb9","\u0bbe"-"\u0bc2","\u0bc6"-"\u0bc8","\u0bca"-"\u0bcd","\u0bd7","\u0be7"-"\u0bef","\u0c01"-"\u0c03","\u0c05"-"\u0c0c","\u0c0e"-"\u0c10","\u0c12"-"\u0c28","\u0c2a"-"\u0c33","\u0c35"-"\u0c39","\u0c3e"-"\u0c44","\u0c46"-"\u0c48","\u0c4a"-"\u0c4d","\u0c55"-"\u0c56","\u0c60"-"\u0c61","\u0c66"-"\u0c6f","\u0c82"-"\u0c83","\u0c85"-"\u0c8c","\u0c8e"-"\u0c90","\u0c92"-"\u0ca8","\u0caa"-"\u0cb3","\u0cb5"-"\u0cb9","\u0cbe"-"\u0cc4","\u0cc6"-"\u0cc8","\u0cca"-"\u0ccd","\u0cd5"-"\u0cd6","\u0cde","\u0ce0"-"\u0ce1","\u0ce6"-"\u0cef","\u0d02"-"\u0d03","\u0d05"-"\u0d0c","\u0d0e"-"\u0d10","\u0d12"-"\u0d28","\u0d2a"-"\u0d39","\u0d3e"-"\u0d43","\u0d46"-"\u0d48","\u0d4a"-"\u0d4d","\u0d57","\u0d60"-"\u0d61","\u0d66"-"\u0d6f","\u0d82"-"\u0d83","\u0d85"-"\u0d96","\u0d9a"-"\u0db1","\u0db3"-"\u0dbb","\u0dbd","\u0dc0"-"\u0dc6","\u0dca","\u0dcf"-"\u0dd4","\u0dd6","\u0dd8"-"\u0ddf","\u0df2"-"\u0df3","\u0e01"-"\u0e3a","\u0e3f"-"\u0e4e","\u0e50"-"\u0e59","\u0e81"-"\u0e82","\u0e84","\u0e87"-"\u0e88","\u0e8a","\u0e8d","\u0e94"-"\u0e97","\u0e99"-"\u0e9f","\u0ea1"-"\u0ea3","\u0ea5","\u0ea7","\u0eaa"-"\u0eab","\u0ead"-"\u0eb9","\u0ebb"-"\u0ebd","\u0ec0"-"\u0ec4","\u0ec6","\u0ec8"-"\u0ecd","\u0ed0"-"\u0ed9","\u0edc"-"\u0edd","\u0f00","\u0f18"-"\u0f19","\u0f20"-"\u0f29","\u0f35","\u0f37","\u0f39","\u0f3e"-"\u0f47","\u0f49"-"\u0f6a","\u0f71"-"\u0f84","\u0f86"-"\u0f8b","\u0f90"-"\u0f97","\u0f99"-"\u0fbc","\u0fc6","\u1000"-"\u1021","\u1023"-"\u1027","\u1029"-"\u102a","\u102c"-"\u1032","\u1036"-"\u1039","\u1040"-"\u1049","\u1050"-"\u1059","\u10a0"-"\u10c5","\u10d0"-"\u10f6","\u1100"-"\u1159","\u115f"-"\u11a2","\u11a8"-"\u11f9","\u1200"-"\u1206","\u1208"-"\u1246","\u1248","\u124a"-"\u124d","\u1250"-"\u1256","\u1258","\u125a"-"\u125d","\u1260"-"\u1286","\u1288","\u128a"-"\u128d","\u1290"-"\u12ae","\u12b0","\u12b2"-"\u12b5","\u12b8"-"\u12be","\u12c0","\u12c2"-"\u12c5","\u12c8"-"\u12ce","\u12d0"-"\u12d6","\u12d8"-"\u12ee","\u12f0"-"\u130e","\u1310","\u1312"-"\u1315","\u1318"-"\u131e","\u1320"-"\u1346","\u1348"-"\u135a","\u1369"-"\u1371","\u13a0"-"\u13f4","\u1401"-"\u166c","\u166f"-"\u1676","\u1681"-"\u169a","\u16a0"-"\u16ea","\u1780"-"\u17d3","\u17db","\u17e0"-"\u17e9","\u180b"-"\u180e","\u1810"-"\u1819","\u1820"-"\u1877","\u1880"-"\u18a9","\u1e00"-"\u1e9b","\u1ea0"-"\u1ef9","\u1f00"-"\u1f15","\u1f18"-"\u1f1d","\u1f20"-"\u1f45","\u1f48"-"\u1f4d","\u1f50"-"\u1f57","\u1f59","\u1f5b","\u1f5d","\u1f5f"-"\u1f7d","\u1f80"-"\u1fb4","\u1fb6"-"\u1fbc","\u1fbe","\u1fc2"-"\u1fc4","\u1fc6"-"\u1fcc","\u1fd0"-"\u1fd3","\u1fd6"-"\u1fdb","\u1fe0"-"\u1fec","\u1ff2"-"\u1ff4","\u1ff6"-"\u1ffc","\u200c"-"\u200f","\u202a"-"\u202e","\u203f"-"\u2040","\u206a"-"\u206f","\u207f","\u20a0"-"\u20af","\u20d0"-"\u20dc","\u20e1","\u2102","\u2107","\u210a"-"\u2113","\u2115","\u2119"-"\u211d","\u2124","\u2126","\u2128","\u212a"-"\u212d","\u212f"-"\u2131","\u2133"-"\u2139","\u2160"-"\u2183","\u3005"-"\u3007","\u3021"-"\u302f","\u3031"-"\u3035","\u3038"-"\u303a","\u3041"-"\u3094","\u3099"-"\u309a","\u309d"-"\u309e","\u30a1"-"\u30fe","\u3105"-"\u312c","\u3131"-"\u318e","\u31a0"-"\u31b7","\u3400"-"\u4db5","\u4e00"-"\u9fa5","\ua000"-"\ua48c","\uac00"-"\ud7a3","\uf900"-"\ufa2d","\ufb00"-"\ufb06","\ufb13"-"\ufb17","\ufb1d"-"\ufb28","\ufb2a"-"\ufb36","\ufb38"-"\ufb3c","\ufb3e","\ufb40"-"\ufb41","\ufb43"-"\ufb44","\ufb46"-"\ufbb1","\ufbd3"-"\ufd3d","\ufd50"-"\ufd8f","\ufd92"-"\ufdc7","\ufdf0"-"\ufdfb","\ufe20"-"\ufe23","\ufe33"-"\ufe34","\ufe4d"-"\ufe4f","\ufe69","\ufe70"-"\ufe72","\ufe74","\ufe76"-"\ufefc","\ufeff","\uff04","\uff10"-"\uff19","\uff21"-"\uff3a","\uff3f","\uff41"-"\uff5a","\uff65"-"\uffbe","\uffc2"-"\uffc7","\uffca"-"\uffcf","\uffd2"-"\uffd7","\uffda"-"\uffdc","\uffe0"-"\uffe1","\uffe5"-"\uffe6","\ufff9"-"\ufffb"]>
 |   < S_CHAR_LITERAL: ("'" ( <ESC> | ~["'", "\\", "\n", "\r"] )* "'") | ("'" ("''" | ~["'"])* "'") >
 |   < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])+ "\"" | ("`" (~["\n","\r","`"])+ "`") | ( "[" ~["0"-"9","]"] (~["\n","\r","]"])* "]" ) >
@@ -398,6 +400,8 @@ Statement SingleStatement() :
         |
         stm = Set()
         |
+        stm = Use()
+        |
         stm = Commit() 
         )
     } catch (ParseException e) {
@@ -454,6 +458,16 @@ SetStatement Set(): {
     <K_SET> name = RelObjectNameExt() ["=" { useEqual=true; } ] value=SimpleExpression()
     {
         return new SetStatement(name,value).setUseEqual(useEqual);
+    }
+}
+
+UseStatement Use(): {
+    String name;
+}
+{
+    <K_USE> name = RelObjectNameExt()
+    {
+        return new UseStatement(name);
     }
 }
 
@@ -897,15 +911,29 @@ MergeInsert MergeInsertClause() : {
 Column Column() #Column :
 {
     String databaseName = null, schemaName = null, tableName = null, columnName = null;
+    String token = null;
 }
 {
-    (
+	columnName = RelObjectName()
+    ( "." [LOOKAHEAD(2) token = RelObjectName()] { tableName = columnName; columnName = token; token = null;} 
+		( "." token = RelObjectName() { schemaName = tableName; tableName = columnName; columnName = token; token = null;} 
+			( "." token = RelObjectName() { databaseName = schemaName; schemaName = tableName; tableName = columnName; columnName = token; } 
+			)?
+		)?
+	)?
+
+    /*(
           LOOKAHEAD(7) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." tableName=RelObjectName() "." columnName=RelObjectName()
         | LOOKAHEAD(5) schemaName=RelObjectName() "." tableName=RelObjectName() "." columnName=RelObjectName()
         | LOOKAHEAD(3) tableName=RelObjectName() "." columnName=RelObjectName()
         | columnName=RelObjectName()
-    )
+    )*/
+
     {
+		if (tableName==null && (databaseName!=null || schemaName!=null)) {
+			throw generateParseException();
+		}
+
         final Database database = new Database(databaseName);
         final Table table = new Table(database, schemaName, tableName);
         Column col = new Column(table, columnName);
@@ -2185,7 +2213,7 @@ Expression SimpleExpression():
 }
 {
   (
-        retval=BitwiseAndOr()
+        retval=ConcatExpression()
   )
 
    {
@@ -2200,10 +2228,10 @@ Expression ConcatExpression():
     Expression rightExpression = null;
 }
 {
-    leftExpression=AdditiveExpression()  { result = leftExpression; }
+    leftExpression=BitwiseAndOr()  { result = leftExpression; }
     (LOOKAHEAD(2)
         "||"
-        rightExpression=AdditiveExpression()
+        rightExpression=BitwiseAndOr()
         {
             Concat binExp = new Concat();
             binExp.setLeftExpression(leftExpression);
@@ -2223,15 +2251,19 @@ Expression BitwiseAndOr():
     Expression rightExpression = null;
 }
 {
-    leftExpression=ConcatExpression()  { result = leftExpression; }
+    leftExpression=AdditiveExpression()  { result = leftExpression; }
     (
         (
-                        "|" { result = new BitwiseOr(); }
-                          |
-                          "&" { result = new BitwiseAnd(); }
+            "|" { result = new BitwiseOr(); }
+            |
+            "&" { result = new BitwiseAnd(); }
+			|
+			"<<" { result = new BitwiseLeftShift(); }
+			|
+			">>" { result = new BitwiseRightShift(); }
         )
 
-                            rightExpression=ConcatExpression()
+        rightExpression=AdditiveExpression()
 
         {
             BinaryExpression binExp = (BinaryExpression) result;
@@ -2330,49 +2362,49 @@ Expression PrimaryExpression():
     ColDataType type = null;
 }
 {
+[sign="+" | sign="-"]
 (
     <K_NULL> { retval = new NullValue(); }
 
     | retval=CaseWhenExpression()
 
-    | LOOKAHEAD(3) [sign="+" | sign="-"] "?" { retval = new JdbcParameter(++jdbcParameterIndex, false); } [ LOOKAHEAD(2) token = <S_LONG> { ((JdbcParameter)retval).setUseFixedIndex(true); ((JdbcParameter)retval).setIndex(Integer.valueOf(token.image)); } ]
+    | "?" { retval = new JdbcParameter(++jdbcParameterIndex, false); } 
+		[ token = <S_LONG> { ((JdbcParameter)retval).setUseFixedIndex(true); ((JdbcParameter)retval).setIndex(Integer.valueOf(token.image)); } ]
 
-    | LOOKAHEAD(3) [sign="+" | sign="-"] retval=JdbcNamedParameter()
+    | LOOKAHEAD(2) retval=JdbcNamedParameter()
 
-    | LOOKAHEAD(3) [sign="+" | sign="-"] retval=UserVariable()
+    | retval=UserVariable()
 
-    | LOOKAHEAD(3) [sign="+" | sign="-"] retval=NumericBind()
+    | LOOKAHEAD(2) retval=NumericBind()
 
     | LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
-
-    | LOOKAHEAD(WithinGroupExpression()) retval=WithinGroupExpression()
 
     | LOOKAHEAD(3) retval=ExtractExpression()
 
     | retval=MySQLGroupConcat()
 
-    | LOOKAHEAD([sign="+" | sign="-"] JsonExpression()) [sign="+" | sign="-"] retval=JsonExpression()
+    | LOOKAHEAD(JsonExpression()) retval=JsonExpression()
 
-    | LOOKAHEAD(["+" | "-"] Function()) [sign="+" | sign="-"] retval=Function()
+    | LOOKAHEAD(Function()) retval=Function()
 
-    | LOOKAHEAD(2) [sign="+" | sign="-"] token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
+    | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
 
-    | LOOKAHEAD(2) [sign="+" | sign="-"] token=<S_LONG> { retval = new LongValue(token.image); }
+    | token=<S_LONG> { retval = new LongValue(token.image); }
 
-    | LOOKAHEAD(2) [sign="+" | sign="-"] token=<S_HEX>  { retval = new HexValue(token.image); }
+    | token=<S_HEX>  { retval = new HexValue(token.image); }
 
-    | LOOKAHEAD(2) [sign="+" | sign="-"] retval=CastExpression()
+    | LOOKAHEAD(2) retval=CastExpression()
 
     // support timestamp expressions
     | token=<K_TIME_KEY_EXPR> { retval = new TimeKeyExpression(token.image); }
 
     | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
 
-    | LOOKAHEAD(["+" | "-"] Column())         [sign="+" | sign="-"] retval=Column()
+    | retval=Column()
 
-    | LOOKAHEAD(["+" | "-"] "(" BitwiseAndOr() ")") [sign="+" | sign="-"] "(" retval=BitwiseAndOr() ")" {retval = new Parenthesis(retval); }
+    | LOOKAHEAD("(" SimpleExpression() ")") "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
 
-    | LOOKAHEAD(3) [sign="+" | sign="-"] "(" retval=SubSelect() ")" 
+    | LOOKAHEAD(3) "(" retval=SubSelect() ")"
 
     | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 
@@ -2478,26 +2510,6 @@ IntervalExpression IntervalExpression() : {
     }
 }
 
-WithinGroupExpression WithinGroupExpression() :
-{
-    Token token = null;
-    List<OrderByElement> orderByElements = null;
-    WithinGroupExpression result = new WithinGroupExpression();
-    ExpressionList exprList;
-}
-{
-    token = <S_IDENTIFIER> "(" exprList = SimpleExpressionList() ")" 
-      <K_WITHIN> <K_GROUP>
-    "(" orderByElements = OrderByElements() ")"
-
-    { 
-        result.setName(token.image);
-        result.setExprList(exprList);
-        result.setOrderByElements(orderByElements);
-        return result; 
-    }
-}
-
 KeepExpression KeepExpression() : {
     KeepExpression keep = new KeepExpression();
     Token token;
@@ -2532,7 +2544,10 @@ AnalyticExpression AnalyticExpression() :
 
     [ keep=KeepExpression() ]
 
-    <K_OVER> "("
+    (<K_OVER> {retval.setType(AnalyticType.OVER);} 
+        | <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);} )
+
+    "("
         [<K_PARTITION> <K_BY> expressionList=SimpleExpressionList() ]
         [olist=OrderByElements() [windowElement = WindowElement() ] ]
         
@@ -2639,7 +2654,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
     CaseExpression caseExp = new CaseExpression();
     Expression switchExp = null;
     WhenClause clause;
-    List whenClauses = new ArrayList();
+    List<WhenClause> whenClauses = new ArrayList<WhenClause>();
     Expression elseExp = null;
 }
 {
@@ -2682,7 +2697,7 @@ WhenClause WhenThenValue():
     Expression thenExp = null;
 }
 {
-    <K_WHEN> whenExp=PrimaryExpression() <K_THEN> thenExp=SimpleExpression()
+    <K_WHEN> whenExp=SimpleExpression() <K_THEN> thenExp=SimpleExpression()
     {
        whenThen.setWhenExpression(whenExp);
        whenThen.setThenExpression(thenExp);
@@ -2694,8 +2709,6 @@ RowConstructor RowConstructor(): {
     ExpressionList list = null;
     RowConstructor rowConstructor = new RowConstructor();
 } {
-    //("(" list =SimpleExpressionListAtLeastTwoItems() ")"
-    //|
     [ <K_ROW> { rowConstructor.setName("ROW");} ]
     "("
         list = SimpleExpressionList()
@@ -3247,7 +3260,7 @@ Drop Drop():
     [<K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
 
     name = Table() { drop.setName(name); }
-    ((tk=<S_IDENTIFIER> | tk=<K_CASCADE>) { dropArgs.add(tk.image); })*
+    ((tk=<S_IDENTIFIER> | tk=<K_CASCADE> | tk=<K_RESTRICT> ) { dropArgs.add(tk.image); })*
 
     {
         if (dropArgs.size() > 0)
@@ -3415,10 +3428,12 @@ AlterExpression AlterExpression():
         }
          (
              (  <K_COLUMN>
-             (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>)
+                (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>)
                      {
                             alterExp.setColumnName(tk.image);
                      }
+                [tk=<K_CASCADE> { alterExp.addParameters(tk.image); } ]
+                  
              )
              |
        (  <K_CONSTRAINT>

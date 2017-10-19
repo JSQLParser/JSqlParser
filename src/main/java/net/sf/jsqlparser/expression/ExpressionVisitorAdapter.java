@@ -358,6 +358,16 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         notExpr.getExpression().accept(this);
     }
 
+    @Override
+    public void visit(BitwiseRightShift expr) {
+        visitBinaryExpression(expr);
+    }
+
+    @Override
+    public void visit(BitwiseLeftShift expr) {
+        visitBinaryExpression(expr);
+    }
+
     protected void visitBinaryExpression(BinaryExpression expr) {
         expr.getLeftExpression().accept(this);
         expr.getRightExpression().accept(this);
@@ -376,14 +386,6 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     @Override
     public void visit(RegExpMySQLOperator expr) {
         visitBinaryExpression(expr);
-    }
-
-    @Override
-    public void visit(WithinGroupExpression wgexpr) {
-        wgexpr.getExprList().accept(this);
-        for (OrderByElement element : wgexpr.getOrderByElements()) {
-            element.getExpression().accept(this);
-        }
     }
 
     @Override

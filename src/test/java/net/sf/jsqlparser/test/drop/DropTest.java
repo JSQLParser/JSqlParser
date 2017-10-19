@@ -40,4 +40,9 @@ public class DropTest {
     public void testDropIfExists() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP TABLE IF EXISTS my_table");
     }
+    
+    @Test
+    public void testDropRestrictIssue510() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP TABLE TABLE2 RESTRICT");
+    }
 }

@@ -23,7 +23,9 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
@@ -51,6 +53,10 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 public interface ExpressionVisitor {
+
+    public void visit(BitwiseRightShift aThis);
+
+    public void visit(BitwiseLeftShift aThis);
 
     void visit(NullValue nullValue);
 
@@ -139,8 +145,6 @@ public interface ExpressionVisitor {
     void visit(Modulo modulo);
 
     void visit(AnalyticExpression aexpr);
-
-    void visit(WithinGroupExpression wgexpr);
 
     void visit(ExtractExpression eexpr);
 

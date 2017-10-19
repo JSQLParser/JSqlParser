@@ -3,10 +3,8 @@ package net.sf.jsqlparser.util;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -88,20 +86,14 @@ public class TablesNamesFinderTest {
                 String type = getLine(in);
                 try {
                     Statement statement = pm.parse(new StringReader(query));
-                    StringTokenizer tokenizer = new StringTokenizer(tables, " ");
-                    List tablesList = new ArrayList();
-                    while (tokenizer.hasMoreTokens()) {
-                        tablesList.add(tokenizer.nextToken());
-                    }
 
-                    String[] tablesArray = (String[]) tablesList.toArray(new String[tablesList.
-                            size()]);
+                    String[] tablesArray = tables.split("\\s+");
 
                     List<String> tableListRetr = tablesNamesFinder.getTableList(statement);
                     assertEquals("stm num:" + numSt, tablesArray.length, tableListRetr.size());
 
                     for (int i = 0; i < tablesArray.length; i++) {
-                        assertEquals("stm num:" + numSt, tablesArray[i], tableListRetr.get(i));
+                        assertTrue("stm num:" + numSt, tableListRetr.contains(tablesArray[i]));
                     }
                 } catch (Exception e) {
                     throw new TestException("error at stm num: " + numSt + " in file " + resPath, e);
@@ -199,6 +191,19 @@ public class TablesNamesFinderTest {
         List<String> tableList = tablesNamesFinder.getTableList(deleteStatement);
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("MY_TABLE1"));
+    }
+    
+    @Test
+    public void testGetTableListFromDeleteWithJoin() throws Exception {
+        String sql = "DELETE t1, t2 FROM MY_TABLE1 t1 JOIN MY_TABLE2 t2 ON t1.id = t2.id";
+        net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+        Delete deleteStatement = (Delete) statement;
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(deleteStatement);
+        assertEquals(2, tableList.size());
+        assertTrue(tableList.contains("MY_TABLE1"));
+        assertTrue(tableList.contains("MY_TABLE2"));
     }
 
     @Test
@@ -415,7 +420,7 @@ public class TablesNamesFinderTest {
         assertEquals("employees", (String) tableList.get(0));
         assertEquals("hr_records", (String) tableList.get(1));
     }
-    
+
     @Test
     public void testUpsertValues() throws Exception {
         String sql = "UPSERT INTO MY_TABLE1 (a) VALUES (5)";
@@ -427,7 +432,7 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("MY_TABLE1"));
     }
-    
+
     @Test
     public void testUpsertSelect() throws Exception {
         String sql = "UPSERT INTO mytable (mycolumn) SELECT mycolumn FROM mytable2";
@@ -440,5 +445,54 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("mytable"));
         assertTrue(tableList.contains("mytable2"));
     }
+
+    @Test
+    public void testCaseWhenSubSelect() throws JSQLParserException {
+        String sql = "select case (select count(*) from mytable2) when 1 then 0 else -1 end";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("mytable2"));
+    }
+
+    @Test
+    public void testCaseWhenSubSelect2() throws JSQLParserException {
+        String sql = "select case when (select count(*) from mytable2) = 1 then 0 else -1 end";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("mytable2"));
+    }
+
+    @Test
+    public void testCaseWhenSubSelect3() throws JSQLParserException {
+        String sql = "select case when 1 = 2 then 0 else (select count(*) from mytable2) end";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("mytable2"));
+    }
     
+    @Test
+    public void testExpressionIssue515() throws JSQLParserException {
+        TablesNamesFinder finder = new TablesNamesFinder();
+        List<String> tableList = finder.getTableList(CCJSqlParserUtil.parseCondExpression("SOME_TABLE.COLUMN = 'A'"));
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("SOME_TABLE"));
+    }
+    
+    public void testSelectHavingSubquery() throws Exception {
+        String sql = "SELECT * FROM TABLE1 GROUP BY COL1 HAVING SUM(COL2) > (SELECT COUNT(*) FROM TABLE2)";
+        net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+        Select selectStmt = (Select) statement;
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(selectStmt);
+        assertEquals(2, tableList.size());
+        assertTrue(tableList.contains("TABLE1"));
+        assertTrue(tableList.contains("TABLE2"));
+    }
 }

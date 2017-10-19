@@ -126,6 +126,9 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(Upsert upsert) {
-        
+    }
+
+    @Override
+    public void visit(UseStatement use) {
     }
 }

@@ -60,10 +60,11 @@ import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.WindowElement;
-import net.sf.jsqlparser.expression.WithinGroupExpression;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
@@ -195,6 +196,16 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     public void visit(NotExpression notExpr) {
         buffer.append(NOT);
         notExpr.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(BitwiseRightShift expr) {
+        visitBinaryExpression(expr, " >> ");
+    }
+
+    @Override
+    public void visit(BitwiseLeftShift expr) {
+        visitBinaryExpression(expr, " << ");
     }
 
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
@@ -600,7 +611,15 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
             keep.accept(this);
             buffer.append(" ");
         }
-        buffer.append("OVER (");
+        
+        switch (aexpr.getType()) {
+            case WITHIN_GROUP:
+                buffer.append("WITHIN GROUP");
+                break;
+            default:
+                buffer.append("OVER");
+        }
+        buffer.append(" (");
 
         if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
             buffer.append("PARTITION BY ");
@@ -684,11 +703,6 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(JsonOperator jsonExpr) {
         visitBinaryExpression(jsonExpr, " " + jsonExpr.getStringExpression() + " ");
-    }
-
-    @Override
-    public void visit(WithinGroupExpression wgexpr) {
-        buffer.append(wgexpr.toString());
     }
 
     @Override

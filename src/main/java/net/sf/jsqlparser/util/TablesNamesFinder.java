@@ -59,10 +59,11 @@ import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.WhenClause;
-import net.sf.jsqlparser.expression.WithinGroupExpression;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
@@ -96,6 +97,7 @@ import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -136,6 +138,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
     private List<String> tables;
+    private boolean allowColumnProcessing = false;
+    
     /**
      * There are special names, that are not table names but are parsed as tables. These names are
      * collected here and are not included in the tables - names anymore.
@@ -149,7 +153,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      * @return
      */
     public List<String> getTableList(Statement statement) {
-        init();
+        init(false);
         statement.accept(this);
         return tables;
     }
@@ -171,7 +175,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      * @return
      */
     public List<String> getTableList(Expression expr) {
-        init();
+        init(true);
         expr.accept(this);
         return tables;
     }
@@ -202,6 +206,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (plainSelect.getWhere() != null) {
             plainSelect.getWhere().accept(this);
         }
+          
+        if(plainSelect.getHaving() != null){
+            plainSelect.getHaving().accept(this);
+        }
+        
         if (plainSelect.getOracleHierarchical() != null) {
             plainSelect.getOracleHierarchical().accept(this);
         }
@@ -245,6 +254,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Column tableColumn) {
+        if (allowColumnProcessing && tableColumn.getTable() != null && tableColumn.getTable().getName() != null) {
+            visit(tableColumn.getTable());
+        }
     }
 
     @Override
@@ -364,6 +376,16 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         notExpr.getExpression().accept(this);
     }
 
+    @Override
+    public void visit(BitwiseRightShift expr) {
+        visitBinaryExpression(expr);
+    }
+
+    @Override
+    public void visit(BitwiseLeftShift expr) {
+        visitBinaryExpression(expr);
+    }
+
     public void visitBinaryExpression(BinaryExpression binaryExpression) {
         binaryExpression.getLeftExpression().accept(this);
         binaryExpression.getRightExpression().accept(this);
@@ -395,6 +417,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      */
     @Override
     public void visit(CaseExpression caseExpression) {
+        if (caseExpression.getSwitchExpression() != null) {
+            caseExpression.getSwitchExpression().accept(this);
+        }
+        if (caseExpression.getWhenClauses() != null) {
+            for (WhenClause when : caseExpression.getWhenClauses()) {
+                when.accept(this);
+            }
+        }
+        if (caseExpression.getElseExpression() != null) {
+            caseExpression.getElseExpression().accept(this);
+        }
     }
 
     /*
@@ -404,6 +437,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      */
     @Override
     public void visit(WhenClause whenClause) {
+        if (whenClause.getWhenExpression() != null) {
+            whenClause.getWhenExpression().accept(this);
+        }
+        if (whenClause.getThenExpression() != null) {
+            whenClause.getThenExpression().accept(this);
+        }
     }
 
     @Override
@@ -489,11 +528,16 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     /**
-     * Initializes table names collector.
+     * Initializes table names collector. Important is the usage of Column instances to find 
+     * table names. This is only allowed for expression parsing, where a better place for 
+     * tablenames could not be there. For complete statements only from items are used to avoid
+     * some alias as tablenames.
+     * @param allowColumnProcessing
      */
-    protected void init() {
+    protected void init(boolean allowColumnProcessing) {
         otherItemNames = new ArrayList<String>();
         tables = new ArrayList<String>();
+        this.allowColumnProcessing = allowColumnProcessing;
     }
 
     @Override
@@ -547,10 +591,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(WithinGroupExpression wgexpr) {
-    }
-
-    @Override
     public void visit(UserVariable var) {
     }
 
@@ -570,6 +610,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(Delete delete) {
         tables.add(delete.getTable().getName());
+
+        if (delete.getJoins() != null) {
+            for (Join join : delete.getJoins()) {
+                join.getRightItem().accept(this);
+            }
+        }
+
         if (delete.getWhere() != null) {
             delete.getWhere().accept(this);
         }
@@ -716,10 +763,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(DateTimeLiteralExpression literal) {
 
     }
-    
+
     @Override
     public void visit(Commit commit) {
-        
+
     }
 
     @Override
@@ -731,5 +778,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (upsert.getSelect() != null) {
             visit(upsert.getSelect());
         }
+    }
+
+    @Override
+    public void visit(UseStatement use) {
     }
 }
