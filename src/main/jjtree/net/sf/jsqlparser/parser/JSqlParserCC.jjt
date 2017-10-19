@@ -272,8 +272,6 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_UPDATE:"UPDATE">
 |   <K_UPSERT:"UPSERT">
 |   <K_USE : "USE">
-|   <K_FORCE : "FORCE">
-|   <K_CALL : "CALL">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
 |   <K_USING:"USING">
 |   <K_VALIDATE : "VALIDATE">
@@ -1062,7 +1060,7 @@ PlainSelect PlainSelect():
     List<Table> intoTables = null;
     Table updateTable = null;
     Wait wait = null;
-    MySqlSqlCalcFoundRows sqlCalcFoundRows = null;
+    boolean mySqlSqlCalcFoundRows = false;
 }
 {
     <K_SELECT>
@@ -1072,8 +1070,6 @@ PlainSelect PlainSelect():
     [skip = Skip() { plainSelect.setSkip(skip);    } ]
 
     [LOOKAHEAD(2) first = First() { plainSelect.setFirst(first); } ]
-
-    { sqlCalcFoundRows = new MySqlSqlCalcFoundRows(); }
 
     [
         <K_ALL>
@@ -1088,7 +1084,7 @@ PlainSelect PlainSelect():
             )
         |
             (
-                <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(sqlCalcFoundRows); }
+                <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(true); }
             )
     ]
 

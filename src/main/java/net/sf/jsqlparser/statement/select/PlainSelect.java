@@ -22,7 +22,6 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.MySqlSqlCalcFoundRows;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Table;
@@ -59,7 +58,7 @@ public class PlainSelect implements SelectBody {
     private Table forUpdateTable = null;
     private boolean useBrackets = false;
     private Wait wait;
-    private MySqlSqlCalcFoundRows mySqlSqlCalcFoundRows;
+    private boolean mySqlSqlCalcFoundRows = false;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -313,6 +312,9 @@ public class PlainSelect implements SelectBody {
         if (top != null) {
             sql.append(top).append(" ");
         }
+        if (mySqlSqlCalcFoundRows) {
+            sql.append("SQL_CALC_FOUND_ROWS").append(" ");
+        }
         sql.append(getStringList(selectItems));
 
         if (intoTables != null) {
@@ -458,11 +460,11 @@ public class PlainSelect implements SelectBody {
         return ans.toString();
     }
 
-    public void setMySqlSqlCalcFoundRows(MySqlSqlCalcFoundRows mySqlCalcFoundRows) {
+    public void setMySqlSqlCalcFoundRows(boolean mySqlCalcFoundRows) {
         this.mySqlSqlCalcFoundRows = mySqlCalcFoundRows;
     }
 
-    public MySqlSqlCalcFoundRows getMySqlSqlCalcFoundRows() {
+    public boolean getMySqlSqlCalcFoundRows() {
         return this.mySqlSqlCalcFoundRows;
     }
 }

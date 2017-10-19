@@ -21,11 +21,11 @@
  */
 package net.sf.jsqlparser.expression.mysql;
 
-import net.sf.jsqlparser.expression.MySqlSqlCalcFoundRows;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -42,13 +42,11 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 /**
  * @author sam
  */
-public class StatementVisitorFactory {
-    public static StatementVisitor create(final AtomicReference<MySqlSqlCalcFoundRows> ref) {
+public class SqlCalcFoundRowsStatementVisitorFactory {
+    public static StatementVisitor create(final MySqlSqlCalcFoundRowRef ref) {
        return new StatementVisitor() {
            @Override
            public void visit(Commit commit) {
@@ -132,11 +130,16 @@ public class StatementVisitorFactory {
 
            @Override
            public void visit(Select select) {
-               select.getSelectBody().accept(SelectVisitorFactory.create(ref));
+               select.getSelectBody().accept(SelectVisitorUsingSqlCalcFoundRowsFactory.create(ref));
            }
 
            @Override
            public void visit(Upsert upsert) {
+
+           }
+
+           @Override
+           public void visit(UseStatement use) {
 
            }
        };

@@ -22,16 +22,13 @@
 package net.sf.jsqlparser.expression.mysql;
 
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.MySqlSqlCalcFoundRows;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import org.junit.Test;
 
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author sam
@@ -39,18 +36,21 @@ import static org.junit.Assert.assertNull;
 public class MySqlSqlCalcFoundRowsTest {
     @Test
     public void testPossibleParsingWithSqlCalcFoundRowsHint() throws JSQLParserException {
-        AtomicReference<MySqlSqlCalcFoundRows> ref = new AtomicReference<MySqlSqlCalcFoundRows>();
+        MySqlSqlCalcFoundRowRef ref = new MySqlSqlCalcFoundRowRef(false);
+        String sqlCalcFoundRowsContainingSql = "SELECT SQL_CALC_FOUND_ROWS * FROM TABLE";
+        String generalSql = "SELECT * FROM TABLE";
 
-        accept(CCJSqlParserUtil.parse("SELECT SQL_CALC_FOUND_ROWS * FROM TABLE"), ref);
-        assertNotNull(ref);
-        assertEquals(MySqlSqlCalcFoundRows.DESCRIPTION, ref.get().getDescription());
+        accept(CCJSqlParserUtil.parse(sqlCalcFoundRowsContainingSql), ref);
+        assertTrue(ref.sqlCalcFoundRows);
 
-        ref.set(null);
-        accept(CCJSqlParserUtil.parse("SELECT * FROM TABLE"), ref);
-        assertNull(ref.get());
+        accept(CCJSqlParserUtil.parse(generalSql), ref);
+        assertFalse(ref.sqlCalcFoundRows);
+
+        assertSqlCanBeParsedAndDeparsed(sqlCalcFoundRowsContainingSql);
+        assertSqlCanBeParsedAndDeparsed(generalSql);
     }
 
-    public void accept(Statement statement, final AtomicReference<MySqlSqlCalcFoundRows> ref) {
-        statement.accept(StatementVisitorFactory.create(ref));
+    public void accept(Statement statement, MySqlSqlCalcFoundRowRef ref) {
+        statement.accept(SqlCalcFoundRowsStatementVisitorFactory.create(ref));
     }
 }
