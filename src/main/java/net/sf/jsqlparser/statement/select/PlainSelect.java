@@ -21,15 +21,15 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.schema.Table;
-
-import java.util.Iterator;
-import java.util.List;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.schema.Table;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The core of a "SELECT" statement (no UNION, no ORDER BY)
@@ -58,6 +58,7 @@ public class PlainSelect implements SelectBody {
     private Table forUpdateTable = null;
     private boolean useBrackets = false;
     private Wait wait;
+    private boolean mySqlSqlCalcFoundRows = false;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -311,6 +312,9 @@ public class PlainSelect implements SelectBody {
         if (top != null) {
             sql.append(top).append(" ");
         }
+        if (mySqlSqlCalcFoundRows) {
+            sql.append("SQL_CALC_FOUND_ROWS").append(" ");
+        }
         sql.append(getStringList(selectItems));
 
         if (intoTables != null) {
@@ -454,5 +458,13 @@ public class PlainSelect implements SelectBody {
         }
 
         return ans.toString();
+    }
+
+    public void setMySqlSqlCalcFoundRows(boolean mySqlCalcFoundRows) {
+        this.mySqlSqlCalcFoundRows = mySqlCalcFoundRows;
+    }
+
+    public boolean getMySqlSqlCalcFoundRows() {
+        return this.mySqlSqlCalcFoundRows;
     }
 }

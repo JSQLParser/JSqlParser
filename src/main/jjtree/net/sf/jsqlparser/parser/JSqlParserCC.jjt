@@ -272,6 +272,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_UPDATE:"UPDATE">
 |   <K_UPSERT:"UPSERT">
 |   <K_USE : "USE">
+|   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
 |   <K_USING:"USING">
 |   <K_VALIDATE : "VALIDATE">
 |   <K_VALUE:"VALUE">
@@ -1059,6 +1060,7 @@ PlainSelect PlainSelect():
     List<Table> intoTables = null;
     Table updateTable = null;
     Wait wait = null;
+    boolean mySqlSqlCalcFoundRows = false;
 }
 {
     <K_SELECT>
@@ -1079,6 +1081,10 @@ PlainSelect PlainSelect():
         |
             (
                 <K_UNIQUE> { Distinct distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
+            )
+        |
+            (
+                <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(true); }
             )
     ]
 
