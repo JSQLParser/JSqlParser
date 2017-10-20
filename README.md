@@ -49,6 +49,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.2
 
+* **SQL_CALC_FOUND_ROWS** support
 * support for more complex expressions within **case expr when expr then expr end**.
 * support for **<<** and **>>** left and right shift operations
 * breaking **API** change: merge of *within group* and *over* (window expressions)
