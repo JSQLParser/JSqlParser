@@ -29,9 +29,17 @@ import java.sql.Timestamp;
 public class TimestampValue implements Expression {
 
     private Timestamp value;
-
+    private char quotation = '\'';
     public TimestampValue(String value) {
-        this.value = Timestamp.valueOf(value.substring(1, value.length() - 1));
+        if (value == null) {
+            throw new java.lang.IllegalArgumentException("null string");
+        } else {
+            if (value.charAt(0) == quotation) {
+                this.value = Timestamp.valueOf(value.substring(1, value.length() - 1));
+            } else {
+                this.value = Timestamp.valueOf(value.substring(0, value.length()));
+            }
+        }
     }
 
     @Override
