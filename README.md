@@ -79,6 +79,10 @@ This will produce the jsqlparser-VERSION.jar file in the target/ directory.
 
 **To build this project without using Maven, one has to build the parser by JavaCC using the CLI options it provids.**
 
+## Debugging through problems
+
+Refer to the [Visualize Parsing](https://github.com/JSQLParser/JSqlParser/wiki/Examples-of-SQL-parsing#visualize-parsing) section to learn how to run the parser in debug mode.
+
 ## Source Code conventions
 
 Recently a checkstyle process was integrated into the build process. JSqlParser follows the sun java format convention. There are no TABs allowed. Use spaces.
