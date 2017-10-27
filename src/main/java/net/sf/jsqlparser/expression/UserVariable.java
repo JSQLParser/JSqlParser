@@ -21,12 +21,14 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  * Simple uservariables like @test.
  *
  * @author aud
  */
-public class UserVariable implements Expression {
+public class UserVariable extends ASTNodeAccessImpl implements Expression {
 
     private String name;
     private boolean doubleAdd = false;

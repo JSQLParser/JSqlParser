@@ -22,13 +22,14 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Rowconstructor.
  *
  * @author tw
  */
-public class RowConstructor implements Expression {
+public class RowConstructor extends ASTNodeAccessImpl implements Expression {
 
     private ExpressionList exprList;
     private String name = null;
