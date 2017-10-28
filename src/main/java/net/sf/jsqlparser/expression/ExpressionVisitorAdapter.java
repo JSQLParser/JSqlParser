@@ -239,6 +239,13 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(IfExpression ifExpression) {
+        ifExpression.getIfExpression().accept(this);
+        ifExpression.getThenExpression().accept(this);
+        ifExpression.getElseExpression().accept(this);
+    }
+
+    @Override
     public void visit(WhenClause expr) {
         expr.getWhenExpression().accept(this);
         expr.getThenExpression().accept(this);

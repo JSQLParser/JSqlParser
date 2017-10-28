@@ -2372,6 +2372,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     | retval=CaseWhenExpression()
 
+    | retval=IfExpression()
+
     | "?" { retval = new JdbcParameter(++jdbcParameterIndex, false); } 
 		[ token = <S_LONG> { ((JdbcParameter)retval).setUseFixedIndex(true); ((JdbcParameter)retval).setIndex(Integer.valueOf(token.image)); } ]
 
@@ -2649,6 +2651,34 @@ CastExpression CastExpression():
     {
         retval.setLeftExpression(expression);
         retval.setType(type);
+        return retval;
+    }
+}
+
+IfExpression IfExpression():{
+    IfExpression retval = new IfExpression();
+    Expression ifCondition = null;
+    Expression thenExpression = null;
+    Expression elseExpression = null;
+}
+{
+    <K_IF> "("
+        (
+            (LOOKAHEAD(AndExpression()) ifCondition=AndExpression()
+             | LOOKAHEAD(OrExpression()) ifCondition=OrExpression()
+             | LOOKAHEAD(SQLCondition()) ifCondition=SQLCondition()
+             | LOOKAHEAD(RegularCondition()) ifCondition=RegularCondition()
+            | ifCondition=SimpleExpression())
+            ","
+            thenExpression=SimpleExpression()
+            ","
+            elseExpression=SimpleExpression()
+        )
+    ")"
+    {
+        retval.setIfExpression(ifCondition);
+        retval.setThenExpression(thenExpression);
+        retval.setElseExpression(elseExpression);
         return retval;
     }
 }
