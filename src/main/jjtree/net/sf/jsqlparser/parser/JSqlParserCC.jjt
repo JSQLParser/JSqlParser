@@ -1002,7 +1002,6 @@ Table Table() #Table :
         final Server server = new Server(serverName);
         final Database database = new Database(server, databaseName);
         Table table = new Table(database, schemaName, tableName);
-        linkAST(table,jjtThis);
         return table;
     }
 }
@@ -1039,7 +1038,7 @@ SelectBody SelectBody():
     { return selectBody; }
 }
 
-PlainSelect PlainSelect():
+PlainSelect PlainSelect() #PlainSelect:
 {
     PlainSelect plainSelect = new PlainSelect();
     List<SelectItem> selectItems = null;
@@ -1121,7 +1120,7 @@ PlainSelect PlainSelect():
     }
 }
 
-SelectBody SetOperationList():
+SelectBody SetOperationList() #SetOperationList:
 {
     SetOperationList list = new SetOperationList();
     List<OrderByElement> orderByElements = null;
@@ -1217,7 +1216,7 @@ SelectExpressionItem SelectExpressionItem():
              [alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
 }
 
-SelectItem SelectItem():
+SelectItem SelectItem() #SelectItem:
 {
     SelectItem selectItem = null;
 }
@@ -1559,7 +1558,7 @@ List JoinsList():
     { return joinsList; }
 }
 
-Join JoinerExpression():
+Join JoinerExpression() #JoinerExpression:
 {
     Join join = new Join();
     FromItem right = null;
@@ -1685,7 +1684,7 @@ OrderByElement OrderByElement():
     }
 }
 
-Limit LimitWithOffset():
+Limit LimitWithOffset() #LimitWithOffset:
 {
     Limit limit = new Limit();
     Token token = null;
@@ -1721,7 +1720,7 @@ Limit LimitWithOffset():
     }
 }
 
-Limit PlainLimit():
+Limit PlainLimit() #PlainLimit:
 {
     Limit limit = new Limit();
     Token token = null;
@@ -1950,7 +1949,7 @@ Expression Condition():
     { return result; }
 }
 
-Expression RegularCondition():
+Expression RegularCondition() #RegularCondition:
 {
     Expression result = null;
     Expression leftExpression;
@@ -2078,7 +2077,7 @@ Expression Between() :
     }
 }
 
-Expression LikeExpression() :
+Expression LikeExpression() #LikeExpression:
 {
     LikeExpression result = new LikeExpression();
     Expression leftExpression = null;
@@ -2357,7 +2356,7 @@ Expression BitwiseXor():
     { return result; }
 }
 
-Expression PrimaryExpression():
+Expression PrimaryExpression() #PrimaryExpression:
 {
     Expression retval = null;
     CastExpression castExpr = null;
