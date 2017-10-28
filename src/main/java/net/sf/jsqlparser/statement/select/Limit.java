@@ -22,11 +22,12 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * A limit clause in the form [LIMIT {[offset,] row_count) | (row_count | ALL) OFFSET offset}]
  */
-public class Limit {
+public class Limit extends ASTNodeAccessImpl {
 
     private Expression rowCount;
     private Expression offset;

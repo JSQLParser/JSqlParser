@@ -24,39 +24,48 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
- * Extract value from date/time expression. The name stores the part - name to get from the
- * following date/time expression.
+ * IF conditions in SELECT clause.
+ * Example: SELECT IF(a = 0, 5, 6), columnB, columnC from table1;
  *
- * @author tw
+ * @author Tomer Shay (Shimshi)
  */
-public class ExtractExpression extends ASTNodeAccessImpl implements Expression {
+public class IfExpression extends ASTNodeAccessImpl implements Expression {
 
-    private String name;
-    private Expression expression;
+    private Expression ifExpression;
+    private Expression thenExpression;
+    private Expression elseExpression;
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
     }
 
-    public String getName() {
-        return name;
+    public Expression getIfExpression() {
+        return ifExpression;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setIfExpression(Expression ifExpression) {
+        this.ifExpression = ifExpression;
     }
 
-    public Expression getExpression() {
-        return expression;
+    public Expression getThenExpression() {
+        return thenExpression;
     }
 
-    public void setExpression(Expression expression) {
-        this.expression = expression;
+    public void setThenExpression(Expression thenExpression) {
+        this.thenExpression = thenExpression;
+    }
+
+    public Expression getElseExpression() {
+        return elseExpression;
+    }
+
+    public void setElseExpression(Expression elseExpression) {
+        this.elseExpression = elseExpression;
     }
 
     @Override
     public String toString() {
-        return "EXTRACT(" + name + " FROM " + expression + ')';
+        return "if(" + ifExpression + ", " + thenExpression + ", " + elseExpression + ")";
     }
 }

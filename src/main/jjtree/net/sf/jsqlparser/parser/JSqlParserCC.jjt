@@ -1002,7 +1002,6 @@ Table Table() #Table :
         final Server server = new Server(serverName);
         final Database database = new Database(server, databaseName);
         Table table = new Table(database, schemaName, tableName);
-        linkAST(table,jjtThis);
         return table;
     }
 }
@@ -1039,7 +1038,7 @@ SelectBody SelectBody():
     { return selectBody; }
 }
 
-PlainSelect PlainSelect():
+PlainSelect PlainSelect() #PlainSelect:
 {
     PlainSelect plainSelect = new PlainSelect();
     List<SelectItem> selectItems = null;
@@ -1116,11 +1115,12 @@ PlainSelect PlainSelect():
         plainSelect.setFromItem(fromItem);
         if (joins != null && joins.size() > 0)
             plainSelect.setJoins(joins);
+        linkAST(plainSelect,jjtThis);
         return plainSelect;
     }
 }
 
-SelectBody SetOperationList():
+SelectBody SetOperationList() #SetOperationList:
 {
     SetOperationList list = new SetOperationList();
     List<OrderByElement> orderByElements = null;
@@ -1140,7 +1140,7 @@ SelectBody SetOperationList():
             (("(" select=SelectBody() ")" { bracket=true;} ) 
                     | select=PlainSelect() { bracket=false;} ) {selects.add(select);brackets.add(bracket); }
             (
-                ((<K_UNION> { UnionOp union = new UnionOp();operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
+                ((<K_UNION> { UnionOp union = new UnionOp();linkAST(union,jjtThis);operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
                 | <K_INTERSECT> { operations.add(new IntersectOp()); }
                 | <K_MINUS> { operations.add(new MinusOp()); }
                 | <K_EXCEPT> { operations.add(new ExceptOp()); }
@@ -1216,7 +1216,7 @@ SelectExpressionItem SelectExpressionItem():
              [alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
 }
 
-SelectItem SelectItem():
+SelectItem SelectItem() #SelectItem:
 {
     SelectItem selectItem = null;
 }
@@ -1227,6 +1227,7 @@ SelectItem SelectItem():
     selectItem=SelectExpressionItem() 
     )
     {
+        linkAST(selectItem,jjtThis);
         return selectItem;
     }
 }
@@ -1557,7 +1558,7 @@ List JoinsList():
     { return joinsList; }
 }
 
-Join JoinerExpression():
+Join JoinerExpression() #JoinerExpression:
 {
     Join join = new Join();
     FromItem right = null;
@@ -1589,6 +1590,7 @@ Join JoinerExpression():
           { join.setUsingColumns(columns); }   ))
       ]
   {
+      linkAST(join,jjtThis);
       join.setRightItem(right);
     return join; 
   }
@@ -1682,7 +1684,7 @@ OrderByElement OrderByElement():
     }
 }
 
-Limit LimitWithOffset():
+Limit LimitWithOffset() #LimitWithOffset:
 {
     Limit limit = new Limit();
     Token token = null;
@@ -1713,11 +1715,12 @@ Limit LimitWithOffset():
             limit = PlainLimit()
         )
     {
+        linkAST(limit,jjtThis);
         return limit;
     }
 }
 
-Limit PlainLimit():
+Limit PlainLimit() #PlainLimit:
 {
     Limit limit = new Limit();
     Token token = null;
@@ -1737,6 +1740,7 @@ Limit PlainLimit():
          <K_NULL> { limit.setLimitNull(true); }
      )
     {
+        linkAST(limit,jjtThis);
         return limit;
     }
 }
@@ -1945,7 +1949,7 @@ Expression Condition():
     { return result; }
 }
 
-Expression RegularCondition():
+Expression RegularCondition() #RegularCondition:
 {
     Expression result = null;
     Expression leftExpression;
@@ -2006,7 +2010,10 @@ Expression RegularCondition():
             ((SupportsOldOracleJoinSyntax)result).setOraclePriorPosition(oraclePrior);
     }
 
-    { return result; }
+    {
+        linkAST(result,jjtThis);
+        return result;
+    }
 }
 
 Expression SQLCondition():
@@ -2070,7 +2077,7 @@ Expression Between() :
     }
 }
 
-Expression LikeExpression() :
+Expression LikeExpression() #LikeExpression:
 {
     LikeExpression result = new LikeExpression();
     Expression leftExpression = null;
@@ -2083,6 +2090,7 @@ Expression LikeExpression() :
     {
         result.setLeftExpression(leftExpression);
         result.setRightExpression(rightExpression);
+        linkAST(result,jjtThis);
         return result;
     }
 }
@@ -2348,7 +2356,7 @@ Expression BitwiseXor():
     { return result; }
 }
 
-Expression PrimaryExpression():
+Expression PrimaryExpression() #PrimaryExpression:
 {
     Expression retval = null;
     CastExpression castExpr = null;
@@ -2363,6 +2371,8 @@ Expression PrimaryExpression():
     <K_NULL> { retval = new NullValue(); }
 
     | retval=CaseWhenExpression()
+
+    | retval=IfExpression()
 
     | "?" { retval = new JdbcParameter(++jdbcParameterIndex, false); } 
 		[ token = <S_LONG> { ((JdbcParameter)retval).setUseFixedIndex(true); ((JdbcParameter)retval).setIndex(Integer.valueOf(token.image)); } ]
@@ -2402,7 +2412,7 @@ Expression PrimaryExpression():
 
     | LOOKAHEAD(3) "(" retval=SubSelect() ")"
 
-    | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
+    | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
 
     | "{d" token=<S_CHAR_LITERAL> "}"  { retval = new DateValue(token.image); }
 
@@ -2641,6 +2651,34 @@ CastExpression CastExpression():
     {
         retval.setLeftExpression(expression);
         retval.setType(type);
+        return retval;
+    }
+}
+
+IfExpression IfExpression():{
+    IfExpression retval = new IfExpression();
+    Expression ifCondition = null;
+    Expression thenExpression = null;
+    Expression elseExpression = null;
+}
+{
+    <K_IF> "("
+        (
+            (LOOKAHEAD(AndExpression()) ifCondition=AndExpression()
+             | LOOKAHEAD(OrExpression()) ifCondition=OrExpression()
+             | LOOKAHEAD(SQLCondition()) ifCondition=SQLCondition()
+             | LOOKAHEAD(RegularCondition()) ifCondition=RegularCondition()
+            | ifCondition=SimpleExpression())
+            ","
+            thenExpression=SimpleExpression()
+            ","
+            elseExpression=SimpleExpression()
+        )
+    ")"
+    {
+        retval.setIfExpression(ifCondition);
+        retval.setThenExpression(thenExpression);
+        retval.setElseExpression(elseExpression);
         return retval;
     }
 }
