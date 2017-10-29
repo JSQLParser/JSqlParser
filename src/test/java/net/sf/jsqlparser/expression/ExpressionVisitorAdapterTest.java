@@ -162,14 +162,14 @@ public class ExpressionVisitorAdapterTest {
         final LongValue elseValue = null;
         Select select = (Select) CCJSqlParserUtil.parse("select if(a=0, 3, 4) from table1");
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
-        IfExpression ifExpression = (IfExpression)((SelectExpressionItem)plainSelect.getSelectItems().get(0)).getExpression();
+        IfExpression ifExpression = (IfExpression) ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getExpression();
         ifExpression.accept(new ExpressionVisitorAdapter() {
             @Override
             public void visit(IfExpression expr) {
                 super.visit(expr);
                 assertEquals(true, expr.getIfExpression() instanceof EqualsTo);
-                assertEquals(3, ((LongValue)expr.getThenExpression()).getValue());
-                assertEquals(4, ((LongValue)expr.getElseExpression()).getValue());
+                assertEquals(3, ((LongValue) expr.getThenExpression()).getValue());
+                assertEquals(4, ((LongValue) expr.getElseExpression()).getValue());
             }
         });
     }
