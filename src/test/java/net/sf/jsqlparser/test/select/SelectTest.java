@@ -2686,4 +2686,8 @@ public class SelectTest extends TestCase {
     public void testIssue522_4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE a + b WHEN -1 * 5 THEN 1 ELSE CASE b + c WHEN -1 * 6 THEN 2 ELSE 3 END END");
     }
+    
+    public void testIssue423() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (tab)");
+    }
 }
