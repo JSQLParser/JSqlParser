@@ -23,11 +23,12 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * An expression as in "SELECT expr1 AS EXPR"
  */
-public class SelectExpressionItem implements SelectItem {
+public class SelectExpressionItem extends ASTNodeAccessImpl implements SelectItem {
 
     private Expression expression;
     private Alias alias;

@@ -21,7 +21,9 @@
  */
 package net.sf.jsqlparser.expression;
 
-public class TimeKeyExpression implements Expression {
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
+public class TimeKeyExpression extends ASTNodeAccessImpl implements Expression {
 
     private String stringValue;
 
