@@ -21,10 +21,12 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  * All the columns (as in "SELECT * FROM ...")
  */
-public class AllColumns implements SelectItem {
+public class AllColumns extends ASTNodeAccessImpl implements SelectItem {
 
     public AllColumns() {
     }

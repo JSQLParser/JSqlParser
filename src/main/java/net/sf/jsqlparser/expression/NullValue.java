@@ -21,10 +21,12 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  * A "NULL" in a sql statement
  */
-public class NullValue implements Expression {
+public class NullValue extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {

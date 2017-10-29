@@ -49,6 +49,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.2
 
+* **SQL_CALC_FOUND_ROWS** support
 * support for more complex expressions within **case expr when expr then expr end**.
 * support for **<<** and **>>** left and right shift operations
 * breaking **API** change: merge of *within group* and *over* (window expressions)
@@ -77,6 +78,10 @@ The project requires the following to build:
 This will produce the jsqlparser-VERSION.jar file in the target/ directory.
 
 **To build this project without using Maven, one has to build the parser by JavaCC using the CLI options it provids.**
+
+## Debugging through problems
+
+Refer to the [Visualize Parsing](https://github.com/JSQLParser/JSqlParser/wiki/Examples-of-SQL-parsing#visualize-parsing) section to learn how to run the parser in debug mode.
 
 ## Source Code conventions
 

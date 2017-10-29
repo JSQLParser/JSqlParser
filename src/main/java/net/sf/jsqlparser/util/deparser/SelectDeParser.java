@@ -91,9 +91,14 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             }
 
         }
+
         Top top = plainSelect.getTop();
         if (top != null) {
             buffer.append(top).append(" ");
+        }
+
+        if (plainSelect.getMySqlSqlCalcFoundRows()) {
+            buffer.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
 
         for (Iterator<SelectItem> iter = plainSelect.getSelectItems().iterator(); iter.hasNext();) {
