@@ -158,8 +158,6 @@ public class ExpressionVisitorAdapterTest {
 
     @Test
     public void testIfExpression() throws JSQLParserException {
-        final LongValue thenValue = null;
-        final LongValue elseValue = null;
         Select select = (Select) CCJSqlParserUtil.parse("select if(a=0, 3, 4) from table1");
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         IfExpression ifExpression = (IfExpression) ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getExpression();
