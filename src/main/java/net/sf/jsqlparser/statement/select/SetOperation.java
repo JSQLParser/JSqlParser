@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
 
 /**
@@ -28,7 +29,7 @@ import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
  *
  * @author tw
  */
-public abstract class SetOperation {
+public abstract class SetOperation extends ASTNodeAccessImpl {
 
     private SetOperationType type;
 

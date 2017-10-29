@@ -21,7 +21,9 @@
  */
 package net.sf.jsqlparser.expression;
 
-public interface Expression {
+import net.sf.jsqlparser.parser.ASTNodeAccess;
+
+public interface Expression extends ASTNodeAccess {
 
     void accept(ExpressionVisitor expressionVisitor);
 }
