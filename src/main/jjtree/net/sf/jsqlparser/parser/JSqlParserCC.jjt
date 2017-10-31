@@ -2084,9 +2084,18 @@ Expression LikeExpression() #LikeExpression:
     Expression rightExpression = null;
 }
 {
-    leftExpression=SimpleExpression()
-    [<K_NOT> { result.setNot(true); } ] ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
-    [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
+    (
+        (
+            leftExpression=SimpleExpression()
+            [<K_NOT> { result.setNot(true); } ] ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
+            [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
+        )
+        |
+        (
+            [<K_NOT> { result.setNot(true); } ] leftExpression=SimpleExpression() ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
+            [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
+        )
+    )
     {
         result.setLeftExpression(leftExpression);
         result.setRightExpression(rightExpression);

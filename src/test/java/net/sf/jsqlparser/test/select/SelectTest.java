@@ -1192,6 +1192,24 @@ public class SelectTest extends TestCase {
         assertEquals("test2", ((LikeExpression) plainSelect.getWhere()).getEscape());
     }
 
+    public void testNotLike() throws JSQLParserException {
+        String statement = "SELECT * FROM tab1 WHERE a NOT LIKE 'test'";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).
+                getRightExpression()).getValue());
+        assertEquals(true, (boolean) ((LikeExpression) plainSelect.getWhere()).isNot());
+    }
+
+    public void testNotLikeWithNotBeforeExpression() throws JSQLParserException {
+        String statement = "SELECT * FROM tab1 WHERE NOT a LIKE 'test'";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).
+                getRightExpression()).getValue());
+        assertEquals(true, (boolean) ((LikeExpression) plainSelect.getWhere()).isNot());
+    }
+
     public void testIlike() throws JSQLParserException {
         String statement = "SELECT col1 FROM table1 WHERE col1 ILIKE '%hello%'";
         assertSqlCanBeParsedAndDeparsed(statement);
