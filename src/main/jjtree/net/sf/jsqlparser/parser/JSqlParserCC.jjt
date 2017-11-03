@@ -625,6 +625,8 @@ Insert Insert():
     boolean useSet = false;
     List<Column> setColumns = new ArrayList<Column>();
     List<Expression> setExpressionList = new ArrayList<Expression>();
+    String name = null;
+    boolean useAs = false;
 }
 {
     <K_INSERT>
@@ -634,7 +636,8 @@ Insert Insert():
     }]
     [<K_IGNORE>{ modifierIgnore = true; }]
     [<K_INTO>] table=Table()
-
+  
+    [ [<K_AS> { useAs = true; } ] name=RelObjectNameWithoutValue() { table.setAlias(new Alias(name,useAs)); }]
 
      [LOOKAHEAD(2) "(" tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"  ]
     (
@@ -940,15 +943,18 @@ Column Column() #Column :
     }
 }
 
-String RelObjectName() :
+/*
+Not all names should be allowed for aliases.
+*/
+String RelObjectNameWithoutValue() : 
 {    Token tk = null; }
 {
     (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>
       | tk=<K_CAST> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> 
       | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE> 
-      | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_VALUE> | tk=<K_XML>
+      | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_XML>
       | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>
-      | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_VALUES> | tk=<K_PERCENT> | tk=<K_PRIOR>
+      | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_PERCENT> | tk=<K_PRIOR>
       | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
       | tk=<K_INSERT>
@@ -958,7 +964,21 @@ String RelObjectName() :
 }
 
 /*
-Extended usage of object names.
+Normal names.
+*/
+String RelObjectName() :
+{    Token tk = null; String result = null; }
+{
+    (result = RelObjectNameWithoutValue() | tk=<K_VALUE> | tk=<K_VALUES>)
+
+    { 
+		if (tk!=null) result=tk.image;
+		return result; 
+	}
+}
+
+/*
+Extended version of object names.
 */
 String RelObjectNameExt():
 { Token tk = null;
