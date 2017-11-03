@@ -41,6 +41,7 @@ package net.sf.jsqlparser.expression;
 
 import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -48,7 +49,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  *
  * @author toben
  */
-public class MySQLGroupConcat implements Expression {
+public class MySQLGroupConcat extends ASTNodeAccessImpl implements Expression {
 
     private ExpressionList expressionList;
     private boolean distinct = false;

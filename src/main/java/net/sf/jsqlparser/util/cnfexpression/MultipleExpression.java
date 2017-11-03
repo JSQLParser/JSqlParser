@@ -26,13 +26,14 @@ import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.NullValue;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * This is a helper class that mainly used for handling the CNF conversion.
  * @author messfish
  *
  */
-public abstract class MultipleExpression implements Expression {
+public abstract class MultipleExpression extends ASTNodeAccessImpl implements Expression {
 
     private final List<Expression> childlist;
     

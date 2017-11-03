@@ -24,12 +24,13 @@ package net.sf.jsqlparser.statement.select;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 
 /**
  * A join clause
  */
-public class Join {
+public class Join extends ASTNodeAccessImpl {
 
     private boolean outer = false;
     private boolean right = false;

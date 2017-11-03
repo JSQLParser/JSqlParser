@@ -96,4 +96,10 @@ public class CCJSqlParserUtilTest {
         Expression result = CCJSqlParserUtil.parseCondExpression("x=92 lasd y=29", true);
         assertEquals("x = 92", result.toString());
     }
+    
+    @Test
+    public void testParseCondExpressionIssue471() throws Exception {
+        Expression result = CCJSqlParserUtil.parseCondExpression("(SSN,SSM) IN ('11111111111111', '22222222222222')");
+        assertEquals("(SSN, SSM) IN ('11111111111111', '22222222222222')", result.toString());
+    }
 }
