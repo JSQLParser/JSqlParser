@@ -49,6 +49,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.2
 
+* support for aliased table in **insert into** statement
 * **SQL_CALC_FOUND_ROWS** support
 * support for more complex expressions within **case expr when expr then expr end**.
 * support for **<<** and **>>** left and right shift operations
