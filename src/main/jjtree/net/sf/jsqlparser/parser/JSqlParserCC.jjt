@@ -30,7 +30,7 @@ options{
 //  FORCE_LA_CHECK=true;
     UNICODE_INPUT=true;
 	JAVA_TEMPLATE_TYPE = "modern";
-	JDK_VERSION = "1.6";
+	JDK_VERSION = "1.7";
     TOKEN_EXTENDS ="BaseToken";
     COMMON_TOKEN_ACTION=true;
 	LEGACY_EXCEPTION_HANDLING = false;
