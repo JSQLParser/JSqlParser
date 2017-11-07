@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.parser.TokenMgrError;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
 import org.apache.commons.io.FileUtils;
@@ -64,9 +63,6 @@ public class SpecialOracleTest {
                     success++;
                     LOG.info("   -> SUCCESS");
                 } catch (JSQLParserException ex) {
-                    //LOG.log(Level.SEVERE, null, ex);
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
-                } catch (TokenMgrError ex) {
                     //LOG.log(Level.SEVERE, null, ex);
                     LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
                 } catch (Exception ex) {

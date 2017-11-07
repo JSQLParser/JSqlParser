@@ -403,15 +403,16 @@ Statement SingleStatement() :
         |
         stm = Commit() 
         )
+		{ return stm; }
     } catch (ParseException e) {
         if (errorRecovery) {
             parseErrors.add(e);
             error_skipto(ST_SEMICOLON);
+			return null;
         }
         else 
             throw e;
     }
-    { return stm; }
 }
 
 Statements Statements() #Statements : 
