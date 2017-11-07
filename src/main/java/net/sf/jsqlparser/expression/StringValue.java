@@ -21,10 +21,12 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  * A string as in 'example_string'
  */
-public class StringValue implements Expression {
+public class StringValue extends ASTNodeAccessImpl implements Expression {
 
     private String value = "";
 

@@ -267,4 +267,9 @@ public class InsertTest {
                 + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'");
     }
     
+    @Test
+    public void testInsertTableWithAliasIssue526() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO account t (name, addr, phone) SELECT * FROM user");
+    }
+    
 }

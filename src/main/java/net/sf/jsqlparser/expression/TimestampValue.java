@@ -21,17 +21,27 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 import java.sql.Timestamp;
 
 /**
  * A Timestamp in the form {ts 'yyyy-mm-dd hh:mm:ss.f . . .'}
  */
-public class TimestampValue implements Expression {
+public class TimestampValue extends ASTNodeAccessImpl implements Expression {
 
     private Timestamp value;
-
+    private char quotation = '\'';
     public TimestampValue(String value) {
-        this.value = Timestamp.valueOf(value.substring(1, value.length() - 1));
+        if (value == null) {
+            throw new java.lang.IllegalArgumentException("null string");
+        } else {
+            if (value.charAt(0) == quotation) {
+                this.value = Timestamp.valueOf(value.substring(1, value.length() - 1));
+            } else {
+                this.value = Timestamp.valueOf(value.substring(0, value.length()));
+            }
+        }
     }
 
     @Override
