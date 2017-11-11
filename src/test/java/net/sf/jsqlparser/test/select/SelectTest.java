@@ -1974,6 +1974,12 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
+    public void testRlike() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE first_name RLIKE '^Ste(v|ph)en$'";
+        Statement st = CCJSqlParserUtil.parse(stmt);
+        assertStatementCanBeDeparsedAs(st, "SELECT * FROM mytable WHERE first_name REGEXP '^Ste(v|ph)en$'");
+    }
+
     public void testBooleanFunction1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE test_func(col1)";
         assertSqlCanBeParsedAndDeparsed(stmt);
