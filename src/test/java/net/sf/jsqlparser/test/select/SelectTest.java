@@ -1374,6 +1374,11 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
+    public void testAliasStartsWithDigit() throws JSQLParserException {
+        String statement = "SELECT a AS 1_a FROM tbl WHERE c = d";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
     public void testGroupByExpression() throws JSQLParserException {
         String statement = "SELECT col1, col2, col1 + col2, sum(col8)" + " FROM table1 "
                 + "GROUP BY col1, col2, col1 + col2";
