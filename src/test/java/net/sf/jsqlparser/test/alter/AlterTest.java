@@ -244,4 +244,12 @@ public class AlterTest extends TestCase {
     public void testDropColumnRestrictIssue510() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE TABLE1 DROP COLUMN NewColumn CASCADE");
     }
+    
+    public void testDropColumnRestrictIssue551() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE table1 DROP NewColumn");
+        
+        // COLUMN keyword appears in deparsed statement, drop becomes all caps
+        assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE table1 DROP COLUMN NewColumn");
+        
+    }
 }
