@@ -3462,7 +3462,7 @@ AlterExpression AlterExpression():
             alterExp.setOperation(AlterOperation.DROP);
         }
          (
-             (  <K_COLUMN>
+             (  (LOOKAHEAD(2) <K_COLUMN>)?
                 (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>)
                      {
                             alterExp.setColumnName(tk.image);
