@@ -49,6 +49,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.2
 
+* switched to JavaCC **modern template**
+* switched to JDK 1.7 
 * introduced more AST node links
 * support for aliased table in **insert into** statement
 * **SQL_CALC_FOUND_ROWS** support
