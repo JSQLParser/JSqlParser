@@ -961,7 +961,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_PERCENT> | tk=<K_PRIOR>
       | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
-      | tk=<K_INSERT>
+      | tk=<K_INSERT> | tk=<K_INDEX>
       )
 
     { return tk.image; }
@@ -2974,7 +2974,7 @@ CreateTable CreateTable():
             ","
 
             (
-                (
+                LOOKAHEAD(3) (
                     tk=<K_INDEX>
                         sk3=RelObjectName()
                         colNames=ColumnsNamesList()
