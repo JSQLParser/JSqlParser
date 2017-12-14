@@ -122,6 +122,8 @@ public interface ExpressionVisitor {
 
     void visit(CaseExpression caseExpression);
 
+    void visit(IfExpression ifExpression);
+
     void visit(WhenClause whenClause);
 
     void visit(ExistsExpression existsExpression);

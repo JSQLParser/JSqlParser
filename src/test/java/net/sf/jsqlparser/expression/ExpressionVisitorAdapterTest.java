@@ -21,12 +21,14 @@ package net.sf.jsqlparser.expression;
 import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -152,6 +154,22 @@ public class ExpressionVisitorAdapterTest {
 
         assertEquals(1, columnList.size());
         assertEquals("bar", columnList.get(0));
+    }
+
+    @Test
+    public void testIfExpression() throws JSQLParserException {
+        Select select = (Select) CCJSqlParserUtil.parse("select if(a=0, 3, 4) from table1");
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        IfExpression ifExpression = (IfExpression) ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getExpression();
+        ifExpression.accept(new ExpressionVisitorAdapter() {
+            @Override
+            public void visit(IfExpression expr) {
+                super.visit(expr);
+                assertEquals(true, expr.getIfExpression() instanceof EqualsTo);
+                assertEquals(3, ((LongValue) expr.getThenExpression()).getValue());
+                assertEquals(4, ((LongValue) expr.getElseExpression()).getValue());
+            }
+        });
     }
 
     @Test
