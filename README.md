@@ -38,6 +38,8 @@ To help JSqlParsers development you are encouraged to provide
 * fund new features
 * a little donation
 
+**Please write in english, since it's the language most of the dev team knows.**
+
 Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.2
