@@ -33,7 +33,6 @@ options{
 	JDK_VERSION = "1.7";
     TOKEN_EXTENDS ="BaseToken";
     COMMON_TOKEN_ACTION=true;
-	LEGACY_EXCEPTION_HANDLING = false;
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -1708,10 +1707,22 @@ OrderByElement OrderByElement():
     }
 }
 
+JdbcParameter SimpleJdbcParameter() : {
+    JdbcParameter retval;
+}
+{
+    "?" { retval = new JdbcParameter(++jdbcParameterIndex, false); } 
+		[ LOOKAHEAD(2) token = <S_LONG> { retval.setUseFixedIndex(true); retval.setIndex(Integer.valueOf(token.image)); } ]
+    {
+        return retval;
+    }
+}
+
 Limit LimitWithOffset() #LimitWithOffset:
 {
     Limit limit = new Limit();
     Token token = null;
+    JdbcParameter jdbc = null;
 }
 {
     (
@@ -1721,7 +1732,7 @@ Limit LimitWithOffset() #LimitWithOffset:
                      (
                          token=<S_LONG> { limit.setOffset(new LongValue(token.image)); }
                          |
-                         "?" { limit.setOffset(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { ((JdbcParameter)limit.getOffset()).setUseFixedIndex(true); ((JdbcParameter)limit.getOffset()).setIndex(Integer.valueOf(token.image)); } ]
+                         jdbc = SimpleJdbcParameter() { limit.setOffset(jdbc); }
                          |
                          ":" { limit.setOffset(new JdbcNamedParameter()); } [ LOOKAHEAD(2) token = <S_IDENTIFIER> { ((JdbcNamedParameter)limit.getOffset()).setName(token.image); } ]
 
@@ -1731,7 +1742,7 @@ Limit LimitWithOffset() #LimitWithOffset:
                 (
                 token=<S_LONG> { limit.setRowCount(new LongValue(token.image)); }
                 |
-                 "?" { limit.setRowCount(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { ((JdbcParameter)limit.getRowCount()).setUseFixedIndex(true); ((JdbcParameter)limit.getRowCount()).setIndex(Integer.valueOf(token.image)); } ]
+                 jdbc = SimpleJdbcParameter() { limit.setRowCount(jdbc); } 
                  |
                  ":" { limit.setRowCount(new JdbcNamedParameter()); } [ LOOKAHEAD(2) token = <S_IDENTIFIER> { ((JdbcNamedParameter)limit.getRowCount()).setName(token.image); } ]
                 )
@@ -1748,6 +1759,7 @@ Limit PlainLimit() #PlainLimit:
 {
     Limit limit = new Limit();
     Token token = null;
+    JdbcParameter jdbc;
 }
 {
     // mysql-postgresql-> LIMIT (row_count | ALL | NULL)
@@ -1755,7 +1767,7 @@ Limit PlainLimit() #PlainLimit:
      (
          token=<S_LONG> { limit.setRowCount(new LongValue(token.image)); }
          |
-         "?" { limit.setRowCount(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { ((JdbcParameter)limit.getRowCount()).setUseFixedIndex(true); ((JdbcParameter)limit.getRowCount()).setIndex(Integer.valueOf(token.image)); } ]
+         jdbc = SimpleJdbcParameter() { limit.setRowCount(jdbc); } 
          |
         ":" { limit.setRowCount(new JdbcNamedParameter()); } [ LOOKAHEAD(2) token = <S_IDENTIFIER> { ((JdbcNamedParameter)limit.getRowCount()).setName(token.image); } ]
          |
@@ -1773,6 +1785,7 @@ Offset Offset():
 {
     Offset offset = new Offset();
     Token token = null;
+    JdbcParameter jdbc;
 }
 {
     (
@@ -1780,7 +1793,7 @@ Offset Offset():
             // sqlserver-oracle-> OFFSET offset (ROW | ROWS)
              <K_OFFSET>
                  (token=<S_LONG> { offset.setOffset(Long.parseLong(token.image)); }
-                 | "?" { offset.setOffsetJdbcParameter(true); } )
+                 | jdbc = SimpleJdbcParameter() { offset.setOffsetJdbcParameter(jdbc); } ) 
                  [(<K_ROWS> { offset.setOffsetParam("ROWS"); } | <K_ROW> { offset.setOffsetParam("ROW"); })]
 
         )
@@ -1793,6 +1806,7 @@ Fetch Fetch():
 {
     Fetch fetch = new Fetch();
     Token token = null;
+    JdbcParameter jdbc;
 }
 {
     (
@@ -1800,7 +1814,7 @@ Fetch Fetch():
              <K_FETCH>
                   (<K_FIRST> { fetch.setFetchParamFirst(true); } | <K_NEXT>)
                  (token=<S_LONG> { fetch.setRowCount(Long.parseLong(token.image)); }
-                 | "?" { fetch.setFetchJdbcParameter(true); } )
+                 | jdbc = SimpleJdbcParameter() { fetch.setFetchJdbcParameter(jdbc); } ) /* "?" { fetch.setFetchJdbcParameter(true); } ) */
                  (<K_ROWS> { fetch.setFetchParam("ROWS"); } | <K_ROW>) 
                  <K_ONLY>
 
@@ -1816,13 +1830,15 @@ Top Top():
     Top top = new Top();
     Token token = null;
     Expression expr = null;
+    JdbcParameter jdbc = null;
 }
 {
     <K_TOP>
     (
          token=<S_LONG>                      { top.setExpression(new LongValue(token.image)); }
        |
-         "?"                                 { top.setExpression(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { ((JdbcParameter)(top.getExpression())).setUseFixedIndex(true); ((JdbcParameter)(top.getExpression())).setIndex(Integer.valueOf(token.image)); } ]
+         jdbc = SimpleJdbcParameter() { top.setExpression(jdbc); }
+         /*"?"                                 { top.setExpression(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { ((JdbcParameter)(top.getExpression())).setUseFixedIndex(true); ((JdbcParameter)(top.getExpression())).setIndex(Integer.valueOf(token.image)); } ]*/
        |
        ":"                                  { top.setExpression(new JdbcNamedParameter()); } [ LOOKAHEAD(2) token = <S_IDENTIFIER> { ((JdbcNamedParameter)top.getExpression()).setName(token.image); } ]
        |
@@ -1841,13 +1857,15 @@ Skip Skip():
 {
     Skip skip = new Skip();
     Token token = null;
+    JdbcParameter jdbc;
 }
 {
     <K_SKIP>
     (
          token=<S_LONG>                      { skip.setRowCount(Long.parseLong(token.image)); }
                 | token=<S_IDENTIFIER>              { skip.setVariable(token.image); }
-                | "?" { skip.setJdbcParameter(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { skip.getJdbcParameter().setUseFixedIndex(true); skip.getJdbcParameter().setIndex(Integer.valueOf(token.image)); } ]
+                | jdbc = SimpleJdbcParameter() { skip.setJdbcParameter(jdbc); } 
+                   /* "?" { skip.setJdbcParameter(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { skip.getJdbcParameter().setUseFixedIndex(true); skip.getJdbcParameter().setIndex(Integer.valueOf(token.image)); } ] */
     )
     {
         return skip;
@@ -1875,6 +1893,7 @@ First First():
 {
     First first = new First();
     Token token = null;
+    JdbcParameter jdbc;
 }
 {
     ( <K_FIRST>                                 { first.setKeyword(First.Keyword.FIRST); }
@@ -1883,7 +1902,8 @@ First First():
     (
          token=<S_LONG>                      { first.setRowCount(Long.parseLong(token.image)); }
                 | token=<S_IDENTIFIER>              { first.setVariable(token.image); }
-                |  "?" { first.setJdbcParameter(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { first.getJdbcParameter().setUseFixedIndex(true); first.getJdbcParameter().setIndex(Integer.valueOf(token.image)); } ]
+                | jdbc = SimpleJdbcParameter() { first.setJdbcParameter(jdbc); } 
+                    /* "?" { first.setJdbcParameter(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { first.getJdbcParameter().setUseFixedIndex(true); first.getJdbcParameter().setIndex(Integer.valueOf(token.image)); } ] */
     )
     {
         return first;
@@ -2406,8 +2426,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     | retval=CaseWhenExpression()
 
-    | "?" { retval = new JdbcParameter(++jdbcParameterIndex, false); } 
-		[ token = <S_LONG> { ((JdbcParameter)retval).setUseFixedIndex(true); ((JdbcParameter)retval).setIndex(Integer.valueOf(token.image)); } ]
+    | retval = SimpleJdbcParameter()
 
     | LOOKAHEAD(2) retval=JdbcNamedParameter()
 

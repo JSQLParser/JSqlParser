@@ -280,8 +280,8 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     public void deparseOffset(Offset offset) {
         // OFFSET offset
         // or OFFSET offset (ROW | ROWS)
-        if (offset.isOffsetJdbcParameter()) {
-            buffer.append(" OFFSET ?");
+        if (offset.getOffsetJdbcParameter()!=null) {
+            buffer.append(" OFFSET ").append(offset.getOffsetJdbcParameter());
         } else if (offset.getOffset() != 0) {
             buffer.append(" OFFSET ");
             buffer.append(offset.getOffset());
@@ -300,8 +300,8 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         } else {
             buffer.append("NEXT ");
         }
-        if (fetch.isFetchJdbcParameter()) {
-            buffer.append("?");
+        if (fetch.getFetchJdbcParameter()!=null) {
+            buffer.append(fetch.getFetchJdbcParameter().toString());
         } else {
             buffer.append(fetch.getRowCount());
         }

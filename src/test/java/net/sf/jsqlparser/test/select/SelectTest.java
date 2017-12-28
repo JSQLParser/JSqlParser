@@ -238,7 +238,7 @@ public class SelectTest extends TestCase {
 
         assertNull(((PlainSelect) select.getSelectBody()).getLimit());
         assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
-        assertTrue(((PlainSelect) select.getSelectBody()).getOffset().isOffsetJdbcParameter());
+        assertEquals("?", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetJdbcParameter().toString());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
@@ -310,7 +310,7 @@ public class SelectTest extends TestCase {
 
         assertNull(((PlainSelect) select.getSelectBody()).getLimit());
         assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
-        assertTrue(((PlainSelect) select.getSelectBody()).getOffset().isOffsetJdbcParameter());
+        assertEquals("?", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetJdbcParameter().toString());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
@@ -452,8 +452,8 @@ public class SelectTest extends TestCase {
         assertNotNull(((PlainSelect) select.getSelectBody()).getFetch());
         assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getFetch().getFetchParam());
         assertFalse(((PlainSelect) select.getSelectBody()).getFetch().isFetchParamFirst());
-        assertFalse(((PlainSelect) select.getSelectBody()).getOffset().isOffsetJdbcParameter());
-        assertFalse(((PlainSelect) select.getSelectBody()).getFetch().isFetchJdbcParameter());
+        assertNull(((PlainSelect) select.getSelectBody()).getOffset().getOffsetJdbcParameter());
+        assertNull(((PlainSelect) select.getSelectBody()).getFetch().getFetchJdbcParameter());
         assertEquals(3, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
         assertEquals(5, ((PlainSelect) select.getSelectBody()).getFetch().getRowCount());
         assertStatementCanBeDeparsedAs(select, statement);
@@ -512,14 +512,22 @@ public class SelectTest extends TestCase {
         assertNotNull(((PlainSelect) select.getSelectBody()).getFetch());
         assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getFetch().getFetchParam());
         assertFalse(((PlainSelect) select.getSelectBody()).getFetch().isFetchParamFirst());
-        assertTrue(((PlainSelect) select.getSelectBody()).getOffset().isOffsetJdbcParameter());
-        assertTrue(((PlainSelect) select.getSelectBody()).getFetch().isFetchJdbcParameter());
+        assertEquals("?", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetJdbcParameter().toString());
+        assertEquals("?", ((PlainSelect) select.getSelectBody()).getFetch().getFetchJdbcParameter().toString());
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
     public void testLimitPR404() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ?1");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE mytable.col = 9 LIMIT :param_name");
+    }
+    
+    public void testLimitOffsetIssue462() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable LIMIT ?1");
+    }
+    
+    public void testLimitOffsetIssue462_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable LIMIT ?1 OFFSET ?2");
     }
 
     public void testTop() throws JSQLParserException {
@@ -1991,7 +1999,7 @@ public class SelectTest extends TestCase {
         String stmt = "SELECT * FROM mytable WHERE first_name REGEXP BINARY '^Ste(v|ph)en$'";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-    
+
     public void testRlike() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE first_name RLIKE '^Ste(v|ph)en$'");
     }
@@ -2708,7 +2716,7 @@ public class SelectTest extends TestCase {
     public void testIssue522_4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE a + b WHEN -1 * 5 THEN 1 ELSE CASE b + c WHEN -1 * 6 THEN 2 ELSE 3 END END");
     }
-    
+
     public void testIssue554() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT T.INDEX AS INDEX133_ FROM myTable T");
     }
