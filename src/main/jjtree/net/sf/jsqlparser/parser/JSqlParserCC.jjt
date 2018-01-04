@@ -1558,11 +1558,13 @@ FromItem SubJoin():
 {
     FromItem fromItem = null;
     Join join = null;
+    List joinList = null;
     SubJoin subJoin = new SubJoin();
 }
 {
     fromItem=FromItem() { subJoin.setLeft(fromItem); }
-    join=JoinerExpression() { subJoin.setJoin(join); }
+//    join=JoinerExpression() { subJoin.setJoin(join); }
+	joinList=JoinsList() { subJoin.setJoinList(joinList); }
 
     {
         return subJoin;
