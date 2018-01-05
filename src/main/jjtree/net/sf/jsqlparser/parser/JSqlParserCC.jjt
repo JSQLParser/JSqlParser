@@ -3312,6 +3312,8 @@ Drop Drop():
         tk=<K_TABLE>
         |
         tk=<K_INDEX>
+        |
+        tk=<K_VIEW>
     )
     { drop.setType(tk.image); }
 
