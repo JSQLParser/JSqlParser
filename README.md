@@ -44,6 +44,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.2
 
+* support for bitwise not **~**
 * support for **drop view**
 * support for indexed JDBC parameters at multiple places
 * allowed **index** as object name

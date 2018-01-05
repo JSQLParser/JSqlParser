@@ -2420,7 +2420,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     ColDataType type = null;
 }
 {
-[sign="+" | sign="-"]
+[sign="+" | sign="-" | sign="~"]
 (
     <K_NULL> { retval = new NullValue(); }
 
