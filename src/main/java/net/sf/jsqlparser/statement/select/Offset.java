@@ -21,13 +21,15 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.JdbcParameter;
+
 /**
  * An offset clause in the form OFFSET offset or in the form OFFSET offset (ROW | ROWS)
  */
 public class Offset {
 
     private long offset;
-    private boolean offsetJdbcParameter = false;
+    private JdbcParameter offsetJdbcParameter = null;
     private String offsetParam = null;
 
     public long getOffset() {
@@ -46,16 +48,16 @@ public class Offset {
         offsetParam = s;
     }
 
-    public boolean isOffsetJdbcParameter() {
+    public JdbcParameter getOffsetJdbcParameter() {
         return offsetJdbcParameter;
     }
 
-    public void setOffsetJdbcParameter(boolean b) {
-        offsetJdbcParameter = b;
+    public void setOffsetJdbcParameter(JdbcParameter jdbc) {
+        offsetJdbcParameter = jdbc;
     }
 
     @Override
     public String toString() {
-        return " OFFSET " + (offsetJdbcParameter ? "?" : offset) + (offsetParam != null ? " " + offsetParam : "");
+        return " OFFSET " + (offsetJdbcParameter!=null ? offsetJdbcParameter.toString() : offset) + (offsetParam != null ? " " + offsetParam : "");
     }
 }

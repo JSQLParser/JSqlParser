@@ -36,11 +36,17 @@ To help JSqlParsers development you are encouraged to provide
 * pull requests for new features
 * improvement requests
 * fund new features
+* a little donation
+
+**Please write in english, since it's the language most of the dev team knows.**
 
 Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.2
 
+* support for bitwise not **~**
+* support for **drop view**
+* support for indexed JDBC parameters at multiple places
 * allowed **index** as object name
 * switched to JavaCC **modern template**
 * switched to JDK 1.7 
