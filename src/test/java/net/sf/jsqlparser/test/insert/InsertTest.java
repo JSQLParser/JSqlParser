@@ -239,7 +239,7 @@ public class InsertTest {
     public void testIssue223() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO user VALUES (2001, '\\'Clark\\'', 'Kent')");
     }
-
+    
     @Test
     public void testKeywordPrecisionIssue363() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO test (user_id, precision) VALUES (1, '111')");
