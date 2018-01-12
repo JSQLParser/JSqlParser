@@ -2720,4 +2720,8 @@ public class SelectTest extends TestCase {
     public void testIssue554() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT T.INDEX AS INDEX133_ FROM myTable T");
     }
+    
+    public void testIssue567KeywordPrimary() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT primary, secondary FROM info");
+    }
 }
