@@ -1569,7 +1569,7 @@ FromItem SubJoin():
     }
 }
 
-List JoinsList():
+List<Join> JoinsList():
 {
     List<Join> joinsList = new ArrayList<Join>();
     Join join = null;
