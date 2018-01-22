@@ -144,6 +144,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_BETWEEN:"BETWEEN">
 |   <K_BINARY: "BINARY">  
 |   <K_BIT:"BIT">
+|   <K_BOTH:"BOTH">
 |   <K_BY:"BY">
 |   <K_CALL : "CALL">
 |   <K_CASCADE: "CASCADE">
@@ -208,6 +209,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_KEY:"KEY">
 |   <K_LAST: "LAST">
 |   <K_LATERAL:"LATERAL">
+|   <K_LEADING:"LEADING">
 |   <K_LEFT:"LEFT">
 |   <K_LIKE:"LIKE">
 |   <K_LIMIT:"LIMIT">
@@ -265,6 +267,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_THEN:"THEN">
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
 |   <K_TOP:"TOP">
+|   <K_TRAILING:"TRAILING">
+|   <K_TRIM:"TRIM">
 |   <K_TRUNCATE:"TRUNCATE">
 |   <K_UNBOUNDED: "UNBOUNDED"> 
 |   <K_UNION:"UNION">
@@ -2442,6 +2446,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     | LOOKAHEAD(JsonExpression()) retval=JsonExpression()
 
+    | retval=TrimExpression()
+
     | LOOKAHEAD(Function()) retval=Function()
 
     | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
@@ -2795,6 +2801,25 @@ Execute Execute(): {
     { 
         execute.setExprList(expressionList);
         return execute; 
+    }
+}
+
+TrimExpression TrimExpression() :
+{
+    TrimExpression retval = new TrimExpression();
+    Token removalChar = null;
+    Expression expr = null;
+}
+{
+    <K_TRIM> "(" [ LOOKAHEAD(3)
+        [<K_LEADING> { retval.setSpecification(TrimSpecification.LEADING); }
+        | <K_TRAILING> { retval.setSpecification(TrimSpecification.TRAILING); }
+        | <K_BOTH> { retval.setSpecification(TrimSpecification.BOTH); }]
+        [removalChar=<S_CHAR_LITERAL> { retval.setRemovalCharacter(removalChar.image); }]
+        <K_FROM>] expr=SimpleExpression() ")"
+    {
+        retval.setExpression(expr);
+        return retval;
     }
 }
 

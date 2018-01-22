@@ -1907,7 +1907,7 @@ public class SelectTest extends TestCase {
     }
 
     public void testMultiValueIn2() throws JSQLParserException {
-        String stmt = "SELECT * FROM mytable WHERE (trim(a), trim(b)) IN (SELECT a, b FROM mytable2)";
+        String stmt = "SELECT * FROM mytable WHERE (TRIM(a), TRIM(b)) IN (SELECT a, b FROM mytable2)";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
@@ -2723,5 +2723,17 @@ public class SelectTest extends TestCase {
     
     public void testIssue567KeywordPrimary() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT primary, secondary FROM info");
+    }
+
+    public void testTrimWithRemovalCharSpecified() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT TRIM('_' FROM '__INIT__') FROM dual");
+    }
+
+    public void testTrimWithEdgeSpecified() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT TRIM(TRAILING FROM 'asdf ') FROM dual");
+    }
+
+    public void testTrimWithEdgeAndRemovalCharSpecified() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT TRIM(BOTH ' ' FROM ' asdf ') FROM dual");
     }
 }

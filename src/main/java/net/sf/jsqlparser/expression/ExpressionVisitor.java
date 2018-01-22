@@ -178,4 +178,5 @@ public interface ExpressionVisitor {
 
     public void visit(NotExpression aThis);
 
+    void visit(TrimExpression trimExpression);
 }
