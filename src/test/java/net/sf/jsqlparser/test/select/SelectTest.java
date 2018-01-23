@@ -2724,4 +2724,12 @@ public class SelectTest extends TestCase {
     public void testIssue567KeywordPrimary() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT primary, secondary FROM info");
     }
+
+    public void testSubstringFrom() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT SUBSTRING(col FROM 3) FROM t");
+    }
+
+    public void testSubstringFromFor() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT SUBSTRING('asdf' FROM 1 FOR 2) FROM dual");
+    }
 }

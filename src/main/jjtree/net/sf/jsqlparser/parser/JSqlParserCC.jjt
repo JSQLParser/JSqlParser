@@ -260,6 +260,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SKIP: "SKIP">
 |   <K_SOME:"SOME">
 |   <K_START:"START">
+|   <K_SUBSTRING:"SUBSTRING">
 |   <K_TABLE:"TABLE">
 |   <K_TABLESPACE : "TABLESPACE">
 |   <K_THEN:"THEN">
@@ -960,7 +961,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_PERCENT> | tk=<K_PRIOR>
       | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
-      | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY>
+      | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_SUBSTRING>
       )
 
     { return tk.image; }
@@ -2442,6 +2443,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     | LOOKAHEAD(JsonExpression()) retval=JsonExpression()
 
+    | LOOKAHEAD(SubstringExpression()) retval=SubstringExpression()
+
     | LOOKAHEAD(Function()) retval=Function()
 
     | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
@@ -2796,6 +2799,22 @@ Execute Execute(): {
         execute.setExprList(expressionList);
         return execute; 
     }
+}
+
+SubstringExpression SubstringExpression() :
+{
+    SubstringExpression retval = new SubstringExpression();
+    Expression expr;
+    Expression start;
+    Expression length;
+}
+{
+    <K_SUBSTRING> "("
+        expr=SimpleExpression() { retval.setExpression(expr); }
+        <K_FROM> start=AdditiveExpression() { retval.setStart(start); }
+        [<K_FOR> length=AdditiveExpression() { retval.setLength(length); }]
+    ")"
+    { return retval; }
 }
 
 Function Function() #Function:
