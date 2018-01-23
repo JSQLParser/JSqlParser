@@ -493,4 +493,8 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     }
 
+    @Override
+    public void visit(TranslateExpression translateExpression) {
+        translateExpression.getExpression().accept(this);
+    }
 }

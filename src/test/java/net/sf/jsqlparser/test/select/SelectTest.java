@@ -2724,4 +2724,12 @@ public class SelectTest extends TestCase {
     public void testIssue567KeywordPrimary() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT primary, secondary FROM info");
     }
+
+    public void testTranslateUsing() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT TRANSLATE('ASDF' USING UNICODE_TO_LATIN) FROM dual");
+    }
+
+    public void testTranslate3argSyntax() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT TRANSLATE('my string', 'abcdefghijklmnopqrstuvwxyz', 'defghijklmnopqrstuvwxyzabc') encode_string FROM dual");
+    }
 }
