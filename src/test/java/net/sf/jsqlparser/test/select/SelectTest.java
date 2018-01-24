@@ -2724,4 +2724,8 @@ public class SelectTest extends TestCase {
     public void testIssue567KeywordPrimary() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT primary, secondary FROM info");
     }
+
+    public void testTeradataCastFormat() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST(t.firstname AS NUMBER FORMAT '#.000') AS col1 FROM table1 t");
+    }
 }
