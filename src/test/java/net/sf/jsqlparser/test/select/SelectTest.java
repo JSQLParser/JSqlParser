@@ -2724,4 +2724,12 @@ public class SelectTest extends TestCase {
     public void testIssue567KeywordPrimary() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT primary, secondary FROM info");
     }
+
+    public void testSimpleTeradataFormatExpression() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT SUM(Salary) (FORMAT '$$99,999.99') FROM Employee");
+    }
+
+    public void testNestedTeradataFormatExpression() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COALESCE(TRIM(CDSIRD.S_TX_CNTR_NO (FORMAT 'Z(17)9'))) FROM dual");
+    }
 }

@@ -2482,6 +2482,9 @@ Expression PrimaryExpression() #PrimaryExpression:
         retval=castExpr;
 } ]
 
+[LOOKAHEAD("("<S_IDENTIFIER>, {getToken(2).image.equalsIgnoreCase("FORMAT")})
+        "(" <S_IDENTIFIER> token=<S_CHAR_LITERAL> ")" { retval = new TeradataFormatExpression(retval, token.image); }]
+
     {
         if (sign != null) {
             retval = new SignedExpression(sign.image.charAt(0), retval);
