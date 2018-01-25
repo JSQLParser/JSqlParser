@@ -152,6 +152,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CAST:"CAST">
 |   <K_CHARACTER:"CHARACTER">
 |   <K_CHECK:"CHECK">
+|   <K_COLLATE:"COLLATE">
 |   <K_COLUMN:"COLUMN">
 |   <K_COMMIT:"COMMIT">
 |   <K_CONNECT:"CONNECT">
@@ -2490,6 +2491,8 @@ Expression PrimaryExpression() #PrimaryExpression:
         castExpr.setType(type);
         retval=castExpr;
 } ]
+
+[<K_COLLATE> token=<S_IDENTIFIER> { retval = new CollateExpression(retval, token.image); }]
 
     {
         if (sign != null) {

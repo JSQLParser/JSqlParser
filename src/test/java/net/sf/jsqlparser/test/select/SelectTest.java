@@ -2748,4 +2748,16 @@ public class SelectTest extends TestCase {
     public void testTeradataCastFormat() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST(t.firstname AS NUMBER FORMAT '#.000') AS col1 FROM table1 t");
     }
+
+    public void testCollateInOrderByClause() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT place FROM locations ORDER BY place COLLATE Traditional_Spanish_ci_ai ASC");
+    }
+
+    public void testCollateInSelectColumn() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT u.name COLLATE Latin1_General_CI_AS AS User FROM users u");
+    }
+
+    public void testCollateInWindowFunction() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT row_number() OVER (ORDER BY name COLLATE Latin1_General_CI_AS_KS ASC) row_num FROM t");
+    }
 }

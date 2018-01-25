@@ -181,4 +181,6 @@ public interface ExpressionVisitor {
     void visit(SubstringExpression substringExpression);
 
     void visit(TrimExpression trimExpression);
+
+    void visit(CollateExpression collateExpression);
 }
