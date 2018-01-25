@@ -2760,4 +2760,12 @@ public class SelectTest extends TestCase {
     public void testCollateInWindowFunction() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT row_number() OVER (ORDER BY name COLLATE Latin1_General_CI_AS_KS ASC) row_num FROM t");
     }
+
+    public void testTranslateUsing() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT TRANSLATE('ASDF' USING UNICODE_TO_LATIN) FROM dual");
+    }
+
+    public void testTranslate3argSyntax() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT TRANSLATE('my string', 'abcdefghijklmnopqrstuvwxyz', 'defghijklmnopqrstuvwxyzabc') encode_string FROM dual");
+    }
 }

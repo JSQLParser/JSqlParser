@@ -183,4 +183,6 @@ public interface ExpressionVisitor {
     void visit(TrimExpression trimExpression);
 
     void visit(CollateExpression collateExpression);
+
+    void visit(TranslateExpression translateExpression);
 }

@@ -59,6 +59,7 @@ import net.sf.jsqlparser.expression.SubstringExpression;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.TranslateExpression;
 import net.sf.jsqlparser.expression.TrimExpression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.WhenClause;
@@ -802,5 +803,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(CollateExpression collateExpression) {
         collateExpression.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(TranslateExpression translateExpression) {
+        translateExpression.getExpression().accept(this);
     }
 }

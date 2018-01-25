@@ -59,6 +59,7 @@ import net.sf.jsqlparser.expression.SubstringExpression;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.TranslateExpression;
 import net.sf.jsqlparser.expression.TrimExpression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.WhenClause;
@@ -764,5 +765,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(CollateExpression collateExpression) {
         buffer.append(collateExpression.toString());
+    }
+
+    @Override
+    public void visit(TranslateExpression translateExpression) {
+        buffer.append(translateExpression.toString());
     }
 }

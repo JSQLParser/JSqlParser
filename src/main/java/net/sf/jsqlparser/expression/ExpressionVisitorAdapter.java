@@ -509,4 +509,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(CollateExpression collateExpression) {
         collateExpression.getExpression().accept(this);
     }
+
+    @Override
+    public void visit(TranslateExpression translateExpression) {
+        translateExpression.getExpression().accept(this);
+    }
 }
