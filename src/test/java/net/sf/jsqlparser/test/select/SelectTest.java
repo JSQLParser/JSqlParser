@@ -2744,4 +2744,8 @@ public class SelectTest extends TestCase {
     public void testTrimWithEdgeAndRemovalCharSpecified() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT TRIM(BOTH ' ' FROM ' asdf ') FROM dual");
     }
+
+    public void testTeradataCastFormat() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST(t.firstname AS NUMBER FORMAT '#.000') AS col1 FROM table1 t");
+    }
 }

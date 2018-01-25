@@ -2705,11 +2705,14 @@ CastExpression CastExpression():
     ColDataType type = null;
     Expression expression = null;
     boolean    useCastKeyword;
+    Token format;
 }
 {
-    <K_CAST> "(" expression=SimpleExpression() <K_AS> type=ColDataType() ")" { retval.setUseCastKeyword(true); }
-
+    <K_CAST> "(" expression=SimpleExpression() <K_AS> type=ColDataType()
+        [LOOKAHEAD(<S_IDENTIFIER>, {getToken(1).image.equalsIgnoreCase("FORMAT")}) <S_IDENTIFIER> format=<S_CHAR_LITERAL> { retval.setFormat(format.image); }]
+    ")"
     {
+        retval.setUseCastKeyword(true);
         retval.setLeftExpression(expression);
         retval.setType(type);
         return retval;
