@@ -2768,4 +2768,12 @@ public class SelectTest extends TestCase {
     public void testTranslate3argSyntax() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT TRANSLATE('my string', 'abcdefghijklmnopqrstuvwxyz', 'defghijklmnopqrstuvwxyzabc') encode_string FROM dual");
     }
+
+    public void testSimpleTeradataFormatExpression() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT SUM(Salary) (FORMAT '$$99,999.99') FROM Employee");
+    }
+
+    public void testNestedTeradataFormatExpression() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COALESCE(TRIM(CDSIRD.S_TX_CNTR_NO (FORMAT 'Z(17)9'))) FROM dual");
+    }
 }
