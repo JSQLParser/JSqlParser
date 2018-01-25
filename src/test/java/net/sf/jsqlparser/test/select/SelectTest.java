@@ -2724,4 +2724,12 @@ public class SelectTest extends TestCase {
     public void testIssue567KeywordPrimary() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT primary, secondary FROM info");
     }
+
+    public void testTeradataQualifyClauseWithReferenceToAnalyticFunctionReference() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ACCOUNT.*, RANK() OVER (PARTITION BY USER ORDER BY TRANSACTION_TIME DESC) AS RANK_TRANSACTION_TIME FROM ACCOUNT QUALIFY RANK_TRANSACTION_TIME = 1");
+    }
+
+    public void testTeradataQualifyClauseWithAnalyticFunction() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ACCOUNT.*, RANK() OVER (PARTITION BY USER ORDER BY TRANSACTION_TIME DESC) AS RANK_TRANSACTION_TIME FROM ACCOUNT QUALIFY RANK() OVER (PARTITION BY USER ORDER BY TRANSACTION_TIME DESC) = 1");
+    }
 }
