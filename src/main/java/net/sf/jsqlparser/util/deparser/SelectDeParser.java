@@ -156,6 +156,11 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             plainSelect.getHaving().accept(expressionVisitor);
         }
 
+        if (plainSelect.getQualify() != null) {
+            buffer.append(" QUALIFY ");
+            plainSelect.getQualify().accept(expressionVisitor);
+        }
+
         if (plainSelect.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).
                     deParse(plainSelect.isOracleSiblings(), plainSelect.getOrderByElements());

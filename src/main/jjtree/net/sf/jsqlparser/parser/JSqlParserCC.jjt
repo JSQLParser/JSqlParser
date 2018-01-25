@@ -244,6 +244,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PRECISION : "PRECISION">
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PRIOR:"PRIOR">
+|   <K_QUALIFY:"QUALIFY">
 |   <K_RANGE: "RANGE">
 |   <K_RECURSIVE:"RECURSIVE">
 |   <K_REFERENCES:"REFERENCES">
@@ -1080,6 +1081,7 @@ PlainSelect PlainSelect() #PlainSelect:
     List<OrderByElement> orderByElements;
     List<Expression> groupByColumnReferences = null;
     Expression having = null;
+    Expression qualify = null;
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
@@ -1131,6 +1133,7 @@ PlainSelect PlainSelect() #PlainSelect:
     [ oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
     [ groupByColumnReferences=GroupByColumnReferences() { plainSelect.setGroupByColumnReferences(groupByColumnReferences); }]
     [ having=Having() { plainSelect.setHaving(having); }]
+    [ qualify=QualifyClause() { plainSelect.setQualify(qualify); }]
     [LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
     [LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements);    }   ]
     [LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
@@ -1680,6 +1683,17 @@ Expression Having():
     <K_HAVING> having=Expression()
     {
         return having;
+    }
+}
+
+Expression QualifyClause():
+{
+    Expression qualify;
+}
+{
+    <K_QUALIFY> qualify=Expression()
+    {
+        return qualify;
     }
 }
 

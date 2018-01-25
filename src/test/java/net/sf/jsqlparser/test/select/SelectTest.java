@@ -2784,4 +2784,12 @@ public class SelectTest extends TestCase {
     public void testTeradataEndPeriodFunction() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT END(vt) AS \"VT_DATE\" FROM t WHERE END(vt) BETWEEN date1 AND date2");
     }
+
+    public void testTeradataQualifyClauseWithReferenceToAnalyticFunctionReference() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ACCOUNT.*, RANK() OVER (PARTITION BY USER ORDER BY TRANSACTION_TIME DESC) AS RANK_TRANSACTION_TIME FROM ACCOUNT QUALIFY RANK_TRANSACTION_TIME = 1");
+    }
+
+    public void testTeradataQualifyClauseWithAnalyticFunction() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ACCOUNT.*, RANK() OVER (PARTITION BY USER ORDER BY TRANSACTION_TIME DESC) AS RANK_TRANSACTION_TIME FROM ACCOUNT QUALIFY RANK() OVER (PARTITION BY USER ORDER BY TRANSACTION_TIME DESC) = 1");
+    }
 }

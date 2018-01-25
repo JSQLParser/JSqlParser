@@ -46,6 +46,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private List<Expression> groupByColumnReferences;
     private List<OrderByElement> orderByElements;
     private Expression having;
+    private Expression qualify;
     private Limit limit;
     private Offset offset;
     private Fetch fetch;
@@ -208,6 +209,14 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         having = expression;
     }
 
+    public Expression getQualify() {
+        return qualify;
+    }
+
+    public void setQualify(Expression qualify) {
+        this.qualify = qualify;
+    }
+
     /**
      * A list of {@link Expression}s of the GROUP BY clause. It is null in case there is no GROUP BY
      * clause
@@ -350,6 +359,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             sql.append(getFormatedList(groupByColumnReferences, "GROUP BY"));
             if (having != null) {
                 sql.append(" HAVING ").append(having);
+            }
+            if (qualify != null) {
+                sql.append(" QUALIFY ").append(qualify);
             }
             sql.append(orderByToString(oracleSiblings, orderByElements));
             if (limit != null) {
