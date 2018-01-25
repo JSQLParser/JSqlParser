@@ -499,4 +499,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         substringExpression.getStart().accept(this);
         substringExpression.getLength().accept(this);
     }
+
+    @Override
+    public void visit(TrimExpression trimExpression) {
+        trimExpression.getExpression().accept(this);
+    }
 }

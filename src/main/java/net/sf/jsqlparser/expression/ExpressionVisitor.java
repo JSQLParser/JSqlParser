@@ -179,4 +179,6 @@ public interface ExpressionVisitor {
     public void visit(NotExpression aThis);
 
     void visit(SubstringExpression substringExpression);
+
+    void visit(TrimExpression trimExpression);
 }
