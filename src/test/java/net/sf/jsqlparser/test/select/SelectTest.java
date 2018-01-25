@@ -2724,4 +2724,12 @@ public class SelectTest extends TestCase {
     public void testIssue567KeywordPrimary() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT primary, secondary FROM info");
     }
+
+    public void testTeradataBeginPeriodFunction() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT BEGIN(vt) AS \"VT_DATE\" FROM t WHERE BEGIN(vt) BETWEEN date1 AND date2");
+    }
+
+    public void testTeradataEndPeriodFunction() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT END(vt) AS \"VT_DATE\" FROM t WHERE END(vt) BETWEEN date1 AND date2");
+    }
 }
