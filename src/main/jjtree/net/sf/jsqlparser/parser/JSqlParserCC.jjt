@@ -968,6 +968,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
       | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_SUBSTRING> | tk=<K_TRANSLATE>
+      | tk=<K_BEGIN>
       )
 
     { return tk.image; }

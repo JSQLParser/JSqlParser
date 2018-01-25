@@ -2776,4 +2776,12 @@ public class SelectTest extends TestCase {
     public void testNestedTeradataFormatExpression() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT COALESCE(TRIM(CDSIRD.S_TX_CNTR_NO (FORMAT 'Z(17)9'))) FROM dual");
     }
+
+    public void testTeradataBeginPeriodFunction() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT BEGIN(vt) AS \"VT_DATE\" FROM t WHERE BEGIN(vt) BETWEEN date1 AND date2");
+    }
+
+    public void testTeradataEndPeriodFunction() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT END(vt) AS \"VT_DATE\" FROM t WHERE END(vt) BETWEEN date1 AND date2");
+    }
 }
