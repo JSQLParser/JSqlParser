@@ -7,12 +7,19 @@ import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -101,5 +108,18 @@ public class CCJSqlParserUtilTest {
     public void testParseCondExpressionIssue471() throws Exception {
         Expression result = CCJSqlParserUtil.parseCondExpression("(SSN,SSM) IN ('11111111111111', '22222222222222')");
         assertEquals("(SSN, SSM) IN ('11111111111111', '22222222222222')", result.toString());
+    }
+
+    @Test
+    public void tableNodeIsNotNull() {
+        try {
+            Select select = (Select) CCJSqlParserUtil.parse("SELECT * FROM table_name");
+            PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+            Table table = (Table) plainSelect.getFromItem();
+            assertNotNull(table.getASTNode());
+
+        } catch (JSQLParserException e) {
+            fail(e.getMessage());
+        }
     }
 }

@@ -1034,6 +1034,7 @@ Table Table() #Table :
         final Server server = new Server(serverName);
         final Database database = new Database(server, databaseName);
         Table table = new Table(database, schemaName, tableName);
+        linkAST(table, jjtThis);
         return table;
     }
 }
