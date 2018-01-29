@@ -2724,4 +2724,8 @@ public class SelectTest extends TestCase {
     public void testIssue567KeywordPrimary() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT primary, secondary FROM info");
     }
+    
+    public void testIssue572TaskReplacement() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT task_id AS \"Task Id\" FROM testtable");
+    }
 }
