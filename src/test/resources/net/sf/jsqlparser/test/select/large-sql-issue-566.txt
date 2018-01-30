@@ -1,0 +1,50 @@
+SELECT "CAMPAIGNID","TARGET_SOURCE","NON_INDV_TYPE","GROUP_SPONSOR","SEGMNTS","COUNTRY_CD","TARGET_STATE","TARGET_CITY","TARGET_ZIP","SIC_CLASS","NAICS_CLASS","GENDER_CD","OCCUPATION","CREDIT_SCORE","MARITAL_STATUS","IMPORT_ID","BIRTH_DT","STATUS"
+             FROM (
+               SELECT
+                 X.CAMPAIGNID,
+                 X.FIELDNAME,
+                 CASE WHEN Y.VALUE IS NULL THEN 'ALL'
+                 ELSE Y.VALUE END AS VALUE
+               FROM
+            --CREATES A CARTESIAN JOIN TO COMBINE ALL CHARACTERISTICS WITH CAMPAIGN
+                 (SELECT
+                    CAMPAIGNID,
+                    FIELDNAME
+                  FROM CAMPAIGN
+                    CROSS JOIN (SELECT DISTINCT FIELDNAME
+                                FROM FIELDCRITERIA)) X
+                 LEFT JOIN
+            --RETURNS ALL AVAILABLE CAMPAIGN CHARACTERISTS
+                 (
+                   SELECT
+                     CAMPAIGNID,
+                     FIELDNAME,
+                     (CASE FIELDNAME
+                      WHEN U'BUSINESSTYPE' THEN D.DISPLAYVALUE
+                      WHEN U'LEADTARGETSOURCE' THEN E.DISPLAYVALUE
+                      ELSE VALUE END) AS VALUE
+                   FROM FIELDCRITERIA A, STRINGFIELDCRITERIA_VALUE B
+                     LEFT JOIN (SELECT
+                                  B.CODE,
+                                  B.DISPLAYVALUE,
+                                  LOOKUPNAME
+                                FROM LOOKUPLIST A, LOOKUPVALUE B
+                                WHERE A.ID = B.LOOKUPLIST_ID AND LOOKUPNAME = 'NONINDIVIDUALTYPE') D ON B.VALUE = D.CODE
+                     LEFT JOIN (SELECT
+                                  B.CODE,
+                                  B.DISPLAYVALUE,
+                                  LOOKUPNAME
+                                FROM LOOKUPLIST A, LOOKUPVALUE B
+                                WHERE A.ID = B.LOOKUPLIST_ID AND LOOKUPNAME = 'LEADTARGETSOURCE') E ON B.VALUE = E.CODE
+                     ,
+                     CAMPAIGN C
+                   WHERE A.ID = B.FIELD_CRITERIA_ID
+                         AND A.CRITERIA_ID = C.ID
+                 ) Y ON X.CAMPAIGNID = Y.CAMPAIGNID AND X.FIELDNAME = Y.FIELDNAME
+             )
+             PIVOT (MAX(VALUE)
+                FOR FIELDNAME
+                IN
+                   ('LEADTARGETSOURCE' AS TARGET_SOURCE, 'BUSINESSTYPE' AS NON_INDV_TYPE, 'GROUPSPONSOR' AS GROUP_SPONSOR, 'SEGMENTS' AS SEGMNTS, 'COUNTRYCD' AS COUNTRY_CD, 'STATEPROVCD' AS TARGET_STATE,
+                   'CITY' AS TARGET_CITY, 'POSTALCODE' AS TARGET_ZIP, 'SICCLASSIFICATION' AS SIC_CLASS, 'NAICSCLASSIFICATION' AS NAICS_CLASS, 'GENDERCD' AS GENDER_CD, 'OCCUPATION' AS OCCUPATION, 'CREDITSCORE' AS CREDIT_SCORE,
+                   'MARITALSTATUSCD' AS MARITAL_STATUS, 'IMPORTID' AS IMPORT_ID, 'BIRTHDATE' AS BIRTH_DT, 'STATUS' AS STATUS))

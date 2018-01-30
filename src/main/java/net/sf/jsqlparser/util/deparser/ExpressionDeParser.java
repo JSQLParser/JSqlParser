@@ -352,6 +352,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(StringValue stringValue) {
+        if (stringValue.getPrefix() != null) {
+            buffer.append(stringValue.getPrefix());
+        }
         buffer.append("'").append(stringValue.getValue()).append("'");
 
     }
@@ -359,7 +362,6 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(Subtraction subtraction) {
         visitBinaryExpression(subtraction, " - ");
-
     }
 
     private void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
@@ -611,7 +613,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
             keep.accept(this);
             buffer.append(" ");
         }
-        
+
         switch (aexpr.getType()) {
             case WITHIN_GROUP:
                 buffer.append("WITHIN GROUP");

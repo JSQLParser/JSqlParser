@@ -2728,4 +2728,13 @@ public class SelectTest extends TestCase {
     public void testIssue572TaskReplacement() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT task_id AS \"Task Id\" FROM testtable");
     }
+    
+    public void testIssue566LargeView() throws IOException, JSQLParserException {
+        String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-issue-566.txt"));
+        assertSqlCanBeParsedAndDeparsed(stmt, true);
+    }
+    
+    public void testIssue566PostgreSQLEscaped() throws IOException, JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT E'test'");
+    }
 }

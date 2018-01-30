@@ -21,26 +21,50 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Arrays;
+import java.util.List;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * A string as in 'example_string'
  */
-public class StringValue extends ASTNodeAccessImpl implements Expression {
+public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
     private String value = "";
+    private Character prefix = null;
+
+    /*
+    N - SQLServer Unicode encoding
+    U - Oracle Unicode encoding
+    E - Postgresql Unicode encoding
+     */
+    public static final List<Character> ALLOWED_PREFIXES = Arrays.asList('N', 'U', 'E');
 
     public StringValue(String escapedValue) {
         // romoving "'" at the start and at the end
         if (escapedValue.startsWith("'") && escapedValue.endsWith("'")) {
             value = escapedValue.substring(1, escapedValue.length() - 1);
-        } else {
-            value = escapedValue;
+            return;
         }
+
+        if (escapedValue.length() > 2) {
+            char p = Character.toUpperCase(escapedValue.charAt(0));
+            if (ALLOWED_PREFIXES.contains(p) && escapedValue.charAt(1) == '\'' && escapedValue.endsWith("'")) {
+                this.prefix = p;
+                value = escapedValue.substring(2, escapedValue.length() - 1);
+                return;
+            }
+        }
+
+        value = escapedValue;
     }
 
     public String getValue() {
         return value;
+    }
+
+    public Character getPrefix() {
+        return prefix;
     }
 
     public String getNotExcapedValue() {
@@ -59,6 +83,10 @@ public class StringValue extends ASTNodeAccessImpl implements Expression {
         value = string;
     }
 
+    public void setPrefix(Character prefix) {
+        this.prefix = prefix;
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
@@ -66,6 +94,6 @@ public class StringValue extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public String toString() {
-        return "'" + value + "'";
+        return (prefix != null ? prefix : "") + "'" + value + "'";
     }
 }
