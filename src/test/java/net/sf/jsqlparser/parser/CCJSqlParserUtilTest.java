@@ -122,4 +122,15 @@ public class CCJSqlParserUtilTest {
             fail(e.getMessage());
         }
     }
+
+    @Test
+    public void shouldNotParseMissingColumnAsNull() {
+        try {
+            CCJSqlParserUtil.parse("SELECT t. FROM t");
+            fail();
+        } catch (JSQLParserException e) {
+            // expect
+        }
+
+    }
 }

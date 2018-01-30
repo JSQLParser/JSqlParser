@@ -927,7 +927,7 @@ Column Column() #Column :
 }
 {
 	columnName = RelObjectName()
-    ( "." [LOOKAHEAD(2) token = RelObjectName()] { tableName = columnName; columnName = token; token = null;} 
+    ( "." token = RelObjectName() { tableName = columnName; columnName = token; token = null;}
 		( "." token = RelObjectName() { schemaName = tableName; tableName = columnName; columnName = token; token = null;} 
 			( "." token = RelObjectName() { databaseName = schemaName; schemaName = tableName; tableName = columnName; columnName = token; } 
 			)?

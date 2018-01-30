@@ -105,12 +105,15 @@ public class SelectTest extends TestCase {
         }
     }
 
-    public void testMultiPartColumnNameWithDatabaseNameAndTableName() throws Exception {
+    public void testMultiPartColumnNameWithDatabaseNameAndTableName() {
         final String statement = "SELECT databaseName..tableName.columnName FROM tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
-        checkMultipartIdentifier(select, "columnName", "databaseName..tableName.columnName");
+        try {
+            parserManager.parse(new StringReader(statement));
+            fail();
+        } catch (JSQLParserException e) {
+            // expect
+        }
     }
 
     public void testMultiPartColumnNameWithDatabaseName() {
