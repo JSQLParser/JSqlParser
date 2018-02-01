@@ -493,4 +493,13 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     }
 
+    @Override
+    public void visit(SubstringExpression substringExpression) {
+        substringExpression.getExpression().accept(this);
+        substringExpression.getFromExpression().accept(this);
+        Expression forExpression = substringExpression.getForExpression();
+        if (forExpression != null) {
+            forExpression.accept(this);
+        }
+    }
 }

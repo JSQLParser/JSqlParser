@@ -54,6 +54,7 @@ import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.SubstringExpression;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
@@ -782,5 +783,15 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(UseStatement use) {
+    }
+
+    @Override
+    public void visit(SubstringExpression substringExpression) {
+        substringExpression.getExpression().accept(this);
+        substringExpression.getFromExpression().accept(this);
+        Expression forExpression = substringExpression.getForExpression();
+        if (forExpression != null) {
+            forExpression.accept(this);
+        }
     }
 }
