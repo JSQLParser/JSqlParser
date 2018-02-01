@@ -3477,7 +3477,33 @@ AlterExpression AlterExpression():
                 checkCs.setExpression(exp);
                 alterExp.setIndex(checkCs);
             }
-           ) )
+            )
+            |
+            (
+                tk=<K_UNIQUE> tk2=<K_KEY>
+                  columnNames=ColumnsNamesList()
+                  {
+                      index = new NamedConstraint();
+                      index.setName(sk3);
+                      index.setType(tk.image + " " + tk2.image);
+                      index.setColumnsNames(columnNames);
+                      alterExp.setIndex(index);
+                  }
+                  constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+            )
+            |
+            (
+                tk=<K_KEY>
+                  columnNames=ColumnsNamesList()
+                  {
+                      index = new NamedConstraint();
+                      index.setName(sk3);
+                      index.setType(tk.image);
+                      index.setColumnsNames(columnNames);
+                      alterExp.setIndex(index);
+                  }
+                  constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+            ) )
         )
         )
     )

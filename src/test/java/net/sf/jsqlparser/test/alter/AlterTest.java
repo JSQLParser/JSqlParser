@@ -3,6 +3,7 @@ package net.sf.jsqlparser.test.alter;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 
+import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -251,5 +252,29 @@ public class AlterTest extends TestCase {
         // COLUMN keyword appears in deparsed statement, drop becomes all caps
         assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE table1 DROP COLUMN NewColumn");
         
+    }
+    
+    public void testAddConstraintKeyIssue320() throws JSQLParserException {
+        String tableName = "table1";
+        String columnName1 = "col1";
+        String columnName2 = "col2";
+        String columnName3 = "col3";
+        String columnName4 = "col4";
+        String constraintName1 = "table1_constraint_1";
+        String constraintName2 = "table1_constraint_2";
+
+        for(String constraintType : Arrays.asList("UNIQUE KEY", "KEY")) {
+            Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ")");
+
+            assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ")");
+
+            stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + ")");
+
+            assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + ")");
+
+            stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + "), ADD CONSTRAINT " + constraintName2 + " " + constraintType + " (" + columnName3 + ", " + columnName4 + ")");
+
+            assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + "), ADD CONSTRAINT " + constraintName2 + " " + constraintType + " (" + columnName3 + ", " + columnName4 + ")");
+        }
     }
 }
