@@ -3,6 +3,7 @@ package net.sf.jsqlparser.test.alter;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 
+import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -253,7 +254,7 @@ public class AlterTest extends TestCase {
         
     }
     
-    private void commonTestAddConstraintKeyIssue320(String constraintType) throws JSQLParserException {
+    public void testAddConstraintKeyIssue320() throws JSQLParserException {
         String tableName = "table1";
         String columnName1 = "col1";
         String columnName2 = "col2";
@@ -262,76 +263,70 @@ public class AlterTest extends TestCase {
         String constraintName1 = "table1_constraint_1";
         String constraintName2 = "table1_constraint_2";
 
-        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ")");
+        for(String constraintType : Arrays.asList("UNIQUE KEY", "KEY")) {
+            Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ")");
+	
+            assertTrue(stmt instanceof Alter);
+            Alter alter = (Alter) stmt;
+            assertNotNull(alter.getTable());
+            assertEquals(tableName, alter.getTable().getName());
+            assertNotNull(alter.getAlterExpressions());
+            assertEquals(1, alter.getAlterExpressions().size());
+            assertEquals(AlterOperation.ADD, alter.getAlterExpressions().get(0).getOperation());
+            assertNotNull(alter.getAlterExpressions().get(0).getIndex());
+            assertEquals(constraintName1, alter.getAlterExpressions().get(0).getIndex().getName());
+            assertEquals(constraintType, alter.getAlterExpressions().get(0).getIndex().getType());
+            assertNotNull(alter.getAlterExpressions().get(0).getIndex().getColumnsNames());
+            assertEquals(1, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().size());
+            assertEquals(columnName1, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().get(0));
 
-        assertTrue(stmt instanceof Alter);
-        Alter alter = (Alter) stmt;
-        assertNotNull(alter.getTable());
-        assertEquals(tableName, alter.getTable().getName());
-        assertNotNull(alter.getAlterExpressions());
-        assertEquals(1, alter.getAlterExpressions().size());
-        assertEquals(AlterOperation.ADD, alter.getAlterExpressions().get(0).getOperation());
-        assertNotNull(alter.getAlterExpressions().get(0).getIndex());
-        assertEquals(constraintName1, alter.getAlterExpressions().get(0).getIndex().getName());
-        assertEquals(constraintType, alter.getAlterExpressions().get(0).getIndex().getType());
-        assertNotNull(alter.getAlterExpressions().get(0).getIndex().getColumnsNames());
-        assertEquals(1, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().size());
-        assertEquals(columnName1, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().get(0));
+            assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ")");
 
-        assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ")");
+            stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + ")");
 
-        stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + ")");
+            assertTrue(stmt instanceof Alter);
+            alter = (Alter) stmt;
+            assertNotNull(alter.getTable());
+            assertEquals(tableName, alter.getTable().getName());
+            assertNotNull(alter.getAlterExpressions());
+            assertEquals(1, alter.getAlterExpressions().size());
+            assertEquals(AlterOperation.ADD, alter.getAlterExpressions().get(0).getOperation());
+            assertNotNull(alter.getAlterExpressions().get(0).getIndex());
+            assertEquals(constraintName1, alter.getAlterExpressions().get(0).getIndex().getName());
+            assertEquals(constraintType, alter.getAlterExpressions().get(0).getIndex().getType());
+            assertNotNull(alter.getAlterExpressions().get(0).getIndex().getColumnsNames());
+            assertEquals(2, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().size());
+            assertEquals(columnName1, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().get(0));
+            assertEquals(columnName2, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().get(1));
 
-        assertTrue(stmt instanceof Alter);
-        alter = (Alter) stmt;
-        assertNotNull(alter.getTable());
-        assertEquals(tableName, alter.getTable().getName());
-        assertNotNull(alter.getAlterExpressions());
-        assertEquals(1, alter.getAlterExpressions().size());
-        assertEquals(AlterOperation.ADD, alter.getAlterExpressions().get(0).getOperation());
-        assertNotNull(alter.getAlterExpressions().get(0).getIndex());
-        assertEquals(constraintName1, alter.getAlterExpressions().get(0).getIndex().getName());
-        assertEquals(constraintType, alter.getAlterExpressions().get(0).getIndex().getType());
-        assertNotNull(alter.getAlterExpressions().get(0).getIndex().getColumnsNames());
-        assertEquals(2, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().size());
-        assertEquals(columnName1, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().get(0));
-        assertEquals(columnName2, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().get(1));
+            assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + ")");
 
-        assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + ")");
+            stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + "), ADD CONSTRAINT " + constraintName2 + " " + constraintType + " (" + columnName3 + ", " + columnName4 + ")");
 
-        stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + "), ADD CONSTRAINT " + constraintName2 + " " + constraintType + " (" + columnName3 + ", " + columnName4 + ")");
+            assertTrue(stmt instanceof Alter);
+            alter = (Alter) stmt;
+            assertNotNull(alter.getTable());
+            assertEquals(tableName, alter.getTable().getName());
+            assertNotNull(alter.getAlterExpressions());
+            assertEquals(2, alter.getAlterExpressions().size());
+            assertEquals(AlterOperation.ADD, alter.getAlterExpressions().get(0).getOperation());
+            assertEquals(AlterOperation.ADD, alter.getAlterExpressions().get(1).getOperation());
+            assertNotNull(alter.getAlterExpressions().get(0).getIndex());
+            assertEquals(constraintName1, alter.getAlterExpressions().get(0).getIndex().getName());
+            assertEquals(constraintType, alter.getAlterExpressions().get(0).getIndex().getType());
+            assertNotNull(alter.getAlterExpressions().get(0).getIndex().getColumnsNames());
+            assertEquals(2, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().size());
+            assertEquals(columnName1, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().get(0));
+            assertEquals(columnName2, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().get(1));
+            assertNotNull(alter.getAlterExpressions().get(1).getIndex());
+            assertEquals(constraintName2, alter.getAlterExpressions().get(1).getIndex().getName());
+            assertEquals(constraintType, alter.getAlterExpressions().get(1).getIndex().getType());
+            assertNotNull(alter.getAlterExpressions().get(1).getIndex().getColumnsNames());
+            assertEquals(2, alter.getAlterExpressions().get(1).getIndex().getColumnsNames().size());
+            assertEquals(columnName3, alter.getAlterExpressions().get(1).getIndex().getColumnsNames().get(0));
+            assertEquals(columnName4, alter.getAlterExpressions().get(1).getIndex().getColumnsNames().get(1));
 
-        assertTrue(stmt instanceof Alter);
-        alter = (Alter) stmt;
-        assertNotNull(alter.getTable());
-        assertEquals(tableName, alter.getTable().getName());
-        assertNotNull(alter.getAlterExpressions());
-        assertEquals(2, alter.getAlterExpressions().size());
-        assertEquals(AlterOperation.ADD, alter.getAlterExpressions().get(0).getOperation());
-        assertEquals(AlterOperation.ADD, alter.getAlterExpressions().get(1).getOperation());
-        assertNotNull(alter.getAlterExpressions().get(0).getIndex());
-        assertEquals(constraintName1, alter.getAlterExpressions().get(0).getIndex().getName());
-        assertEquals(constraintType, alter.getAlterExpressions().get(0).getIndex().getType());
-        assertNotNull(alter.getAlterExpressions().get(0).getIndex().getColumnsNames());
-        assertEquals(2, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().size());
-        assertEquals(columnName1, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().get(0));
-        assertEquals(columnName2, alter.getAlterExpressions().get(0).getIndex().getColumnsNames().get(1));
-        assertNotNull(alter.getAlterExpressions().get(1).getIndex());
-        assertEquals(constraintName2, alter.getAlterExpressions().get(1).getIndex().getName());
-        assertEquals(constraintType, alter.getAlterExpressions().get(1).getIndex().getType());
-        assertNotNull(alter.getAlterExpressions().get(1).getIndex().getColumnsNames());
-        assertEquals(2, alter.getAlterExpressions().get(1).getIndex().getColumnsNames().size());
-        assertEquals(columnName3, alter.getAlterExpressions().get(1).getIndex().getColumnsNames().get(0));
-        assertEquals(columnName4, alter.getAlterExpressions().get(1).getIndex().getColumnsNames().get(1));
-
-        assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + "), ADD CONSTRAINT " + constraintName2 + " " + constraintType + " (" + columnName3 + ", " + columnName4 + ")");
-    }
-
-    public void testAddConstraintUniqueKeyIssue320() throws JSQLParserException {
-        commonTestAddConstraintKeyIssue320("UNIQUE KEY");
-    }
-    
-    public void testAddConstraintKeyIssue320() throws JSQLParserException {
-        commonTestAddConstraintKeyIssue320("KEY");
+            assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + "), ADD CONSTRAINT " + constraintName2 + " " + constraintType + " (" + columnName3 + ", " + columnName4 + ")");
+        }
     }
 }
