@@ -789,6 +789,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(SubstringExpression substringExpression) {
         substringExpression.getExpression().accept(this);
         substringExpression.getStart().accept(this);
-        substringExpression.getLength().accept(this);
+        Expression length = substringExpression.getLength();
+        if (length != null) {
+            length.accept(this);
+        }
     }
 }
