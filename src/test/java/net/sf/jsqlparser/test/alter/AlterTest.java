@@ -265,7 +265,7 @@ public class AlterTest extends TestCase {
 
         for(String constraintType : Arrays.asList("UNIQUE KEY", "KEY")) {
             Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ")");
-	
+
             assertTrue(stmt instanceof Alter);
             Alter alter = (Alter) stmt;
             assertNotNull(alter.getTable());
