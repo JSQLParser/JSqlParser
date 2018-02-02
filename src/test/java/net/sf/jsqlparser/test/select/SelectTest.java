@@ -2737,4 +2737,12 @@ public class SelectTest extends TestCase {
     public void testIssue566PostgreSQLEscaped() throws IOException, JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT E'test'");
     }
+    
+    public void testIssue563MultiSubJoin() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT c FROM ((SELECT a FROM t) JOIN (SELECT b FROM t2) ON a = B JOIN (SELECT c FROM t3) ON b = c)");
+    }
+    
+    public void testIssue563MultiSubJoin_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT c FROM ((SELECT a FROM t))");
+    }
 }
