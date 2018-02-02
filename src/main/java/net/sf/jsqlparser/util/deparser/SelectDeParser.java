@@ -329,7 +329,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     public void visit(SubJoin subjoin) {
         buffer.append("(");
         subjoin.getLeft().accept(this);
-        deparseJoin(subjoin.getJoin());
+        for(Join join : subjoin.getJoinList()) {
+            deparseJoin(join);
+        }
         buffer.append(")");
 
         if (subjoin.getPivot() != null) {
