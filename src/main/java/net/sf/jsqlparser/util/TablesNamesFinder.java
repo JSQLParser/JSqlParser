@@ -459,7 +459,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(SubJoin subjoin) {
         subjoin.getLeft().accept(this);
-        subjoin.getJoin().getRightItem().accept(this);
+        for(Join join : subjoin.getJoinList()) {
+            join.getRightItem().accept(this);
+        }
     }
 
     @Override

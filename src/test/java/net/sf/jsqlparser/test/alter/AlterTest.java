@@ -264,17 +264,15 @@ public class AlterTest extends TestCase {
         String constraintName2 = "table1_constraint_2";
 
         for(String constraintType : Arrays.asList("UNIQUE KEY", "KEY")) {
-            Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ")");
+            assertSqlCanBeParsedAndDeparsed("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " 
+                    + constraintType + " (" + columnName1 + ")");
 
-            assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ")");
+            assertSqlCanBeParsedAndDeparsed("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " 
+                    + constraintType + " (" + columnName1 + ", " + columnName2 + ")");
 
-            stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + ")");
-
-            assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + ")");
-
-            stmt = CCJSqlParserUtil.parse("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + "), ADD CONSTRAINT " + constraintName2 + " " + constraintType + " (" + columnName3 + ", " + columnName4 + ")");
-
-            assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " + constraintType + " (" + columnName1 + ", " + columnName2 + "), ADD CONSTRAINT " + constraintName2 + " " + constraintType + " (" + columnName3 + ", " + columnName4 + ")");
+            assertSqlCanBeParsedAndDeparsed("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " " 
+                    + constraintType + " (" + columnName1 + ", " + columnName2 + "), ADD CONSTRAINT " 
+                    + constraintName2 + " " + constraintType + " (" + columnName3 + ", " + columnName4 + ")");
         }
     }
 }

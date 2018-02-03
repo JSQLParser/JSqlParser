@@ -1559,12 +1559,12 @@ FromItem SubJoin():
 {
     FromItem fromItem = null;
     Join join = null;
+    List joinList = null;
     SubJoin subJoin = new SubJoin();
 }
 {
     fromItem=FromItem() { subJoin.setLeft(fromItem); }
-    join=JoinerExpression() { subJoin.setJoin(join); }
-
+	joinList=SubJoinsList() { subJoin.setJoinList(joinList); }
     {
         return subJoin;
     }
@@ -1576,11 +1576,22 @@ List<Join> JoinsList():
     Join join = null;
 }
 {
-
     (join=JoinerExpression() { joinsList.add(join); })*
+    { return joinsList; }
+}
+
+List SubJoinsList():
+{
+    List<Join> joinsList = new ArrayList<Join>();
+    Join join = null;
+}
+{
+
+    (join=JoinerExpression() { joinsList.add(join); })+
 
     { return joinsList; }
 }
+
 
 Join JoinerExpression() #JoinerExpression:
 {

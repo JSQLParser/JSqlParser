@@ -2745,4 +2745,12 @@ public class SelectTest extends TestCase {
     public void testSubstringFromFor() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT SUBSTRING('asdf' FROM 1 FOR 2) FROM dual");
     }
+    
+    public void testIssue563MultiSubJoin() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT c FROM ((SELECT a FROM t) JOIN (SELECT b FROM t2) ON a = B JOIN (SELECT c FROM t3) ON b = c)");
+    }
+    
+    public void testIssue563MultiSubJoin_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT c FROM ((SELECT a FROM t))");
+    }
 }
