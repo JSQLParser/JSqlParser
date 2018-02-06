@@ -21,40 +21,18 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.JdbcParameter;
 
 /**
  * An offset clause in the form OFFSET offset or in the form OFFSET offset (ROW | ROWS)
  */
+@Data
 public class Offset {
 
     private long offset;
     private JdbcParameter offsetJdbcParameter = null;
     private String offsetParam = null;
-
-    public long getOffset() {
-        return offset;
-    }
-
-    public String getOffsetParam() {
-        return offsetParam;
-    }
-
-    public void setOffset(long l) {
-        offset = l;
-    }
-
-    public void setOffsetParam(String s) {
-        offsetParam = s;
-    }
-
-    public JdbcParameter getOffsetJdbcParameter() {
-        return offsetJdbcParameter;
-    }
-
-    public void setOffsetJdbcParameter(JdbcParameter jdbc) {
-        offsetJdbcParameter = jdbc;
-    }
 
     @Override
     public String toString() {

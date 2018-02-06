@@ -1,6 +1,12 @@
 package net.sf.jsqlparser.test.update;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.StringReader;
+
+import org.junit.Test;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -10,10 +16,6 @@ import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.update.Update;
-import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
 public class UpdateTest {
 

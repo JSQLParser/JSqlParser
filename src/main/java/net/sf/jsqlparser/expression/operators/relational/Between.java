@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -28,53 +29,22 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 /**
  * A "BETWEEN" expr1 expr2 statement
  */
+@Data
 public class Between extends ASTNodeAccessImpl implements Expression {
 
-    private Expression leftExpression;
-    private boolean not = false;
-    private Expression betweenExpressionStart;
-    private Expression betweenExpressionEnd;
+	private Expression leftExpression;
+	private boolean not = false;
+	private Expression betweenExpressionStart;
+	private Expression betweenExpressionEnd;
 
-    public Expression getBetweenExpressionEnd() {
-        return betweenExpressionEnd;
-    }
+	@Override
+	public void accept(ExpressionVisitor expressionVisitor) {
+		expressionVisitor.visit(this);
+	}
 
-    public Expression getBetweenExpressionStart() {
-        return betweenExpressionStart;
-    }
-
-    public Expression getLeftExpression() {
-        return leftExpression;
-    }
-
-    public boolean isNot() {
-        return not;
-    }
-
-    public void setBetweenExpressionEnd(Expression expression) {
-        betweenExpressionEnd = expression;
-    }
-
-    public void setBetweenExpressionStart(Expression expression) {
-        betweenExpressionStart = expression;
-    }
-
-    public void setLeftExpression(Expression expression) {
-        leftExpression = expression;
-    }
-
-    public void setNot(boolean b) {
-        not = b;
-    }
-
-    @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        return leftExpression + " " + (not ? "NOT " : "") + "BETWEEN " + betweenExpressionStart + " AND "
-                + betweenExpressionEnd;
-    }
+	@Override
+	public String toString() {
+		return leftExpression + " " + (not ? "NOT " : "") + "BETWEEN " + betweenExpressionStart + " AND "
+			+ betweenExpressionEnd;
+	}
 }

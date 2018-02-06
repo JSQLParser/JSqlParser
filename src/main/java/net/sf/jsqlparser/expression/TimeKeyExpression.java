@@ -21,31 +21,23 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+@Data
+@AllArgsConstructor
 public class TimeKeyExpression extends ASTNodeAccessImpl implements Expression {
 
-    private String stringValue;
+	private String stringValue;
 
-    public TimeKeyExpression(final String value) {
-        this.stringValue = value;
-    }
+	@Override
+	public void accept(ExpressionVisitor expressionVisitor) {
+		expressionVisitor.visit(this);
+	}
 
-    @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
-
-    public String getStringValue() {
-        return stringValue;
-    }
-
-    public void setStringValue(String string) {
-        stringValue = string;
-    }
-
-    @Override
-    public String toString() {
-        return getStringValue();
-    }
+	@Override
+	public String toString() {
+		return getStringValue();
+	}
 }

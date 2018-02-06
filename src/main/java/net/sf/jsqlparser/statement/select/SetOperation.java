@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
 
@@ -29,13 +31,11 @@ import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
  *
  * @author tw
  */
+@Data
+@AllArgsConstructor
 public abstract class SetOperation extends ASTNodeAccessImpl {
 
     private SetOperationType type;
-
-    public SetOperation(SetOperationType type) {
-        this.type = type;
-    }
 
     @Override
     public String toString() {

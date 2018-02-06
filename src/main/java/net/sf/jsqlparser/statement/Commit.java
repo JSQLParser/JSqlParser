@@ -22,13 +22,14 @@
 package net.sf.jsqlparser.statement;
 
 public class Commit implements Statement {
-    @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
-    }
-    
-    @Override
-    public String toString() {
-        return "COMMIT";
-    }
+
+	@Override
+	public void accept(StatementVisitor statementVisitor) {
+		statementVisitor.visit(this);
+	}
+
+	@Override
+	public String toString() {
+		return "COMMIT";
+	}
 }

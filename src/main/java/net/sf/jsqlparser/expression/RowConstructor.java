@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
@@ -29,37 +30,19 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
  *
  * @author tw
  */
+@Data
 public class RowConstructor extends ASTNodeAccessImpl implements Expression {
 
-    private ExpressionList exprList;
-    private String name = null;
+	private ExpressionList exprList;
+	private String name = null;
 
-    public RowConstructor() {
-    }
+	@Override
+	public void accept(ExpressionVisitor expressionVisitor) {
+		expressionVisitor.visit(this);
+	}
 
-    public ExpressionList getExprList() {
-        return exprList;
-    }
-
-    public void setExprList(ExpressionList exprList) {
-        this.exprList = exprList;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        return (name != null ? name : "") + exprList.toString();
-    }
+	@Override
+	public String toString() {
+		return (name != null ? name : "") + exprList.toString();
+	}
 }

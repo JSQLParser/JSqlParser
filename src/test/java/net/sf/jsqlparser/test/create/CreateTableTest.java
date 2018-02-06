@@ -1,5 +1,7 @@
 package net.sf.jsqlparser.test.create;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -16,7 +18,6 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.util.TablesNamesFinder;
-import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class CreateTableTest extends TestCase {
 

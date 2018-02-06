@@ -1,5 +1,7 @@
 package net.sf.jsqlparser.test.create;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
 import java.io.StringReader;
 
 import junit.framework.TestCase;
@@ -8,7 +10,6 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class CreateViewTest extends TestCase {
 

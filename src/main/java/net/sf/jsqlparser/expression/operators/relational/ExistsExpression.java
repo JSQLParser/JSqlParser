@@ -21,42 +21,28 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+@Data
 public class ExistsExpression extends ASTNodeAccessImpl implements Expression {
 
-    private Expression rightExpression;
-    private boolean not = false;
+	private Expression rightExpression;
+	private boolean not = false;
 
-    public Expression getRightExpression() {
-        return rightExpression;
-    }
+	@Override
+	public void accept(ExpressionVisitor expressionVisitor) {
+		expressionVisitor.visit(this);
+	}
 
-    public void setRightExpression(Expression expression) {
-        rightExpression = expression;
-    }
+	public String getStringExpression() {
+		return (not ? "NOT " : "") + "EXISTS";
+	}
 
-    public boolean isNot() {
-        return not;
-    }
-
-    public void setNot(boolean b) {
-        not = b;
-    }
-
-    @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
-
-    public String getStringExpression() {
-        return (not ? "NOT " : "") + "EXISTS";
-    }
-
-    @Override
-    public String toString() {
-        return getStringExpression() + " " + rightExpression.toString();
-    }
+	@Override
+	public String toString() {
+		return getStringExpression() + " " + rightExpression.toString();
+	}
 }

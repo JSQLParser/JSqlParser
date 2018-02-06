@@ -21,38 +21,29 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 /**
  * All the columns of a table (as in "SELECT TableName.* FROM ...")
  */
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.schema.*;
+import net.sf.jsqlparser.schema.Table;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AllTableColumns extends ASTNodeAccessImpl implements SelectItem {
 
-    private Table table;
+	private Table table;
 
-    public AllTableColumns() {
-    }
+	@Override
+	public void accept(SelectItemVisitor selectItemVisitor) {
+		selectItemVisitor.visit(this);
+	}
 
-    public AllTableColumns(Table tableName) {
-        this.table = tableName;
-    }
-
-    public Table getTable() {
-        return table;
-    }
-
-    public void setTable(Table table) {
-        this.table = table;
-    }
-
-    @Override
-    public void accept(SelectItemVisitor selectItemVisitor) {
-        selectItemVisitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        return table + ".*";
-    }
+	@Override
+	public String toString() {
+		return table + ".*";
+	}
 }

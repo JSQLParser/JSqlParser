@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -28,41 +30,24 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 /**
  * An expression as in "SELECT expr1 AS EXPR"
  */
+@Data
+@NoArgsConstructor
 public class SelectExpressionItem extends ASTNodeAccessImpl implements SelectItem {
 
-    private Expression expression;
-    private Alias alias;
-
-    public SelectExpressionItem() {
-    }
+	private Expression expression;
+	private Alias alias;
 
     public SelectExpressionItem(Expression expression) {
         this.expression = expression;
     }
 
-    public Alias getAlias() {
-        return alias;
-    }
-
-    public Expression getExpression() {
-        return expression;
-    }
-
-    public void setAlias(Alias alias) {
-        this.alias = alias;
-    }
-
-    public void setExpression(Expression expression) {
-        this.expression = expression;
-    }
-
     @Override
-    public void accept(SelectItemVisitor selectItemVisitor) {
-        selectItemVisitor.visit(this);
-    }
+	public void accept(SelectItemVisitor selectItemVisitor) {
+		selectItemVisitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return expression + ((alias != null) ? alias.toString() : "");
-    }
+	@Override
+	public String toString() {
+		return expression + ((alias != null) ? alias.toString() : "");
+	}
 }

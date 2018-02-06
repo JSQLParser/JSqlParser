@@ -1,14 +1,16 @@
 package net.sf.jsqlparser.test.create;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import java.io.StringReader;
+
+import org.junit.Test;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
-import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import org.junit.Test;
 
 /**
  * @author Raymond Augé

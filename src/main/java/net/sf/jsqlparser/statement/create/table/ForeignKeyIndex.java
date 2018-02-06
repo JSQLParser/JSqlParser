@@ -22,6 +22,8 @@
 package net.sf.jsqlparser.statement.create.table;
 
 import java.util.List;
+
+import lombok.Data;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -30,44 +32,13 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  *
  * @author toben
  */
+@Data
 public class ForeignKeyIndex extends NamedConstraint {
 
     private Table table;
     private List<String> referencedColumnNames;
     private String onDeleteReferenceOption;
     private String onUpdateReferenceOption;
-
-    public Table getTable() {
-        return table;
-    }
-
-    public void setTable(Table table) {
-        this.table = table;
-    }
-
-    public List<String> getReferencedColumnNames() {
-        return referencedColumnNames;
-    }
-
-    public void setReferencedColumnNames(List<String> referencedColumnNames) {
-        this.referencedColumnNames = referencedColumnNames;
-    }
-
-    public String getOnDeleteReferenceOption() {
-        return onDeleteReferenceOption;
-    }
-
-    public void setOnDeleteReferenceOption(String onDeleteReferenceOption) {
-        this.onDeleteReferenceOption = onDeleteReferenceOption;
-    }
-
-    public String getOnUpdateReferenceOption() {
-        return onUpdateReferenceOption;
-    }
-
-    public void setOnUpdateReferenceOption(String onUpdateReferenceOption) {
-        this.onUpdateReferenceOption = onUpdateReferenceOption;
-    }
 
     @Override
     public String toString() {

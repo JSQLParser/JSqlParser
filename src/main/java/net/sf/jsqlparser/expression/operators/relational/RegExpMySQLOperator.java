@@ -21,42 +21,38 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
+@Data
 public class RegExpMySQLOperator extends BinaryExpression {
 
-    private RegExpMatchOperatorType operatorType;
-    private boolean useRLike = false;
+	private RegExpMatchOperatorType operatorType;
+	@Accessors(chain = true)
+	private boolean useRLike = false;
 
-    public RegExpMySQLOperator(RegExpMatchOperatorType operatorType) {
-        if (operatorType == null) {
-            throw new NullPointerException();
-        }
-        this.operatorType = operatorType;
-    }
+	public RegExpMySQLOperator(RegExpMatchOperatorType operatorType) {
+		if (operatorType == null) {
+			throw new NullPointerException();
+		}
+		this.operatorType = operatorType;
+	}
 
-    public RegExpMatchOperatorType getOperatorType() {
-        return operatorType;
-    }
+	@Override
+	public void accept(ExpressionVisitor expressionVisitor) {
+		expressionVisitor.visit(this);
+	}
 
-    public boolean isUseRLike() {
-        return useRLike;
-    }
-
-    public RegExpMySQLOperator useRLike() {
-        useRLike = true;
-        return this;
-    }
-
+	@Override
+	public String getStringExpression() {
+		return (useRLike ? "RLIKE" : "REGEXP")
+			+ (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
+	}
+	
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
-
-    @Override
-    public String getStringExpression() {
-        return (useRLike ? "RLIKE" : "REGEXP")
-                + (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
+    public String toString() {
+    	return super.toString();
     }
 }

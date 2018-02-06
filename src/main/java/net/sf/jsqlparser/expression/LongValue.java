@@ -21,9 +21,9 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.math.BigInteger;
+
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Every number without a point or an exponential format is a LongValue.

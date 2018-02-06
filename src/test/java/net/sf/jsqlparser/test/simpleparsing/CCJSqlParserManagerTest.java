@@ -4,11 +4,12 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.create.CreateTableTest;
-import org.junit.Test;
 
 public class CCJSqlParserManagerTest {
 

@@ -21,11 +21,42 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.schema.*;
-import net.sf.jsqlparser.statement.select.*;
+import java.util.Iterator;
+import java.util.List;
 
-import java.util.*;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.expression.MySQLIndexHint;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.Fetch;
+import net.sf.jsqlparser.statement.select.First;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.Offset;
+import net.sf.jsqlparser.statement.select.Pivot;
+import net.sf.jsqlparser.statement.select.PivotVisitor;
+import net.sf.jsqlparser.statement.select.PivotXml;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.SelectItemVisitor;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.Skip;
+import net.sf.jsqlparser.statement.select.SubJoin;
+import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.TableFunction;
+import net.sf.jsqlparser.statement.select.Top;
+import net.sf.jsqlparser.statement.select.ValuesList;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
@@ -97,7 +128,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             buffer.append(top).append(" ");
         }
 
-        if (plainSelect.getMySqlSqlCalcFoundRows()) {
+        if (plainSelect.isMySqlSqlCalcFoundRows()) {
             buffer.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
 
@@ -236,7 +267,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         if (pivot != null) {
             pivot.accept(this);
         }
-        MySQLIndexHint indexHint = tableName.getIndexHint();
+        MySQLIndexHint indexHint = tableName.getMySQLIndexHint();
         if (indexHint != null) {
             buffer.append(indexHint);
         }

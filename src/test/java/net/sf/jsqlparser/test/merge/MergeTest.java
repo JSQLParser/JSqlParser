@@ -18,12 +18,14 @@
  */
 package net.sf.jsqlparser.test.merge;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import org.junit.Test;
-import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.junit.Assert.fail;
 
 /**
  *

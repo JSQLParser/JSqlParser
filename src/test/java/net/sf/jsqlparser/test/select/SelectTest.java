@@ -1,20 +1,53 @@
 package net.sf.jsqlparser.test.select;
 
-import junit.framework.*;
-import net.sf.jsqlparser.*;
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.expression.operators.arithmetic.*;
-import net.sf.jsqlparser.expression.operators.relational.*;
-import net.sf.jsqlparser.parser.*;
-import net.sf.jsqlparser.schema.*;
-import net.sf.jsqlparser.statement.*;
-import net.sf.jsqlparser.statement.select.*;
-import org.apache.commons.io.*;
+import static net.sf.jsqlparser.test.TestUtils.assertExpressionCanBeDeparsedAs;
+import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.List;
 
-import static net.sf.jsqlparser.test.TestUtils.*;
+import org.apache.commons.io.IOUtils;
+
+import junit.framework.TestCase;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.DoubleValue;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.IntervalExpression;
+import net.sf.jsqlparser.expression.JdbcNamedParameter;
+import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.SignedExpression;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.TimeValue;
+import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
+import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.First;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.Skip;
+import net.sf.jsqlparser.statement.select.TableFunction;
+import net.sf.jsqlparser.statement.select.Top;
+import net.sf.jsqlparser.statement.select.Wait;
 
 public class SelectTest extends TestCase {
 
@@ -555,7 +588,7 @@ public class SelectTest extends TestCase {
 
         final Top top = selectBody.getTop();
         assertEquals("5", top.getExpression().toString());
-        assertTrue(top.hasParenthesis());
+        assertTrue(top.isParenthesis());
         assertTrue(top.isPercentage());
 
         final List<SelectItem> selectItems = selectBody.getSelectItems();
@@ -697,7 +730,7 @@ public class SelectTest extends TestCase {
         assertNotNull(skip.getJdbcParameter());
         assertNotNull(skip.getJdbcParameter().getIndex());
         assertTrue(skip.getJdbcParameter().isUseFixedIndex());
-        assertEquals((int) 1, (int) skip.getJdbcParameter().getIndex());
+        assertEquals(1, (int) skip.getJdbcParameter().getIndex());
         assertNull(skip.getVariable());
         final First first = selectBody.getFirst();
         assertNull(first.getJdbcParameter());
@@ -1206,7 +1239,7 @@ public class SelectTest extends TestCase {
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).
                 getRightExpression()).getValue());
-        assertEquals(true, (boolean) ((LikeExpression) plainSelect.getWhere()).isNot());
+        assertEquals(true, ((LikeExpression) plainSelect.getWhere()).isNot());
     }
 
     public void testNotLikeWithNotBeforeExpression() throws JSQLParserException {
@@ -1215,7 +1248,7 @@ public class SelectTest extends TestCase {
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).
                 getRightExpression()).getValue());
-        assertEquals(true, (boolean) ((LikeExpression) plainSelect.getWhere()).isNot());
+        assertEquals(true, ((LikeExpression) plainSelect.getWhere()).isNot());
     }
 
     public void testIlike() throws JSQLParserException {

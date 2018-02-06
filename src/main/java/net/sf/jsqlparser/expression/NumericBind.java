@@ -21,31 +21,25 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  *
  * @author aud
  */
+@Data
 public class NumericBind extends ASTNodeAccessImpl implements Expression {
 
-    private int bindId;
+	private int bindId;
 
-    public int getBindId() {
-        return bindId;
-    }
+	@Override
+	public void accept(ExpressionVisitor expressionVisitor) {
+		expressionVisitor.visit(this);
+	}
 
-    public void setBindId(int bindId) {
-        this.bindId = bindId;
-    }
-
-    @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        return ":" + bindId;
-    }
+	@Override
+	public String toString() {
+		return ":" + bindId;
+	}
 }

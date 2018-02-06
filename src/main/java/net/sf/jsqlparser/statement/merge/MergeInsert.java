@@ -22,6 +22,8 @@
 package net.sf.jsqlparser.statement.merge;
 
 import java.util.List;
+
+import lombok.Data;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -30,30 +32,15 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  *
  * @author toben
  */
+@Data
 public class MergeInsert {
 
-    private List<Column> columns = null;
-    private List<Expression> values = null;
+	private List<Column> columns = null;
+	private List<Expression> values = null;
 
-    public List<Column> getColumns() {
-        return columns;
-    }
-
-    public void setColumns(List<Column> columns) {
-        this.columns = columns;
-    }
-
-    public List<Expression> getValues() {
-        return values;
-    }
-
-    public void setValues(List<Expression> values) {
-        this.values = values;
-    }
-
-    @Override
-    public String toString() {
-        return " WHEN NOT MATCHED THEN INSERT " + PlainSelect.getStringList(columns, true, true)
-                + " VALUES " + PlainSelect.getStringList(values, true, true);
-    }
+	@Override
+	public String toString() {
+		return " WHEN NOT MATCHED THEN INSERT " + PlainSelect.getStringList(columns, true, true)
+			+ " VALUES " + PlainSelect.getStringList(values, true, true);
+	}
 }

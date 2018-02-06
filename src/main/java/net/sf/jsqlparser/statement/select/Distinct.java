@@ -23,39 +23,23 @@ package net.sf.jsqlparser.statement.select;
 
 import java.util.List;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * A DISTINCT [ON (expression, ...)] clause
  */
+@Data
+@NoArgsConstructor
 public class Distinct {
-
-    private List<SelectItem> onSelectItems;
-    private boolean useUnique = false;
-
-    public Distinct() {
-    }
-
-    public Distinct(boolean useUnique) {
-        this.useUnique = useUnique;
-    }
 
     /**
      * A list of {@link SelectItem}s expressions, as in "select DISTINCT ON (a,b,c) a,b FROM..."
-     *
-     * @return a list of {@link SelectItem}s expressions
      */
-    public List<SelectItem> getOnSelectItems() {
-        return onSelectItems;
-    }
+    private List<SelectItem> onSelectItems;
+    private boolean useUnique = false;
 
-    public void setOnSelectItems(List<SelectItem> list) {
-        onSelectItems = list;
-    }
-
-    public boolean isUseUnique() {
-        return useUnique;
-    }
-
-    public void setUseUnique(boolean useUnique) {
+    public Distinct(boolean useUnique) {
         this.useUnique = useUnique;
     }
 

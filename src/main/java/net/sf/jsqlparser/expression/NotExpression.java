@@ -21,26 +21,18 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * It represents a "-" or "+" before an expression
  */
+@Data
+@AllArgsConstructor
 public class NotExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression expression;
-
-    public NotExpression(Expression expression) {
-        setExpression(expression);
-    }
-
-    public Expression getExpression() {
-        return expression;
-    }
-
-    public final void setExpression(Expression expression) {
-        this.expression = expression;
-    }
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {

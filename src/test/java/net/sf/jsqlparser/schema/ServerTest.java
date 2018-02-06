@@ -1,6 +1,7 @@
 package net.sf.jsqlparser.schema;
 
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 /*

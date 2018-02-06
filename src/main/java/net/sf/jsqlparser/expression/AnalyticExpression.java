@@ -21,11 +21,12 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.List;
+
+import lombok.Data;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
-
-import java.util.List;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
@@ -36,165 +37,85 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  *
  * @author tw
  */
+@Data
 public class AnalyticExpression extends ASTNodeAccessImpl implements Expression {
 
-    private ExpressionList partitionExpressionList;
-    private List<OrderByElement> orderByElements;
-    private String name;
-    private Expression expression;
-    private Expression offset;
-    private Expression defaultValue;
-    private boolean allColumns = false;
-    private WindowElement windowElement;
-    private KeepExpression keep = null;
-    private AnalyticType type = AnalyticType.OVER;
+	private ExpressionList partitionExpressionList;
+	private List<OrderByElement> orderByElements;
+	private String name;
+	private Expression expression;
+	private Expression offset;
+	private Expression defaultValue;
+	private boolean allColumns = false;
+	private WindowElement windowElement;
+	private KeepExpression keep = null;
+	private AnalyticType type = AnalyticType.OVER;
 
-    @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor expressionVisitor) {
+		expressionVisitor.visit(this);
+	}
 
-    public List<OrderByElement> getOrderByElements() {
-        return orderByElements;
-    }
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
 
-    public void setOrderByElements(List<OrderByElement> orderByElements) {
-        this.orderByElements = orderByElements;
-    }
+		b.append(name).append("(");
+		if (expression != null) {
+			b.append(expression.toString());
+			if (offset != null) {
+				b.append(", ").append(offset.toString());
+				if (defaultValue != null) {
+					b.append(", ").append(defaultValue.toString());
+				}
+			}
+		} else if (isAllColumns()) {
+			b.append("*");
+		}
+		b.append(") ");
+		if (keep != null) {
+			b.append(keep.toString()).append(" ");
+		}
 
-    public KeepExpression getKeep() {
-        return keep;
-    }
+		switch (type) {
+			case WITHIN_GROUP:
+				b.append("WITHIN GROUP");
+				break;
+			default:
+				b.append("OVER");
+		}
+		b.append(" (");
 
-    public void setKeep(KeepExpression keep) {
-        this.keep = keep;
-    }
+		toStringPartitionBy(b);
+		toStringOrderByElements(b);
 
-    public ExpressionList getPartitionExpressionList() {
-        return partitionExpressionList;
-    }
+		b.append(")");
 
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
-        this.partitionExpressionList = partitionExpressionList;
-    }
+		return b.toString();
+	}
 
-    public String getName() {
-        return name;
-    }
+	private void toStringPartitionBy(StringBuilder b) {
+		if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
+			b.append("PARTITION BY ");
+			b.append(PlainSelect.getStringList(partitionExpressionList.getExpressions(), true, false));
+			b.append(" ");
+		}
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	private void toStringOrderByElements(StringBuilder b) {
+		if (orderByElements != null && !orderByElements.isEmpty()) {
+			b.append("ORDER BY ");
+			for (int i = 0; i < orderByElements.size(); i++) {
+				if (i > 0) {
+					b.append(", ");
+				}
+				b.append(orderByElements.get(i).toString());
+			}
 
-    public Expression getExpression() {
-        return expression;
-    }
-
-    public void setExpression(Expression expression) {
-        this.expression = expression;
-    }
-
-    public Expression getOffset() {
-        return offset;
-    }
-
-    public void setOffset(Expression offset) {
-        this.offset = offset;
-    }
-
-    public Expression getDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(Expression defaultValue) {
-        this.defaultValue = defaultValue;
-    }
-
-    public WindowElement getWindowElement() {
-        return windowElement;
-    }
-
-    public void setWindowElement(WindowElement windowElement) {
-        this.windowElement = windowElement;
-    }
-
-    public AnalyticType getType() {
-        return type;
-    }
-
-    public void setType(AnalyticType type) {
-        this.type = type;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-
-        b.append(name).append("(");
-        if (expression != null) {
-            b.append(expression.toString());
-            if (offset != null) {
-                b.append(", ").append(offset.toString());
-                if (defaultValue != null) {
-                    b.append(", ").append(defaultValue.toString());
-                }
-            }
-        } else if (isAllColumns()) {
-            b.append("*");
-        }
-        b.append(") ");
-        if (keep != null) {
-            b.append(keep.toString()).append(" ");
-        }
-        
-        switch (type) {
-            case WITHIN_GROUP:
-                b.append("WITHIN GROUP");
-                break;
-            default:
-                b.append("OVER");
-        }
-        b.append(" (");
-
-        toStringPartitionBy(b);
-        toStringOrderByElements(b);
-
-        b.append(")");
-
-        return b.toString();
-    }
-
-    public boolean isAllColumns() {
-        return allColumns;
-    }
-
-    public void setAllColumns(boolean allColumns) {
-        this.allColumns = allColumns;
-    }
-
-    private void toStringPartitionBy(StringBuilder b) {
-        if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
-            b.append("PARTITION BY ");
-            b.append(PlainSelect.
-                    getStringList(partitionExpressionList.getExpressions(), true, false));
-            b.append(" ");
-        }
-    }
-
-    private void toStringOrderByElements(StringBuilder b) {
-        if (orderByElements != null && !orderByElements.isEmpty()) {
-            b.append("ORDER BY ");
-            for (int i = 0; i < orderByElements.size(); i++) {
-                if (i > 0) {
-                    b.append(", ");
-                }
-                b.append(orderByElements.get(i).toString());
-            }
-
-            if (windowElement != null) {
-                b.append(' ');
-                b.append(windowElement);
-            }
-        }
-    }
+			if (windowElement != null) {
+				b.append(' ');
+				b.append(windowElement);
+			}
+		}
+	}
 }

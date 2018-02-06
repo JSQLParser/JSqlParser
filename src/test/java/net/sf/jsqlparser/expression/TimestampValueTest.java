@@ -1,12 +1,13 @@
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.JSQLParserException;
-import org.junit.Test;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import org.junit.Test;
+
+import net.sf.jsqlparser.JSQLParserException;
 
 /**
  * @author Linyu Chen

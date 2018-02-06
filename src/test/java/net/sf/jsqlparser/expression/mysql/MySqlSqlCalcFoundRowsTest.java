@@ -21,6 +21,12 @@
  */
 package net.sf.jsqlparser.expression.mysql;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
@@ -28,11 +34,6 @@ import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
-import org.junit.Test;
-
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author sam
@@ -61,7 +62,7 @@ public class MySqlSqlCalcFoundRowsTest {
                 select.getSelectBody().accept(new SelectVisitorAdapter() {
                     @Override
                     public void visit(PlainSelect plainSelect) {
-                        ref.sqlCalcFoundRows = plainSelect.getMySqlSqlCalcFoundRows();
+                        ref.sqlCalcFoundRows = plainSelect.isMySqlSqlCalcFoundRows();
                     }
                 });
             }

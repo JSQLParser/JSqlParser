@@ -21,132 +21,87 @@
  */
 package net.sf.jsqlparser.schema;
 
-import net.sf.jsqlparser.expression.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.IntoTableVisitor;
+import net.sf.jsqlparser.statement.select.Pivot;
 
 /**
  * A table. It can have an alias and the schema name it belongs to.
  */
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName {
 
-    private Database database;
-    private String schemaName;
-    private String name;
+	private Database database;
+	private String schemaName;
+	private String name;
 
-    private Alias alias;
-    private Pivot pivot;
-    private MySQLIndexHint hint;
+	private Alias alias;
+	private Pivot pivot;
+	private MySQLIndexHint mySQLIndexHint;
 
-    public Table() {
-    }
+	public Table(String name) {
+		this.name = name;
+	}
 
-    public Table(String name) {
-        this.name = name;
-    }
+	public Table(String schemaName, String name) {
+		this.schemaName = schemaName;
+		this.name = name;
+	}
 
-    public Table(String schemaName, String name) {
-        this.schemaName = schemaName;
-        this.name = name;
-    }
+	public Table(Database database, String schemaName, String name) {
+		this.database = database;
+		this.schemaName = schemaName;
+		this.name = name;
+	}
 
-    public Table(Database database, String schemaName, String name) {
-        this.database = database;
-        this.schemaName = schemaName;
-        this.name = name;
-    }
+	@Override
+	public String getFullyQualifiedName() {
+		String fqn = "";
 
-    public Database getDatabase() {
-        return database;
-    }
+		if (database != null) {
+			fqn += database.getFullyQualifiedName();
+		}
+		if (!fqn.isEmpty()) {
+			fqn += ".";
+		}
 
-    public void setDatabase(Database database) {
-        this.database = database;
-    }
+		if (schemaName != null) {
+			fqn += schemaName;
+		}
+		if (!fqn.isEmpty()) {
+			fqn += ".";
+		}
 
-    public String getSchemaName() {
-        return schemaName;
-    }
+		if (name != null) {
+			fqn += name;
+		}
 
-    public void setSchemaName(String string) {
-        schemaName = string;
-    }
+		return fqn;
+	}
 
-    public String getName() {
-        return name;
-    }
+	@Override
+	public void accept(FromItemVisitor fromItemVisitor) {
+		fromItemVisitor.visit(this);
+	}
 
-    public void setName(String string) {
-        name = string;
-    }
+	public void accept(IntoTableVisitor intoTableVisitor) {
+		intoTableVisitor.visit(this);
+	}
 
-    @Override
-    public Alias getAlias() {
-        return alias;
-    }
-
-    @Override
-    public void setAlias(Alias alias) {
-        this.alias = alias;
-    }
-
-    @Override
-    public String getFullyQualifiedName() {
-        String fqn = "";
-
-        if (database != null) {
-            fqn += database.getFullyQualifiedName();
-        }
-        if (!fqn.isEmpty()) {
-            fqn += ".";
-        }
-
-        if (schemaName != null) {
-            fqn += schemaName;
-        }
-        if (!fqn.isEmpty()) {
-            fqn += ".";
-        }
-
-        if (name != null) {
-            fqn += name;
-        }
-
-        return fqn;
-    }
-
-    @Override
-    public void accept(FromItemVisitor fromItemVisitor) {
-        fromItemVisitor.visit(this);
-    }
-
-    public void accept(IntoTableVisitor intoTableVisitor) {
-        intoTableVisitor.visit(this);
-    }
-
-    @Override
-    public Pivot getPivot() {
-        return pivot;
-    }
-
-    @Override
-    public void setPivot(Pivot pivot) {
-        this.pivot = pivot;
-    }
-
-    public MySQLIndexHint getIndexHint() {
-        return hint;
-    }
-
-    public void setHint(MySQLIndexHint hint) {
-        this.hint = hint;
-    }
-
-    @Override
-    public String toString() {
-        return getFullyQualifiedName()
-                + ((alias != null) ? alias.toString() : "")
-                + ((pivot != null) ? " " + pivot : "")
-                + ((hint != null) ? hint.toString() : "");
-    }
+	@Override
+	public String toString() {
+		return getFullyQualifiedName()
+			+ ((alias != null) ? alias.toString() : "")
+			+ ((pivot != null) ? " " + pivot : "")
+			+ ((mySQLIndexHint != null) ? mySQLIndexHint.toString() : "");
+	}
 }

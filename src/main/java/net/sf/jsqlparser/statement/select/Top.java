@@ -21,59 +21,37 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.Expression;
 
 /**
  * A top clause in the form [TOP (row_count) or TOP row_count]
  */
+@Data
 public class Top {
 
-    private boolean hasParenthesis = false;
-    private boolean isPercentage = false;
-    private Expression expression;
+	private boolean parenthesis = false;
+	private boolean percentage = false;
+	private Expression expression;
 
-    public Expression getExpression() {
-        return expression;
-    }
+	@Override
+	public String toString() {
+		String result = "TOP ";
 
-    public void setExpression(Expression expression) {
-        this.expression = expression;
-    }
+		if (parenthesis) {
+			result += "(";
+		}
 
-    public boolean hasParenthesis() {
-        return hasParenthesis;
-    }
+		result += expression.toString();
 
-    public void setParenthesis(boolean hasParenthesis) {
-        this.hasParenthesis = hasParenthesis;
-    }
+		if (parenthesis) {
+			result += ")";
+		}
 
-    public boolean isPercentage() {
-        return isPercentage;
-    }
+		if (percentage) {
+			result += " PERCENT";
+		}
 
-    public void setPercentage(boolean percentage) {
-        this.isPercentage = percentage;
-    }
-
-    @Override
-    public String toString() {
-        String result = "TOP ";
-
-        if (hasParenthesis) {
-            result += "(";
-        }
-
-        result += expression.toString();
-
-        if (hasParenthesis) {
-            result += ")";
-        }
-
-        if (isPercentage) {
-            result += " PERCENT";
-        }
-
-        return result;
-    }
+		return result;
+	}
 }

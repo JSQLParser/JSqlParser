@@ -1,14 +1,20 @@
 package net.sf.jsqlparser.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
+
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
-
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
@@ -22,8 +28,6 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
-import static org.junit.Assert.*;
-import org.junit.Test;
 
 public class TablesNamesFinderTest {
 

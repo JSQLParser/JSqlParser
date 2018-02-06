@@ -1,6 +1,16 @@
 package net.sf.jsqlparser.test.insert;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.StringReader;
+
+import org.junit.Test;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -13,11 +23,6 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.junit.Assert.*;
-
-import org.junit.Test;
 
 public class InsertTest {
 

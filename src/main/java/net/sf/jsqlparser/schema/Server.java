@@ -21,8 +21,12 @@
  */
 package net.sf.jsqlparser.schema;
 
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import lombok.Data;
+
+@Data
 public final class Server implements MultiPartName {
 
     public static final Pattern SERVER_PATTERN = Pattern.
@@ -47,22 +51,6 @@ public final class Server implements MultiPartName {
     public Server(String serverName, String instanceName) {
         setServerName(serverName);
         setInstanceName(instanceName);
-    }
-
-    public String getServerName() {
-        return serverName;
-    }
-
-    public void setServerName(String serverName) {
-        this.serverName = serverName;
-    }
-
-    public String getInstanceName() {
-        return instanceName;
-    }
-
-    public void setInstanceName(String instanceName) {
-        this.instanceName = instanceName;
     }
 
     @Override

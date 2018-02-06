@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.merge;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
@@ -33,124 +34,65 @@ import net.sf.jsqlparser.statement.select.SubSelect;
  *
  * @author tw
  */
+@Data
 public class Merge implements Statement {
 
-    private Table table;
-    private Table usingTable;
-    private SubSelect usingSelect;
-    private Alias usingAlias;
-    private Expression onCondition;
-    private MergeInsert mergeInsert;
-    private MergeUpdate mergeUpdate;
-    private boolean insertFirst = false;
+	private Table table;
+	private Table usingTable;
+	private SubSelect usingSelect;
+	private Alias usingAlias;
+	private Expression onCondition;
+	private MergeInsert mergeInsert;
+	private MergeUpdate mergeUpdate;
+	private boolean insertFirst = false;
 
-    public Table getTable() {
-        return table;
-    }
+	public void setUsingSelect(SubSelect usingSelect) {
+		this.usingSelect = usingSelect;
+		if (this.usingSelect != null) {
+			this.usingSelect.setUseBrackets(false);
+		}
+	}
 
-    public void setTable(Table name) {
-        table = name;
-    }
+	@Override
+	public void accept(StatementVisitor statementVisitor) {
+		statementVisitor.visit(this);
+	}
 
-    public Table getUsingTable() {
-        return usingTable;
-    }
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		b.append("MERGE INTO ");
+		b.append(table);
+		b.append(" USING ");
+		if (usingTable != null) {
+			b.append(usingTable.toString());
+		} else if (usingSelect != null) {
+			b.append("(").append(usingSelect.toString()).append(")");
+		}
 
-    public void setUsingTable(Table usingTable) {
-        this.usingTable = usingTable;
-    }
+		if (usingAlias != null) {
+			b.append(usingAlias.toString());
+		}
+		b.append(" ON (");
+		b.append(onCondition);
+		b.append(")");
 
-    public SubSelect getUsingSelect() {
-        return usingSelect;
-    }
+		if (insertFirst) {
+			if (mergeInsert != null) {
+				b.append(mergeInsert.toString());
+			}
+		}
 
-    public void setUsingSelect(SubSelect usingSelect) {
-        this.usingSelect = usingSelect;
-        if (this.usingSelect != null) {
-            this.usingSelect.setUseBrackets(false);
-        }
-    }
+		if (mergeUpdate != null) {
+			b.append(mergeUpdate.toString());
+		}
 
-    public Alias getUsingAlias() {
-        return usingAlias;
-    }
+		if (!insertFirst) {
+			if (mergeInsert != null) {
+				b.append(mergeInsert.toString());
+			}
+		}
 
-    public void setUsingAlias(Alias usingAlias) {
-        this.usingAlias = usingAlias;
-    }
-
-    public Expression getOnCondition() {
-        return onCondition;
-    }
-
-    public void setOnCondition(Expression onCondition) {
-        this.onCondition = onCondition;
-    }
-
-    public MergeInsert getMergeInsert() {
-        return mergeInsert;
-    }
-
-    public void setMergeInsert(MergeInsert insert) {
-        this.mergeInsert = insert;
-    }
-
-    public MergeUpdate getMergeUpdate() {
-        return mergeUpdate;
-    }
-
-    public void setMergeUpdate(MergeUpdate mergeUpdate) {
-        this.mergeUpdate = mergeUpdate;
-    }
-
-    @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
-    }
-
-    public boolean isInsertFirst() {
-        return insertFirst;
-    }
-
-    public void setInsertFirst(boolean insertFirst) {
-        this.insertFirst = insertFirst;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-        b.append("MERGE INTO ");
-        b.append(table);
-        b.append(" USING ");
-        if (usingTable != null) {
-            b.append(usingTable.toString());
-        } else if (usingSelect != null) {
-            b.append("(").append(usingSelect.toString()).append(")");
-        }
-
-        if (usingAlias != null) {
-            b.append(usingAlias.toString());
-        }
-        b.append(" ON (");
-        b.append(onCondition);
-        b.append(")");
-
-        if (insertFirst) {
-            if (mergeInsert != null) {
-                b.append(mergeInsert.toString());
-            }
-        }
-
-        if (mergeUpdate != null) {
-            b.append(mergeUpdate.toString());
-        }
-
-        if (!insertFirst) {
-            if (mergeInsert != null) {
-                b.append(mergeInsert.toString());
-            }
-        }
-
-        return b.toString();
-    }
+		return b.toString();
+	}
 }

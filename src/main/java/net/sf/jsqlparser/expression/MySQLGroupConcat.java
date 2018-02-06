@@ -40,6 +40,8 @@
 package net.sf.jsqlparser.expression;
 
 import java.util.List;
+
+import lombok.Data;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -49,44 +51,13 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  *
  * @author toben
  */
+@Data
 public class MySQLGroupConcat extends ASTNodeAccessImpl implements Expression {
 
     private ExpressionList expressionList;
     private boolean distinct = false;
     private List<OrderByElement> orderByElements;
     private String separator;
-
-    public ExpressionList getExpressionList() {
-        return expressionList;
-    }
-
-    public void setExpressionList(ExpressionList expressionList) {
-        this.expressionList = expressionList;
-    }
-
-    public boolean isDistinct() {
-        return distinct;
-    }
-
-    public void setDistinct(boolean distinct) {
-        this.distinct = distinct;
-    }
-
-    public List<OrderByElement> getOrderByElements() {
-        return orderByElements;
-    }
-
-    public void setOrderByElements(List<OrderByElement> orderByElements) {
-        this.orderByElements = orderByElements;
-    }
-
-    public String getSeparator() {
-        return separator;
-    }
-
-    public void setSeparator(String separator) {
-        this.separator = separator;
-    }
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {

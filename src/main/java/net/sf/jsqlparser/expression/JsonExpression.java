@@ -24,6 +24,7 @@ package net.sf.jsqlparser.expression;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 
@@ -31,6 +32,7 @@ import net.sf.jsqlparser.schema.Column;
  *
  * @author toben
  */
+@Data
 public class JsonExpression extends ASTNodeAccessImpl implements Expression {
 
     private Column column;
@@ -41,14 +43,6 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
-    }
-
-    public Column getColumn() {
-        return column;
-    }
-
-    public void setColumn(Column column) {
-        this.column = column;
     }
 
 //    public List<String> getIdents() {

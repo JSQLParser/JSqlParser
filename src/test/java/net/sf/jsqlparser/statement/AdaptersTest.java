@@ -1,5 +1,11 @@
 package net.sf.jsqlparser.statement;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.Stack;
+
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
@@ -10,11 +16,6 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
-import org.junit.Test;
-
-import java.util.Stack;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author aalmiray

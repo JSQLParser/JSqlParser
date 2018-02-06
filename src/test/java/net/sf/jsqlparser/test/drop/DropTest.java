@@ -1,13 +1,15 @@
 package net.sf.jsqlparser.test.drop;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.Assert.assertEquals;
+
 import java.io.StringReader;
+
+import org.junit.Test;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.drop.Drop;
-import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 
 public class DropTest {
 

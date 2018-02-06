@@ -92,7 +92,7 @@ class CloneHelper {
         if(express instanceof BinaryExpression) {
             BinaryExpression binary = (BinaryExpression) express;
             if(binary.isNot()) {
-                binary.removeNot();
+                binary.setNot(false);
                 return new NotExpression(modify(binary));
              }
         }

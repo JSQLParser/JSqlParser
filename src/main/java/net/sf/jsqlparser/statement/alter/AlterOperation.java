@@ -26,5 +26,8 @@ package net.sf.jsqlparser.statement.alter;
  * @author toben
  */
 public enum AlterOperation {
-    ADD, DROP, MODIFY, CHANGE;
+	ADD,
+	DROP,
+	MODIFY,
+	CHANGE,
 }

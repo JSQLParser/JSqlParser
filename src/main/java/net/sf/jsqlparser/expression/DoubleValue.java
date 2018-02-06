@@ -21,40 +21,39 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Every number with a point or a exponential format is a DoubleValue
  */
+@Data
 public class DoubleValue extends ASTNodeAccessImpl implements Expression {
 
-    private double value;
-    private String stringValue;
+	private double value;
+	@Getter(AccessLevel.NONE)
+	@Setter(AccessLevel.NONE)
+	private String stringValue;
 
-    public DoubleValue(final String value) {
-        String val = value;
-        if (val.charAt(0) == '+') {
-            val = val.substring(1);
-        }
-        this.value = Double.parseDouble(val);
-        this.stringValue = val;
-    }
+	public DoubleValue(final String value) {
+		String val = value;
+		if (val.charAt(0) == '+') {
+			val = val.substring(1);
+		}
+		this.value = Double.parseDouble(val);
+		this.stringValue = val;
+	}
 
-    @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
+	@Override
+	public void accept(ExpressionVisitor expressionVisitor) {
+		expressionVisitor.visit(this);
+	}
 
-    public double getValue() {
-        return value;
-    }
-
-    public void setValue(double d) {
-        value = d;
-    }
-
-    @Override
-    public String toString() {
-        return stringValue;
-    }
+	@Override
+	public String toString() {
+		return stringValue;
+	}
 }

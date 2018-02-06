@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.JdbcParameter;
 
 /**
@@ -29,35 +30,12 @@ import net.sf.jsqlparser.expression.JdbcParameter;
  * Initial implementation was done for informix special syntax:
  * http://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqls.doc/ids_sqs_0156.htm
  */
+@Data
 public class Skip {
 
     private Long rowCount;
     private JdbcParameter jdbcParameter;
     private String variable;
-
-    public Long getRowCount() {
-        return rowCount;
-    }
-
-    public void setRowCount(Long rowCount) {
-        this.rowCount = rowCount;
-    }
-
-    public JdbcParameter getJdbcParameter() {
-        return jdbcParameter;
-    }
-
-    public void setJdbcParameter(JdbcParameter jdbcParameter) {
-        this.jdbcParameter = jdbcParameter;
-    }
-
-    public String getVariable() {
-        return variable;
-    }
-
-    public void setVariable(String variable) {
-        this.variable = variable;
-    }
 
     @Override
     public String toString() {

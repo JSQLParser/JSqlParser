@@ -21,24 +21,17 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
 public class ValidateConstraint implements ConstraintState {
 
-    private boolean not;
+	private boolean not;
 
-    public ValidateConstraint(boolean not) {
-        this.not = not;
-    }
-
-    public boolean isNot() {
-        return not;
-    }
-
-    public void setNot(boolean not) {
-        this.not = not;
-    }
-
-    @Override
-    public String toString() {
-        return not ? "NOVALIDATE" : "VALIDATE";
-    }
+	@Override
+	public String toString() {
+		return not ? "NOVALIDATE" : "VALIDATE";
+	}
 }

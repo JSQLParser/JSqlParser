@@ -21,44 +21,40 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.sql.Timestamp;
+
+import lombok.Data;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * A Timestamp in the form {ts 'yyyy-mm-dd hh:mm:ss.f . . .'}
  */
+@Data
 public class TimestampValue extends ASTNodeAccessImpl implements Expression {
 
-    private Timestamp value;
-    private char quotation = '\'';
-    public TimestampValue(String value) {
-        if (value == null) {
-            throw new java.lang.IllegalArgumentException("null string");
-        } else {
-            if (value.charAt(0) == quotation) {
-                this.value = Timestamp.valueOf(value.substring(1, value.length() - 1));
-            } else {
-                this.value = Timestamp.valueOf(value.substring(0, value.length()));
-            }
-        }
-    }
+	private static final char QUOTATION = '\'';
 
-    @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
+	private Timestamp value;
 
-    public Timestamp getValue() {
-        return value;
-    }
+	public TimestampValue(String value) {
+		if (value == null) {
+			throw new java.lang.IllegalArgumentException("null string");
+		} else {
+			if (value.charAt(0) == QUOTATION) {
+				this.value = Timestamp.valueOf(value.substring(1, value.length() - 1));
+			} else {
+				this.value = Timestamp.valueOf(value.substring(0, value.length()));
+			}
+		}
+	}
 
-    public void setValue(Timestamp d) {
-        value = d;
-    }
+	@Override
+	public void accept(ExpressionVisitor expressionVisitor) {
+		expressionVisitor.visit(this);
+	}
 
-    @Override
-    public String toString() {
-        return "{ts '" + value + "'}";
-    }
+	@Override
+	public String toString() {
+		return "{ts '" + value + "'}";
+	}
 }

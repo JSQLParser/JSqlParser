@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 
+import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
-import net.sf.jsqlparser.expression.BinaryExpression;
 
 /**
  * This class handles the conversion from a normal expression tree into
@@ -380,7 +380,7 @@ public class CNFConverter {
                 if (child instanceof LikeExpression) {
                     ((LikeExpression) child).setNot(true);
                 }else if(child instanceof BinaryExpression) {
-                    ((BinaryExpression) child).setNot();
+                    ((BinaryExpression) child).setNot(true);
                 }else {
                     child = new NotExpression(child);
                 }

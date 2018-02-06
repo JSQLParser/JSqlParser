@@ -1,6 +1,11 @@
 package net.sf.jsqlparser.test.replace;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.StringReader;
+
+import org.junit.Test;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -12,9 +17,6 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.test.TestUtils;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
 public class ReplaceTest {
 

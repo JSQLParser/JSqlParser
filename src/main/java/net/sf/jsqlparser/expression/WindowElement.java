@@ -21,52 +21,31 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.Data;
+
+@Data
 public class WindowElement {
 
-    public enum Type {
+	public enum Type {
 
-        ROWS,
-        RANGE
-    }
+		ROWS,
+		RANGE
+	}
 
-    private Type type;
-    private WindowOffset offset;
-    private WindowRange range;
+	private Type type;
+	private WindowOffset offset;
+	private WindowRange range;
 
-    public Type getType() {
-        return type;
-    }
+	@Override
+	public String toString() {
+		StringBuilder buffer = new StringBuilder(type.toString());
 
-    public void setType(Type type) {
-        this.type = type;
-    }
+		if (offset != null) {
+			buffer.append(offset.toString());
+		} else if (range != null) {
+			buffer.append(range.toString());
+		}
 
-    public WindowOffset getOffset() {
-        return offset;
-    }
-
-    public void setOffset(WindowOffset offset) {
-        this.offset = offset;
-    }
-
-    public WindowRange getRange() {
-        return range;
-    }
-
-    public void setRange(WindowRange range) {
-        this.range = range;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder buffer = new StringBuilder(type.toString());
-
-        if (offset != null) {
-            buffer.append(offset.toString());
-        } else if (range != null) {
-            buffer.append(range.toString());
-        }
-
-        return buffer.toString();
-    }
+		return buffer.toString();
+	}
 }

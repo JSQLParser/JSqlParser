@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
@@ -15,7 +17,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.util.TablesNamesFinder;
-import org.junit.Test;
 
 public class SpeedTest {
 

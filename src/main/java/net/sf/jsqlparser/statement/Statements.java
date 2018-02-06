@@ -23,32 +23,27 @@ package net.sf.jsqlparser.statement;
 
 import java.util.List;
 
+import lombok.Data;
+
 /**
  *
  * @author toben
  */
+@Data
 public class Statements {
 
-    private List<Statement> statements;
+	private List<Statement> statements;
 
-    public List<Statement> getStatements() {
-        return statements;
-    }
+	public void accept(StatementVisitor statementVisitor) {
+		statementVisitor.visit(this);
+	}
 
-    public void setStatements(List<Statement> statements) {
-        this.statements = statements;
-    }
-
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-        for (Statement stmt : statements) {
-            b.append(stmt.toString()).append(";\n");
-        }
-        return b.toString();
-    }
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		for (Statement stmt : statements) {
+			b.append(stmt.toString()).append(";\n");
+		}
+		return b.toString();
+	}
 }

@@ -22,12 +22,14 @@
 package net.sf.jsqlparser.statement.drop;
 
 import java.util.List;
-import net.sf.jsqlparser.schema.Table;
 
+import lombok.Data;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
+@Data
 public class Drop implements Statement {
 
     private String type;
@@ -38,38 +40,6 @@ public class Drop implements Statement {
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
-    }
-
-    public Table getName() {
-        return name;
-    }
-
-    public List<String> getParameters() {
-        return parameters;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setName(Table string) {
-        name = string;
-    }
-
-    public void setParameters(List<String> list) {
-        parameters = list;
-    }
-
-    public void setType(String string) {
-        type = string;
-    }
-
-    public boolean isIfExists() {
-        return ifExists;
-    }
-
-    public void setIfExists(boolean ifExists) {
-        this.ifExists = ifExists;
     }
 
     @Override

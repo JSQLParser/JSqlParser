@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
@@ -29,31 +31,20 @@ import net.sf.jsqlparser.statement.select.SubSelect;
  *
  * @author toben
  */
+@Data
+@AllArgsConstructor
 public class AnyComparisonExpression extends ASTNodeAccessImpl implements Expression {
 
-    private final SubSelect subSelect;
-    private final AnyType anyType;
+	private final AnyType anyType;
+	private final SubSelect subSelect;
 
-    public AnyComparisonExpression(AnyType anyType, SubSelect subSelect) {
-        this.anyType = anyType;
-        this.subSelect = subSelect;
-    }
+	@Override
+	public void accept(ExpressionVisitor expressionVisitor) {
+		expressionVisitor.visit(this);
+	}
 
-    public SubSelect getSubSelect() {
-        return subSelect;
-    }
-
-    @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
-
-    public AnyType getAnyType() {
-        return anyType;
-    }
-
-    @Override
-    public String toString() {
-        return anyType.name() + " " + subSelect.toString();
-    }
+	@Override
+	public String toString() {
+		return anyType.name() + " " + subSelect.toString();
+	}
 }

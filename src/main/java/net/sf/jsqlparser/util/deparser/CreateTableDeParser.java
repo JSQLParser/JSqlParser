@@ -61,11 +61,11 @@ public class CreateTableDeParser {
         buffer.append(createTable.getTable().getFullyQualifiedName());
         if (createTable.getSelect() != null) {
             buffer.append(" AS ");
-            if (createTable.isSelectParenthesis()) {
+            if (createTable.isParenthesis()) {
                 buffer.append("(");
             }
             buffer.append(createTable.getSelect().toString());
-            if (createTable.isSelectParenthesis()) {
+            if (createTable.isParenthesis()) {
                 buffer.append(")");
             }
         } else {
