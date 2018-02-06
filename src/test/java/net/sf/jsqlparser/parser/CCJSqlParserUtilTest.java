@@ -23,24 +23,19 @@ import net.sf.jsqlparser.schema.Column;
  */
 public class CCJSqlParserUtilTest {
 
-    public CCJSqlParserUtilTest() {
-    }
+    public CCJSqlParserUtilTest() {}
 
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     /**
      * Test of parseExpression method, of class CCJSqlParserUtil.
@@ -64,12 +59,12 @@ public class CCJSqlParserUtilTest {
         assertTrue(mult.getLeftExpression() instanceof LongValue);
         assertTrue(mult.getRightExpression() instanceof Parenthesis);
     }
-    
+
     @Test(expected = JSQLParserException.class)
     public void testParseExpressionNonPartial() throws Exception {
         Expression result = CCJSqlParserUtil.parseExpression("a+", false);
     }
-    
+
     @Test
     public void testParseExpressionNonPartial2() throws Exception {
         Expression result = CCJSqlParserUtil.parseExpression("a+", true);
@@ -81,25 +76,25 @@ public class CCJSqlParserUtilTest {
         Expression result = CCJSqlParserUtil.parseCondExpression("a+b>5 and c<3");
         assertEquals("a + b > 5 AND c < 3", result.toString());
     }
-    
+
     @Test
     public void testParseCondExpressionNonPartial() throws Exception {
         Expression result = CCJSqlParserUtil.parseCondExpression("x=92 and y=29", false);
         assertEquals("x = 92 AND y = 29", result.toString());
     }
-    
+
     @Test(expected = JSQLParserException.class)
     public void testParseCondExpressionNonPartial2() throws Exception {
         Expression result = CCJSqlParserUtil.parseCondExpression("x=92 lasd y=29", false);
         System.out.println(result.toString());
     }
-    
+
     @Test
     public void testParseCondExpressionPartial2() throws Exception {
         Expression result = CCJSqlParserUtil.parseCondExpression("x=92 lasd y=29", true);
         assertEquals("x = 92", result.toString());
     }
-    
+
     @Test
     public void testParseCondExpressionIssue471() throws Exception {
         Expression result = CCJSqlParserUtil.parseCondExpression("(SSN,SSM) IN ('11111111111111', '22222222222222')");

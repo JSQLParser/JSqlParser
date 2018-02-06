@@ -31,31 +31,31 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class Limit extends ASTNodeAccessImpl {
 
-	private Expression rowCount;
-	private Expression offset;
-	/**
-	 * True if the limit is "LIMIT ALL [OFFSET ...])
-	 */
-	private boolean limitAll;
-	/**
-	 * True if the limit is "LIMIT NULL [OFFSET ...])
-	 */
-	private boolean limitNull = false;
+    private Expression rowCount;
+    private Expression offset;
+    /**
+     * True if the limit is "LIMIT ALL [OFFSET ...])
+     */
+    private boolean limitAll;
+    /**
+     * True if the limit is "LIMIT NULL [OFFSET ...])
+     */
+    private boolean limitNull = false;
 
-	@Override
-	public String toString() {
-		String retVal = " LIMIT ";
-		if (limitNull) {
-			retVal += "NULL";
-		} else {
-			if (null != offset) {
-				retVal += offset + ", ";
-			}
-			if (null != rowCount) {
-				retVal += rowCount;
-			}
-		}
+    @Override
+    public String toString() {
+        String retVal = " LIMIT ";
+        if (limitNull) {
+            retVal += "NULL";
+        } else {
+            if (null != offset) {
+                retVal += offset + ", ";
+            }
+            if (null != rowCount) {
+                retVal += rowCount;
+            }
+        }
 
-		return retVal;
-	}
+        return retVal;
+    }
 }

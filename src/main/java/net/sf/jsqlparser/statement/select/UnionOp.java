@@ -31,21 +31,21 @@ import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
 @Data
 public class UnionOp extends SetOperation {
 
-	private boolean distinct;
-	private boolean all;
+    private boolean distinct;
+    private boolean all;
 
-	public UnionOp() {
-		super(SetOperationType.UNION);
-	}
+    public UnionOp() {
+        super(SetOperationType.UNION);
+    }
 
-	@Override
-	public String toString() {
-		String allDistinct = "";
-		if (isAll()) {
-			allDistinct = " ALL";
-		} else if (isDistinct()) {
-			allDistinct = " DISTINCT";
-		}
-		return super.toString() + allDistinct;
-	}
+    @Override
+    public String toString() {
+        String allDistinct = "";
+        if (isAll()) {
+            allDistinct = " ALL";
+        } else if (isDistinct()) {
+            allDistinct = " DISTINCT";
+        }
+        return super.toString() + allDistinct;
+    }
 }

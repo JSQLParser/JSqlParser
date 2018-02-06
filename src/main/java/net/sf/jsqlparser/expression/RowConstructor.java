@@ -33,16 +33,16 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class RowConstructor extends ASTNodeAccessImpl implements Expression {
 
-	private ExpressionList exprList;
-	private String name = null;
+    private ExpressionList exprList;
+    private String name = null;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return (name != null ? name : "") + exprList.toString();
-	}
+    @Override
+    public String toString() {
+        return (name != null ? name : "") + exprList.toString();
+    }
 }

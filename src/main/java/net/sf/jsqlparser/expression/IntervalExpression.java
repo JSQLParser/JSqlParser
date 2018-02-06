@@ -31,16 +31,16 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class IntervalExpression extends ASTNodeAccessImpl implements Expression {
 
-	private String parameter = null;
-	private String intervalType = null;
+    private String parameter = null;
+    private String intervalType = null;
 
-	@Override
-	public String toString() {
-		return "INTERVAL " + parameter + (intervalType != null ? " " + intervalType : "");
-	}
+    @Override
+    public String toString() {
+        return "INTERVAL " + parameter + (intervalType != null ? " " + intervalType : "");
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 }

@@ -37,62 +37,62 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 @Data
 public class Merge implements Statement {
 
-	private Table table;
-	private Table usingTable;
-	private SubSelect usingSelect;
-	private Alias usingAlias;
-	private Expression onCondition;
-	private MergeInsert mergeInsert;
-	private MergeUpdate mergeUpdate;
-	private boolean insertFirst = false;
+    private Table table;
+    private Table usingTable;
+    private SubSelect usingSelect;
+    private Alias usingAlias;
+    private Expression onCondition;
+    private MergeInsert mergeInsert;
+    private MergeUpdate mergeUpdate;
+    private boolean insertFirst = false;
 
-	public void setUsingSelect(SubSelect usingSelect) {
-		this.usingSelect = usingSelect;
-		if (this.usingSelect != null) {
-			this.usingSelect.setUseBrackets(false);
-		}
-	}
+    public void setUsingSelect(SubSelect usingSelect) {
+        this.usingSelect = usingSelect;
+        if (this.usingSelect != null) {
+            this.usingSelect.setUseBrackets(false);
+        }
+    }
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder b = new StringBuilder();
-		b.append("MERGE INTO ");
-		b.append(table);
-		b.append(" USING ");
-		if (usingTable != null) {
-			b.append(usingTable.toString());
-		} else if (usingSelect != null) {
-			b.append("(").append(usingSelect.toString()).append(")");
-		}
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append("MERGE INTO ");
+        b.append(table);
+        b.append(" USING ");
+        if (usingTable != null) {
+            b.append(usingTable.toString());
+        } else if (usingSelect != null) {
+            b.append("(").append(usingSelect.toString()).append(")");
+        }
 
-		if (usingAlias != null) {
-			b.append(usingAlias.toString());
-		}
-		b.append(" ON (");
-		b.append(onCondition);
-		b.append(")");
+        if (usingAlias != null) {
+            b.append(usingAlias.toString());
+        }
+        b.append(" ON (");
+        b.append(onCondition);
+        b.append(")");
 
-		if (insertFirst) {
-			if (mergeInsert != null) {
-				b.append(mergeInsert.toString());
-			}
-		}
+        if (insertFirst) {
+            if (mergeInsert != null) {
+                b.append(mergeInsert.toString());
+            }
+        }
 
-		if (mergeUpdate != null) {
-			b.append(mergeUpdate.toString());
-		}
+        if (mergeUpdate != null) {
+            b.append(mergeUpdate.toString());
+        }
 
-		if (!insertFirst) {
-			if (mergeInsert != null) {
-				b.append(mergeInsert.toString());
-			}
-		}
+        if (!insertFirst) {
+            if (mergeInsert != null) {
+                b.append(mergeInsert.toString());
+            }
+        }
 
-		return b.toString();
-	}
+        return b.toString();
+    }
 }

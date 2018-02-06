@@ -30,14 +30,14 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 @Data
 public class Fetch {
 
-	private long rowCount;
-	private JdbcParameter fetchJdbcParameter = null;
-	private boolean isFetchParamFirst = false;
-	private String fetchParam = "ROW";
+    private long rowCount;
+    private JdbcParameter fetchJdbcParameter = null;
+    private boolean isFetchParamFirst = false;
+    private String fetchParam = "ROW";
 
-	@Override
-	public String toString() {
-		return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " "
-			+ (fetchJdbcParameter != null ? fetchJdbcParameter.toString() : Long.toString(rowCount)) + " " + fetchParam + " ONLY";
-	}
+    @Override
+    public String toString() {
+        return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " "
+            + (fetchJdbcParameter != null ? fetchJdbcParameter.toString() : Long.toString(rowCount)) + " " + fetchParam + " ONLY";
+    }
 }

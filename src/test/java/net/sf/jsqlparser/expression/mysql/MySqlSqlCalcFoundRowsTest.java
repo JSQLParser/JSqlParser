@@ -39,6 +39,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
  * @author sam
  */
 public class MySqlSqlCalcFoundRowsTest {
+
     @Test
     public void testPossibleParsingWithSqlCalcFoundRowsHint() throws JSQLParserException {
         MySqlSqlCalcFoundRowRef ref = new MySqlSqlCalcFoundRowRef(false);
@@ -57,21 +58,24 @@ public class MySqlSqlCalcFoundRowsTest {
 
     private void accept(Statement statement, final MySqlSqlCalcFoundRowRef ref) {
         statement.accept(new StatementVisitorAdapter() {
+
             @Override
             public void visit(Select select) {
                 select.getSelectBody().accept(new SelectVisitorAdapter() {
+
                     @Override
                     public void visit(PlainSelect plainSelect) {
                         ref.sqlCalcFoundRows = plainSelect.isMySqlSqlCalcFoundRows();
                     }
                 });
             }
-            
+
         });
     }
 }
 
 class MySqlSqlCalcFoundRowRef {
+
     public boolean sqlCalcFoundRows = false;
 
     public MySqlSqlCalcFoundRowRef(boolean sqlCalcFoundRows) {

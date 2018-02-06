@@ -40,6 +40,7 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StatementDeParserTest {
+
     @Mock
     private ExpressionDeParser expressionDeParser;
 
@@ -117,14 +118,14 @@ public class StatementDeParserTest {
         withItem2.setSelectBody(withItem2SelectBody);
 
         statementDeParser.visit(insert);
-        
+
         then(withItem1).should().accept(selectDeParser);
         then(withItem2).should().accept(selectDeParser);
         then(selectBody).should().accept(selectDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
-    
+
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithoutItemsList() {
@@ -306,13 +307,14 @@ public class StatementDeParserTest {
         description.appendText(" and select de-parser ");
         selectDeParserMatcher.describeTo(description);
         return new CustomTypeSafeMatcher<ReplaceDeParser>(description.toString()) {
+
             @Override
             public boolean matchesSafely(ReplaceDeParser item) {
                 return expressionDeParserMatcher.matches(item.getExpressionVisitor()) && selectDeParserMatcher.matches(item.getSelectVisitor());
             }
         };
     }
-    
+
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeparsersWhenDeParsingUpsertWithExpressionList() throws JSQLParserException {
@@ -357,5 +359,5 @@ public class StatementDeParserTest {
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
-    
+
 }

@@ -46,6 +46,7 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
 public class StatementDeParser implements StatementVisitor {
+
     private ExpressionDeParser expressionDeParser;
 
     private SelectDeParser selectDeParser;
@@ -143,8 +144,7 @@ public class StatementDeParser implements StatementVisitor {
     }
 
     @Override
-    public void visit(Truncate truncate) {
-    }
+    public void visit(Truncate truncate) {}
 
     @Override
     public void visit(Update update) {
@@ -201,7 +201,7 @@ public class StatementDeParser implements StatementVisitor {
         //TODO implementation of a deparser
         buffer.append(merge.toString());
     }
-    
+
     @Override
     public void visit(Commit commit) {
         buffer.append(commit.toString());

@@ -36,41 +36,41 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 @Data
 public class CreateView implements Statement {
 
-	/**
-	 * In the syntax tree, a view looks and acts just like a Table.
-	 */
-	private Table view;
-	/**
-	 * @return the SelectBody
-	 */
-	private SelectBody selectBody;
-	/**
-	 * @return was "OR REPLACE" specified?
-	 */
-	private boolean orReplace = false;
-	private List<String> columnNames = null;
-	private boolean materialized = false;
+    /**
+     * In the syntax tree, a view looks and acts just like a Table.
+     */
+    private Table view;
+    /**
+     * @return the SelectBody
+     */
+    private SelectBody selectBody;
+    /**
+     * @return was "OR REPLACE" specified?
+     */
+    private boolean orReplace = false;
+    private List<String> columnNames = null;
+    private boolean materialized = false;
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sql = new StringBuilder("CREATE ");
-		if (isOrReplace()) {
-			sql.append("OR REPLACE ");
-		}
-		if (isMaterialized()) {
-			sql.append("MATERIALIZED ");
-		}
-		sql.append("VIEW ");
-		sql.append(view);
-		if (columnNames != null) {
-			sql.append(PlainSelect.getStringList(columnNames, true, true));
-		}
-		sql.append(" AS ").append(selectBody);
-		return sql.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder sql = new StringBuilder("CREATE ");
+        if (isOrReplace()) {
+            sql.append("OR REPLACE ");
+        }
+        if (isMaterialized()) {
+            sql.append("MATERIALIZED ");
+        }
+        sql.append("VIEW ");
+        sql.append(view);
+        if (columnNames != null) {
+            sql.append(PlainSelect.getStringList(columnNames, true, true));
+        }
+        sql.append(" AS ").append(selectBody);
+        return sql.toString();
+    }
 }

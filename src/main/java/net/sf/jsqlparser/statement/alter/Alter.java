@@ -37,40 +37,40 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 @Data
 public class Alter implements Statement {
 
-	private Table table;
+    private Table table;
 
-	private List<AlterExpression> alterExpressions;
+    private List<AlterExpression> alterExpressions;
 
-	public void addAlterExpression(AlterExpression alterExpression) {
-		if (alterExpressions == null) {
-			alterExpressions = new ArrayList<AlterExpression>();
-		}
-		alterExpressions.add(alterExpression);
-	}
+    public void addAlterExpression(AlterExpression alterExpression) {
+        if (alterExpressions == null) {
+            alterExpressions = new ArrayList<AlterExpression>();
+        }
+        alterExpressions.add(alterExpression);
+    }
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
+    @Override
+    public String toString() {
 
-		StringBuilder b = new StringBuilder();
-		b.append("ALTER TABLE ").append(table.getFullyQualifiedName()).append(" ");
+        StringBuilder b = new StringBuilder();
+        b.append("ALTER TABLE ").append(table.getFullyQualifiedName()).append(" ");
 
-		Iterator<AlterExpression> altIter = alterExpressions.iterator();
+        Iterator<AlterExpression> altIter = alterExpressions.iterator();
 
-		while (altIter.hasNext()) {
-			b.append(altIter.next().toString());
+        while (altIter.hasNext()) {
+            b.append(altIter.next().toString());
 
-			// Need to append whitespace after each ADD or DROP statement
-			// but not the last one
-			if (altIter.hasNext()) {
-				b.append(", ");
-			}
-		}
+            // Need to append whitespace after each ADD or DROP statement
+            // but not the last one
+            if (altIter.hasNext()) {
+                b.append(", ");
+            }
+        }
 
-		return b.toString();
-	}
+        return b.toString();
+    }
 }

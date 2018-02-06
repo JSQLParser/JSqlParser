@@ -30,22 +30,22 @@ import lombok.Data;
 @AllArgsConstructor
 public class MySQLIndexHint {
 
-	private final String action;
-	private final String indexQualifier;
-	private final List<String> indexNames;
+    private final String action;
+    private final String indexQualifier;
+    private final List<String> indexNames;
 
-	@Override
-	public String toString() {
-		// use|ignore|force key|index (index1,...,indexN)
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(" ").append(action).append(" ").append(indexQualifier).append(" (");
-		for (int i = 0; i < indexNames.size(); i++) {
-			if (i > 0) {
-				buffer.append(",");
-			}
-			buffer.append(indexNames.get(i));
-		}
-		buffer.append(")");
-		return buffer.toString();
-	}
+    @Override
+    public String toString() {
+        // use|ignore|force key|index (index1,...,indexN)
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(" ").append(action).append(" ").append(indexQualifier).append(" (");
+        for (int i = 0; i < indexNames.size(); i++) {
+            if (i > 0) {
+                buffer.append(",");
+            }
+            buffer.append(indexNames.get(i));
+        }
+        buffer.append(")");
+        return buffer.toString();
+    }
 }

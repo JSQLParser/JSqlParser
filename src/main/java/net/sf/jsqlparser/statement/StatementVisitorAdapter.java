@@ -38,9 +38,10 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
 public class StatementVisitorAdapter implements StatementVisitor {
+
     @Override
     public void visit(Commit commit) {
-        
+
     }
 
     @Override
@@ -121,14 +122,11 @@ public class StatementVisitorAdapter implements StatementVisitor {
     }
 
     @Override
-    public void visit(AlterView alterView) {
-    }
+    public void visit(AlterView alterView) {}
 
     @Override
-    public void visit(Upsert upsert) {
-    }
+    public void visit(Upsert upsert) {}
 
     @Override
-    public void visit(UseStatement use) {
-    }
+    public void visit(UseStatement use) {}
 }

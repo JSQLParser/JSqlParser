@@ -49,22 +49,22 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class DateTimeLiteralExpression extends ASTNodeAccessImpl implements Expression {
 
-	private String value;
-	private DateTime type;
+    private String value;
+    private DateTime type;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return type.name() + " " + value;
-	}
+    @Override
+    public String toString() {
+        return type.name() + " " + value;
+    }
 
-	public static enum DateTime {
-		DATE,
-		TIME,
-		TIMESTAMP,
-	}
+    public static enum DateTime {
+        DATE,
+        TIME,
+        TIMESTAMP,
+    }
 }

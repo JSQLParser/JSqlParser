@@ -26,26 +26,26 @@ import lombok.Data;
 @Data
 public class WindowElement {
 
-	public enum Type {
+    public enum Type {
 
-		ROWS,
-		RANGE
-	}
+        ROWS,
+        RANGE
+    }
 
-	private Type type;
-	private WindowOffset offset;
-	private WindowRange range;
+    private Type type;
+    private WindowOffset offset;
+    private WindowRange range;
 
-	@Override
-	public String toString() {
-		StringBuilder buffer = new StringBuilder(type.toString());
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder(type.toString());
 
-		if (offset != null) {
-			buffer.append(offset.toString());
-		} else if (range != null) {
-			buffer.append(range.toString());
-		}
+        if (offset != null) {
+            buffer.append(offset.toString());
+        } else if (range != null) {
+            buffer.append(range.toString());
+        }
 
-		return buffer.toString();
-	}
+        return buffer.toString();
+    }
 }

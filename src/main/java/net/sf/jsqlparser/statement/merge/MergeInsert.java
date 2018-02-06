@@ -35,12 +35,12 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 @Data
 public class MergeInsert {
 
-	private List<Column> columns = null;
-	private List<Expression> values = null;
+    private List<Column> columns = null;
+    private List<Expression> values = null;
 
-	@Override
-	public String toString() {
-		return " WHEN NOT MATCHED THEN INSERT " + PlainSelect.getStringList(columns, true, true)
-			+ " VALUES " + PlainSelect.getStringList(values, true, true);
-	}
+    @Override
+    public String toString() {
+        return " WHEN NOT MATCHED THEN INSERT " + PlainSelect.getStringList(columns, true, true)
+            + " VALUES " + PlainSelect.getStringList(values, true, true);
+    }
 }

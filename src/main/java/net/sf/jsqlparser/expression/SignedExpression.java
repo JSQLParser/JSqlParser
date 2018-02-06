@@ -30,28 +30,28 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class SignedExpression extends ASTNodeAccessImpl implements Expression {
 
-	private char sign;
-	private Expression expression;
+    private char sign;
+    private Expression expression;
 
-	public SignedExpression(char sign, Expression expression) {
-		setSign(sign);
-		setExpression(expression);
-	}
+    public SignedExpression(char sign, Expression expression) {
+        setSign(sign);
+        setExpression(expression);
+    }
 
-	public final void setSign(char sign) {
-		this.sign = sign;
-		if (sign != '+' && sign != '-' && sign != '~') {
-			throw new IllegalArgumentException("illegal sign character, only + - ~ allowed");
-		}
-	}
+    public final void setSign(char sign) {
+        this.sign = sign;
+        if (sign != '+' && sign != '-' && sign != '~') {
+            throw new IllegalArgumentException("illegal sign character, only + - ~ allowed");
+        }
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return getSign() + expression.toString();
-	}
+    @Override
+    public String toString() {
+        return getSign() + expression.toString();
+    }
 }

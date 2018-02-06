@@ -34,16 +34,16 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @AllArgsConstructor
 public class JdbcParameter extends ASTNodeAccessImpl implements Expression {
 
-	private Integer index;
-	private boolean useFixedIndex = false;
+    private Integer index;
+    private boolean useFixedIndex = false;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return useFixedIndex ? "?" + index : "?";
-	}
+    @Override
+    public String toString() {
+        return useFixedIndex ? "?" + index : "?";
+    }
 }

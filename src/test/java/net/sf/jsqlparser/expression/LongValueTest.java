@@ -35,24 +35,19 @@ import org.junit.Test;
  */
 public class LongValueTest {
 
-    public LongValueTest() {
-    }
+    public LongValueTest() {}
 
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     @Test
     public void testSimpleNumber() {

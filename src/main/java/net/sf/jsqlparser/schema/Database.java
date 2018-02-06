@@ -30,33 +30,33 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public final class Database implements MultiPartName {
 
-	private Server server;
-	private String databaseName;
+    private Server server;
+    private String databaseName;
 
-	public Database(String databaseName) {
-		this(null, databaseName);
-	}
+    public Database(String databaseName) {
+        this(null, databaseName);
+    }
 
-	@Override
-	public String getFullyQualifiedName() {
-		String fqn = "";
+    @Override
+    public String getFullyQualifiedName() {
+        String fqn = "";
 
-		if (server != null) {
-			fqn += server.getFullyQualifiedName();
-		}
-		if (!fqn.isEmpty()) {
-			fqn += ".";
-		}
+        if (server != null) {
+            fqn += server.getFullyQualifiedName();
+        }
+        if (!fqn.isEmpty()) {
+            fqn += ".";
+        }
 
-		if (databaseName != null) {
-			fqn += databaseName;
-		}
+        if (databaseName != null) {
+            fqn += databaseName;
+        }
 
-		return fqn;
-	}
+        return fqn;
+    }
 
-	@Override
-	public String toString() {
-		return getFullyQualifiedName();
-	}
+    @Override
+    public String toString() {
+        return getFullyQualifiedName();
+    }
 }

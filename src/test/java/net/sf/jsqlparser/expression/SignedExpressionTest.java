@@ -35,24 +35,19 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
  */
 public class SignedExpressionTest {
 
-    public SignedExpressionTest() {
-    }
+    public SignedExpressionTest() {}
 
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     /**
      * Test of getSign method, of class SignedExpression.

@@ -31,15 +31,15 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class NumericBind extends ASTNodeAccessImpl implements Expression {
 
-	private int bindId;
+    private int bindId;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return ":" + bindId;
-	}
+    @Override
+    public String toString() {
+        return ":" + bindId;
+    }
 }

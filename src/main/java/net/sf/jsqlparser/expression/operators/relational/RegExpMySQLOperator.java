@@ -29,30 +29,30 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 @Data
 public class RegExpMySQLOperator extends BinaryExpression {
 
-	private RegExpMatchOperatorType operatorType;
-	@Accessors(chain = true)
-	private boolean useRLike = false;
+    private RegExpMatchOperatorType operatorType;
+    @Accessors(chain = true)
+    private boolean useRLike = false;
 
-	public RegExpMySQLOperator(RegExpMatchOperatorType operatorType) {
-		if (operatorType == null) {
-			throw new NullPointerException();
-		}
-		this.operatorType = operatorType;
-	}
+    public RegExpMySQLOperator(RegExpMatchOperatorType operatorType) {
+        if (operatorType == null) {
+            throw new NullPointerException();
+        }
+        this.operatorType = operatorType;
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String getStringExpression() {
-		return (useRLike ? "RLIKE" : "REGEXP")
-			+ (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
-	}
-	
+    @Override
+    public String getStringExpression() {
+        return (useRLike ? "RLIKE" : "REGEXP")
+            + (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
+    }
+
     @Override
     public String toString() {
-    	return super.toString();
+        return super.toString();
     }
 }

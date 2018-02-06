@@ -32,21 +32,21 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class UserVariable extends ASTNodeAccessImpl implements Expression {
 
-	/**
-	 * The name of the parameter
-	 *
-	 * @return the name of the parameter
-	 */
-	private String name;
-	private boolean doubleAdd = false;
+    /**
+     * The name of the parameter
+     *
+     * @return the name of the parameter
+     */
+    private String name;
+    private boolean doubleAdd = false;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return "@" + (doubleAdd ? "@" : "") + name;
-	}
+    @Override
+    public String toString() {
+        return "@" + (doubleAdd ? "@" : "") + name;
+    }
 }

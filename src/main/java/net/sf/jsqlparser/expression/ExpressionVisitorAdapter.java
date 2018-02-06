@@ -351,8 +351,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
-    public void visit(IntervalExpression expr) {
-    }
+    public void visit(IntervalExpression expr) {}
 
     @Override
     public void visit(OracleHierarchicalExpression expr) {

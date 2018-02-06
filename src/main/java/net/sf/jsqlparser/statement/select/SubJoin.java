@@ -32,25 +32,25 @@ import net.sf.jsqlparser.expression.Alias;
 @Data
 public class SubJoin implements FromItem {
 
-	private FromItem left;
-	private Alias alias;
-	private Pivot pivot;
-	private List<Join> joinList;
+    private FromItem left;
+    private Alias alias;
+    private Pivot pivot;
+    private List<Join> joinList;
 
-	@Override
-	public void accept(FromItemVisitor fromItemVisitor) {
-		fromItemVisitor.visit(this);
-	}
+    @Override
+    public void accept(FromItemVisitor fromItemVisitor) {
+        fromItemVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("(").append(left);
-		for (Join j : joinList) {
-			sb.append(" ").append(j);
-		}
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(").append(left);
+        for (Join j : joinList) {
+            sb.append(" ").append(j);
+        }
 
-		sb.append(")").append((alias != null) ? (" " + alias.toString()) : "").append((pivot != null) ? " " + pivot : "");
-		return sb.toString();
-	}
+        sb.append(")").append((alias != null) ? (" " + alias.toString()) : "").append((pivot != null) ? " " + pivot : "");
+        return sb.toString();
+    }
 }

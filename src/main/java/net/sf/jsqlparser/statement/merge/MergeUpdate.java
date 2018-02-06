@@ -34,27 +34,27 @@ import net.sf.jsqlparser.schema.Column;
 @Data
 public class MergeUpdate {
 
-	private List<Column> columns = null;
-	private List<Expression> values = null;
-	private Expression whereCondition;
-	private Expression deleteWhereCondition;
+    private List<Column> columns = null;
+    private List<Expression> values = null;
+    private Expression whereCondition;
+    private Expression deleteWhereCondition;
 
-	@Override
-	public String toString() {
-		StringBuilder b = new StringBuilder();
-		b.append(" WHEN MATCHED THEN UPDATE SET ");
-		for (int i = 0; i < columns.size(); i++) {
-			if (i != 0) {
-				b.append(", ");
-			}
-			b.append(columns.get(i).toString()).append(" = ").append(values.get(i).toString());
-		}
-		if (whereCondition != null) {
-			b.append(" WHERE ").append(whereCondition.toString());
-		}
-		if (deleteWhereCondition != null) {
-			b.append(" DELETE WHERE ").append(deleteWhereCondition.toString());
-		}
-		return b.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append(" WHEN MATCHED THEN UPDATE SET ");
+        for (int i = 0; i < columns.size(); i++) {
+            if (i != 0) {
+                b.append(", ");
+            }
+            b.append(columns.get(i).toString()).append(" = ").append(values.get(i).toString());
+        }
+        if (whereCondition != null) {
+            b.append(" WHERE ").append(whereCondition.toString());
+        }
+        if (deleteWhereCondition != null) {
+            b.append(" DELETE WHERE ").append(deleteWhereCondition.toString());
+        }
+        return b.toString();
+    }
 }

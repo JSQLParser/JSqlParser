@@ -51,7 +51,7 @@ public class MemoryTest {
          * "wct_audit_entry  ,  wct_transaction  ,  wct_workflows  WHERE                           " +
          * "(  wct_audit_entry.privilege  =  'W'  or  wct_audit_entry.privilege  =                 " + "'C'  ))))";
          */
- /*
+        /*
          * String longQuery = "select  *  from  d WHERE                           " +
          * "(  wct_audit_entry.privilege  =  'W'  or  wct_audit_entry.privilege  =                 " +
          * "'C'  )  and  wct_audit_entry.outcome  =  't'  and                                      " +

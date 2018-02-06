@@ -30,24 +30,24 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 @Data
 public class ColDataType {
 
-	private String dataType;
-	private List<String> argumentsStringList;
-	private String characterSet;
-	private List<Integer> arrayData = new ArrayList<Integer>();
+    private String dataType;
+    private List<String> argumentsStringList;
+    private String characterSet;
+    private List<Integer> arrayData = new ArrayList<Integer>();
 
-	@Override
-	public String toString() {
-		StringBuilder arraySpec = new StringBuilder();
-		for (Integer item : arrayData) {
-			arraySpec.append("[");
-			if (item != null) {
-				arraySpec.append(item);
-			}
-			arraySpec.append("]");
-		}
-		return dataType
-			+ (argumentsStringList != null ? " " + PlainSelect.getStringList(argumentsStringList, true, true) : "")
-			+ arraySpec.toString()
-			+ (characterSet != null ? " CHARACTER SET " + characterSet : "");
-	}
+    @Override
+    public String toString() {
+        StringBuilder arraySpec = new StringBuilder();
+        for (Integer item : arrayData) {
+            arraySpec.append("[");
+            if (item != null) {
+                arraySpec.append(item);
+            }
+            arraySpec.append("]");
+        }
+        return dataType
+            + (argumentsStringList != null ? " " + PlainSelect.getStringList(argumentsStringList, true, true) : "")
+            + arraySpec.toString()
+            + (characterSet != null ? " CHARACTER SET " + characterSet : "");
+    }
 }

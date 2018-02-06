@@ -26,16 +26,16 @@ import lombok.Data;
 @Data
 public class WindowRange {
 
-	private WindowOffset start;
-	private WindowOffset end;
+    private WindowOffset start;
+    private WindowOffset end;
 
-	@Override
-	public String toString() {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(" BETWEEN");
-		buffer.append(start);
-		buffer.append(" AND");
-		buffer.append(end);
-		return buffer.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(" BETWEEN");
+        buffer.append(start);
+        buffer.append(" AND");
+        buffer.append(end);
+        return buffer.toString();
+    }
 }

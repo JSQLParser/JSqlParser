@@ -32,20 +32,20 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 @Data
 public class Index {
 
-	/**
-	 * The type of this index: "PRIMARY KEY", "UNIQUE", "INDEX"
-	 */
-	private String type;
-	/**
-	 * A list of strings of all the columns regarding this index
-	 */
-	private List<String> columnsNames;
-	private String name;
-	private List<String> indexSpec;
+    /**
+     * The type of this index: "PRIMARY KEY", "UNIQUE", "INDEX"
+     */
+    private String type;
+    /**
+     * A list of strings of all the columns regarding this index
+     */
+    private List<String> columnsNames;
+    private String name;
+    private List<String> indexSpec;
 
-	@Override
-	public String toString() {
-		String idxSpecText = PlainSelect.getStringList(indexSpec, false, false);
-		return type + (name != null ? " " + name : "") + " " + PlainSelect.getStringList(columnsNames, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
-	}
+    @Override
+    public String toString() {
+        String idxSpecText = PlainSelect.getStringList(indexSpec, false, false);
+        return type + (name != null ? " " + name : "") + " " + PlainSelect.getStringList(columnsNames, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
+    }
 }

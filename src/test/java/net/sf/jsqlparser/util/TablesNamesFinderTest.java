@@ -49,8 +49,7 @@ public class TablesNamesFinderTest {
     }
 
     private void runTestOnResource(String resPath) throws Exception {
-        BufferedReader in = new BufferedReader(new InputStreamReader(TablesNamesFinderTest.class.
-                getResourceAsStream(resPath)));
+        BufferedReader in = new BufferedReader(new InputStreamReader(TablesNamesFinderTest.class.getResourceAsStream(resPath)));
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
 
         try {
@@ -115,7 +114,7 @@ public class TablesNamesFinderTest {
     public void testGetTableList() throws Exception {
 
         String sql = "SELECT * FROM MY_TABLE1, MY_TABLE2, (SELECT * FROM MY_TABLE3) LEFT OUTER JOIN MY_TABLE4 "
-                + " WHERE ID = (SELECT MAX(ID) FROM MY_TABLE5) AND ID2 IN (SELECT * FROM MY_TABLE6)";
+            + " WHERE ID = (SELECT MAX(ID) FROM MY_TABLE5) AND ID2 IN (SELECT * FROM MY_TABLE6)";
         net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
 
         // now you should use a class that implements StatementVisitor to decide what to do
@@ -196,7 +195,7 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("MY_TABLE1"));
     }
-    
+
     @Test
     public void testGetTableListFromDeleteWithJoin() throws Exception {
         String sql = "DELETE t1, t2 FROM MY_TABLE1 t1 JOIN MY_TABLE2 t2 ON t1.id = t2.id";
@@ -395,8 +394,7 @@ public class TablesNamesFinderTest {
 
     @Test
     public void testUpdateGetTableListIssue295() throws JSQLParserException {
-        Update statement = (Update) CCJSqlParserUtil.
-                parse("UPDATE component SET col = 0 WHERE (component_id,ver_num) IN (SELECT component_id,ver_num FROM component_temp)");
+        Update statement = (Update) CCJSqlParserUtil.parse("UPDATE component SET col = 0 WHERE (component_id,ver_num) IN (SELECT component_id,ver_num FROM component_temp)");
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
         List<String> tableList = tablesNamesFinder.getTableList(statement);
         assertEquals(2, tableList.size());
@@ -479,7 +477,7 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("mytable2"));
     }
-    
+
     @Test
     public void testExpressionIssue515() throws JSQLParserException {
         TablesNamesFinder finder = new TablesNamesFinder();
@@ -487,7 +485,7 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("SOME_TABLE"));
     }
-    
+
     public void testSelectHavingSubquery() throws Exception {
         String sql = "SELECT * FROM TABLE1 GROUP BY COL1 HAVING SUM(COL2) > (SELECT COUNT(*) FROM TABLE2)";
         net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));

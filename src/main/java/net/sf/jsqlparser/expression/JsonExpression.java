@@ -45,21 +45,21 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
         expressionVisitor.visit(this);
     }
 
-//    public List<String> getIdents() {
-//        return idents;
-//    }
-//
-//    public void setIdents(List<String> idents) {
-//        this.idents = idents;
-//        operators = new ArrayList<String>();
-//        for (String ident : idents) {
-//            operators.add("->");
-//        }
-//    }
-//    
-//    public void addIdent(String ident) {
-//        addIdent(ident, "->");
-//    }
+    //    public List<String> getIdents() {
+    //        return idents;
+    //    }
+    //
+    //    public void setIdents(List<String> idents) {
+    //        this.idents = idents;
+    //        operators = new ArrayList<String>();
+    //        for (String ident : idents) {
+    //            operators.add("->");
+    //        }
+    //    }
+    //    
+    //    public void addIdent(String ident) {
+    //        addIdent(ident, "->");
+    //    }
     public void addIdent(String ident, String operator) {
         idents.add(ident);
         operators.add(operator);

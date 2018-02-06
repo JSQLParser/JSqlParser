@@ -36,30 +36,30 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 @Data
 public class AlterView implements Statement {
 
-	/**
-	 * In the syntax tree, a view looks and acts just like a Table.
-	 */
-	private Table view;
-	/**
-	 * @return the SelectBody
-	 */
-	private SelectBody selectBody;
-	private List<String> columnNames = null;
+    /**
+     * In the syntax tree, a view looks and acts just like a Table.
+     */
+    private Table view;
+    /**
+     * @return the SelectBody
+     */
+    private SelectBody selectBody;
+    private List<String> columnNames = null;
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sql = new StringBuilder("ALTER ");
-		sql.append("VIEW ");
-		sql.append(view);
-		if (columnNames != null) {
-			sql.append(PlainSelect.getStringList(columnNames, true, true));
-		}
-		sql.append(" AS ").append(selectBody);
-		return sql.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder sql = new StringBuilder("ALTER ");
+        sql.append("VIEW ");
+        sql.append(view);
+        if (columnNames != null) {
+            sql.append(PlainSelect.getStringList(columnNames, true, true));
+        }
+        sql.append(" AS ").append(selectBody);
+        return sql.toString();
+    }
 }

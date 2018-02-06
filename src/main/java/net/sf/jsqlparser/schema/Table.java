@@ -40,68 +40,68 @@ import net.sf.jsqlparser.statement.select.Pivot;
 @EqualsAndHashCode(callSuper = true)
 public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName {
 
-	private Database database;
-	private String schemaName;
-	private String name;
+    private Database database;
+    private String schemaName;
+    private String name;
 
-	private Alias alias;
-	private Pivot pivot;
-	private MySQLIndexHint mySQLIndexHint;
+    private Alias alias;
+    private Pivot pivot;
+    private MySQLIndexHint mySQLIndexHint;
 
-	public Table(String name) {
-		this.name = name;
-	}
+    public Table(String name) {
+        this.name = name;
+    }
 
-	public Table(String schemaName, String name) {
-		this.schemaName = schemaName;
-		this.name = name;
-	}
+    public Table(String schemaName, String name) {
+        this.schemaName = schemaName;
+        this.name = name;
+    }
 
-	public Table(Database database, String schemaName, String name) {
-		this.database = database;
-		this.schemaName = schemaName;
-		this.name = name;
-	}
+    public Table(Database database, String schemaName, String name) {
+        this.database = database;
+        this.schemaName = schemaName;
+        this.name = name;
+    }
 
-	@Override
-	public String getFullyQualifiedName() {
-		String fqn = "";
+    @Override
+    public String getFullyQualifiedName() {
+        String fqn = "";
 
-		if (database != null) {
-			fqn += database.getFullyQualifiedName();
-		}
-		if (!fqn.isEmpty()) {
-			fqn += ".";
-		}
+        if (database != null) {
+            fqn += database.getFullyQualifiedName();
+        }
+        if (!fqn.isEmpty()) {
+            fqn += ".";
+        }
 
-		if (schemaName != null) {
-			fqn += schemaName;
-		}
-		if (!fqn.isEmpty()) {
-			fqn += ".";
-		}
+        if (schemaName != null) {
+            fqn += schemaName;
+        }
+        if (!fqn.isEmpty()) {
+            fqn += ".";
+        }
 
-		if (name != null) {
-			fqn += name;
-		}
+        if (name != null) {
+            fqn += name;
+        }
 
-		return fqn;
-	}
+        return fqn;
+    }
 
-	@Override
-	public void accept(FromItemVisitor fromItemVisitor) {
-		fromItemVisitor.visit(this);
-	}
+    @Override
+    public void accept(FromItemVisitor fromItemVisitor) {
+        fromItemVisitor.visit(this);
+    }
 
-	public void accept(IntoTableVisitor intoTableVisitor) {
-		intoTableVisitor.visit(this);
-	}
+    public void accept(IntoTableVisitor intoTableVisitor) {
+        intoTableVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return getFullyQualifiedName()
-			+ ((alias != null) ? alias.toString() : "")
-			+ ((pivot != null) ? " " + pivot : "")
-			+ ((mySQLIndexHint != null) ? mySQLIndexHint.toString() : "");
-	}
+    @Override
+    public String toString() {
+        return getFullyQualifiedName()
+            + ((alias != null) ? alias.toString() : "")
+            + ((pivot != null) ? " " + pivot : "")
+            + ((mySQLIndexHint != null) ? mySQLIndexHint.toString() : "");
+    }
 }

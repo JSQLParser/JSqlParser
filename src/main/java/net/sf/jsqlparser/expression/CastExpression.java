@@ -32,21 +32,21 @@ import net.sf.jsqlparser.statement.create.table.ColDataType;
 @Data
 public class CastExpression extends ASTNodeAccessImpl implements Expression {
 
-	private Expression leftExpression;
-	private ColDataType type;
-	private boolean useCastKeyword = true;
+    private Expression leftExpression;
+    private ColDataType type;
+    private boolean useCastKeyword = true;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		if (useCastKeyword) {
-			return "CAST(" + leftExpression + " AS " + type.toString() + ")";
-		} else {
-			return leftExpression + "::" + type.toString();
-		}
-	}
+    @Override
+    public String toString() {
+        if (useCastKeyword) {
+            return "CAST(" + leftExpression + " AS " + type.toString() + ")";
+        } else {
+            return leftExpression + "::" + type.toString();
+        }
+    }
 }

@@ -34,20 +34,20 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @NoArgsConstructor
 public class SelectExpressionItem extends ASTNodeAccessImpl implements SelectItem {
 
-	private Expression expression;
-	private Alias alias;
+    private Expression expression;
+    private Alias alias;
 
     public SelectExpressionItem(Expression expression) {
         this.expression = expression;
     }
 
     @Override
-	public void accept(SelectItemVisitor selectItemVisitor) {
-		selectItemVisitor.visit(this);
-	}
+    public void accept(SelectItemVisitor selectItemVisitor) {
+        selectItemVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return expression + ((alias != null) ? alias.toString() : "");
-	}
+    @Override
+    public String toString() {
+        return expression + ((alias != null) ? alias.toString() : "");
+    }
 }

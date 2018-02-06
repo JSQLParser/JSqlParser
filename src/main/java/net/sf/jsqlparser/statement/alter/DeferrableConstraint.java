@@ -28,15 +28,15 @@ import lombok.Data;
 @AllArgsConstructor
 public class DeferrableConstraint implements ConstraintState {
 
-	private boolean not;
+    private boolean not;
 
-	@Override
-	public String toString() {
-		StringBuilder b = new StringBuilder();
-		if (not) {
-			b.append("NOT ");
-		}
-		b.append("DEFERRABLE");
-		return b.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        if (not) {
+            b.append("NOT ");
+        }
+        b.append("DEFERRABLE");
+        return b.toString();
+    }
 }

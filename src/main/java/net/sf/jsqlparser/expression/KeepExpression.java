@@ -38,38 +38,38 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 @Data
 public class KeepExpression extends ASTNodeAccessImpl implements Expression {
 
-	private String name;
-	private List<OrderByElement> orderByElements;
-	private boolean first = false;
+    private String name;
+    private List<OrderByElement> orderByElements;
+    private boolean first = false;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder b = new StringBuilder();
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
 
-		b.append("KEEP (").append(name);
+        b.append("KEEP (").append(name);
 
-		b.append(" ").append(first ? "FIRST" : "LAST").append(" ");
-		toStringOrderByElements(b);
+        b.append(" ").append(first ? "FIRST" : "LAST").append(" ");
+        toStringOrderByElements(b);
 
-		b.append(")");
+        b.append(")");
 
-		return b.toString();
-	}
+        return b.toString();
+    }
 
-	private void toStringOrderByElements(StringBuilder b) {
-		if (orderByElements != null && !orderByElements.isEmpty()) {
-			b.append("ORDER BY ");
-			for (int i = 0; i < orderByElements.size(); i++) {
-				if (i > 0) {
-					b.append(", ");
-				}
-				b.append(orderByElements.get(i).toString());
-			}
-		}
-	}
+    private void toStringOrderByElements(StringBuilder b) {
+        if (orderByElements != null && !orderByElements.isEmpty()) {
+            b.append("ORDER BY ");
+            for (int i = 0; i < orderByElements.size(); i++) {
+                if (i > 0) {
+                    b.append(", ");
+                }
+                b.append(orderByElements.get(i).toString());
+            }
+        }
+    }
 }

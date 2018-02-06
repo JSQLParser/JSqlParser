@@ -74,8 +74,8 @@ public class CreateTable implements Statement {
         String createOps = PlainSelect.getStringList(createOptionsStrings, false, false);
 
         sql = "CREATE " + (unlogged ? "UNLOGGED " : "")
-                + (!"".equals(createOps) ? createOps + " " : "")
-                + "TABLE " + (ifNotExists ? "IF NOT EXISTS " : "") + table;
+            + (!"".equals(createOps) ? createOps + " " : "")
+            + "TABLE " + (ifNotExists ? "IF NOT EXISTS " : "") + table;
 
         if (select != null) {
             sql += " AS " + (parenthesis ? "(" : "") + select.toString() + (parenthesis ? ")" : "");

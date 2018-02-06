@@ -50,23 +50,23 @@ import net.sf.jsqlparser.expression.Expression;
 @Data
 public class SetStatement implements Statement {
 
-	private String name;
-	private Expression expression;
-	@Accessors(chain = true)
-	private boolean useEqual;
+    private String name;
+    private Expression expression;
+    @Accessors(chain = true)
+    private boolean useEqual;
 
-	public SetStatement(String name, Expression expression) {
-		this.name = name;
-		this.expression = expression;
-	}
+    public SetStatement(String name, Expression expression) {
+        this.name = name;
+        this.expression = expression;
+    }
 
-	@Override
-	public String toString() {
-		return "SET " + name + (useEqual ? " = " : " ") + expression.toString();
-	}
+    @Override
+    public String toString() {
+        return "SET " + name + (useEqual ? " = " : " ") + expression.toString();
+    }
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 }

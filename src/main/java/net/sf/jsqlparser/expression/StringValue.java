@@ -33,54 +33,54 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
-	private String value = "";
-	private Character prefix = null;
+    private String value = "";
+    private Character prefix = null;
 
-	/*
-	N - SQLServer Unicode encoding
-	U - Oracle Unicode encoding
-	E - Postgresql Unicode encoding
-	 */
-	public static final List<Character> ALLOWED_PREFIXES = Arrays.asList('N', 'U', 'E');
+    /*
+    N - SQLServer Unicode encoding
+    U - Oracle Unicode encoding
+    E - Postgresql Unicode encoding
+     */
+    public static final List<Character> ALLOWED_PREFIXES = Arrays.asList('N', 'U', 'E');
 
-	public StringValue(String escapedValue) {
-		// romoving "'" at the start and at the end
-		if (escapedValue.startsWith("'") && escapedValue.endsWith("'")) {
-			value = escapedValue.substring(1, escapedValue.length() - 1);
-			return;
-		}
+    public StringValue(String escapedValue) {
+        // romoving "'" at the start and at the end
+        if (escapedValue.startsWith("'") && escapedValue.endsWith("'")) {
+            value = escapedValue.substring(1, escapedValue.length() - 1);
+            return;
+        }
 
-		if (escapedValue.length() > 2) {
-			char p = Character.toUpperCase(escapedValue.charAt(0));
-			if (ALLOWED_PREFIXES.contains(p) && escapedValue.charAt(1) == '\'' && escapedValue.endsWith("'")) {
-				this.prefix = p;
-				value = escapedValue.substring(2, escapedValue.length() - 1);
-				return;
-			}
-		}
+        if (escapedValue.length() > 2) {
+            char p = Character.toUpperCase(escapedValue.charAt(0));
+            if (ALLOWED_PREFIXES.contains(p) && escapedValue.charAt(1) == '\'' && escapedValue.endsWith("'")) {
+                this.prefix = p;
+                value = escapedValue.substring(2, escapedValue.length() - 1);
+                return;
+            }
+        }
 
-		value = escapedValue;
-	}
+        value = escapedValue;
+    }
 
-	public String getNotExcapedValue() {
-		StringBuilder buffer = new StringBuilder(value);
-		int index = 0;
-		int deletesNum = 0;
-		while ((index = value.indexOf("''", index)) != -1) {
-			buffer.deleteCharAt(index - deletesNum);
-			index += 2;
-			deletesNum++;
-		}
-		return buffer.toString();
-	}
+    public String getNotExcapedValue() {
+        StringBuilder buffer = new StringBuilder(value);
+        int index = 0;
+        int deletesNum = 0;
+        while ((index = value.indexOf("''", index)) != -1) {
+            buffer.deleteCharAt(index - deletesNum);
+            index += 2;
+            deletesNum++;
+        }
+        return buffer.toString();
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return (prefix != null ? prefix : "") + "'" + value + "'";
-	}
+    @Override
+    public String toString() {
+        return (prefix != null ? prefix : "") + "'" + value + "'";
+    }
 }

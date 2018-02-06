@@ -33,16 +33,16 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class ExtractExpression extends ASTNodeAccessImpl implements Expression {
 
-	private String name;
-	private Expression expression;
+    private String name;
+    private Expression expression;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return "EXTRACT(" + name + " FROM " + expression + ')';
-	}
+    @Override
+    public String toString() {
+        return "EXTRACT(" + name + " FROM " + expression + ')';
+    }
 }

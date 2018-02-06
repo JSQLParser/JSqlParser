@@ -34,81 +34,81 @@ import net.sf.jsqlparser.schema.Column;
 @Data
 public class Join extends ASTNodeAccessImpl {
 
-	/**
-	 * Whether is a "OUTER" join
-	 */
-	private boolean outer = false;
-	/**
-	 * Whether is a "RIGHT" join
-	 */
-	private boolean right = false;
-	/**
-	 * Whether is a "LEFT" join
-	 */
-	private boolean left = false;
-	/**
-	 * Whether is a "NATURAL" join
-	 */
-	private boolean natural = false;
-	/**
-	 * Whether is a "FULL" join
-	 */
-	private boolean full = false;
-	/**
-	 * Whether is a "INNER" join
-	 */
-	private boolean inner = false;
-	/**
-	 * Whether is a tab1,tab2 join
-	 */
-	private boolean simple = false;
-	private boolean cross = false;
-	/**
-	 * Whether is a "SEMI" join
-	 */
-	private boolean semi = false;
-	/**
-	 * The right item of the join
-	 */
-	private FromItem rightItem;
-	/**
-	 * The "ON" expression (if any)
-	 */
-	private Expression onExpression;
-	/**
-	 * The "USING" list of {@link net.sf.jsqlparser.schema.Column}s (if any)
-	 */
-	private List<Column> usingColumns;
+    /**
+     * Whether is a "OUTER" join
+     */
+    private boolean outer = false;
+    /**
+     * Whether is a "RIGHT" join
+     */
+    private boolean right = false;
+    /**
+     * Whether is a "LEFT" join
+     */
+    private boolean left = false;
+    /**
+     * Whether is a "NATURAL" join
+     */
+    private boolean natural = false;
+    /**
+     * Whether is a "FULL" join
+     */
+    private boolean full = false;
+    /**
+     * Whether is a "INNER" join
+     */
+    private boolean inner = false;
+    /**
+     * Whether is a tab1,tab2 join
+     */
+    private boolean simple = false;
+    private boolean cross = false;
+    /**
+     * Whether is a "SEMI" join
+     */
+    private boolean semi = false;
+    /**
+     * The right item of the join
+     */
+    private FromItem rightItem;
+    /**
+     * The "ON" expression (if any)
+     */
+    private Expression onExpression;
+    /**
+     * The "USING" list of {@link net.sf.jsqlparser.schema.Column}s (if any)
+     */
+    private List<Column> usingColumns;
 
-	@Override
-	public String toString() {
-		if (isSimple()) {
-			return "" + rightItem;
-		} else {
-			String type = "";
+    @Override
+    public String toString() {
+        if (isSimple()) {
+            return "" + rightItem;
+        } else {
+            String type = "";
 
-			if (isRight()) {
-				type += "RIGHT ";
-			} else if (isNatural()) {
-				type += "NATURAL ";
-			} else if (isFull()) {
-				type += "FULL ";
-			} else if (isLeft()) {
-				type += "LEFT ";
-			} else if (isCross()) {
-				type += "CROSS ";
-			}
+            if (isRight()) {
+                type += "RIGHT ";
+            } else if (isNatural()) {
+                type += "NATURAL ";
+            } else if (isFull()) {
+                type += "FULL ";
+            } else if (isLeft()) {
+                type += "LEFT ";
+            } else if (isCross()) {
+                type += "CROSS ";
+            }
 
-			if (isOuter()) {
-				type += "OUTER ";
-			} else if (isInner()) {
-				type += "INNER ";
-			} else if (isSemi()) {
-				type += "SEMI ";
-			}
+            if (isOuter()) {
+                type += "OUTER ";
+            } else if (isInner()) {
+                type += "INNER ";
+            } else if (isSemi()) {
+                type += "SEMI ";
+            }
 
-			return type + "JOIN " + rightItem + ((onExpression != null) ? " ON " + onExpression + "" : "")
-				+ PlainSelect.getFormatedList(usingColumns, "USING", true, true);
-		}
-	}
+            return type + "JOIN " + rightItem + ((onExpression != null) ? " ON " + onExpression + "" : "")
+                + PlainSelect.getFormatedList(usingColumns, "USING", true, true);
+        }
+    }
 }

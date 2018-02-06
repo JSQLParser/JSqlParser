@@ -26,6 +26,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ExpressionDeParserTest {
+
     private ExpressionDeParser expressionDeParser;
 
     @Mock
@@ -198,6 +199,7 @@ public class ExpressionDeParserTest {
 
     private Answer<Void> appendToBuffer(final String string) {
         return new Answer<Void>() {
+
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 buffer.append(string);

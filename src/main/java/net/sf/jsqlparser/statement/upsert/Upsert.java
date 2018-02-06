@@ -50,59 +50,59 @@ import net.sf.jsqlparser.statement.select.Select;
 @Data
 public class Upsert implements Statement {
 
-	private Table table;
-	private List<Column> columns;
-	private ItemsList itemsList;
-	private boolean useValues = true;
-	private Select select;
-	private boolean useSelectBrackets = true;
-	private boolean useDuplicate = false;
-	private List<Column> duplicateUpdateColumns;
-	private List<Expression> duplicateUpdateExpressionList;
+    private Table table;
+    private List<Column> columns;
+    private ItemsList itemsList;
+    private boolean useValues = true;
+    private Select select;
+    private boolean useSelectBrackets = true;
+    private boolean useDuplicate = false;
+    private List<Column> duplicateUpdateColumns;
+    private List<Expression> duplicateUpdateExpressionList;
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
 
-		sb.append("UPSERT INTO ");
-		sb.append(table).append(" ");
-		if (columns != null) {
-			sb.append(PlainSelect.getStringList(columns, true, true)).append(" ");
-		}
-		if (useValues) {
-			sb.append("VALUES ");
-		}
+        sb.append("UPSERT INTO ");
+        sb.append(table).append(" ");
+        if (columns != null) {
+            sb.append(PlainSelect.getStringList(columns, true, true)).append(" ");
+        }
+        if (useValues) {
+            sb.append("VALUES ");
+        }
 
-		if (itemsList != null) {
-			sb.append(itemsList);
-		} else {
-			if (useSelectBrackets) {
-				sb.append("(");
-			}
-			if (select != null) {
-				sb.append(select);
-			}
-			if (useSelectBrackets) {
-				sb.append(")");
-			}
-		}
+        if (itemsList != null) {
+            sb.append(itemsList);
+        } else {
+            if (useSelectBrackets) {
+                sb.append("(");
+            }
+            if (select != null) {
+                sb.append(select);
+            }
+            if (useSelectBrackets) {
+                sb.append(")");
+            }
+        }
 
-		if (useDuplicate) {
-			sb.append(" ON DUPLICATE KEY UPDATE ");
-			for (int i = 0; i < getDuplicateUpdateColumns().size(); i++) {
-				if (i != 0) {
-					sb.append(", ");
-				}
-				sb.append(duplicateUpdateColumns.get(i)).append(" = ");
-				sb.append(duplicateUpdateExpressionList.get(i));
-			}
-		}
+        if (useDuplicate) {
+            sb.append(" ON DUPLICATE KEY UPDATE ");
+            for (int i = 0; i < getDuplicateUpdateColumns().size(); i++) {
+                if (i != 0) {
+                    sb.append(", ");
+                }
+                sb.append(duplicateUpdateColumns.get(i)).append(" = ");
+                sb.append(duplicateUpdateExpressionList.get(i));
+            }
+        }
 
-		return sb.toString();
-	}
+        return sb.toString();
+    }
 }

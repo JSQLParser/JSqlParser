@@ -37,52 +37,52 @@ import net.sf.jsqlparser.statement.create.table.Index;
 @Data
 public class CreateIndex implements Statement {
 
-	/**
-	 * The table on which the index is to be created
-	 */
-	private Table table;
-	/**
-	 * The index to be created
-	 */
-	private Index index;
+    /**
+     * The table on which the index is to be created
+     */
+    private Table table;
+    /**
+     * The index to be created
+     */
+    private Index index;
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder buffer = new StringBuilder();
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
 
-		buffer.append("CREATE ");
+        buffer.append("CREATE ");
 
-		if (index.getType() != null) {
-			buffer.append(index.getType());
-			buffer.append(" ");
-		}
+        if (index.getType() != null) {
+            buffer.append(index.getType());
+            buffer.append(" ");
+        }
 
-		buffer.append("INDEX ");
-		buffer.append(index.getName());
-		buffer.append(" ON ");
-		buffer.append(table.getFullyQualifiedName());
+        buffer.append("INDEX ");
+        buffer.append(index.getName());
+        buffer.append(" ON ");
+        buffer.append(table.getFullyQualifiedName());
 
-		if (index.getColumnsNames() != null) {
-			buffer.append(" (");
+        if (index.getColumnsNames() != null) {
+            buffer.append(" (");
 
-			for (Iterator<String> iter = index.getColumnsNames().iterator(); iter.hasNext();) {
-				String columnName = iter.next();
+            for (Iterator<String> iter = index.getColumnsNames().iterator(); iter.hasNext();) {
+                String columnName = iter.next();
 
-				buffer.append(columnName);
+                buffer.append(columnName);
 
-				if (iter.hasNext()) {
-					buffer.append(", ");
-				}
-			}
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
 
-			buffer.append(")");
-		}
+            buffer.append(")");
+        }
 
-		return buffer.toString();
-	}
+        return buffer.toString();
+    }
 }

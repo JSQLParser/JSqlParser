@@ -31,49 +31,49 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @NoArgsConstructor
 public class InExpression extends ASTNodeAccessImpl implements Expression, SupportsOldOracleJoinSyntax {
 
-	private Expression leftExpression;
-	private ItemsList leftItemsList;
-	private ItemsList rightItemsList;
-	private boolean not = false;
+    private Expression leftExpression;
+    private ItemsList leftItemsList;
+    private ItemsList rightItemsList;
+    private boolean not = false;
 
-	private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
+    private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
 
-	public InExpression(Expression leftExpression, ItemsList itemsList) {
-		setLeftExpression(leftExpression);
-		setRightItemsList(itemsList);
-	}
+    public InExpression(Expression leftExpression, ItemsList itemsList) {
+        setLeftExpression(leftExpression);
+        setRightItemsList(itemsList);
+    }
 
-	@Override
-	public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
-		this.oldOracleJoinSyntax = oldOracleJoinSyntax;
-		if (oldOracleJoinSyntax < 0 || oldOracleJoinSyntax > 1) {
-			throw new IllegalArgumentException("unexpected join type for oracle found with IN (type=" + oldOracleJoinSyntax + ")");
-		}
-	}
+    @Override
+    public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
+        this.oldOracleJoinSyntax = oldOracleJoinSyntax;
+        if (oldOracleJoinSyntax < 0 || oldOracleJoinSyntax > 1) {
+            throw new IllegalArgumentException("unexpected join type for oracle found with IN (type=" + oldOracleJoinSyntax + ")");
+        }
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	private String getLeftExpressionString() {
-		return leftExpression + (oldOracleJoinSyntax == ORACLE_JOIN_RIGHT ? "(+)" : "");
-	}
+    private String getLeftExpressionString() {
+        return leftExpression + (oldOracleJoinSyntax == ORACLE_JOIN_RIGHT ? "(+)" : "");
+    }
 
-	@Override
-	public String toString() {
-		return (leftExpression == null ? leftItemsList : getLeftExpressionString()) + " " + (not ? "NOT " : "") + "IN " + rightItemsList + "";
-	}
+    @Override
+    public String toString() {
+        return (leftExpression == null ? leftItemsList : getLeftExpressionString()) + " " + (not ? "NOT " : "") + "IN " + rightItemsList + "";
+    }
 
-	@Override
-	public int getOraclePriorPosition() {
-		return SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR;
-	}
+    @Override
+    public int getOraclePriorPosition() {
+        return SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR;
+    }
 
-	@Override
-	public void setOraclePriorPosition(int priorPosition) {
-		if (priorPosition != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
-			throw new IllegalArgumentException("unexpected prior for oracle found");
-		}
-	}
+    @Override
+    public void setOraclePriorPosition(int priorPosition) {
+        if (priorPosition != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
+            throw new IllegalArgumentException("unexpected prior for oracle found");
+        }
+    }
 }

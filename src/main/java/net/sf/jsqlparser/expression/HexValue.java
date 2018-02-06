@@ -32,15 +32,15 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @AllArgsConstructor
 public class HexValue extends ASTNodeAccessImpl implements Expression {
 
-	private String value;
+    private String value;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return value;
-	}
+    @Override
+    public String toString() {
+        return value;
+    }
 }

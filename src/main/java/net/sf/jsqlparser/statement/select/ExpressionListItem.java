@@ -28,11 +28,11 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 @Data
 public class ExpressionListItem {
 
-	private ExpressionList expressionList;
-	private Alias alias;
+    private ExpressionList expressionList;
+    private Alias alias;
 
-	@Override
-	public String toString() {
-		return expressionList + ((alias != null) ? alias.toString() : "");
-	}
+    @Override
+    public String toString() {
+        return expressionList + ((alias != null) ? alias.toString() : "");
+    }
 }

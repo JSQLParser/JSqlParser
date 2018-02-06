@@ -76,8 +76,7 @@ public class SpecialOracleTest {
             }
         }
 
-        LOG.
-                log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
+        LOG.log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[] { count, success });
         assertTrue(success >= 140);
     }
 
@@ -105,14 +104,14 @@ public class SpecialOracleTest {
 
         // First, the regular way (normal for most databases).
         sql = "SELECT\n"
-                + "    Something\n"
-                + "FROM\n"
-                + "    Sometable\n"
-                + "WHERE\n"
-                + "    Somefield >= Somevalue\n"
-                + "    AND Somefield <= Somevalue\n"
-                + "    AND Somefield <> Somevalue\n"
-                + "    AND Somefield != Somevalue\n";
+            + "    Something\n"
+            + "FROM\n"
+            + "    Sometable\n"
+            + "WHERE\n"
+            + "    Somefield >= Somevalue\n"
+            + "    AND Somefield <= Somevalue\n"
+            + "    AND Somefield <> Somevalue\n"
+            + "    AND Somefield != Somevalue\n";
 
         statement = CCJSqlParserUtil.parse(sql);
 
@@ -122,13 +121,13 @@ public class SpecialOracleTest {
 
         // Second, the special crap Oracle lets you get away with.
         sql = "SELECT\n"
-                + "    Something\n"
-                + "FROM\n"
-                + "    Sometable\n"
-                + "WHERE\n"
-                + "    Somefield > = Somevalue\n"
-                + "    AND Somefield < = Somevalue\n"
-                + "    AND Somefield < > Somevalue\n";
+            + "    Something\n"
+            + "FROM\n"
+            + "    Sometable\n"
+            + "WHERE\n"
+            + "    Somefield > = Somevalue\n"
+            + "    AND Somefield < = Somevalue\n"
+            + "    AND Somefield < > Somevalue\n";
 
         // Note, we do not (currently) test the "!=" with spaces in between -- Postgresql deals with this as two operators, "factorial" and "equals".
         statement = CCJSqlParserUtil.parse(sql);
@@ -139,13 +138,13 @@ public class SpecialOracleTest {
 
         // And then with multiple whitespace
         sql = "SELECT\n"
-                + "    Something\n"
-                + "FROM\n"
-                + "    Sometable\n"
-                + "WHERE\n"
-                + "    Somefield > \t = Somevalue\n"
-                + "    AND Somefield <   = Somevalue\n"
-                + "    AND Somefield <\t\t> Somevalue\n";
+            + "    Something\n"
+            + "FROM\n"
+            + "    Sometable\n"
+            + "WHERE\n"
+            + "    Somefield > \t = Somevalue\n"
+            + "    AND Somefield <   = Somevalue\n"
+            + "    AND Somefield <\t\t> Somevalue\n";
 
         statement = CCJSqlParserUtil.parse(sql);
 

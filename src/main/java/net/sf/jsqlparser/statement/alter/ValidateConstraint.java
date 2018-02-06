@@ -28,10 +28,10 @@ import lombok.Data;
 @AllArgsConstructor
 public class ValidateConstraint implements ConstraintState {
 
-	private boolean not;
+    private boolean not;
 
-	@Override
-	public String toString() {
-		return not ? "NOVALIDATE" : "VALIDATE";
-	}
+    @Override
+    public String toString() {
+        return not ? "NOVALIDATE" : "VALIDATE";
+    }
 }

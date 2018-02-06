@@ -61,7 +61,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
      *
      * @return true if it's java-escaped
      */
-	private boolean escaped = false;
+    private boolean escaped = false;
     private String attribute;
     private KeepExpression keep = null;
 

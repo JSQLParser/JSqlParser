@@ -101,12 +101,10 @@ public class AlterExpression {
         } else if (pkColumns != null) {
             b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
         } else if (ukColumns != null) {
-            b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.
-                    getStringList(ukColumns)).append(")");
+            b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
-            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).
-                    append(") REFERENCES ").append(fkSourceTable).append(" (").append(
-                    PlainSelect.getStringList(fkSourceColumns)).append(")");
+            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).append(") REFERENCES ").append(fkSourceTable).append(" (").append(
+                PlainSelect.getStringList(fkSourceColumns)).append(")");
             if (isOnDeleteCascade()) {
                 b.append(" ON DELETE CASCADE");
             } else if (isOnDeleteRestrict()) {
@@ -120,7 +118,7 @@ public class AlterExpression {
         if (getConstraints() != null && !getConstraints().isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
         }
-        if (parameters!=null && !parameters.isEmpty()) {
+        if (parameters != null && !parameters.isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
         }
 

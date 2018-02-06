@@ -29,15 +29,15 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @AllArgsConstructor
 public class TimeKeyExpression extends ASTNodeAccessImpl implements Expression {
 
-	private String stringValue;
+    private String stringValue;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return getStringValue();
-	}
+    @Override
+    public String toString() {
+        return getStringValue();
+    }
 }

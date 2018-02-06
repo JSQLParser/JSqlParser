@@ -32,19 +32,19 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class DateValue extends ASTNodeAccessImpl implements Expression {
 
-	private Date value;
+    private Date value;
 
-	public DateValue(String value) {
-		this.value = Date.valueOf(value.substring(1, value.length() - 1));
-	}
+    public DateValue(String value) {
+        this.value = Date.valueOf(value.substring(1, value.length() - 1));
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return "{d '" + value.toString() + "'}";
-	}
+    @Override
+    public String toString() {
+        return "{d '" + value.toString() + "'}";
+    }
 }

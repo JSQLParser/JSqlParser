@@ -30,28 +30,28 @@ import net.sf.jsqlparser.expression.Expression;
 @Data
 public class Top {
 
-	private boolean parenthesis = false;
-	private boolean percentage = false;
-	private Expression expression;
+    private boolean parenthesis = false;
+    private boolean percentage = false;
+    private Expression expression;
 
-	@Override
-	public String toString() {
-		String result = "TOP ";
+    @Override
+    public String toString() {
+        String result = "TOP ";
 
-		if (parenthesis) {
-			result += "(";
-		}
+        if (parenthesis) {
+            result += "(";
+        }
 
-		result += expression.toString();
+        result += expression.toString();
 
-		if (parenthesis) {
-			result += ")";
-		}
+        if (parenthesis) {
+            result += ")";
+        }
 
-		if (percentage) {
-			result += " PERCENT";
-		}
+        if (percentage) {
+            result += " PERCENT";
+        }
 
-		return result;
-	}
+        return result;
+    }
 }

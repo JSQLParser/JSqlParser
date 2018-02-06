@@ -33,19 +33,19 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 @Data
 public class ColumnDefinition {
 
-	private String columnName;
-	/**
-	 * The {@link ColDataType} of this column definition
-	 */
-	private ColDataType colDataType;
-	/**
-	 * A list of strings of every word after the datatype of the column.<br>
-	 * Example ("NOT", "NULL")
-	 */
-	private List<String> columnSpecStrings;
+    private String columnName;
+    /**
+     * The {@link ColDataType} of this column definition
+     */
+    private ColDataType colDataType;
+    /**
+     * A list of strings of every word after the datatype of the column.<br>
+     * Example ("NOT", "NULL")
+     */
+    private List<String> columnSpecStrings;
 
-	@Override
-	public String toString() {
-		return columnName + " " + colDataType + (columnSpecStrings != null ? " " + PlainSelect.getStringList(columnSpecStrings, false, false) : "");
-	}
+    @Override
+    public String toString() {
+        return columnName + " " + colDataType + (columnSpecStrings != null ? " " + PlainSelect.getStringList(columnSpecStrings, false, false) : "");
+    }
 }

@@ -35,15 +35,15 @@ import net.sf.jsqlparser.schema.Table;
 @AllArgsConstructor
 public class AllTableColumns extends ASTNodeAccessImpl implements SelectItem {
 
-	private Table table;
+    private Table table;
 
-	@Override
-	public void accept(SelectItemVisitor selectItemVisitor) {
-		selectItemVisitor.visit(this);
-	}
+    @Override
+    public void accept(SelectItemVisitor selectItemVisitor) {
+        selectItemVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return table + ".*";
-	}
+    @Override
+    public String toString() {
+        return table + ".*";
+    }
 }

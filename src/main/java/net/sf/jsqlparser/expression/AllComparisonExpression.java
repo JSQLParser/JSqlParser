@@ -30,15 +30,15 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 @RequiredArgsConstructor
 public class AllComparisonExpression extends ASTNodeAccessImpl implements Expression {
 
-	private final SubSelect subSelect;
+    private final SubSelect subSelect;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return "ALL " + subSelect.toString();
-	}
+    @Override
+    public String toString() {
+        return "ALL " + subSelect.toString();
+    }
 }

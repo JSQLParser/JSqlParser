@@ -36,55 +36,55 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @EqualsAndHashCode(callSuper = true)
 public final class Column extends ASTNodeAccessImpl implements Expression, MultiPartName {
 
-	private Table table;
-	private String columnName;
+    private Table table;
+    private String columnName;
 
-	public Column(Table table, String columnName) {
-		setTable(table);
-		setColumnName(columnName);
-	}
+    public Column(Table table, String columnName) {
+        setTable(table);
+        setColumnName(columnName);
+    }
 
-	public Column(String columnName) {
-		this(null, columnName);
-	}
+    public Column(String columnName) {
+        this(null, columnName);
+    }
 
-	@Override
-	public String getFullyQualifiedName() {
-		return getName(false);
-	}
+    @Override
+    public String getFullyQualifiedName() {
+        return getName(false);
+    }
 
-	/**
-	 * Get name with out without using aliases.
-	 *
-	 * @param aliases
-	 * @return
-	 */
-	public String getName(boolean aliases) {
-		StringBuilder fqn = new StringBuilder();
+    /**
+     * Get name with out without using aliases.
+     *
+     * @param aliases
+     * @return
+     */
+    public String getName(boolean aliases) {
+        StringBuilder fqn = new StringBuilder();
 
-		if (table != null) {
-			if (table.getAlias() != null && aliases) {
-				fqn.append(table.getAlias().getName());
-			} else {
-				fqn.append(table.getFullyQualifiedName());
-			}
-		}
-		if (fqn.length() > 0) {
-			fqn.append('.');
-		}
-		if (columnName != null) {
-			fqn.append(columnName);
-		}
-		return fqn.toString();
-	}
+        if (table != null) {
+            if (table.getAlias() != null && aliases) {
+                fqn.append(table.getAlias().getName());
+            } else {
+                fqn.append(table.getFullyQualifiedName());
+            }
+        }
+        if (fqn.length() > 0) {
+            fqn.append('.');
+        }
+        if (columnName != null) {
+            fqn.append(columnName);
+        }
+        return fqn.toString();
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return getName(true);
-	}
+    @Override
+    public String toString() {
+        return getName(true);
+    }
 }

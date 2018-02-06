@@ -26,10 +26,10 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public abstract class ComparisonOperator extends OldOracleJoinBinaryExpression {
 
-	private final String operator;
+    private final String operator;
 
-	@Override
-	public String getStringExpression() {
-		return operator;
-	}
+    @Override
+    public String getStringExpression() {
+        return operator;
+    }
 }

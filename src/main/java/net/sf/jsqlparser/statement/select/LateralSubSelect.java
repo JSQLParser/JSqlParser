@@ -32,19 +32,19 @@ import net.sf.jsqlparser.expression.Alias;
 @Data
 public class LateralSubSelect implements FromItem {
 
-	private SubSelect subSelect;
-	private Alias alias;
-	private Pivot pivot;
+    private SubSelect subSelect;
+    private Alias alias;
+    private Pivot pivot;
 
-	@Override
-	public void accept(FromItemVisitor fromItemVisitor) {
-		fromItemVisitor.visit(this);
-	}
+    @Override
+    public void accept(FromItemVisitor fromItemVisitor) {
+        fromItemVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return "LATERAL" + subSelect.toString()
-			+ ((alias != null) ? alias.toString() : "")
-			+ ((pivot != null) ? " " + pivot : "");
-	}
+    @Override
+    public String toString() {
+        return "LATERAL" + subSelect.toString()
+            + ((alias != null) ? alias.toString() : "")
+            + ((pivot != null) ? " " + pivot : "");
+    }
 }

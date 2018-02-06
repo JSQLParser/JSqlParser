@@ -32,15 +32,15 @@ import net.sf.jsqlparser.expression.Expression;
 @Data
 public class ExcludeConstraint extends Index {
 
-	private Expression expression;
+    private Expression expression;
 
-	@Override
-	public String toString() {
-		StringBuilder exclusionStatement = new StringBuilder("EXCLUDE WHERE ");
-		exclusionStatement.append("(");
-		exclusionStatement.append(expression);
-		exclusionStatement.append(")");
-		return exclusionStatement.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder exclusionStatement = new StringBuilder("EXCLUDE WHERE ");
+        exclusionStatement.append("(");
+        exclusionStatement.append(expression);
+        exclusionStatement.append(")");
+        return exclusionStatement.toString();
+    }
 
 }

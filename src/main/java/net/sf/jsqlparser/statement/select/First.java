@@ -34,28 +34,28 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 @Data
 public class First {
 
-	public enum Keyword {
-		FIRST,
-		LIMIT
-	}
+    public enum Keyword {
+        FIRST,
+        LIMIT
+    }
 
-	private Keyword keyword;
-	private Long rowCount;
-	private JdbcParameter jdbcParameter;
-	private String variable;
+    private Keyword keyword;
+    private Long rowCount;
+    private JdbcParameter jdbcParameter;
+    private String variable;
 
-	@Override
-	public String toString() {
-		String result = keyword.name() + " ";
+    @Override
+    public String toString() {
+        String result = keyword.name() + " ";
 
-		if (rowCount != null) {
-			result += rowCount;
-		} else if (jdbcParameter != null) {
-			result += jdbcParameter.toString();
-		} else if (variable != null) {
-			result += variable;
-		}
+        if (rowCount != null) {
+            result += rowCount;
+        } else if (jdbcParameter != null) {
+            result += jdbcParameter.toString();
+        } else if (variable != null) {
+            result += variable;
+        }
 
-		return result;
-	}
+        return result;
+    }
 }

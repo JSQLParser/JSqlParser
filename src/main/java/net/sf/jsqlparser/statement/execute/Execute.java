@@ -34,23 +34,23 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 @Data
 public class Execute implements Statement {
 
-	private EXEC_TYPE execType = EXEC_TYPE.EXECUTE;
-	private String name;
-	private ExpressionList exprList;
+    private EXEC_TYPE execType = EXEC_TYPE.EXECUTE;
+    private String name;
+    private ExpressionList exprList;
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return execType.name() + " " + name + " " + PlainSelect.getStringList(exprList.getExpressions(), true, false);
-	}
+    @Override
+    public String toString() {
+        return execType.name() + " " + name + " " + PlainSelect.getStringList(exprList.getExpressions(), true, false);
+    }
 
-	public static enum EXEC_TYPE {
-		EXECUTE,
-		EXEC,
-		CALL
-	}
+    public static enum EXEC_TYPE {
+        EXECUTE,
+        EXEC,
+        CALL
+    }
 }

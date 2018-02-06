@@ -20,24 +20,19 @@ import net.sf.jsqlparser.statement.select.Select;
  */
 public class AddAliasesVisitorTest {
 
-    public AddAliasesVisitorTest() {
-    }
+    public AddAliasesVisitorTest() {}
 
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
@@ -84,7 +79,6 @@ public class AddAliasesVisitorTest {
         final AddAliasesVisitor instance = new AddAliasesVisitor();
         setOpList.getSelectBody().accept(instance);
 
-        assertEquals("SELECT 3 + 4 AS A1 FROM test UNION SELECT 7 + 8 AS A1 FROM test2", setOpList.
-                toString());
+        assertEquals("SELECT 3 + 4 AS A1 FROM test UNION SELECT 7 + 8 AS A1 FROM test2", setOpList.toString());
     }
 }

@@ -32,16 +32,16 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class WhenClause extends ASTNodeAccessImpl implements Expression {
 
-	private Expression whenExpression;
-	private Expression thenExpression;
+    private Expression whenExpression;
+    private Expression thenExpression;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return "WHEN " + whenExpression + " THEN " + thenExpression;
-	}
+    @Override
+    public String toString() {
+        return "WHEN " + whenExpression + " THEN " + thenExpression;
+    }
 }

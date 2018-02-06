@@ -38,55 +38,55 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression, ItemsList {
 
-	private SelectBody selectBody;
-	private Alias alias;
-	private boolean useBrackets = true;
-	private List<WithItem> withItemsList;
+    private SelectBody selectBody;
+    private Alias alias;
+    private boolean useBrackets = true;
+    private List<WithItem> withItemsList;
 
-	private Pivot pivot;
+    private Pivot pivot;
 
-	@Override
-	public void accept(FromItemVisitor fromItemVisitor) {
-		fromItemVisitor.visit(this);
-	}
+    @Override
+    public void accept(FromItemVisitor fromItemVisitor) {
+        fromItemVisitor.visit(this);
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public void accept(ItemsListVisitor itemsListVisitor) {
-		itemsListVisitor.visit(this);
-	}
+    @Override
+    public void accept(ItemsListVisitor itemsListVisitor) {
+        itemsListVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder retval = new StringBuilder();
-		if (useBrackets) {
-			retval.append("(");
-		}
-		if (withItemsList != null && !withItemsList.isEmpty()) {
-			retval.append("WITH ");
-			for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
-				WithItem withItem = iter.next();
-				retval.append(withItem);
-				if (iter.hasNext()) {
-					retval.append(",");
-				}
-				retval.append(" ");
-			}
-		}
-		retval.append(selectBody);
-		if (useBrackets) {
-			retval.append(")");
-		}
-		if (alias != null) {
-			retval.append(alias.toString());
-		}
-		if (pivot != null) {
-			retval.append(" ").append(pivot);
-		}
-		return retval.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder retval = new StringBuilder();
+        if (useBrackets) {
+            retval.append("(");
+        }
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            retval.append("WITH ");
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+                WithItem withItem = iter.next();
+                retval.append(withItem);
+                if (iter.hasNext()) {
+                    retval.append(",");
+                }
+                retval.append(" ");
+            }
+        }
+        retval.append(selectBody);
+        if (useBrackets) {
+            retval.append(")");
+        }
+        if (alias != null) {
+            retval.append(alias.toString());
+        }
+        if (pivot != null) {
+            retval.append(" ").append(pivot);
+        }
+        return retval.toString();
+    }
 }

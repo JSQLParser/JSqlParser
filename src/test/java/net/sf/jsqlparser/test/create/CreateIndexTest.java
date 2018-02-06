@@ -21,8 +21,7 @@ public class CreateIndexTest {
 
     @Test
     public void testCreateIndex() throws JSQLParserException {
-        String statement
-                = "CREATE INDEX myindex ON mytab (mycol, mycol2)";
+        String statement = "CREATE INDEX myindex ON mytab (mycol, mycol2)";
         CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
         assertEquals(2, createIndex.getIndex().getColumnsNames().size());
         assertEquals("myindex", createIndex.getIndex().getName());
@@ -34,8 +33,7 @@ public class CreateIndexTest {
 
     @Test
     public void testCreateIndex2() throws JSQLParserException {
-        String statement
-                = "CREATE mytype INDEX myindex ON mytab (mycol, mycol2)";
+        String statement = "CREATE mytype INDEX myindex ON mytab (mycol, mycol2)";
         CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
         assertEquals(2, createIndex.getIndex().getColumnsNames().size());
         assertEquals("myindex", createIndex.getIndex().getName());
@@ -47,8 +45,7 @@ public class CreateIndexTest {
 
     @Test
     public void testCreateIndex3() throws JSQLParserException {
-        String statement
-                = "CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2, mycol3)";
+        String statement = "CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2, mycol3)";
         CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
         assertEquals(3, createIndex.getIndex().getColumnsNames().size());
         assertEquals("myindex", createIndex.getIndex().getName());
@@ -59,8 +56,7 @@ public class CreateIndexTest {
 
     @Test
     public void testCreateIndex4() throws JSQLParserException {
-        String statement
-                = "CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2 (75), mycol3)";
+        String statement = "CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2 (75), mycol3)";
         CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
         assertEquals(3, createIndex.getIndex().getColumnsNames().size());
         assertEquals("myindex", createIndex.getIndex().getName());
@@ -71,8 +67,7 @@ public class CreateIndexTest {
 
     @Test
     public void testCreateIndex5() throws JSQLParserException {
-        String statement
-                = "CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2 (75), mycol3) mymodifiers";
+        String statement = "CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2 (75), mycol3) mymodifiers";
         CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
         assertEquals(3, createIndex.getIndex().getColumnsNames().size());
         assertEquals("myindex", createIndex.getIndex().getName());

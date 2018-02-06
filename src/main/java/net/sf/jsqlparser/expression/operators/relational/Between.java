@@ -32,19 +32,19 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class Between extends ASTNodeAccessImpl implements Expression {
 
-	private Expression leftExpression;
-	private boolean not = false;
-	private Expression betweenExpressionStart;
-	private Expression betweenExpressionEnd;
+    private Expression leftExpression;
+    private boolean not = false;
+    private Expression betweenExpressionStart;
+    private Expression betweenExpressionEnd;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return leftExpression + " " + (not ? "NOT " : "") + "BETWEEN " + betweenExpressionStart + " AND "
-			+ betweenExpressionEnd;
-	}
+    @Override
+    public String toString() {
+        return leftExpression + " " + (not ? "NOT " : "") + "BETWEEN " + betweenExpressionStart + " AND "
+            + betweenExpressionEnd;
+    }
 }

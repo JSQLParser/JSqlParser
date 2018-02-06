@@ -34,24 +34,19 @@ import net.sf.jsqlparser.JSQLParserException;
  */
 public class ExecuteTest {
 
-    public ExecuteTest() {
-    }
+    public ExecuteTest() {}
 
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     /**
      * Test of accept method, of class Execute.
@@ -62,12 +57,12 @@ public class ExecuteTest {
     public void testAcceptExecute() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("EXECUTE myproc 'a', 2, 'b'");
     }
-    
+
     @Test
     public void testAcceptExec() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("EXEC myproc 'a', 2, 'b'");
     }
-    
+
     @Test
     public void testAcceptCall() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CALL myproc 'a', 2, 'b'");

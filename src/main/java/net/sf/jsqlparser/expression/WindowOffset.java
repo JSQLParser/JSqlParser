@@ -26,41 +26,41 @@ import lombok.Data;
 @Data
 public class WindowOffset {
 
-	public enum Type {
+    public enum Type {
 
-		PRECEDING,
-		FOLLOWING,
-		CURRENT,
-		EXPR
-	}
+        PRECEDING,
+        FOLLOWING,
+        CURRENT,
+        EXPR
+    }
 
-	private Expression expression;
-	private Type type;
+    private Expression expression;
+    private Type type;
 
-	@Override
-	public String toString() {
-		StringBuilder buffer = new StringBuilder();
-		if (expression != null) {
-			buffer.append(' ').append(expression);
-			if (type != null) {
-				buffer.append(' ');
-				buffer.append(type);
-			}
-		} else {
-			switch (type) {
-				case PRECEDING:
-					buffer.append(" UNBOUNDED PRECEDING");
-					break;
-				case FOLLOWING:
-					buffer.append(" UNBOUNDED FOLLOWING");
-					break;
-				case CURRENT:
-					buffer.append(" CURRENT ROW");
-					break;
-				default:
-					break;
-			}
-		}
-		return buffer.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        if (expression != null) {
+            buffer.append(' ').append(expression);
+            if (type != null) {
+                buffer.append(' ');
+                buffer.append(type);
+            }
+        } else {
+            switch (type) {
+                case PRECEDING:
+                    buffer.append(" UNBOUNDED PRECEDING");
+                    break;
+                case FOLLOWING:
+                    buffer.append(" UNBOUNDED FOLLOWING");
+                    break;
+                case CURRENT:
+                    buffer.append(" CURRENT ROW");
+                    break;
+                default:
+                    break;
+            }
+        }
+        return buffer.toString();
+    }
 }

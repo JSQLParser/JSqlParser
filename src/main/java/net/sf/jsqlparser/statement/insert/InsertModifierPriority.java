@@ -26,8 +26,8 @@ package net.sf.jsqlparser.statement.insert;
  * @author tw
  */
 public enum InsertModifierPriority {
-	LOW_PRIORITY,
-	DELAYED,
-	HIGH_PRIORITY,
-	IGNORE,
+    LOW_PRIORITY,
+    DELAYED,
+    HIGH_PRIORITY,
+    IGNORE,
 }

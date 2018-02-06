@@ -31,28 +31,28 @@ import lombok.Data;
 @Data
 public class WithItem implements SelectBody {
 
-	/**
-	 * The name of this WITH item (for example, "myWITH" in "WITH myWITH AS (SELECT A,B,C))"
-	 */
-	private String name;
-	/**
-	 * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH mywith (A,B,C) AS ...")
-	 */
-	private List<SelectItem> withItemList;
-	/**
-	 * The {@link SelectBody} of this WITH item is the part after the "AS" keyword
-	 */
-	private SelectBody selectBody;
-	private boolean recursive;
+    /**
+     * The name of this WITH item (for example, "myWITH" in "WITH myWITH AS (SELECT A,B,C))"
+     */
+    private String name;
+    /**
+     * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH mywith (A,B,C) AS ...")
+     */
+    private List<SelectItem> withItemList;
+    /**
+     * The {@link SelectBody} of this WITH item is the part after the "AS" keyword
+     */
+    private SelectBody selectBody;
+    private boolean recursive;
 
-	@Override
-	public String toString() {
-		return (recursive ? "RECURSIVE " : "") + name + ((withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "")
-			+ " AS (" + selectBody + ")";
-	}
+    @Override
+    public String toString() {
+        return (recursive ? "RECURSIVE " : "") + name + ((withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "")
+            + " AS (" + selectBody + ")";
+    }
 
-	@Override
-	public void accept(SelectVisitor visitor) {
-		visitor.visit(this);
-	}
+    @Override
+    public void accept(SelectVisitor visitor) {
+        visitor.visit(this);
+    }
 }

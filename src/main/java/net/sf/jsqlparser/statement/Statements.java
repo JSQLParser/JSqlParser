@@ -32,18 +32,18 @@ import lombok.Data;
 @Data
 public class Statements {
 
-	private List<Statement> statements;
+    private List<Statement> statements;
 
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder b = new StringBuilder();
-		for (Statement stmt : statements) {
-			b.append(stmt.toString()).append(";\n");
-		}
-		return b.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        for (Statement stmt : statements) {
+            b.append(stmt.toString()).append(";\n");
+        }
+        return b.toString();
+    }
 }

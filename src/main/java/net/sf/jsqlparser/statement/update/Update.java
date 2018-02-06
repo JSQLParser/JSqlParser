@@ -126,8 +126,7 @@ public class Update implements Statement {
         if (isReturningAllColumns()) {
             b.append(" RETURNING *");
         } else if (getReturningExpressionList() != null) {
-            b.append(" RETURNING ").append(PlainSelect.
-                    getStringList(getReturningExpressionList(), true, false));
+            b.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
         }
 
         return b.toString();

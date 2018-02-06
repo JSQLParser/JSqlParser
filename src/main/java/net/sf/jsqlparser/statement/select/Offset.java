@@ -36,6 +36,6 @@ public class Offset {
 
     @Override
     public String toString() {
-        return " OFFSET " + (offsetJdbcParameter!=null ? offsetJdbcParameter.toString() : offset) + (offsetParam != null ? " " + offsetParam : "");
+        return " OFFSET " + (offsetJdbcParameter != null ? offsetJdbcParameter.toString() : offset) + (offsetParam != null ? " " + offsetParam : "");
     }
 }

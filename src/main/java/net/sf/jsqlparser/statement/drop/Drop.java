@@ -45,7 +45,7 @@ public class Drop implements Statement {
     @Override
     public String toString() {
         String sql = "DROP " + type + " "
-                + (ifExists ? "IF EXISTS " : "") + name.toString();
+            + (ifExists ? "IF EXISTS " : "") + name.toString();
 
         if (parameters != null && !parameters.isEmpty()) {
             sql += " " + PlainSelect.getStringList(parameters);

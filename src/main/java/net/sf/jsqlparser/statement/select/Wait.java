@@ -20,19 +20,19 @@ import lombok.Data;
 @Data
 public class Wait {
 
-	/**
-	 * The number of seconds specified for the WAIT command
-	 */
-	private long timeout;
+    /**
+     * The number of seconds specified for the WAIT command
+     */
+    private long timeout;
 
-	/**
-	 * Returns a String containing the WAIT clause and its timeout, where TIMEOUT is specified by
-	 * {@link #getTimeout()}. The returned string will null     be:<code>
-	 * &quot; WAIT &lt;TIMEOUT&gt;&quot;
-	 * </code>
-	 */
-	@Override
-	public String toString() {
-		return " WAIT " + timeout;
-	}
+    /**
+     * Returns a String containing the WAIT clause and its timeout, where TIMEOUT is specified by
+     * {@link #getTimeout()}. The returned string will null     be:<code>
+     * &quot; WAIT &lt;TIMEOUT&gt;&quot;
+     * </code>
+     */
+    @Override
+    public String toString() {
+        return " WAIT " + timeout;
+    }
 }

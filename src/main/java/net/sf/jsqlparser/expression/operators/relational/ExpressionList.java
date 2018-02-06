@@ -37,15 +37,15 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 @AllArgsConstructor
 public class ExpressionList implements ItemsList {
 
-	private List<Expression> expressions;
+    private List<Expression> expressions;
 
-	@Override
-	public void accept(ItemsListVisitor itemsListVisitor) {
-		itemsListVisitor.visit(this);
-	}
+    @Override
+    public void accept(ItemsListVisitor itemsListVisitor) {
+        itemsListVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return PlainSelect.getStringList(expressions, true, true);
-	}
+    @Override
+    public String toString() {
+        return PlainSelect.getStringList(expressions, true, true);
+    }
 }

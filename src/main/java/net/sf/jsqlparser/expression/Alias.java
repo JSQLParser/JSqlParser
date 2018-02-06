@@ -32,15 +32,15 @@ import lombok.Data;
 @AllArgsConstructor
 public class Alias {
 
-	private String name;
-	private boolean useAs = true;
+    private String name;
+    private boolean useAs = true;
 
-	public Alias(String name) {
-		this(name, true);
-	}
+    public Alias(String name) {
+        this(name, true);
+    }
 
-	@Override
-	public String toString() {
-		return (useAs ? " AS " : " ") + name;
-	}
+    @Override
+    public String toString() {
+        return (useAs ? " AS " : " ") + name;
+    }
 }

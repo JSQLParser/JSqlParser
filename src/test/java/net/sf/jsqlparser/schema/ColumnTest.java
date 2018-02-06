@@ -34,24 +34,19 @@ import net.sf.jsqlparser.expression.Alias;
  */
 public class ColumnTest {
 
-    public ColumnTest() {
-    }
+    public ColumnTest() {}
 
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     @Test
     public void testMissingTableAlias() {

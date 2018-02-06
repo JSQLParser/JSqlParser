@@ -24,8 +24,7 @@ public class CreateViewTest extends TestCase {
         CreateView createView = (CreateView) parserManager.parse(new StringReader(statement));
         assertFalse(createView.isOrReplace());
         assertEquals("myview", createView.getView().getName());
-        assertEquals("mytab", ((Table) ((PlainSelect) createView.getSelectBody()).getFromItem()).
-                getName());
+        assertEquals("mytab", ((Table) ((PlainSelect) createView.getSelectBody()).getFromItem()).getName());
         assertEquals(statement, createView.toString());
     }
 
@@ -55,8 +54,7 @@ public class CreateViewTest extends TestCase {
         CreateView createView = (CreateView) parserManager.parse(new StringReader(statement));
         assertFalse(createView.isOrReplace());
         assertEquals("myview", createView.getView().getName());
-        assertEquals("mytab", ((Table) ((PlainSelect) createView.getSelectBody()).getFromItem()).
-                getName());
+        assertEquals("mytab", ((Table) ((PlainSelect) createView.getSelectBody()).getFromItem()).getName());
         assertEquals(statement2, createView.toString());
     }
 

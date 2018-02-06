@@ -32,15 +32,15 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 @Data
 public class Truncate implements Statement {
 
-	private Table table;
+    private Table table;
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return "TRUNCATE TABLE " + table;
-	}
+    @Override
+    public String toString() {
+        return "TRUNCATE TABLE " + table;
+    }
 }

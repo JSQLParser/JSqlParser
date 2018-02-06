@@ -35,16 +35,16 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 @AllArgsConstructor
 public class AnyComparisonExpression extends ASTNodeAccessImpl implements Expression {
 
-	private final AnyType anyType;
-	private final SubSelect subSelect;
+    private final AnyType anyType;
+    private final SubSelect subSelect;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return anyType.name() + " " + subSelect.toString();
-	}
+    @Override
+    public String toString() {
+        return anyType.name() + " " + subSelect.toString();
+    }
 }

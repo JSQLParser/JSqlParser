@@ -29,20 +29,20 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class ExistsExpression extends ASTNodeAccessImpl implements Expression {
 
-	private Expression rightExpression;
-	private boolean not = false;
+    private Expression rightExpression;
+    private boolean not = false;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	public String getStringExpression() {
-		return (not ? "NOT " : "") + "EXISTS";
-	}
+    public String getStringExpression() {
+        return (not ? "NOT " : "") + "EXISTS";
+    }
 
-	@Override
-	public String toString() {
-		return getStringExpression() + " " + rightExpression.toString();
-	}
+    @Override
+    public String toString() {
+        return getStringExpression() + " " + rightExpression.toString();
+    }
 }

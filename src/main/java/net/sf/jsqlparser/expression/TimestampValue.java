@@ -32,29 +32,29 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class TimestampValue extends ASTNodeAccessImpl implements Expression {
 
-	private static final char QUOTATION = '\'';
+    private static final char QUOTATION = '\'';
 
-	private Timestamp value;
+    private Timestamp value;
 
-	public TimestampValue(String value) {
-		if (value == null) {
-			throw new java.lang.IllegalArgumentException("null string");
-		} else {
-			if (value.charAt(0) == QUOTATION) {
-				this.value = Timestamp.valueOf(value.substring(1, value.length() - 1));
-			} else {
-				this.value = Timestamp.valueOf(value.substring(0, value.length()));
-			}
-		}
-	}
+    public TimestampValue(String value) {
+        if (value == null) {
+            throw new java.lang.IllegalArgumentException("null string");
+        } else {
+            if (value.charAt(0) == QUOTATION) {
+                this.value = Timestamp.valueOf(value.substring(1, value.length() - 1));
+            } else {
+                this.value = Timestamp.valueOf(value.substring(0, value.length()));
+            }
+        }
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return "{ts '" + value + "'}";
-	}
+    @Override
+    public String toString() {
+        return "{ts '" + value + "'}";
+    }
 }

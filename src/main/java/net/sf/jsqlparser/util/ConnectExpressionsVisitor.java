@@ -49,8 +49,7 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
     private String alias = "expr";
     private final List<SelectExpressionItem> itemsExpr = new LinkedList<SelectExpressionItem>();
 
-    public ConnectExpressionsVisitor() {
-    }
+    public ConnectExpressionsVisitor() {}
 
     public ConnectExpressionsVisitor(String alias) {
         this.alias = alias;
@@ -98,8 +97,7 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
     }
 
     @Override
-    public void visit(WithItem withItem) {
-    }
+    public void visit(WithItem withItem) {}
 
     @Override
     public void visit(AllTableColumns allTableColumns) {

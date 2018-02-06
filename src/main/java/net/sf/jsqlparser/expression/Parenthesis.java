@@ -32,18 +32,18 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @AllArgsConstructor
 public class Parenthesis extends ASTNodeAccessImpl implements Expression {
 
-	private Expression expression;
-	private boolean not = false;
+    private Expression expression;
+    private boolean not = false;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return (not ? "NOT " : "") + "(" + expression + ")";
-	}
+    @Override
+    public String toString() {
+        return (not ? "NOT " : "") + "(" + expression + ")";
+    }
 
     public Parenthesis(Expression expression) {
         setExpression(expression);

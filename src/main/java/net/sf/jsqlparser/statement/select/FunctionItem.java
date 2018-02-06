@@ -28,11 +28,11 @@ import net.sf.jsqlparser.expression.Function;
 @Data
 public class FunctionItem {
 
-	private Function function;
-	private Alias alias;
+    private Function function;
+    private Alias alias;
 
-	@Override
-	public String toString() {
-		return function + ((alias != null) ? alias.toString() : "");
-	}
+    @Override
+    public String toString() {
+        return function + ((alias != null) ? alias.toString() : "");
+    }
 }

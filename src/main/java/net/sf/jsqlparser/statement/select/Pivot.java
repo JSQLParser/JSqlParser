@@ -30,26 +30,26 @@ import net.sf.jsqlparser.schema.Column;
 @Data
 public class Pivot {
 
-	private List<FunctionItem> functionItems;
-	private List<Column> forColumns;
-	private List<SelectExpressionItem> singleInItems;
-	private List<ExpressionListItem> multiInItems;
-	private Alias alias;
+    private List<FunctionItem> functionItems;
+    private List<Column> forColumns;
+    private List<SelectExpressionItem> singleInItems;
+    private List<ExpressionListItem> multiInItems;
+    private Alias alias;
 
-	public void accept(PivotVisitor pivotVisitor) {
-		pivotVisitor.visit(this);
-	}
+    public void accept(PivotVisitor pivotVisitor) {
+        pivotVisitor.visit(this);
+    }
 
-	public List<?> getInItems() {
-		return singleInItems == null ? multiInItems : singleInItems;
-	}
+    public List<?> getInItems() {
+        return singleInItems == null ? multiInItems : singleInItems;
+    }
 
-	@Override
-	public String toString() {
-		return "PIVOT ("
-			+ PlainSelect.getStringList(functionItems)
-			+ " FOR " + PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)
-			+ " IN " + PlainSelect.getStringList(getInItems(), true, true) + ")"
-			+ (alias != null ? alias.toString() : "");
-	}
+    @Override
+    public String toString() {
+        return "PIVOT ("
+            + PlainSelect.getStringList(functionItems)
+            + " FOR " + PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)
+            + " IN " + PlainSelect.getStringList(getInItems(), true, true) + ")"
+            + (alias != null ? alias.toString() : "");
+    }
 }

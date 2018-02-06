@@ -45,8 +45,7 @@ import net.sf.jsqlparser.util.deparser.StatementDeParser;
  */
 public class TestUtils {
 
-    private static final Pattern SQL_COMMENT_PATTERN = Pattern.
-            compile("(--.*$)|(/\\*.*?\\*/)", Pattern.MULTILINE);
+    private static final Pattern SQL_COMMENT_PATTERN = Pattern.compile("(--.*$)|(/\\*.*?\\*/)", Pattern.MULTILINE);
 
     public static void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(statement, false);
@@ -71,19 +70,18 @@ public class TestUtils {
 
     public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement, boolean laxDeparsingCheck) {
         assertEquals(buildSqlString(statement, laxDeparsingCheck),
-                buildSqlString(parsed.toString(), laxDeparsingCheck));
+            buildSqlString(parsed.toString(), laxDeparsingCheck));
 
         StatementDeParser deParser = new StatementDeParser(new StringBuilder());
         parsed.accept(deParser);
         assertEquals(buildSqlString(statement, laxDeparsingCheck),
-                buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
+            buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
     }
 
     public static String buildSqlString(final String originalSql, boolean laxDeparsingCheck) {
         String sql = SQL_COMMENT_PATTERN.matcher(originalSql).replaceAll("");
         if (laxDeparsingCheck) {
-            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").
-                    replaceAll("\\s*([!/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
+            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([!/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
         } else {
             return sql;
         }

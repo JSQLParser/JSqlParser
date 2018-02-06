@@ -29,16 +29,16 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 @Data
 public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
 
-	private Expression leftExpression;
-	private boolean not = false;
+    private Expression leftExpression;
+    private boolean not = false;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return leftExpression + " IS " + (not ? "NOT " : "") + "NULL";
-	}
+    @Override
+    public String toString() {
+        return leftExpression + " IS " + (not ? "NOT " : "") + "NULL";
+    }
 }

@@ -34,11 +34,11 @@ import net.sf.jsqlparser.schema.Table;
 @Data
 public class CheckConstraint extends NamedConstraint {
 
-	private Table table;
-	private Expression expression;
+    private Table table;
+    private Expression expression;
 
-	@Override
-	public String toString() {
-		return "CONSTRAINT " + getName() + " CHECK (" + expression + ")";
-	}
+    @Override
+    public String toString() {
+        return "CONSTRAINT " + getName() + " CHECK (" + expression + ")";
+    }
 }

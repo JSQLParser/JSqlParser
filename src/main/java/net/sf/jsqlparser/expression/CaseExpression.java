@@ -61,19 +61,19 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 @Data
 public class CaseExpression extends ASTNodeAccessImpl implements Expression {
 
-	private Expression switchExpression;
-	private List<WhenClause> whenClauses;
-	private Expression elseExpression;
+    private Expression switchExpression;
+    private List<WhenClause> whenClauses;
+    private Expression elseExpression;
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return "CASE " + ((switchExpression != null) ? switchExpression + " " : "")
-			+ PlainSelect.getStringList(whenClauses, false, false) + " "
-			+ ((elseExpression != null) ? "ELSE " + elseExpression + " " : "") + "END";
-	}
+    @Override
+    public String toString() {
+        return "CASE " + ((switchExpression != null) ? switchExpression + " " : "")
+            + PlainSelect.getStringList(whenClauses, false, false) + " "
+            + ((elseExpression != null) ? "ELSE " + elseExpression + " " : "") + "END";
+    }
 }
