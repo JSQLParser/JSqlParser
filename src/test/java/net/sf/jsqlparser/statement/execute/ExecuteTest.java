@@ -34,8 +34,6 @@ import net.sf.jsqlparser.JSQLParserException;
  */
 public class ExecuteTest {
 
-    public ExecuteTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

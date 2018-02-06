@@ -41,8 +41,6 @@ import net.sf.jsqlparser.statement.create.view.CreateView;
  */
 public class CreateViewDeParserTest {
 
-    public CreateViewDeParserTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

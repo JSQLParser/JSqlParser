@@ -32,8 +32,6 @@ import org.junit.Test;
  */
 public class StringValueTest {
 
-    public StringValueTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

@@ -48,8 +48,6 @@ import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
  */
 public class ExpressionVisitorAdapterTest {
 
-    public ExpressionVisitorAdapterTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

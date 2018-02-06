@@ -20,8 +20,6 @@ import net.sf.jsqlparser.statement.select.Select;
  */
 public class AddAliasesVisitorTest {
 
-    public AddAliasesVisitorTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

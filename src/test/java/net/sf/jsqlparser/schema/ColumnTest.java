@@ -34,8 +34,6 @@ import net.sf.jsqlparser.expression.Alias;
  */
 public class ColumnTest {
 
-    public ColumnTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

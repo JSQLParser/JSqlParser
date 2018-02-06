@@ -23,8 +23,6 @@ import net.sf.jsqlparser.statement.select.Select;
  */
 public class StatementsTest {
 
-    public StatementsTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

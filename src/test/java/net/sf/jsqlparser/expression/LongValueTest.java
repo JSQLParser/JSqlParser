@@ -35,8 +35,6 @@ import org.junit.Test;
  */
 public class LongValueTest {
 
-    public LongValueTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

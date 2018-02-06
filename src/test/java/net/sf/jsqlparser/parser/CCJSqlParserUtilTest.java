@@ -23,8 +23,6 @@ import net.sf.jsqlparser.schema.Column;
  */
 public class CCJSqlParserUtilTest {
 
-    public CCJSqlParserUtilTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

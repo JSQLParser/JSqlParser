@@ -32,8 +32,6 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
  */
 public class SelectUtilsTest {
 
-    public SelectUtilsTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

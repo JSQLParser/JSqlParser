@@ -23,8 +23,6 @@ import net.sf.jsqlparser.statement.select.Select;
  */
 public class ConnectExpressionsVisitorTest {
 
-    public ConnectExpressionsVisitorTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

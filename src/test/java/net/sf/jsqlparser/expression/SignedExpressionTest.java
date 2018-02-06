@@ -35,8 +35,6 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
  */
 public class SignedExpressionTest {
 
-    public SignedExpressionTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 
