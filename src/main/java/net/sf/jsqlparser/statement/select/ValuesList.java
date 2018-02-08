@@ -21,12 +21,14 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-
 import java.util.Iterator;
 import java.util.List;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 
 /**
  * This is a container for a values item within a select statement. It holds some syntactical stuff
@@ -34,15 +36,14 @@ import net.sf.jsqlparser.expression.Alias;
  *
  * @author toben
  */
+@Data
+@NoArgsConstructor
 public class ValuesList implements FromItem {
 
     private Alias alias;
     private MultiExpressionList multiExpressionList;
     private boolean noBrackets = false;
     private List<String> columnNames;
-
-    public ValuesList() {
-    }
 
     public ValuesList(MultiExpressionList multiExpressionList) {
         this.multiExpressionList = multiExpressionList;
@@ -54,47 +55,19 @@ public class ValuesList implements FromItem {
     }
 
     @Override
-    public Alias getAlias() {
-        return alias;
-    }
-
-    @Override
-    public void setAlias(Alias alias) {
-        this.alias = alias;
-    }
-
-    @Override
     public Pivot getPivot() {
         return null;
     }
 
     @Override
-    public void setPivot(Pivot pivot) {
-    }
-
-    public MultiExpressionList getMultiExpressionList() {
-        return multiExpressionList;
-    }
-
-    public void setMultiExpressionList(MultiExpressionList multiExpressionList) {
-        this.multiExpressionList = multiExpressionList;
-    }
-
-    public boolean isNoBrackets() {
-        return noBrackets;
-    }
-
-    public void setNoBrackets(boolean noBrackets) {
-        this.noBrackets = noBrackets;
-    }
+    public void setPivot(Pivot pivot) {}
 
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
 
         b.append("(VALUES ");
-        for (Iterator<ExpressionList> it = getMultiExpressionList().getExprList().iterator(); it.
-                hasNext();) {
+        for (Iterator<ExpressionList> it = getMultiExpressionList().getExprList().iterator(); it.hasNext();) {
             b.append(PlainSelect.getStringList(it.next().getExpressions(), true, !isNoBrackets()));
             if (it.hasNext()) {
                 b.append(", ");
@@ -116,13 +89,5 @@ public class ValuesList implements FromItem {
             }
         }
         return b.toString();
-    }
-
-    public List<String> getColumnNames() {
-        return columnNames;
-    }
-
-    public void setColumnNames(List<String> columnNames) {
-        this.columnNames = columnNames;
     }
 }

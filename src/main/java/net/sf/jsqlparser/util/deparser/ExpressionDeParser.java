@@ -112,8 +112,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     private boolean useBracketsInExprList = true;
     private OrderByDeParser orderByDeParser = new OrderByDeParser();
 
-    public ExpressionDeParser() {
-    }
+    public ExpressionDeParser() {}
 
     /**
      * @param selectVisitor a SelectVisitor to de-parse SubSelects. It has to share the same<br>
@@ -380,8 +379,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         if (selectVisitor != null) {
             if (subSelect.getWithItemsList() != null) {
                 buffer.append("WITH ");
-                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.
-                        hasNext();) {
+                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.hasNext();) {
                     iter.next().accept(selectVisitor);
                     if (iter.hasNext()) {
                         buffer.append(", ");

@@ -21,12 +21,16 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
+@Data
 public class RegExpMySQLOperator extends BinaryExpression {
 
     private RegExpMatchOperatorType operatorType;
+    @Accessors(chain = true)
     private boolean useRLike = false;
 
     public RegExpMySQLOperator(RegExpMatchOperatorType operatorType) {
@@ -34,19 +38,6 @@ public class RegExpMySQLOperator extends BinaryExpression {
             throw new NullPointerException();
         }
         this.operatorType = operatorType;
-    }
-
-    public RegExpMatchOperatorType getOperatorType() {
-        return operatorType;
-    }
-
-    public boolean isUseRLike() {
-        return useRLike;
-    }
-
-    public RegExpMySQLOperator useRLike() {
-        useRLike = true;
-        return this;
     }
 
     @Override
@@ -57,6 +48,11 @@ public class RegExpMySQLOperator extends BinaryExpression {
     @Override
     public String getStringExpression() {
         return (useRLike ? "RLIKE" : "REGEXP")
-                + (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
+            + (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
     }
 }

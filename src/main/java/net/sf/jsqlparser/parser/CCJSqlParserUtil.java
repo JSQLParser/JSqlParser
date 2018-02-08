@@ -23,6 +23,8 @@ package net.sf.jsqlparser.parser;
 
 import java.io.InputStream;
 import java.io.Reader;
+
+import lombok.experimental.UtilityClass;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
@@ -33,12 +35,10 @@ import net.sf.jsqlparser.statement.Statements;
  *
  * @author toben
  */
+@UtilityClass
 public final class CCJSqlParserUtil {
 
-    private CCJSqlParserUtil() {
-    }
-
-    public static Statement parse(Reader statementReader) throws JSQLParserException {
+    public Statement parse(Reader statementReader) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StreamProvider(statementReader));
         try {
             return parser.Statement();
@@ -47,7 +47,7 @@ public final class CCJSqlParserUtil {
         }
     }
 
-    public static Statement parse(String sql) throws JSQLParserException {
+    public Statement parse(String sql) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(sql));
         try {
             return parser.Statement();
@@ -56,7 +56,7 @@ public final class CCJSqlParserUtil {
         }
     }
 
-    public static Node parseAST(String sql) throws JSQLParserException {
+    public Node parseAST(String sql) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(sql));
         try {
             parser.Statement();
@@ -66,7 +66,7 @@ public final class CCJSqlParserUtil {
         }
     }
 
-    public static Statement parse(InputStream is) throws JSQLParserException {
+    public Statement parse(InputStream is) throws JSQLParserException {
         try {
             CCJSqlParser parser = new CCJSqlParser(new StreamProvider(is));
             return parser.Statement();
@@ -75,7 +75,7 @@ public final class CCJSqlParserUtil {
         }
     }
 
-    public static Statement parse(InputStream is, String encoding) throws JSQLParserException {
+    public Statement parse(InputStream is, String encoding) throws JSQLParserException {
         try {
             CCJSqlParser parser = new CCJSqlParser(new StreamProvider(is, encoding));
             return parser.Statement();
@@ -91,11 +91,11 @@ public final class CCJSqlParserUtil {
      * @return
      * @throws JSQLParserException
      */
-    public static Expression parseExpression(String expression) throws JSQLParserException {
+    public Expression parseExpression(String expression) throws JSQLParserException {
         return parseExpression(expression, true);
     }
-    
-    public static Expression parseExpression(String expression, boolean allowPartialParse) throws JSQLParserException {
+
+    public Expression parseExpression(String expression, boolean allowPartialParse) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(expression));
         try {
             Expression expr = parser.SimpleExpression();
@@ -117,7 +117,7 @@ public final class CCJSqlParserUtil {
      * @return
      * @throws JSQLParserException
      */
-    public static Expression parseCondExpression(String condExpr) throws JSQLParserException {
+    public Expression parseCondExpression(String condExpr) throws JSQLParserException {
         return parseCondExpression(condExpr, true);
     }
 
@@ -128,7 +128,7 @@ public final class CCJSqlParserUtil {
      * @param allowPartialParse false: needs the whole string to be processed.
      * @return
      */
-    public static Expression parseCondExpression(String condExpr, boolean allowPartialParse) throws JSQLParserException {
+    public Expression parseCondExpression(String condExpr, boolean allowPartialParse) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(condExpr));
         try {
             Expression expr = parser.Expression();
@@ -146,7 +146,7 @@ public final class CCJSqlParserUtil {
     /**
      * Parse a statement list.
      */
-    public static Statements parseStatements(String sqls) throws JSQLParserException {
+    public Statements parseStatements(String sqls) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqls));
         try {
             return parser.Statements();

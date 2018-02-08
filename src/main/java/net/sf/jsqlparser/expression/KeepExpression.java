@@ -21,10 +21,11 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.List;
+
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
-
-import java.util.List;
 
 /**
  * Analytic function. The name of the function is variable but the parameters following the special
@@ -34,6 +35,7 @@ import java.util.List;
  *
  * @author tw
  */
+@Data
 public class KeepExpression extends ASTNodeAccessImpl implements Expression {
 
     private String name;
@@ -43,30 +45,6 @@ public class KeepExpression extends ASTNodeAccessImpl implements Expression {
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
-    }
-
-    public List<OrderByElement> getOrderByElements() {
-        return orderByElements;
-    }
-
-    public void setOrderByElements(List<OrderByElement> orderByElements) {
-        this.orderByElements = orderByElements;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isFirst() {
-        return first;
-    }
-
-    public void setFirst(boolean first) {
-        this.first = first;
     }
 
     @Override

@@ -21,28 +21,29 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import lombok.Data;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Oracle Hint Expression
  *
  * @author valdo
  */
+@Data
 public class OracleHint extends ASTNodeAccessImpl implements Expression {
 
     private static final Pattern SINGLE_LINE = Pattern.compile("--\\+ *([^ ].*[^ ])");
-    private static final Pattern MULTI_LINE = Pattern.
-            compile("\\/\\*\\+ *([^ ].*[^ ]) *\\*+\\/", Pattern.MULTILINE | Pattern.DOTALL);
+    private static final Pattern MULTI_LINE = Pattern.compile("\\/\\*\\+ *([^ ].*[^ ]) *\\*+\\/", Pattern.MULTILINE | Pattern.DOTALL);
 
     private String value;
     private boolean singleLine = false;
 
     public static boolean isHintMatch(String comment) {
         return SINGLE_LINE.matcher(comment).find()
-                || MULTI_LINE.matcher(comment).find();
+            || MULTI_LINE.matcher(comment).find();
     }
 
     public final void setComment(String comment) {
@@ -60,22 +61,6 @@ public class OracleHint extends ASTNodeAccessImpl implements Expression {
         }
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public boolean isSingleLine() {
-        return singleLine;
-    }
-
-    public void setSingleLine(boolean singleLine) {
-        this.singleLine = singleLine;
-    }
-
     @Override
     public void accept(ExpressionVisitor visitor) {
         visitor.visit(this);
@@ -89,5 +74,4 @@ public class OracleHint extends ASTNodeAccessImpl implements Expression {
             return "/*+ " + value + " */";
         }
     }
-
 }

@@ -21,11 +21,13 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * It represents a "-" or "+" or "~" before an expression
  */
+@Data
 public class SignedExpression extends ASTNodeAccessImpl implements Expression {
 
     private char sign;
@@ -36,23 +38,11 @@ public class SignedExpression extends ASTNodeAccessImpl implements Expression {
         setExpression(expression);
     }
 
-    public char getSign() {
-        return sign;
-    }
-
     public final void setSign(char sign) {
         this.sign = sign;
         if (sign != '+' && sign != '-' && sign != '~') {
             throw new IllegalArgumentException("illegal sign character, only + - ~ allowed");
         }
-    }
-
-    public Expression getExpression() {
-        return expression;
-    }
-
-    public final void setExpression(Expression expression) {
-        this.expression = expression;
     }
 
     @Override

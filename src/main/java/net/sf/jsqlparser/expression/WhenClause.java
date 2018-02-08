@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
@@ -28,6 +29,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
  *
  * @author Havard Rast Blok
  */
+@Data
 public class WhenClause extends ASTNodeAccessImpl implements Expression {
 
     private Expression whenExpression;
@@ -36,34 +38,6 @@ public class WhenClause extends ASTNodeAccessImpl implements Expression {
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
-    }
-
-    /**
-     * @return Returns the thenExpression.
-     */
-    public Expression getThenExpression() {
-        return thenExpression;
-    }
-
-    /**
-     * @param thenExpression The thenExpression to set.
-     */
-    public void setThenExpression(Expression thenExpression) {
-        this.thenExpression = thenExpression;
-    }
-
-    /**
-     * @return Returns the whenExpression.
-     */
-    public Expression getWhenExpression() {
-        return whenExpression;
-    }
-
-    /**
-     * @param whenExpression The whenExpression to set.
-     */
-    public void setWhenExpression(Expression whenExpression) {
-        this.whenExpression = whenExpression;
     }
 
     @Override

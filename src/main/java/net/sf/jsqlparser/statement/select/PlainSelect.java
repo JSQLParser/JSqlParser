@@ -21,28 +21,43 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import lombok.Data;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.schema.Table;
+
 /**
  * The core of a "SELECT" statement (no UNION, no ORDER BY)
  */
+@Data
 public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     private Distinct distinct = null;
+    /**
+     * The {@link SelectItem}s in this query (for example the A,B,C in "SELECT A,B,C")
+     */
     private List<SelectItem> selectItems;
     private List<Table> intoTables;
+    /**
+     * The {@link FromItem} in this query
+     */
     private FromItem fromItem;
+    /**
+     * The list of {@link Join}s
+     */
     private List<Join> joins;
     private Expression where;
+    /**
+     * A list of {@link Expression}s of the GROUP BY clause. It is null in case there is no GROUP BY
+     * clause
+     */
     private List<Expression> groupByColumnReferences;
     private List<OrderByElement> orderByElements;
     private Expression having;
@@ -58,54 +73,11 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private boolean forUpdate = false;
     private Table forUpdateTable = null;
     private boolean useBrackets = false;
+    /**
+     * Sets the {@link Wait} for this SELECT
+     */
     private Wait wait;
     private boolean mySqlSqlCalcFoundRows = false;
-
-    public boolean isUseBrackets() {
-        return useBrackets;
-    }
-
-    public void setUseBrackets(boolean useBrackets) {
-        this.useBrackets = useBrackets;
-    }
-
-    /**
-     * The {@link FromItem} in this query
-     *
-     * @return the {@link FromItem}
-     */
-    public FromItem getFromItem() {
-        return fromItem;
-    }
-
-    public List<Table> getIntoTables() {
-        return intoTables;
-    }
-
-    /**
-     * The {@link SelectItem}s in this query (for example the A,B,C in "SELECT A,B,C")
-     *
-     * @return a list of {@link SelectItem}s
-     */
-    public List<SelectItem> getSelectItems() {
-        return selectItems;
-    }
-
-    public Expression getWhere() {
-        return where;
-    }
-
-    public void setFromItem(FromItem item) {
-        fromItem = item;
-    }
-
-    public void setIntoTables(List<Table> intoTables) {
-        this.intoTables = intoTables;
-    }
-
-    public void setSelectItems(List<SelectItem> list) {
-        selectItems = list;
-    }
 
     public void addSelectItems(SelectItem... items) {
         if (selectItems == null) {
@@ -114,112 +86,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         Collections.addAll(selectItems, items);
     }
 
-    public void setWhere(Expression where) {
-        this.where = where;
-    }
-
-    /**
-     * The list of {@link Join}s
-     *
-     * @return the list of {@link Join}s
-     */
-    public List<Join> getJoins() {
-        return joins;
-    }
-
-    public void setJoins(List<Join> list) {
-        joins = list;
-    }
-
     @Override
     public void accept(SelectVisitor selectVisitor) {
         selectVisitor.visit(this);
-    }
-
-    public List<OrderByElement> getOrderByElements() {
-        return orderByElements;
-    }
-
-    public void setOrderByElements(List<OrderByElement> orderByElements) {
-        this.orderByElements = orderByElements;
-    }
-
-    public Limit getLimit() {
-        return limit;
-    }
-
-    public void setLimit(Limit limit) {
-        this.limit = limit;
-    }
-
-    public Offset getOffset() {
-        return offset;
-    }
-
-    public void setOffset(Offset offset) {
-        this.offset = offset;
-    }
-
-    public Fetch getFetch() {
-        return fetch;
-    }
-
-    public void setFetch(Fetch fetch) {
-        this.fetch = fetch;
-    }
-
-    public Top getTop() {
-        return top;
-    }
-
-    public void setTop(Top top) {
-        this.top = top;
-    }
-
-    public Skip getSkip() {
-        return skip;
-    }
-
-    public void setSkip(Skip skip) {
-        this.skip = skip;
-    }
-
-    public First getFirst() {
-        return first;
-    }
-
-    public void setFirst(First first) {
-        this.first = first;
-    }
-
-    public Distinct getDistinct() {
-        return distinct;
-    }
-
-    public void setDistinct(Distinct distinct) {
-        this.distinct = distinct;
-    }
-
-    public Expression getHaving() {
-        return having;
-    }
-
-    public void setHaving(Expression expression) {
-        having = expression;
-    }
-
-    /**
-     * A list of {@link Expression}s of the GROUP BY clause. It is null in case there is no GROUP BY
-     * clause
-     *
-     * @return a list of {@link Expression}s
-     */
-    public List<Expression> getGroupByColumnReferences() {
-        return groupByColumnReferences;
-    }
-
-    public void setGroupByColumnReferences(List<Expression> list) {
-        groupByColumnReferences = list;
     }
 
     public void addGroupByColumnReference(Expression expr) {
@@ -227,64 +96,6 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             groupByColumnReferences = new ArrayList<Expression>();
         }
         groupByColumnReferences.add(expr);
-    }
-
-    public OracleHierarchicalExpression getOracleHierarchical() {
-        return oracleHierarchical;
-    }
-
-    public void setOracleHierarchical(OracleHierarchicalExpression oracleHierarchical) {
-        this.oracleHierarchical = oracleHierarchical;
-    }
-
-    public boolean isOracleSiblings() {
-        return oracleSiblings;
-    }
-
-    public void setOracleSiblings(boolean oracleSiblings) {
-        this.oracleSiblings = oracleSiblings;
-    }
-
-    public boolean isForUpdate() {
-        return forUpdate;
-    }
-
-    public void setForUpdate(boolean forUpdate) {
-        this.forUpdate = forUpdate;
-    }
-
-    public Table getForUpdateTable() {
-        return forUpdateTable;
-    }
-
-    public void setForUpdateTable(Table forUpdateTable) {
-        this.forUpdateTable = forUpdateTable;
-    }
-
-    public OracleHint getOracleHint() {
-        return oracleHint;
-    }
-
-    public void setOracleHint(OracleHint oracleHint) {
-        this.oracleHint = oracleHint;
-    }
-
-    /**
-     * Sets the {@link Wait} for this SELECT
-     *
-     * @param wait the {@link Wait} for this SELECT
-     */
-    public void setWait(final Wait wait) {
-        this.wait = wait;
-    }
-
-    /**
-     * Returns the value of the {@link Wait} set for this SELECT
-     *
-     * @return the value of the {@link Wait} set for this SELECT
-     */
-    public Wait getWait() {
-        return wait;
     }
 
     @Override
@@ -436,7 +247,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
      */
     public static String getStringList(List<?> list, boolean useComma, boolean useBrackets) {
         StringBuilder ans = new StringBuilder();
-//        String ans = "";
+        //        String ans = "";
         String comma = ",";
         if (!useComma) {
             comma = "";
@@ -444,28 +255,20 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         if (list != null) {
             if (useBrackets) {
                 ans.append("(");
-//                ans += "(";
+                //                ans += "(";
             }
 
             for (int i = 0; i < list.size(); i++) {
                 ans.append(list.get(i)).append((i < list.size() - 1) ? comma + " " : "");
-//                ans += "" + list.get(i) + ((i < list.size() - 1) ? comma + " " : "");
+                //                ans += "" + list.get(i) + ((i < list.size() - 1) ? comma + " " : "");
             }
 
             if (useBrackets) {
                 ans.append(")");
-//                ans += ")";
+                //                ans += ")";
             }
         }
 
         return ans.toString();
-    }
-
-    public void setMySqlSqlCalcFoundRows(boolean mySqlCalcFoundRows) {
-        this.mySqlSqlCalcFoundRows = mySqlCalcFoundRows;
-    }
-
-    public boolean getMySqlSqlCalcFoundRows() {
-        return this.mySqlSqlCalcFoundRows;
     }
 }

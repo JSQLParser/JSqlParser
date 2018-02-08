@@ -23,6 +23,8 @@ package net.sf.jsqlparser.statement.select;
 
 import java.util.Iterator;
 import java.util.List;
+
+import lombok.Data;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
@@ -33,6 +35,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 /**
  * A subselect followed by an optional alias.
  */
+@Data
 public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression, ItemsList {
 
     private SelectBody selectBody;
@@ -47,53 +50,9 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
         fromItemVisitor.visit(this);
     }
 
-    public SelectBody getSelectBody() {
-        return selectBody;
-    }
-
-    public void setSelectBody(SelectBody body) {
-        selectBody = body;
-    }
-
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
-    }
-
-    @Override
-    public Alias getAlias() {
-        return alias;
-    }
-
-    @Override
-    public void setAlias(Alias alias) {
-        this.alias = alias;
-    }
-
-    @Override
-    public Pivot getPivot() {
-        return pivot;
-    }
-
-    @Override
-    public void setPivot(Pivot pivot) {
-        this.pivot = pivot;
-    }
-
-    public boolean isUseBrackets() {
-        return useBrackets;
-    }
-
-    public void setUseBrackets(boolean useBrackets) {
-        this.useBrackets = useBrackets;
-    }
-
-    public List<WithItem> getWithItemsList() {
-        return withItemsList;
-    }
-
-    public void setWithItemsList(List<WithItem> withItemsList) {
-        this.withItemsList = withItemsList;
     }
 
     @Override
@@ -122,14 +81,12 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
         if (useBrackets) {
             retval.append(")");
         }
-
         if (alias != null) {
             retval.append(alias.toString());
         }
         if (pivot != null) {
             retval.append(" ").append(pivot);
         }
-
         return retval.toString();
     }
 }

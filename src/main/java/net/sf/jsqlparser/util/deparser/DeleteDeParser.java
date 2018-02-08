@@ -36,8 +36,7 @@ public class DeleteDeParser {
     private StringBuilder buffer = new StringBuilder();
     private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
 
-    public DeleteDeParser() {
-    }
+    public DeleteDeParser() {}
 
     /**
      * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share

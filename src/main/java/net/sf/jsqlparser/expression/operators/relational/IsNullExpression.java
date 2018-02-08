@@ -21,30 +21,16 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+@Data
 public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
     private boolean not = false;
-
-    public Expression getLeftExpression() {
-        return leftExpression;
-    }
-
-    public boolean isNot() {
-        return not;
-    }
-
-    public void setLeftExpression(Expression expression) {
-        leftExpression = expression;
-    }
-
-    public void setNot(boolean b) {
-        not = b;
-    }
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {

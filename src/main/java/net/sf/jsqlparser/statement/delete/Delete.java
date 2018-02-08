@@ -21,6 +21,9 @@
  */
 package net.sf.jsqlparser.statement.delete;
 
+import java.util.List;
+
+import lombok.Data;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -30,8 +33,7 @@ import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-import java.util.List;
-
+@Data
 public class Delete implements Statement {
 
     private Table table;
@@ -41,57 +43,9 @@ public class Delete implements Statement {
     private Limit limit;
     private List<OrderByElement> orderByElements;
 
-    public List<OrderByElement> getOrderByElements() {
-        return orderByElements;
-    }
-
-    public void setOrderByElements(List<OrderByElement> orderByElements) {
-        this.orderByElements = orderByElements;
-    }
-
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
-    }
-
-    public Table getTable() {
-        return table;
-    }
-
-    public Expression getWhere() {
-        return where;
-    }
-
-    public void setTable(Table name) {
-        table = name;
-    }
-
-    public void setWhere(Expression expression) {
-        where = expression;
-    }
-
-    public Limit getLimit() {
-        return limit;
-    }
-
-    public void setLimit(Limit limit) {
-        this.limit = limit;
-    }
-
-    public List<Table> getTables() {
-        return tables;
-    }
-
-    public void setTables(List<Table> tables) {
-        this.tables = tables;
-    }
-
-    public List<Join> getJoins() {
-        return joins;
-    }
-
-    public void setJoins(List<Join> joins) {
-        this.joins = joins;
     }
 
     @Override

@@ -23,17 +23,16 @@ package net.sf.jsqlparser.expression;
 
 import java.util.List;
 
-public class MySQLIndexHint  {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class MySQLIndexHint {
 
     private final String action;
     private final String indexQualifier;
     private final List<String> indexNames;
-
-    public MySQLIndexHint(String action, String indexQualifier, List<String> indexNames) {
-        this.action = action;
-        this.indexQualifier = indexQualifier;
-        this.indexNames = indexNames;
-    }
 
     @Override
     public String toString() {

@@ -23,6 +23,7 @@ package net.sf.jsqlparser.statement.insert;
 
 import java.util.List;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
@@ -37,10 +38,17 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
  * The insert statement. Every column name in <code>columnNames</code> matches an item in
  * <code>itemsList</code>
  */
+@Data
 public class Insert implements Statement {
 
     private Table table;
+    /**
+     * The columns (found in "INSERT INTO (col1,col2..) [...]" )
+     */
     private List<Column> columns;
+    /**
+     * The values (as VALUES (...) or SELECT)
+     */
     private ItemsList itemsList;
     private boolean useValues = true;
     private Select select;
@@ -54,7 +62,7 @@ public class Insert implements Statement {
     private boolean returningAllColumns = false;
 
     private List<SelectExpressionItem> returningExpressionList = null;
-    
+
     /* these lines of codes are used to handle SET syntax in the insert part. 
      * the SET syntax is based on this: https://dev.mysql.com/doc/refman/5.6/en/insert.html. */
     private boolean useSet = false;
@@ -64,144 +72,6 @@ public class Insert implements Statement {
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
-    }
-
-    public Table getTable() {
-        return table;
-    }
-
-    public void setTable(Table name) {
-        table = name;
-    }
-
-    /**
-     * Get the columns (found in "INSERT INTO (col1,col2..) [...]" )
-     *
-     * @return a list of {@link net.sf.jsqlparser.schema.Column}
-     */
-    public List<Column> getColumns() {
-        return columns;
-    }
-
-    public void setColumns(List<Column> list) {
-        columns = list;
-    }
-
-    /**
-     * Get the values (as VALUES (...) or SELECT)
-     *
-     * @return the values of the insert
-     */
-    public ItemsList getItemsList() {
-        return itemsList;
-    }
-
-    public void setItemsList(ItemsList list) {
-        itemsList = list;
-    }
-
-    public boolean isUseValues() {
-        return useValues;
-    }
-
-    public void setUseValues(boolean useValues) {
-        this.useValues = useValues;
-    }
-
-    public boolean isReturningAllColumns() {
-        return returningAllColumns;
-    }
-
-    public void setReturningAllColumns(boolean returningAllColumns) {
-        this.returningAllColumns = returningAllColumns;
-    }
-
-    public List<SelectExpressionItem> getReturningExpressionList() {
-        return returningExpressionList;
-    }
-
-    public void setReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
-        this.returningExpressionList = returningExpressionList;
-    }
-
-    public Select getSelect() {
-        return select;
-    }
-
-    public void setSelect(Select select) {
-        this.select = select;
-    }
-
-    public boolean isUseSelectBrackets() {
-        return useSelectBrackets;
-    }
-
-    public void setUseSelectBrackets(boolean useSelectBrackets) {
-        this.useSelectBrackets = useSelectBrackets;
-    }
-
-    public boolean isUseDuplicate() {
-        return useDuplicate;
-    }
-
-    public void setUseDuplicate(boolean useDuplicate) {
-        this.useDuplicate = useDuplicate;
-    }
-
-    public List<Column> getDuplicateUpdateColumns() {
-        return duplicateUpdateColumns;
-    }
-
-    public void setDuplicateUpdateColumns(List<Column> duplicateUpdateColumns) {
-        this.duplicateUpdateColumns = duplicateUpdateColumns;
-    }
-
-    public List<Expression> getDuplicateUpdateExpressionList() {
-        return duplicateUpdateExpressionList;
-    }
-
-    public void setDuplicateUpdateExpressionList(List<Expression> duplicateUpdateExpressionList) {
-        this.duplicateUpdateExpressionList = duplicateUpdateExpressionList;
-    }
-
-    public InsertModifierPriority getModifierPriority() {
-        return modifierPriority;
-    }
-
-    public void setModifierPriority(InsertModifierPriority modifierPriority) {
-        this.modifierPriority = modifierPriority;
-    }
-
-    public boolean isModifierIgnore() {
-        return modifierIgnore;
-    }
-
-    public void setModifierIgnore(boolean modifierIgnore) {
-        this.modifierIgnore = modifierIgnore;
-    }
-    
-    public void setUseSet(boolean useSet) {
-        this.useSet = useSet;
-    }
-    
-    public boolean isUseSet() {
-        return useSet;
-    }
-    
-    public void setSetColumns(List<Column> setColumns) {
-        this.setColumns = setColumns;
-    }
-    
-    public List<Column> getSetColumns() {
-        return setColumns;
-    }
-    
-    public void setSetExpressionList(List<Expression> setExpressionList) {
-        this.setExpressionList = setExpressionList;
-    }
-    
-    public List<Expression> getSetExpressionList() {
-        return setExpressionList;
     }
 
     @Override
@@ -238,7 +108,7 @@ public class Insert implements Statement {
                 sql.append(")");
             }
         }
-        
+
         if (useSet) {
             sql.append("SET ");
             for (int i = 0; i < getSetColumns().size(); i++) {
@@ -264,11 +134,9 @@ public class Insert implements Statement {
         if (isReturningAllColumns()) {
             sql.append(" RETURNING *");
         } else if (getReturningExpressionList() != null) {
-            sql.append(" RETURNING ").append(PlainSelect.
-                    getStringList(getReturningExpressionList(), true, false));
+            sql.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
         }
 
         return sql.toString();
     }
-    
 }

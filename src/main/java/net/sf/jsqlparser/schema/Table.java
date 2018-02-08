@@ -21,13 +21,23 @@
  */
 package net.sf.jsqlparser.schema;
 
-import net.sf.jsqlparser.expression.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.IntoTableVisitor;
+import net.sf.jsqlparser.statement.select.Pivot;
 
 /**
  * A table. It can have an alias and the schema name it belongs to.
  */
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName {
 
     private Database database;
@@ -36,10 +46,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     private Alias alias;
     private Pivot pivot;
-    private MySQLIndexHint hint;
-
-    public Table() {
-    }
+    private MySQLIndexHint mySQLIndexHint;
 
     public Table(String name) {
         this.name = name;
@@ -54,40 +61,6 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         this.database = database;
         this.schemaName = schemaName;
         this.name = name;
-    }
-
-    public Database getDatabase() {
-        return database;
-    }
-
-    public void setDatabase(Database database) {
-        this.database = database;
-    }
-
-    public String getSchemaName() {
-        return schemaName;
-    }
-
-    public void setSchemaName(String string) {
-        schemaName = string;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String string) {
-        name = string;
-    }
-
-    @Override
-    public Alias getAlias() {
-        return alias;
-    }
-
-    @Override
-    public void setAlias(Alias alias) {
-        this.alias = alias;
     }
 
     @Override
@@ -125,28 +98,10 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     @Override
-    public Pivot getPivot() {
-        return pivot;
-    }
-
-    @Override
-    public void setPivot(Pivot pivot) {
-        this.pivot = pivot;
-    }
-
-    public MySQLIndexHint getIndexHint() {
-        return hint;
-    }
-
-    public void setHint(MySQLIndexHint hint) {
-        this.hint = hint;
-    }
-
-    @Override
     public String toString() {
         return getFullyQualifiedName()
-                + ((alias != null) ? alias.toString() : "")
-                + ((pivot != null) ? " " + pivot : "")
-                + ((hint != null) ? hint.toString() : "");
+            + ((alias != null) ? alias.toString() : "")
+            + ((pivot != null) ? " " + pivot : "")
+            + ((mySQLIndexHint != null) ? mySQLIndexHint.toString() : "");
     }
 }

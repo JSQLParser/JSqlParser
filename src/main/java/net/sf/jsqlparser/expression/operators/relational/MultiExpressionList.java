@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
+import lombok.Data;
 import net.sf.jsqlparser.expression.Expression;
 
 /**
@@ -33,6 +35,7 @@ import net.sf.jsqlparser.expression.Expression;
  *
  * @author toben
  */
+@Data
 public class MultiExpressionList implements ItemsList {
 
     private List<ExpressionList> exprList;
@@ -46,13 +49,9 @@ public class MultiExpressionList implements ItemsList {
         itemsListVisitor.visit(this);
     }
 
-    public List<ExpressionList> getExprList() {
-        return exprList;
-    }
-
     public void addExpressionList(ExpressionList el) {
         if (!exprList.isEmpty()
-                && exprList.get(0).getExpressions().size() != el.getExpressions().size()) {
+            && exprList.get(0).getExpressions().size() != el.getExpressions().size()) {
             throw new IllegalArgumentException("different count of parameters");
         }
         exprList.add(el);

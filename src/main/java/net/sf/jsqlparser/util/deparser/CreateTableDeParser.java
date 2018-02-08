@@ -48,8 +48,7 @@ public class CreateTableDeParser {
         if (createTable.isUnlogged()) {
             buffer.append("UNLOGGED ");
         }
-        String params = PlainSelect.
-                getStringList(createTable.getCreateOptionsStrings(), false, false);
+        String params = PlainSelect.getStringList(createTable.getCreateOptionsStrings(), false, false);
         if (!"".equals(params)) {
             buffer.append(params).append(' ');
         }
@@ -61,18 +60,17 @@ public class CreateTableDeParser {
         buffer.append(createTable.getTable().getFullyQualifiedName());
         if (createTable.getSelect() != null) {
             buffer.append(" AS ");
-            if (createTable.isSelectParenthesis()) {
+            if (createTable.isParenthesis()) {
                 buffer.append("(");
             }
             buffer.append(createTable.getSelect().toString());
-            if (createTable.isSelectParenthesis()) {
+            if (createTable.isParenthesis()) {
                 buffer.append(")");
             }
         } else {
             if (createTable.getColumnDefinitions() != null) {
                 buffer.append(" (");
-                for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.
-                        hasNext();) {
+                for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
                     ColumnDefinition columnDefinition = iter.next();
                     buffer.append(columnDefinition.getColumnName());
                     buffer.append(" ");

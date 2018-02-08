@@ -34,6 +34,5 @@ public class TableFunction extends FunctionItem implements FromItem {
     }
 
     @Override
-    public void setPivot(Pivot pivot) {
-    }
+    public void setPivot(Pivot pivot) {}
 }

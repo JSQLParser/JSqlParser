@@ -21,10 +21,21 @@
  */
 package net.sf.jsqlparser.util;
 
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.statement.select.*;
+import java.util.LinkedList;
+import java.util.List;
 
-import java.util.*;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.SelectItemVisitor;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
  * Connect all selected expressions with a binary expression. Out of select a,b from table one gets
@@ -38,8 +49,7 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
     private String alias = "expr";
     private final List<SelectExpressionItem> itemsExpr = new LinkedList<SelectExpressionItem>();
 
-    public ConnectExpressionsVisitor() {
-    }
+    public ConnectExpressionsVisitor() {}
 
     public ConnectExpressionsVisitor(String alias) {
         this.alias = alias;
@@ -87,8 +97,7 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
     }
 
     @Override
-    public void visit(WithItem withItem) {
-    }
+    public void visit(WithItem withItem) {}
 
     @Override
     public void visit(AllTableColumns allTableColumns) {

@@ -21,21 +21,14 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
 public class DeferrableConstraint implements ConstraintState {
 
     private boolean not;
-
-    public DeferrableConstraint(boolean not) {
-        this.not = not;
-    }
-
-    public boolean isNot() {
-        return not;
-    }
-
-    public void setNot(boolean not) {
-        this.not = not;
-    }
 
     @Override
     public String toString() {

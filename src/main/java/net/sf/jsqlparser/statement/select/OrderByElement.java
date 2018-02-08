@@ -21,11 +21,13 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.Expression;
 
 /**
  * An element (column reference) in an "ORDER BY" clause.
  */
+@Data
 public class OrderByElement {
 
     public enum NullOrdering {
@@ -37,42 +39,10 @@ public class OrderByElement {
     private Expression expression;
     private boolean asc = true;
     private NullOrdering nullOrdering;
-    private boolean ascDesc = false;
-
-    public boolean isAsc() {
-        return asc;
-    }
-
-    public NullOrdering getNullOrdering() {
-        return nullOrdering;
-    }
-
-    public void setNullOrdering(NullOrdering nullOrdering) {
-        this.nullOrdering = nullOrdering;
-    }
-
-    public void setAsc(boolean b) {
-        asc = b;
-    }
-
-    public void setAscDescPresent(boolean b) {
-        ascDesc = b;
-    }
-
-    public boolean isAscDescPresent() {
-        return ascDesc;
-    }
+    private boolean ascDescPresent = false;
 
     public void accept(OrderByVisitor orderByVisitor) {
         orderByVisitor.visit(this);
-    }
-
-    public Expression getExpression() {
-        return expression;
-    }
-
-    public void setExpression(Expression expression) {
-        this.expression = expression;
     }
 
     @Override
@@ -82,7 +52,7 @@ public class OrderByElement {
 
         if (!asc) {
             b.append(" DESC");
-        } else if (ascDesc) {
+        } else if (ascDescPresent) {
             b.append(" ASC");
         }
 

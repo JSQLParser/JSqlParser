@@ -21,11 +21,12 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.List;
+
+import lombok.Data;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
-
-import java.util.List;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
@@ -36,6 +37,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  *
  * @author tw
  */
+@Data
 public class AnalyticExpression extends ASTNodeAccessImpl implements Expression {
 
     private ExpressionList partitionExpressionList;
@@ -52,78 +54,6 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
-    }
-
-    public List<OrderByElement> getOrderByElements() {
-        return orderByElements;
-    }
-
-    public void setOrderByElements(List<OrderByElement> orderByElements) {
-        this.orderByElements = orderByElements;
-    }
-
-    public KeepExpression getKeep() {
-        return keep;
-    }
-
-    public void setKeep(KeepExpression keep) {
-        this.keep = keep;
-    }
-
-    public ExpressionList getPartitionExpressionList() {
-        return partitionExpressionList;
-    }
-
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
-        this.partitionExpressionList = partitionExpressionList;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Expression getExpression() {
-        return expression;
-    }
-
-    public void setExpression(Expression expression) {
-        this.expression = expression;
-    }
-
-    public Expression getOffset() {
-        return offset;
-    }
-
-    public void setOffset(Expression offset) {
-        this.offset = offset;
-    }
-
-    public Expression getDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(Expression defaultValue) {
-        this.defaultValue = defaultValue;
-    }
-
-    public WindowElement getWindowElement() {
-        return windowElement;
-    }
-
-    public void setWindowElement(WindowElement windowElement) {
-        this.windowElement = windowElement;
-    }
-
-    public AnalyticType getType() {
-        return type;
-    }
-
-    public void setType(AnalyticType type) {
-        this.type = type;
     }
 
     @Override
@@ -146,7 +76,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         if (keep != null) {
             b.append(keep.toString()).append(" ");
         }
-        
+
         switch (type) {
             case WITHIN_GROUP:
                 b.append("WITHIN GROUP");
@@ -164,19 +94,10 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         return b.toString();
     }
 
-    public boolean isAllColumns() {
-        return allColumns;
-    }
-
-    public void setAllColumns(boolean allColumns) {
-        this.allColumns = allColumns;
-    }
-
     private void toStringPartitionBy(StringBuilder b) {
         if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
             b.append("PARTITION BY ");
-            b.append(PlainSelect.
-                    getStringList(partitionExpressionList.getExpressions(), true, false));
+            b.append(PlainSelect.getStringList(partitionExpressionList.getExpressions(), true, false));
             b.append(" ");
         }
     }

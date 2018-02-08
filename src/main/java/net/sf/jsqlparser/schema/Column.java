@@ -21,19 +21,23 @@
  */
 package net.sf.jsqlparser.schema;
 
-import net.sf.jsqlparser.expression.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * A column. It can have the table name it belongs to.
  */
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public final class Column extends ASTNodeAccessImpl implements Expression, MultiPartName {
 
     private Table table;
     private String columnName;
-
-    public Column() {
-    }
 
     public Column(Table table, String columnName) {
         setTable(table);
@@ -42,22 +46,6 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
 
     public Column(String columnName) {
         this(null, columnName);
-    }
-
-    public Table getTable() {
-        return table;
-    }
-
-    public void setTable(Table table) {
-        this.table = table;
-    }
-
-    public String getColumnName() {
-        return columnName;
-    }
-
-    public void setColumnName(String string) {
-        columnName = string;
     }
 
     @Override

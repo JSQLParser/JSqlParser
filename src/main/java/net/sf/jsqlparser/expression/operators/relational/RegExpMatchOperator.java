@@ -21,9 +21,11 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
+@Data
 public class RegExpMatchOperator extends BinaryExpression {
 
     private RegExpMatchOperatorType operatorType;
@@ -33,10 +35,6 @@ public class RegExpMatchOperator extends BinaryExpression {
             throw new NullPointerException();
         }
         this.operatorType = operatorType;
-    }
-
-    public RegExpMatchOperatorType getOperatorType() {
-        return operatorType;
     }
 
     @Override
@@ -59,5 +57,10 @@ public class RegExpMatchOperator extends BinaryExpression {
                 break;
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
     }
 }

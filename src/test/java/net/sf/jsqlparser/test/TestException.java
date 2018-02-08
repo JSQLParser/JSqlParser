@@ -3,6 +3,7 @@ package net.sf.jsqlparser.test;
 /**
  * An exception class with stack trace informations
  */
+@SuppressWarnings("serial")
 public class TestException extends Exception {
 
     private Throwable cause = null;

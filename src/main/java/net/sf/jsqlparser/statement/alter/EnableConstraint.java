@@ -21,21 +21,14 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
 public class EnableConstraint implements ConstraintState {
 
     private boolean disable;
-
-    public EnableConstraint(boolean disable) {
-        this.disable = disable;
-    }
-
-    public boolean isDisable() {
-        return disable;
-    }
-
-    public void setDisable(boolean disable) {
-        this.disable = disable;
-    }
 
     @Override
     public String toString() {

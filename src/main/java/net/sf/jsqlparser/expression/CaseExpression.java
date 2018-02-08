@@ -23,6 +23,7 @@ package net.sf.jsqlparser.expression;
 
 import java.util.List;
 
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -57,6 +58,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  *
  * @author Havard Rast Blok
  */
+@Data
 public class CaseExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression switchExpression;
@@ -68,52 +70,10 @@ public class CaseExpression extends ASTNodeAccessImpl implements Expression {
         expressionVisitor.visit(this);
     }
 
-    /**
-     * @return Returns the switchExpression.
-     */
-    public Expression getSwitchExpression() {
-        return switchExpression;
-    }
-
-    /**
-     * @param switchExpression The switchExpression to set.
-     */
-    public void setSwitchExpression(Expression switchExpression) {
-        this.switchExpression = switchExpression;
-    }
-
-    /**
-     * @return Returns the elseExpression.
-     */
-    public Expression getElseExpression() {
-        return elseExpression;
-    }
-
-    /**
-     * @param elseExpression The elseExpression to set.
-     */
-    public void setElseExpression(Expression elseExpression) {
-        this.elseExpression = elseExpression;
-    }
-
-    /**
-     * @return Returns the whenClauses.
-     */
-    public List<WhenClause> getWhenClauses() {
-        return whenClauses;
-    }
-
-    /**
-     * @param whenClauses The whenClauses to set.
-     */
-    public void setWhenClauses(List<WhenClause> whenClauses) {
-        this.whenClauses = whenClauses;
-    }
-
     @Override
     public String toString() {
         return "CASE " + ((switchExpression != null) ? switchExpression + " " : "")
-                + PlainSelect.getStringList(whenClauses, false, false) + " "
-                + ((elseExpression != null) ? "ELSE " + elseExpression + " " : "") + "END";
+            + PlainSelect.getStringList(whenClauses, false, false) + " "
+            + ((elseExpression != null) ? "ELSE " + elseExpression + " " : "") + "END";
     }
 }

@@ -21,16 +21,14 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import lombok.AllArgsConstructor;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
+@AllArgsConstructor
 public class JsonOperator extends BinaryExpression {
 
-    private String op; //"@>"
-
-    public JsonOperator(String op) {
-        this.op = op;
-    }
+    private final String op; //"@>"
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {

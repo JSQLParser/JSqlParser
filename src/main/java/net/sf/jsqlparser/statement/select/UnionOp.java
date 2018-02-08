@@ -21,12 +21,14 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import lombok.Data;
 import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
 
 /**
  *
  * @author tw
  */
+@Data
 public class UnionOp extends SetOperation {
 
     private boolean distinct;
@@ -34,22 +36,6 @@ public class UnionOp extends SetOperation {
 
     public UnionOp() {
         super(SetOperationType.UNION);
-    }
-
-    public boolean isAll() {
-        return all;
-    }
-
-    public void setAll(boolean all) {
-        this.all = all;
-    }
-
-    public boolean isDistinct() {
-        return distinct;
-    }
-
-    public void setDistinct(boolean distinct) {
-        this.distinct = distinct;
     }
 
     @Override

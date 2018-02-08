@@ -1,6 +1,6 @@
 package net.sf.jsqlparser.util.cnfexpression;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
  *
  */
 public class CNFTest {
-    
+
     /**
      * The purpose of this method is to check when there is a Not Operator
      * at the root. Which means the root must be switched.  
@@ -58,14 +58,14 @@ public class CNFTest {
     @Test
     public void test1() throws Exception {
         Expression expr = CCJSqlParserUtil.parseCondExpression(
-                  "NOT ((1.2 < 2.3 OR 3.5 = 4.6) AND (1.1 <> 2.5 OR 8.0 >= 7.2))");
+            "NOT ((1.2 < 2.3 OR 3.5 = 4.6) AND (1.1 <> 2.5 OR 8.0 >= 7.2))");
         Expression expected = CCJSqlParserUtil.parseCondExpression(
-                "(NOT 1.2 < 2.3 OR NOT 1.1 <> 2.5) AND (NOT 1.2 < 2.3 OR NOT 8.0 >= 7.2) AND"
+            "(NOT 1.2 < 2.3 OR NOT 1.1 <> 2.5) AND (NOT 1.2 < 2.3 OR NOT 8.0 >= 7.2) AND"
                 + " (NOT 3.5 = 4.6 OR NOT 1.1 <> 2.5) AND (NOT 3.5 = 4.6 OR NOT 8.0 >= 7.2)");
         Expression result = CNFConverter.convertToCNF(expr);
         assertEquals(expected.toString(), result.toString());
     }
-    
+
     /**
      * The purpose is to test the double negation law. As you can 
      * see when you build the tree, there will be two Not Operators 
@@ -109,16 +109,16 @@ public class CNFTest {
      */
     @Test
     public void test2() throws Exception {
-        Expression expr = CCJSqlParserUtil.parseCondExpression( 
-                "((NOT (NOT 1.1 >= 2.3 OR 3.3 < 4.5)) OR "
+        Expression expr = CCJSqlParserUtil.parseCondExpression(
+            "((NOT (NOT 1.1 >= 2.3 OR 3.3 < 4.5)) OR "
                 + "(S.A LIKE '\"%%%\"' AND S.B = '\"orz\"'))");
-        Expression expected = CCJSqlParserUtil.parseCondExpression( 
-                "(1.1 >= 2.3 OR S.A LIKE '\"%%%\"') AND (1.1 >= 2.3 OR S.B = '\"orz\"')"
+        Expression expected = CCJSqlParserUtil.parseCondExpression(
+            "(1.1 >= 2.3 OR S.A LIKE '\"%%%\"') AND (1.1 >= 2.3 OR S.B = '\"orz\"')"
                 + " AND (NOT 3.3 < 4.5 OR S.A LIKE '\"%%%\"') AND (NOT 3.3 < 4.5 OR S.B = '\"orz\"')");
         Expression result = CNFConverter.convertToCNF(expr);
         assertEquals(expected.toString(), result.toString());
     }
-    
+
     /**
      * This is the case when we test a more complex tree structure,
      * Notice you could see the amount of line to build up the CNF tree.
@@ -358,32 +358,32 @@ public class CNFTest {
     @Test
     public void test3() throws Exception {
         Expression expr = CCJSqlParserUtil.parseCondExpression(
-                "(3.0 >= 4.0 AND 5.0 <= 6.0) OR "
+            "(3.0 >= 4.0 AND 5.0 <= 6.0) OR "
                 + "(((7.0 < 8.0 AND 9.0 > 10.0) AND 11.0 = 12.0) OR "
                 + "NOT (13.0 <> 14.0 OR (15.0 = 16.0 AND (17.0 = 18.0 OR 19.0 > 20.0))))");
         Expression expected = CCJSqlParserUtil.parseCondExpression(
-                "(3.0 >= 4.0 OR 7.0 < 8.0 OR NOT 13.0 <> 14.0) AND "
-                        + "(3.0 >= 4.0 OR 7.0 < 8.0 OR NOT 15.0 = 16.0 OR NOT 17.0 = 18.0) AND "
-                        + "(3.0 >= 4.0 OR 7.0 < 8.0 OR NOT 15.0 = 16.0 OR NOT 19.0 > 20.0) AND "
-                        + "(3.0 >= 4.0 OR 9.0 > 10.0 OR NOT 13.0 <> 14.0) AND "
-                        + "(3.0 >= 4.0 OR 9.0 > 10.0 OR NOT 15.0 = 16.0 OR NOT 17.0 = 18.0) AND "
-                        + "(3.0 >= 4.0 OR 9.0 > 10.0 OR NOT 15.0 = 16.0 OR NOT 19.0 > 20.0) AND "
-                        + "(3.0 >= 4.0 OR 11.0 = 12.0 OR NOT 13.0 <> 14.0) AND "
-                        + "(3.0 >= 4.0 OR 11.0 = 12.0 OR NOT 15.0 = 16.0 OR NOT 17.0 = 18.0) AND "
-                        + "(3.0 >= 4.0 OR 11.0 = 12.0 OR NOT 15.0 = 16.0 OR NOT 19.0 > 20.0) AND "
-                        + "(5.0 <= 6.0 OR 7.0 < 8.0 OR NOT 13.0 <> 14.0) AND "
-                        + "(5.0 <= 6.0 OR 7.0 < 8.0 OR NOT 15.0 = 16.0 OR NOT 17.0 = 18.0) AND "
-                        + "(5.0 <= 6.0 OR 7.0 < 8.0 OR NOT 15.0 = 16.0 OR NOT 19.0 > 20.0) AND "
-                        + "(5.0 <= 6.0 OR 9.0 > 10.0 OR NOT 13.0 <> 14.0) AND "
-                        + "(5.0 <= 6.0 OR 9.0 > 10.0 OR NOT 15.0 = 16.0 OR NOT 17.0 = 18.0) AND "
-                        + "(5.0 <= 6.0 OR 9.0 > 10.0 OR NOT 15.0 = 16.0 OR NOT 19.0 > 20.0) AND "
-                        + "(5.0 <= 6.0 OR 11.0 = 12.0 OR NOT 13.0 <> 14.0) AND "
-                        + "(5.0 <= 6.0 OR 11.0 = 12.0 OR NOT 15.0 = 16.0 OR NOT 17.0 = 18.0) AND "
-                        + "(5.0 <= 6.0 OR 11.0 = 12.0 OR NOT 15.0 = 16.0 OR NOT 19.0 > 20.0)");
+            "(3.0 >= 4.0 OR 7.0 < 8.0 OR NOT 13.0 <> 14.0) AND "
+                + "(3.0 >= 4.0 OR 7.0 < 8.0 OR NOT 15.0 = 16.0 OR NOT 17.0 = 18.0) AND "
+                + "(3.0 >= 4.0 OR 7.0 < 8.0 OR NOT 15.0 = 16.0 OR NOT 19.0 > 20.0) AND "
+                + "(3.0 >= 4.0 OR 9.0 > 10.0 OR NOT 13.0 <> 14.0) AND "
+                + "(3.0 >= 4.0 OR 9.0 > 10.0 OR NOT 15.0 = 16.0 OR NOT 17.0 = 18.0) AND "
+                + "(3.0 >= 4.0 OR 9.0 > 10.0 OR NOT 15.0 = 16.0 OR NOT 19.0 > 20.0) AND "
+                + "(3.0 >= 4.0 OR 11.0 = 12.0 OR NOT 13.0 <> 14.0) AND "
+                + "(3.0 >= 4.0 OR 11.0 = 12.0 OR NOT 15.0 = 16.0 OR NOT 17.0 = 18.0) AND "
+                + "(3.0 >= 4.0 OR 11.0 = 12.0 OR NOT 15.0 = 16.0 OR NOT 19.0 > 20.0) AND "
+                + "(5.0 <= 6.0 OR 7.0 < 8.0 OR NOT 13.0 <> 14.0) AND "
+                + "(5.0 <= 6.0 OR 7.0 < 8.0 OR NOT 15.0 = 16.0 OR NOT 17.0 = 18.0) AND "
+                + "(5.0 <= 6.0 OR 7.0 < 8.0 OR NOT 15.0 = 16.0 OR NOT 19.0 > 20.0) AND "
+                + "(5.0 <= 6.0 OR 9.0 > 10.0 OR NOT 13.0 <> 14.0) AND "
+                + "(5.0 <= 6.0 OR 9.0 > 10.0 OR NOT 15.0 = 16.0 OR NOT 17.0 = 18.0) AND "
+                + "(5.0 <= 6.0 OR 9.0 > 10.0 OR NOT 15.0 = 16.0 OR NOT 19.0 > 20.0) AND "
+                + "(5.0 <= 6.0 OR 11.0 = 12.0 OR NOT 13.0 <> 14.0) AND "
+                + "(5.0 <= 6.0 OR 11.0 = 12.0 OR NOT 15.0 = 16.0 OR NOT 17.0 = 18.0) AND "
+                + "(5.0 <= 6.0 OR 11.0 = 12.0 OR NOT 15.0 = 16.0 OR NOT 19.0 > 20.0)");
         Expression result = CNFConverter.convertToCNF(expr);
         assertEquals(expected.toString(), result.toString());
     }
-    
+
     /**
      * This is the case when we test a very simple tree structure that 
      * has neither AND operator or OR operator.
@@ -412,7 +412,7 @@ public class CNFTest {
         Expression result = CNFConverter.convertToCNF(expr);
         assertEquals(expected.toString(), result.toString());
     }
-    
+
     /**
      * This is the case when we test the tree that only contains AND
      * operator without having an OR operator.
@@ -450,13 +450,13 @@ public class CNFTest {
     @Test
     public void test5() throws Exception {
         Expression expr = CCJSqlParserUtil.parseCondExpression(
-                "NOT ((NOT (S.A > 3.5 AND S.B < 4)) OR "
+            "NOT ((NOT (S.A > 3.5 AND S.B < 4)) OR "
                 + "(S.C LIKE '\"%%\"' OR S.D = {t '12:04:34'}))");
         Expression expected = CCJSqlParserUtil.parseCondExpression(
-                "S.A > 3.5 AND S.B < 4 AND S.C NOT LIKE '\"%%\"' "
-                        + "AND NOT S.D = {t '12:04:34'}");
+            "S.A > 3.5 AND S.B < 4 AND S.C NOT LIKE '\"%%\"' "
+                + "AND NOT S.D = {t '12:04:34'}");
         Expression result = CNFConverter.convertToCNF(expr);
         assertEquals(expected.toString(), result.toString());
     }
-    
+
 }

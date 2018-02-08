@@ -21,26 +21,13 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.Data;
+
+@Data
 public class WindowRange {
 
     private WindowOffset start;
     private WindowOffset end;
-
-    public WindowOffset getEnd() {
-        return end;
-    }
-
-    public void setEnd(WindowOffset end) {
-        this.end = end;
-    }
-
-    public WindowOffset getStart() {
-        return start;
-    }
-
-    public void setStart(WindowOffset start) {
-        this.start = start;
-    }
 
     @Override
     public String toString() {

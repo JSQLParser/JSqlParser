@@ -21,22 +21,26 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.sql.Timestamp;
+
+import lombok.Data;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * A Timestamp in the form {ts 'yyyy-mm-dd hh:mm:ss.f . . .'}
  */
+@Data
 public class TimestampValue extends ASTNodeAccessImpl implements Expression {
 
+    private static final char QUOTATION = '\'';
+
     private Timestamp value;
-    private char quotation = '\'';
+
     public TimestampValue(String value) {
         if (value == null) {
             throw new java.lang.IllegalArgumentException("null string");
         } else {
-            if (value.charAt(0) == quotation) {
+            if (value.charAt(0) == QUOTATION) {
                 this.value = Timestamp.valueOf(value.substring(1, value.length() - 1));
             } else {
                 this.value = Timestamp.valueOf(value.substring(0, value.length()));
@@ -47,14 +51,6 @@ public class TimestampValue extends ASTNodeAccessImpl implements Expression {
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
-    }
-
-    public Timestamp getValue() {
-        return value;
-    }
-
-    public void setValue(Timestamp d) {
-        value = d;
     }
 
     @Override

@@ -21,9 +21,10 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.BinaryExpression;
-import static net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax.ORACLE_PRIOR_START;
 
+@Data
 public abstract class OldOracleJoinBinaryExpression extends BinaryExpression implements SupportsOldOracleJoinSyntax {
 
     private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
@@ -41,27 +42,12 @@ public abstract class OldOracleJoinBinaryExpression extends BinaryExpression imp
     @Override
     public String toString() {
         return (isNot() ? "NOT " : "")
-                + (oraclePriorPosition == ORACLE_PRIOR_START ? "PRIOR " : "")
-                + getLeftExpression()
-                + (oldOracleJoinSyntax == ORACLE_JOIN_RIGHT ? "(+)" : "") + " "
-                + getStringExpression() + " "
-                + (oraclePriorPosition == ORACLE_PRIOR_END ? "PRIOR " : "")
-                + getRightExpression()
-                + (oldOracleJoinSyntax == ORACLE_JOIN_LEFT ? "(+)" : "");
-    }
-
-    @Override
-    public int getOldOracleJoinSyntax() {
-        return oldOracleJoinSyntax;
-    }
-
-    @Override
-    public int getOraclePriorPosition() {
-        return oraclePriorPosition;
-    }
-
-    @Override
-    public void setOraclePriorPosition(int oraclePriorPosition) {
-        this.oraclePriorPosition = oraclePriorPosition;
+            + (oraclePriorPosition == ORACLE_PRIOR_START ? "PRIOR " : "")
+            + getLeftExpression()
+            + (oldOracleJoinSyntax == ORACLE_JOIN_RIGHT ? "(+)" : "") + " "
+            + getStringExpression() + " "
+            + (oraclePriorPosition == ORACLE_PRIOR_END ? "PRIOR " : "")
+            + getRightExpression()
+            + (oldOracleJoinSyntax == ORACLE_JOIN_LEFT ? "(+)" : "");
     }
 }

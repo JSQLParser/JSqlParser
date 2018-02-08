@@ -18,13 +18,15 @@
  */
 package net.sf.jsqlparser.statement;
 
-import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import net.sf.jsqlparser.JSQLParserException;
 
 /**
  *
@@ -32,24 +34,17 @@ import org.junit.Test;
  */
 public class SetStatementTest {
 
-    public SetStatementTest() {
-    }
-
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     @Test
     public void testSimpleSet() throws JSQLParserException {

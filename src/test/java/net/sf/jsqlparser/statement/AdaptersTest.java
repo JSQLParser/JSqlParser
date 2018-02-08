@@ -1,5 +1,11 @@
 package net.sf.jsqlparser.statement;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.Stack;
+
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
@@ -10,11 +16,6 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
-import org.junit.Test;
-
-import java.util.Stack;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author aalmiray
@@ -31,12 +32,15 @@ public class AdaptersTest {
 
         final Stack<Pair<String, String>> params = new Stack<Pair<String, String>>();
         stmnt.accept(new StatementVisitorAdapter() {
+
             @Override
             public void visit(Select select) {
                 select.getSelectBody().accept(new SelectVisitorAdapter() {
+
                     @Override
                     public void visit(PlainSelect plainSelect) {
                         plainSelect.getWhere().accept(new ExpressionVisitorAdapter() {
+
                             @Override
                             protected void visitBinaryExpression(BinaryExpression expr) {
                                 if (!(expr instanceof AndExpression)) {
@@ -47,15 +51,12 @@ public class AdaptersTest {
 
                             @Override
                             public void visit(Column column) {
-                                params.push(new Pair<String, String>(column.getColumnName(), params.
-                                        pop().getRight()));
+                                params.push(new Pair<String, String>(column.getColumnName(), params.pop().getRight()));
                             }
 
                             @Override
                             public void visit(JdbcNamedParameter parameter) {
-                                params.
-                                        push(new Pair<String, String>(params.pop().getLeft(), parameter.
-                                                getName()));
+                                params.push(new Pair<String, String>(params.pop().getLeft(), parameter.getName()));
                             }
                         });
                     }

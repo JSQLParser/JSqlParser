@@ -23,11 +23,14 @@ package net.sf.jsqlparser.expression;
 
 import java.util.Arrays;
 import java.util.List;
+
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * A string as in 'example_string'
  */
+@Data
 public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
     private String value = "";
@@ -59,14 +62,6 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         value = escapedValue;
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public Character getPrefix() {
-        return prefix;
-    }
-
     public String getNotExcapedValue() {
         StringBuilder buffer = new StringBuilder(value);
         int index = 0;
@@ -77,14 +72,6 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
             deletesNum++;
         }
         return buffer.toString();
-    }
-
-    public void setValue(String string) {
-        value = string;
-    }
-
-    public void setPrefix(Character prefix) {
-        this.prefix = prefix;
     }
 
     @Override

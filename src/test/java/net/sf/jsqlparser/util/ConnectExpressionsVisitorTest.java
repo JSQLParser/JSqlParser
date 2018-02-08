@@ -1,18 +1,21 @@
 package net.sf.jsqlparser.util;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.StringReader;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.select.Select;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -20,24 +23,17 @@ import static org.junit.Assert.*;
  */
 public class ConnectExpressionsVisitorTest {
 
-    public ConnectExpressionsVisitorTest() {
-    }
-
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
@@ -46,6 +42,7 @@ public class ConnectExpressionsVisitorTest {
         String sql = "select a,b,c from test";
         Select select = (Select) parserManager.parse(new StringReader(sql));
         ConnectExpressionsVisitor instance = new ConnectExpressionsVisitor() {
+
             @Override
             protected BinaryExpression createBinaryExpression() {
                 return new Concat();
@@ -61,6 +58,7 @@ public class ConnectExpressionsVisitorTest {
         String sql = "select a,b,c from test";
         Select select = (Select) parserManager.parse(new StringReader(sql));
         ConnectExpressionsVisitor instance = new ConnectExpressionsVisitor("testexpr") {
+
             @Override
             protected BinaryExpression createBinaryExpression() {
                 return new Addition();

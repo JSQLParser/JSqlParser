@@ -21,47 +21,34 @@
  */
 package net.sf.jsqlparser.statement.create.index;
 
-import net.sf.jsqlparser.schema.*;
-import net.sf.jsqlparser.statement.*;
-import net.sf.jsqlparser.statement.create.table.*;
+import java.util.Iterator;
 
-import java.util.*;
+import lombok.Data;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.create.table.Index;
 
 /**
  * A "CREATE INDEX" statement
  *
  * @author Raymond Augé
  */
+@Data
 public class CreateIndex implements Statement {
 
+    /**
+     * The table on which the index is to be created
+     */
     private Table table;
+    /**
+     * The index to be created
+     */
     private Index index;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
-    }
-
-    /**
-     * The index to be created
-     */
-    public Index getIndex() {
-        return index;
-    }
-
-    public void setIndex(Index index) {
-        this.index = index;
-    }
-
-    /**
-     * The table on which the index is to be created
-     */
-    public Table getTable() {
-        return table;
-    }
-
-    public void setTable(Table table) {
-        this.table = table;
     }
 
     @Override
@@ -83,8 +70,8 @@ public class CreateIndex implements Statement {
         if (index.getColumnsNames() != null) {
             buffer.append(" (");
 
-            for (Iterator iter = index.getColumnsNames().iterator(); iter.hasNext();) {
-                String columnName = (String) iter.next();
+            for (Iterator<String> iter = index.getColumnsNames().iterator(); iter.hasNext();) {
+                String columnName = iter.next();
 
                 buffer.append(columnName);
 
@@ -98,5 +85,4 @@ public class CreateIndex implements Statement {
 
         return buffer.toString();
     }
-
 }

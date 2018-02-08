@@ -21,6 +21,9 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.Data;
+
+@Data
 public class WindowElement {
 
     public enum Type {
@@ -32,30 +35,6 @@ public class WindowElement {
     private Type type;
     private WindowOffset offset;
     private WindowRange range;
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public WindowOffset getOffset() {
-        return offset;
-    }
-
-    public void setOffset(WindowOffset offset) {
-        this.offset = offset;
-    }
-
-    public WindowRange getRange() {
-        return range;
-    }
-
-    public void setRange(WindowRange range) {
-        this.range = range;
-    }
 
     @Override
     public String toString() {

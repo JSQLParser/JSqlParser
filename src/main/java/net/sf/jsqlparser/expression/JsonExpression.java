@@ -24,6 +24,7 @@ package net.sf.jsqlparser.expression;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 
@@ -31,6 +32,7 @@ import net.sf.jsqlparser.schema.Column;
  *
  * @author toben
  */
+@Data
 public class JsonExpression extends ASTNodeAccessImpl implements Expression {
 
     private Column column;
@@ -43,29 +45,21 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
         expressionVisitor.visit(this);
     }
 
-    public Column getColumn() {
-        return column;
-    }
-
-    public void setColumn(Column column) {
-        this.column = column;
-    }
-
-//    public List<String> getIdents() {
-//        return idents;
-//    }
-//
-//    public void setIdents(List<String> idents) {
-//        this.idents = idents;
-//        operators = new ArrayList<String>();
-//        for (String ident : idents) {
-//            operators.add("->");
-//        }
-//    }
-//    
-//    public void addIdent(String ident) {
-//        addIdent(ident, "->");
-//    }
+    //    public List<String> getIdents() {
+    //        return idents;
+    //    }
+    //
+    //    public void setIdents(List<String> idents) {
+    //        this.idents = idents;
+    //        operators = new ArrayList<String>();
+    //        for (String ident : idents) {
+    //            operators.add("->");
+    //        }
+    //    }
+    //    
+    //    public void addIdent(String ident) {
+    //        addIdent(ident, "->");
+    //    }
     public void addIdent(String ident, String operator) {
         idents.add(ident);
         operators.add(operator);

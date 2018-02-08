@@ -22,6 +22,8 @@
 package net.sf.jsqlparser.statement.create.view;
 
 import java.util.List;
+
+import lombok.Data;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -31,47 +33,22 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 /**
  * A "CREATE VIEW" statement
  */
+@Data
 public class AlterView implements Statement {
 
+    /**
+     * In the syntax tree, a view looks and acts just like a Table.
+     */
     private Table view;
+    /**
+     * @return the SelectBody
+     */
     private SelectBody selectBody;
     private List<String> columnNames = null;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
-    }
-
-    /**
-     * In the syntax tree, a view looks and acts just like a Table.
-     *
-     * @return The name of the view to be created.
-     */
-    public Table getView() {
-        return view;
-    }
-
-    public void setView(Table view) {
-        this.view = view;
-    }
-
-    /**
-     * @return the SelectBody
-     */
-    public SelectBody getSelectBody() {
-        return selectBody;
-    }
-
-    public void setSelectBody(SelectBody selectBody) {
-        this.selectBody = selectBody;
-    }
-
-    public List<String> getColumnNames() {
-        return columnNames;
-    }
-
-    public void setColumnNames(List<String> columnNames) {
-        this.columnNames = columnNames;
     }
 
     @Override

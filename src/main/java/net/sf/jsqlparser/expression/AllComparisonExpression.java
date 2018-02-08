@@ -21,20 +21,16 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
+@Data
+@RequiredArgsConstructor
 public class AllComparisonExpression extends ASTNodeAccessImpl implements Expression {
 
     private final SubSelect subSelect;
-
-    public AllComparisonExpression(SubSelect subSelect) {
-        this.subSelect = subSelect;
-    }
-
-    public SubSelect getSubSelect() {
-        return subSelect;
-    }
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {

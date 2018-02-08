@@ -21,35 +21,26 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Every number with a point or a exponential format is a DoubleValue
  */
+@Data
+@AllArgsConstructor
 public class HexValue extends ASTNodeAccessImpl implements Expression {
 
-    private String stringValue;
-
-    public HexValue(final String value) {
-        String val = value;
-        this.stringValue = val;
-    }
+    private String value;
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
     }
 
-    public String getValue() {
-        return stringValue;
-    }
-
-    public void setValue(String d) {
-        stringValue = d;
-    }
-
     @Override
     public String toString() {
-        return stringValue;
+        return value;
     }
 }

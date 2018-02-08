@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.merge;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
@@ -33,6 +34,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
  *
  * @author tw
  */
+@Data
 public class Merge implements Statement {
 
     private Table table;
@@ -44,26 +46,6 @@ public class Merge implements Statement {
     private MergeUpdate mergeUpdate;
     private boolean insertFirst = false;
 
-    public Table getTable() {
-        return table;
-    }
-
-    public void setTable(Table name) {
-        table = name;
-    }
-
-    public Table getUsingTable() {
-        return usingTable;
-    }
-
-    public void setUsingTable(Table usingTable) {
-        this.usingTable = usingTable;
-    }
-
-    public SubSelect getUsingSelect() {
-        return usingSelect;
-    }
-
     public void setUsingSelect(SubSelect usingSelect) {
         this.usingSelect = usingSelect;
         if (this.usingSelect != null) {
@@ -71,49 +53,9 @@ public class Merge implements Statement {
         }
     }
 
-    public Alias getUsingAlias() {
-        return usingAlias;
-    }
-
-    public void setUsingAlias(Alias usingAlias) {
-        this.usingAlias = usingAlias;
-    }
-
-    public Expression getOnCondition() {
-        return onCondition;
-    }
-
-    public void setOnCondition(Expression onCondition) {
-        this.onCondition = onCondition;
-    }
-
-    public MergeInsert getMergeInsert() {
-        return mergeInsert;
-    }
-
-    public void setMergeInsert(MergeInsert insert) {
-        this.mergeInsert = insert;
-    }
-
-    public MergeUpdate getMergeUpdate() {
-        return mergeUpdate;
-    }
-
-    public void setMergeUpdate(MergeUpdate mergeUpdate) {
-        this.mergeUpdate = mergeUpdate;
-    }
-
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
-    }
-
-    public boolean isInsertFirst() {
-        return insertFirst;
-    }
-
-    public void setInsertFirst(boolean insertFirst) {
-        this.insertFirst = insertFirst;
     }
 
     @Override

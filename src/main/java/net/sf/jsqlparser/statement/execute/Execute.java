@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.execute;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -30,35 +31,12 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  *
  * @author toben
  */
+@Data
 public class Execute implements Statement {
 
     private EXEC_TYPE execType = EXEC_TYPE.EXECUTE;
     private String name;
     private ExpressionList exprList;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public ExpressionList getExprList() {
-        return exprList;
-    }
-
-    public void setExprList(ExpressionList exprList) {
-        this.exprList = exprList;
-    }
-
-    public EXEC_TYPE getExecType() {
-        return execType;
-    }
-
-    public void setExecType(EXEC_TYPE execType) {
-        this.execType = execType;
-    }
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -67,14 +45,12 @@ public class Execute implements Statement {
 
     @Override
     public String toString() {
-        return execType.name() + " " + name + " " + PlainSelect.
-                getStringList(exprList.getExpressions(), true, false);
+        return execType.name() + " " + name + " " + PlainSelect.getStringList(exprList.getExpressions(), true, false);
     }
-    
+
     public static enum EXEC_TYPE {
         EXECUTE,
         EXEC,
         CALL
     }
-
 }

@@ -1,7 +1,17 @@
 package net.sf.jsqlparser.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.List;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
@@ -15,12 +25,6 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -28,24 +32,17 @@ import static org.junit.Assert.*;
  */
 public class SelectUtilsTest {
 
-    public SelectUtilsTest() {
-    }
-
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     /**
      * Test of addColumn method, of class SelectUtils.
@@ -77,8 +74,7 @@ public class SelectUtilsTest {
 
     @Test
     public void testBuildSelectFromTableAndExpressions() {
-        Select select = SelectUtils.
-                buildSelectFromTableAndExpressions(new Table("mytable"), new Column("a"), new Column("b"));
+        Select select = SelectUtils.buildSelectFromTableAndExpressions(new Table("mytable"), new Column("a"), new Column("b"));
         assertEquals("SELECT a, b FROM mytable", select.toString());
     }
 
@@ -90,12 +86,10 @@ public class SelectUtilsTest {
 
     @Test
     public void testBuildSelectFromTableAndParsedExpression() throws JSQLParserException {
-        Select select = SelectUtils.
-                buildSelectFromTableAndExpressions(new Table("mytable"), "a+b", "test");
+        Select select = SelectUtils.buildSelectFromTableAndExpressions(new Table("mytable"), "a+b", "test");
         assertEquals("SELECT a + b, test FROM mytable", select.toString());
 
-        assertTrue(((SelectExpressionItem) ((PlainSelect) select.getSelectBody()).getSelectItems().
-                get(0)).getExpression() instanceof Addition);
+        assertTrue(((SelectExpressionItem) ((PlainSelect) select.getSelectBody()).getSelectItems().get(0)).getExpression() instanceof Addition);
     }
 
     @Test
@@ -112,11 +106,9 @@ public class SelectUtilsTest {
         Table table2 = new Table("mytable2");
         table2.setAlias(new Alias("tab2"));
 
-        List<? extends Expression> colunas = Arrays.
-                asList(new Column(table1, "col1"), new Column(table1, "col2"), new Column(table1, "col3"), new Column(table2, "b1"), new Column(table2, "b2"));
+        List<? extends Expression> colunas = Arrays.asList(new Column(table1, "col1"), new Column(table1, "col2"), new Column(table1, "col3"), new Column(table2, "b1"), new Column(table2, "b2"));
 
-        Select select = SelectUtils.buildSelectFromTableAndExpressions(table1, colunas.
-                toArray(new Expression[colunas.size()]));
+        Select select = SelectUtils.buildSelectFromTableAndExpressions(table1, colunas.toArray(new Expression[colunas.size()]));
 
         final EqualsTo equalsTo = new EqualsTo();
         equalsTo.setLeftExpression(new Column(table1, "col1"));
@@ -125,7 +117,7 @@ public class SelectUtilsTest {
         addJoin.setLeft(true);
 
         assertEquals("SELECT tab1.col1, tab1.col2, tab1.col3, tab2.b1, tab2.b2 FROM mytable1 AS tab1 LEFT JOIN mytable2 AS tab2 ON tab1.col1 = tab2.b1",
-                select.toString());
+            select.toString());
     }
 
     public void testTableAliasIssue311_2() {

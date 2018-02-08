@@ -21,32 +21,18 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  *
  * @author wumpz
  */
+@Data
 public class IntervalExpression extends ASTNodeAccessImpl implements Expression {
 
     private String parameter = null;
     private String intervalType = null;
-
-    public String getParameter() {
-        return parameter;
-    }
-
-    public void setParameter(String parameter) {
-        this.parameter = parameter;
-    }
-
-    public String getIntervalType() {
-        return intervalType;
-    }
-
-    public void setIntervalType(String intervalType) {
-        this.intervalType = intervalType;
-    }
 
     @Override
     public String toString() {

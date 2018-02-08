@@ -21,13 +21,15 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.sql.Time;
+
+import lombok.Data;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * A Time in the form {t 'hh:mm:ss'}
  */
+@Data
 public class TimeValue extends ASTNodeAccessImpl implements Expression {
 
     private Time value;
@@ -39,14 +41,6 @@ public class TimeValue extends ASTNodeAccessImpl implements Expression {
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
-    }
-
-    public Time getValue() {
-        return value;
-    }
-
-    public void setValue(Time d) {
-        value = d;
     }
 
     @Override

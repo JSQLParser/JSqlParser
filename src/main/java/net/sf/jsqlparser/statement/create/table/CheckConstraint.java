@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 
@@ -30,26 +31,11 @@ import net.sf.jsqlparser.schema.Table;
  *
  * thor mw
  */
+@Data
 public class CheckConstraint extends NamedConstraint {
 
     private Table table;
     private Expression expression;
-
-    public Table getTable() {
-        return table;
-    }
-
-    public void setTable(Table table) {
-        this.table = table;
-    }
-
-    public Expression getExpression() {
-        return expression;
-    }
-
-    public void setExpression(Expression expression) {
-        this.expression = expression;
-    }
 
     @Override
     public String toString() {

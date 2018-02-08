@@ -21,14 +21,21 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Every number with a point or a exponential format is a DoubleValue
  */
+@Data
 public class DoubleValue extends ASTNodeAccessImpl implements Expression {
 
     private double value;
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     private String stringValue;
 
     public DoubleValue(final String value) {
@@ -43,14 +50,6 @@ public class DoubleValue extends ASTNodeAccessImpl implements Expression {
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
-    }
-
-    public double getValue() {
-        return value;
-    }
-
-    public void setValue(double d) {
-        value = d;
     }
 
     @Override

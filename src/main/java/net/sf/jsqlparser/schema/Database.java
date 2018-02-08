@@ -21,34 +21,20 @@
  */
 package net.sf.jsqlparser.schema;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public final class Database implements MultiPartName {
 
     private Server server;
     private String databaseName;
 
     public Database(String databaseName) {
-        setDatabaseName(databaseName);
-    }
-
-    public Database(Server server, String databaseName) {
-        setServer(server);
-        setDatabaseName(databaseName);
-    }
-
-    public Server getServer() {
-        return server;
-    }
-
-    public void setServer(Server server) {
-        this.server = server;
-    }
-
-    public String getDatabaseName() {
-        return databaseName;
-    }
-
-    public void setDatabaseName(String databaseName) {
-        this.databaseName = databaseName;
+        this(null, databaseName);
     }
 
     @Override

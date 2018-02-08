@@ -24,9 +24,11 @@ package net.sf.jsqlparser.statement.select;
 import java.util.Iterator;
 import java.util.List;
 
+import lombok.Data;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
+@Data
 public class Select implements Statement {
 
     private SelectBody selectBody;
@@ -35,14 +37,6 @@ public class Select implements Statement {
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
-    }
-
-    public SelectBody getSelectBody() {
-        return selectBody;
-    }
-
-    public void setSelectBody(SelectBody body) {
-        selectBody = body;
     }
 
     @Override
@@ -61,13 +55,5 @@ public class Select implements Statement {
         }
         retval.append(selectBody);
         return retval.toString();
-    }
-
-    public List<WithItem> getWithItemsList() {
-        return withItemsList;
-    }
-
-    public void setWithItemsList(List<WithItem> withItemsList) {
-        this.withItemsList = withItemsList;
     }
 }

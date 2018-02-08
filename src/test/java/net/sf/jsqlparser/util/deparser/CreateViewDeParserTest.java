@@ -18,6 +18,14 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserDefaultVisitor;
 import net.sf.jsqlparser.parser.CCJSqlParserTreeConstants;
@@ -26,12 +34,6 @@ import net.sf.jsqlparser.parser.SimpleNode;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.view.CreateView;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  *
@@ -39,24 +41,17 @@ import org.junit.Test;
  */
 public class CreateViewDeParserTest {
 
-    public CreateViewDeParserTest() {
-    }
-
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     /**
      * Test of deParse method, of class CreateViewDeParser.
@@ -90,13 +85,11 @@ public class CreateViewDeParserTest {
         selectDeParser.setExpressionVisitor(expressionDeParser);
 
         CreateViewDeParser instance = new CreateViewDeParser(b, selectDeParser);
-        CreateView vc = (CreateView) CCJSqlParserUtil.
-                parse("CREATE VIEW test AS SELECT a, b FROM mytable");
+        CreateView vc = (CreateView) CCJSqlParserUtil.parse("CREATE VIEW test AS SELECT a, b FROM mytable");
         instance.deParse(vc);
 
         assertEquals("CREATE VIEW test AS SELECT a, b FROM mytable", vc.toString());
-        assertEquals("CREATE VIEW test AS SELECT \"a\", \"b\" FROM mytable", instance.getBuffer().
-                toString());
+        assertEquals("CREATE VIEW test AS SELECT \"a\", \"b\" FROM mytable", instance.getBuffer().toString());
     }
 
     @Test
@@ -108,6 +101,7 @@ public class CreateViewDeParserTest {
         assertEquals(CCJSqlParserTreeConstants.JJTSTATEMENT, node.getId());
 
         node.jjtAccept(new CCJSqlParserDefaultVisitor() {
+
             int idxDelta = 0;
 
             @Override

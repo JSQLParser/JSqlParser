@@ -24,46 +24,16 @@ package net.sf.jsqlparser.statement.create.table;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Data;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
+@Data
 public class ColDataType {
 
     private String dataType;
     private List<String> argumentsStringList;
     private String characterSet;
     private List<Integer> arrayData = new ArrayList<Integer>();
-
-    public List<String> getArgumentsStringList() {
-        return argumentsStringList;
-    }
-
-    public String getDataType() {
-        return dataType;
-    }
-
-    public void setArgumentsStringList(List<String> list) {
-        argumentsStringList = list;
-    }
-
-    public void setDataType(String string) {
-        dataType = string;
-    }
-
-    public String getCharacterSet() {
-        return characterSet;
-    }
-
-    public void setCharacterSet(String characterSet) {
-        this.characterSet = characterSet;
-    }
-
-    public List<Integer> getArrayData() {
-        return arrayData;
-    }
-
-    public void setArrayData(List<Integer> arrayData) {
-        this.arrayData = arrayData;
-    }
 
     @Override
     public String toString() {
@@ -76,9 +46,8 @@ public class ColDataType {
             arraySpec.append("]");
         }
         return dataType
-                + (argumentsStringList != null ? " " + PlainSelect.
-                                getStringList(argumentsStringList, true, true) : "")
-                + arraySpec.toString()
-                + (characterSet != null ? " CHARACTER SET " + characterSet : "");
+            + (argumentsStringList != null ? " " + PlainSelect.getStringList(argumentsStringList, true, true) : "")
+            + arraySpec.toString()
+            + (characterSet != null ? " CHARACTER SET " + characterSet : "");
     }
 }

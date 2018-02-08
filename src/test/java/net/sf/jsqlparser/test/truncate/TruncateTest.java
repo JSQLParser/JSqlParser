@@ -1,11 +1,13 @@
 package net.sf.jsqlparser.test.truncate;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.StringReader;
+
+import org.junit.Test;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.truncate.Truncate;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 
 public class TruncateTest {
 

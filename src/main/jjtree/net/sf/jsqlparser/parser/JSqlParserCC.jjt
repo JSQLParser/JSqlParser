@@ -1489,7 +1489,7 @@ FromItem FromItem():
                 LOOKAHEAD(2)
                 indexHint=MySQLIndexHint() {
                     if (fromItem instanceof Table)
-						((Table) fromItem).setHint(indexHint);
+						((Table) fromItem).setMySQLIndexHint(indexHint);
                 }
             ]
         )
@@ -1964,7 +1964,7 @@ Expression AndExpression() :
         left=Condition()
         |
         [ <K_NOT> { not = true; } ]
-        "(" left=OrExpression() ")" {left = new Parenthesis(left); if (not) { ((Parenthesis)left).setNot(); not = false; } }
+        "(" left=OrExpression() ")" {left = new Parenthesis(left); if (not) { ((Parenthesis)left).setNot(true); not = false; } }
     )
     { result = left; }
 
@@ -1975,7 +1975,7 @@ Expression AndExpression() :
             right=Condition()
             |
             [ <K_NOT> { not = true; } ]
-            "(" right=OrExpression() ")" {right = new Parenthesis(right); if (not) { ((Parenthesis)right).setNot(); not = false; } }
+            "(" right=OrExpression() ")" {right = new Parenthesis(right); if (not) { ((Parenthesis)right).setNot(true); not = false; } }
         )
         {
             result = new AndExpression(left, right);
@@ -2032,7 +2032,7 @@ Expression RegularCondition() #RegularCondition:
     | "@@" { result = new Matches(); }
     | "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
     | <K_REGEXP> [ <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
-    | <K_RLIKE> [ <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE).useRLike(); }
+    | <K_RLIKE> [ <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE).setUseRLike(true); }
     | "~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
     | "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
     | "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
@@ -2057,7 +2057,7 @@ Expression RegularCondition() #RegularCondition:
         regCond.setLeftExpression(leftExpression);
         regCond.setRightExpression(rightExpression);
         if (not)
-            regCond.setNot();
+            regCond.setNot(true);
 
         if (oracleJoin>0)
             ((SupportsOldOracleJoinSyntax)result).setOldOracleJoinSyntax(oracleJoin);
@@ -3120,8 +3120,8 @@ CreateTable CreateTable():
         )
         |
         (
-        <K_AS> ( LOOKAHEAD("(" Select() ")") "(" select = Select() { createTable.setSelect(select, true); } ")"
-                 | select = Select() { createTable.setSelect(select, false); } )
+        <K_AS> ( LOOKAHEAD("(" Select() ")") "(" select = Select() { createTable.setSelect(select); createTable.setParenthesis(true); } ")"
+                 | select = Select() { createTable.setSelect(select); createTable.setParenthesis(false); } )
         )
     ]
 

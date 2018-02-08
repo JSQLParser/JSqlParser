@@ -21,10 +21,12 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.schema.Column;
-
 import java.util.List;
 
+import lombok.Data;
+import net.sf.jsqlparser.schema.Column;
+
+@Data
 public class PivotXml extends Pivot {
 
     private SelectBody inSelect;
@@ -35,32 +37,13 @@ public class PivotXml extends Pivot {
         pivotVisitor.visit(this);
     }
 
-    public SelectBody getInSelect() {
-        return inSelect;
-    }
-
-    public void setInSelect(SelectBody inSelect) {
-        this.inSelect = inSelect;
-    }
-
-    public boolean isInAny() {
-        return inAny;
-    }
-
-    public void setInAny(boolean inAny) {
-        this.inAny = inAny;
-    }
-
     @Override
     public String toString() {
         List<Column> forColumns = getForColumns();
-        String in = inAny ? "ANY" : inSelect == null ? PlainSelect.getStringList(getInItems()) : inSelect.
-                toString();
+        String in = inAny ? "ANY" : inSelect == null ? PlainSelect.getStringList(getInItems()) : inSelect.toString();
         return "PIVOT XML ("
-                + PlainSelect.getStringList(getFunctionItems())
-                + " FOR " + PlainSelect.
-                        getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)
-                + " IN (" + in + "))";
+            + PlainSelect.getStringList(getFunctionItems())
+            + " FOR " + PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)
+            + " IN (" + in + "))";
     }
-
 }

@@ -21,38 +21,22 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 /**
  *
  * @author toben
  */
+@Data
+@AllArgsConstructor
 public class Alias {
 
     private String name;
     private boolean useAs = true;
 
     public Alias(String name) {
-        this.name = name;
-    }
-
-    public Alias(String name, boolean useAs) {
-        this.name = name;
-        this.useAs = useAs;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isUseAs() {
-        return useAs;
-    }
-
-    public void setUseAs(boolean useAs) {
-        this.useAs = useAs;
+        this(name, true);
     }
 
     @Override

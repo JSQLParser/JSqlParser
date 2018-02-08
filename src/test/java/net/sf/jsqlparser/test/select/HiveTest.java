@@ -1,15 +1,17 @@
 package net.sf.jsqlparser.test.select;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-
-import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
 /**
  * Created by nhanitvn on 5/19/16.
@@ -22,11 +24,11 @@ public class HiveTest {
         Statement statement;
 
         sql = "SELECT\n"
-                + "    Something\n"
-                + "FROM\n"
-                + "    Sometable\n"
-                + "LEFT SEMI JOIN\n"
-                + "    Othertable\n";
+            + "    Something\n"
+            + "FROM\n"
+            + "    Sometable\n"
+            + "LEFT SEMI JOIN\n"
+            + "    Othertable\n";
 
         statement = CCJSqlParserUtil.parse(sql);
 
@@ -35,8 +37,7 @@ public class HiveTest {
         Select select = (Select) statement;
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         assertEquals(1, plainSelect.getJoins().size());
-        assertEquals("Othertable", ((Table) plainSelect.getJoins().get(0).getRightItem()).
-                getFullyQualifiedName());
+        assertEquals("Othertable", ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
         assertTrue(plainSelect.getJoins().get(0).isLeft());
         assertTrue(plainSelect.getJoins().get(0).isSemi());
         assertStatementCanBeDeparsedAs(select, sql, true);

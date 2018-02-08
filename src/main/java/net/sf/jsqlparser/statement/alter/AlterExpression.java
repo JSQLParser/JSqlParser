@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.Data;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -34,6 +35,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  *
  * @author toben & wrobstory
  */
+@Data
 public class AlterExpression {
 
     private AlterOperation operation;
@@ -57,58 +59,6 @@ public class AlterExpression {
     private List<ConstraintState> constraints;
     private List<String> parameters;
 
-    public AlterOperation getOperation() {
-        return operation;
-    }
-
-    public void setOperation(AlterOperation operation) {
-        this.operation = operation;
-    }
-
-    public boolean isOnDeleteCascade() {
-        return onDeleteCascade;
-    }
-
-    public void setOnDeleteCascade(boolean onDeleteCascade) {
-        this.onDeleteCascade = onDeleteCascade;
-    }
-
-    public boolean isOnDeleteRestrict() {
-        return onDeleteRestrict;
-    }
-
-    public void setOnDeleteRestrict(boolean onDeleteRestrict) {
-        this.onDeleteRestrict = onDeleteRestrict;
-    }
-
-    public boolean isOnDeleteSetNull() {
-        return onDeleteSetNull;
-    }
-
-    public void setOnDeleteSetNull(boolean onDeleteSetNull) {
-        this.onDeleteSetNull = onDeleteSetNull;
-    }
-
-    public List<String> getFkColumns() {
-        return fkColumns;
-    }
-
-    public void setFkColumns(List<String> fkColumns) {
-        this.fkColumns = fkColumns;
-    }
-
-    public String getFkSourceTable() {
-        return fkSourceTable;
-    }
-
-    public void setFkSourceTable(String fkSourceTable) {
-        this.fkSourceTable = fkSourceTable;
-    }
-
-    public List<ColumnDataType> getColDataTypeList() {
-        return colDataTypeList;
-    }
-
     public void addColDataType(String columnName, ColDataType colDataType) {
         addColDataType(new ColumnDataType(columnName, colDataType, null));
     }
@@ -120,79 +70,11 @@ public class AlterExpression {
         colDataTypeList.add(columnDataType);
     }
 
-    public List<String> getFkSourceColumns() {
-        return fkSourceColumns;
-    }
-
-    public void setFkSourceColumns(List<String> fkSourceColumns) {
-        this.fkSourceColumns = fkSourceColumns;
-    }
-
-    public String getColumnName() {
-        return columnName;
-    }
-
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
-    }
-
-    public String getConstraintName() {
-        return this.constraintName;
-    }
-
-    public void setConstraintName(final String constraintName) {
-        this.constraintName = constraintName;
-    }
-
-    public List<String> getPkColumns() {
-        return pkColumns;
-    }
-
-    public void setPkColumns(List<String> pkColumns) {
-        this.pkColumns = pkColumns;
-    }
-
-    public List<String> getUkColumns() {
-        return ukColumns;
-    }
-
-    public void setUkColumns(List<String> ukColumns) {
-        this.ukColumns = ukColumns;
-    }
-
-    public String getUkName() {
-        return ukName;
-    }
-
-    public void setUkName(String ukName) {
-        this.ukName = ukName;
-    }
-
-    public Index getIndex() {
-        return index;
-    }
-
-    public void setIndex(Index index) {
-        this.index = index;
-    }
-
-    public List<ConstraintState> getConstraints() {
-        return constraints;
-    }
-
-    public void setConstraints(List<ConstraintState> constraints) {
-        this.constraints = constraints;
-    }
-
     public void addParameters(String... params) {
         if (parameters == null) {
             parameters = new ArrayList<String>();
         }
         parameters.addAll(Arrays.asList(params));
-    }
-
-    public List<String> getParameters() {
-        return parameters;
     }
 
     @Override
@@ -219,12 +101,10 @@ public class AlterExpression {
         } else if (pkColumns != null) {
             b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
         } else if (ukColumns != null) {
-            b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.
-                    getStringList(ukColumns)).append(")");
+            b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
-            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).
-                    append(") REFERENCES ").append(fkSourceTable).append(" (").append(
-                    PlainSelect.getStringList(fkSourceColumns)).append(")");
+            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).append(") REFERENCES ").append(fkSourceTable).append(" (").append(
+                PlainSelect.getStringList(fkSourceColumns)).append(")");
             if (isOnDeleteCascade()) {
                 b.append(" ON DELETE CASCADE");
             } else if (isOnDeleteRestrict()) {
@@ -238,13 +118,14 @@ public class AlterExpression {
         if (getConstraints() != null && !getConstraints().isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
         }
-        if (parameters!=null && !parameters.isEmpty()) {
+        if (parameters != null && !parameters.isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
         }
 
         return b.toString();
     }
 
+    @Data
     public static class ColumnDataType {
 
         private final String columnName;
@@ -255,14 +136,6 @@ public class AlterExpression {
             this.columnName = columnName;
             this.colDataType = colDataType;
             this.columnSpecs = columnSpecs;
-        }
-
-        public String getColumnName() {
-            return columnName;
-        }
-
-        public ColDataType getColDataType() {
-            return colDataType;
         }
 
         public List<String> getColumnSpecs() {

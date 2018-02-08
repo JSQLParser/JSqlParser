@@ -23,30 +23,21 @@ package net.sf.jsqlparser.expression.operators.relational;
 
 import java.util.List;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * A list of expressions, as in SELECT A FROM TAB WHERE B IN (expr1,expr2,expr3)
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ExpressionList implements ItemsList {
 
     private List<Expression> expressions;
-
-    public ExpressionList() {
-    }
-
-    public ExpressionList(List<Expression> expressions) {
-        this.expressions = expressions;
-    }
-
-    public List<Expression> getExpressions() {
-        return expressions;
-    }
-
-    public void setExpressions(List<Expression> list) {
-        expressions = list;
-    }
 
     @Override
     public void accept(ItemsListVisitor itemsListVisitor) {

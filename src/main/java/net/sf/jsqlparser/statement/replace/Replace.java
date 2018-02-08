@@ -23,6 +23,7 @@ package net.sf.jsqlparser.statement.replace;
 
 import java.util.List;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
@@ -34,11 +35,25 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 /**
  * The replace statement.
  */
+@Data
 public class Replace implements Statement {
 
     private Table table;
+    /**
+     * A list of {@link net.sf.jsqlparser.schema.Column}s either from a "REPLACE mytab (col1, col2)
+     * [...]" or a "REPLACE mytab SET col1=exp1, col2=exp2".
+     */
     private List<Column> columns;
+    /**
+     * An {@link ItemsList} (either from a "REPLACE mytab VALUES (exp1,exp2)" or a "REPLACE mytab
+     * SELECT * FROM mytab2") it is null in case of a "REPLACE mytab SET col1=exp1, col2=exp2"
+     */
     private ItemsList itemsList;
+    /**
+     * A list of {@link net.sf.jsqlparser.expression.Expression}s (from a "REPLACE mytab SET
+     * col1=exp1, col2=exp2"). <br>
+     * it is null in case of a "REPLACE mytab (col1, col2) [...]"
+     */
     private List<Expression> expressions;
     private boolean useValues = true;
     private boolean useIntoTables = false;
@@ -46,69 +61,6 @@ public class Replace implements Statement {
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
-    }
-
-    public Table getTable() {
-        return table;
-    }
-
-    public void setTable(Table name) {
-        table = name;
-    }
-
-    public boolean isUseIntoTables() {
-        return useIntoTables;
-    }
-
-    public void setUseIntoTables(boolean useIntoTables) {
-        this.useIntoTables = useIntoTables;
-    }
-
-    /**
-     * A list of {@link net.sf.jsqlparser.schema.Column}s either from a "REPLACE mytab (col1, col2)
-     * [...]" or a "REPLACE mytab SET col1=exp1, col2=exp2".
-     *
-     * @return a list of {@link net.sf.jsqlparser.schema.Column}s
-     */
-    public List<Column> getColumns() {
-        return columns;
-    }
-
-    /**
-     * An {@link ItemsList} (either from a "REPLACE mytab VALUES (exp1,exp2)" or a "REPLACE mytab
-     * SELECT * FROM mytab2") it is null in case of a "REPLACE mytab SET col1=exp1, col2=exp2"
-     */
-    public ItemsList getItemsList() {
-        return itemsList;
-    }
-
-    public void setColumns(List<Column> list) {
-        columns = list;
-    }
-
-    public void setItemsList(ItemsList list) {
-        itemsList = list;
-    }
-
-    /**
-     * A list of {@link net.sf.jsqlparser.expression.Expression}s (from a "REPLACE mytab SET
-     * col1=exp1, col2=exp2"). <br>
-     * it is null in case of a "REPLACE mytab (col1, col2) [...]"
-     */
-    public List<Expression> getExpressions() {
-        return expressions;
-    }
-
-    public void setExpressions(List<Expression> list) {
-        expressions = list;
-    }
-
-    public boolean isUseValues() {
-        return useValues;
-    }
-
-    public void setUseValues(boolean useValues) {
-        this.useValues = useValues;
     }
 
     @Override

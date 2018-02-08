@@ -23,12 +23,15 @@ package net.sf.jsqlparser.statement.select;
 
 import java.util.List;
 
+import lombok.Data;
+
 /**
  * A database set operation. This operation consists of a list of plainSelects connected by set
  * operations (UNION,INTERSECT,MINUS,EXCEPT). All these operations have the same priority.
  *
  * @author tw
  */
+@Data
 public class SetOperationList implements SelectBody {
 
     private List<SelectBody> selects;
@@ -44,30 +47,6 @@ public class SetOperationList implements SelectBody {
         selectVisitor.visit(this);
     }
 
-    public List<OrderByElement> getOrderByElements() {
-        return orderByElements;
-    }
-
-    public List<SelectBody> getSelects() {
-        return selects;
-    }
-
-    public List<SetOperation> getOperations() {
-        return operations;
-    }
-
-    public List<Boolean> getBrackets() {
-        return brackets;
-    }
-
-    public void setBrackets(List<Boolean> brackets) {
-        this.brackets = brackets;
-    }
-
-    public void setOrderByElements(List<OrderByElement> orderByElements) {
-        this.orderByElements = orderByElements;
-    }
-
     public void setBracketsOpsAndSelects(List<Boolean> brackets, List<SelectBody> select, List<SetOperation> ops) {
         selects = select;
         operations = ops;
@@ -76,30 +55,6 @@ public class SetOperationList implements SelectBody {
         if (select.size() - 1 != ops.size() || select.size() != brackets.size()) {
             throw new IllegalArgumentException("list sizes are not valid");
         }
-    }
-
-    public Limit getLimit() {
-        return limit;
-    }
-
-    public void setLimit(Limit limit) {
-        this.limit = limit;
-    }
-
-    public Offset getOffset() {
-        return offset;
-    }
-
-    public void setOffset(Offset offset) {
-        this.offset = offset;
-    }
-
-    public Fetch getFetch() {
-        return fetch;
-    }
-
-    public void setFetch(Fetch fetch) {
-        this.fetch = fetch;
     }
 
     @Override
@@ -140,6 +95,6 @@ public class SetOperationList implements SelectBody {
         INTERSECT,
         EXCEPT,
         MINUS,
-        UNION
+        UNION,
     }
 }

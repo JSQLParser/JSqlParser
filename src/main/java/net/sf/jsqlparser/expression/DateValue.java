@@ -21,13 +21,15 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.sql.Date;
+
+import lombok.Data;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * A Date in the form {d 'yyyy-mm-dd'}
  */
+@Data
 public class DateValue extends ASTNodeAccessImpl implements Expression {
 
     private Date value;
@@ -39,14 +41,6 @@ public class DateValue extends ASTNodeAccessImpl implements Expression {
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
-    }
-
-    public Date getValue() {
-        return value;
-    }
-
-    public void setValue(Date d) {
-        value = d;
     }
 
     @Override

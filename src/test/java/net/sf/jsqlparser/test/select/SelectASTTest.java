@@ -18,22 +18,24 @@
  */
 package net.sf.jsqlparser.test.select;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserDefaultVisitor;
 import net.sf.jsqlparser.parser.CCJSqlParserTreeConstants;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.parser.Token;
 import net.sf.jsqlparser.parser.SimpleNode;
+import net.sf.jsqlparser.parser.Token;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Test;
 
 /**
  *
@@ -82,6 +84,7 @@ public class SelectASTTest {
         node.dump("*");
         assertEquals(CCJSqlParserTreeConstants.JJTSTATEMENT, node.getId());
         node.jjtAccept(new CCJSqlParserDefaultVisitor() {
+
             @Override
             public Object visit(SimpleNode node, Object data) {
                 if (node.getId() == CCJSqlParserTreeConstants.JJTSUBSELECT) {
@@ -99,7 +102,7 @@ public class SelectASTTest {
         assertEquals(34, subSelectStart.beginColumn);
         assertEquals(62, subSelectEnd.endColumn);
     }
-    
+
     @Test
     public void testSelectASTColumnLF() throws JSQLParserException {
         String sql = "SELECT  a,  b FROM  mytable \n order by   b,  c";
@@ -122,7 +125,7 @@ public class SelectASTTest {
         }
         assertEquals("SELECT  *,  * FROM  mytable \n order by   #,  #", b.toString());
     }
-    
+
     @Test
     public void testSelectASTCommentLF() throws JSQLParserException {
         String sql = "SELECT  /* testcomment */ \n a,  b FROM  -- testcomment2 \n mytable \n order by   b,  c";
@@ -145,7 +148,7 @@ public class SelectASTTest {
         }
         assertEquals("SELECT  /* testcomment */ \n *,  * FROM  -- testcomment2 \n mytable \n order by   #,  #", b.toString());
     }
-    
+
     @Test
     public void testSelectASTCommentCRLF() throws JSQLParserException {
         String sql = "SELECT  /* testcomment */ \r\n a,  b FROM  -- testcomment2 \r\n mytable \r\n order by   b,  c";

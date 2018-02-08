@@ -23,6 +23,7 @@ package net.sf.jsqlparser.statement.update;
 
 import java.util.List;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -30,20 +31,28 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
 /**
  * The update statement.
  */
+@Data
 public class Update implements Statement {
 
     private List<Table> tables;
     private Expression where;
+    /**
+     * The {@link net.sf.jsqlparser.schema.Column}s in this update (as col1 and col2 in UPDATE
+     * col1='a', col2='b')
+     */
     private List<Column> columns;
+    /**
+     * The {@link Expression}s in this update (as 'a' and 'b' in UPDATE col1='a', col2='b')
+     */
     private List<Expression> expressions;
     private FromItem fromItem;
     private List<Join> joins;
@@ -58,121 +67,6 @@ public class Update implements Statement {
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
-    }
-
-    public List<Table> getTables() {
-        return tables;
-    }
-
-    public Expression getWhere() {
-        return where;
-    }
-
-    public void setTables(List<Table> list) {
-        tables = list;
-    }
-
-    public void setWhere(Expression expression) {
-        where = expression;
-    }
-
-    /**
-     * The {@link net.sf.jsqlparser.schema.Column}s in this update (as col1 and col2 in UPDATE
-     * col1='a', col2='b')
-     *
-     * @return a list of {@link net.sf.jsqlparser.schema.Column}s
-     */
-    public List<Column> getColumns() {
-        return columns;
-    }
-
-    /**
-     * The {@link Expression}s in this update (as 'a' and 'b' in UPDATE col1='a', col2='b')
-     *
-     * @return a list of {@link Expression}s
-     */
-    public List<Expression> getExpressions() {
-        return expressions;
-    }
-
-    public void setColumns(List<Column> list) {
-        columns = list;
-    }
-
-    public void setExpressions(List<Expression> list) {
-        expressions = list;
-    }
-
-    public FromItem getFromItem() {
-        return fromItem;
-    }
-
-    public void setFromItem(FromItem fromItem) {
-        this.fromItem = fromItem;
-    }
-
-    public List<Join> getJoins() {
-        return joins;
-    }
-
-    public void setJoins(List<Join> joins) {
-        this.joins = joins;
-    }
-
-    public Select getSelect() {
-        return select;
-    }
-
-    public void setSelect(Select select) {
-        this.select = select;
-    }
-
-    public boolean isUseColumnsBrackets() {
-        return useColumnsBrackets;
-    }
-
-    public void setUseColumnsBrackets(boolean useColumnsBrackets) {
-        this.useColumnsBrackets = useColumnsBrackets;
-    }
-
-    public boolean isUseSelect() {
-        return useSelect;
-    }
-
-    public void setUseSelect(boolean useSelect) {
-        this.useSelect = useSelect;
-    }
-
-    public void setOrderByElements(List<OrderByElement> orderByElements) {
-        this.orderByElements = orderByElements;
-    }
-
-    public void setLimit(Limit limit) {
-        this.limit = limit;
-    }
-
-    public List<OrderByElement> getOrderByElements() {
-        return orderByElements;
-    }
-
-    public Limit getLimit() {
-        return limit;
-    }
-
-    public boolean isReturningAllColumns() {
-        return returningAllColumns;
-    }
-
-    public void setReturningAllColumns(boolean returningAllColumns) {
-        this.returningAllColumns = returningAllColumns;
-    }
-
-    public List<SelectExpressionItem> getReturningExpressionList() {
-        return returningExpressionList;
-    }
-
-    public void setReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
-        this.returningExpressionList = returningExpressionList;
     }
 
     @Override
@@ -232,8 +126,7 @@ public class Update implements Statement {
         if (isReturningAllColumns()) {
             b.append(" RETURNING *");
         } else if (getReturningExpressionList() != null) {
-            b.append(" RETURNING ").append(PlainSelect.
-                    getStringList(getReturningExpressionList(), true, false));
+            b.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
         }
 
         return b.toString();

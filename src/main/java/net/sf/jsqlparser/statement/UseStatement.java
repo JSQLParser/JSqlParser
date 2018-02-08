@@ -21,25 +21,20 @@
  */
 package net.sf.jsqlparser.statement;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  *
  * @author toben
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UseStatement implements Statement {
 
     private String name;
-
-    public UseStatement(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     @Override
     public String toString() {

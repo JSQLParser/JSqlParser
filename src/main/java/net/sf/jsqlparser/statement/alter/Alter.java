@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import lombok.Data;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -33,33 +34,18 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  *
  * @author toben & wrobstory
  */
+@Data
 public class Alter implements Statement {
 
     private Table table;
 
     private List<AlterExpression> alterExpressions;
 
-    public Table getTable() {
-        return table;
-    }
-
-    public void setTable(Table table) {
-        this.table = table;
-    }
-
     public void addAlterExpression(AlterExpression alterExpression) {
         if (alterExpressions == null) {
             alterExpressions = new ArrayList<AlterExpression>();
         }
         alterExpressions.add(alterExpression);
-    }
-
-    public List<AlterExpression> getAlterExpressions() {
-        return alterExpressions;
-    }
-
-    public void setAlterExpressions(List<AlterExpression> alterExpressions) {
-        this.alterExpressions = alterExpressions;
     }
 
     @Override
@@ -87,5 +73,4 @@ public class Alter implements Statement {
 
         return b.toString();
     }
-
 }

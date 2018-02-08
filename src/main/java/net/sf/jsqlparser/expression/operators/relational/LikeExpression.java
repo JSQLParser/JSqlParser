@@ -21,23 +21,16 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import lombok.Data;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
+@Data
 public class LikeExpression extends BinaryExpression {
 
     private boolean not = false;
     private String escape = null;
     private boolean caseInsensitive = false;
-
-    @Override
-    public boolean isNot() {
-        return not;
-    }
-
-    public void setNot(boolean b) {
-        not = b;
-    }
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
@@ -55,23 +48,6 @@ public class LikeExpression extends BinaryExpression {
         if (escape != null) {
             retval += " ESCAPE " + "'" + escape + "'";
         }
-
         return retval;
-    }
-
-    public String getEscape() {
-        return escape;
-    }
-
-    public void setEscape(String escape) {
-        this.escape = escape;
-    }
-
-    public boolean isCaseInsensitive() {
-        return caseInsensitive;
-    }
-
-    public void setCaseInsensitive(boolean caseInsensitive) {
-        this.caseInsensitive = caseInsensitive;
     }
 }

@@ -18,16 +18,17 @@
  */
 package net.sf.jsqlparser.statement;
 
-import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
 import org.junit.Test;
+
+import net.sf.jsqlparser.JSQLParserException;
 
 /**
  *
  * @author toben
  */
 public class UseStatementTest {
-
 
     @Test
     public void testSimpleUse() throws JSQLParserException {

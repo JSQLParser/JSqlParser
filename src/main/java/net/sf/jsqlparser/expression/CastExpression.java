@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
@@ -28,39 +29,16 @@ import net.sf.jsqlparser.statement.create.table.ColDataType;
  *
  * @author tw
  */
+@Data
 public class CastExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
     private ColDataType type;
     private boolean useCastKeyword = true;
 
-    public ColDataType getType() {
-        return type;
-    }
-
-    public void setType(ColDataType type) {
-        this.type = type;
-    }
-
-    public Expression getLeftExpression() {
-        return leftExpression;
-    }
-
-    public void setLeftExpression(Expression expression) {
-        leftExpression = expression;
-    }
-
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
-    }
-
-    public boolean isUseCastKeyword() {
-        return useCastKeyword;
-    }
-
-    public void setUseCastKeyword(boolean useCastKeyword) {
-        this.useCastKeyword = useCastKeyword;
     }
 
     @Override

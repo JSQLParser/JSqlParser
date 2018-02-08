@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import lombok.Data;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
@@ -28,35 +29,20 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
  *
  * @author aud
  */
+@Data
 public class UserVariable extends ASTNodeAccessImpl implements Expression {
-
-    private String name;
-    private boolean doubleAdd = false;
 
     /**
      * The name of the parameter
      *
      * @return the name of the parameter
      */
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    private String name;
+    private boolean doubleAdd = false;
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
-    }
-
-    public boolean isDoubleAdd() {
-        return doubleAdd;
-    }
-
-    public void setDoubleAdd(boolean doubleAdd) {
-        this.doubleAdd = doubleAdd;
     }
 
     @Override
