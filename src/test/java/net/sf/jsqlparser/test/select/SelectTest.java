@@ -2745,4 +2745,9 @@ public class SelectTest extends TestCase {
     public void testIssue563MultiSubJoin_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT c FROM ((SELECT a FROM t))");
     }
+    
+    public void testIssue582NumericConstants() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT x'009fd'");
+        assertSqlCanBeParsedAndDeparsed("SELECT X'009fd'");
+    }
 }
