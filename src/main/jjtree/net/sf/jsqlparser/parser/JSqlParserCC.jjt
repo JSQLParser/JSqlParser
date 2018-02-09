@@ -318,7 +318,7 @@ TOKEN : /* Numeric Constants */
             )>
   |     < S_LONG: ( <DIGIT> )+ >
   |     < #DIGIT: ["0" - "9"] >
-  |     < S_HEX: ("x'" ( <HEX_VALUE> )+ "'" | "0x" ( <HEX_VALUE> )+ ) >
+  |     < S_HEX: (["x","X"] "'" ( <HEX_VALUE> )+ "'" | "0x" ( <HEX_VALUE> )+ ) >
   |     < #HEX_VALUE: ["0"-"9","A"-"F"]  >
 }
 
