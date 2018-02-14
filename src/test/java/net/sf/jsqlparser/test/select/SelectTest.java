@@ -1308,6 +1308,11 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
+    public void testSelectAliasInSingleQuotes() throws JSQLParserException {
+        String statement = "SELECT mycolumn AS 'My Column Name' FROM mytable";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
     public void testSelectAliasWithoutAs() throws JSQLParserException {
         String statement = "SELECT mycolumn \"My Column Name\" FROM mytable";
         assertSqlCanBeParsedAndDeparsed(statement);
