@@ -238,7 +238,7 @@ public class SelectTest extends TestCase {
 
         assertNull(((PlainSelect) select.getSelectBody()).getLimit());
         assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
-        assertTrue(((PlainSelect) select.getSelectBody()).getOffset().isOffsetJdbcParameter());
+        assertEquals("?", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetJdbcParameter().toString());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
@@ -310,7 +310,7 @@ public class SelectTest extends TestCase {
 
         assertNull(((PlainSelect) select.getSelectBody()).getLimit());
         assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
-        assertTrue(((PlainSelect) select.getSelectBody()).getOffset().isOffsetJdbcParameter());
+        assertEquals("?", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetJdbcParameter().toString());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
@@ -452,8 +452,8 @@ public class SelectTest extends TestCase {
         assertNotNull(((PlainSelect) select.getSelectBody()).getFetch());
         assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getFetch().getFetchParam());
         assertFalse(((PlainSelect) select.getSelectBody()).getFetch().isFetchParamFirst());
-        assertFalse(((PlainSelect) select.getSelectBody()).getOffset().isOffsetJdbcParameter());
-        assertFalse(((PlainSelect) select.getSelectBody()).getFetch().isFetchJdbcParameter());
+        assertNull(((PlainSelect) select.getSelectBody()).getOffset().getOffsetJdbcParameter());
+        assertNull(((PlainSelect) select.getSelectBody()).getFetch().getFetchJdbcParameter());
         assertEquals(3, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
         assertEquals(5, ((PlainSelect) select.getSelectBody()).getFetch().getRowCount());
         assertStatementCanBeDeparsedAs(select, statement);
@@ -512,14 +512,22 @@ public class SelectTest extends TestCase {
         assertNotNull(((PlainSelect) select.getSelectBody()).getFetch());
         assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getFetch().getFetchParam());
         assertFalse(((PlainSelect) select.getSelectBody()).getFetch().isFetchParamFirst());
-        assertTrue(((PlainSelect) select.getSelectBody()).getOffset().isOffsetJdbcParameter());
-        assertTrue(((PlainSelect) select.getSelectBody()).getFetch().isFetchJdbcParameter());
+        assertEquals("?", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetJdbcParameter().toString());
+        assertEquals("?", ((PlainSelect) select.getSelectBody()).getFetch().getFetchJdbcParameter().toString());
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
     public void testLimitPR404() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ?1");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE mytable.col = 9 LIMIT :param_name");
+    }
+    
+    public void testLimitOffsetIssue462() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable LIMIT ?1");
+    }
+    
+    public void testLimitOffsetIssue462_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable LIMIT ?1 OFFSET ?2");
     }
 
     public void testTop() throws JSQLParserException {
@@ -1190,6 +1198,24 @@ public class SelectTest extends TestCase {
         assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).
                 getRightExpression()).getValue());
         assertEquals("test2", ((LikeExpression) plainSelect.getWhere()).getEscape());
+    }
+
+    public void testNotLike() throws JSQLParserException {
+        String statement = "SELECT * FROM tab1 WHERE a NOT LIKE 'test'";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).
+                getRightExpression()).getValue());
+        assertEquals(true, (boolean) ((LikeExpression) plainSelect.getWhere()).isNot());
+    }
+
+    public void testNotLikeWithNotBeforeExpression() throws JSQLParserException {
+        String statement = "SELECT * FROM tab1 WHERE NOT a LIKE 'test'";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).
+                getRightExpression()).getValue());
+        assertEquals(true, (boolean) ((LikeExpression) plainSelect.getWhere()).isNot());
     }
 
     public void testIlike() throws JSQLParserException {
@@ -1974,6 +2000,10 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
+    public void testRlike() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE first_name RLIKE '^Ste(v|ph)en$'");
+    }
+
     public void testBooleanFunction1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE test_func(col1)";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -2685,5 +2715,48 @@ public class SelectTest extends TestCase {
 
     public void testIssue522_4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE a + b WHEN -1 * 5 THEN 1 ELSE CASE b + c WHEN -1 * 6 THEN 2 ELSE 3 END END");
+    }
+
+    public void testIssue554() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT T.INDEX AS INDEX133_ FROM myTable T");
+    }
+    
+    public void testIssue567KeywordPrimary() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT primary, secondary FROM info");
+    }
+    
+    public void testIssue572TaskReplacement() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT task_id AS \"Task Id\" FROM testtable");
+    }
+    
+    public void testIssue566LargeView() throws IOException, JSQLParserException {
+        String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-issue-566.txt"));
+        assertSqlCanBeParsedAndDeparsed(stmt, true);
+    }
+    
+    public void testIssue566PostgreSQLEscaped() throws IOException, JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT E'test'");
+    }
+    
+    public void testIssue563MultiSubJoin() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT c FROM ((SELECT a FROM t) JOIN (SELECT b FROM t2) ON a = B JOIN (SELECT c FROM t3) ON b = c)");
+    }
+    
+    public void testIssue563MultiSubJoin_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT c FROM ((SELECT a FROM t))");
+    }
+    
+    public void testIssue582NumericConstants() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT x'009fd'");
+        assertSqlCanBeParsedAndDeparsed("SELECT X'009fd'");
+    }
+    
+    public void testIssue583CharacterLiteralAsAlias() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN T.ISC = 1 THEN T.EXTDESC WHEN T.b = 2 THEN '2' ELSE T.C END AS 'Test' FROM T");
+    }
+    
+    public void testIssue266KeywordTop() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT @top");
+        assertSqlCanBeParsedAndDeparsed("SELECT @TOP");
     }
 }

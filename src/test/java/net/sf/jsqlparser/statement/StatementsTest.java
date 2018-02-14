@@ -1,10 +1,10 @@
 package net.sf.jsqlparser.statement;
 
-import java.io.StringReader;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.ParseException;
+import net.sf.jsqlparser.parser.StringProvider;
 import net.sf.jsqlparser.statement.select.Select;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -63,7 +63,7 @@ public class StatementsTest {
     @Test
     public void testStatementsErrorRecovery() throws JSQLParserException, ParseException {
         String sqls = "select * from mytable; select * from;";
-        CCJSqlParser parser = new CCJSqlParser(new StringReader(sqls));
+        CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqls));
         parser.setErrorRecovery(true);
         Statements parseStatements = parser.Statements();
 
@@ -76,7 +76,7 @@ public class StatementsTest {
     @Test
     public void testStatementsErrorRecovery2() throws JSQLParserException, ParseException {
         String sqls = "select * from1 table;";
-        CCJSqlParser parser = new CCJSqlParser(new StringReader(sqls));
+        CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqls));
         parser.setErrorRecovery(true);
         Statements parseStatements = parser.Statements();
 
@@ -89,7 +89,7 @@ public class StatementsTest {
     @Test
     public void testStatementsErrorRecovery3() throws JSQLParserException, ParseException {
         String sqls = "select * from mytable; select * from;select * from mytable2";
-        CCJSqlParser parser = new CCJSqlParser(new StringReader(sqls));
+        CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqls));
         parser.setErrorRecovery(true);
         Statements parseStatements = parser.Statements();
 

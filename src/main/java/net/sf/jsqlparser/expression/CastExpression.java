@@ -21,13 +21,14 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
 /**
  *
  * @author tw
  */
-public class CastExpression implements Expression {
+public class CastExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
     private ColDataType type;

@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 import java.util.List;
@@ -35,7 +36,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  *
  * @author tw
  */
-public class AnalyticExpression implements Expression {
+public class AnalyticExpression extends ASTNodeAccessImpl implements Expression {
 
     private ExpressionList partitionExpressionList;
     private List<OrderByElement> orderByElements;

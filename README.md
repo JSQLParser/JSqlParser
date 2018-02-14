@@ -19,14 +19,6 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 * Released version **1.1** of JSqlParser. 
 * JSqlParser has now a build in checkstyle configuration to introduce source code conventions.
 * Released first major version **1.0** of JSqlParser. 
-* Please test the actual **0.9.8-SNAPSHOT**. It includes includes grammar refactorings or changes which eventually results in parse tree changes.
-* Version **0.9.7** released.
-* Version **0.9.6** released.
-* Version **0.9.5** released.
-* Please test the actual **0.9.5-SNAPSHOT**. It includes some grammar refactorings which eventually results in parse tree changes.
-* Version **0.9.4** released.
-* Please test the actual SNAPSHOT, if there are problems using the extended identifier token.
-* Version **0.9.3** released.
 
 More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
 
@@ -44,11 +36,24 @@ To help JSqlParsers development you are encouraged to provide
 * pull requests for new features
 * improvement requests
 * fund new features
+* a little donation
+
+**Please write in english, since it's the language most of the dev team knows.**
 
 Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.2
 
+* support for single quoted aliases ___select col1 as 'alias'___
+* support for Unicode string literal like **N'test'** or **U'test'**
+* support for bitwise not **~**
+* support for **drop view**
+* support for indexed JDBC parameters at multiple places
+* allowed **index** as object name
+* switched to JavaCC **modern template**
+* switched to JDK 1.7 
+* introduced more AST node links
+* support for aliased table in **insert into** statement
 * **SQL_CALC_FOUND_ROWS** support
 * support for more complex expressions within **case expr when expr then expr end**.
 * support for **<<** and **>>** left and right shift operations
