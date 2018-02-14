@@ -1269,9 +1269,11 @@ AllTableColumns AllTableColumns():
 
 Alias Alias():
 { String name = null;
+  Token token = null;
   boolean useAs = false; }
 {
-    [<K_AS> { useAs = true; } ] name=RelObjectName()
+    [<K_AS> { useAs = true; } ] 
+	( name=RelObjectName() | token=<S_CHAR_LITERAL> { name=token.image; } )
    { return new Alias(name,useAs); }
 }
 

@@ -2750,4 +2750,8 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT x'009fd'");
         assertSqlCanBeParsedAndDeparsed("SELECT X'009fd'");
     }
+    
+    public void testIssue583CharacterLiteralAsAlias() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN T.ISC = 1 THEN T.EXTDESC WHEN T.b = 2 THEN '2' ELSE T.C END AS 'Test' FROM T");
+    }
 }
