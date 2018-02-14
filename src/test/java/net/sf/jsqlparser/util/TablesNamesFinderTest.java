@@ -22,6 +22,7 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -494,5 +495,28 @@ public class TablesNamesFinderTest {
         assertEquals(2, tableList.size());
         assertTrue(tableList.contains("TABLE1"));
         assertTrue(tableList.contains("TABLE2"));
+    }
+
+    @Test
+    public void testSubstringFromFor() throws JSQLParserException {
+        String sql = "select substring((select str from t where id = 1) from (select start_pos from u where id = 1) for (select len from v where id = 1))";
+        Statement select = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(select);
+        assertThat(tableList, containsInAnyOrder("t", "u", "v"));
+    }
+
+    @Test
+    public void testSubstringFrom() throws JSQLParserException {
+        String sql = "select substring((select str from t where id = 1) from (select start_pos from u where id = 1))";
+        Statement select = null;
+        try {
+            select = CCJSqlParserUtil.parse(sql);
+        } catch (NullPointerException e) {
+            fail("Tried to visit an optional for expression?");
+        }
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(select);
+        assertThat(tableList, containsInAnyOrder("t", "u"));
     }
 }

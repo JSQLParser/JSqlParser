@@ -30,11 +30,8 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -217,4 +214,23 @@ public class ExpressionVisitorAdapterTest {
         expr.accept(adapter);
     }
 
+    @Test
+    public void testSubstringFromFor() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseExpression("substring('asdf' from 2 for 3)");
+        assertThat(expr, instanceOf(SubstringExpression.class));
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        expr.accept(adapter);
+    }
+
+    @Test
+    public void testSubstringFrom() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseExpression("substring('asdf' from 2)");
+        assertThat(expr, instanceOf(SubstringExpression.class));
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        try {
+            expr.accept(adapter);
+        } catch (NullPointerException e) {
+            fail("Tried to visit an optional for expression?");
+        }
+    }
 }
