@@ -2759,4 +2759,9 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT @top");
         assertSqlCanBeParsedAndDeparsed("SELECT @TOP");
     }
+    
+    public void testIssue584MySQLValueListExpression() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a, b FROM T WHERE (T.a, T.b) = (c, d)");
+        assertSqlCanBeParsedAndDeparsed("SELECT a FROM T WHERE (T.a) = (SELECT b FROM T, c, d)");
+    }
 }
