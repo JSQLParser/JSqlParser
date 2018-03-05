@@ -2243,7 +2243,7 @@ Expression ComparisonItem() :
   (
     retval=AllComparisonExpression()
     | LOOKAHEAD(3) retval=AnyComparisonExpression()
-    | LOOKAHEAD(MySQLValueListExpression()) retval=MySQLValueListExpression()
+    | LOOKAHEAD(ValueListExpression()) retval=ValueListExpression()
     | LOOKAHEAD(3) retval=SimpleExpression()
     | retval=RowConstructor()
   )
@@ -2861,9 +2861,9 @@ MySQLGroupConcat MySQLGroupConcat():{
     }
 }
 
-MySQLValueListExpression MySQLValueListExpression():
+ValueListExpression ValueListExpression():
 {
-    MySQLValueListExpression retval = new MySQLValueListExpression();
+    ValueListExpression retval = new ValueListExpression();
     ExpressionList expressionList = null;
 }
 {

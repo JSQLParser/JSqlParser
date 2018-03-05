@@ -418,8 +418,8 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
     
     @Override
-    public void visit(MySQLValueListExpression valueList) {
-        for (Expression expr : valueList.getExpressionList().getExpressions()) {
+    public void visit(ValueListExpression valueListExpression) {
+        for (Expression expr : valueListExpression.getExpressionList().getExpressions()) {
             expr.accept(this);
         }
     }

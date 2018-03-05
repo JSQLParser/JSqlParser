@@ -168,7 +168,7 @@ public interface ExpressionVisitor {
 
     void visit(MySQLGroupConcat groupConcat);
     
-    void visit(MySQLValueListExpression valueList);
+    void visit(ValueListExpression valueList);
 
     void visit(RowConstructor rowConstructor);
 

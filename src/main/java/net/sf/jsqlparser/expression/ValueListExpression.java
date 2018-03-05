@@ -29,13 +29,13 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Models a list of expressions usable as condition.<br>
- * This allows for instance the following MySQL expression : 
+ * This allows for instance the following expression : 
  * <code>"[WHERE] (a, b) [OPERATOR] (c, d)"</code>
  * where "(a, b)" and "(c, d)" are instances of this class.
  * 
  * @author adriil
  */
-public class MySQLValueListExpression extends ASTNodeAccessImpl implements Expression {
+public class ValueListExpression extends ASTNodeAccessImpl implements Expression {
 
     private ExpressionList expressionList;
     
