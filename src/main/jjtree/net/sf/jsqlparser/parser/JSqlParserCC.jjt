@@ -2662,9 +2662,17 @@ IfExpression IfExpression():{
              | LOOKAHEAD(RegularCondition()) ifCondition=RegularCondition()
             | ifCondition=SimpleExpression())
             ","
-            thenExpression=SimpleExpression()
+            (LOOKAHEAD(AndExpression()) thenExpression=AndExpression()
+             | LOOKAHEAD(OrExpression()) thenExpression=OrExpression()
+             | LOOKAHEAD(SQLCondition()) thenExpression=SQLCondition()
+             | LOOKAHEAD(RegularCondition()) thenExpression=RegularCondition()
+            | thenExpression=SimpleExpression())
             ","
-            elseExpression=SimpleExpression()
+            (LOOKAHEAD(AndExpression()) elseExpression=AndExpression()
+             | LOOKAHEAD(OrExpression()) elseExpression=OrExpression()
+             | LOOKAHEAD(SQLCondition()) elseExpression=SQLCondition()
+             | LOOKAHEAD(RegularCondition()) elseExpression=RegularCondition()
+            | elseExpression=SimpleExpression())
         )
     ")"
     {
