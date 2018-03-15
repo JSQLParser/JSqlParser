@@ -62,32 +62,46 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
 
     @Override
     public String getFullyQualifiedName() {
-        return getName(false);
+        return getFullyQualifiedName(false);
     }
 
     /**
-     * Get name with out without using aliases.
-     *
-     * @param aliases
+     * Get FQN.
+     * @param aliases - use aliases.
      * @return
      */
-    public String getName(boolean aliases) {
+    public String getFullyQualifiedName(boolean aliases) {
         StringBuilder fqn = new StringBuilder();
 
         if (table != null) {
-            if (table.getAlias() != null && aliases) {
+            if (aliases && table.getAlias() != null) {
                 fqn.append(table.getAlias().getName());
             } else {
                 fqn.append(table.getFullyQualifiedName());
             }
-        }
-        if (fqn.length() > 0) {
-            fqn.append('.');
+            if (fqn.length() > 0) {
+                fqn.append('.');
+            }
         }
         if (columnName != null) {
-            fqn.append(columnName);
+            fqn.append(getName());
         }
+
         return fqn.toString();
+    }
+
+    /**
+     * Get name.
+     * @return 
+     */
+    public String getName() {
+        StringBuilder name = new StringBuilder();
+
+        if (columnName != null) {
+            name.append(columnName);
+        }
+
+        return name.toString();
     }
 
     @Override
@@ -97,6 +111,6 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
 
     @Override
     public String toString() {
-        return getName(true);
+        return getFullyQualifiedName();
     }
 }

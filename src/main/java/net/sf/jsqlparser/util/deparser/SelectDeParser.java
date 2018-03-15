@@ -378,7 +378,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             buffer.append(" USING (");
             for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator.hasNext();) {
                 Column column = iterator.next();
-                buffer.append(column.toString());
+                buffer.append(column.getFullyQualifiedName());
                 if (iterator.hasNext()) {
                     buffer.append(", ");
                 }
