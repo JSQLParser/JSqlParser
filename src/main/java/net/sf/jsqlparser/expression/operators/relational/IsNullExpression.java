@@ -29,6 +29,7 @@ public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
     private boolean not = false;
+    private boolean useIsNull = false;
 
     public Expression getLeftExpression() {
         return leftExpression;
@@ -46,6 +47,14 @@ public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
         not = b;
     }
 
+    public boolean isUseIsNull() {
+        return useIsNull;
+    }
+
+    public void setUseIsNull(boolean useIsNull) {
+        this.useIsNull = useIsNull;
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
@@ -53,6 +62,10 @@ public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public String toString() {
-        return leftExpression + " IS " + (not ? "NOT " : "") + "NULL";
+        if (isUseIsNull()) {
+            return leftExpression + (not ? " NOT" : "") + " ISNULL";
+        } else {
+            return leftExpression + " IS " + (not ? "NOT " : "") + "NULL";
+        }
     }
 }
