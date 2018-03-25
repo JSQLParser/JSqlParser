@@ -274,6 +274,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_UPSERT:"UPSERT">
 |   <K_USE : "USE">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
+|   <K_SQL_NO_CACHE: "SQL_NO_CACHE">
 |   <K_USING:"USING">
 |   <K_VALIDATE : "VALIDATE">
 |   <K_VALUE:"VALUE">
@@ -1107,6 +1108,10 @@ PlainSelect PlainSelect() #PlainSelect:
         |
             (
                 <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(true); }
+            )
+        |
+            (
+                <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlNoCache(true); }
             )
     ]
 

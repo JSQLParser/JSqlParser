@@ -2153,6 +2153,11 @@ public class SelectTest extends TestCase {
         }
     }
 
+    public void testSqlNoCache() throws JSQLParserException {
+        String stmt = "SELECT SQL_NO_CACHE sales.date FROM sales";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
     public void testSelectInto1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * INTO user_copy FROM user");
     }

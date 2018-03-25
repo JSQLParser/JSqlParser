@@ -97,6 +97,10 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             buffer.append(top).append(" ");
         }
 
+        if (plainSelect.getMySqlSqlNoCache()) {
+            buffer.append("SQL_NO_CACHE").append(" ");
+        }
+
         if (plainSelect.getMySqlSqlCalcFoundRows()) {
             buffer.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
