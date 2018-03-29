@@ -18,7 +18,7 @@ import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class SelectTest extends TestCase {
 
-    private CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     public SelectTest(String arg0) {
         super(arg0);
@@ -2767,5 +2767,17 @@ public class SelectTest extends TestCase {
     
     public void testIssue588NotNull() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE col1 ISNULL");
+    }
+    
+    public void testParenthesisAroundFromItem() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (mytable)");
+    }
+    
+    public void testParenthesisAroundFromItem2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (mytable myalias)");
+    }
+    
+    public void testParenthesisAroundFromItem3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (mytable) myalias");
     }
 }

@@ -301,7 +301,8 @@ TOKEN : /* Operators */
     <OP_GREATERTHANEQUALS: ">" (<WHITESPACE>)* "=">
 |    <OP_MINORTHANEQUALS: "<" (<WHITESPACE>)* "=">
 |    <OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
-|    <OP_NOTEQUALSBANG: "!=">
+|    <OP_NOTEQUALSBANG: "!" (<WHITESPACE>)* "=">
+|    <OP_CONCAT: "|" (<WHITESPACE>)* "|">
 }
 
 TOKEN : /* Date/Time with time zones */
@@ -1474,7 +1475,11 @@ FromItem FromItem():
                         LOOKAHEAD(SubJoin())
                         fromItem=SubJoin()
                         |
+                        LOOKAHEAD(3)
                         fromItem=SubSelect()
+                        |
+                        fromItem=FromItem()
+                          { fromItem = new ParenthesisFromItem(fromItem); }
                         )
                     ")"
                 )
@@ -2304,8 +2309,8 @@ Expression ConcatExpression():
 }
 {
     leftExpression=BitwiseAndOr()  { result = leftExpression; }
-    (LOOKAHEAD(2)
-        "||"
+    (LOOKAHEAD(3)
+        <OP_CONCAT>  /* Oracle allows space between the bars. */
         rightExpression=BitwiseAndOr()
         {
             Concat binExp = new Concat();

@@ -36,4 +36,6 @@ public interface FromItemVisitor {
     void visit(ValuesList valuesList);
 
     void visit(TableFunction tableFunction);
+
+    public void visit(ParenthesisFromItem aThis);
 }
