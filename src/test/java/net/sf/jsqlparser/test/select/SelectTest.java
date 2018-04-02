@@ -2780,4 +2780,12 @@ public class SelectTest extends TestCase {
     public void testParenthesisAroundFromItem3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (mytable) myalias");
     }
+    
+    public void testJoinerExpressionIssue596() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM a JOIN (b JOIN c ON b.id = c.id) ON a.id = c.id");
+    }
+    
+//    public void testJoinerExpressionIssue596_2() throws JSQLParserException {
+//        assertSqlCanBeParsedAndDeparsed("SELECT * FROM a JOIN b JOIN c ON b.id = c.id ON a.id = c.id");
+//    }
 }
