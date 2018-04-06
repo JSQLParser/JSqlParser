@@ -272,4 +272,8 @@ public class InsertTest {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO account t (name, addr, phone) SELECT * FROM user");
     }
     
+    @Test
+    public void testInsertKeyWordEnableIssue592() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO T_USER (ID, EMAIL_VALIDATE, ENABLE, PASSWORD) VALUES (?, ?, ?, ?)");
+    }
 }

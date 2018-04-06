@@ -262,10 +262,18 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(IsNullExpression isNullExpression) {
         isNullExpression.getLeftExpression().accept(this);
-        if (isNullExpression.isNot()) {
-            buffer.append(" IS NOT NULL");
+        if (isNullExpression.isUseIsNull()) {
+            if (isNullExpression.isNot()) {
+                buffer.append(" NOT ISNULL");
+            } else {
+                buffer.append(" ISNULL");
+            }
         } else {
-            buffer.append(" IS NULL");
+            if (isNullExpression.isNot()) {
+                buffer.append(" IS NOT NULL");
+            } else {
+                buffer.append(" IS NULL");
+            }
         }
     }
 
@@ -727,7 +735,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     public void visit(MySQLGroupConcat groupConcat) {
         buffer.append(groupConcat.toString());
     }
-    
+
     @Override
     public void visit(ValueListExpression valueList) {
         buffer.append(valueList.toString());

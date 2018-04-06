@@ -203,6 +203,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_INTERVAL:"INTERVAL">
 |   <K_INTO:"INTO">
 |   <K_IS:"IS">
+|   <K_ISNULL:"ISNULL">
 |   <K_JOIN:"JOIN">
 |   <K_KEEP:"KEEP">
 |   <K_KEY:"KEY">
@@ -300,7 +301,8 @@ TOKEN : /* Operators */
     <OP_GREATERTHANEQUALS: ">" (<WHITESPACE>)* "=">
 |    <OP_MINORTHANEQUALS: "<" (<WHITESPACE>)* "=">
 |    <OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
-|    <OP_NOTEQUALSBANG: "!=">
+|    <OP_NOTEQUALSBANG: "!" (<WHITESPACE>)* "=">
+|    <OP_CONCAT: "|" (<WHITESPACE>)* "|">
 }
 
 TOKEN : /* Date/Time with time zones */
@@ -960,7 +962,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_PERCENT> | tk=<K_PRIOR>
       | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
-      | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY>
+      | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_ENABLE>
       )
 
     { return tk.image; }
@@ -1473,7 +1475,11 @@ FromItem FromItem():
                         LOOKAHEAD(SubJoin())
                         fromItem=SubJoin()
                         |
+                        LOOKAHEAD(3)
                         fromItem=SubSelect()
+                        |
+                        fromItem=FromItem()
+                          { fromItem = new ParenthesisFromItem(fromItem); }
                         )
                     ")"
                 )
@@ -2044,7 +2050,7 @@ Expression RegularCondition() #RegularCondition:
         | "?" { result = new JsonOperator("?"); }
         | "?|" { result = new JsonOperator("?|"); }
         | "?&" { result = new JsonOperator("?&"); }
-        | "||" { result = new JsonOperator("||"); }
+        | <OP_CONCAT> { result = new JsonOperator("||"); }
         | "-" { result = new JsonOperator("-"); }
         | "-#" { result = new JsonOperator("-#"); }
     )
@@ -2169,9 +2175,11 @@ Expression IsNullExpression():
 }
 {
     (
-    <K_NOT> { result.setNot(true); } leftExpression=SimpleExpression() <K_IS> <K_NULL>
+    <K_NOT> { result.setNot(true); } leftExpression=SimpleExpression() 
+        ( <K_ISNULL> { result.setUseIsNull(true); } | <K_IS> <K_NULL> )
     |
-    leftExpression=SimpleExpression() <K_IS> [<K_NOT> { result.setNot(true); } ] <K_NULL>
+    leftExpression=SimpleExpression() 
+        (<K_ISNULL> { result.setUseIsNull(true); } | <K_IS> [<K_NOT> { result.setNot(true); } ] <K_NULL> )
     )
 
     {
@@ -2301,8 +2309,8 @@ Expression ConcatExpression():
 }
 {
     leftExpression=BitwiseAndOr()  { result = leftExpression; }
-    (LOOKAHEAD(2)
-        "||"
+    (LOOKAHEAD(3)
+        <OP_CONCAT>  /* Oracle allows space between the bars. */
         rightExpression=BitwiseAndOr()
         {
             Concat binExp = new Concat();

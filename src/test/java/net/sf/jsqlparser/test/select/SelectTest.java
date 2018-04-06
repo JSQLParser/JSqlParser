@@ -18,7 +18,7 @@ import static net.sf.jsqlparser.test.TestUtils.*;
 
 public class SelectTest extends TestCase {
 
-    private CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     public SelectTest(String arg0) {
         super(arg0);
@@ -2764,4 +2764,28 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT a, b FROM T WHERE (T.a, T.b) = (c, d)");
         assertSqlCanBeParsedAndDeparsed("SELECT a FROM T WHERE (T.a) = (SELECT b FROM T, c, d)");
     }
+    
+    public void testIssue588NotNull() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE col1 ISNULL");
+    }
+    
+    public void testParenthesisAroundFromItem() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (mytable)");
+    }
+    
+    public void testParenthesisAroundFromItem2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (mytable myalias)");
+    }
+    
+    public void testParenthesisAroundFromItem3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (mytable) myalias");
+    }
+    
+    public void testJoinerExpressionIssue596() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM a JOIN (b JOIN c ON b.id = c.id) ON a.id = c.id");
+    }
+    
+//    public void testJoinerExpressionIssue596_2() throws JSQLParserException {
+//        assertSqlCanBeParsedAndDeparsed("SELECT * FROM a JOIN b JOIN c ON b.id = c.id ON a.id = c.id");
+//    }
 }

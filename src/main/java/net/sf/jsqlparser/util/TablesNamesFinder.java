@@ -115,6 +115,7 @@ import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.ParenthesisFromItem;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
@@ -790,5 +791,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(UseStatement use) {
+    }
+
+    @Override
+    public void visit(ParenthesisFromItem parenthesis) {
+        parenthesis.getFromItem().accept(this);
     }
 }

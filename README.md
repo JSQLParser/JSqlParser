@@ -44,6 +44,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.2
 
+* support for **isnull**
 * support for single quoted aliases ___select col1 as 'alias'___
 * support for Unicode string literal like **N'test'** or **U'test'**
 * support for bitwise not **~**
