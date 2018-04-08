@@ -604,6 +604,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         WindowElement windowElement = aexpr.getWindowElement();
 
         buffer.append(name).append("(");
+        if (aexpr.isDistinct()) {
+            buffer.append("DISTINCT ");
+        }
         if (expression != null) {
             expression.accept(this);
             if (offset != null) {

@@ -2616,10 +2616,14 @@ AnalyticExpression AnalyticExpression() :
     Expression defaultValue = null;
     WindowElement windowElement = null;
     KeepExpression keep = null;
+    boolean distinct = false;
 }
 {
     token=<S_IDENTIFIER> { retval.setName(token.image); }
-        "(" [ expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } ] ")" 
+        "(" [ 
+            [ <K_DISTINCT> {distinct = true;} ]
+            (expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } )
+            ] ")" 
 
     [ keep=KeepExpression() ]
 
@@ -2631,6 +2635,7 @@ AnalyticExpression AnalyticExpression() :
         [olist=OrderByElements() [windowElement = WindowElement() ] ]
         
     {
+        retval.setDistinct(distinct);
         retval.setExpression(expr);
         retval.setOffset(offset);
         retval.setDefaultValue(defaultValue);
