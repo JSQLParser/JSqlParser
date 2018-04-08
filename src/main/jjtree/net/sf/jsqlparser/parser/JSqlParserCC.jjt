@@ -3197,6 +3197,10 @@ CreateView CreateView():
 {
     <K_CREATE>
     [ <K_OR> <K_REPLACE> { createView.setOrReplace(true);} ]
+    [ 
+        <K_NO> <K_FORCE> { createView.setForce(ForceOption.NO_FORCE); } 
+        | <K_FORCE> { createView.setForce(ForceOption.FORCE); }
+    ]
     [ <K_MATERIALIZED> { createView.setMaterialized(true);} ]
     <K_VIEW> view=Table() { createView.setView(view); }
     [ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
