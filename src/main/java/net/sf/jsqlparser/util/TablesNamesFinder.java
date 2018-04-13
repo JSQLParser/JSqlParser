@@ -135,6 +135,8 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 
 /**
  * Find all used tables within an select statement.
+ * 
+ * Override extractTableName method to modify the extracted table names (e.g. without schema).
  */
 public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor, StatementVisitor {
 
@@ -218,9 +220,18 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         }
     }
 
+    /**
+     * Override to adapt the tableName generation (e.g. with / without schema).
+     * @param table
+     * @return 
+     */
+    protected String extractTableName(Table table) {
+        return table.getFullyQualifiedName();
+    }
+    
     @Override
     public void visit(Table tableName) {
-        String tableWholeName = tableName.getFullyQualifiedName();
+        String tableWholeName = extractTableName(tableName);
         if (!otherItemNames.contains(tableWholeName.toLowerCase())
                 && !tables.contains(tableWholeName)) {
             tables.add(tableWholeName);
@@ -618,7 +629,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Delete delete) {
-        tables.add(delete.getTable().getName());
+        visit(delete.getTable());
 
         if (delete.getJoins() != null) {
             for (Join join : delete.getJoins()) {
@@ -634,7 +645,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(Update update) {
         for (Table table : update.getTables()) {
-            tables.add(table.getName());
+            visit(table);
         }
         if (update.getExpressions() != null) {
             for (Expression expression : update.getExpressions()) {
@@ -659,7 +670,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Insert insert) {
-        tables.add(insert.getTable().getName());
+        visit(insert.getTable());
         if (insert.getItemsList() != null) {
             insert.getItemsList().accept(this);
         }
@@ -670,7 +681,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Replace replace) {
-        tables.add(replace.getTable().getName());
+        visit(replace.getTable());
         if (replace.getExpressions() != null) {
             for (Expression expression : replace.getExpressions()) {
                 expression.accept(this);
@@ -698,7 +709,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(CreateTable create) {
-        tables.add(create.getTable().getFullyQualifiedName());
+        visit(create.getTable());
         if (create.getSelect() != null) {
             create.getSelect().accept(this);
         }
@@ -743,7 +754,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Merge merge) {
-        tables.add(merge.getTable().getName());
+        visit(merge.getTable());
         if (merge.getUsingTable() != null) {
             merge.getUsingTable().accept(this);
         } else if (merge.getUsingSelect() != null) {
@@ -780,7 +791,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Upsert upsert) {
-        tables.add(upsert.getTable().getName());
+        visit(upsert.getTable());
         if (upsert.getItemsList() != null) {
             upsert.getItemsList().accept(this);
         }
