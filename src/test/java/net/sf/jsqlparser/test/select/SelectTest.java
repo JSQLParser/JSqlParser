@@ -1618,6 +1618,11 @@ public class SelectTest extends TestCase {
         String statement = "SELECT last_value(s.revenue_hold) OVER (PARTITION BY s.id_d_insertion_order, s.id_d_product_ad_attr, trunc(s.date_id, 'mm') ORDER BY s.date_id) AS col FROM s";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
+    
+    public void testAnalyticFunction19() throws JSQLParserException {
+        String statement = "SELECT count(DISTINCT CASE WHEN client_organic_search_drop_flag = 1 THEN brand END) OVER (PARTITION BY client, category_1, category_2, category_3, category_4 ) AS client_brand_org_drop_count FROM sometable";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
 
     public void testAnalyticFunctionProblem1b() throws JSQLParserException {
         String statement = "SELECT last_value(s.revenue_hold) OVER (PARTITION BY s.id_d_insertion_order, s.id_d_product_ad_attr, trunc(s.date_id, 'mm') ORDER BY s.date_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS col FROM s";

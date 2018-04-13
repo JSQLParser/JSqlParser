@@ -2616,10 +2616,14 @@ AnalyticExpression AnalyticExpression() :
     Expression defaultValue = null;
     WindowElement windowElement = null;
     KeepExpression keep = null;
+    boolean distinct = false;
 }
 {
     token=<S_IDENTIFIER> { retval.setName(token.image); }
-        "(" [ expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } ] ")" 
+        "(" [ 
+            [ <K_DISTINCT> {distinct = true;} ]
+            (expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } )
+            ] ")" 
 
     [ keep=KeepExpression() ]
 
@@ -2631,6 +2635,7 @@ AnalyticExpression AnalyticExpression() :
         [olist=OrderByElements() [windowElement = WindowElement() ] ]
         
     {
+        retval.setDistinct(distinct);
         retval.setExpression(expr);
         retval.setOffset(offset);
         retval.setDefaultValue(defaultValue);
@@ -3197,6 +3202,10 @@ CreateView CreateView():
 {
     <K_CREATE>
     [ <K_OR> <K_REPLACE> { createView.setOrReplace(true);} ]
+    [ 
+        <K_NO> <K_FORCE> { createView.setForce(ForceOption.NO_FORCE); } 
+        | <K_FORCE> { createView.setForce(ForceOption.FORCE); }
+    ]
     [ <K_MATERIALIZED> { createView.setMaterialized(true);} ]
     <K_VIEW> view=Table() { createView.setView(view); }
     [ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]

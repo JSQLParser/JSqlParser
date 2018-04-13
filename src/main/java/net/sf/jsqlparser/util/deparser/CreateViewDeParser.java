@@ -56,6 +56,14 @@ public class CreateViewDeParser {
         if (createView.isOrReplace()) {
             buffer.append("OR REPLACE ");
         }
+        switch (createView.getForce()) {
+            case FORCE:
+                buffer.append("FORCE ");
+                break;
+            case NO_FORCE:
+                buffer.append("NO FORCE ");
+                break;
+        }
         if (createView.isMaterialized()) {
             buffer.append("MATERIALIZED ");
         }
