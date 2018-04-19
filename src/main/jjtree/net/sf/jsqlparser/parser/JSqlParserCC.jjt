@@ -21,18 +21,21 @@
  */
 
 options{
-    IGNORE_CASE=true ;
-    STATIC=false;
-    DEBUG_PARSER=false;
-    DEBUG_LOOKAHEAD=false;
-    DEBUG_TOKEN_MANAGER=false;
-	CACHE_TOKENS=false;
-//  FORCE_LA_CHECK=true;
-    UNICODE_INPUT=true;
+    IGNORE_CASE = true ;
+    STATIC = false;
+    DEBUG_PARSER = false;
+    DEBUG_LOOKAHEAD = false;
+    DEBUG_TOKEN_MANAGER = false;
+	CACHE_TOKENS = false;
+//  FORCE_LA_CHECK = true;
+    UNICODE_INPUT = true;
 	JAVA_TEMPLATE_TYPE = "modern";
 	JDK_VERSION = "1.7";
-    TOKEN_EXTENDS ="BaseToken";
-    COMMON_TOKEN_ACTION=true;
+    TOKEN_EXTENDS = "BaseToken";
+    COMMON_TOKEN_ACTION = true;
+	NODE_DEFAULT_VOID = true;
+	TRACK_TOKENS = true;
+	VISITOR = true;
 }
 
 PARSER_BEGIN(CCJSqlParser)

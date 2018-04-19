@@ -106,11 +106,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <nodeDefaultVoid>true</nodeDefaultVoid>
-                    <visitor>true</visitor>
-                    <trackTokens>true</trackTokens>
-                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>net.java.dev.javacc</groupId>
