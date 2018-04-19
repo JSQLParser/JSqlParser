@@ -276,6 +276,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_USE : "USE">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
 |   <K_USING:"USING">
+|   <K_UNSIGNED:"UNSIGNED">
 |   <K_VALIDATE : "VALIDATE">
 |   <K_VALUE:"VALUE">
 |   <K_VALUES:"VALUES">
@@ -963,6 +964,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
       | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_ENABLE>
+	  | tk=<K_UNSIGNED>
       )
 
     { return tk.image; }
@@ -3177,9 +3179,13 @@ ColDataType ColDataType():
     List<Integer> array = new ArrayList<Integer>();
 }
 {
-    ( (tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-    | tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-    | ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> ) { colDataType.setDataType(tk.image); })
+    ( 
+		(tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
+		| tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
+		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> )  
+				{ colDataType.setDataType(tk.image); }
+		| tk=<K_UNSIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
+	)
 
     [LOOKAHEAD(2) "(" ( (tk=<S_LONG> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> ) { argumentsStringList.add(tk.image); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
     [( "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
@@ -3300,6 +3306,8 @@ List<String> CreateParameter():
             tk=<K_EXCLUDE> { param.add(tk.image); }
             |
             tk=<K_WHERE> { param.add(tk.image); }
+			|
+            tk=<K_UNSIGNED> { param.add(tk.image); }
 
         )
     {return param;}

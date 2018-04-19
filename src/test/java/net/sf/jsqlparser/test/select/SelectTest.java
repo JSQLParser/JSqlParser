@@ -2793,4 +2793,12 @@ public class SelectTest extends TestCase {
 //    public void testJoinerExpressionIssue596_2() throws JSQLParserException {
 //        assertSqlCanBeParsedAndDeparsed("SELECT * FROM a JOIN b JOIN c ON b.id = c.id ON a.id = c.id");
 //    }
+    
+    public void testProblemSqlIssue603() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN MAX(CAST(a.jobNum AS INTEGER)) IS NULL THEN '1000' ELSE MAX(CAST(a.jobNum AS INTEGER)) + 1 END FROM user_employee a");
+    }
+    
+    public void testProblemSqlIssue603_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST(col1 AS UNSIGNED INTEGER) FROM mytable");
+    }
 }
