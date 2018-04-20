@@ -264,6 +264,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TABLE:"TABLE">
 |   <K_TABLESPACE : "TABLESPACE">
 |   <K_THEN:"THEN">
+|   <K_TEMP:"TEMP">
+|   <K_TEMPORARY:"TEMPORARY">
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
 |   <K_TOP:"TOP">
 |   <K_TRUNCATE:"TRUNCATE">
@@ -386,10 +388,10 @@ Statement SingleStatement() :
         LOOKAHEAD(CreateIndex())
         stm = CreateIndex()
         |
-        LOOKAHEAD(2)
+        LOOKAHEAD(CreateTable())
         stm = CreateTable()
         |
-        LOOKAHEAD(2)
+        LOOKAHEAD(CreateView())
         stm = CreateView()
         |
         stm = AlterView()
@@ -963,6 +965,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
       | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_ENABLE>
+      | tk=<K_TEMP> | tk=<K_TEMPORARY>
       )
 
     { return tk.image; }
@@ -3206,6 +3209,10 @@ CreateView CreateView():
         <K_NO> <K_FORCE> { createView.setForce(ForceOption.NO_FORCE); } 
         | <K_FORCE> { createView.setForce(ForceOption.FORCE); }
     ]
+    [
+        <K_TEMP> { createView.setTemporary(TemporaryOption.TEMP); }
+        | <K_TEMPORARY> { createView.setTemporary(TemporaryOption.TEMPORARY); }
+    ]
     [ <K_MATERIALIZED> { createView.setMaterialized(true);} ]
     <K_VIEW> view=Table() { createView.setView(view); }
     [ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
@@ -3300,6 +3307,10 @@ List<String> CreateParameter():
             tk=<K_EXCLUDE> { param.add(tk.image); }
             |
             tk=<K_WHERE> { param.add(tk.image); }
+            |
+            tk=<K_TEMP> { param.add(tk.image); }
+            |
+            tk=<K_TEMPORARY> { param.add(tk.image); }
 
         )
     {return param;}

@@ -39,6 +39,7 @@ public class CreateView implements Statement {
     private List<String> columnNames = null;
     private boolean materialized = false;
     private ForceOption force = ForceOption.NONE;
+    private TemporaryOption temp = TemporaryOption.NONE;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -107,6 +108,14 @@ public class CreateView implements Statement {
         this.force = force;
     }
 
+    public TemporaryOption getTemporary() {
+        return temp;
+    }
+
+    public void setTemporary(TemporaryOption temp) {
+        this.temp = temp;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder("CREATE ");
@@ -121,6 +130,11 @@ public class CreateView implements Statement {
                 sql.append("NO FORCE ");
                 break;
         }
+        
+        if (temp != TemporaryOption.NONE) {
+            sql.append(temp.name()).append(" ");
+        }
+        
         if (isMaterialized()) {
             sql.append("MATERIALIZED ");
         }

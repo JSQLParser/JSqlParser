@@ -22,6 +22,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.create.view.TemporaryOption;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 
@@ -32,7 +33,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 public class CreateViewDeParser {
 
     private StringBuilder buffer;
-    private SelectVisitor selectVisitor;
+    private final SelectVisitor selectVisitor;
 
     /**
      * @param buffer the buffer that will be filled with the select
@@ -63,6 +64,9 @@ public class CreateViewDeParser {
             case NO_FORCE:
                 buffer.append("NO FORCE ");
                 break;
+        }
+        if (createView.getTemporary() != TemporaryOption.NONE) {
+            buffer.append(createView.getTemporary().name()).append(" ");
         }
         if (createView.isMaterialized()) {
             buffer.append("MATERIALIZED ");

@@ -84,4 +84,12 @@ public class CreateViewTest extends TestCase {
     public void testCreateForceView3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE OR REPLACE NO FORCE VIEW view1 AS SELECT a, b FROM testtab");
     }
+    
+    public void testCreateTemporaryViewIssue604() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TEMPORARY VIEW myview AS SELECT * FROM mytable");
+    }
+    
+    public void testCreateTemporaryViewIssue604_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TEMP VIEW myview AS SELECT * FROM mytable");
+    }
 }
