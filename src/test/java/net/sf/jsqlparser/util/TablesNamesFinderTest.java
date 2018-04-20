@@ -506,4 +506,13 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("TABLE1"));
     }
     
+    @Test
+    public void testSkippedSchemaIssue600() throws JSQLParserException {
+        String sql = "delete from schema.table where id = 1";
+        TablesNamesFinder finder = new TablesNamesFinder();
+        List<String> tableList = finder.getTableList(CCJSqlParserUtil.parse(sql));
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("schema.table"));
+    }
+    
 }
