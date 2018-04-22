@@ -385,7 +385,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(SubSelect subSelect) {
-        buffer.append("(");
+        if (subSelect.isUseBrackets()) {
+            buffer.append("(");
+        }
         if (selectVisitor != null) {
             if (subSelect.getWithItemsList() != null) {
                 buffer.append("WITH ");
@@ -402,7 +404,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
             subSelect.getSelectBody().accept(selectVisitor);
         }
-        buffer.append(")");
+        if (subSelect.isUseBrackets()) {
+            buffer.append(")");
+        }
     }
 
     @Override

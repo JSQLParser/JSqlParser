@@ -2840,6 +2840,7 @@ Function Function() #Function:
     String tmp = null;
     ExpressionList expressionList = null;
     KeepExpression keep = null;
+    SubSelect expr = null;
 }
 {
     ["{fn" { retval.setEscaped(true); } ]
@@ -2847,7 +2848,8 @@ Function Function() #Function:
     funcName=RelObjectNameExt()
 
     [ "." tmp=RelObjectNameExt() { funcName+= "." + tmp; } ["." tmp=RelObjectNameExt() { funcName+= "." + tmp; }]]
-    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] (expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }) ] ")"
+    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] (LOOKAHEAD(3) expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }
+        | expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); } ) ] ")"
 
     [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]
 

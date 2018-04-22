@@ -2801,4 +2801,12 @@ public class SelectTest extends TestCase {
     public void testProblemSqlIssue603_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST(col1 AS UNSIGNED INTEGER) FROM mytable");
     }
+    
+    public void testProblemSqlFuncParamIssue605() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT p.id, pt.name, array_to_string( array( select pc.name from product_category pc ), ',' ) AS categories FROM product p", true);
+    }
+    
+    public void testProblemSqlFuncParamIssue605_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT func(SELECT col1 FROM mytable)");
+    }
 }
