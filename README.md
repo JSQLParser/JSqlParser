@@ -45,6 +45,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.3
 
+* corrected ISNULL regression (issue #610)
+
 
 ## Extensions of JSqlParser releases
 
