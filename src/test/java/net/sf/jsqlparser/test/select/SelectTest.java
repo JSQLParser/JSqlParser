@@ -2809,4 +2809,8 @@ public class SelectTest extends TestCase {
     public void testProblemSqlFuncParamIssue605_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT func(SELECT col1 FROM mytable)");
     }
+    
+    public void testSqlContainIsNullFunctionShouldBeParsed() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT name, age, ISNULL(home, 'earn more money') FROM person");
+    }
 }
