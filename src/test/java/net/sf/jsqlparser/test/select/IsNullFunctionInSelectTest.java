@@ -30,6 +30,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import org.junit.Test;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -39,9 +40,10 @@ import static org.junit.Assert.assertThat;
 public class IsNullFunctionInSelectTest {
     @Test
     public void sqlContainIsNullFunctionShouldBeParsed() throws JSQLParserException {
-        String sql = "select name, age, ISNULL(home, 'earn more money') from person";
+        String sql = "SELECT name, age, ISNULL(home, 'earn more money') FROM person";
         Statement statement = CCJSqlParserUtil.parse(sql);
         assertThat(accept(statement), is(true));
+        assertSqlCanBeParsedAndDeparsed(sql);
     }
 
     private boolean accept(Statement statement) {
