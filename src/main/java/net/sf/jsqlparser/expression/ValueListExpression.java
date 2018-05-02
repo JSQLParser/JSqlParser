@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2016 JSQLParser
+ * Copyright (C) 2004 - 2018 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,33 +19,42 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
+/**
+ * 
+ */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-public class TimeKeyExpression extends ASTNodeAccessImpl implements Expression {
+/**
+ * Models a list of expressions usable as condition.<br>
+ * This allows for instance the following expression : 
+ * <code>"[WHERE] (a, b) [OPERATOR] (c, d)"</code>
+ * where "(a, b)" and "(c, d)" are instances of this class.
+ * 
+ * @author adriil
+ */
+public class ValueListExpression extends ASTNodeAccessImpl implements Expression {
 
-    private String stringValue;
+    private ExpressionList expressionList;
+    
+    public ExpressionList getExpressionList() {
+        return expressionList;
+    }
 
-    public TimeKeyExpression(final String value) {
-        this.stringValue = value;
+    public void setExpressionList(ExpressionList expressionList) {
+        this.expressionList = expressionList;
     }
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
     }
-
-    public String getStringValue() {
-        return stringValue;
-    }
-
-    public void setStringValue(String string) {
-        stringValue = string;
-    }
-
+    
     @Override
     public String toString() {
-        return getStringValue();
+        return expressionList.toString();
     }
+
 }

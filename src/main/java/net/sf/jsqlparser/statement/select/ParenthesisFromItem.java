@@ -21,49 +21,40 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.Alias;
-
-import java.util.List;
+import net.sf.jsqlparser.expression.*;
 
 /**
- * A table created by "(tab1 [join tab2]* )".
+ * It represents an expression like "(" expression ")"
  */
-public class SubJoin implements FromItem {
+public class ParenthesisFromItem implements FromItem {
 
-    private FromItem left;
+    private FromItem fromItem;
+    
     private Alias alias;
-    private Pivot pivot;
-    private List<Join> joinList;
+
+    public ParenthesisFromItem() {
+    }
+
+    public ParenthesisFromItem(FromItem fromItem) {
+        setFromItem(fromItem);
+    }
+
+    public FromItem getFromItem() {
+        return fromItem;
+    }
+
+    public final void setFromItem(FromItem fromItem) {
+        this.fromItem = fromItem;
+    }
 
     @Override
     public void accept(FromItemVisitor fromItemVisitor) {
         fromItemVisitor.visit(this);
     }
 
-    public FromItem getLeft() {
-        return left;
-    }
-
-    public void setLeft(FromItem l) {
-        left = l;
-    }
-
-    public List<Join> getJoinList() {
-        return joinList;
-    }
-
-    public void setJoinList(List<Join> joinList) {
-        this.joinList = joinList;
-    }
-
     @Override
-    public Pivot getPivot() {
-        return pivot;
-    }
-
-    @Override
-    public void setPivot(Pivot pivot) {
-        this.pivot = pivot;
+    public String toString() {
+        return "(" + fromItem + ")" + (alias!=null?alias.toString():"");
     }
 
     @Override
@@ -77,14 +68,12 @@ public class SubJoin implements FromItem {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("(").append(left);
-        for(Join j : joinList) {
-            sb.append(" ").append(j);
-        }
+    public Pivot getPivot() {
+        throw new UnsupportedOperationException("Not supported yet."); 
+    }
 
-        sb.append(")").append((alias != null) ? (" " + alias.toString()) : "").append((pivot != null) ? " " + pivot : "");
-        return sb.toString();
+    @Override
+    public void setPivot(Pivot pivot) {
+        throw new UnsupportedOperationException("Not supported yet."); 
     }
 }

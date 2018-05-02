@@ -23,8 +23,9 @@ package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-public class InExpression implements Expression, SupportsOldOracleJoinSyntax {
+public class InExpression extends ASTNodeAccessImpl implements Expression, SupportsOldOracleJoinSyntax {
 
     private Expression leftExpression;
     private ItemsList leftItemsList;

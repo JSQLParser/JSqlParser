@@ -54,4 +54,9 @@ public class FromItemVisitorAdapter implements FromItemVisitor {
     public void visit(TableFunction valuesList) {
 
     }
+
+    @Override
+    public void visit(ParenthesisFromItem aThis) {
+        
+    }
 }

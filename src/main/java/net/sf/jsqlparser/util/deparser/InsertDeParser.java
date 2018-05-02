@@ -52,8 +52,8 @@ public class InsertDeParser implements ItemsListVisitor {
      * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
      * {@link net.sf.jsqlparser.expression.Expression}s. It has to share the same<br>
      * StringBuilder (buffer parameter) as this object in order to work
-     * @param selectVisitor a {@link SelectVisitor} to de-parse
-     * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the same<br>
+     * @param selectVisitor a {@link SelectVisitor} to de-parse {@link net.sf.jsqlparser.statement.select.Select}s. It
+     * has to share the same<br>
      * StringBuilder (buffer parameter) as this object in order to work
      * @param buffer the buffer that will be filled with the insert
      */
@@ -81,7 +81,8 @@ public class InsertDeParser implements ItemsListVisitor {
         }
         buffer.append("INTO ");
 
-        buffer.append(insert.getTable().getFullyQualifiedName());
+        buffer.append(insert.getTable().toString());
+
         if (insert.getColumns() != null) {
             buffer.append(" (");
             for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext();) {
@@ -115,7 +116,7 @@ public class InsertDeParser implements ItemsListVisitor {
                 buffer.append(")");
             }
         }
-        
+
         if (insert.isUseSet()) {
             buffer.append(" SET ");
             for (int i = 0; i < insert.getSetColumns().size(); i++) {

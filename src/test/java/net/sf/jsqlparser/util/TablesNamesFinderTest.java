@@ -484,6 +484,7 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("SOME_TABLE"));
     }
     
+    @Test
     public void testSelectHavingSubquery() throws Exception {
         String sql = "SELECT * FROM TABLE1 GROUP BY COL1 HAVING SUM(COL2) > (SELECT COUNT(*) FROM TABLE2)";
         net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
@@ -495,4 +496,23 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("TABLE1"));
         assertTrue(tableList.contains("TABLE2"));
     }
+    
+    @Test
+    public void testMySQLValueListExpression() throws JSQLParserException {
+        String sql = "SELECT * FROM TABLE1 WHERE (a, b) = (c, d)";
+        TablesNamesFinder finder = new TablesNamesFinder();
+        List<String> tableList = finder.getTableList(CCJSqlParserUtil.parse(sql));
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("TABLE1"));
+    }
+    
+    @Test
+    public void testSkippedSchemaIssue600() throws JSQLParserException {
+        String sql = "delete from schema.table where id = 1";
+        TablesNamesFinder finder = new TablesNamesFinder();
+        List<String> tableList = finder.getTableList(CCJSqlParserUtil.parse(sql));
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("schema.table"));
+    }
+    
 }

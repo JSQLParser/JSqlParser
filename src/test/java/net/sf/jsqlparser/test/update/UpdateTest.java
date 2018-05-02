@@ -116,4 +116,19 @@ public class UpdateTest {
     public void testUpdateIssue508LeftShift() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE user SET num = 1 << 1 WHERE id = 1");
     }
+    
+    @Test
+    public void testUpdateIssue338() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE mytable SET status = (status & ~1)");
+    }
+    
+    @Test
+    public void testUpdateIssue338_1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE mytable SET status = (status & 1)");
+    }
+    
+    @Test
+    public void testUpdateIssue338_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE mytable SET status = (status + 1)");
+    }
 }

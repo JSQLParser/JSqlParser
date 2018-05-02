@@ -76,4 +76,17 @@ public class StringValueTest {
         String result = instance.getNotExcapedValue();
         assertEquals(expResult, result);
     }
+
+    @Test
+    public void testPrefixes() {
+        checkStringValue("E'test'", "test", 'E');
+        checkStringValue("'test'", "test", null);
+
+    }
+
+    private void checkStringValue(String original, String expectedValue, Character expectedPrefix) {
+        StringValue v = new StringValue(original);
+        assertEquals(expectedValue, v.getValue());
+        assertEquals(expectedPrefix, v.getPrefix());
+    }
 }

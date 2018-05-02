@@ -23,7 +23,6 @@ package net.sf.jsqlparser.parser;
 
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.StringReader;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
@@ -40,7 +39,7 @@ public final class CCJSqlParserUtil {
     }
 
     public static Statement parse(Reader statementReader) throws JSQLParserException {
-        CCJSqlParser parser = new CCJSqlParser(statementReader);
+        CCJSqlParser parser = new CCJSqlParser(new StreamProvider(statementReader));
         try {
             return parser.Statement();
         } catch (Exception ex) {
@@ -49,7 +48,7 @@ public final class CCJSqlParserUtil {
     }
 
     public static Statement parse(String sql) throws JSQLParserException {
-        CCJSqlParser parser = new CCJSqlParser(new StringReader(sql));
+        CCJSqlParser parser = new CCJSqlParser(new StringProvider(sql));
         try {
             return parser.Statement();
         } catch (Exception ex) {
@@ -58,7 +57,7 @@ public final class CCJSqlParserUtil {
     }
 
     public static Node parseAST(String sql) throws JSQLParserException {
-        CCJSqlParser parser = new CCJSqlParser(new StringReader(sql));
+        CCJSqlParser parser = new CCJSqlParser(new StringProvider(sql));
         try {
             parser.Statement();
             return parser.jjtree.rootNode();
@@ -68,8 +67,8 @@ public final class CCJSqlParserUtil {
     }
 
     public static Statement parse(InputStream is) throws JSQLParserException {
-        CCJSqlParser parser = new CCJSqlParser(is);
         try {
+            CCJSqlParser parser = new CCJSqlParser(new StreamProvider(is));
             return parser.Statement();
         } catch (Exception ex) {
             throw new JSQLParserException(ex);
@@ -77,8 +76,8 @@ public final class CCJSqlParserUtil {
     }
 
     public static Statement parse(InputStream is, String encoding) throws JSQLParserException {
-        CCJSqlParser parser = new CCJSqlParser(is, encoding);
         try {
+            CCJSqlParser parser = new CCJSqlParser(new StreamProvider(is, encoding));
             return parser.Statement();
         } catch (Exception ex) {
             throw new JSQLParserException(ex);
@@ -97,7 +96,7 @@ public final class CCJSqlParserUtil {
     }
     
     public static Expression parseExpression(String expression, boolean allowPartialParse) throws JSQLParserException {
-        CCJSqlParser parser = new CCJSqlParser(new StringReader(expression));
+        CCJSqlParser parser = new CCJSqlParser(new StringProvider(expression));
         try {
             Expression expr = parser.SimpleExpression();
             if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
@@ -130,7 +129,7 @@ public final class CCJSqlParserUtil {
      * @return
      */
     public static Expression parseCondExpression(String condExpr, boolean allowPartialParse) throws JSQLParserException {
-        CCJSqlParser parser = new CCJSqlParser(new StringReader(condExpr));
+        CCJSqlParser parser = new CCJSqlParser(new StringProvider(condExpr));
         try {
             Expression expr = parser.Expression();
             if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
@@ -148,7 +147,7 @@ public final class CCJSqlParserUtil {
      * Parse a statement list.
      */
     public static Statements parseStatements(String sqls) throws JSQLParserException {
-        CCJSqlParser parser = new CCJSqlParser(new StringReader(sqls));
+        CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqls));
         try {
             return parser.Statements();
         } catch (Exception ex) {

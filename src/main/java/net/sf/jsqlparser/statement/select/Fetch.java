@@ -21,13 +21,15 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.JdbcParameter;
+
 /**
  * A fetch clause in the form FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
  */
 public class Fetch {
 
     private long rowCount;
-    private boolean fetchJdbcParameter = false;
+    private JdbcParameter fetchJdbcParameter = null;
     private boolean isFetchParamFirst = false;
     private String fetchParam = "ROW";
 
@@ -39,7 +41,7 @@ public class Fetch {
         rowCount = l;
     }
 
-    public boolean isFetchJdbcParameter() {
+    public JdbcParameter getFetchJdbcParameter() {
         return fetchJdbcParameter;
     }
 
@@ -51,8 +53,8 @@ public class Fetch {
         return isFetchParamFirst;
     }
 
-    public void setFetchJdbcParameter(boolean b) {
-        fetchJdbcParameter = b;
+    public void setFetchJdbcParameter(JdbcParameter jdbc) {
+        fetchJdbcParameter = jdbc;
     }
 
     public void setFetchParam(String s) {
@@ -65,7 +67,8 @@ public class Fetch {
 
     @Override
     public String toString() {
-        return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " " + (fetchJdbcParameter ? "?" : Long.
-                toString(rowCount)) + " " + fetchParam + " ONLY";
+        return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " " 
+                + (fetchJdbcParameter!=null ? fetchJdbcParameter.toString() : 
+                    Long.toString(rowCount)) + " " + fetchParam + " ONLY";
     }
 }

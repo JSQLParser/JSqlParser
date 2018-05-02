@@ -18,20 +18,20 @@
  */
 package net.sf.jsqlparser.test.select;
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import org.apache.commons.io.FileUtils;
+import org.junit.ComparisonFailure;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.parser.TokenMgrError;
 
-import static net.sf.jsqlparser.test.TestUtils.*;
-import org.apache.commons.io.FileUtils;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.Assert.assertTrue;
-import org.junit.ComparisonFailure;
-import org.junit.Test;
 
 /**
  * Tries to parse and deparse all statments in net.sf.jsqlparser.test.oracle-tests.
@@ -64,9 +64,7 @@ public class SpecialOracleTest {
                     success++;
                     LOG.info("   -> SUCCESS");
                 } catch (JSQLParserException ex) {
-                    //LOG.log(Level.SEVERE, null, ex);
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
-                } catch (TokenMgrError ex) {
+                    ex.printStackTrace();
                     //LOG.log(Level.SEVERE, null, ex);
                     LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
                 } catch (Exception ex) {
@@ -79,7 +77,7 @@ public class SpecialOracleTest {
 
         LOG.
                 log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
-        assertTrue(success >= 140);
+        assertTrue(success >= 142);
     }
 
     @Test

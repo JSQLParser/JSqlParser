@@ -239,7 +239,7 @@ public class InsertTest {
     public void testIssue223() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO user VALUES (2001, '\\'Clark\\'', 'Kent')");
     }
-
+    
     @Test
     public void testKeywordPrecisionIssue363() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO test (user_id, precision) VALUES (1, '111')");
@@ -267,4 +267,13 @@ public class InsertTest {
                 + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'");
     }
     
+    @Test
+    public void testInsertTableWithAliasIssue526() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO account t (name, addr, phone) SELECT * FROM user");
+    }
+    
+    @Test
+    public void testInsertKeyWordEnableIssue592() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO T_USER (ID, EMAIL_VALIDATE, ENABLE, PASSWORD) VALUES (?, ?, ?, ?)");
+    }
 }

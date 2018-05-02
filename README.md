@@ -15,18 +15,11 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 
 ## News
+* Released version **1.2** of JSqlParser
 * breaking **API** change: merge of *within group* and *over* (window expressions)
 * Released version **1.1** of JSqlParser. 
 * JSqlParser has now a build in checkstyle configuration to introduce source code conventions.
 * Released first major version **1.0** of JSqlParser. 
-* Please test the actual **0.9.8-SNAPSHOT**. It includes includes grammar refactorings or changes which eventually results in parse tree changes.
-* Version **0.9.7** released.
-* Version **0.9.6** released.
-* Version **0.9.5** released.
-* Please test the actual **0.9.5-SNAPSHOT**. It includes some grammar refactorings which eventually results in parse tree changes.
-* Version **0.9.4** released.
-* Please test the actual SNAPSHOT, if there are problems using the extended identifier token.
-* Version **0.9.3** released.
 
 More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
 
@@ -44,19 +37,14 @@ To help JSqlParsers development you are encouraged to provide
 * pull requests for new features
 * improvement requests
 * fund new features
+* a little donation
+
+**Please write in english, since it's the language most of the dev team knows.**
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 1.2
+## Extensions in the latest SNAPSHOT version 1.3
 
-* support for more complex expressions within **case expr when expr then expr end**.
-* support for **<<** and **>>** left and right shift operations
-* breaking **API** change: merge of *within group* and *over* (window expressions)
-* first support for *use* statements
-* first support for *call* statements
-* create table allows now quoted identifiers within primary key definition
-* introduced alias for subquery in combination with a pivot definition (this **changes** alias handling within the library for pivot sqls)
-* force the parser to fully parse a String using parseCondExpression or parseExpression
 
 ## Extensions of JSqlParser releases
 
@@ -77,6 +65,10 @@ The project requires the following to build:
 This will produce the jsqlparser-VERSION.jar file in the target/ directory.
 
 **To build this project without using Maven, one has to build the parser by JavaCC using the CLI options it provids.**
+
+## Debugging through problems
+
+Refer to the [Visualize Parsing](https://github.com/JSQLParser/JSqlParser/wiki/Examples-of-SQL-parsing#visualize-parsing) section to learn how to run the parser in debug mode.
 
 ## Source Code conventions
 
@@ -120,7 +112,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>1.1</version>
+	<version>1.2</version>
 </dependency>
 ```
 

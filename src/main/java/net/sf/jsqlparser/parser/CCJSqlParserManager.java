@@ -33,7 +33,7 @@ public class CCJSqlParserManager implements JSqlParser {
 
     @Override
     public Statement parse(Reader statementReader) throws JSQLParserException {
-        CCJSqlParser parser = new CCJSqlParser(statementReader);
+        CCJSqlParser parser = new CCJSqlParser(new StreamProvider(statementReader));
         try {
             return parser.Statement();
         } catch (Exception ex) {

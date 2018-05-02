@@ -24,6 +24,10 @@ package net.sf.jsqlparser.expression.mysql;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.StatementVisitorAdapter;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import org.junit.Test;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -50,7 +54,26 @@ public class MySqlSqlCalcFoundRowsTest {
         assertSqlCanBeParsedAndDeparsed(generalSql);
     }
 
-    public void accept(Statement statement, MySqlSqlCalcFoundRowRef ref) {
-        statement.accept(SqlCalcFoundRowsStatementVisitorFactory.create(ref));
+    private void accept(Statement statement, final MySqlSqlCalcFoundRowRef ref) {
+        statement.accept(new StatementVisitorAdapter() {
+            @Override
+            public void visit(Select select) {
+                select.getSelectBody().accept(new SelectVisitorAdapter() {
+                    @Override
+                    public void visit(PlainSelect plainSelect) {
+                        ref.sqlCalcFoundRows = plainSelect.getMySqlSqlCalcFoundRows();
+                    }
+                });
+            }
+            
+        });
+    }
+}
+
+class MySqlSqlCalcFoundRowRef {
+    public boolean sqlCalcFoundRows = false;
+
+    public MySqlSqlCalcFoundRowRef(boolean sqlCalcFoundRows) {
+        this.sqlCalcFoundRows = sqlCalcFoundRows;
     }
 }
