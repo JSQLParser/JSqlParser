@@ -971,6 +971,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_ENABLE>
 	  | tk=<K_UNSIGNED>
       | tk=<K_TEMP> | tk=<K_TEMPORARY>
+      | tk=<K_ISNULL>
       )
 
     { return tk.image; }
