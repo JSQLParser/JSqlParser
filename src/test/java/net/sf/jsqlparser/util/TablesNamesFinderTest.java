@@ -21,7 +21,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.test.TestException;
-import net.sf.jsqlparser.test.simpleparsing.CCJSqlParserManagerTest;
+import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
