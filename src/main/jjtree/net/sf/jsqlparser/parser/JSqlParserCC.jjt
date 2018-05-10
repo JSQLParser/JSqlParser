@@ -2007,10 +2007,7 @@ Expression Condition():
 {
     (LOOKAHEAD(SQLCondition()) result=SQLCondition()
     | LOOKAHEAD(RegularCondition()) result=RegularCondition()
-    | LOOKAHEAD(Function()) result=Function()
-    | <K_NOT> result=Column() { result = new NotExpression(result); }
-    | result=Column()
-    | LOOKAHEAD({ "0".equals(getToken(1).image) || "1".equals(getToken(1).image) }) token=<S_LONG> { result = new LongValue(token.image); }
+    | result=Function()
     )
 
     { return result; }
