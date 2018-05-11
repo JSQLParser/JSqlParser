@@ -244,6 +244,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PRECISION : "PRECISION">
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PRIOR:"PRIOR">
+|   <K_POSITION:"POSITION">
 |   <K_QUALIFY:"QUALIFY">
 |   <K_RANGE: "RANGE">
 |   <K_RECURSIVE:"RECURSIVE">
@@ -2468,6 +2469,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     | LOOKAHEAD(TranslateExpression()) retval=TranslateExpression()
 
+    | retval=PositionExpression()
+
     | LOOKAHEAD(Function()) retval=Function()
 
     | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
@@ -2878,6 +2881,21 @@ TranslateExpression TranslateExpression() :
     {
         retval.setTranslationName(translationName.image);
         retval.setExpression(expr);
+        return retval;
+    }
+}
+
+PositionExpression PositionExpression() :
+{
+    PositionExpression retval = new PositionExpression();
+    Expression substring;
+    Expression string;
+}
+{
+    <K_POSITION> "(" substring=SimpleExpression() <K_IN> string=SimpleExpression() ")"
+    {
+        retval.setSubstring(substring);
+        retval.setString(string);
         return retval;
     }
 }

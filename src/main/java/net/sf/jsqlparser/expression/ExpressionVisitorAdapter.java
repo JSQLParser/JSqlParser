@@ -522,4 +522,10 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(TeradataFormatExpression teradataFormatExpression) {
         teradataFormatExpression.getExpression().accept(this);
     }
+
+    @Override
+    public void visit(PositionExpression positionExpression) {
+        positionExpression.getSubstring().accept(this);
+        positionExpression.getString().accept(this);
+    }
 }

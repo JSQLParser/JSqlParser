@@ -2742,4 +2742,8 @@ public class SelectTest extends TestCase {
     public void testTeradataQualifyClauseWithAnalyticFunction() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ACCOUNT.*, RANK() OVER (PARTITION BY USER ORDER BY TRANSACTION_TIME DESC) AS RANK_TRANSACTION_TIME FROM ACCOUNT QUALIFY RANK() OVER (PARTITION BY USER ORDER BY TRANSACTION_TIME DESC) = 1");
     }
+
+    public void testPositionIn() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT POSITION('Jose' IN 'San Jose')");
+    }
 }

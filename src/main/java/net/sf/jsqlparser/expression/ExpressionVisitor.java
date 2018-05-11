@@ -187,4 +187,6 @@ public interface ExpressionVisitor {
     void visit(TranslateExpression translateExpression);
 
     void visit(TeradataFormatExpression teradataFormatExpression);
+
+    void visit(PositionExpression positionExpression);
 }
