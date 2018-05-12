@@ -3161,4 +3161,9 @@ public class SelectTest {
     public void testSqlContainIsNullFunctionShouldBeParsed() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT name, age, ISNULL(home, 'earn more money') FROM person");
     }
+    
+    @Test
+    public void testNestedCast() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT acolumn::bit (64)::bigint FROM mytable");
+    }
 }
