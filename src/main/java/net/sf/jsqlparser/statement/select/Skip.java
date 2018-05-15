@@ -25,7 +25,7 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 
 /**
  * A skip clause in the form [SKIP row_count]
- * 
+ *
  * Initial implementation was done for informix special syntax:
  * http://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqls.doc/ids_sqs_0156.htm
  */
@@ -63,11 +63,11 @@ public class Skip {
     public String toString() {
         String result = "SKIP ";
 
-        if(rowCount != null) {
+        if (rowCount != null) {
             result += rowCount;
         } else if (jdbcParameter != null) {
             result += jdbcParameter.toString();
-        } else if (variable != null){
+        } else if (variable != null) {
             result += variable;
         }
 

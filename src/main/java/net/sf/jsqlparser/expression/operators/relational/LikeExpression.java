@@ -26,46 +26,46 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class LikeExpression extends BinaryExpression {
 
-	private boolean not = false;
-	private String escape = null;
+    private boolean not = false;
+    private String escape = null;
     private boolean caseInsensitive = false;
 
-	@Override
-	public boolean isNot() {
-		return not;
-	}
+    @Override
+    public boolean isNot() {
+        return not;
+    }
 
-	public void setNot(boolean b) {
-		not = b;
-	}
+    public void setNot(boolean b) {
+        not = b;
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String getStringExpression() {
-		return ((not) ? "NOT " : "") + (caseInsensitive?"ILIKE":"LIKE");
-	}
+    @Override
+    public String getStringExpression() {
+        return (not ? "NOT " : "") + (caseInsensitive ? "ILIKE" : "LIKE");
+    }
 
-	@Override
-	public String toString() {
-		String retval = super.toString();
-		if (escape != null) {
-			retval += " ESCAPE " + "'" + escape + "'";
-		}
+    @Override
+    public String toString() {
+        String retval = super.toString();
+        if (escape != null) {
+            retval += " ESCAPE " + "'" + escape + "'";
+        }
 
-		return retval;
-	}
+        return retval;
+    }
 
-	public String getEscape() {
-		return escape;
-	}
+    public String getEscape() {
+        return escape;
+    }
 
-	public void setEscape(String escape) {
-		this.escape = escape;
-	}
+    public void setEscape(String escape) {
+        this.escape = escape;
+    }
 
     public boolean isCaseInsensitive() {
         return caseInsensitive;

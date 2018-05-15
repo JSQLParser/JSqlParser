@@ -30,39 +30,39 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class Drop implements Statement {
 
-	private String type;
-	private Table name;
-	private List<String> parameters;
+    private String type;
+    private Table name;
+    private List<String> parameters;
     private boolean ifExists = false;
 
-	@Override
-	public void accept(StatementVisitor statementVisitor) {
-		statementVisitor.visit(this);
-	}
+    @Override
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
-	public Table getName() {
-		return name;
-	}
+    public Table getName() {
+        return name;
+    }
 
-	public List<String> getParameters() {
-		return parameters;
-	}
+    public List<String> getParameters() {
+        return parameters;
+    }
 
-	public String getType() {
-		return type;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public void setName(Table string) {
-		name = string;
-	}
+    public void setName(Table string) {
+        name = string;
+    }
 
-	public void setParameters(List<String> list) {
-		parameters = list;
-	}
+    public void setParameters(List<String> list) {
+        parameters = list;
+    }
 
-	public void setType(String string) {
-		type = string;
-	}
+    public void setType(String string) {
+        type = string;
+    }
 
     public boolean isIfExists() {
         return ifExists;
@@ -72,15 +72,15 @@ public class Drop implements Statement {
         this.ifExists = ifExists;
     }
 
-	@Override
-	public String toString() {
-		String sql = "DROP " + type + " "
-           + (ifExists?"IF EXISTS ":"") + name.toString();
+    @Override
+    public String toString() {
+        String sql = "DROP " + type + " "
+                + (ifExists ? "IF EXISTS " : "") + name.toString();
 
-		if (parameters != null && parameters.size() > 0) {
-			sql += " " + PlainSelect.getStringList(parameters);
-		}
+        if (parameters != null && !parameters.isEmpty()) {
+            sql += " " + PlainSelect.getStringList(parameters);
+        }
 
-		return sql;
-	}
+        return sql;
+    }
 }

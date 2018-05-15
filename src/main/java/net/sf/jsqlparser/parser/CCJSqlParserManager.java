@@ -31,13 +31,13 @@ import net.sf.jsqlparser.statement.Statement;
  */
 public class CCJSqlParserManager implements JSqlParser {
 
-	@Override
-	public Statement parse(Reader statementReader) throws JSQLParserException {
-		CCJSqlParser parser = new CCJSqlParser(statementReader);
-		try {
-			return parser.Statement();
-		} catch (Exception ex) {
-			throw new JSQLParserException(ex);
-		} 
-	}
+    @Override
+    public Statement parse(Reader statementReader) throws JSQLParserException {
+        CCJSqlParser parser = new CCJSqlParser(new StreamProvider(statementReader));
+        try {
+            return parser.Statement();
+        } catch (Exception ex) {
+            throw new JSQLParserException(ex);
+        }
+    }
 }

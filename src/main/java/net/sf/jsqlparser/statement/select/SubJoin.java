@@ -28,56 +28,56 @@ import net.sf.jsqlparser.expression.Alias;
  */
 public class SubJoin implements FromItem {
 
-	private FromItem left;
-	private Join join;
-	private Alias alias;
-	private Pivot pivot;
+    private FromItem left;
+    private Join join;
+    private Alias alias;
+    private Pivot pivot;
 
-	@Override
-	public void accept(FromItemVisitor fromItemVisitor) {
-		fromItemVisitor.visit(this);
-	}
+    @Override
+    public void accept(FromItemVisitor fromItemVisitor) {
+        fromItemVisitor.visit(this);
+    }
 
-	public FromItem getLeft() {
-		return left;
-	}
+    public FromItem getLeft() {
+        return left;
+    }
 
-	public void setLeft(FromItem l) {
-		left = l;
-	}
+    public void setLeft(FromItem l) {
+        left = l;
+    }
 
-	public Join getJoin() {
-		return join;
-	}
+    public Join getJoin() {
+        return join;
+    }
 
-	public void setJoin(Join j) {
-		join = j;
-	}
+    public void setJoin(Join j) {
+        join = j;
+    }
 
-	@Override
-	public Pivot getPivot() {
-		return pivot;
-	}
+    @Override
+    public Pivot getPivot() {
+        return pivot;
+    }
 
-	@Override
-	public void setPivot(Pivot pivot) {
-		this.pivot = pivot;
-	}
+    @Override
+    public void setPivot(Pivot pivot) {
+        this.pivot = pivot;
+    }
 
-	@Override
-	public Alias getAlias() {
-		return alias;
-	}
+    @Override
+    public Alias getAlias() {
+        return alias;
+    }
 
-	@Override
-	public void setAlias(Alias alias) {
-		this.alias = alias;
-	}
+    @Override
+    public void setAlias(Alias alias) {
+        this.alias = alias;
+    }
 
-	@Override
-	public String toString() {
-		return "(" + left + " " + join + ")"
-				+ ((pivot != null) ? " " + pivot : "")
-				+ ((alias != null) ? alias.toString() : "");
-	}
+    @Override
+    public String toString() {
+        return "(" + left + " " + join + ")"
+                + ((alias != null) ? alias.toString() : "")
+                + ((pivot != null) ? " " + pivot : "");
+    }
 }

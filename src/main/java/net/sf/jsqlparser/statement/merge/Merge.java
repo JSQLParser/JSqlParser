@@ -36,6 +36,13 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 public class Merge implements Statement {
 
     private Table table;
+    private Table usingTable;
+    private SubSelect usingSelect;
+    private Alias usingAlias;
+    private Expression onCondition;
+    private MergeInsert mergeInsert;
+    private MergeUpdate mergeUpdate;
+    private boolean insertFirst = false;
 
     public Table getTable() {
         return table;
@@ -45,8 +52,6 @@ public class Merge implements Statement {
         table = name;
     }
 
-    private Table usingTable;
-
     public Table getUsingTable() {
         return usingTable;
     }
@@ -54,8 +59,6 @@ public class Merge implements Statement {
     public void setUsingTable(Table usingTable) {
         this.usingTable = usingTable;
     }
-
-    private SubSelect usingSelect;
 
     public SubSelect getUsingSelect() {
         return usingSelect;
@@ -68,8 +71,6 @@ public class Merge implements Statement {
         }
     }
 
-    private Alias usingAlias;
-
     public Alias getUsingAlias() {
         return usingAlias;
     }
@@ -77,8 +78,6 @@ public class Merge implements Statement {
     public void setUsingAlias(Alias usingAlias) {
         this.usingAlias = usingAlias;
     }
-
-    private Expression onCondition;
 
     public Expression getOnCondition() {
         return onCondition;
@@ -88,8 +87,6 @@ public class Merge implements Statement {
         this.onCondition = onCondition;
     }
 
-    private MergeInsert mergeInsert;
-
     public MergeInsert getMergeInsert() {
         return mergeInsert;
     }
@@ -97,8 +94,6 @@ public class Merge implements Statement {
     public void setMergeInsert(MergeInsert insert) {
         this.mergeInsert = insert;
     }
-
-    private MergeUpdate mergeUpdate;
 
     public MergeUpdate getMergeUpdate() {
         return mergeUpdate;
@@ -113,18 +108,26 @@ public class Merge implements Statement {
         statementVisitor.visit(this);
     }
 
+    public boolean isInsertFirst() {
+        return insertFirst;
+    }
+
+    public void setInsertFirst(boolean insertFirst) {
+        this.insertFirst = insertFirst;
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append("MERGE INTO ");
         b.append(table);
-        b.append(" USING (");
+        b.append(" USING ");
         if (usingTable != null) {
             b.append(usingTable.toString());
         } else if (usingSelect != null) {
-            b.append(usingSelect.toString());
+            b.append("(").append(usingSelect.toString()).append(")");
         }
-        b.append(")");
+
         if (usingAlias != null) {
             b.append(usingAlias.toString());
         }
@@ -132,12 +135,20 @@ public class Merge implements Statement {
         b.append(onCondition);
         b.append(")");
 
+        if (insertFirst) {
+            if (mergeInsert != null) {
+                b.append(mergeInsert.toString());
+            }
+        }
+
         if (mergeUpdate != null) {
             b.append(mergeUpdate.toString());
         }
 
-        if (mergeInsert != null) {
-            b.append(mergeInsert.toString());
+        if (!insertFirst) {
+            if (mergeInsert != null) {
+                b.append(mergeInsert.toString());
+            }
         }
 
         return b.toString();

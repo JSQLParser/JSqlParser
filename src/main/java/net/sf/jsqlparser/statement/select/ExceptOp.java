@@ -29,7 +29,7 @@ import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
  */
 public class ExceptOp extends SetOperation {
 
-	public ExceptOp() {
-		super(SetOperationType.EXCEPT);
-	}
+    public ExceptOp() {
+        super(SetOperationType.EXCEPT);
+    }
 }

@@ -21,50 +21,54 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.JdbcParameter;
+
 /**
  * A fetch clause in the form FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
  */
 public class Fetch {
 
-	private long rowCount;
-	private boolean fetchJdbcParameter = false;
+    private long rowCount;
+    private JdbcParameter fetchJdbcParameter = null;
     private boolean isFetchParamFirst = false;
-	private String fetchParam = "ROW";
+    private String fetchParam = "ROW";
 
-	public long getRowCount() {
-		return rowCount;
-	}
+    public long getRowCount() {
+        return rowCount;
+    }
 
-	public void setRowCount(long l) {
-		rowCount = l;
-	}
+    public void setRowCount(long l) {
+        rowCount = l;
+    }
 
-	public boolean isFetchJdbcParameter() {
-		return fetchJdbcParameter;
-	}
+    public JdbcParameter getFetchJdbcParameter() {
+        return fetchJdbcParameter;
+    }
 
     public String getFetchParam() {
-		return fetchParam;
-	}
+        return fetchParam;
+    }
 
-	public boolean isFetchParamFirst() {
-		return isFetchParamFirst;
-	}
+    public boolean isFetchParamFirst() {
+        return isFetchParamFirst;
+    }
 
-	public void setFetchJdbcParameter(boolean b) {
-		fetchJdbcParameter = b;
-	}
+    public void setFetchJdbcParameter(JdbcParameter jdbc) {
+        fetchJdbcParameter = jdbc;
+    }
 
-	public void setFetchParam(String s) {
-		this.fetchParam = s;
-	}
+    public void setFetchParam(String s) {
+        this.fetchParam = s;
+    }
 
-	public void setFetchParamFirst(boolean b) {
-		this.isFetchParamFirst = b;
-	}
+    public void setFetchParamFirst(boolean b) {
+        this.isFetchParamFirst = b;
+    }
 
-	@Override
-	public String toString() {
-		return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " " + (fetchJdbcParameter ? "?" : rowCount + "") + " "+ fetchParam + " ONLY";
-	}
+    @Override
+    public String toString() {
+        return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " " 
+                + (fetchJdbcParameter!=null ? fetchJdbcParameter.toString() : 
+                    Long.toString(rowCount)) + " " + fetchParam + " ONLY";
+    }
 }

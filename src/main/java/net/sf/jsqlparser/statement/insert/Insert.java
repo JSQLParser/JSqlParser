@@ -34,8 +34,8 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
 /**
- * The insert statement. Every column name in <code>columnNames</code> matches
- * an item in <code>itemsList</code>
+ * The insert statement. Every column name in <code>columnNames</code> matches an item in
+ * <code>itemsList</code>
  */
 public class Insert implements Statement {
 
@@ -54,6 +54,12 @@ public class Insert implements Statement {
     private boolean returningAllColumns = false;
 
     private List<SelectExpressionItem> returningExpressionList = null;
+    
+    /* these lines of codes are used to handle SET syntax in the insert part. 
+     * the SET syntax is based on this: https://dev.mysql.com/doc/refman/5.6/en/insert.html. */
+    private boolean useSet = false;
+    private List<Column> setColumns;
+    private List<Expression> setExpressionList;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -173,16 +179,40 @@ public class Insert implements Statement {
     public void setModifierIgnore(boolean modifierIgnore) {
         this.modifierIgnore = modifierIgnore;
     }
+    
+    public void setUseSet(boolean useSet) {
+        this.useSet = useSet;
+    }
+    
+    public boolean isUseSet() {
+        return useSet;
+    }
+    
+    public void setSetColumns(List<Column> setColumns) {
+        this.setColumns = setColumns;
+    }
+    
+    public List<Column> getSetColumns() {
+        return setColumns;
+    }
+    
+    public void setSetExpressionList(List<Expression> setExpressionList) {
+        this.setExpressionList = setExpressionList;
+    }
+    
+    public List<Expression> getSetExpressionList() {
+        return setExpressionList;
+    }
 
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder();
 
         sql.append("INSERT ");
-        if(modifierPriority != null){
+        if (modifierPriority != null) {
             sql.append(modifierPriority.name()).append(" ");
         }
-        if(modifierIgnore){
+        if (modifierIgnore) {
             sql.append("IGNORE ");
         }
         sql.append("INTO ");
@@ -197,19 +227,30 @@ public class Insert implements Statement {
 
         if (itemsList != null) {
             sql.append(itemsList);
+        } else {
+            if (useSelectBrackets) {
+                sql.append("(");
+            }
+            if (select != null) {
+                sql.append(select);
+            }
+            if (useSelectBrackets) {
+                sql.append(")");
+            }
+        }
+        
+        if (useSet) {
+            sql.append("SET ");
+            for (int i = 0; i < getSetColumns().size(); i++) {
+                if (i != 0) {
+                    sql.append(", ");
+                }
+                sql.append(setColumns.get(i)).append(" = ");
+                sql.append(setExpressionList.get(i));
+            }
         }
 
-        if (useSelectBrackets) {
-            sql.append("(");
-        }
-        if (select != null) {
-            sql.append(select);
-        }
-        if (useSelectBrackets) {
-            sql.append(")");
-        }
-
-        if (useDuplicate){
+        if (useDuplicate) {
             sql.append(" ON DUPLICATE KEY UPDATE ");
             for (int i = 0; i < getDuplicateUpdateColumns().size(); i++) {
                 if (i != 0) {
@@ -223,9 +264,11 @@ public class Insert implements Statement {
         if (isReturningAllColumns()) {
             sql.append(" RETURNING *");
         } else if (getReturningExpressionList() != null) {
-            sql.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
+            sql.append(" RETURNING ").append(PlainSelect.
+                    getStringList(getReturningExpressionList(), true, false));
         }
 
         return sql.toString();
     }
+    
 }

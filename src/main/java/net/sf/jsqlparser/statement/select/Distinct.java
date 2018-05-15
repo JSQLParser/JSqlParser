@@ -28,30 +28,45 @@ import java.util.List;
  */
 public class Distinct {
 
-	private List<SelectItem> onSelectItems;
+    private List<SelectItem> onSelectItems;
+    private boolean useUnique = false;
 
-	/**
-	 * A list of {@link SelectItem}s expressions, as in "select DISTINCT ON
-	 * (a,b,c) a,b FROM..."
-	 *
-	 * @return a list of {@link SelectItem}s expressions
-	 */
-	public List<SelectItem> getOnSelectItems() {
-		return onSelectItems;
-	}
+    public Distinct() {
+    }
 
-	public void setOnSelectItems(List<SelectItem> list) {
-		onSelectItems = list;
-	}
+    public Distinct(boolean useUnique) {
+        this.useUnique = useUnique;
+    }
 
-	@Override
-	public String toString() {
-		String sql = "DISTINCT";
+    /**
+     * A list of {@link SelectItem}s expressions, as in "select DISTINCT ON (a,b,c) a,b FROM..."
+     *
+     * @return a list of {@link SelectItem}s expressions
+     */
+    public List<SelectItem> getOnSelectItems() {
+        return onSelectItems;
+    }
 
-		if (onSelectItems != null && onSelectItems.size() > 0) {
-			sql += " ON (" + PlainSelect.getStringList(onSelectItems) + ")";
-		}
+    public void setOnSelectItems(List<SelectItem> list) {
+        onSelectItems = list;
+    }
 
-		return sql;
-	}
+    public boolean isUseUnique() {
+        return useUnique;
+    }
+
+    public void setUseUnique(boolean useUnique) {
+        this.useUnique = useUnique;
+    }
+
+    @Override
+    public String toString() {
+        String sql = useUnique ? "UNIQUE" : "DISTINCT";
+
+        if (onSelectItems != null && !onSelectItems.isEmpty()) {
+            sql += " ON (" + PlainSelect.getStringList(onSelectItems) + ")";
+        }
+
+        return sql;
+    }
 }

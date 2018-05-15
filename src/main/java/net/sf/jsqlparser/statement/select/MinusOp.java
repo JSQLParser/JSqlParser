@@ -29,7 +29,7 @@ import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
  */
 public class MinusOp extends SetOperation {
 
-	public MinusOp() {
-		super(SetOperationType.MINUS);
-	}
+    public MinusOp() {
+        super(SetOperationType.MINUS);
+    }
 }

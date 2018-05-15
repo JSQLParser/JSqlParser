@@ -16,7 +16,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
@@ -33,32 +32,32 @@ import static org.junit.Assert.*;
  * @author toben
  */
 public class SignedExpressionTest {
-	
-	public SignedExpressionTest() {
-	}
-	
-	@BeforeClass
-	public static void setUpClass() {
-	}
-	
-	@AfterClass
-	public static void tearDownClass() {
-	}
-	
-	@Before
-	public void setUp() {
-	}
-	
-	@After
-	public void tearDown() {
-	}
 
-	/**
-	 * Test of getSign method, of class SignedExpression.
-	 */
-	@Test(expected = IllegalArgumentException.class)
-	public void testGetSign() throws JSQLParserException {
-		new SignedExpression('*', CCJSqlParserUtil.parseExpression("a"));
-		fail("must not work");
-	}
+    public SignedExpressionTest() {
+    }
+
+    @BeforeClass
+    public static void setUpClass() {
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    /**
+     * Test of getSign method, of class SignedExpression.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetSign() throws JSQLParserException {
+        new SignedExpression('*', CCJSqlParserUtil.parseExpression("a"));
+        fail("must not work");
+    }
 }

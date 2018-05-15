@@ -21,45 +21,51 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  * A string as in 'example_string'
  */
-public class StringValue implements Expression {
+public class StringValue extends ASTNodeAccessImpl implements Expression {
 
-	private String value = "";
+    private String value = "";
 
-	public StringValue(String escapedValue) {
-		// romoving "'" at the start and at the end
-		value = escapedValue.substring(1, escapedValue.length() - 1);
-	}
+    public StringValue(String escapedValue) {
+        // romoving "'" at the start and at the end
+        if (escapedValue.startsWith("'") && escapedValue.endsWith("'")) {
+            value = escapedValue.substring(1, escapedValue.length() - 1);
+        } else {
+            value = escapedValue;
+        }
+    }
 
-	public String getValue() {
-		return value;
-	}
+    public String getValue() {
+        return value;
+    }
 
-	public String getNotExcapedValue() {
-		StringBuilder buffer = new StringBuilder(value);
-		int index = 0;
-		int deletesNum = 0;
-		while ((index = value.indexOf("''", index)) != -1) {
-			buffer.deleteCharAt(index - deletesNum);
-			index += 2;
-			deletesNum++;
-		}
-		return buffer.toString();
-	}
+    public String getNotExcapedValue() {
+        StringBuilder buffer = new StringBuilder(value);
+        int index = 0;
+        int deletesNum = 0;
+        while ((index = value.indexOf("''", index)) != -1) {
+            buffer.deleteCharAt(index - deletesNum);
+            index += 2;
+            deletesNum++;
+        }
+        return buffer.toString();
+    }
 
-	public void setValue(String string) {
-		value = string;
-	}
+    public void setValue(String string) {
+        value = string;
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return "'" + value + "'";
-	}
+    @Override
+    public String toString() {
+        return "'" + value + "'";
+    }
 }

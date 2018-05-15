@@ -21,13 +21,15 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  *
  * @author aud
  */
-public class NumericBind implements Expression {
+public class NumericBind extends ASTNodeAccessImpl implements Expression {
 
-	private int bindId;
+    private int bindId;
 
     public int getBindId() {
         return bindId;
@@ -37,13 +39,13 @@ public class NumericBind implements Expression {
         this.bindId = bindId;
     }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return ":" + bindId;
-	}
+    @Override
+    public String toString() {
+        return ":" + bindId;
+    }
 }

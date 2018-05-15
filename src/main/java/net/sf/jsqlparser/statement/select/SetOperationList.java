@@ -24,109 +24,122 @@ package net.sf.jsqlparser.statement.select;
 import java.util.List;
 
 /**
- * A database set operation. This operation consists of a list of plainSelects
- * connected by set operations (UNION,INTERSECT,MINUS,EXCEPT). All these
- * operations have the same priority.
+ * A database set operation. This operation consists of a list of plainSelects connected by set
+ * operations (UNION,INTERSECT,MINUS,EXCEPT). All these operations have the same priority.
  *
  * @author tw
  */
 public class SetOperationList implements SelectBody {
 
-	private List<SelectBody> selects;
-	private List<SetOperation> operations;
-	private List<OrderByElement> orderByElements;
-	private Limit limit;
-	private Offset offset;
-	private Fetch fetch;
+    private List<SelectBody> selects;
+    private List<Boolean> brackets;
+    private List<SetOperation> operations;
+    private List<OrderByElement> orderByElements;
+    private Limit limit;
+    private Offset offset;
+    private Fetch fetch;
 
-	@Override
-	public void accept(SelectVisitor selectVisitor) {
-		selectVisitor.visit(this);
-	}
+    @Override
+    public void accept(SelectVisitor selectVisitor) {
+        selectVisitor.visit(this);
+    }
 
-	public List<OrderByElement> getOrderByElements() {
-		return orderByElements;
-	}
+    public List<OrderByElement> getOrderByElements() {
+        return orderByElements;
+    }
 
-	public List<SelectBody> getSelects() {
-		return selects;
-	}
+    public List<SelectBody> getSelects() {
+        return selects;
+    }
 
-	public List<SetOperation> getOperations() {
-		return operations;
-	}
+    public List<SetOperation> getOperations() {
+        return operations;
+    }
 
-	public void setOrderByElements(List<OrderByElement> orderByElements) {
-		this.orderByElements = orderByElements;
-	}
+    public List<Boolean> getBrackets() {
+        return brackets;
+    }
 
-	public void setOpsAndSelects(List<SelectBody> select, List<SetOperation> ops) {
-		selects = select;
-		operations = ops;
+    public void setBrackets(List<Boolean> brackets) {
+        this.brackets = brackets;
+    }
 
-		if (select.size() - 1 != ops.size()) {
-			throw new IllegalArgumentException("list sizes are not valid");
-		}
-	}
+    public void setOrderByElements(List<OrderByElement> orderByElements) {
+        this.orderByElements = orderByElements;
+    }
 
-	public Limit getLimit() {
-		return limit;
-	}
+    public void setBracketsOpsAndSelects(List<Boolean> brackets, List<SelectBody> select, List<SetOperation> ops) {
+        selects = select;
+        operations = ops;
+        this.brackets = brackets;
 
-	public void setLimit(Limit limit) {
-		this.limit = limit;
-	}
+        if (select.size() - 1 != ops.size() || select.size() != brackets.size()) {
+            throw new IllegalArgumentException("list sizes are not valid");
+        }
+    }
 
-	public Offset getOffset() {
-		return offset;
-	}
+    public Limit getLimit() {
+        return limit;
+    }
 
-	public void setOffset(Offset offset) {
-		this.offset = offset;
-	}
+    public void setLimit(Limit limit) {
+        this.limit = limit;
+    }
 
-	public Fetch getFetch() {
-		return fetch;
-	}
+    public Offset getOffset() {
+        return offset;
+    }
 
-	public void setFetch(Fetch fetch) {
-		this.fetch = fetch;
-	}
+    public void setOffset(Offset offset) {
+        this.offset = offset;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder buffer = new StringBuilder();
+    public Fetch getFetch() {
+        return fetch;
+    }
 
-		for (int i = 0; i < selects.size(); i++) {
-			if (i != 0) {
-				buffer.append(" ").append(operations.get(i - 1).toString()).append(" ");
-			}
-			buffer.append("(").append(selects.get(i).toString()).append(")");
-		}
+    public void setFetch(Fetch fetch) {
+        this.fetch = fetch;
+    }
 
-		if (orderByElements != null) {
-			buffer.append(PlainSelect.orderByToString(orderByElements));
-		}
-		if (limit != null) {
-			buffer.append(limit.toString());
-		}
-		if (offset != null) {
-			buffer.append(offset.toString());
-		}
-		if (fetch != null) {
-			buffer.append(fetch.toString());
-		}
-		return buffer.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
 
-	/**
-	 * list of set operations.
-	 */
-	public enum SetOperationType {
+        for (int i = 0; i < selects.size(); i++) {
+            if (i != 0) {
+                buffer.append(" ").append(operations.get(i - 1).toString()).append(" ");
+            }
+            if (brackets == null || brackets.get(i)) {
+                buffer.append("(").append(selects.get(i).toString()).append(")");
+            } else {
+                buffer.append(selects.get(i).toString());
+            }
+        }
 
-		INTERSECT,
-		EXCEPT,
-		MINUS,
-		UNION
-	}
+        if (orderByElements != null) {
+            buffer.append(PlainSelect.orderByToString(orderByElements));
+        }
+        if (limit != null) {
+            buffer.append(limit.toString());
+        }
+        if (offset != null) {
+            buffer.append(offset.toString());
+        }
+        if (fetch != null) {
+            buffer.append(fetch.toString());
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * list of set operations.
+     */
+    public enum SetOperationType {
+
+        INTERSECT,
+        EXCEPT,
+        MINUS,
+        UNION
+    }
 }
