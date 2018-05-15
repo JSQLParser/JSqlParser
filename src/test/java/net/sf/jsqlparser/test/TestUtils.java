@@ -18,24 +18,23 @@
  */
 package net.sf.jsqlparser.test;
 
-import static junit.framework.TestCase.*;
+import net.sf.jsqlparser.*;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.parser.*;
+import net.sf.jsqlparser.statement.*;
+import net.sf.jsqlparser.util.deparser.*;
 
-import java.io.StringReader;
+import java.io.*;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
-import net.sf.jsqlparser.util.deparser.SelectDeParser;
-import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
@@ -65,12 +64,12 @@ public class TestUtils {
     }
 
     public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement, boolean laxDeparsingCheck) {
-        assertEquals(buildSqlString(statement, laxDeparsingCheck),
+        assertEquals(buildSqlString(statement, laxDeparsingCheck), 
                 buildSqlString(parsed.toString(), laxDeparsingCheck));
 
         StatementDeParser deParser = new StatementDeParser(new StringBuilder());
         parsed.accept(deParser);
-        assertEquals(buildSqlString(statement, laxDeparsingCheck),
+        assertEquals(buildSqlString(statement, laxDeparsingCheck), 
                 buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
     }
 
@@ -78,10 +77,10 @@ public class TestUtils {
         if (laxDeparsingCheck) {
             return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
         } else {
-            return sql.toLowerCase();
+            return sql;
         }
     }
-
+    
     @Test
     public void testBuildSqlString() {
         assertEquals("select col from test", buildSqlString("   SELECT   col FROM  \r\n \t  TEST \n", true));
@@ -98,7 +97,7 @@ public class TestUtils {
 
         assertEquals(expression, stringBuilder.toString());
     }
-
+    
     public static void assertOracleHintExists(String sql, boolean assertDeparser, String... hints) throws JSQLParserException {
         if (assertDeparser) {
             assertSqlCanBeParsedAndDeparsed(sql, true);
@@ -125,5 +124,5 @@ public class TestUtils {
             }
         }
     }
-
+    
 }
