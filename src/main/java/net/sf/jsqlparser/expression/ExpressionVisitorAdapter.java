@@ -493,7 +493,10 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 	@Override
 	public void visit(TeradataTrimExpression teradataTrimExpression)
 	{
-
+		if(teradataTrimExpression.getRemovalCharExpression() != null)
+		{
+			teradataTrimExpression.getRemovalCharExpression().accept(this);
+		}
 		teradataTrimExpression.getTargetStringExpression().accept(this);
 		if(teradataTrimExpression.getCollationNameExpression() != null)
 		{
