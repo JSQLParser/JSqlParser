@@ -49,6 +49,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 * corrected ISNULL regression (issue #610)
 * refactored statement test classes to the class corresponding packages
+* allowed nested postgresql casts (e.g. col::bigint::int)
 
 
 ## Extensions of JSqlParser releases
