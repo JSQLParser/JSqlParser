@@ -2,13 +2,13 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>0.9.5-teradata1</version>
+    <version>1.2-SNAPSHOT</version>
     <name>JSQLParser library</name>
     <inceptionYear>2004</inceptionYear>
     <organization>
         <name>JSQLParser</name>
     </organization>
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
     <url>https://github.com/JSQLParser/JSqlParser</url>
 
     <licenses>
@@ -36,6 +36,36 @@
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <version>1.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>2.7.22</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <scope>test</scope>
+            <version>2.44.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.opera</groupId>
+            <artifactId>operadriver</artifactId>
+            <scope>test</scope>
+            <version>1.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.seleniumhq.selenium</groupId>
+                    <artifactId>selenium-remote-driver</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -73,10 +103,10 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
+                <version>3.7.0</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                     <showWarnings>true</showWarnings>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
@@ -103,7 +133,7 @@
                     <dependency>
                         <groupId>net.java.dev.javacc</groupId>
                         <artifactId>javacc</artifactId>
-                        <version>6.1.2</version>
+                        <version>7.0.3</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -153,7 +183,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.2</version>
+                <version>2.5.3</version>
                 <configuration>
                     <localCheckout>true</localCheckout>
                     <pushChanges>false</pushChanges>
@@ -163,7 +193,7 @@
                     <dependency>
                         <groupId>org.apache.maven.scm</groupId>
                         <artifactId>maven-scm-provider-gitexe</artifactId>
-                        <version>1.9</version>
+                        <version>1.9.5</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -231,9 +261,20 @@
                     </instrumentation>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>3.0.1</version>
+                <extensions>true</extensions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.15</version>
+            </plugin>
         </plugins>
     </build>
-
+    
     <reporting>
         <plugins>
             <plugin>
@@ -334,6 +375,77 @@
             <properties>
                 <javadoc.opts>-Xdoclint:none</javadoc.opts>
             </properties>
+        </profile>
+        <profile>
+            <id>check.sources</id>
+            <activation>
+                <property>
+                    <name>!skipCheckSources</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <version>2.17</version>
+                        <executions>
+                            <execution>
+                                <id>verify-style</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <logViolationsToConsole>true</logViolationsToConsole>
+                            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                            <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                            <checkstyleRules>
+                                <module name="Checker">
+                                    <module name="SuppressWarningsFilter" />
+                                    <module name="FileTabCharacter" />
+                                    <!-- git checkout may change linefeeds on the fly
+                                    <module name="RegexpMultiline">
+                                        <property name="format" value="(?s:(\r\n|\r).*)" />
+                                        <property name="message" value="CRLF and CR line endings are prohibited, but this file uses them." />
+                                    </module>
+                                    -->
+                                    <module name="TreeWalker">
+                                        <module name="AvoidNestedBlocks" />
+                                        <module name="ConstantName" />
+                                        <module name="EmptyCatchBlock" />
+                                        <module name="EmptyStatement" />
+                                        <module name="MissingOverride" />
+                                        <module name="MultipleVariableDeclarations" />
+                                        <module name="ParameterAssignment" />
+                                        <module name="StringLiteralEquality" />
+                                        <module name="RedundantImport" />
+                                        <module name="UnusedImports" />
+                                        
+										<module name="WhitespaceAfter" />
+										
+                                        <module name="NeedBraces" />
+                                        <module name="UnnecessaryParentheses" />
+                                        <module name="LeftCurly" />
+                                        <module name="RightCurly" />
+                                        
+                                        <module name="SuppressWarningsHolder" />
+                                    </module>
+                                </module>
+                            </checkstyleRules>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.puppycrawl.tools</groupId>
+                                <artifactId>checkstyle</artifactId>
+                                <version>6.19</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 

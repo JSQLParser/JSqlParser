@@ -31,30 +31,30 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  */
 public class ExpressionList implements ItemsList {
 
-	private List<Expression> expressions;
+    private List<Expression> expressions;
 
-	public ExpressionList() {
-	}
+    public ExpressionList() {
+    }
 
-	public ExpressionList(List<Expression> expressions) {
-		this.expressions = expressions;
-	}
+    public ExpressionList(List<Expression> expressions) {
+        this.expressions = expressions;
+    }
 
-	public List<Expression> getExpressions() {
-		return expressions;
-	}
+    public List<Expression> getExpressions() {
+        return expressions;
+    }
 
-	public void setExpressions(List<Expression> list) {
-		expressions = list;
-	}
+    public void setExpressions(List<Expression> list) {
+        expressions = list;
+    }
 
-	@Override
-	public void accept(ItemsListVisitor itemsListVisitor) {
-		itemsListVisitor.visit(this);
-	}
+    @Override
+    public void accept(ItemsListVisitor itemsListVisitor) {
+        itemsListVisitor.visit(this);
+    }
 
-	@Override
-	public String toString() {
-		return PlainSelect.getStringList(expressions, true, true);
-	}
+    @Override
+    public String toString() {
+        return PlainSelect.getStringList(expressions, true, true);
+    }
 }

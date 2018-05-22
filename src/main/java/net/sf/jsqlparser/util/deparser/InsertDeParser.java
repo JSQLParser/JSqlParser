@@ -30,15 +30,14 @@ import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.insert.InsertModifierPriority;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a
- * string) an {@link net.sf.jsqlparser.statement.insert.Insert}
+ * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) an
+ * {@link net.sf.jsqlparser.statement.insert.Insert}
  */
 public class InsertDeParser implements ItemsListVisitor {
 
@@ -51,12 +50,10 @@ public class InsertDeParser implements ItemsListVisitor {
 
     /**
      * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
-     * {@link net.sf.jsqlparser.expression.Expression}s. It has to share the
-     * same<br>
+     * {@link net.sf.jsqlparser.expression.Expression}s. It has to share the same<br>
      * StringBuilder (buffer parameter) as this object in order to work
-     * @param selectVisitor a {@link SelectVisitor} to de-parse
-     * {@link net.sf.jsqlparser.statement.select.Select}s. It has to share the
-     * same<br>
+     * @param selectVisitor a {@link SelectVisitor} to de-parse {@link net.sf.jsqlparser.statement.select.Select}s. It
+     * has to share the same<br>
      * StringBuilder (buffer parameter) as this object in order to work
      * @param buffer the buffer that will be filled with the insert
      */
@@ -76,15 +73,16 @@ public class InsertDeParser implements ItemsListVisitor {
 
     public void deParse(Insert insert) {
         buffer.append("INSERT ");
-        if(insert.getModifierPriority() != null){
+        if (insert.getModifierPriority() != null) {
             buffer.append(insert.getModifierPriority()).append(" ");
         }
-        if(insert.isModifierIgnore()){
+        if (insert.isModifierIgnore()) {
             buffer.append("IGNORE ");
         }
         buffer.append("INTO ");
 
-        buffer.append(insert.getTable().getFullyQualifiedName());
+        buffer.append(insert.getTable().toString());
+
         if (insert.getColumns() != null) {
             buffer.append(" (");
             for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext();) {
@@ -119,7 +117,23 @@ public class InsertDeParser implements ItemsListVisitor {
             }
         }
 
-        if(insert.isUseDuplicate()){
+        if (insert.isUseSet()) {
+            buffer.append(" SET ");
+            for (int i = 0; i < insert.getSetColumns().size(); i++) {
+                Column column = insert.getSetColumns().get(i);
+                column.accept(expressionVisitor);
+
+                buffer.append(" = ");
+
+                Expression expression = insert.getSetExpressionList().get(i);
+                expression.accept(expressionVisitor);
+                if (i < insert.getSetColumns().size() - 1) {
+                    buffer.append(", ");
+                }
+            }
+        }
+
+        if (insert.isUseDuplicate()) {
             buffer.append(" ON DUPLICATE KEY UPDATE ");
             for (int i = 0; i < insert.getDuplicateUpdateColumns().size(); i++) {
                 Column column = insert.getDuplicateUpdateColumns().get(i);
@@ -137,7 +151,8 @@ public class InsertDeParser implements ItemsListVisitor {
             buffer.append(" RETURNING *");
         } else if (insert.getReturningExpressionList() != null) {
             buffer.append(" RETURNING ");
-            for (Iterator<SelectExpressionItem> iter = insert.getReturningExpressionList().iterator(); iter.hasNext();) {
+            for (Iterator<SelectExpressionItem> iter = insert.getReturningExpressionList().
+                    iterator(); iter.hasNext();) {
                 buffer.append(iter.next().toString());
                 if (iter.hasNext()) {
                     buffer.append(", ");

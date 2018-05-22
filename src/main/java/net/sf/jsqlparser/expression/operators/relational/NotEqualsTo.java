@@ -23,28 +23,18 @@ package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
-public class NotEqualsTo extends OldOracleJoinBinaryExpression {
-
-    private final String operator;
+public class NotEqualsTo extends ComparisonOperator {
 
     public NotEqualsTo() {
-        operator = "<>";
+        super("<>");
     }
 
     public NotEqualsTo(String operator) {
-        this.operator = operator;
-        if (!"!=".equals(operator) && !"<>".equals(operator)) {
-            throw new IllegalArgumentException("only <> or != allowed");
-        }
+        super(operator);
     }
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
-    }
-
-    @Override
-    public String getStringExpression() {
-        return operator;
     }
 }

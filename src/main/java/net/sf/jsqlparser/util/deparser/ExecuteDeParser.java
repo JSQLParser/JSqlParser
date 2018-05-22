@@ -21,44 +21,53 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import java.util.List;
+
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.execute.Execute;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class ExecuteDeParser {
 
-	private StringBuilder buffer;
-	private ExpressionVisitor expressionVisitor;
+    private StringBuilder buffer;
+    private ExpressionVisitor expressionVisitor;
 
-	/**
-	 * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
-	 * expressions. It has to share the same<br>
-	 * StringBuilder (buffer parameter) as this object in order to work
-	 * @param buffer the buffer that will be filled with the select
-	 */
-	public ExecuteDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
-		this.buffer = buffer;
-		this.expressionVisitor = expressionVisitor;
-	}
+    /**
+     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share
+     * the same<br>
+     * StringBuilder (buffer parameter) as this object in order to work
+     * @param buffer the buffer that will be filled with the select
+     */
+    public ExecuteDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+        this.buffer = buffer;
+        this.expressionVisitor = expressionVisitor;
+    }
 
-	public StringBuilder getBuffer() {
-		return buffer;
-	}
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
 
-	public void setBuffer(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 
-	public void deParse(Execute execute) {
-		buffer.append("EXECUTE ").append(execute.getName());
-		buffer.append(" ").append(PlainSelect.getStringList(execute.getExprList().getExpressions(), true, false));
-	}
+    public void deParse(Execute execute) {
+        buffer.append(execute.getExecType().name()).append(" ").append(execute.getName());
+        List<Expression> expressions = execute.getExprList().getExpressions();
+        for (int i = 0; i < expressions.size(); i++) {
+            if (i > 0) {
+                buffer.append(",");
+            }
+            buffer.append(" ");
+            expressions.get(i).accept(expressionVisitor);
+        }
+    }
 
-	public ExpressionVisitor getExpressionVisitor() {
-		return expressionVisitor;
-	}
+    public ExpressionVisitor getExpressionVisitor() {
+        return expressionVisitor;
+    }
 
-	public void setExpressionVisitor(ExpressionVisitor visitor) {
-		expressionVisitor = visitor;
-	}
+    public void setExpressionVisitor(ExpressionVisitor visitor) {
+        expressionVisitor = visitor;
+    }
 }

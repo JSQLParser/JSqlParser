@@ -25,24 +25,26 @@ import net.sf.jsqlparser.statement.alter.Alter;
 
 /**
  * very simple alter statement deparser
+ *
  * @author toben
  */
 public class AlterDeParser {
+
     private StringBuilder buffer;
 
     public AlterDeParser(StringBuilder buffer) {
         this.buffer = buffer;
     }
-    
+
     public void deParse(Alter alter) {
-		buffer.append(alter.toString());
-	}
+        buffer.append(alter.toString());
+    }
 
-	public StringBuilder getBuffer() {
-		return buffer;
-	}
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
 
-	public void setBuffer(StringBuilder buffer) {
-		this.buffer = buffer;
-	}
+    public void setBuffer(StringBuilder buffer) {
+        this.buffer = buffer;
+    }
 }

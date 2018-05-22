@@ -36,6 +36,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     private Alias alias;
     private Pivot pivot;
+    private MySQLIndexHint hint;
 
     public Table() {
     }
@@ -133,10 +134,19 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         this.pivot = pivot;
     }
 
+    public MySQLIndexHint getIndexHint() {
+        return hint;
+    }
+
+    public void setHint(MySQLIndexHint hint) {
+        this.hint = hint;
+    }
+
     @Override
     public String toString() {
         return getFullyQualifiedName()
-               + ((pivot != null) ? " " + pivot : "")
-               + ((alias != null) ? alias.toString() : "");
+                + ((alias != null) ? alias.toString() : "")
+                + ((pivot != null) ? " " + pivot : "")
+                + ((hint != null) ? hint.toString() : "");
     }
 }

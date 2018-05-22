@@ -21,27 +21,31 @@
  */
 package net.sf.jsqlparser.expression;
 
-public class TeradataCastExpression extends CastExpression
-{
-	private Expression formatExpression = null;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-	@Override
-	public String toString() {
-		if (isUseCastKeyword()) {
-			return "CAST(" + getLeftExpression() + " AS " + getType().toString() + (formatExpression != null ? (" FORMAT " + formatExpression) : "") + ")";
-		} else {
-			return super.toString();
-		}
-	}
+public class TimeKeyExpression extends ASTNodeAccessImpl implements Expression {
 
-	public Expression getFormatExpression()
-	{
-		return formatExpression;
-	}
+    private String stringValue;
 
-	public void setFormatExpression(Expression formatExpression)
-	{
-		this.formatExpression = formatExpression;
-	}
+    public TimeKeyExpression(final String value) {
+        this.stringValue = value;
+    }
 
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
+
+    public String getStringValue() {
+        return stringValue;
+    }
+
+    public void setStringValue(String string) {
+        stringValue = string;
+    }
+
+    @Override
+    public String toString() {
+        return getStringValue();
+    }
 }

@@ -24,16 +24,15 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.schema.Column;
 
 import java.util.List;
+import net.sf.jsqlparser.expression.Alias;
 
 public class Pivot {
 
     private List<FunctionItem> functionItems;
-
     private List<Column> forColumns;
-
     private List<SelectExpressionItem> singleInItems;
-
     private List<ExpressionListItem> multiInItems;
+    private Alias alias;
 
     public void accept(PivotVisitor pivotVisitor) {
         pivotVisitor.visit(this);
@@ -75,11 +74,21 @@ public class Pivot {
         return singleInItems == null ? multiInItems : singleInItems;
     }
 
+    public Alias getAlias() {
+        return alias;
+    }
+
+    public void setAlias(Alias alias) {
+        this.alias = alias;
+    }
+
     @Override
     public String toString() {
-        return "PIVOT (" +
-                PlainSelect.getStringList(functionItems) +
-                " FOR " + PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1) +
-                " IN " + PlainSelect.getStringList(getInItems(), true, true) + ")";
+        return "PIVOT ("
+                + PlainSelect.getStringList(functionItems)
+                + " FOR " + PlainSelect.
+                        getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)
+                + " IN " + PlainSelect.getStringList(getInItems(), true, true) + ")"
+                + (alias!=null?alias.toString():"");
     }
 }

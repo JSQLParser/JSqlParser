@@ -27,31 +27,60 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * Foreign Key Index
+ *
  * @author toben
  */
 public class ForeignKeyIndex extends NamedConstraint {
-	private Table table;
-	private List<String> referencedColumnNames;
 
-	public Table getTable() {
-		return table;
-	}
+    private Table table;
+    private List<String> referencedColumnNames;
+    private String onDeleteReferenceOption;
+    private String onUpdateReferenceOption;
 
-	public void setTable(Table table) {
-		this.table = table;
-	}
+    public Table getTable() {
+        return table;
+    }
 
-	public List<String> getReferencedColumnNames() {
-		return referencedColumnNames;
-	}
+    public void setTable(Table table) {
+        this.table = table;
+    }
 
-	public void setReferencedColumnNames(List<String> referencedColumnNames) {
-		this.referencedColumnNames = referencedColumnNames;
-	}
+    public List<String> getReferencedColumnNames() {
+        return referencedColumnNames;
+    }
 
-	@Override
-	public String toString() {
-		return super.toString()
-				+ " REFERENCES " + table + PlainSelect.getStringList(getReferencedColumnNames(), true, true);
-	}
+    public void setReferencedColumnNames(List<String> referencedColumnNames) {
+        this.referencedColumnNames = referencedColumnNames;
+    }
+
+    public String getOnDeleteReferenceOption() {
+        return onDeleteReferenceOption;
+    }
+
+    public void setOnDeleteReferenceOption(String onDeleteReferenceOption) {
+        this.onDeleteReferenceOption = onDeleteReferenceOption;
+    }
+
+    public String getOnUpdateReferenceOption() {
+        return onUpdateReferenceOption;
+    }
+
+    public void setOnUpdateReferenceOption(String onUpdateReferenceOption) {
+        this.onUpdateReferenceOption = onUpdateReferenceOption;
+    }
+
+    @Override
+    public String toString() {
+        String referenceOptions = "";
+        if (onDeleteReferenceOption != null) {
+            referenceOptions += " ON DELETE " + onDeleteReferenceOption;
+        }
+        if (onUpdateReferenceOption != null) {
+            referenceOptions += " ON UPDATE " + onUpdateReferenceOption;
+        }
+        return super.toString()
+                + " REFERENCES " + table + PlainSelect.
+                        getStringList(getReferencedColumnNames(), true, true)
+                + referenceOptions;
+    }
 }

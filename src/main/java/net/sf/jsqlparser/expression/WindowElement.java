@@ -60,7 +60,7 @@ public class WindowElement {
     @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder(type.toString());
-        
+
         if (offset != null) {
             buffer.append(offset.toString());
         } else if (range != null) {

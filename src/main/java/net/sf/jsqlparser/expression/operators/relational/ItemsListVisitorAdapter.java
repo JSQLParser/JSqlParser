@@ -23,7 +23,8 @@ package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.statement.select.SubSelect;
 
-public class ItemsListVisitorAdapter implements ItemsListVisitor{
+public class ItemsListVisitorAdapter implements ItemsListVisitor {
+
     @Override
     public void visit(SubSelect subSelect) {
 

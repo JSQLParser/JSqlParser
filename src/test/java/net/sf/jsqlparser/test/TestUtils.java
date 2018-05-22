@@ -18,9 +18,8 @@
  */
 package net.sf.jsqlparser.test;
 
-import static junit.framework.TestCase.*;
-
 import java.io.StringReader;
+import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,12 +35,17 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
  * @author toben
  */
 public class TestUtils {
+
+    private static final Pattern SQL_COMMENT_PATTERN = Pattern.
+            compile("(--.*$)|(/\\*.*?\\*/)", Pattern.MULTILINE);
 
     public static void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(statement, false);
@@ -51,8 +55,8 @@ public class TestUtils {
      * Tries to parse and deparse the given statement.
      *
      * @param statement
-     * @param laxDeparsingCheck removes all linefeeds from the original and
-     * removes all double spaces. The check is caseinsensitive.
+     * @param laxDeparsingCheck removes all linefeeds from the original and removes all double
+     * spaces. The check is caseinsensitive.
      * @throws JSQLParserException
      */
     public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck) throws JSQLParserException {
@@ -74,11 +78,13 @@ public class TestUtils {
                 buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
     }
 
-    public static String buildSqlString(String sql, boolean laxDeparsingCheck) {
+    public static String buildSqlString(final String originalSql, boolean laxDeparsingCheck) {
+        String sql = SQL_COMMENT_PATTERN.matcher(originalSql).replaceAll("");
         if (laxDeparsingCheck) {
-            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
+            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").
+                    replaceAll("\\s*([!/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
         } else {
-            return sql.toLowerCase();
+            return sql;
         }
     }
 

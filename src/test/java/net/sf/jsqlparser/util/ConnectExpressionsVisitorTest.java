@@ -20,53 +20,54 @@ import static org.junit.Assert.*;
  */
 public class ConnectExpressionsVisitorTest {
 
-	public ConnectExpressionsVisitorTest() {
-	}
+    public ConnectExpressionsVisitorTest() {
+    }
 
-	@BeforeClass
-	public static void setUpClass() {
-	}
+    @BeforeClass
+    public static void setUpClass() {
+    }
 
-	@AfterClass
-	public static void tearDownClass() {
-	}
+    @AfterClass
+    public static void tearDownClass() {
+    }
 
-	@Before
-	public void setUp() {
-	}
+    @Before
+    public void setUp() {
+    }
 
-	@After
-	public void tearDown() {
-	}
-	CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    @After
+    public void tearDown() {
+    }
 
-	@Test
-	public void testVisit_PlainSelect_concat() throws JSQLParserException {
-		String sql = "select a,b,c from test";
-		Select select = (Select) parserManager.parse(new StringReader(sql));
-		ConnectExpressionsVisitor instance = new ConnectExpressionsVisitor() {
-			@Override
-			protected BinaryExpression createBinaryExpression() {
-				return new Concat();
-			}
-		};
-		select.getSelectBody().accept(instance);
+    private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
-		assertEquals("SELECT a || b || c AS expr FROM test", select.toString());
-	}
+    @Test
+    public void testVisit_PlainSelect_concat() throws JSQLParserException {
+        String sql = "select a,b,c from test";
+        Select select = (Select) parserManager.parse(new StringReader(sql));
+        ConnectExpressionsVisitor instance = new ConnectExpressionsVisitor() {
+            @Override
+            protected BinaryExpression createBinaryExpression() {
+                return new Concat();
+            }
+        };
+        select.getSelectBody().accept(instance);
 
-	@Test
-	public void testVisit_PlainSelect_addition() throws JSQLParserException {
-		String sql = "select a,b,c from test";
-		Select select = (Select) parserManager.parse(new StringReader(sql));
-		ConnectExpressionsVisitor instance = new ConnectExpressionsVisitor("testexpr") {
-			@Override
-			protected BinaryExpression createBinaryExpression() {
-				return new Addition();
-			}
-		};
-		select.getSelectBody().accept(instance);
+        assertEquals("SELECT a || b || c AS expr FROM test", select.toString());
+    }
 
-		assertEquals("SELECT a + b + c AS testexpr FROM test", select.toString());
-	}
+    @Test
+    public void testVisit_PlainSelect_addition() throws JSQLParserException {
+        String sql = "select a,b,c from test";
+        Select select = (Select) parserManager.parse(new StringReader(sql));
+        ConnectExpressionsVisitor instance = new ConnectExpressionsVisitor("testexpr") {
+            @Override
+            protected BinaryExpression createBinaryExpression() {
+                return new Addition();
+            }
+        };
+        select.getSelectBody().accept(instance);
+
+        assertEquals("SELECT a + b + c AS testexpr FROM test", select.toString());
+    }
 }

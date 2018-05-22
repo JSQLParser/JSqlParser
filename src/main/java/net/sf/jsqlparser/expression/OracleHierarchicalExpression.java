@@ -21,11 +21,13 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 /**
  *
  * @author toben
  */
-public class OracleHierarchicalExpression implements Expression {
+public class OracleHierarchicalExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression startExpression;
     private Expression connectExpression;

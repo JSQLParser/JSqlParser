@@ -21,34 +21,36 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 import java.sql.Time;
 
 /**
  * A Time in the form {t 'hh:mm:ss'}
  */
-public class TimeValue implements Expression {
+public class TimeValue extends ASTNodeAccessImpl implements Expression {
 
-	private Time value;
+    private Time value;
 
-	public TimeValue(String value) {
-		this.value = Time.valueOf(value.substring(1, value.length() - 1));
-	}
+    public TimeValue(String value) {
+        this.value = Time.valueOf(value.substring(1, value.length() - 1));
+    }
 
-	@Override
-	public void accept(ExpressionVisitor expressionVisitor) {
-		expressionVisitor.visit(this);
-	}
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 
-	public Time getValue() {
-		return value;
-	}
+    public Time getValue() {
+        return value;
+    }
 
-	public void setValue(Time d) {
-		value = d;
-	}
+    public void setValue(Time d) {
+        value = d;
+    }
 
-	@Override
-	public String toString() {
-		return "{t '" + value + "'}";
-	}
+    @Override
+    public String toString() {
+        return "{t '" + value + "'}";
+    }
 }

@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 import java.util.List;
@@ -28,16 +29,15 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
- * Analytic function. The name of the function is variable but the parameters
- * following the special analytic function path. e.g. row_number() over (order
- * by test). Additional there can be an expression for an analytical aggregate
- * like sum(col) or the "all collumns" wildcard like count(*).
+ * Analytic function. The name of the function is variable but the parameters following the special
+ * analytic function path. e.g. row_number() over (order by test). Additional there can be an
+ * expression for an analytical aggregate like sum(col) or the "all collumns" wildcard like
+ * count(*).
  *
  * @author tw
  */
-public class AnalyticExpression implements Expression {
+public class AnalyticExpression extends ASTNodeAccessImpl implements Expression {
 
-    //private List<Column> partitionByColumns;
     private ExpressionList partitionExpressionList;
     private List<OrderByElement> orderByElements;
     private String name;
@@ -47,6 +47,7 @@ public class AnalyticExpression implements Expression {
     private boolean allColumns = false;
     private WindowElement windowElement;
     private KeepExpression keep = null;
+    private AnalyticType type = AnalyticType.OVER;
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
@@ -117,6 +118,14 @@ public class AnalyticExpression implements Expression {
         this.windowElement = windowElement;
     }
 
+    public AnalyticType getType() {
+        return type;
+    }
+
+    public void setType(AnalyticType type) {
+        this.type = type;
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -137,7 +146,15 @@ public class AnalyticExpression implements Expression {
         if (keep != null) {
             b.append(keep.toString()).append(" ");
         }
-        b.append("OVER (");
+        
+        switch (type) {
+            case WITHIN_GROUP:
+                b.append("WITHIN GROUP");
+                break;
+            default:
+                b.append("OVER");
+        }
+        b.append(" (");
 
         toStringPartitionBy(b);
         toStringOrderByElements(b);
@@ -158,7 +175,8 @@ public class AnalyticExpression implements Expression {
     private void toStringPartitionBy(StringBuilder b) {
         if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
             b.append("PARTITION BY ");
-            b.append(PlainSelect.getStringList(partitionExpressionList.getExpressions(), true, false));
+            b.append(PlainSelect.
+                    getStringList(partitionExpressionList.getExpressions(), true, false));
             b.append(" ");
         }
     }

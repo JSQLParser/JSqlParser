@@ -21,7 +21,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-public class SelectItemVisitorAdapter implements SelectItemVisitor{
+public class SelectItemVisitorAdapter implements SelectItemVisitor {
+
     @Override
     public void visit(AllColumns columns) {
 

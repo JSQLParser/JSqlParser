@@ -31,5 +31,5 @@ import net.sf.jsqlparser.statement.Statement;
  */
 public interface JSqlParser {
 
-	Statement parse(Reader statementReader) throws JSQLParserException;
+    Statement parse(Reader statementReader) throws JSQLParserException;
 }

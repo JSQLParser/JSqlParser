@@ -25,7 +25,8 @@ import java.util.regex.*;
 
 public final class Server implements MultiPartName {
 
-    public static final Pattern SERVER_PATTERN = Pattern.compile("\\[([^\\]]+?)(?:\\\\([^\\]]+))?\\]");
+    public static final Pattern SERVER_PATTERN = Pattern.
+            compile("\\[([^\\]]+?)(?:\\\\([^\\]]+))?\\]");
 
     private String serverName;
     private String instanceName;
@@ -35,7 +36,6 @@ public final class Server implements MultiPartName {
         if (serverAndInstanceName != null) {
             final Matcher matcher = SERVER_PATTERN.matcher(serverAndInstanceName);
             if (!matcher.find()) {
-                //throw new IllegalArgumentException(String.format("%s is not a valid database reference", serverAndInstanceName));
                 simpleName = serverAndInstanceName;
             } else {
                 setServerName(matcher.group(1));
@@ -67,7 +67,8 @@ public final class Server implements MultiPartName {
 
     @Override
     public String getFullyQualifiedName() {
-        if (serverName != null && !serverName.isEmpty() && instanceName != null && !instanceName.isEmpty()) {
+        if (serverName != null && !serverName.isEmpty() && instanceName != null && !instanceName.
+                isEmpty()) {
             return String.format("[%s\\%s]", serverName, instanceName);
         } else if (serverName != null && !serverName.isEmpty()) {
             return String.format("[%s]", serverName);

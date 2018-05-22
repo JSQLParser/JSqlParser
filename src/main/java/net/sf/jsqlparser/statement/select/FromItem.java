@@ -24,16 +24,15 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Alias;
 
 /**
- * An item in a "SELECT [...] FROM item1" statement. (for example a table or a
- * sub-select)
+ * An item in a "SELECT [...] FROM item1" statement. (for example a table or a sub-select)
  */
 public interface FromItem {
 
-	void accept(FromItemVisitor fromItemVisitor);
+    void accept(FromItemVisitor fromItemVisitor);
 
-	Alias getAlias();
+    Alias getAlias();
 
-	void setAlias(Alias alias);
+    void setAlias(Alias alias);
 
     Pivot getPivot();
 
