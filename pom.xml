@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.github.jsqlparser</groupId>
+    <groupId>com.github.paxdei</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2.0</version>
     <name>JSQLParser library</name>
     <inceptionYear>2004</inceptionYear>
     <organization>
         <name>JSQLParser</name>
     </organization>
     <packaging>bundle</packaging>
-    <url>https://github.com/JSQLParser/JSqlParser</url>
+    <url>https://github.com/paxdei/JSqlParser</url>
 
     <licenses>
         <license>
@@ -274,7 +274,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <reporting>
         <plugins>
             <plugin>
@@ -423,14 +423,14 @@
                                         <module name="StringLiteralEquality" />
                                         <module name="RedundantImport" />
                                         <module name="UnusedImports" />
-                                        
+
 										<module name="WhitespaceAfter" />
-										
+
                                         <module name="NeedBraces" />
                                         <module name="UnnecessaryParentheses" />
                                         <module name="LeftCurly" />
                                         <module name="RightCurly" />
-                                        
+
                                         <module name="SuppressWarningsHolder" />
                                     </module>
                                 </module>
