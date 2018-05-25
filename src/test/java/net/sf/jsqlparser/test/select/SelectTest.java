@@ -1157,10 +1157,6 @@ public class SelectTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE col + 4 WHEN 2 THEN 1 ELSE 0 END");
     }
 
-    public void testIssue371SimplifiedCase2() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT CASE col > 4 WHEN true THEN 1 ELSE 0 END");
-    }
-
     public void testIssue235SimplifiedCase3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN (CASE WHEN (CASE WHEN (1) THEN 0 END) THEN 0 END) THEN 0 END FROM a");
     }
@@ -2745,5 +2741,9 @@ public class SelectTest extends TestCase {
 
     public void testPositionIn() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT POSITION('Jose' IN 'San Jose')");
+    }
+
+    public void testConcatAsSwitchExpression() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASE 'asdf' || 'asdf' WHEN 'qwerty' THEN 'hm' END FROM dual");
     }
 }

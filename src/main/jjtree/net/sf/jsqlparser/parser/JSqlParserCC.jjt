@@ -2757,7 +2757,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
     (
             ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
         |
-            (LOOKAHEAD(RegularCondition()) switchExp=RegularCondition() | switchExp=BitwiseAndOr())
+            switchExp=SimpleExpression()
              ( clause=WhenThenValue() { whenClauses.add(clause); } )+
     )
    [<K_ELSE> elseExp=SimpleExpression()]
