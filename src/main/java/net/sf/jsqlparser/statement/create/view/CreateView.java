@@ -38,6 +38,8 @@ public class CreateView implements Statement {
     private boolean orReplace = false;
     private List<String> columnNames = null;
     private boolean materialized = false;
+    private ForceOption force = ForceOption.NONE;
+    private TemporaryOption temp = TemporaryOption.NONE;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -98,12 +100,41 @@ public class CreateView implements Statement {
         this.materialized = materialized;
     }
 
+    public ForceOption getForce() {
+        return force;
+    }
+
+    public void setForce(ForceOption force) {
+        this.force = force;
+    }
+
+    public TemporaryOption getTemporary() {
+        return temp;
+    }
+
+    public void setTemporary(TemporaryOption temp) {
+        this.temp = temp;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder("CREATE ");
         if (isOrReplace()) {
             sql.append("OR REPLACE ");
         }
+        switch (force) {
+            case FORCE:
+                sql.append("FORCE ");
+                break;
+            case NO_FORCE:
+                sql.append("NO FORCE ");
+                break;
+        }
+        
+        if (temp != TemporaryOption.NONE) {
+            sql.append(temp.name()).append(" ");
+        }
+        
         if (isMaterialized()) {
             sql.append("MATERIALIZED ");
         }

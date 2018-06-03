@@ -21,18 +21,21 @@
  */
 
 options{
-    IGNORE_CASE=true ;
-    STATIC=false;
-    DEBUG_PARSER=false;
-    DEBUG_LOOKAHEAD=false;
-    DEBUG_TOKEN_MANAGER=false;
-	CACHE_TOKENS=false;
-//  FORCE_LA_CHECK=true;
-    UNICODE_INPUT=true;
+    IGNORE_CASE = true ;
+    STATIC = false;
+    DEBUG_PARSER = false;
+    DEBUG_LOOKAHEAD = false;
+    DEBUG_TOKEN_MANAGER = false;
+	CACHE_TOKENS = false;
+//  FORCE_LA_CHECK = true;
+    UNICODE_INPUT = true;
 	JAVA_TEMPLATE_TYPE = "modern";
 	JDK_VERSION = "1.7";
-    TOKEN_EXTENDS ="BaseToken";
-    COMMON_TOKEN_ACTION=true;
+    TOKEN_EXTENDS = "BaseToken";
+    COMMON_TOKEN_ACTION = true;
+	NODE_DEFAULT_VOID = true;
+	TRACK_TOKENS = true;
+	VISITOR = true;
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -203,6 +206,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_INTERVAL:"INTERVAL">
 |   <K_INTO:"INTO">
 |   <K_IS:"IS">
+|   <K_ISNULL:"ISNULL">
 |   <K_JOIN:"JOIN">
 |   <K_KEEP:"KEEP">
 |   <K_KEY:"KEY">
@@ -263,6 +267,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TABLE:"TABLE">
 |   <K_TABLESPACE : "TABLESPACE">
 |   <K_THEN:"THEN">
+|   <K_TEMP:"TEMP">
+|   <K_TEMPORARY:"TEMPORARY">
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
 |   <K_TOP:"TOP">
 |   <K_TRUNCATE:"TRUNCATE">
@@ -275,6 +281,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_USE : "USE">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
 |   <K_USING:"USING">
+|   <K_UNSIGNED:"UNSIGNED">
 |   <K_VALIDATE : "VALIDATE">
 |   <K_VALUE:"VALUE">
 |   <K_VALUES:"VALUES">
@@ -300,7 +307,8 @@ TOKEN : /* Operators */
     <OP_GREATERTHANEQUALS: ">" (<WHITESPACE>)* "=">
 |    <OP_MINORTHANEQUALS: "<" (<WHITESPACE>)* "=">
 |    <OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
-|    <OP_NOTEQUALSBANG: "!=">
+|    <OP_NOTEQUALSBANG: "!" (<WHITESPACE>)* "=">
+|    <OP_CONCAT: "|" (<WHITESPACE>)* "|">
 }
 
 TOKEN : /* Date/Time with time zones */
@@ -384,10 +392,10 @@ Statement SingleStatement() :
         LOOKAHEAD(CreateIndex())
         stm = CreateIndex()
         |
-        LOOKAHEAD(2)
+        LOOKAHEAD(CreateTable())
         stm = CreateTable()
         |
-        LOOKAHEAD(2)
+        LOOKAHEAD(CreateView())
         stm = CreateView()
         |
         stm = AlterView()
@@ -960,7 +968,9 @@ String RelObjectNameWithoutValue() :
       | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_PERCENT> | tk=<K_PRIOR>
       | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
-      | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY>
+      | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_ENABLE>
+	  | tk=<K_UNSIGNED>
+      | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_ISNULL> 
       )
 
     { return tk.image; }
@@ -1473,7 +1483,11 @@ FromItem FromItem():
                         LOOKAHEAD(SubJoin())
                         fromItem=SubJoin()
                         |
+                        LOOKAHEAD(3)
                         fromItem=SubSelect()
+                        |
+                        fromItem=FromItem()
+                          { fromItem = new ParenthesisFromItem(fromItem); }
                         )
                     ")"
                 )
@@ -2044,7 +2058,7 @@ Expression RegularCondition() #RegularCondition:
         | "?" { result = new JsonOperator("?"); }
         | "?|" { result = new JsonOperator("?|"); }
         | "?&" { result = new JsonOperator("?&"); }
-        | "||" { result = new JsonOperator("||"); }
+        | <OP_CONCAT> { result = new JsonOperator("||"); }
         | "-" { result = new JsonOperator("-"); }
         | "-#" { result = new JsonOperator("-#"); }
     )
@@ -2169,9 +2183,11 @@ Expression IsNullExpression():
 }
 {
     (
-    <K_NOT> { result.setNot(true); } leftExpression=SimpleExpression() <K_IS> <K_NULL>
+    <K_NOT> { result.setNot(true); } leftExpression=SimpleExpression() 
+        ( <K_ISNULL> { result.setUseIsNull(true); } | <K_IS> <K_NULL> )
     |
-    leftExpression=SimpleExpression() <K_IS> [<K_NOT> { result.setNot(true); } ] <K_NULL>
+    leftExpression=SimpleExpression() 
+        (<K_ISNULL> { result.setUseIsNull(true); } | <K_IS> [<K_NOT> { result.setNot(true); } ] <K_NULL> )
     )
 
     {
@@ -2243,6 +2259,7 @@ Expression ComparisonItem() :
   (
     retval=AllComparisonExpression()
     | LOOKAHEAD(3) retval=AnyComparisonExpression()
+    | LOOKAHEAD(ValueListExpression()) retval=ValueListExpression()
     | LOOKAHEAD(3) retval=SimpleExpression()
     | retval=RowConstructor()
   )
@@ -2300,8 +2317,8 @@ Expression ConcatExpression():
 }
 {
     leftExpression=BitwiseAndOr()  { result = leftExpression; }
-    (LOOKAHEAD(2)
-        "||"
+    (LOOKAHEAD(3)
+        <OP_CONCAT>  /* Oracle allows space between the bars. */
         rightExpression=BitwiseAndOr()
         {
             Concat binExp = new Concat();
@@ -2487,13 +2504,13 @@ Expression PrimaryExpression() #PrimaryExpression:
     | retval = IntervalExpression()
 )
 
-[ "::" type=ColDataType() {
+    ( "::" type=ColDataType() {
         castExpr = new CastExpression();
         castExpr.setUseCastKeyword(false);
         castExpr.setLeftExpression(retval);
         castExpr.setType(type);
         retval=castExpr;
-} ]
+    } )*
 
     {
         if (sign != null) {
@@ -2607,10 +2624,14 @@ AnalyticExpression AnalyticExpression() :
     Expression defaultValue = null;
     WindowElement windowElement = null;
     KeepExpression keep = null;
+    boolean distinct = false;
 }
 {
     token=<S_IDENTIFIER> { retval.setName(token.image); }
-        "(" [ expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } ] ")" 
+        "(" [ 
+            [ <K_DISTINCT> {distinct = true;} ]
+            (expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } )
+            ] ")" 
 
     [ keep=KeepExpression() ]
 
@@ -2622,6 +2643,7 @@ AnalyticExpression AnalyticExpression() :
         [olist=OrderByElements() [windowElement = WindowElement() ] ]
         
     {
+        retval.setDistinct(distinct);
         retval.setExpression(expr);
         retval.setOffset(offset);
         retval.setDefaultValue(defaultValue);
@@ -2818,6 +2840,7 @@ Function Function() #Function:
     String tmp = null;
     ExpressionList expressionList = null;
     KeepExpression keep = null;
+    SubSelect expr = null;
 }
 {
     ["{fn" { retval.setEscaped(true); } ]
@@ -2825,7 +2848,8 @@ Function Function() #Function:
     funcName=RelObjectNameExt()
 
     [ "." tmp=RelObjectNameExt() { funcName+= "." + tmp; } ["." tmp=RelObjectNameExt() { funcName+= "." + tmp; }]]
-    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] (expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }) ] ")"
+    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] (LOOKAHEAD(3) expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }
+        | expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); } ) ] ")"
 
     [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]
 
@@ -2857,6 +2881,19 @@ MySQLGroupConcat MySQLGroupConcat():{
     { 
         retval.setExpressionList(expressionList);
         return retval; 
+    }
+}
+
+ValueListExpression ValueListExpression():
+{
+    ValueListExpression retval = new ValueListExpression();
+    ExpressionList expressionList = null;
+}
+{
+    "(" expressionList = SimpleExpressionListAtLeastTwoItems() ")"
+    {
+        retval.setExpressionList(expressionList);
+        return retval;
     }
 }
 
@@ -3150,9 +3187,13 @@ ColDataType ColDataType():
     List<Integer> array = new ArrayList<Integer>();
 }
 {
-    ( (tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-    | tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-    | ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> ) { colDataType.setDataType(tk.image); })
+    ( 
+		(tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
+		| tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
+		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> )  
+				{ colDataType.setDataType(tk.image); }
+		| tk=<K_UNSIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
+	)
 
     [LOOKAHEAD(2) "(" ( (tk=<S_LONG> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> ) { argumentsStringList.add(tk.image); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
     [( "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
@@ -3175,6 +3216,14 @@ CreateView CreateView():
 {
     <K_CREATE>
     [ <K_OR> <K_REPLACE> { createView.setOrReplace(true);} ]
+    [ 
+        <K_NO> <K_FORCE> { createView.setForce(ForceOption.NO_FORCE); } 
+        | <K_FORCE> { createView.setForce(ForceOption.FORCE); }
+    ]
+    [
+        <K_TEMP> { createView.setTemporary(TemporaryOption.TEMP); }
+        | <K_TEMPORARY> { createView.setTemporary(TemporaryOption.TEMPORARY); }
+    ]
     [ <K_MATERIALIZED> { createView.setMaterialized(true);} ]
     <K_VIEW> view=Table() { createView.setView(view); }
     [ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
@@ -3269,6 +3318,12 @@ List<String> CreateParameter():
             tk=<K_EXCLUDE> { param.add(tk.image); }
             |
             tk=<K_WHERE> { param.add(tk.image); }
+			|
+            tk=<K_UNSIGNED> { param.add(tk.image); }
+            |
+            tk=<K_TEMP> { param.add(tk.image); }
+            |
+            tk=<K_TEMPORARY> { param.add(tk.image); }
 
         )
     {return param;}

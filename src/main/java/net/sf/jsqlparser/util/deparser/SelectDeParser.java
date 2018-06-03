@@ -40,7 +40,8 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     }
 
     /**
-     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share the same<br>
+     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share
+     * the same<br>
      * StringBuilder (buffer parameter) as this object in order to work
      * @param buffer the buffer that will be filled with the select
      */
@@ -280,7 +281,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     public void deparseOffset(Offset offset) {
         // OFFSET offset
         // or OFFSET offset (ROW | ROWS)
-        if (offset.getOffsetJdbcParameter()!=null) {
+        if (offset.getOffsetJdbcParameter() != null) {
             buffer.append(" OFFSET ").append(offset.getOffsetJdbcParameter());
         } else if (offset.getOffset() != 0) {
             buffer.append(" OFFSET ");
@@ -300,7 +301,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         } else {
             buffer.append("NEXT ");
         }
-        if (fetch.getFetchJdbcParameter()!=null) {
+        if (fetch.getFetchJdbcParameter() != null) {
             buffer.append(fetch.getFetchJdbcParameter().toString());
         } else {
             buffer.append(fetch.getRowCount());
@@ -329,7 +330,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     public void visit(SubJoin subjoin) {
         buffer.append("(");
         subjoin.getLeft().accept(this);
-        for(Join join : subjoin.getJoinList()) {
+        for (Join join : subjoin.getJoinList()) {
             deparseJoin(join);
         }
         buffer.append(")");
@@ -451,5 +452,15 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     @Override
     public void visit(TableFunction tableFunction) {
         buffer.append(tableFunction.toString());
+    }
+
+    @Override
+    public void visit(ParenthesisFromItem parenthesis) {
+        buffer.append("(");
+        parenthesis.getFromItem().accept(this);
+        buffer.append(")");
+        if (parenthesis.getAlias() != null) {
+            buffer.append(parenthesis.getAlias().toString());
+        }
     }
 }

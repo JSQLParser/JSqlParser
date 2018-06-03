@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/JSQLParser/JSqlParser.svg?branch=master)](https://travis-ci.org/JSQLParser/JSqlParser)   [![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/00b2d91995764ae4805b55627aca8d39)](https://www.codacy.com/app/wumpz/JSqlParser?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=JSQLParser/JSqlParser&amp;utm_campaign=Badge_Grade)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser/badge.svg)](http://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser)
+[![Javadocs](https://www.javadoc.io/badge/com.github.jsqlparser/jsqlparser.svg)](https://www.javadoc.io/doc/com.github.jsqlparser/jsqlparser)
 
 [![PayPal donate button](http://img.shields.io/paypal/donate.png?color=blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=64CCN9JJANZXA "Help this JSqlParser version using Paypal")  
 
@@ -15,6 +17,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 
 ## News
+* Released version **1.2** of JSqlParser
 * breaking **API** change: merge of *within group* and *over* (window expressions)
 * Released version **1.1** of JSqlParser. 
 * JSqlParser has now a build in checkstyle configuration to introduce source code conventions.
@@ -42,27 +45,12 @@ To help JSqlParsers development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 1.2
+## Extensions in the latest SNAPSHOT version 1.3
 
-* support for single quoted aliases ___select col1 as 'alias'___
-* support for Unicode string literal like **N'test'** or **U'test'**
-* support for bitwise not **~**
-* support for **drop view**
-* support for indexed JDBC parameters at multiple places
-* allowed **index** as object name
-* switched to JavaCC **modern template**
-* switched to JDK 1.7 
-* introduced more AST node links
-* support for aliased table in **insert into** statement
-* **SQL_CALC_FOUND_ROWS** support
-* support for more complex expressions within **case expr when expr then expr end**.
-* support for **<<** and **>>** left and right shift operations
-* breaking **API** change: merge of *within group* and *over* (window expressions)
-* first support for *use* statements
-* first support for *call* statements
-* create table allows now quoted identifiers within primary key definition
-* introduced alias for subquery in combination with a pivot definition (this **changes** alias handling within the library for pivot sqls)
-* force the parser to fully parse a String using parseCondExpression or parseExpression
+* corrected ISNULL regression (issue #610)
+* refactored statement test classes to the class corresponding packages
+* allowed nested postgresql casts (e.g. col::bigint::int)
+
 
 ## Extensions of JSqlParser releases
 
@@ -130,7 +118,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>1.1</version>
+	<version>1.2</version>
 </dependency>
 ```
 

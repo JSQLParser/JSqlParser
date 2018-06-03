@@ -48,6 +48,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private WindowElement windowElement;
     private KeepExpression keep = null;
     private AnalyticType type = AnalyticType.OVER;
+    private boolean distinct = false;
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
@@ -126,11 +127,22 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.type = type;
     }
 
+    public boolean isDistinct() {
+        return distinct;
+    }
+
+    public void setDistinct(boolean distinct) {
+        this.distinct = distinct;
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
 
         b.append(name).append("(");
+        if (isDistinct()) {
+            b.append("DISTINCT ");
+        }
         if (expression != null) {
             b.append(expression.toString());
             if (offset != null) {
@@ -146,7 +158,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         if (keep != null) {
             b.append(keep.toString()).append(" ");
         }
-        
+
         switch (type) {
             case WITHIN_GROUP:
                 b.append("WITHIN GROUP");
