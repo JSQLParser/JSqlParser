@@ -47,6 +47,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.3
 
+* named parameter for **OFFSET** (issue #612)
 * corrected ISNULL regression (issue #610)
 * refactored statement test classes to the class corresponding packages
 * allowed nested postgresql casts (e.g. col::bigint::int)
