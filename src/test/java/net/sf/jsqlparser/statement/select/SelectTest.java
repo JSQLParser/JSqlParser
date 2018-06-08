@@ -3166,4 +3166,9 @@ public class SelectTest {
     public void testNestedCast() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT acolumn::bit (64)::bigint FROM mytable");
     }
+    
+     @Test
+    public void testNamedParametersIssue612() throws Exception {
+        assertSqlCanBeParsedAndDeparsed( "SELECT a FROM b LIMIT 10 OFFSET :param");
+    }
 }

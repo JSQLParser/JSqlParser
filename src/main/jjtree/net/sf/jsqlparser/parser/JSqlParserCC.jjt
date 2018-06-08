@@ -1745,6 +1745,16 @@ JdbcParameter SimpleJdbcParameter() : {
     }
 }
 
+JdbcNamedParameter SimpleJdbcNamedParameter() : {
+    Token token;
+}
+{
+    ":" token = <S_IDENTIFIER>
+    {
+        return new JdbcNamedParameter(token.image);
+    }
+}
+
 Limit LimitWithOffset() #LimitWithOffset:
 {
     Limit limit = new Limit();
@@ -1813,6 +1823,7 @@ Offset Offset():
     Offset offset = new Offset();
     Token token = null;
     JdbcParameter jdbc;
+    JdbcNamedParameter jdbcNamed;
 }
 {
     (
@@ -1820,7 +1831,8 @@ Offset Offset():
             // sqlserver-oracle-> OFFSET offset (ROW | ROWS)
              <K_OFFSET>
                  (token=<S_LONG> { offset.setOffset(Long.parseLong(token.image)); }
-                 | jdbc = SimpleJdbcParameter() { offset.setOffsetJdbcParameter(jdbc); } ) 
+                 | jdbc = SimpleJdbcParameter() { offset.setOffsetJdbcParameter(jdbc); } 
+                 | jdbcNamed = SimpleJdbcNamedParameter() { offset.setOffsetJdbcParameter(jdbcNamed); }) 
                  [(<K_ROWS> { offset.setOffsetParam("ROWS"); } | <K_ROW> { offset.setOffsetParam("ROW"); })]
 
         )

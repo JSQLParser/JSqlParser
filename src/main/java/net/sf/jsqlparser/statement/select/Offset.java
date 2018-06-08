@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
 
 /**
@@ -29,7 +31,7 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 public class Offset {
 
     private long offset;
-    private JdbcParameter offsetJdbcParameter = null;
+    private Expression offsetJdbcParameter = null;
     private String offsetParam = null;
 
     public long getOffset() {
@@ -48,11 +50,15 @@ public class Offset {
         offsetParam = s;
     }
 
-    public JdbcParameter getOffsetJdbcParameter() {
+    public Expression getOffsetJdbcParameter() {
         return offsetJdbcParameter;
     }
 
     public void setOffsetJdbcParameter(JdbcParameter jdbc) {
+        offsetJdbcParameter = jdbc;
+    }
+    
+    public void setOffsetJdbcParameter(JdbcNamedParameter jdbc) {
         offsetJdbcParameter = jdbc;
     }
 

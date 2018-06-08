@@ -31,11 +31,13 @@ public class JdbcNamedParameter extends ASTNodeAccessImpl implements Expression 
 
     private String name;
 
-    /**
-     * The name of the parameter
-     *
-     * @return the name of the parameter
-     */
+    public JdbcNamedParameter() {
+    }
+
+    public JdbcNamedParameter(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }
