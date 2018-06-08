@@ -283,7 +283,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         // or OFFSET offset (ROW | ROWS)
         if (offset.getOffsetJdbcParameter() != null) {
             buffer.append(" OFFSET ").append(offset.getOffsetJdbcParameter());
-        } else if (offset.getOffset() != 0) {
+        } else {
             buffer.append(" OFFSET ");
             buffer.append(offset.getOffset());
         }

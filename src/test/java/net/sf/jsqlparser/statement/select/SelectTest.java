@@ -3171,4 +3171,10 @@ public class SelectTest {
     public void testNamedParametersIssue612() throws Exception {
         assertSqlCanBeParsedAndDeparsed( "SELECT a FROM b LIMIT 10 OFFSET :param");
     }
+    
+    @Test
+    public void testMissingOffsetIssue620() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a, b FROM test OFFSET 0");
+        assertSqlCanBeParsedAndDeparsed("SELECT a, b FROM test LIMIT 1 OFFSET 0");
+    }
 }
