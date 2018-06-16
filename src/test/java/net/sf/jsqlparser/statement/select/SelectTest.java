@@ -3177,4 +3177,19 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT a, b FROM test OFFSET 0");
         assertSqlCanBeParsedAndDeparsed("SELECT a, b FROM test LIMIT 1 OFFSET 0");
     }
+    
+    @Test
+    public void testMultiPartNames1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a.b");
+    }
+    
+    @Test
+    public void testMultiPartNames2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a.b.*");
+    }
+    
+    @Test
+    public void testMultiPartNames3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a.*");
+    }
 }

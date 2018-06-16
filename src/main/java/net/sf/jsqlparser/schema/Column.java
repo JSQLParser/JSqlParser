@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.schema;
 
+import java.util.List;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
@@ -38,6 +39,12 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
     public Column(Table table, String columnName) {
         setTable(table);
         setColumnName(columnName);
+    }
+
+    public Column(List<String> nameParts) {
+        this(nameParts.size() > 1
+                ? new Table(nameParts.subList(0, nameParts.size() - 1)) : null,
+                nameParts.get(nameParts.size() - 1));
     }
 
     public Column(String columnName) {

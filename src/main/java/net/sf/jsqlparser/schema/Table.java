@@ -21,6 +21,9 @@
  */
 package net.sf.jsqlparser.schema;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.*;
@@ -30,9 +33,15 @@ import net.sf.jsqlparser.statement.select.*;
  */
 public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName {
 
-    private Database database;
-    private String schemaName;
-    private String name;
+//    private Database database;
+//    private String schemaName;
+//    private String name;
+    private static final int NAME_IDX = 0;
+    private static final int SCHEMA_IDX = 1;
+    private static final int DATABASE_IDX = 2;
+    private static final int SERVER_IDX = 3;
+
+    private List<String> partItems = new ArrayList<>();
 
     private Alias alias;
     private Pivot pivot;
@@ -42,42 +51,48 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     public Table(String name) {
-        this.name = name;
+        setIndex(NAME_IDX, name);
     }
 
     public Table(String schemaName, String name) {
-        this.schemaName = schemaName;
-        this.name = name;
+        setIndex(NAME_IDX, name);
+        setIndex(SCHEMA_IDX, schemaName);
     }
 
     public Table(Database database, String schemaName, String name) {
-        this.database = database;
-        this.schemaName = schemaName;
-        this.name = name;
+        setIndex(NAME_IDX, name);
+        setIndex(SCHEMA_IDX, schemaName);
+        setIndex(DATABASE_IDX, database.getDatabaseName());
+        setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
+    }
+
+    public Table(List<String> partItems) {
+        this.partItems = new ArrayList<>(partItems);
+        Collections.reverse(this.partItems);
     }
 
     public Database getDatabase() {
-        return database;
+        return new Database(getIndex(DATABASE_IDX));
     }
 
     public void setDatabase(Database database) {
-        this.database = database;
+        setIndex(DATABASE_IDX, database.getDatabaseName());
     }
 
     public String getSchemaName() {
-        return schemaName;
+        return getIndex(SCHEMA_IDX);
     }
 
     public void setSchemaName(String string) {
-        schemaName = string;
+        setIndex(SCHEMA_IDX, string);
     }
 
     public String getName() {
-        return name;
+        return getIndex(NAME_IDX);
     }
 
     public void setName(String string) {
-        name = string;
+        setIndex(NAME_IDX, string);
     }
 
     @Override
@@ -90,29 +105,37 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         this.alias = alias;
     }
 
+    private void setIndex(int idx, String value) {
+        for (int i = 0; i < idx - partItems.size() + 1; i++) {
+            partItems.add(null);
+        }
+        partItems.set(idx, value);
+    }
+
+    private String getIndex(int idx) {
+        if (idx < partItems.size()) {
+            return partItems.get(idx);
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public String getFullyQualifiedName() {
-        String fqn = "";
+        StringBuilder fqn = new StringBuilder();
 
-        if (database != null) {
-            fqn += database.getFullyQualifiedName();
-        }
-        if (!fqn.isEmpty()) {
-            fqn += ".";
-        }
-
-        if (schemaName != null) {
-            fqn += schemaName;
-        }
-        if (!fqn.isEmpty()) {
-            fqn += ".";
+        for (int i = partItems.size()-1 ; i >=0; i--) {
+            String part = partItems.get(i);
+            if (part == null) {
+                part = "";
+            }
+            fqn.append(part);
+            if (i != 0) {
+                fqn.append(".");
+            }
         }
 
-        if (name != null) {
-            fqn += name;
-        }
-
-        return fqn;
+        return fqn.toString();
     }
 
     @Override

@@ -922,17 +922,22 @@ MergeInsert MergeInsertClause() : {
 
 Column Column() #Column :
 {
-    String databaseName = null, schemaName = null, tableName = null, columnName = null;
+    //String databaseName = null, schemaName = null, tableName = null, columnName = null;
     String token = null;
+    List<String> data = new ArrayList<String>();
 }
 {
-	columnName = RelObjectName()
+    token = RelObjectName() { data.add(token); }
+    ( LOOKAHEAD (2) "." token = RelObjectName() { data.add(token); } ) *
+
+	/*columnName = RelObjectName()
     ( "." [LOOKAHEAD(2) token = RelObjectName()] { tableName = columnName; columnName = token; token = null;} 
 		( "." token = RelObjectName() { schemaName = tableName; tableName = columnName; columnName = token; token = null;} 
 			( "." token = RelObjectName() { databaseName = schemaName; schemaName = tableName; tableName = columnName; columnName = token; } 
 			)?
 		)?
 	)?
+    */
 
     /*(
           LOOKAHEAD(7) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." tableName=RelObjectName() "." columnName=RelObjectName()
@@ -942,13 +947,13 @@ Column Column() #Column :
     )*/
 
     {
-		if (tableName==null && (databaseName!=null || schemaName!=null)) {
+		/*if (tableName==null && (databaseName!=null || schemaName!=null)) {
 			throw generateParseException();
-		}
+		}*/
 
-        final Database database = new Database(databaseName);
-        final Table table = new Table(database, schemaName, tableName);
-        Column col = new Column(table, columnName);
+        //final Database database = new Database(databaseName);
+        //final Table table = new Table(database, schemaName, tableName);
+        Column col = new Column(data);
         linkAST(col,jjtThis);
         return col;
     }
@@ -1022,19 +1027,24 @@ String RelObjectNameExt2():
 
 Table Table() #Table :
 {
-    String serverName = null, databaseName = null, schemaName = null, tableName = null;
+    //String serverName = null, databaseName = null, schemaName = null, tableName = null;
+    List<String> data = new ArrayList<String>();
+    String token;
 }
 {
-    (
+    token = RelObjectName() { data.add(token); }
+    ( LOOKAHEAD(2) "." token = RelObjectName() { data.add(token); } ) *
+
+   /* (
           LOOKAHEAD(7) serverName=RelObjectName() "." [databaseName=RelObjectName()] "." [schemaName=RelObjectName()] "." tableName=RelObjectName()
         | LOOKAHEAD(5) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." tableName=RelObjectName()
         | LOOKAHEAD(3) schemaName=RelObjectName() "." tableName=RelObjectName()
         | tableName=RelObjectName()
-    )
+    )*/
     {
-        final Server server = new Server(serverName);
-        final Database database = new Database(server, databaseName);
-        Table table = new Table(database, schemaName, tableName);
+        //final Server server = new Server(serverName);
+        //final Database database = new Database(server, databaseName);
+        Table table = new Table(data);
         return table;
     }
 }
