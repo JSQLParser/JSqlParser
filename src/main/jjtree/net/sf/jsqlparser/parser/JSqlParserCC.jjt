@@ -928,7 +928,7 @@ Column Column() #Column :
 }
 {
     token = RelObjectName() { data.add(token); }
-    ( LOOKAHEAD (2) "." token = RelObjectName() { data.add(token); } ) *
+    ( LOOKAHEAD (2) "." ("." { data.add(null); })* token = RelObjectName() { data.add(token); } ) *
 
 	/*columnName = RelObjectName()
     ( "." [LOOKAHEAD(2) token = RelObjectName()] { tableName = columnName; columnName = token; token = null;} 
@@ -1033,7 +1033,7 @@ Table Table() #Table :
 }
 {
     token = RelObjectName() { data.add(token); }
-    ( LOOKAHEAD(2) "." token = RelObjectName() { data.add(token); } ) *
+    ( LOOKAHEAD(2) "." ("." { data.add(null); })* token = RelObjectName() { data.add(token); } ) *
 
    /* (
           LOOKAHEAD(7) serverName=RelObjectName() "." [databaseName=RelObjectName()] "." [schemaName=RelObjectName()] "." tableName=RelObjectName()
