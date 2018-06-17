@@ -17,7 +17,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 
 ## News
-* changed behaviour of dotted multipart names for tables and columns to accept ORM class names
+* Changed behaviour of dotted multipart names for user variables, tables and columns to accept e.g. ORM class names. To achieve this some behaviour of name parsing had to be changed. Before the parser would fail missing databasenames for SqlServer queries (server..schema.table). But this is allowed for the schema (server.database..table). Now the parser accepts missing inner names per se to avoid some very complicated parsing rules.
 * Released version **1.2** of JSqlParser
 * breaking **API** change: merge of *within group* and *over* (window expressions)
 * Released version **1.1** of JSqlParser. 
