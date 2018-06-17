@@ -23,7 +23,7 @@
 options{
     IGNORE_CASE = true ;
     STATIC = false;
-    DEBUG_PARSER = false;
+    DEBUG_PARSER = true;
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
 	CACHE_TOKENS = false;
@@ -2556,10 +2556,12 @@ JdbcNamedParameter JdbcNamedParameter() : {
 UserVariable UserVariable() : {
     UserVariable var = new UserVariable();
     String varName;
+    String var2;
 }
 {
     ("@" | "@@" { var.setDoubleAdd(true);} )
     varName=RelObjectNameExt2() 
+    ( "." var2=RelObjectNameExt2() { varName+="." + var2; } )*
     { 
         var.setName(varName); 
         return var; 
