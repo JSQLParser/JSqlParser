@@ -3215,5 +3215,5 @@ public class SelectTest {
     @Test
     public void testMultiPartNamesIssue608() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @@session.tx_read_only");
-    }
+    } 
 }
