@@ -26,7 +26,6 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 
 import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * Analytic function. The name of the function is variable but the parameters following the special
@@ -38,14 +37,13 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  */
 public class AnalyticExpression extends ASTNodeAccessImpl implements Expression {
 
-    private ExpressionList partitionExpressionList;
-    private List<OrderByElement> orderByElements;
+    private final OrderByClause orderBy = new OrderByClause();
+    private final PartitionByClause partitionBy = new PartitionByClause();
     private String name;
     private Expression expression;
     private Expression offset;
     private Expression defaultValue;
     private boolean allColumns = false;
-    private WindowElement windowElement;
     private KeepExpression keep = null;
     private AnalyticType type = AnalyticType.OVER;
     private boolean distinct = false;
@@ -56,11 +54,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     public List<OrderByElement> getOrderByElements() {
-        return orderByElements;
+        return orderBy.getOrderByElements();
     }
 
     public void setOrderByElements(List<OrderByElement> orderByElements) {
-        this.orderByElements = orderByElements;
+        orderBy.setOrderByElements(orderByElements);
     }
 
     public KeepExpression getKeep() {
@@ -72,11 +70,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     public ExpressionList getPartitionExpressionList() {
-        return partitionExpressionList;
+        return partitionBy.getPartitionExpressionList();
     }
 
     public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
-        this.partitionExpressionList = partitionExpressionList;
+        partitionBy.setPartitionExpressionList(partitionExpressionList);
     }
 
     public String getName() {
@@ -112,11 +110,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     public WindowElement getWindowElement() {
-        return windowElement;
+        return orderBy.getWindowElement();
     }
 
     public void setWindowElement(WindowElement windowElement) {
-        this.windowElement = windowElement;
+        orderBy.setWindowElement(windowElement);
     }
 
     public AnalyticType getType() {
@@ -168,8 +166,8 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         }
         b.append(" (");
 
-        toStringPartitionBy(b);
-        toStringOrderByElements(b);
+        partitionBy.toStringPartitionBy(b);
+        orderBy.toStringOrderByElements(b);
 
         b.append(")");
 
@@ -184,29 +182,4 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.allColumns = allColumns;
     }
 
-    private void toStringPartitionBy(StringBuilder b) {
-        if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
-            b.append("PARTITION BY ");
-            b.append(PlainSelect.
-                    getStringList(partitionExpressionList.getExpressions(), true, false));
-            b.append(" ");
-        }
-    }
-
-    private void toStringOrderByElements(StringBuilder b) {
-        if (orderByElements != null && !orderByElements.isEmpty()) {
-            b.append("ORDER BY ");
-            for (int i = 0; i < orderByElements.size(); i++) {
-                if (i > 0) {
-                    b.append(", ");
-                }
-                b.append(orderByElements.get(i).toString());
-            }
-
-            if (windowElement != null) {
-                b.append(' ');
-                b.append(windowElement);
-            }
-        }
-    }
 }
