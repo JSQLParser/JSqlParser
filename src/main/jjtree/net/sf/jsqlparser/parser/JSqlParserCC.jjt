@@ -2144,7 +2144,7 @@ Expression InExpression() :
         leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
         [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
     )
-    [<K_NOT> { result.setNot(true); } ] <K_IN> "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")"
+    [<K_NOT> { result.setNot(true); } ] <K_IN> ["("] (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) [")"]
     {
         result.setRightItemsList(rightItemsList);
         return result;
