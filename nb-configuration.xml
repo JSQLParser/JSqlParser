@@ -13,10 +13,12 @@
 		That way multiple projects can share the same settings (useful for formatting rules for example).
 		Any value defined here will override the pom.xml file value but is only applicable to the current project.
 		-->
-        <netbeans.compile.on.save>none</netbeans.compile.on.save>
+        <netbeans.compile.on.save>all</netbeans.compile.on.save>
         <com-junichi11-netbeans-changelf.enable>false</com-junichi11-netbeans-changelf.enable>
         <com-junichi11-netbeans-changelf.use-project>true</com-junichi11-netbeans-changelf.use-project>
         <com-junichi11-netbeans-changelf.lf-kind>LF</com-junichi11-netbeans-changelf.lf-kind>
         <com-junichi11-netbeans-changelf.use-global>false</com-junichi11-netbeans-changelf.use-global>
+        <org-netbeans-modules-javascript2-requirejs.enabled>true</org-netbeans-modules-javascript2-requirejs.enabled>
+        <netbeans.hint.jdkPlatform>JDK_1.8</netbeans.hint.jdkPlatform>
     </properties>
 </project-shared-configuration>

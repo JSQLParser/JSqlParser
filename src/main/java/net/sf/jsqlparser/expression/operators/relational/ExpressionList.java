@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import java.util.Arrays;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
@@ -38,6 +39,10 @@ public class ExpressionList implements ItemsList {
 
     public ExpressionList(List<Expression> expressions) {
         this.expressions = expressions;
+    }
+    
+    public ExpressionList(Expression ... expressions) {
+        this.expressions = Arrays.asList(expressions);
     }
 
     public List<Expression> getExpressions() {

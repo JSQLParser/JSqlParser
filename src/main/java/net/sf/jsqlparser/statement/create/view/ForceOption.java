@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2018 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,44 +19,16 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-package net.sf.jsqlparser.statement.select;
+package net.sf.jsqlparser.statement.create.view;
 
-import net.sf.jsqlparser.schema.Table;
-
-public class FromItemVisitorAdapter implements FromItemVisitor {
-
-    @Override
-    public void visit(Table table) {
-
-    }
-
-    @Override
-    public void visit(SubSelect subSelect) {
-
-    }
-
-    @Override
-    public void visit(SubJoin subjoin) {
-
-    }
-
-    @Override
-    public void visit(LateralSubSelect lateralSubSelect) {
-
-    }
-
-    @Override
-    public void visit(ValuesList valuesList) {
-
-    }
-
-    @Override
-    public void visit(TableFunction valuesList) {
-
-    }
-
-    @Override
-    public void visit(ParenthesisFromItem aThis) {
-        
-    }
+/**
+ *
+ * @author Tobias Warneke (t.warneke@gmx.net)
+ */
+public enum ForceOption {
+    NONE,
+    
+    FORCE,
+    
+    NO_FORCE
 }

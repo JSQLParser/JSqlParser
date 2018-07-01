@@ -45,6 +45,7 @@ import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
+import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
@@ -261,10 +262,18 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(IsNullExpression isNullExpression) {
         isNullExpression.getLeftExpression().accept(this);
-        if (isNullExpression.isNot()) {
-            buffer.append(" IS NOT NULL");
+        if (isNullExpression.isUseIsNull()) {
+            if (isNullExpression.isNot()) {
+                buffer.append(" NOT ISNULL");
+            } else {
+                buffer.append(" ISNULL");
+            }
         } else {
-            buffer.append(" IS NULL");
+            if (isNullExpression.isNot()) {
+                buffer.append(" IS NOT NULL");
+            } else {
+                buffer.append(" IS NULL");
+            }
         }
     }
 
@@ -376,7 +385,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(SubSelect subSelect) {
-        buffer.append("(");
+        if (subSelect.isUseBrackets()) {
+            buffer.append("(");
+        }
         if (selectVisitor != null) {
             if (subSelect.getWithItemsList() != null) {
                 buffer.append("WITH ");
@@ -393,7 +404,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
             subSelect.getSelectBody().accept(selectVisitor);
         }
-        buffer.append(")");
+        if (subSelect.isUseBrackets()) {
+            buffer.append(")");
+        }
     }
 
     @Override
@@ -595,6 +608,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         WindowElement windowElement = aexpr.getWindowElement();
 
         buffer.append(name).append("(");
+        if (aexpr.isDistinct()) {
+            buffer.append("DISTINCT ");
+        }
         if (expression != null) {
             expression.accept(this);
             if (offset != null) {
@@ -725,6 +741,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(MySQLGroupConcat groupConcat) {
         buffer.append(groupConcat.toString());
+    }
+
+    @Override
+    public void visit(ValueListExpression valueList) {
+        buffer.append(valueList.toString());
     }
 
     @Override
