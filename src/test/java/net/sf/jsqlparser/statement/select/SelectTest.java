@@ -2388,6 +2388,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testSqlNoCache() throws JSQLParserException {
+        String stmt = "SELECT SQL_NO_CACHE sales.date FROM sales";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
     public void testSelectInto1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * INTO user_copy FROM user");
     }
@@ -3165,7 +3170,7 @@ public class SelectTest {
     public void testSqlContainIsNullFunctionShouldBeParsed() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT name, age, ISNULL(home, 'earn more money') FROM person");
     }
-    
+
     @Test
     public void testNestedCast() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT acolumn::bit (64)::bigint FROM mytable");

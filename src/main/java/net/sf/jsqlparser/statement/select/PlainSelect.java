@@ -60,6 +60,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private boolean useBrackets = false;
     private Wait wait;
     private boolean mySqlSqlCalcFoundRows = false;
+    private boolean sqlNoCacheFlag = false;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -313,6 +314,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         if (top != null) {
             sql.append(top).append(" ");
         }
+        if (sqlNoCacheFlag) {
+            sql.append("SQL_NO_CACHE").append(" ");
+        }
         if (mySqlSqlCalcFoundRows) {
             sql.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
@@ -465,7 +469,15 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.mySqlSqlCalcFoundRows = mySqlCalcFoundRows;
     }
 
+    public void setMySqlSqlNoCache(boolean sqlNoCacheFlagSet) {
+        this.sqlNoCacheFlag = sqlNoCacheFlagSet;
+    }
+
     public boolean getMySqlSqlCalcFoundRows() {
         return this.mySqlSqlCalcFoundRows;
+    }
+
+    public boolean getMySqlSqlNoCache() {
+        return this.sqlNoCacheFlag;
     }
 }
