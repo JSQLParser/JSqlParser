@@ -140,6 +140,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ALL:"ALL">
 |   <K_ALTER:"ALTER">
 |   <K_AND:"AND">
+|   <K_AND_OPERATOR:"&&">
 |   <K_ANY:"ANY">
 |   <K_AS: "AS">
 |   <K_ASC:"ASC">
@@ -1985,7 +1986,7 @@ Expression AndExpression() :
     { result = left; }
 
     (
-         <K_AND>
+         (<K_AND> | <K_AND_OPERATOR>)
         (
         LOOKAHEAD(Condition())
             right=Condition()

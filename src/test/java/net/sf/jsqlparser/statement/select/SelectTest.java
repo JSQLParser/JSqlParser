@@ -3166,4 +3166,11 @@ public class SelectTest {
     public void testNestedCast() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT acolumn::bit (64)::bigint FROM mytable");
     }
+
+    @Test
+    public void testAndOperator() throws JSQLParserException {
+        String stmt = "SELECT name from customers where name = 'John' && lastname = 'Doh'";
+        Statement parsed = parserManager.parse(new StringReader(stmt));
+        assertStatementCanBeDeparsedAs(parsed, "SELECT name FROM customers WHERE name = 'John' AND lastname = 'Doh'");
+    }
 }
