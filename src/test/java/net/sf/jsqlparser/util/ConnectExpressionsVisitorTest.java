@@ -20,8 +20,6 @@ import static org.junit.Assert.*;
  */
 public class ConnectExpressionsVisitorTest {
 
-    public ConnectExpressionsVisitorTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

@@ -19,8 +19,6 @@ import static org.junit.Assert.*;
  */
 public class StatementsTest {
 
-    public StatementsTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

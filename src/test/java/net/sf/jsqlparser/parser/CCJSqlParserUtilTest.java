@@ -20,8 +20,6 @@ import static org.junit.Assert.*;
  */
 public class CCJSqlParserUtilTest {
 
-    public CCJSqlParserUtilTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

@@ -39,8 +39,6 @@ import org.junit.Test;
  */
 public class CreateViewDeParserTest {
 
-    public CreateViewDeParserTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

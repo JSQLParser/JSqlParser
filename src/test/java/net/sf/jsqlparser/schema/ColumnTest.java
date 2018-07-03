@@ -32,8 +32,6 @@ import static org.junit.Assert.*;
  */
 public class ColumnTest {
 
-    public ColumnTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

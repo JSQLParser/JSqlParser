@@ -536,6 +536,8 @@ public class CreateTableTest {
                 } catch (Exception e) {
                     //TODO(PB): till the tests are split - do not fail all if one fails!
                     //throw new TestException("error at stm num: " + numSt + "  " + query, e);
+                    System.out.println("error at stm num: " + numSt + "  " + query);
+                    e.printStackTrace();
                 }
                 numSt++;
 

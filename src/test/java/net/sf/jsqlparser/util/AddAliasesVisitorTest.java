@@ -17,8 +17,6 @@ import static org.junit.Assert.*;
  */
 public class AddAliasesVisitorTest {
 
-    public AddAliasesVisitorTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

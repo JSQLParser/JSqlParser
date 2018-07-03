@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
  */
 public class StringValueTest {
 
-    public StringValueTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

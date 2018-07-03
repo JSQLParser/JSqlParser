@@ -33,8 +33,6 @@ import static org.junit.Assert.*;
  */
 public class SignedExpressionTest {
 
-    public SignedExpressionTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

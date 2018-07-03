@@ -28,8 +28,6 @@ import static org.junit.Assert.*;
  */
 public class SelectUtilsTest {
 
-    public SelectUtilsTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

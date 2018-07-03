@@ -32,8 +32,6 @@ import static org.junit.Assert.*;
  */
 public class LongValueTest {
 
-    public LongValueTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

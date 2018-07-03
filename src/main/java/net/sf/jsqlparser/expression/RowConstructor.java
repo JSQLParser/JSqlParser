@@ -34,8 +34,6 @@ public class RowConstructor extends ASTNodeAccessImpl implements Expression {
     private ExpressionList exprList;
     private String name = null;
 
-    public RowConstructor() {}
-
     public ExpressionList getExprList() {
         return exprList;
     }
