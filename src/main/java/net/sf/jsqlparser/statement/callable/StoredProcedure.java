@@ -65,14 +65,32 @@ public class StoredProcedure extends Statement.Default {
 
     @Override
     public String toString() {
+        StringBuilder sb = new StringBuilder();
         if (isOracle) {
-            return "BEGIN " + (retval != null ? (retval + " := ") : "") +
-                callableFunction.toString() + "; END;" + (options != null ? " OPTION (" + options + ")" : "");
+            sb.append("BEGIN ");
+            if (retval != null) {
+                sb.append(retval).append(" := ");
+            }
+            sb.append(callableFunction).append("; END;");
+            if (options != null) {
+                sb.append(" OPTION (" + options + ")");
+            }
         } else {
-            return (withBrackets ? "{" : "") + ((retval != null) ? (retval + " = ") : "") +
-                "CALL " + callableFunction.toString() + (withBrackets ? "}" : "") + (options != null ? " OPTION (" + options + ")" : "");
+            if (withBrackets) {
+                sb.append("{");
+            }
+            if (retval != null) {
+                sb.append(retval).append(" = ");
+            }
+            sb.append("CALL ").append(callableFunction);
+            if (withBrackets) {
+                sb.append("}");
+            }
+            if (options != null) {
+                sb.append(" OPTION (" + options + ")");
+            }
         }
-
+        return sb.toString();
     }
 
     // used for comparing two stored procedure calls
