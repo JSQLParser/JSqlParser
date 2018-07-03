@@ -30,7 +30,7 @@ public class CallableTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("{? = CALL proc(?, '1', ?)}", true);
     }
 
-    public void testCallable4_1() throws JSQLParserException {
+    public void testCallable4a() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("{? = CALL proc}", true);
     }
 
@@ -38,7 +38,7 @@ public class CallableTest extends TestCase {
         assertSqlCanBeParsedAndDeparsed("{call proc() }", true);
     }
 
-    public void testCallable5_1() throws JSQLParserException {
+    public void testCallable5a() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("{call proc}", true);
     }
 

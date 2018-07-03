@@ -33,8 +33,6 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
     private Expression rightExpression;
     private boolean not = false;
 
-    public BinaryExpression() {}
-
     public Expression getLeftExpression() {
         return leftExpression;
     }

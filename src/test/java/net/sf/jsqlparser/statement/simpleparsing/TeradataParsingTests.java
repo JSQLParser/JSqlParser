@@ -27,7 +27,7 @@ public class TeradataParsingTests {
                     break;
                 }
 
-                System.out.println(statement.toString());
+                System.out.println(statement);
 
                 parserManager.parse(new StringReader(statement));
 
@@ -74,7 +74,6 @@ public class TeradataParsingTests {
         while (true) {
             line = in.readLine();
             if (line != null) {
-                line.trim();
                 if ((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/' && line.charAt(1) == '/')) {
                     break;
                 }

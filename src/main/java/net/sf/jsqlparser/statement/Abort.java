@@ -23,8 +23,6 @@ package net.sf.jsqlparser.statement;
 
 public class Abort extends Statement.Default {
 
-    public Abort() {}
-
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);

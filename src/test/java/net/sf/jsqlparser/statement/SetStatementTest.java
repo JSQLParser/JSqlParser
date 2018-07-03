@@ -39,8 +39,6 @@ public class SetStatementTest {
 
     CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
-    public SetStatementTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 

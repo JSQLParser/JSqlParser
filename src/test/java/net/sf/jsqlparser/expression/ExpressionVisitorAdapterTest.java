@@ -48,8 +48,6 @@ import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
  */
 public class ExpressionVisitorAdapterTest {
 
-    public ExpressionVisitorAdapterTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 
@@ -216,7 +214,6 @@ public class ExpressionVisitorAdapterTest {
         Expression expr = CCJSqlParserUtil.parseExpression("CAST(((2 + 4) * 2) AS FORMAT 'ZZZ9' )");
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         expr.accept(adapter);
-
     }
 
 }
