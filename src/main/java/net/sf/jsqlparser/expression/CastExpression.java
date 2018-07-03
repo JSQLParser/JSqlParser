@@ -33,6 +33,9 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
     private Expression leftExpression;
     private ColDataType type;
     private boolean useCastKeyword = true;
+    private String format;
+    private String named;
+    private String title;
 
     public ColDataType getType() {
         return type;
@@ -63,10 +66,51 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
         this.useCastKeyword = useCastKeyword;
     }
 
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
+    public String getNamed() {
+        return named;
+    }
+
+    public void setNamed(String named) {
+        this.named = named;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     @Override
     public String toString() {
         if (useCastKeyword) {
-            return "CAST(" + leftExpression + " AS " + type.toString() + ")";
+            StringBuilder sb = new StringBuilder("CAST(");
+            sb.append(leftExpression);
+            sb.append(" AS");
+            if (type != null) {
+                sb.append(" ").append(type.toString());
+            }
+            if (format != null) {
+                sb.append(" FORMAT ").append(format);
+            }
+            if (named != null) {
+                sb.append(" NAMED ").append(named);
+            }
+            if (title != null) {
+                sb.append(" TITLE ").append(title);
+            }
+
+            sb.append(")");
+            return sb.toString();
         } else {
             return leftExpression + "::" + type.toString();
         }

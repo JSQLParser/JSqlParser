@@ -22,6 +22,8 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.callable.StoredProcedure;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -32,6 +34,7 @@ import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
+import net.sf.jsqlparser.statement.select.Help;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
@@ -77,4 +80,13 @@ public interface StatementVisitor {
 
     void visit(UseStatement use);
 
+    void visit(StoredProcedure callable);
+
+    void visit(AlterUser alterUser);
+
+    void visit(Help help);
+
+    void visit(BeginTrans trans);
+
+    void visit(Abort abort);
 }

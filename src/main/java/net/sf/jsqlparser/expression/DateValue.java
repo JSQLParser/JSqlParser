@@ -21,9 +21,9 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.sql.Date;
+
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * A Date in the form {d 'yyyy-mm-dd'}

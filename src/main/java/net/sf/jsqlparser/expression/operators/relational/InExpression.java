@@ -34,8 +34,7 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
 
     private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
 
-    public InExpression() {
-    }
+    public InExpression() {}
 
     public InExpression(Expression leftExpression, ItemsList itemsList) {
         setLeftExpression(leftExpression);

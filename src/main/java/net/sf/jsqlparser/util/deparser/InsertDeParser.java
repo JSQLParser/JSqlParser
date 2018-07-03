@@ -45,8 +45,7 @@ public class InsertDeParser implements ItemsListVisitor {
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
 
-    public InsertDeParser() {
-    }
+    public InsertDeParser() {}
 
     /**
      * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
@@ -72,14 +71,16 @@ public class InsertDeParser implements ItemsListVisitor {
     }
 
     public void deParse(Insert insert) {
-        buffer.append("INSERT ");
+        buffer.append(insert.getType()).append(" ");
         if (insert.getModifierPriority() != null) {
             buffer.append(insert.getModifierPriority()).append(" ");
         }
         if (insert.isModifierIgnore()) {
             buffer.append("IGNORE ");
         }
-        buffer.append("INTO ");
+        if (insert.hasInto()) {
+            buffer.append("INTO ");
+        }
 
         buffer.append(insert.getTable().toString());
 
@@ -151,8 +152,7 @@ public class InsertDeParser implements ItemsListVisitor {
             buffer.append(" RETURNING *");
         } else if (insert.getReturningExpressionList() != null) {
             buffer.append(" RETURNING ");
-            for (Iterator<SelectExpressionItem> iter = insert.getReturningExpressionList().
-                    iterator(); iter.hasNext();) {
+            for (Iterator<SelectExpressionItem> iter = insert.getReturningExpressionList().iterator(); iter.hasNext();) {
                 buffer.append(iter.next().toString());
                 if (iter.hasNext()) {
                     buffer.append(", ");

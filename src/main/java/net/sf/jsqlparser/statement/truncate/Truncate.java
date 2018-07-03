@@ -28,7 +28,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 /**
  * A TRUNCATE TABLE statement
  */
-public class Truncate implements Statement {
+public class Truncate extends Statement.Default {
 
     private Table table;
 

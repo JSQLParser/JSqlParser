@@ -82,9 +82,8 @@ public class WithItem implements SelectBody {
 
     @Override
     public String toString() {
-        return (recursive ? "RECURSIVE " : "") + name + ((withItemList != null) ? " " + PlainSelect.
-                getStringList(withItemList, true, true) : "")
-                + " AS (" + selectBody + ")";
+        return (recursive ? "RECURSIVE " : "") + name + ((withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "")
+            + " AS (" + selectBody + ")";
     }
 
     @Override

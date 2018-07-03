@@ -21,12 +21,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-
 import java.util.Iterator;
 import java.util.List;
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 
 /**
  * This is a container for a values item within a select statement. It holds some syntactical stuff
@@ -41,8 +40,7 @@ public class ValuesList implements FromItem {
     private boolean noBrackets = false;
     private List<String> columnNames;
 
-    public ValuesList() {
-    }
+    public ValuesList() {}
 
     public ValuesList(MultiExpressionList multiExpressionList) {
         this.multiExpressionList = multiExpressionList;
@@ -69,8 +67,7 @@ public class ValuesList implements FromItem {
     }
 
     @Override
-    public void setPivot(Pivot pivot) {
-    }
+    public void setPivot(Pivot pivot) {}
 
     public MultiExpressionList getMultiExpressionList() {
         return multiExpressionList;
@@ -93,8 +90,7 @@ public class ValuesList implements FromItem {
         StringBuilder b = new StringBuilder();
 
         b.append("(VALUES ");
-        for (Iterator<ExpressionList> it = getMultiExpressionList().getExprList().iterator(); it.
-                hasNext();) {
+        for (Iterator<ExpressionList> it = getMultiExpressionList().getExprList().iterator(); it.hasNext();) {
             b.append(PlainSelect.getStringList(it.next().getExpressions(), true, !isNoBrackets()));
             if (it.hasNext()) {
                 b.append(", ");

@@ -30,16 +30,16 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
 /**
  * The update statement.
  */
-public class Update implements Statement {
+public class Update extends Statement.Default {
 
     private List<Table> tables;
     private Expression where;
@@ -232,8 +232,7 @@ public class Update implements Statement {
         if (isReturningAllColumns()) {
             b.append(" RETURNING *");
         } else if (getReturningExpressionList() != null) {
-            b.append(" RETURNING ").append(PlainSelect.
-                    getStringList(getReturningExpressionList(), true, false));
+            b.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
         }
 
         return b.toString();

@@ -23,7 +23,7 @@ package net.sf.jsqlparser.expression;
 
 import java.util.List;
 
-public class MySQLIndexHint  {
+public class MySQLIndexHint {
 
     private final String action;
     private final String indexQualifier;

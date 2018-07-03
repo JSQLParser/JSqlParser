@@ -31,8 +31,7 @@ public class Distinct {
     private List<SelectItem> onSelectItems;
     private boolean useUnique = false;
 
-    public Distinct() {
-    }
+    public Distinct() {}
 
     public Distinct(boolean useUnique) {
         this.useUnique = useUnique;

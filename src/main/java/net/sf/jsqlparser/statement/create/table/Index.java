@@ -76,7 +76,6 @@ public class Index {
     @Override
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
-        return type + (name != null ? " " + name : "") + " " + PlainSelect.
-                getStringList(columnsNames, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
+        return type + (name != null ? " " + name : "") + " " + PlainSelect.getStringList(columnsNames, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
     }
 }

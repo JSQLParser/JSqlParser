@@ -113,7 +113,7 @@ public class CaseExpression extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         return "CASE " + ((switchExpression != null) ? switchExpression + " " : "")
-                + PlainSelect.getStringList(whenClauses, false, false) + " "
-                + ((elseExpression != null) ? "ELSE " + elseExpression + " " : "") + "END";
+            + PlainSelect.getStringList(whenClauses, false, false) + " "
+            + ((elseExpression != null) ? "ELSE " + elseExpression + " " : "") + "END";
     }
 }

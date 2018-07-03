@@ -26,5 +26,33 @@ package net.sf.jsqlparser.statement;
  */
 public interface Statement {
 
+    public abstract class Default implements Statement {
+
+        protected UsingParams usingParams = null;
+
+        @Override
+        public boolean hasUsingParams() {
+            return this.usingParams != null;
+        }
+
+        @Override
+        public void setUsingParams(UsingParams up) {
+            this.usingParams = up;
+
+        }
+
+        @Override
+        public UsingParams getUsingParams() {
+            return this.usingParams;
+        }
+
+    }
+
     void accept(StatementVisitor statementVisitor);
+
+    boolean hasUsingParams();
+
+    void setUsingParams(UsingParams up);
+
+    UsingParams getUsingParams();
 }

@@ -36,58 +36,58 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public abstract class MultipleExpression extends ASTNodeAccessImpl implements Expression {
 
     private final List<Expression> childlist;
-    
+
     public MultipleExpression(List<Expression> childlist) {
         this.childlist = childlist;
     }
-    
+
     public int size() {
         return childlist.size();
     }
-    
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(new NullValue());
     }
-    
+
     public List<Expression> getList() {
         return childlist;
     }
-    
+
     public Expression getChild(int index) {
         return childlist.get(index);
     }
-    
+
     public Expression removeChild(int index) {
         return childlist.remove(index);
     }
-    
+
     public void setChild(int index, Expression express) {
         childlist.set(index, express);
     }
-    
+
     public int getIndex(Expression express) {
         return childlist.indexOf(express);
     }
-    
+
     public void addChild(int index, Expression express) {
         childlist.add(index, express);
     }
-    
+
     public abstract String getStringExpression();
-    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("(");
-        for(int i=0; i<size(); i++) {
+        for (int i = 0; i < size(); i++) {
             sb.append(getChild(i));
-            if(i!=size() - 1) {
+            if (i != size() - 1) {
                 sb.append(" ").append(getStringExpression()).append(" ");
             }
         }
         sb.append(")");
         return sb.toString();
     }
-    
+
 }

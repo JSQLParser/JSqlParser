@@ -21,7 +21,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.Alias;
 
 /**
  * It represents an expression like "(" expression ")"
@@ -29,11 +29,10 @@ import net.sf.jsqlparser.expression.*;
 public class ParenthesisFromItem implements FromItem {
 
     private FromItem fromItem;
-    
+
     private Alias alias;
 
-    public ParenthesisFromItem() {
-    }
+    public ParenthesisFromItem() {}
 
     public ParenthesisFromItem(FromItem fromItem) {
         setFromItem(fromItem);
@@ -54,7 +53,7 @@ public class ParenthesisFromItem implements FromItem {
 
     @Override
     public String toString() {
-        return "(" + fromItem + ")" + (alias!=null?alias.toString():"");
+        return "(" + fromItem + ")" + (alias != null ? alias.toString() : "");
     }
 
     @Override
@@ -69,11 +68,11 @@ public class ParenthesisFromItem implements FromItem {
 
     @Override
     public Pivot getPivot() {
-        throw new UnsupportedOperationException("Not supported yet."); 
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void setPivot(Pivot pivot) {
-        throw new UnsupportedOperationException("Not supported yet."); 
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

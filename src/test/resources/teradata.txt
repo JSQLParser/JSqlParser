@@ -1,0 +1,149 @@
+// format:
+// statement row1
+// statement row2
+// ...
+// statement rown
+// <empty line>
+CREATE TABLE good_7 (
+       column_1 INTEGER, 
+       column_2 INTEGER NOT NULL UNIQUE,
+       column_3 INTEGER NOT NULL UNIQUE)
+     UNIQUE PRIMARY INDEX (column_2);
+
+CREATE TABLE geoTable4(id INTEGER,
+                       geo1 ST_GEOMETRY(30000) INLINE LENGTH 30000,
+                       geo2 ST_GEOMETRY INLINE LENGTH 100);
+
+ CREATE TABLE table_1_rls_constraints (
+       column_1 INTEGER,
+       column_2 CHARACTER(30), 
+       classification_level    CONSTRAINT, 
+       classification_category CONSTRAINT)
+     UNIQUE PRIMARY INDEX(col1);
+
+CREATE TABLE accounts (
+       cust_id     INTEGER, 
+       last_name   VARCHAR(30) CHARACTER SET UNICODE NOT CASESPECIFIC, 
+       first_name  VARCHAR(30), 
+       city        VARCHAR(50))
+     PRIMARY INDEX (cust_id)
+     PARTITION BY CASE_N (last_name LIKE ‘A%’,
+                          last_name LIKE ‘B%’,
+                          last_name LIKE ‘C%’,
+                          last_name LIKE ‘D%’,
+                          last_name LIKE ‘E%’,
+                          last_name LIKE ‘F%’,
+                          last_name LIKE ‘G%’,
+                          last_name LIKE ‘H%’,
+                          last_name LIKE ‘I%’,
+                          last_name LIKE ‘J%’,
+                          last_name LIKE ‘K%’,
+                          last_name LIKE ‘L%’,
+                          last_name LIKE ‘M%’,
+                          last_name LIKE ‘N%’,
+                          last_name LIKE ‘O%’,
+                          last_name LIKE ‘P%’,
+                          last_name LIKE ‘Q%’,
+                          last_name LIKE ‘R%’,
+                          last_name LIKE ‘S%’,
+                          last_name LIKE ‘T%’,
+                          last_name LIKE ‘U%’,
+                          last_name LIKE ‘V%’,
+                          last_name LIKE ‘W%’,
+                          last_name LIKE ‘X%’,
+                          last_name LIKE ‘Y%’,
+                          last_name LIKE ‘Z%’,
+                          NO CASE,
+                          UNKNOWN); 
+
+CREATE TABLE accounts (
+       cust_id     INTEGER, 
+       last_name   VARCHAR(30) CHARACTER SET UNICODE NOT CASESPECIFIC, 
+       first_name  VARCHAR(30), 
+       city        VARCHAR(50))
+     PRIMARY INDEX (cust_id)
+     PARTITION BY  CASE_N (last_name < 'A', last_name < 'B',
+                           last_name < 'C', last_name < 'D',
+                           last_name < 'E', last_name < 'F',
+                           last_name < 'G', last_name < 'H',
+                           last_name < 'I', last_name < 'J',
+                           last_name < 'K', last_name < 'L',
+                           last_name < 'M', last_name < 'N',
+                           last_name < 'O', last_name < 'P',
+                           last_name < 'Q', last_name < 'R',
+                           last_name < 'S', last_name < 'T',
+                           last_name < 'U', last_name < 'V',
+                           last_name < 'W', last_name < 'X',
+                           last_name < 'Y', last_name >= 'Z',
+                           UNKNOWN);
+
+;Partition Lock for a Row-Partitioned Table
+CREATE TABLE HLSDS.SLPPIT1 (PI INT, PC INT, X INT, Y INT)
+PRIMARY INDEX (PI)
+PARTITION BY (RANGE_N(PC BETWEEN 1 AND 10 EACH 1));
+
+SELECT name
+FROM personnel p
+WHERE salary = (SELECT MAX(salary)
+				FROM personnel sp
+				WHERE p.department=sp.department);
+
+SELECT pubname
+FROM publisher
+WHERE 0 = (SELECT COUNT(*)
+			FROM book
+			WHERE book.pubnum=publisher.pubnum);
+
+;Arithmetic expressions
+SELECT (fix_cost + (SELECT SUM(part_cost)
+					FROM parts)) AS total_cost
+
+;String expressions
+SELECT (SELECT prod_name
+		FROM prod_table AS p
+		WHERE p.pno = s.pno) || store_no
+
+;CASE expressions
+SELECT CASE WHEN (SELECT count(*)
+					FROM inventory
+					WHERE inventory.pno = orders.pno) > 0
+			THEN 1
+			ELSE 0
+		END
+		
+;Aggregate expressions
+SELECT SUM(SELECT count(*)
+			FROM sales
+			WHERE sales.txn_no = receipts.txn_no)
+
+;Value list expressions
+SELECT SUM(SELECT count(*)
+			FROM sales
+			WHERE txn_no IN (1,2, (SELECT MAX(txn_no)
+									FROM sales
+									WHERE sale_date = CURRENT_DATE));
+
+;Example: SELECT Statements That Specify a System-Derived PARTITION
+;Column In Their Select Lists 1
+SELECT orders.*, PARTITION
+FROM orders
+WHERE orders.PARTITION = 10
+AND
+orders.o_totalprice > 100;
+
+;Example: SELECT Statements That Specify a System-Derived PARTITION
+;Column In Their Select Lists 2
+SELECT orders.*, lineitem.*, orders.PARTITION
+FROM orders, lineitem
+WHERE orders.PARTITION = 3
+AND
+lineitem.PARTITION = 5
+AND
+orders.o_orderkey = lineitem.1_orderkey;
+
+;Example: Scalar Subquery in the Select List of a SELECT Statement
+SELECT category, title,(SELECT AVG(price)
+						FROM movie_titles AS t1
+						WHERE t1.category=t2.category) AS avgprice
+FROM movie_titles AS t2
+WHERE t2.price < avgprice;

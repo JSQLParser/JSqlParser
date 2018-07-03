@@ -35,8 +35,7 @@ import net.sf.jsqlparser.statement.Statements;
  */
 public final class CCJSqlParserUtil {
 
-    private CCJSqlParserUtil() {
-    }
+    private CCJSqlParserUtil() {}
 
     public static Statement parse(Reader statementReader) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StreamProvider(statementReader));
@@ -94,7 +93,7 @@ public final class CCJSqlParserUtil {
     public static Expression parseExpression(String expression) throws JSQLParserException {
         return parseExpression(expression, true);
     }
-    
+
     public static Expression parseExpression(String expression, boolean allowPartialParse) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(expression));
         try {

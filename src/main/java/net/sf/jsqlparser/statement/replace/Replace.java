@@ -34,7 +34,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 /**
  * The replace statement.
  */
-public class Replace implements Statement {
+public class Replace extends Statement.Default {
 
     private Table table;
     private List<Column> columns;

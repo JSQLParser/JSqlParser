@@ -25,6 +25,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class PartitionByClause {
+
     ExpressionList partitionExpressionList;
 
     public ExpressionList getPartitionExpressionList() {
@@ -38,8 +39,7 @@ public class PartitionByClause {
     void toStringPartitionBy(StringBuilder b) {
         if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
             b.append("PARTITION BY ");
-            b.append(PlainSelect.
-                    getStringList(partitionExpressionList.getExpressions(), true, false));
+            b.append(PlainSelect.getStringList(partitionExpressionList.getExpressions(), true, false));
             b.append(" ");
         }
     }

@@ -57,13 +57,13 @@ public class Offset {
     public void setOffsetJdbcParameter(JdbcParameter jdbc) {
         offsetJdbcParameter = jdbc;
     }
-    
+
     public void setOffsetJdbcParameter(JdbcNamedParameter jdbc) {
         offsetJdbcParameter = jdbc;
     }
 
     @Override
     public String toString() {
-        return " OFFSET " + (offsetJdbcParameter!=null ? offsetJdbcParameter.toString() : offset) + (offsetParam != null ? " " + offsetParam : "");
+        return " OFFSET " + (offsetJdbcParameter != null ? offsetJdbcParameter.toString() : offset) + (offsetParam != null ? " " + offsetParam : "");
     }
 }

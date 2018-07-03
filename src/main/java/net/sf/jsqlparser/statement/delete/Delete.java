@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.statement.delete;
 
+import java.util.List;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -30,9 +32,7 @@ import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-import java.util.List;
-
-public class Delete implements Statement {
+public class Delete extends Statement.Default {
 
     private Table table;
     private List<Table> tables;

@@ -21,9 +21,9 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.sql.Timestamp;
+
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * A Timestamp in the form {ts 'yyyy-mm-dd hh:mm:ss.f . . .'}
@@ -32,6 +32,7 @@ public class TimestampValue extends ASTNodeAccessImpl implements Expression {
 
     private Timestamp value;
     private char quotation = '\'';
+
     public TimestampValue(String value) {
         if (value == null) {
             throw new java.lang.IllegalArgumentException("null string");

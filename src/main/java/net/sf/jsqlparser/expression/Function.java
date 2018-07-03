@@ -34,6 +34,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private boolean allColumns = false;
     private boolean distinct = false;
     private boolean isEscaped = false;
+    private boolean supportNoParantesis = false;
     private String attribute;
     private KeepExpression keep = null;
 
@@ -137,8 +138,10 @@ public class Function extends ASTNodeAccessImpl implements Expression {
             }
         } else if (isAllColumns()) {
             params = "(*)";
-        } else {
+        } else if (!supportNoParantesis) {
             params = "()";
+        } else {
+            params = "";
         }
 
         String ans = name + "" + params + "";
@@ -156,5 +159,13 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         }
 
         return ans;
+    }
+
+    public boolean isSupportNoParantesis() {
+        return supportNoParantesis;
+    }
+
+    public void setSupportNoParantesis(boolean supportNoParantesis) {
+        this.supportNoParantesis = supportNoParantesis;
     }
 }

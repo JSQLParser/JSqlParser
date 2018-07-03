@@ -70,7 +70,7 @@ public class LateralSubSelect implements FromItem {
     @Override
     public String toString() {
         return "LATERAL" + subSelect.toString()
-                + ((alias != null) ? alias.toString() : "")
-                + ((pivot != null) ? " " + pivot : "");
+            + ((alias != null) ? alias.toString() : "")
+            + ((pivot != null) ? " " + pivot : "");
     }
 }

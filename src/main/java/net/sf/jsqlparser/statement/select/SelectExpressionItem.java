@@ -33,8 +33,7 @@ public class SelectExpressionItem extends ASTNodeAccessImpl implements SelectIte
     private Expression expression;
     private Alias alias;
 
-    public SelectExpressionItem() {
-    }
+    public SelectExpressionItem() {}
 
     public SelectExpressionItem(Expression expression) {
         this.expression = expression;

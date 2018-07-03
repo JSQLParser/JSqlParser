@@ -22,6 +22,8 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.callable.StoredProcedure;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -32,15 +34,17 @@ import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
+import net.sf.jsqlparser.statement.select.Help;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
 public class StatementVisitorAdapter implements StatementVisitor {
+
     @Override
     public void visit(Commit commit) {
-        
+
     }
 
     @Override
@@ -121,14 +125,34 @@ public class StatementVisitorAdapter implements StatementVisitor {
     }
 
     @Override
-    public void visit(AlterView alterView) {
+    public void visit(AlterView alterView) {}
+
+    @Override
+    public void visit(Upsert upsert) {}
+
+    @Override
+    public void visit(StoredProcedure callable) {}
+
+    @Override
+    public void visit(AlterUser alterUser) {}
+
+    @Override
+    public void visit(UseStatement use) {}
+
+    @Override
+    public void visit(Help help) {
+        // TODO Auto-generated method stub
     }
 
     @Override
-    public void visit(Upsert upsert) {
+    public void visit(BeginTrans trans) {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
-    public void visit(UseStatement use) {
+    public void visit(Abort abort) {
+        // TODO Auto-generated method stub
+
     }
 }

@@ -77,6 +77,7 @@ public class SelectASTTest {
         node.dump("*");
         assertEquals(CCJSqlParserTreeConstants.JJTSTATEMENT, node.getId());
         node.jjtAccept(new CCJSqlParserDefaultVisitor() {
+
             @Override
             public Object visit(SimpleNode node, Object data) {
                 if (node.getId() == CCJSqlParserTreeConstants.JJTSUBSELECT) {
@@ -94,7 +95,7 @@ public class SelectASTTest {
         assertEquals(34, subSelectStart.beginColumn);
         assertEquals(62, subSelectEnd.endColumn);
     }
-    
+
     @Test
     public void testSelectASTColumnLF() throws JSQLParserException {
         String sql = "SELECT  a,  b FROM  mytable \n order by   b,  c";
@@ -117,7 +118,7 @@ public class SelectASTTest {
         }
         assertEquals("SELECT  *,  * FROM  mytable \n order by   #,  #", b.toString());
     }
-    
+
     @Test
     public void testSelectASTCommentLF() throws JSQLParserException {
         String sql = "SELECT  /* testcomment */ \n a,  b FROM  -- testcomment2 \n mytable \n order by   b,  c";
@@ -140,7 +141,7 @@ public class SelectASTTest {
         }
         assertEquals("SELECT  /* testcomment */ \n *,  * FROM  -- testcomment2 \n mytable \n order by   #,  #", b.toString());
     }
-    
+
     @Test
     public void testSelectASTCommentCRLF() throws JSQLParserException {
         String sql = "SELECT  /* testcomment */ \r\n a,  b FROM  -- testcomment2 \r\n mytable \r\n order by   b,  c";

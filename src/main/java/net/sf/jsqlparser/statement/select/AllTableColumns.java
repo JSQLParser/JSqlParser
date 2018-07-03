@@ -25,14 +25,13 @@ package net.sf.jsqlparser.statement.select;
  * All the columns of a table (as in "SELECT TableName.* FROM ...")
  */
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.schema.*;
+import net.sf.jsqlparser.schema.Table;
 
 public class AllTableColumns extends ASTNodeAccessImpl implements SelectItem {
 
     private Table table;
 
-    public AllTableColumns() {
-    }
+    public AllTableColumns() {}
 
     public AllTableColumns(Table tableName) {
         this.table = tableName;

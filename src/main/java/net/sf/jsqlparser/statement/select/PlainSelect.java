@@ -21,16 +21,16 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.schema.Table;
 
 /**
  * The core of a "SELECT" statement (no UNION, no ORDER BY)
@@ -60,7 +60,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private boolean useBrackets = false;
     private Wait wait;
     private boolean mySqlSqlCalcFoundRows = false;
+    private String selectType = "SELECT";
     private boolean sqlNoCacheFlag = false;
+    private String sqlOptions;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -294,7 +296,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         if (useBrackets) {
             sql.append("(");
         }
-        sql.append("SELECT ");
+        sql.append(selectType).append(" ");
 
         if (oracleHint != null) {
             sql.append(oracleHint).append(" ");
@@ -383,6 +385,11 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
                 sql.append(" WHERE ").append(where);
             }
         }
+
+        if (getSqlOptions() != null) {
+            sql.append(" OPTION(").append(getSqlOptions()).append(")");
+        }
+
         if (useBrackets) {
             sql.append(")");
         }
@@ -440,7 +447,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
      */
     public static String getStringList(List<?> list, boolean useComma, boolean useBrackets) {
         StringBuilder ans = new StringBuilder();
-//        String ans = "";
+        //        String ans = "";
         String comma = ",";
         if (!useComma) {
             comma = "";
@@ -448,21 +455,37 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         if (list != null) {
             if (useBrackets) {
                 ans.append("(");
-//                ans += "(";
+                //                ans += "(";
             }
 
             for (int i = 0; i < list.size(); i++) {
                 ans.append(list.get(i)).append((i < list.size() - 1) ? comma + " " : "");
-//                ans += "" + list.get(i) + ((i < list.size() - 1) ? comma + " " : "");
+                //                ans += "" + list.get(i) + ((i < list.size() - 1) ? comma + " " : "");
             }
 
             if (useBrackets) {
                 ans.append(")");
-//                ans += ")";
+                //                ans += ")";
             }
         }
 
         return ans.toString();
+    }
+
+    public boolean getMySqlSqlCalcFoundRows() {
+        return this.mySqlSqlCalcFoundRows;
+    }
+
+    public boolean getMySqlSqlNoCache() {
+        return this.sqlNoCacheFlag;
+    }
+
+    public Object getSelectType() {
+        return this.selectType;
+    }
+
+    public String getSqlOptions() {
+        return sqlOptions;
     }
 
     public void setMySqlSqlCalcFoundRows(boolean mySqlCalcFoundRows) {
@@ -473,11 +496,11 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.sqlNoCacheFlag = sqlNoCacheFlagSet;
     }
 
-    public boolean getMySqlSqlCalcFoundRows() {
-        return this.mySqlSqlCalcFoundRows;
+    public void setSelectType(String selType) {
+        this.selectType = selType.toUpperCase();
     }
 
-    public boolean getMySqlSqlNoCache() {
-        return this.sqlNoCacheFlag;
+    public void setSqlOptions(String sqlOptions) {
+        this.sqlOptions = sqlOptions;
     }
 }

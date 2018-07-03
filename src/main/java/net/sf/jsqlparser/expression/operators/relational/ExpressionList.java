@@ -34,14 +34,13 @@ public class ExpressionList implements ItemsList {
 
     private List<Expression> expressions;
 
-    public ExpressionList() {
-    }
+    public ExpressionList() {}
 
     public ExpressionList(List<Expression> expressions) {
         this.expressions = expressions;
     }
-    
-    public ExpressionList(Expression ... expressions) {
+
+    public ExpressionList(Expression... expressions) {
         this.expressions = Arrays.asList(expressions);
     }
 

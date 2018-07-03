@@ -30,11 +30,12 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  *
  * @author toben
  */
-public class Execute implements Statement {
+public class Execute extends Statement.Default {
 
     private EXEC_TYPE execType = EXEC_TYPE.EXECUTE;
     private String name;
     private ExpressionList exprList;
+    private boolean parenthesis = false;
 
     public String getName() {
         return name;
@@ -67,10 +68,17 @@ public class Execute implements Statement {
 
     @Override
     public String toString() {
-        return execType.name() + " " + name + " " + PlainSelect.
-                getStringList(exprList.getExpressions(), true, false);
+        return execType.name() + " " + name + (this.parenthesis ? "(" : " ") + PlainSelect.getStringList(exprList.getExpressions(), true, false) + (this.parenthesis ? ")" : "");
     }
-    
+
+    public boolean isParenthesis() {
+        return parenthesis;
+    }
+
+    public void setParenthesis(boolean parenthesis) {
+        this.parenthesis = parenthesis;
+    }
+
     public static enum EXEC_TYPE {
         EXECUTE,
         EXEC,

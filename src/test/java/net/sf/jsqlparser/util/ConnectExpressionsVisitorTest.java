@@ -20,24 +20,17 @@ import static org.junit.Assert.*;
  */
 public class ConnectExpressionsVisitorTest {
 
-    public ConnectExpressionsVisitorTest() {
-    }
-
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
@@ -46,6 +39,7 @@ public class ConnectExpressionsVisitorTest {
         String sql = "select a,b,c from test";
         Select select = (Select) parserManager.parse(new StringReader(sql));
         ConnectExpressionsVisitor instance = new ConnectExpressionsVisitor() {
+
             @Override
             protected BinaryExpression createBinaryExpression() {
                 return new Concat();
@@ -61,6 +55,7 @@ public class ConnectExpressionsVisitorTest {
         String sql = "select a,b,c from test";
         Select select = (Select) parserManager.parse(new StringReader(sql));
         ConnectExpressionsVisitor instance = new ConnectExpressionsVisitor("testexpr") {
+
             @Override
             protected BinaryExpression createBinaryExpression() {
                 return new Addition();

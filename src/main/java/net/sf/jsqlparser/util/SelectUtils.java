@@ -47,8 +47,7 @@ public final class SelectUtils {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
 
-    private SelectUtils() {
-    }
+    private SelectUtils() {}
 
     /**
      * Builds select expr1, expr2 from table.
