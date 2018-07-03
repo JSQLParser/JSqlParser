@@ -582,7 +582,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         if (cast.isUseCastKeyword()) {
             buffer.append("CAST(");
             buffer.append(cast.getLeftExpression());
-            buffer.append(" AS ");
+            buffer.append(" AS");
             if (cast.getType() != null) {
                 buffer.append(" ").append(cast.getType());
             }

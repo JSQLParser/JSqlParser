@@ -61,7 +61,7 @@ public class ExecuteDeParser {
         List<Expression> expressions = execute.getExprList().getExpressions();
         for (int i = 0; i < expressions.size(); i++) {
             if (i > 0) {
-                buffer.append(",");
+                buffer.append(", ");
             }
             expressions.get(i).accept(expressionVisitor);
         }
