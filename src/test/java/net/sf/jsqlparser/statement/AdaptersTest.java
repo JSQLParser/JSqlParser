@@ -31,12 +31,15 @@ public class AdaptersTest {
 
         final Stack<Pair<String, String>> params = new Stack<Pair<String, String>>();
         stmnt.accept(new StatementVisitorAdapter() {
+
             @Override
             public void visit(Select select) {
                 select.getSelectBody().accept(new SelectVisitorAdapter() {
+
                     @Override
                     public void visit(PlainSelect plainSelect) {
                         plainSelect.getWhere().accept(new ExpressionVisitorAdapter() {
+
                             @Override
                             protected void visitBinaryExpression(BinaryExpression expr) {
                                 if (!(expr instanceof AndExpression)) {
@@ -47,15 +50,12 @@ public class AdaptersTest {
 
                             @Override
                             public void visit(Column column) {
-                                params.push(new Pair<String, String>(column.getColumnName(), params.
-                                        pop().getRight()));
+                                params.push(new Pair<String, String>(column.getColumnName(), params.pop().getRight()));
                             }
 
                             @Override
                             public void visit(JdbcNamedParameter parameter) {
-                                params.
-                                        push(new Pair<String, String>(params.pop().getLeft(), parameter.
-                                                getName()));
+                                params.push(new Pair<String, String>(params.pop().getLeft(), parameter.getName()));
                             }
                         });
                     }

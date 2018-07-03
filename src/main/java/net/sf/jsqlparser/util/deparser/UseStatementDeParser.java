@@ -39,7 +39,7 @@ public class UseStatementDeParser {
         this.buffer = buffer;
     }
 
-    public void deParse(UseStatement set) {
-        buffer.append("USE ").append(set.getName());
+    public void deParse(UseStatement use) {
+        buffer.append(use.getFlavor()).append(" ").append(use.getName());
     }
 }

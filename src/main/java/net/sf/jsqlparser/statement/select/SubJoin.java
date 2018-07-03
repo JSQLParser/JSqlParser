@@ -21,9 +21,9 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.Alias;
-
 import java.util.List;
+
+import net.sf.jsqlparser.expression.Alias;
 
 /**
  * A table created by "(tab1 [join tab2]* )".
@@ -80,7 +80,7 @@ public class SubJoin implements FromItem {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("(").append(left);
-        for(Join j : joinList) {
+        for (Join j : joinList) {
             sb.append(" ").append(j);
         }
 

@@ -15,8 +15,7 @@ public class CCJSqlParserManagerTest {
     @Test
     public void testParse() throws Exception {
         CCJSqlParserManager parserManager = new CCJSqlParserManager();
-        BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.
-                getResourceAsStream("/simple_parsing.txt")));
+        BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/simple_parsing.txt")));
 
         String statement = "";
         while (true) {
@@ -60,8 +59,7 @@ public class CCJSqlParserManagerTest {
         while (true) {
             line = in.readLine();
             if (line != null) {
-                if ((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/' && line.
-                        charAt(1) == '/')) {
+                if ((line.length() < 2) || (line.length() >= 2) && !(line.charAt(0) == '/' && line.charAt(1) == '/')) {
                     break;
                 }
             } else {

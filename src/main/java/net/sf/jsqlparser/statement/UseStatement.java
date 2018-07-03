@@ -25,9 +25,10 @@ package net.sf.jsqlparser.statement;
  *
  * @author toben
  */
-public class UseStatement implements Statement {
+public class UseStatement extends Statement.Default {
 
     private String name;
+    private String flavor = "USE";
 
     public UseStatement(String name) {
         this.name = name;
@@ -43,11 +44,20 @@ public class UseStatement implements Statement {
 
     @Override
     public String toString() {
-        return "USE " + name;
+        return flavor + " " + name;
     }
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
+    }
+
+    public String getFlavor() {
+        return flavor;
+    }
+
+    public UseStatement setFlavor(String flavor) {
+        this.flavor = flavor;
+        return this;
     }
 }

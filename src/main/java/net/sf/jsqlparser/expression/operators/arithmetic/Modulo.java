@@ -31,8 +31,7 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
  */
 public class Modulo extends BinaryExpression {
 
-    public Modulo() {
-    }
+    public Modulo() {}
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {

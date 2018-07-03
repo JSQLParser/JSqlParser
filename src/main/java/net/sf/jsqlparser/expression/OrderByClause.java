@@ -21,11 +21,12 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.statement.select.OrderByElement;
-
 import java.util.List;
 
+import net.sf.jsqlparser.statement.select.OrderByElement;
+
 public class OrderByClause {
+
     private List<OrderByElement> orderByElements;
     private WindowElement windowElement;
 

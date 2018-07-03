@@ -33,7 +33,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
  *
  * @author tw
  */
-public class Merge implements Statement {
+public class Merge extends Statement.Default {
 
     private Table table;
     private Table usingTable;

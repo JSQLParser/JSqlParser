@@ -45,7 +45,7 @@ import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
-import net.sf.jsqlparser.expression.ValueListExpression;
+import net.sf.jsqlparser.expression.NamedExpression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
@@ -59,6 +59,7 @@ import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
+import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.WindowElement;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
@@ -113,8 +114,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     private boolean useBracketsInExprList = true;
     private OrderByDeParser orderByDeParser = new OrderByDeParser();
 
-    public ExpressionDeParser() {
-    }
+    public ExpressionDeParser() {}
 
     /**
      * @param selectVisitor a SelectVisitor to de-parse SubSelects. It has to share the same<br>
@@ -391,8 +391,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         if (selectVisitor != null) {
             if (subSelect.getWithItemsList() != null) {
                 buffer.append("WITH ");
-                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.
-                        hasNext();) {
+                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.hasNext();) {
                     iter.next().accept(selectVisitor);
                     if (iter.hasNext()) {
                         buffer.append(", ");
@@ -425,6 +424,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         }
 
         buffer.append(tableColumn.getColumnName());
+        if (tableColumn.getCollate() != null) {
+            buffer.append(" COLLATE ").append(tableColumn.getCollate());
+        }
     }
 
     @Override
@@ -581,7 +583,18 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
             buffer.append("CAST(");
             buffer.append(cast.getLeftExpression());
             buffer.append(" AS ");
-            buffer.append(cast.getType());
+            if (cast.getType() != null) {
+                buffer.append(" ").append(cast.getType());
+            }
+            if (cast.getFormat() != null) {
+                buffer.append(" FORMAT ").append(cast.getFormat());
+            }
+            if (cast.getNamed() != null) {
+                buffer.append(" NAMED ").append(cast.getNamed());
+            }
+            if (cast.getTitle() != null) {
+                buffer.append(" TITLE ").append(cast.getTitle());
+            }
             buffer.append(")");
         } else {
             buffer.append(cast.getLeftExpression());
@@ -696,6 +709,15 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(JdbcNamedParameter jdbcNamedParameter) {
         buffer.append(jdbcNamedParameter.toString());
+    }
+
+    @Override
+    public void visit(NamedExpression namedExpression) {
+        String name = namedExpression.getName();
+        if (name != null) {
+            buffer.append(name).append(" => ");
+        }
+        namedExpression.getExpression().accept(this);
     }
 
     @Override

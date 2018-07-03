@@ -40,6 +40,7 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StatementDeParserTest {
+
     @Mock
     private ExpressionDeParser expressionDeParser;
 
@@ -117,14 +118,14 @@ public class StatementDeParserTest {
         withItem2.setSelectBody(withItem2SelectBody);
 
         statementDeParser.visit(insert);
-        
+
         then(withItem1).should().accept(selectDeParser);
         then(withItem2).should().accept(selectDeParser);
         then(selectBody).should().accept(selectDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
-    
+
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithoutItemsList() {
@@ -195,8 +196,9 @@ public class StatementDeParserTest {
         List<Expression> expressions = new ArrayList<Expression>();
         Expression where = mock(Expression.class);
         List<OrderByElement> orderByElements = new ArrayList<OrderByElement>();
-        Column column1 = new Column();
-        Column column2 = new Column();
+        //PB: must set different names, otherwise column's are equal and the test would fail
+        Column column1 = new Column("column1");
+        Column column2 = new Column("column2");
         Expression expression1 = mock(Expression.class);
         Expression expression2 = mock(Expression.class);
         OrderByElement orderByElement1 = new OrderByElement();
@@ -236,8 +238,9 @@ public class StatementDeParserTest {
         Select select = new Select();
         Expression where = mock(Expression.class);
         List<OrderByElement> orderByElements = new ArrayList<OrderByElement>();
-        Column column1 = new Column();
-        Column column2 = new Column();
+        //PB: must set different names, otherwise column's are equal and the test would fail
+        Column column1 = new Column("column1");
+        Column column2 = new Column("column2");
         SelectBody selectBody = mock(SelectBody.class);
         OrderByElement orderByElement1 = new OrderByElement();
         OrderByElement orderByElement2 = new OrderByElement();
@@ -306,13 +309,14 @@ public class StatementDeParserTest {
         description.appendText(" and select de-parser ");
         selectDeParserMatcher.describeTo(description);
         return new CustomTypeSafeMatcher<ReplaceDeParser>(description.toString()) {
+
             @Override
             public boolean matchesSafely(ReplaceDeParser item) {
                 return expressionDeParserMatcher.matches(item.getExpressionVisitor()) && selectDeParserMatcher.matches(item.getSelectVisitor());
             }
         };
     }
-    
+
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeparsersWhenDeParsingUpsertWithExpressionList() throws JSQLParserException {
@@ -357,5 +361,5 @@ public class StatementDeParserTest {
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
-    
+
 }

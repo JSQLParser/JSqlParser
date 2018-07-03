@@ -21,14 +21,32 @@
  */
 package net.sf.jsqlparser.statement;
 
-public class Commit implements Statement {
+import net.sf.jsqlparser.expression.Expression;
+
+public class Commit extends Statement.Default {
+
+    private String image = "COMMIT"; // default commit (other possibilities are ET/END TRANSACTION)
+    private String options;
+    private Expression userVar;
+
+    public Commit(String image, String opts, Expression userVar) {
+        this.image = image;
+        if (opts != null && !opts.isEmpty()) {
+            this.options = opts;
+        } else {
+            this.options = null;
+        }
+
+        this.userVar = userVar;
+    }
+
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
-    
+
     @Override
     public String toString() {
-        return "COMMIT";
+        return image + (options != null ? (" " + options) : "") + (userVar != null ? (" " + userVar.toString()) : "");
     }
 }

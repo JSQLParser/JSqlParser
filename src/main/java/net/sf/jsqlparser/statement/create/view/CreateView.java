@@ -31,7 +31,7 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 /**
  * A "CREATE VIEW" statement
  */
-public class CreateView implements Statement {
+public class CreateView extends Statement.Default {
 
     private Table view;
     private SelectBody selectBody;
@@ -130,11 +130,11 @@ public class CreateView implements Statement {
                 sql.append("NO FORCE ");
                 break;
         }
-        
+
         if (temp != TemporaryOption.NONE) {
             sql.append(temp.name()).append(" ");
         }
-        
+
         if (isMaterialized()) {
             sql.append("MATERIALIZED ");
         }

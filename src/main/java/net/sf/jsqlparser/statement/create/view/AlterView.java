@@ -29,9 +29,9 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectBody;
 
 /**
- * A "CREATE VIEW" statement
+ * A "ALTER VIEW" statement
  */
-public class AlterView implements Statement {
+public class AlterView extends Statement.Default {
 
     private Table view;
     private SelectBody selectBody;

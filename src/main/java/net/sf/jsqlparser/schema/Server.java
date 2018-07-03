@@ -21,16 +21,20 @@
  */
 package net.sf.jsqlparser.schema;
 
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class Server implements MultiPartName {
 
-    public static final Pattern SERVER_PATTERN = Pattern.
-            compile("\\[([^\\]]+?)(?:\\\\([^\\]]+))?\\]");
+    public static final Pattern SERVER_PATTERN = Pattern.compile("\\[([^\\]]+?)(?:\\\\([^\\]]+))?\\]");
 
     private String serverName;
     private String instanceName;
     private String simpleName;
+
+    public String getSimpleName() {
+        return simpleName;
+    }
 
     public Server(String serverAndInstanceName) {
         if (serverAndInstanceName != null) {
@@ -47,6 +51,10 @@ public final class Server implements MultiPartName {
     public Server(String serverName, String instanceName) {
         setServerName(serverName);
         setInstanceName(instanceName);
+    }
+
+    public Server(Server server) {
+        this(server.serverName, server.instanceName);
     }
 
     public String getServerName() {
@@ -67,8 +75,7 @@ public final class Server implements MultiPartName {
 
     @Override
     public String getFullyQualifiedName() {
-        if (serverName != null && !serverName.isEmpty() && instanceName != null && !instanceName.
-                isEmpty()) {
+        if (serverName != null && !serverName.isEmpty() && instanceName != null && !instanceName.isEmpty()) {
             return String.format("[%s\\%s]", serverName, instanceName);
         } else if (serverName != null && !serverName.isEmpty()) {
             return String.format("[%s]", serverName);

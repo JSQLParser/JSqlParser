@@ -26,5 +26,4 @@ package net.sf.jsqlparser.statement.alter;
  *
  * @author Christophe Moine
  */
-public interface ConstraintState {
-}
+public interface ConstraintState {}

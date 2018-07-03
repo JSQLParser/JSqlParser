@@ -68,7 +68,6 @@ public class ColumnDefinition {
 
     @Override
     public String toString() {
-        return columnName + " " + colDataType + (columnSpecStrings != null ? " " + PlainSelect.
-                getStringList(columnSpecStrings, false, false) : "");
+        return columnName + " " + colDataType + (columnSpecStrings != null ? " " + PlainSelect.getStringList(columnSpecStrings, false, false) : "");
     }
 }

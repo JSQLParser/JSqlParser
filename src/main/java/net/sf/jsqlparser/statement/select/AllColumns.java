@@ -28,8 +28,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
  */
 public class AllColumns extends ASTNodeAccessImpl implements SelectItem {
 
-    public AllColumns() {
-    }
+    public AllColumns() {}
 
     @Override
     public void accept(SelectItemVisitor selectItemVisitor) {

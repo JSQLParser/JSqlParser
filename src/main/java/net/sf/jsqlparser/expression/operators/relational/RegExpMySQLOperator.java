@@ -57,6 +57,6 @@ public class RegExpMySQLOperator extends BinaryExpression {
     @Override
     public String getStringExpression() {
         return (useRLike ? "RLIKE" : "REGEXP")
-                + (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
+            + (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
     }
 }

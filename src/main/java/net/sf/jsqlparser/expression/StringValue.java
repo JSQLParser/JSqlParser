@@ -59,6 +59,12 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         value = escapedValue;
     }
 
+    // copy constructor
+    public StringValue(String value, Character prefix) {
+        this.value = value;
+        this.prefix = prefix;
+    }
+
     public String getValue() {
         return value;
     }

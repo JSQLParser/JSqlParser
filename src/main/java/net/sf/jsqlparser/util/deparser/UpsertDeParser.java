@@ -44,7 +44,7 @@ public class UpsertDeParser implements ItemsListVisitor {
     private StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
-    
+
     /**
      * Constructor: this constructor is used to assign the values coming from the
      * arguments to their global values.
@@ -91,7 +91,7 @@ public class UpsertDeParser implements ItemsListVisitor {
         }
 
     }
-    
+
     private void appendColumns(Upsert upsert) {
         buffer.append(" (");
         for (Iterator<Column> iter = upsert.getColumns().iterator(); iter.hasNext();) {
@@ -103,7 +103,7 @@ public class UpsertDeParser implements ItemsListVisitor {
         }
         buffer.append(")");
     }
-    
+
     private void appendSelect(Upsert upsert) {
         buffer.append(" ");
         if (upsert.isUseSelectBrackets()) {
@@ -121,7 +121,7 @@ public class UpsertDeParser implements ItemsListVisitor {
             buffer.append(")");
         }
     }
-    
+
     private void appendDuplicate(Upsert upsert) {
         buffer.append(" ON DUPLICATE KEY UPDATE ");
         for (int i = 0; i < upsert.getDuplicateUpdateColumns().size(); i++) {

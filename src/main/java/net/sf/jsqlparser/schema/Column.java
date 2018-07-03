@@ -22,7 +22,9 @@
 package net.sf.jsqlparser.schema;
 
 import java.util.List;
-import net.sf.jsqlparser.expression.*;
+
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
@@ -33,8 +35,9 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
     private Table table;
     private String columnName;
 
-    public Column() {
-    }
+    private String collate = null;
+
+    public Column() {}
 
     public Column(Table table, String columnName) {
         setTable(table);
@@ -43,12 +46,16 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
 
     public Column(List<String> nameParts) {
         this(nameParts.size() > 1
-                ? new Table(nameParts.subList(0, nameParts.size() - 1)) : null,
-                nameParts.get(nameParts.size() - 1));
+            ? new Table(nameParts.subList(0, nameParts.size() - 1)) : null,
+            nameParts.get(nameParts.size() - 1));
     }
 
     public Column(String columnName) {
         this(null, columnName);
+    }
+
+    public Column(Column column) {
+        this(column.table, column.columnName);
     }
 
     public Table getTable() {
@@ -69,32 +76,49 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
 
     @Override
     public String getFullyQualifiedName() {
-        return getName(false);
+        return getFullyQualifiedName(false);
     }
 
     /**
-     * Get name with out without using aliases.
-     *
-     * @param aliases
+     * Get FQN.
+     * @param aliases - use aliases.
      * @return
      */
-    public String getName(boolean aliases) {
+    public String getFullyQualifiedName(boolean aliases) {
         StringBuilder fqn = new StringBuilder();
 
         if (table != null) {
-            if (table.getAlias() != null && aliases) {
+            if (aliases && table.getAlias() != null) {
                 fqn.append(table.getAlias().getName());
             } else {
                 fqn.append(table.getFullyQualifiedName());
             }
-        }
-        if (fqn.length() > 0) {
-            fqn.append('.');
+            if (fqn.length() > 0) {
+                fqn.append('.');
+            }
         }
         if (columnName != null) {
-            fqn.append(columnName);
+            fqn.append(getName());
         }
         return fqn.toString();
+    }
+
+    /**
+     * Get name.
+     * @return 
+     */
+    public String getName() {
+        StringBuilder name = new StringBuilder();
+
+        if (columnName != null) {
+            name.append(columnName);
+        }
+
+        if (collate != null) {
+            name.append(" COLLATE ").append(collate);
+        }
+
+        return name.toString();
     }
 
     @Override
@@ -104,6 +128,52 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
 
     @Override
     public String toString() {
-        return getName(true);
+        return getFullyQualifiedName(true);
+    }
+
+    public String getCollate() {
+        return collate;
+    }
+
+    public void setCollate(String collate) {
+        this.collate = collate;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((columnName == null) ? 0 : columnName.hashCode());
+        result = prime * result + ((table == null) ? 0 : table.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Column other = (Column) obj;
+        if (columnName == null) {
+            if (other.columnName != null) {
+                return false;
+            }
+        } else if (!columnName.equals(other.columnName)) {
+            return false;
+        }
+        if (table == null) {
+            if (other.table != null) {
+                return false;
+            }
+        } else if (!table.equals(other.table)) {
+            return false;
+        }
+        return true;
     }
 }

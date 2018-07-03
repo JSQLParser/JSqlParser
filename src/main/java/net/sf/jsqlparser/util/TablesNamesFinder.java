@@ -45,7 +45,7 @@ import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
-import net.sf.jsqlparser.expression.ValueListExpression;
+import net.sf.jsqlparser.expression.NamedExpression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
@@ -59,6 +59,7 @@ import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
+import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
@@ -93,6 +94,8 @@ import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Abort;
+import net.sf.jsqlparser.statement.BeginTrans;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.Statement;
@@ -100,6 +103,8 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.callable.StoredProcedure;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -113,6 +118,7 @@ import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.Help;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.ParenthesisFromItem;
@@ -143,7 +149,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
     private List<String> tables;
     private boolean allowColumnProcessing = false;
-    
+
     /**
      * There are special names, that are not table names but are parsed as tables. These names are
      * collected here and are not included in the tables - names anymore.
@@ -210,11 +216,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (plainSelect.getWhere() != null) {
             plainSelect.getWhere().accept(this);
         }
-          
-        if(plainSelect.getHaving() != null){
+
+        if (plainSelect.getHaving() != null) {
             plainSelect.getHaving().accept(this);
         }
-        
+
         if (plainSelect.getOracleHierarchical() != null) {
             plainSelect.getOracleHierarchical().accept(this);
         }
@@ -228,12 +234,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     protected String extractTableName(Table table) {
         return table.getFullyQualifiedName();
     }
-    
+
     @Override
     public void visit(Table tableName) {
         String tableWholeName = extractTableName(tableName);
         if (!otherItemNames.contains(tableWholeName.toLowerCase())
-                && !tables.contains(tableWholeName)) {
+            && !tables.contains(tableWholeName)) {
             tables.add(tableWholeName);
         }
     }
@@ -278,8 +284,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(DoubleValue doubleValue) {
-    }
+    public void visit(DoubleValue doubleValue) {}
 
     @Override
     public void visit(EqualsTo equalsTo) {
@@ -320,12 +325,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(IsNullExpression isNullExpression) {
-    }
+    public void visit(IsNullExpression isNullExpression) {}
 
     @Override
-    public void visit(JdbcParameter jdbcParameter) {
-    }
+    public void visit(JdbcParameter jdbcParameter) {}
 
     @Override
     public void visit(LikeExpression likeExpression) {
@@ -338,8 +341,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(LongValue longValue) {
-    }
+    public void visit(LongValue longValue) {}
 
     @Override
     public void visit(MinorThan minorThan) {
@@ -362,8 +364,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(NullValue nullValue) {
-    }
+    public void visit(NullValue nullValue) {}
 
     @Override
     public void visit(OrExpression orExpression) {
@@ -376,8 +377,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(StringValue stringValue) {
-    }
+    public void visit(StringValue stringValue) {}
 
     @Override
     public void visit(Subtraction subtraction) {
@@ -412,16 +412,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(DateValue dateValue) {
-    }
+    public void visit(DateValue dateValue) {}
 
     @Override
-    public void visit(TimestampValue timestampValue) {
-    }
+    public void visit(TimestampValue timestampValue) {}
 
     @Override
-    public void visit(TimeValue timeValue) {
-    }
+    public void visit(TimeValue timeValue) {}
 
     /*
      * (non-Javadoc)
@@ -471,7 +468,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(SubJoin subjoin) {
         subjoin.getLeft().accept(this);
-        for(Join join : subjoin.getJoinList()) {
+        for (Join join : subjoin.getJoinList()) {
             join.getRightItem().accept(this);
         }
     }
@@ -512,8 +509,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(AnalyticExpression analytic) {
-    }
+    public void visit(AnalyticExpression analytic) {}
 
     @Override
     public void visit(SetOperationList list) {
@@ -523,8 +519,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(ExtractExpression eexpr) {
-    }
+    public void visit(ExtractExpression eexpr) {}
 
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
@@ -539,8 +534,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(ValuesList valuesList) {
-    }
+    public void visit(ValuesList valuesList) {}
 
     /**
      * Initializes table names collector. Important is the usage of Column instances to find 
@@ -556,12 +550,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(IntervalExpression iexpr) {
-    }
+    public void visit(IntervalExpression iexpr) {}
 
     @Override
-    public void visit(JdbcNamedParameter jdbcNamedParameter) {
-    }
+    public void visit(JdbcNamedParameter jdbcNamedParameter) {}
 
     @Override
     public void visit(OracleHierarchicalExpression oexpr) {
@@ -585,20 +577,16 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(JsonExpression jsonExpr) {
-    }
+    public void visit(JsonExpression jsonExpr) {}
 
     @Override
-    public void visit(JsonOperator jsonExpr) {
-    }
+    public void visit(JsonOperator jsonExpr) {}
 
     @Override
-    public void visit(AllColumns allColumns) {
-    }
+    public void visit(AllColumns allColumns) {}
 
     @Override
-    public void visit(AllTableColumns allTableColumns) {
-    }
+    public void visit(AllTableColumns allTableColumns) {}
 
     @Override
     public void visit(SelectExpressionItem item) {
@@ -606,8 +594,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(UserVariable var) {
-    }
+    public void visit(UserVariable var) {}
 
     @Override
     public void visit(NumericBind bind) {
@@ -615,13 +602,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(KeepExpression aexpr) {
-    }
+    public void visit(KeepExpression aexpr) {}
 
     @Override
-    public void visit(MySQLGroupConcat groupConcat) {
-    }
-    
+    public void visit(MySQLGroupConcat groupConcat) {}
+
     @Override
     public void visit(ValueListExpression valueList) {
         valueList.getExpressionList().accept(this);
@@ -763,12 +748,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(OracleHint hint) {
-    }
+    public void visit(OracleHint hint) {}
 
     @Override
-    public void visit(TableFunction valuesList) {
-    }
+    public void visit(TableFunction valuesList) {}
 
     @Override
     public void visit(AlterView alterView) {
@@ -776,8 +759,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(TimeKeyExpression timeKeyExpression) {
-    }
+    public void visit(TimeKeyExpression timeKeyExpression) {}
 
     @Override
     public void visit(DateTimeLiteralExpression literal) {
@@ -801,11 +783,34 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(UseStatement use) {
-    }
+    public void visit(UseStatement use) {}
 
     @Override
     public void visit(ParenthesisFromItem parenthesis) {
         parenthesis.getFromItem().accept(this);
     }
+
+    @Override
+    public void visit(StoredProcedure callable) {
+        tables.add(callable.getFunction().getName());
+    }
+
+    @Override
+    public void visit(AlterUser alterUser) {}
+
+    @Override
+    public void visit(NamedExpression namedExpression) {
+        namedExpression.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(Help help) {
+        tables.add(help.getName());
+    }
+
+    @Override
+    public void visit(BeginTrans trans) {}
+
+    @Override
+    public void visit(Abort abort) {}
 }

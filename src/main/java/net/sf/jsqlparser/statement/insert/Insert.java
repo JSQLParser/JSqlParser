@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.insert;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
@@ -34,10 +35,10 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
 /**
- * The insert statement. Every column name in <code>columnNames</code> matches an item in
- * <code>itemsList</code>
+ * The insert statement. Every column name in <code>columnNames</code> matches
+ * an item in <code>itemsList</code>
  */
-public class Insert implements Statement {
+public class Insert extends Statement.Default {
 
     private Table table;
     private List<Column> columns;
@@ -50,11 +51,13 @@ public class Insert implements Statement {
     private List<Expression> duplicateUpdateExpressionList;
     private InsertModifierPriority modifierPriority = null;
     private boolean modifierIgnore = false;
+    private String type = "INSERT";
+    private boolean hasInto = false;
 
     private boolean returningAllColumns = false;
 
     private List<SelectExpressionItem> returningExpressionList = null;
-    
+
     /* these lines of codes are used to handle SET syntax in the insert part. 
      * the SET syntax is based on this: https://dev.mysql.com/doc/refman/5.6/en/insert.html. */
     private boolean useSet = false;
@@ -179,46 +182,60 @@ public class Insert implements Statement {
     public void setModifierIgnore(boolean modifierIgnore) {
         this.modifierIgnore = modifierIgnore;
     }
-    
+
     public void setUseSet(boolean useSet) {
         this.useSet = useSet;
     }
-    
+
     public boolean isUseSet() {
         return useSet;
     }
-    
+
     public void setSetColumns(List<Column> setColumns) {
         this.setColumns = setColumns;
     }
-    
+
     public List<Column> getSetColumns() {
         return setColumns;
     }
-    
+
     public void setSetExpressionList(List<Expression> setExpressionList) {
         this.setExpressionList = setExpressionList;
     }
-    
+
     public List<Expression> getSetExpressionList() {
         return setExpressionList;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder();
 
-        sql.append("INSERT ");
+        sql.append(type).append(" ");
         if (modifierPriority != null) {
             sql.append(modifierPriority.name()).append(" ");
         }
         if (modifierIgnore) {
             sql.append("IGNORE ");
         }
-        sql.append("INTO ");
+        if (hasInto) {
+            sql.append("INTO ");
+        }
         sql.append(table).append(" ");
         if (columns != null) {
-            sql.append(PlainSelect.getStringList(columns, true, true)).append(" ");
+            List<String> simpleNamedColumns = new ArrayList<String>(columns.size());
+            for (Column column : columns) {
+                simpleNamedColumns.add(column.getName());
+            }
+            sql.append(PlainSelect.getStringList(simpleNamedColumns, true, true)).append(" ");
         }
 
         if (useValues) {
@@ -238,7 +255,7 @@ public class Insert implements Statement {
                 sql.append(")");
             }
         }
-        
+
         if (useSet) {
             sql.append("SET ");
             for (int i = 0; i < getSetColumns().size(); i++) {
@@ -264,11 +281,18 @@ public class Insert implements Statement {
         if (isReturningAllColumns()) {
             sql.append(" RETURNING *");
         } else if (getReturningExpressionList() != null) {
-            sql.append(" RETURNING ").append(PlainSelect.
-                    getStringList(getReturningExpressionList(), true, false));
+            sql.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
         }
 
         return sql.toString();
     }
-    
+
+    public boolean hasInto() {
+        return hasInto;
+    }
+
+    public void setHasInto(boolean hasInto) {
+        this.hasInto = hasInto;
+    }
+
 }

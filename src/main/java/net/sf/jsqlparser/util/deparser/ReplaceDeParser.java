@@ -43,8 +43,7 @@ public class ReplaceDeParser implements ItemsListVisitor {
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
 
-    public ReplaceDeParser() {
-    }
+    public ReplaceDeParser() {}
 
     /**
      * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share

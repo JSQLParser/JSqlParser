@@ -24,31 +24,37 @@ package net.sf.jsqlparser.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import net.sf.jsqlparser.expression.*;
+
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.MySQLIndexHint;
+import net.sf.jsqlparser.expression.SQLServerTableHint;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.IntoTableVisitor;
+import net.sf.jsqlparser.statement.select.Pivot;
 
 /**
  * A table. It can have an alias and the schema name it belongs to.
  */
 public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName {
 
-//    private Database database;
-//    private String schemaName;
-//    private String name;
+    //    private Database database;
+    //    private String schemaName;
+    //    private String name;
     private static final int NAME_IDX = 0;
     private static final int SCHEMA_IDX = 1;
     private static final int DATABASE_IDX = 2;
     private static final int SERVER_IDX = 3;
 
-    private List<String> partItems = new ArrayList<>();
+    private List<String> partItems = new ArrayList<String>();
 
     private Alias alias;
     private Pivot pivot;
     private MySQLIndexHint hint;
+    private List<SQLServerTableHint> sqlServerTableHints;
 
-    public Table() {
-    }
+    public Table() {}
 
     public Table(String name) {
         setIndex(NAME_IDX, name);
@@ -62,13 +68,24 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     public Table(Database database, String schemaName, String name) {
         setIndex(NAME_IDX, name);
         setIndex(SCHEMA_IDX, schemaName);
-        setIndex(DATABASE_IDX, database.getDatabaseName());
-        setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
+        if (database != null) {
+            setIndex(DATABASE_IDX, database.getDatabaseName());
+            setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
+        }
     }
 
     public Table(List<String> partItems) {
-        this.partItems = new ArrayList<>(partItems);
+        this.partItems = new ArrayList<String>(partItems);
         Collections.reverse(this.partItems);
+    }
+
+    public Table(Alias alias, Database database, String schemaName, String name) {
+        this(database, schemaName, name);
+        this.alias = alias;
+    }
+
+    public Table(Table table) {
+        this(table.getDatabase(), table.getSchemaName(), table.getName());
     }
 
     public Database getDatabase() {
@@ -124,15 +141,15 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     public String getFullyQualifiedName() {
         StringBuilder fqn = new StringBuilder();
 
-        for (int i = partItems.size()-1 ; i >=0; i--) {
+        for (int i = partItems.size() - 1; i >= 0; i--) {
             String part = partItems.get(i);
             if (part == null) {
-                part = "";
+                continue;
             }
-            fqn.append(part);
-            if (i != 0) {
+            if (fqn.length() > 0) {
                 fqn.append(".");
             }
+            fqn.append(part);
         }
 
         return fqn.toString();
@@ -165,11 +182,81 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         this.hint = hint;
     }
 
+    public List<SQLServerTableHint> getSqlServerTableHints() {
+        return sqlServerTableHints;
+    }
+
+    public void setSqlServerTableHints(List<SQLServerTableHint> sqlServerTableHints) {
+        this.sqlServerTableHints = sqlServerTableHints;
+    }
+
     @Override
     public String toString() {
-        return getFullyQualifiedName()
-                + ((alias != null) ? alias.toString() : "")
-                + ((pivot != null) ? " " + pivot : "")
-                + ((hint != null) ? hint.toString() : "");
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder
+            .append(getFullyQualifiedName())
+            .append(pivot != null ? " " + pivot : "")
+            .append(alias != null ? alias : "")
+            .append(hint != null ? hint : "");
+        if (sqlServerTableHints != null && sqlServerTableHints.size() > 0) {
+            stringBuilder.append(" WITH(");
+            boolean first = true;
+            for (SQLServerTableHint sqlServerTableHint : sqlServerTableHints) {
+                if (first) {
+                    first = false;
+                } else {
+                    stringBuilder.append(",");
+                }
+                stringBuilder.append(sqlServerTableHint);
+            }
+            stringBuilder.append(")");
+        }
+        return stringBuilder.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        for (String part : partItems) {
+            result = prime * result + ((part == null) ? 0 : part.hashCode());
+        }
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Table other = (Table) obj;
+        if (getName() == null) {
+            if (other.getName() != null) {
+                return false;
+            }
+        } else if (!getName().equals(other.getName())) {
+            return false;
+        }
+        if (getSchemaName() == null) {
+            if (other.getSchemaName() != null) {
+                return false;
+            }
+        } else if (!getSchemaName().equals(other.getSchemaName())) {
+            return false;
+        }
+        if (getDatabase() == null) {
+            if (other.getDatabase() != null) {
+                return false;
+            }
+        } else if (!getDatabase().equals(other.getDatabase())) {
+            return false;
+        }
+        return true;
     }
 }

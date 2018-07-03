@@ -27,7 +27,7 @@ import java.util.List;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class Select implements Statement {
+public class Select extends Statement.Default {
 
     private SelectBody selectBody;
     private List<WithItem> withItemsList;

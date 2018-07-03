@@ -18,12 +18,14 @@
  */
 package net.sf.jsqlparser.expression;
 
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
 /**
  *

@@ -28,9 +28,9 @@ import org.junit.Test;
  */
 public class UseStatementTest {
 
-
     @Test
     public void testSimpleUse() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("USE mydatabase");
+        assertSqlCanBeParsedAndDeparsed("DATABASE mydatabase"); // teradata style
     }
 }

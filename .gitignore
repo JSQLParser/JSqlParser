@@ -18,3 +18,4 @@
 *.java~
 *.yml~
 /nbproject/
+/.checkstyle

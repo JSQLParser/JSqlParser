@@ -36,8 +36,13 @@ public class DropDeParser {
     }
 
     public void deParse(Drop drop) {
-        buffer.append("DROP ");
-        buffer.append(drop.getType());
+        String type = drop.getType();
+        if ("DT".equalsIgnoreCase(type)) {
+            buffer.append("DT");
+        } else {
+            buffer.append("DROP ");
+            buffer.append(type);
+        }
         if (drop.isIfExists()) {
             buffer.append(" IF EXISTS");
         }

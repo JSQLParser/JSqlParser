@@ -18,13 +18,18 @@
  */
 package net.sf.jsqlparser.statement;
 
-import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
+import java.io.StringReader;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserManager;
 
 /**
  *
@@ -32,24 +37,21 @@ import org.junit.Test;
  */
 public class SetStatementTest {
 
-    public SetStatementTest() {
-    }
+    CCJSqlParserManager parserManager = new CCJSqlParserManager();
+
+    public SetStatementTest() {}
 
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     @Test
     public void testSimpleSet() throws JSQLParserException {
@@ -64,5 +66,11 @@ public class SetStatementTest {
     @Test
     public void testIssue373_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET tester 5");
+    }
+
+    @Test
+    public void testSetQueryBandTeradata() throws JSQLParserException {
+        // make sure it is parseable (dont want to deparse atm)
+        parserManager.parse(new StringReader("SET QUERY_BAND = 'UTILITYNAME=MULTLOAD;' UPDATE FOR SESSION"));
     }
 }

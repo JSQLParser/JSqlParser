@@ -32,7 +32,7 @@ import net.sf.jsqlparser.statement.select.Select;
 /**
  * A "CREATE TABLE" statement
  */
-public class CreateTable implements Statement {
+public class CreateTable extends Statement.Default {
 
     private Table table;
     private boolean unlogged = false;
@@ -147,8 +147,8 @@ public class CreateTable implements Statement {
         String createOps = PlainSelect.getStringList(createOptionsStrings, false, false);
 
         sql = "CREATE " + (unlogged ? "UNLOGGED " : "")
-                + (!"".equals(createOps) ? createOps + " " : "")
-                + "TABLE " + (ifNotExists ? "IF NOT EXISTS " : "") + table;
+            + (!"".equals(createOps) ? createOps + " " : "")
+            + "TABLE " + (ifNotExists ? "IF NOT EXISTS " : "") + table;
 
         if (select != null) {
             sql += " AS " + (selectParenthesis ? "(" : "") + select.toString() + (selectParenthesis ? ")" : "");

@@ -218,7 +218,7 @@ public class Join extends ASTNodeAccessImpl {
             }
 
             return type + "JOIN " + rightItem + ((onExpression != null) ? " ON " + onExpression + "" : "")
-                    + PlainSelect.getFormatedList(usingColumns, "USING", true, true);
+                + PlainSelect.getFormatedList(usingColumns, "USING", true, true);
         }
 
     }

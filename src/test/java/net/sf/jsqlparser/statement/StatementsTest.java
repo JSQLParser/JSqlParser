@@ -19,24 +19,19 @@ import static org.junit.Assert.*;
  */
 public class StatementsTest {
 
-    public StatementsTest() {
-    }
+    public StatementsTest() {}
 
     @BeforeClass
-    public static void setUpClass() {
-    }
+    public static void setUpClass() {}
 
     @AfterClass
-    public static void tearDownClass() {
-    }
+    public static void tearDownClass() {}
 
     @Before
-    public void setUp() {
-    }
+    public void setUp() {}
 
     @After
-    public void tearDown() {
-    }
+    public void tearDown() {}
 
     @Test
     public void testStatements() throws JSQLParserException {

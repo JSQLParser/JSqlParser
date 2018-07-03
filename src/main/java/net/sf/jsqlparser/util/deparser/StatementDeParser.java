@@ -23,12 +23,16 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 
+import net.sf.jsqlparser.statement.Abort;
+import net.sf.jsqlparser.statement.BeginTrans;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.callable.StoredProcedure;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -39,6 +43,7 @@ import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
+import net.sf.jsqlparser.statement.select.Help;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.truncate.Truncate;
@@ -46,11 +51,12 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
 public class StatementDeParser implements StatementVisitor {
-    private ExpressionDeParser expressionDeParser;
 
-    private SelectDeParser selectDeParser;
+    protected ExpressionDeParser expressionDeParser;
 
-    private StringBuilder buffer;
+    protected SelectDeParser selectDeParser;
+
+    protected StringBuilder buffer;
 
     public StatementDeParser(StringBuilder buffer) {
         this(new ExpressionDeParser(), new SelectDeParser(), buffer);
@@ -143,8 +149,7 @@ public class StatementDeParser implements StatementVisitor {
     }
 
     @Override
-    public void visit(Truncate truncate) {
-    }
+    public void visit(Truncate truncate) {}
 
     @Override
     public void visit(Update update) {
@@ -201,7 +206,7 @@ public class StatementDeParser implements StatementVisitor {
         //TODO implementation of a deparser
         buffer.append(merge.toString());
     }
-    
+
     @Override
     public void visit(Commit commit) {
         buffer.append(commit.toString());
@@ -220,5 +225,30 @@ public class StatementDeParser implements StatementVisitor {
     @Override
     public void visit(UseStatement use) {
         new UseStatementDeParser(buffer).deParse(use);
+    }
+
+    @Override
+    public void visit(StoredProcedure callable) {
+        buffer.append(callable.toString());
+    }
+
+    @Override
+    public void visit(AlterUser alterUser) {
+        buffer.append(alterUser.toString());
+    }
+
+    @Override
+    public void visit(Help help) {
+        buffer.append(help.toString());
+    }
+
+    @Override
+    public void visit(BeginTrans trans) {
+        buffer.append(trans.toString());
+    }
+
+    @Override
+    public void visit(Abort abort) {
+        buffer.append(abort.toString());
     }
 }

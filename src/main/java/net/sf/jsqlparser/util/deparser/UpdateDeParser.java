@@ -28,14 +28,14 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.update.Update;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.OrderByVisitor;
 import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.OrderByVisitor;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
+import net.sf.jsqlparser.statement.update.Update;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) an
@@ -43,12 +43,11 @@ import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
  */
 public class UpdateDeParser implements OrderByVisitor {
 
-    private StringBuilder buffer = new StringBuilder();
-    private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
-    private SelectVisitor selectVisitor = new SelectVisitorAdapter();
+    protected StringBuilder buffer = new StringBuilder();
+    protected ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
+    protected SelectVisitor selectVisitor = new SelectVisitorAdapter();
 
-    public UpdateDeParser() {
-    }
+    public UpdateDeParser() {}
 
     /**
      * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share
@@ -74,8 +73,7 @@ public class UpdateDeParser implements OrderByVisitor {
     }
 
     public void deParse(Update update) {
-        buffer.append("UPDATE ").append(PlainSelect.getStringList(update.getTables(), true, false)).
-                append(" SET ");
+        buffer.append("UPDATE ").append(PlainSelect.getStringList(update.getTables(), true, false)).append(" SET ");
 
         if (!update.isUseSelect()) {
             for (int i = 0; i < update.getColumns().size(); i++) {
@@ -139,8 +137,7 @@ public class UpdateDeParser implements OrderByVisitor {
             buffer.append(" RETURNING *");
         } else if (update.getReturningExpressionList() != null) {
             buffer.append(" RETURNING ");
-            for (Iterator<SelectExpressionItem> iter = update.getReturningExpressionList().
-                    iterator(); iter.hasNext();) {
+            for (Iterator<SelectExpressionItem> iter = update.getReturningExpressionList().iterator(); iter.hasNext();) {
                 buffer.append(iter.next().toString());
                 if (iter.hasNext()) {
                     buffer.append(", ");
@@ -167,8 +164,7 @@ public class UpdateDeParser implements OrderByVisitor {
         }
         if (orderBy.getNullOrdering() != null) {
             buffer.append(' ');
-            buffer.
-                    append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
+            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
         }
     }
 }

@@ -34,10 +34,8 @@ public class InsertTest {
         assertEquals(3, ((ExpressionList) insert.getItemsList()).getExpressions().size());
         assertTrue(((ExpressionList) insert.getItemsList()).getExpressions().get(0) instanceof JdbcParameter);
         assertEquals("sadfsd",
-                ((StringValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(1)).
-                        getValue());
-        assertEquals(234, ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().
-                get(2)).getValue());
+            ((StringValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(1)).getValue());
+        assertEquals(234, ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(2)).getValue());
         assertEquals(statement, "" + insert);
 
         statement = "INSERT INTO myschema.mytable VALUES (?, ?, 2.3)";
@@ -45,9 +43,8 @@ public class InsertTest {
         assertEquals("myschema.mytable", insert.getTable().getFullyQualifiedName());
         assertEquals(3, ((ExpressionList) insert.getItemsList()).getExpressions().size());
         assertTrue(((ExpressionList) insert.getItemsList()).getExpressions().get(0) instanceof JdbcParameter);
-        assertEquals(2.3, ((DoubleValue) ((ExpressionList) insert.getItemsList()).getExpressions().
-                get(2)).getValue(),
-                0.0);
+        assertEquals(2.3, ((DoubleValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(2)).getValue(),
+            0.0);
         assertEquals(statement, "" + insert);
 
     }
@@ -60,8 +57,7 @@ public class InsertTest {
         assertEquals(1, insert.getColumns().size());
         assertEquals("col1", ((Column) insert.getColumns().get(0)).getColumnName());
         assertEquals("val1",
-                ((StringValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(0)).
-                        getValue());
+            ((StringValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(0)).getValue());
         assertEquals("INSERT INTO mytable (col1) VALUES ('val1')", insert.toString());
     }
 
@@ -77,13 +73,13 @@ public class InsertTest {
         assertNull(insert.getItemsList());
         assertNotNull(insert.getSelect());
         assertEquals("mytable2",
-                ((Table) ((PlainSelect) insert.getSelect().getSelectBody()).getFromItem()).getName());
+            ((Table) ((PlainSelect) insert.getSelect().getSelectBody()).getFromItem()).getName());
 
         // toString uses brakets
         String statementToString = "INSERT INTO mytable (col1, col2, col3) SELECT * FROM mytable2";
         assertEquals(statementToString, "" + insert);
     }
-    
+
     @Test
     public void testInsertFromSet() throws JSQLParserException {
         String statement = "INSERT INTO mytable SET col1 = 12, col2 = name1 * name2";
@@ -97,11 +93,11 @@ public class InsertTest {
         assertEquals("name1 * name2", insert.getSetExpressionList().get(1).toString());
         assertEquals(statement, "" + insert);
     }
-    
+
     @Test
     public void testInsertValuesWithDuplicateElimination() throws JSQLParserException {
         String statement = "INSERT INTO TEST (ID, COUNTER) VALUES (123, 0) "
-                + "ON DUPLICATE KEY UPDATE COUNTER = COUNTER + 1";
+            + "ON DUPLICATE KEY UPDATE COUNTER = COUNTER + 1";
         Insert insert = (Insert) parserManager.parse(new StringReader(statement));
         assertEquals("TEST", insert.getTable().getName());
         assertEquals(2, insert.getColumns().size());
@@ -109,10 +105,8 @@ public class InsertTest {
         assertEquals("ID", ((Column) insert.getColumns().get(0)).getColumnName());
         assertEquals("COUNTER", ((Column) insert.getColumns().get(1)).getColumnName());
         assertEquals(2, ((ExpressionList) insert.getItemsList()).getExpressions().size());
-        assertEquals(123, ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().
-                get(0)).getValue());
-        assertEquals(0, ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().
-                get(1)).getValue());
+        assertEquals(123, ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(0)).getValue());
+        assertEquals(0, ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(1)).getValue());
         assertEquals(1, insert.getDuplicateUpdateColumns().size());
         assertEquals("COUNTER", ((Column) insert.getDuplicateUpdateColumns().get(0)).getColumnName());
         assertEquals(1, insert.getDuplicateUpdateExpressionList().size());
@@ -121,11 +115,11 @@ public class InsertTest {
         assertTrue(insert.isUseDuplicate());
         assertEquals(statement, "" + insert);
     }
-    
+
     @Test
     public void testInsertFromSetWithDuplicateElimination() throws JSQLParserException {
         String statement = "INSERT INTO mytable SET col1 = 122 "
-                + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'";
+            + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'";
         Insert insert = (Insert) parserManager.parse(new StringReader(statement));
         assertEquals("mytable", insert.getTable().getName());
         assertEquals(1, insert.getSetColumns().size());
@@ -238,7 +232,7 @@ public class InsertTest {
     public void testIssue223() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO user VALUES (2001, '\\'Clark\\'', 'Kent')");
     }
-    
+
     @Test
     public void testKeywordPrecisionIssue363() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO test (user_id, precision) VALUES (1, '111')");
@@ -248,31 +242,43 @@ public class InsertTest {
     public void testWithDeparsingIssue406() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("insert into mytab3 (a,b,c) select a,b,c from mytab where exists(with t as (select * from mytab2) select * from t)", true);
     }
-    
+
     @Test
     public void testInsertSetInDeparsing() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable SET col1 = 12, col2 = name1 * name2");
     }
-    
+
     @Test
     public void testInsertValuesWithDuplicateEliminationInDeparsing() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO TEST (ID, COUNTER) VALUES (123, 0) "
-                + "ON DUPLICATE KEY UPDATE COUNTER = COUNTER + 1");
+            + "ON DUPLICATE KEY UPDATE COUNTER = COUNTER + 1");
     }
-    
+
     @Test
     public void testInsertSetWithDuplicateEliminationInDeparsing() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable SET col1 = 122 "
-                + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'");
+            + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'");
     }
-    
+
     @Test
     public void testInsertTableWithAliasIssue526() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO account t (name, addr, phone) SELECT * FROM user");
     }
-    
+
     @Test
-    public void testInsertKeyWordEnableIssue592() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("INSERT INTO T_USER (ID, EMAIL_VALIDATE, ENABLE, PASSWORD) VALUES (?, ?, ?, ?)");
+    public void testINSforTeradata() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INS INTO personnel.inslogtable (LogType, Seq) VALUES (125, 1)");
+    }
+
+    @Test
+    public void testInsertUsingTeradata() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INS personnel.inslogtable (LOGTYPE, SYSINFO) VALUES (0, :SYS_DAT)");
+
+        parserManager.parse(new StringReader("USING (SYS_DAT VARBYTE(255)) INS personnel.inslogtable (LOGTYPE, SYSINFO) VALUES (0, :SYS_DAT)"));
+        parserManager.parse(new StringReader("USING (emp_name CHARACTER(40) UPPERCASE, emp_number INTEGER) INSERT INTO employee (:emp_name, :emp_number);"));
+        parserManager.parse(new StringReader("USING (SYS_DAT VARBYTE(255)) INS personnel.inslogtable (LOGTYPE, SYSINFO) VALUES (0, :SYS_DAT)"));
+
+        //those currently fail:
+        //parserManager.parse(new StringReader("USING SYS_DAT(VARBYTE(255)) INS personnel.inslogtable (LOGTYPE, SYSINFO) VALUES (0, :SYS_DAT)"));
     }
 }

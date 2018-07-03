@@ -33,7 +33,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  *
  * @author toben & wrobstory
  */
-public class Alter implements Statement {
+public class Alter extends Statement.Default {
 
     private Table table;
 

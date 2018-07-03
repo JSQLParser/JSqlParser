@@ -28,7 +28,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-public class Drop implements Statement {
+public class Drop extends Statement.Default {
 
     private String type;
     private Table name;
@@ -74,8 +74,14 @@ public class Drop implements Statement {
 
     @Override
     public String toString() {
-        String sql = "DROP " + type + " "
-                + (ifExists ? "IF EXISTS " : "") + name.toString();
+        String sql;
+        if ("DT".equalsIgnoreCase(type)) {
+            sql = "DT "; // short for drop table
+        } else {
+            sql = "DROP " + type + " ";
+        }
+
+        sql += (ifExists ? "IF EXISTS " : "") + name.toString();
 
         if (parameters != null && !parameters.isEmpty()) {
             sql += " " + PlainSelect.getStringList(parameters);
