@@ -193,11 +193,16 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder
-            .append(getFullyQualifiedName())
-            .append(pivot != null ? " " + pivot : "")
-            .append(alias != null ? alias : "")
-            .append(hint != null ? hint : "");
+        stringBuilder.append(getFullyQualifiedName());
+        if (pivot != null) {
+            stringBuilder.append(" ").append(pivot);
+        }
+        if (alias != null) {
+            stringBuilder.append(alias);
+        }
+        if (hint != null) {
+            stringBuilder.append(hint);
+        }
         if (sqlServerTableHints != null && sqlServerTableHints.size() > 0) {
             stringBuilder.append(" WITH(");
             boolean first = true;

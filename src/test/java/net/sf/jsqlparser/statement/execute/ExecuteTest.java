@@ -33,8 +33,6 @@ import static net.sf.jsqlparser.test.TestUtils.*;
  */
 public class ExecuteTest {
 
-    public ExecuteTest() {}
-
     @BeforeClass
     public static void setUpClass() {}
 
