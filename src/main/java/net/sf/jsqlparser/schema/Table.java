@@ -70,7 +70,9 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         setIndex(SCHEMA_IDX, schemaName);
         if (database != null) {
             setIndex(DATABASE_IDX, database.getDatabaseName());
-            setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
+            if (database.getServer() != null) {
+                setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
+            }
         }
     }
 
@@ -85,7 +87,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     public Table(Table table) {
-        this(table.getDatabase(), table.getSchemaName(), table.getName());
+        this(table != null ? table.getDatabase() : null, table != null ? table.getSchemaName() : null, table != null ? table.getName() : null);
     }
 
     public Database getDatabase() {

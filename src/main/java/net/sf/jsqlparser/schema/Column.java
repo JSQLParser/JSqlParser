@@ -55,7 +55,7 @@ public final class Column extends ASTNodeAccessImpl implements Expression, Multi
     }
 
     public Column(Column column) {
-        this(column.table, column.columnName);
+        this(column != null ? column.table : null, column != null ? column.columnName : null);
     }
 
     public Table getTable() {

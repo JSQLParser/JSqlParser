@@ -36,7 +36,7 @@ public final class Database implements MultiPartName {
     }
 
     public Database(Database database) {
-        this(database.server, database.databaseName);
+        this(database != null ? database.server : null, database != null ? database.databaseName : null);
     }
 
     public Server getServer() {

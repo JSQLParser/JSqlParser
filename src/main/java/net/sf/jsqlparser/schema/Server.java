@@ -54,7 +54,7 @@ public final class Server implements MultiPartName {
     }
 
     public Server(Server server) {
-        this(server.serverName, server.instanceName);
+        this(server != null ? server.serverName : null, server != null ? server.instanceName : null);
     }
 
     public String getServerName() {
