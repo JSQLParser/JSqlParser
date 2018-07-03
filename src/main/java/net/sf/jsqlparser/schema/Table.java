@@ -143,13 +143,14 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
         for (int i = partItems.size() - 1; i >= 0; i--) {
             String part = partItems.get(i);
-            if (part == null) {
-                continue;
-            }
+            //TODO(PB): looks like part1..part3, for example, when part2 is null (missing) - is a correct syntax
+            //            if (part == null) {
+            //                continue;
+            //            }
             if (fqn.length() > 0) {
                 fqn.append(".");
             }
-            fqn.append(part);
+            fqn.append(part != null ? part : "");
         }
 
         return fqn.toString();
