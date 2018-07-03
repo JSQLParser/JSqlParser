@@ -98,6 +98,10 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             buffer.append(top).append(" ");
         }
 
+        if (plainSelect.getMySqlSqlNoCache()) {
+            buffer.append("SQL_NO_CACHE").append(" ");
+        }
+
         if (plainSelect.getMySqlSqlCalcFoundRows()) {
             buffer.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
@@ -283,7 +287,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         // or OFFSET offset (ROW | ROWS)
         if (offset.getOffsetJdbcParameter() != null) {
             buffer.append(" OFFSET ").append(offset.getOffsetJdbcParameter());
-        } else if (offset.getOffset() != 0) {
+        } else {
             buffer.append(" OFFSET ");
             buffer.append(offset.getOffset());
         }

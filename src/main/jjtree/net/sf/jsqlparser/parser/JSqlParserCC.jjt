@@ -281,6 +281,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_UPSERT:"UPSERT">
 |   <K_USE : "USE">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
+|   <K_SQL_NO_CACHE: "SQL_NO_CACHE">
 |   <K_USING:"USING">
 |   <K_UNSIGNED:"UNSIGNED">
 |   <K_VALIDATE : "VALIDATE">
@@ -923,17 +924,22 @@ MergeInsert MergeInsertClause() : {
 
 Column Column() #Column :
 {
-    String databaseName = null, schemaName = null, tableName = null, columnName = null;
+    //String databaseName = null, schemaName = null, tableName = null, columnName = null;
     String token = null;
+    List<String> data = new ArrayList<String>();
 }
 {
-	columnName = RelObjectName()
+    token = RelObjectName() { data.add(token); }
+    ( LOOKAHEAD (2) "." ("." { data.add(null); })* token = RelObjectName() { data.add(token); } ) *
+
+	/*columnName = RelObjectName()
     ( "." [LOOKAHEAD(2) token = RelObjectName()] { tableName = columnName; columnName = token; token = null;} 
 		( "." token = RelObjectName() { schemaName = tableName; tableName = columnName; columnName = token; token = null;} 
 			( "." token = RelObjectName() { databaseName = schemaName; schemaName = tableName; tableName = columnName; columnName = token; } 
 			)?
 		)?
 	)?
+    */
 
     /*(
           LOOKAHEAD(7) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." tableName=RelObjectName() "." columnName=RelObjectName()
@@ -943,13 +949,13 @@ Column Column() #Column :
     )*/
 
     {
-		if (tableName==null && (databaseName!=null || schemaName!=null)) {
+		/*if (tableName==null && (databaseName!=null || schemaName!=null)) {
 			throw generateParseException();
-		}
+		}*/
 
-        final Database database = new Database(databaseName);
-        final Table table = new Table(database, schemaName, tableName);
-        Column col = new Column(table, columnName);
+        //final Database database = new Database(databaseName);
+        //final Table table = new Table(database, schemaName, tableName);
+        Column col = new Column(data);
         linkAST(col,jjtThis);
         return col;
     }
@@ -1023,19 +1029,24 @@ String RelObjectNameExt2():
 
 Table Table() #Table :
 {
-    String serverName = null, databaseName = null, schemaName = null, tableName = null;
+    //String serverName = null, databaseName = null, schemaName = null, tableName = null;
+    List<String> data = new ArrayList<String>();
+    String token;
 }
 {
-    (
+    token = RelObjectName() { data.add(token); }
+    ( LOOKAHEAD(2) "." ("." { data.add(null); })* token = RelObjectName() { data.add(token); } ) *
+
+   /* (
           LOOKAHEAD(7) serverName=RelObjectName() "." [databaseName=RelObjectName()] "." [schemaName=RelObjectName()] "." tableName=RelObjectName()
         | LOOKAHEAD(5) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." tableName=RelObjectName()
         | LOOKAHEAD(3) schemaName=RelObjectName() "." tableName=RelObjectName()
         | tableName=RelObjectName()
-    )
+    )*/
     {
-        final Server server = new Server(serverName);
-        final Database database = new Database(server, databaseName);
-        Table table = new Table(database, schemaName, tableName);
+        //final Server server = new Server(serverName);
+        //final Database database = new Database(server, databaseName);
+        Table table = new Table(data);
         return table;
     }
 }
@@ -1118,6 +1129,10 @@ PlainSelect PlainSelect() #PlainSelect:
         |
             (
                 <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(true); }
+            )
+        |
+            (
+                <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlNoCache(true); }
             )
     ]
 
@@ -1746,6 +1761,16 @@ JdbcParameter SimpleJdbcParameter() : {
     }
 }
 
+JdbcNamedParameter SimpleJdbcNamedParameter() : {
+    Token token;
+}
+{
+    ":" token = <S_IDENTIFIER>
+    {
+        return new JdbcNamedParameter(token.image);
+    }
+}
+
 Limit LimitWithOffset() #LimitWithOffset:
 {
     Limit limit = new Limit();
@@ -1814,6 +1839,7 @@ Offset Offset():
     Offset offset = new Offset();
     Token token = null;
     JdbcParameter jdbc;
+    JdbcNamedParameter jdbcNamed;
 }
 {
     (
@@ -1821,7 +1847,8 @@ Offset Offset():
             // sqlserver-oracle-> OFFSET offset (ROW | ROWS)
              <K_OFFSET>
                  (token=<S_LONG> { offset.setOffset(Long.parseLong(token.image)); }
-                 | jdbc = SimpleJdbcParameter() { offset.setOffsetJdbcParameter(jdbc); } ) 
+                 | jdbc = SimpleJdbcParameter() { offset.setOffsetJdbcParameter(jdbc); } 
+                 | jdbcNamed = SimpleJdbcNamedParameter() { offset.setOffsetJdbcParameter(jdbcNamed); }) 
                  [(<K_ROWS> { offset.setOffsetParam("ROWS"); } | <K_ROW> { offset.setOffsetParam("ROW"); })]
 
         )
@@ -2535,10 +2562,12 @@ JdbcNamedParameter JdbcNamedParameter() : {
 UserVariable UserVariable() : {
     UserVariable var = new UserVariable();
     String varName;
+    String var2;
 }
 {
     ("@" | "@@" { var.setDoubleAdd(true);} )
     varName=RelObjectNameExt2() 
+    ( "." var2=RelObjectNameExt2() { varName+="." + var2; } )*
     { 
         var.setName(varName); 
         return var; 
