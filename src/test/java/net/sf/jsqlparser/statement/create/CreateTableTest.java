@@ -284,6 +284,10 @@ public class CreateTableTest extends TestCase {
     public void testIssue273Varchar2Byte() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE IF NOT EXISTS \"TABLE_OK\" (\"SOME_FIELD\" VARCHAR2 (256 BYTE))");
     }
+    
+    public void testIssue273Varchar2Char() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE IF NOT EXISTS \"TABLE_OK\" (\"SOME_FIELD\" VARCHAR2 (256 CHAR))");
+    }
 
     public void testRUBiSCreateList() throws Exception {
         BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.

@@ -155,6 +155,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CAST:"CAST">
 |   <K_CHARACTER:"CHARACTER">
 |   <K_CHECK:"CHECK">
+|   <K_CHAR:"CHAR">
 |   <K_COLUMN:"COLUMN">
 |   <K_COMMIT:"COMMIT">
 |   <K_CONNECT:"CONNECT">
@@ -967,7 +968,7 @@ Not all names should be allowed for aliases.
 String RelObjectNameWithoutValue() : 
 {    Token tk = null; }
 {
-    (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_BYTE>
+    (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_BYTE> | <K_CHAR>
       | tk=<K_CAST> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> 
       | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE> 
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_XML>
@@ -3220,12 +3221,12 @@ ColDataType ColDataType():
     ( 
 		(tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 		| tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> )  
+		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> | tk=<K_CHAR> )  
 				{ colDataType.setDataType(tk.image); }
 		| tk=<K_UNSIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
 	)
 
-    [LOOKAHEAD(2) "(" {tk2 =null;} ( (tk=<S_LONG> [ tk2=<K_BYTE> ] | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> ) 
+    [LOOKAHEAD(2) "(" {tk2 =null;} ( (tk=<S_LONG> [ tk2=<K_BYTE> | tk2=<K_CHAR> ] | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> ) 
 		{ argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:"")); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
     [( "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
     [<K_CHARACTER> <K_SET> tk=<S_IDENTIFIER> { colDataType.setCharacterSet(tk.image); } ]
