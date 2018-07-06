@@ -276,6 +276,10 @@ public class CreateTableTest extends TestCase {
     public void testQuotedPKColumnsIssue491_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE `FOO` (`ID` INT64, `NAME` STRING (100), PRIMARY KEY (`ID`))");
     }
+    
+    public void testKeySyntaxWithLengthColumnParameter() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE basic (BASIC_TITLE varchar (255) NOT NULL, KEY BASIC_TITLE (BASIC_TITLE(255)))");
+    }
 
     public void testRUBiSCreateList() throws Exception {
         BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.

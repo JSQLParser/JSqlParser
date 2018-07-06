@@ -3377,16 +3377,28 @@ String AList():
     }
 }
 
+String ColumnsNamesListItem(): 
+{
+	Token tk = null;
+    String item = null;
+} 
+{
+	(tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { item = tk.image; }
+	[ "(" tk = <S_LONG>  ")" { item = item + "(" + tk.image + ")"; } ]
+	{
+		return item;
+	}
+}
+
 List<String> ColumnsNamesList():
 {
     List<String> retval = new ArrayList<String>();
-    Token tk = null;
+    String img = null;
 }
 {
     "("
-
-         (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { retval.add(tk.image); }
-         ( "," (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { retval.add(tk.image); } )*
+         img=ColumnsNamesListItem() { retval.add(img); }
+         ( "," img=ColumnsNamesListItem() { retval.add(img); } )*
 
     ")"
     {
