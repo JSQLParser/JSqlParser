@@ -255,30 +255,34 @@ public class CreateTableTest extends TestCase {
     public void testCreateUnitonIssue402_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE temp.abc AS (SELECT sku FROM temp.a UNION SELECT sku FROM temp.b)");
     }
-    
+
     public void testTimestampWithTimezone() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE TABLE country_region (" +
-                "regionid BIGINT NOT NULL CONSTRAINT pk_auth_region PRIMARY KEY, " +
-                "region_name VARCHAR (100) NOT NULL, " +
-                "creation_date TIMESTAMP (0) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP (0) NOT NULL, " +
-                "last_change_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP (0), " +
-                "CONSTRAINT region_name_unique UNIQUE (region_name))");
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE country_region ("
+                + "regionid BIGINT NOT NULL CONSTRAINT pk_auth_region PRIMARY KEY, "
+                + "region_name VARCHAR (100) NOT NULL, "
+                + "creation_date TIMESTAMP (0) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP (0) NOT NULL, "
+                + "last_change_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP (0), "
+                + "CONSTRAINT region_name_unique UNIQUE (region_name))");
     }
-    
+
     public void testCreateTableAsSelect3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE public.sales1 AS (SELECT * FROM public.sales)");
     }
-    
+
     public void testQuotedPKColumnsIssue491() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE `FOO` (`ID` INT64, `NAME` STRING (100)) PRIMARY KEY (`ID`)");
     }
-    
+
     public void testQuotedPKColumnsIssue491_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE `FOO` (`ID` INT64, `NAME` STRING (100), PRIMARY KEY (`ID`))");
     }
-    
+
     public void testKeySyntaxWithLengthColumnParameter() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE basic (BASIC_TITLE varchar (255) NOT NULL, KEY BASIC_TITLE (BASIC_TITLE(255)))");
+    }
+
+    public void testIssue273Varchar2Byte() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE IF NOT EXISTS \"TABLE_OK\" (\"SOME_FIELD\" VARCHAR2 (256 BYTE))");
     }
 
     public void testRUBiSCreateList() throws Exception {
