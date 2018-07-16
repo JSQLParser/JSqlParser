@@ -56,7 +56,7 @@ public class Truncate implements Statement {
 
     @Override
     public String toString() {
-        if(cascade==true){
+        if(cascade){
             return "TRUNCATE TABLE " + table+" CASCADE";
         }
         return "TRUNCATE TABLE " + table;

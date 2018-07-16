@@ -2,6 +2,9 @@ package net.sf.jsqlparser.statement.truncate;
 
 import java.io.StringReader;
 
+import static net.sf.jsqlparser.test.TestUtils.*;
+import net.sf.jsqlparser.*;
+
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
@@ -23,5 +26,20 @@ public class TruncateTest {
         truncate = (Truncate) parserManager.parse(new StringReader(statement));
         assertEquals("mytab", truncate.getTable().getName());
         assertEquals(toStringStatement.toUpperCase(), truncate.toString().toUpperCase());
+
+        statement = "TRUNCATE TABLE mytab CASCADE";
+        truncate = (Truncate) parserManager.parse(new StringReader(statement));
+        assertEquals(statement, truncate.toString());
     }
+
+    @Test
+    public void testTruncateDeparse() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("TRUNCATE TABLE foo");
+    }
+
+    @Test
+    public void testTruncateCascadeDeparse() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("TRUNCATE TABLE foo CASCADE");
+    }
+
 }
