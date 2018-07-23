@@ -3221,4 +3221,9 @@ public class SelectTest {
     public void testMultiPartNamesIssue608() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @@session.tx_read_only");
     } 
+    
+    @Test
+    public void testMultiPartNamesIssue643() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT id, bid, pid, devnum, pointdesc, sysid, zone, sort FROM fault ORDER BY id DESC LIMIT ?, ?");
+    }
 }
