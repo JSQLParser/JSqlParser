@@ -3449,7 +3449,7 @@ Truncate Truncate():
 }
 {
     <K_TRUNCATE> <K_TABLE>
-    table=Table() { truncate.setTable(table); }
+	table=Table() { truncate.setTable(table); truncate.setCascade(false); } [ <K_CASCADE> {truncate.setCascade(true);} ]
     {
         return truncate;
     }

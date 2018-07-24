@@ -31,6 +31,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 public class Truncate implements Statement {
 
     private Table table;
+    boolean cascade;  // to support TRUNCATE TABLE ... CASCADE
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -45,8 +46,19 @@ public class Truncate implements Statement {
         this.table = table;
     }
 
+    public boolean getCascade(){
+        return cascade;
+    }
+
+    public void setCascade(boolean c){
+        cascade=c;
+    }
+
     @Override
     public String toString() {
+        if(cascade){
+            return "TRUNCATE TABLE " + table+" CASCADE";
+        }
         return "TRUNCATE TABLE " + table;
     }
 }
