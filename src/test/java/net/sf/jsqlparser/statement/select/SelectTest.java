@@ -3228,7 +3228,17 @@ public class SelectTest {
     public void testMultiPartNamesIssue608() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @@session.tx_read_only");
     } 
-    
+
+//    Teradata allows SEL to be used in place of SELECT
+//    Deparse to the non-contracted form
+    @Test
+    public void testSelContraction() throws JSQLParserException {
+        final String statementSrc = "SEL name, age FROM person";
+        final String statementTgt = "SELECT name, age FROM person";
+        Select select = (Select) parserManager.parse(new StringReader(statementSrc));
+        assertStatementCanBeDeparsedAs(select, statementTgt);
+    }
+  
     @Test
     public void testMultiPartNamesIssue643() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT id, bid, pid, devnum, pointdesc, sysid, zone, sort FROM fault ORDER BY id DESC LIMIT ?, ?");

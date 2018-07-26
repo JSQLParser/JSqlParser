@@ -258,7 +258,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_RIGHT:"RIGHT">
 |   <K_ROW: "ROW"> 
 |   <K_ROWS: "ROWS">
-|   <K_SELECT:"SELECT">
+|   <K_SELECT: ("SELECT" | "SEL")>
 |   <K_SEMI : "SEMI">
 |   <K_SEPARATOR:"SEPARATOR">
 |   <K_SET:"SET">
