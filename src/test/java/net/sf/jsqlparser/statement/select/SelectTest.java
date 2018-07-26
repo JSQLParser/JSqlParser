@@ -1025,6 +1025,13 @@ public class SelectTest {
         assertTrue(fun.isAllColumns());
         assertStatementCanBeDeparsedAs(select, statement);
     }
+    
+    @Test
+    public void testEscapedFunctionsIssue647() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT {fn test(0)} AS COL");
+        //assertSqlCanBeParsedAndDeparsed("SELECT {fn current_timestamp(0)} AS COL");
+        assertSqlCanBeParsedAndDeparsed("SELECT {fn concat(a, b)} AS COL");
+    }
 
     @Test
     public void testWhere() throws JSQLParserException {
@@ -3231,5 +3238,9 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statementSrc));
         assertStatementCanBeDeparsedAs(select, statementTgt);
     }
-
+  
+    @Test
+    public void testMultiPartNamesIssue643() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT id, bid, pid, devnum, pointdesc, sysid, zone, sort FROM fault ORDER BY id DESC LIMIT ?, ?");
+    }
 }

@@ -144,6 +144,11 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Truncate truncate) {
+        buffer.append("TRUNCATE TABLE ");
+        buffer.append(truncate.getTable());
+        if(truncate.getCascade()){
+            buffer.append(" CASCADE");
+        }
     }
 
     @Override

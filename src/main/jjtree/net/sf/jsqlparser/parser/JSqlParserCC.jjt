@@ -979,6 +979,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_ENABLE>
 	  | tk=<K_UNSIGNED>
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_ISNULL> 
+	  | tk=<K_ZONE>
       )
 
     { return tk.image; }
@@ -3448,7 +3449,7 @@ Truncate Truncate():
 }
 {
     <K_TRUNCATE> <K_TABLE>
-    table=Table() { truncate.setTable(table); }
+	table=Table() { truncate.setTable(table); truncate.setCascade(false); } [ <K_CASCADE> {truncate.setCascade(true);} ]
     {
         return truncate;
     }
