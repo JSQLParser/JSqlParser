@@ -2990,7 +2990,7 @@ CreateIndex CreateIndex():
     (CreateParameter() | ascDesc=<K_ASC> | ascDesc=<K_DESC>)*
     {
         colNames.add(columnName.image);
-        indexSpecs.add(ascDesc.image);
+        indexSpecs.add(ascDesc == null ? null : ascDesc.image);
     }
 
     (
@@ -3002,7 +3002,7 @@ CreateIndex CreateIndex():
         (CreateParameter() | ascDesc=<K_ASC> | ascDesc=<K_DESC>)*
         {
             colNames.add(columnName.image);
-            indexSpecs.add(ascDesc.image);
+        indexSpecs.add(ascDesc == null ? null : ascDesc.image);
         }
     )*
 
