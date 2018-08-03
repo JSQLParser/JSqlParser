@@ -84,4 +84,14 @@ public class CreateIndexTest {
         String stmt = "CREATE INDEX myindex ON mytab (mycol, mycol2)";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+    
+    @Test
+    public void testCreateIndexDesc() throws JSQLParserException {
+        String statement = "CREATE INDEX myindex ON mytab (mycol desc, mycol2 asc)";
+        CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
+        assertEquals(2, createIndex.getIndex().getColumnsNames().size());
+        assertEquals(2, createIndex.getIndex().getIndexSpec().size());
+        assertEquals("desc", createIndex.getIndex().getIndexSpec().get(0));
+        assertEquals("asc", createIndex.getIndex().getIndexSpec().get(1));
+    }
 }
