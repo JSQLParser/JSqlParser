@@ -52,7 +52,7 @@ public class Index {
      * The type of this index: "PRIMARY KEY", "UNIQUE", "INDEX"
      */
     public String getType() {
-        return types == null ? "" : String.join(" ", types);
+        return types == null || types.isEmpty() ? null : String.join(" ", types);
     }
     
     /**
@@ -96,7 +96,7 @@ public class Index {
     @Override
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
-        return (types == null ? "" : (String.join(" ", types))) + (name != null ? " " + name : "") + " " + PlainSelect.
+        return (types == null || types.isEmpty() ? "" : PlainSelect.getStringList(types, false, false)) + (name != null ? " " + name : "") + " " + PlainSelect.
                 getStringList(columnsNames, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
     }
 }
