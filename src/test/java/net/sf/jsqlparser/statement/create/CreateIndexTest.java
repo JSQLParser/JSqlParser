@@ -94,4 +94,17 @@ public class CreateIndexTest {
         assertEquals("desc", createIndex.getIndex().getIndexSpec().get(0));
         assertEquals("asc", createIndex.getIndex().getIndexSpec().get(1));
     }
+    
+    @Test
+    public void testCreateUniqueNullFilteredIndex() throws JSQLParserException {
+        String statement = "CREATE UNIQUE NULL_FILTERED INDEX myindex ON mytab (mycol)";
+        CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
+        assertEquals(1, createIndex.getIndex().getColumnsNames().size());
+        assertEquals(1, createIndex.getIndex().getIndexSpec().size());
+        assertEquals(2, createIndex.getIndex().getTypes().size());
+        assertEquals("UNIQUE", createIndex.getIndex().getTypes().get(0));
+        assertEquals("NULL_FILTERED", createIndex.getIndex().getTypes().get(1));
+        assertEquals("UNIQUE NULL_FILTERED", createIndex.getIndex().getType());
+        assertEquals("CREATE UNIQUE NULL_FILTERED INDEX myindex ON mytab (mycol)", createIndex.toString());
+    }
 }
