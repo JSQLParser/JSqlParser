@@ -79,12 +79,12 @@ public class StringValueTest {
 
     @Test
     public void testPrefixes() {
-        checkStringValue("E'test'", "test", 'E');
+        checkStringValue("E'test'", "test", "E");
         checkStringValue("'test'", "test", null);
 
     }
 
-    private void checkStringValue(String original, String expectedValue, Character expectedPrefix) {
+    private void checkStringValue(String original, String expectedValue, String expectedPrefix) {
         StringValue v = new StringValue(original);
         assertEquals(expectedValue, v.getValue());
         assertEquals(expectedPrefix, v.getPrefix());
