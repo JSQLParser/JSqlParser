@@ -2966,18 +2966,19 @@ CreateIndex CreateIndex():
     Index index = null;
     String name = null;
     List<String> parameter = new ArrayList<String>();
+    List<String> types = new ArrayList<String>();
     List<String> indexSpecs = new ArrayList<String>();
     Token ascDesc = null;
 }
 {
     <K_CREATE>
-    ( parameter=CreateParameter() )*
+    (parameter = CreateParameter() { types.addAll(parameter); })*
 
     <K_INDEX> name=RelObjectName()
     {
         index = new Index();
         index.setName(name);
-        index.setType(parameter.isEmpty()?null:parameter.get(0));
+        index.setTypes(types);
     }
 
     <K_ON> table=Table()
