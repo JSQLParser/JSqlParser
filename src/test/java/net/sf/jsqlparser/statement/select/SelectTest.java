@@ -3250,4 +3250,31 @@ public class SelectTest {
     public void testMultiPartNamesIssue643() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT id, bid, pid, devnum, pointdesc, sysid, zone, sort FROM fault ORDER BY id DESC LIMIT ?, ?");
     }
+
+    @Test
+    public void testRawStringExpressionIssue656() throws JSQLParserException {
+      for(String c : new String[] {"u", "e", "n", "r", "b", "br"} ) {
+        final String prefix = c;
+        String sql = "select " + c + "'test' from foo";
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        assertNotNull(statement);
+        statement.accept(new StatementVisitorAdapter() {
+          @Override
+          public void visit(Select select) {
+            select.getSelectBody().accept(new SelectVisitorAdapter() {
+              @Override
+              public void visit(PlainSelect plainSelect) {
+                SelectExpressionItem typedExpression =
+                    (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+                assertNotNull(typedExpression);
+                assertNull(typedExpression.getAlias());
+                StringValue value = (StringValue) typedExpression.getExpression();
+                assertEquals(prefix.toUpperCase(), value.getPrefix());
+                assertEquals("test", value.getValue());
+              }
+            });
+          }
+        });
+      }
+    }
 }
