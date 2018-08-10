@@ -39,8 +39,9 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
     E - Postgresql Unicode encoding
     R - Cloud Spanner Raw string
     B - Cloud Spanner Byte string
+    RB - Cloud Spanner Raw Byte string 
      */
-    public static final List<String> ALLOWED_PREFIXES = Arrays.asList("N", "U", "E", "R", "B", "BR");
+    public static final List<String> ALLOWED_PREFIXES = Arrays.asList("N", "U", "E", "R", "B", "RB");
 
     public StringValue(String escapedValue) {
         // romoving "'" at the start and at the end

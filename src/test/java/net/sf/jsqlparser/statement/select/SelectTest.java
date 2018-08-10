@@ -3253,7 +3253,7 @@ public class SelectTest {
 
     @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
-      for(String c : new String[] {"u", "e", "n", "r", "b", "br"} ) {
+      for(String c : new String[] {"u", "e", "n", "r", "b", "rb"} ) {
         final String prefix = c;
         String sql = "select " + c + "'test' from foo";
         Statement statement = CCJSqlParserUtil.parse(sql);
