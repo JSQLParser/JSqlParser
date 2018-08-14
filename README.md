@@ -48,6 +48,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.3
 
+* support for additional raw string and byte prefixes (issue #659)
 * support for special oracle type syntax **varchar2(255 BYTE)** (issue #273) 
 * introduced dotted multipart names for uservariables (issue #608)
 * changed behaviour of dotted multipart names for tables and columns to accept ORM class names (issue #163)
