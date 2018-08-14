@@ -31,14 +31,17 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
     private String value = "";
-    private Character prefix = null;
+    private String prefix = null;
 
     /*
     N - SQLServer Unicode encoding
     U - Oracle Unicode encoding
     E - Postgresql Unicode encoding
+    R - Cloud Spanner Raw string
+    B - Cloud Spanner Byte string
+    RB - Cloud Spanner Raw Byte string 
      */
-    public static final List<Character> ALLOWED_PREFIXES = Arrays.asList('N', 'U', 'E');
+    public static final List<String> ALLOWED_PREFIXES = Arrays.asList("N", "U", "E", "R", "B", "RB");
 
     public StringValue(String escapedValue) {
         // romoving "'" at the start and at the end
@@ -48,11 +51,12 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         }
 
         if (escapedValue.length() > 2) {
-            char p = Character.toUpperCase(escapedValue.charAt(0));
-            if (ALLOWED_PREFIXES.contains(p) && escapedValue.charAt(1) == '\'' && escapedValue.endsWith("'")) {
-                this.prefix = p;
-                value = escapedValue.substring(2, escapedValue.length() - 1);
-                return;
+            for(String p : ALLOWED_PREFIXES) {
+                if(escapedValue.length() > p.length() && escapedValue.substring(0, p.length()).equalsIgnoreCase(p) && escapedValue.charAt(p.length())=='\'') {
+                    this.prefix = p;
+                    value = escapedValue.substring(p.length() + 1, escapedValue.length() - 1);
+                    return;
+                }
             }
         }
 
@@ -63,7 +67,7 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         return value;
     }
 
-    public Character getPrefix() {
+    public String getPrefix() {
         return prefix;
     }
 
@@ -83,7 +87,7 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         value = string;
     }
 
-    public void setPrefix(Character prefix) {
+    public void setPrefix(String prefix) {
         this.prefix = prefix;
     }
 
