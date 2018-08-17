@@ -3358,7 +3358,12 @@ List<String> CreateParameter():
             tk=<K_TEMP> { param.add(tk.image); }
             |
             tk=<K_TEMPORARY> { param.add(tk.image); }
-
+			|
+            tk=<K_PARTITION> { param.add(tk.image); }
+			|
+            tk=<K_BY> { param.add(tk.image); }
+			|
+            tk=<K_IN> { param.add(tk.image); }
         )
     {return param;}
 }
