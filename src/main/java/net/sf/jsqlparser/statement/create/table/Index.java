@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -30,7 +32,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  */
 public class Index {
 
-    private String type;
+    private List<String> types;
     private List<String> columnsNames;
     private String name;
     private List<String> idxSpec;
@@ -50,7 +52,14 @@ public class Index {
      * The type of this index: "PRIMARY KEY", "UNIQUE", "INDEX"
      */
     public String getType() {
-        return type;
+        return types == null || types.isEmpty() ? null : PlainSelect.getStringList(types, false, false);
+    }
+    
+    /**
+     * All types of this index: "PRIMARY KEY", "UNIQUE", "UNIQUE NULL_FILTERED", "INDEX"
+     */
+    public List<String> getTypes() {
+        return types;
     }
 
     public void setColumnsNames(List<String> list) {
@@ -60,9 +69,20 @@ public class Index {
     public void setName(String string) {
         name = string;
     }
-
+    
     public void setType(String string) {
-        type = string;
+        if(types == null) {
+            types = new ArrayList<>();
+        }
+        if(string == null) {
+            types.clear();
+        } else {
+            types.addAll(Arrays.asList(string.split("\\s+")));
+        }
+    }
+
+    public void setTypes(List<String> list) {
+        types = list;
     }
 
     public List<String> getIndexSpec() {
@@ -76,7 +96,7 @@ public class Index {
     @Override
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
-        return type + (name != null ? " " + name : "") + " " + PlainSelect.
+        return (types == null || types.isEmpty() ? "" : PlainSelect.getStringList(types, false, false)) + (name != null ? " " + name : "") + " " + PlainSelect.
                 getStringList(columnsNames, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
     }
 }

@@ -2966,16 +2966,19 @@ CreateIndex CreateIndex():
     Index index = null;
     String name = null;
     List<String> parameter = new ArrayList<String>();
+    List<String> types = new ArrayList<String>();
+    List<String> indexSpecs = new ArrayList<String>();
+    Token ascDesc = null;
 }
 {
     <K_CREATE>
-    ( parameter=CreateParameter() )*
+    (parameter = CreateParameter() { types.addAll(parameter); })*
 
     <K_INDEX> name=RelObjectName()
     {
         index = new Index();
         index.setName(name);
-        index.setType(parameter.isEmpty()?null:parameter.get(0));
+        index.setTypes(types);
     }
 
     <K_ON> table=Table()
@@ -2985,9 +2988,10 @@ CreateIndex CreateIndex():
     |
     columnName=<S_QUOTED_IDENTIFIER>)
 
-    (CreateParameter() | <K_ASC> | <K_DESC>)*
+    (CreateParameter() | ascDesc=<K_ASC> | ascDesc=<K_DESC>)*
     {
         colNames.add(columnName.image);
+        indexSpecs.add(ascDesc == null ? null : ascDesc.image);
     }
 
     (
@@ -2996,9 +3000,10 @@ CreateIndex CreateIndex():
         |
         columnName=<S_QUOTED_IDENTIFIER>)
 
-        (CreateParameter() | <K_ASC> | <K_DESC>)*
+        (CreateParameter() | ascDesc=<K_ASC> | ascDesc=<K_DESC>)*
         {
             colNames.add(columnName.image);
+        indexSpecs.add(ascDesc == null ? null : ascDesc.image);
         }
     )*
 
@@ -3007,6 +3012,7 @@ CreateIndex CreateIndex():
 
     {
         index.setColumnsNames(colNames);
+        index.setIndexSpec(indexSpecs);
         createIndex.setIndex(index);
         createIndex.setTable(table);
         return createIndex;
