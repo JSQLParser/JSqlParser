@@ -1,13 +1,13 @@
 package net.sf.jsqlparser.statement.create;
 
 import java.io.StringReader;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -83,5 +83,11 @@ public class CreateIndexTest {
     public void testCreateIndex6() throws JSQLParserException {
         String stmt = "CREATE INDEX myindex ON mytab (mycol, mycol2)";
         assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    @Ignore
+    public void testCreateIndexIssue633() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)");
     }
 }

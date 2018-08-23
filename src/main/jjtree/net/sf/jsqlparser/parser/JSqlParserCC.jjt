@@ -3599,12 +3599,12 @@ AlterExpression AlterExpression():
             )
             |
             (
-                tk=<K_UNIQUE> tk2=<K_KEY>
+                tk=<K_UNIQUE> (tk2=<K_KEY>)?
                   columnNames=ColumnsNamesList()
                   {
                       index = new NamedConstraint();
                       index.setName(sk3);
-                      index.setType(tk.image + " " + tk2.image);
+                      index.setType(tk.image + (tk2!=null?" " + tk2.image:""));
                       index.setColumnsNames(columnNames);
                       alterExp.setIndex(index);
                   }
