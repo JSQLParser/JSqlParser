@@ -27,6 +27,8 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
@@ -35,6 +37,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class CreateTableDeParser {
 
     private StringBuilder buffer;
+    private StatementDeParser statementDeParser;
 
     /**
      * @param buffer the buffer that will be filled with the select
@@ -42,6 +45,12 @@ public class CreateTableDeParser {
     public CreateTableDeParser(StringBuilder buffer) {
         this.buffer = buffer;
     }
+
+    public CreateTableDeParser(StatementDeParser statementDeParser, StringBuilder buffer) {
+        this.buffer = buffer;
+        this.statementDeParser = statementDeParser;
+    }
+
 
     public void deParse(CreateTable createTable) {
         buffer.append("CREATE ");
@@ -64,7 +73,8 @@ public class CreateTableDeParser {
             if (createTable.isSelectParenthesis()) {
                 buffer.append("(");
             }
-            buffer.append(createTable.getSelect().toString());
+            Select sel = createTable.getSelect();
+            sel.accept(this.statementDeParser);
             if (createTable.isSelectParenthesis()) {
                 buffer.append(")");
             }

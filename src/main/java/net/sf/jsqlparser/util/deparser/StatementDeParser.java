@@ -70,7 +70,7 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(CreateTable createTable) {
-        CreateTableDeParser createTableDeParser = new CreateTableDeParser(buffer);
+        CreateTableDeParser createTableDeParser = new CreateTableDeParser(this, buffer);
         createTableDeParser.deParse(createTable);
     }
 
