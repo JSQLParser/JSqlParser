@@ -62,4 +62,18 @@ public class BlockTest {
                 + "SELECT * FROM feature;\n"
                 + "END;\n", stmts.toString());
     }
+
+    @Test
+    public void testBlock2() throws JSQLParserException {
+        Statements stmts = CCJSqlParserUtil.parseStatements("begin\n"
+                + "update table1 set a = 'xx' where b = 'condition1';\n"
+                + "update table1 set a = 'xx' where b = 'condition2';\n"
+                + "end;");
+        assertEquals("BEGIN\n"
+                + "UPDATE table1 SET a = 'xx' WHERE b = 'condition1';\n"
+                + "UPDATE table1 SET a = 'xx' WHERE b = 'condition2';\n"
+                + "END;\n"
+                + "", stmts.toString());
+
+    }
 }
