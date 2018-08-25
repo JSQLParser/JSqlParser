@@ -77,4 +77,6 @@ public interface StatementVisitor {
 
     void visit(UseStatement use);
 
+    void visit(Block block);
+
 }

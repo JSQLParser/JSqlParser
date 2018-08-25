@@ -22,9 +22,10 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
-
+import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
@@ -46,6 +47,7 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
 public class StatementDeParser implements StatementVisitor {
+
     private ExpressionDeParser expressionDeParser;
 
     private SelectDeParser selectDeParser;
@@ -146,7 +148,7 @@ public class StatementDeParser implements StatementVisitor {
     public void visit(Truncate truncate) {
         buffer.append("TRUNCATE TABLE ");
         buffer.append(truncate.getTable());
-        if(truncate.getCascade()){
+        if (truncate.getCascade()) {
             buffer.append(" CASCADE");
         }
     }
@@ -206,7 +208,7 @@ public class StatementDeParser implements StatementVisitor {
         //TODO implementation of a deparser
         buffer.append(merge.toString());
     }
-    
+
     @Override
     public void visit(Commit commit) {
         buffer.append(commit.toString());
@@ -225,5 +227,17 @@ public class StatementDeParser implements StatementVisitor {
     @Override
     public void visit(UseStatement use) {
         new UseStatementDeParser(buffer).deParse(use);
+    }
+
+    @Override
+    public void visit(Block block) {
+        buffer.append("BEGIN\n");
+        if (block.getStatements() != null) {
+            for (Statement stmt : block.getStatements().getStatements()) {
+                stmt.accept(this);
+                buffer.append(";\n");
+            }
+        }
+        buffer.append("END");
     }
 }

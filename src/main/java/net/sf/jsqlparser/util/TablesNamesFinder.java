@@ -23,7 +23,6 @@ package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -45,7 +44,6 @@ import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
-import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
@@ -59,6 +57,7 @@ import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
+import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
@@ -93,6 +92,7 @@ import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.Statement;
@@ -135,7 +135,7 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 
 /**
  * Find all used tables within an select statement.
- * 
+ *
  * Override extractTableName method to modify the extracted table names (e.g. without schema).
  */
 public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor, StatementVisitor {
@@ -143,7 +143,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
     private List<String> tables;
     private boolean allowColumnProcessing = false;
-    
+
     /**
      * There are special names, that are not table names but are parsed as tables. These names are
      * collected here and are not included in the tables - names anymore.
@@ -210,11 +210,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (plainSelect.getWhere() != null) {
             plainSelect.getWhere().accept(this);
         }
-          
-        if(plainSelect.getHaving() != null){
+
+        if (plainSelect.getHaving() != null) {
             plainSelect.getHaving().accept(this);
         }
-        
+
         if (plainSelect.getOracleHierarchical() != null) {
             plainSelect.getOracleHierarchical().accept(this);
         }
@@ -222,13 +222,14 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     /**
      * Override to adapt the tableName generation (e.g. with / without schema).
+     *
      * @param table
-     * @return 
+     * @return
      */
     protected String extractTableName(Table table) {
         return table.getFullyQualifiedName();
     }
-    
+
     @Override
     public void visit(Table tableName) {
         String tableWholeName = extractTableName(tableName);
@@ -471,7 +472,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(SubJoin subjoin) {
         subjoin.getLeft().accept(this);
-        for(Join join : subjoin.getJoinList()) {
+        for (Join join : subjoin.getJoinList()) {
             join.getRightItem().accept(this);
         }
     }
@@ -543,10 +544,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     /**
-     * Initializes table names collector. Important is the usage of Column instances to find 
-     * table names. This is only allowed for expression parsing, where a better place for 
-     * tablenames could not be there. For complete statements only from items are used to avoid
-     * some alias as tablenames.
+     * Initializes table names collector. Important is the usage of Column instances to find table
+     * names. This is only allowed for expression parsing, where a better place for tablenames could
+     * not be there. For complete statements only from items are used to avoid some alias as
+     * tablenames.
+     *
      * @param allowColumnProcessing
      */
     protected void init(boolean allowColumnProcessing) {
@@ -621,7 +623,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(MySQLGroupConcat groupConcat) {
     }
-    
+
     @Override
     public void visit(ValueListExpression valueList) {
         valueList.getExpressionList().accept(this);
@@ -807,5 +809,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(ParenthesisFromItem parenthesis) {
         parenthesis.getFromItem().accept(this);
+    }
+
+    @Override
+    public void visit(Block block) {
+        if (block.getStatements() != null) {
+            visit(block.getStatements());
+        }
     }
 }

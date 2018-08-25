@@ -428,6 +428,36 @@ Statement SingleStatement() :
     }
 }
 
+Block Block() #Block : {
+    Statements stmts = new Statements();
+  List<Statement> list = new ArrayList<Statement>();
+  Statement stm;
+    Block block = new Block();
+} 
+{
+    <K_BEGIN>
+(<ST_SEMICOLON>)*
+    try {
+       (stm = SingleStatement() | stm = Block()) { list.add(stm); } <ST_SEMICOLON>
+       ( (stm = SingleStatement() | stm = Block()) <ST_SEMICOLON> { list.add(stm); } )*
+    } catch (ParseException e) {
+        if (errorRecovery) {
+            parseErrors.add(e);
+            error_skipto(ST_SEMICOLON);
+        }
+        else 
+            throw e;
+    }
+    {
+        stmts.setStatements(list);
+        block.setStatements(stmts);
+    }
+    <K_END>
+    {
+        return block;
+    }
+}
+
 Statements Statements() #Statements : 
 { Statements stmts = new Statements();
   List<Statement> list = new ArrayList<Statement>();
@@ -435,8 +465,8 @@ Statements Statements() #Statements :
 {
     (<ST_SEMICOLON>)*
     try {
-       stm = SingleStatement() { list.add(stm); }
-       ( <ST_SEMICOLON> [stm = SingleStatement() { list.add(stm); }] )*
+       (stm = SingleStatement() | stm = Block()) { list.add(stm); }
+       ( <ST_SEMICOLON> [(stm = SingleStatement() | stm = Block()) { list.add(stm); }] )*
         <EOF>
     } catch (ParseException e) {
         if (errorRecovery) {
