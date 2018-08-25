@@ -48,6 +48,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.3
 
+* support for block statements (begin ... end)
 * support for additional raw string and byte prefixes (issue #659)
 * support for special oracle type syntax **varchar2(255 BYTE)** (issue #273) 
 * introduced dotted multipart names for uservariables (issue #608)
