@@ -3274,7 +3274,7 @@ CreateView CreateView():
 {
     CreateView createView = new CreateView();
     Table view = null;
-    SelectBody select = null;
+    Select select = null;
     List<String> columnNames = null;
 }
 {
@@ -3292,7 +3292,7 @@ CreateView CreateView():
     <K_VIEW> view=Table() { createView.setView(view); }
     [ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
     <K_AS>
-    select=SelectBody() { createView.setSelectBody(select); }
+    select=Select() { createView.setSelect(select); }
     { return createView; }
 }
 

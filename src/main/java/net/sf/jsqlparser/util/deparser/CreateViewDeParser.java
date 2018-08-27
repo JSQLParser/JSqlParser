@@ -24,7 +24,9 @@ package net.sf.jsqlparser.util.deparser;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.create.view.TemporaryOption;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
@@ -77,7 +79,22 @@ public class CreateViewDeParser {
         }
         buffer.append(" AS ");
 
-        createView.getSelectBody().accept(selectVisitor);
+        Select select = createView.getSelect();
+        if (select.getWithItemsList() != null) {
+            buffer.append("WITH ");
+            boolean first = true;
+            for (WithItem item : select.getWithItemsList()) {
+                if (!first) {
+                    buffer.append(", ");
+                } else {
+                    first = false;
+                }
+
+                item.accept(selectVisitor);
+            }
+            buffer.append(" ");
+        }
+        createView.getSelect().getSelectBody().accept(selectVisitor);
     }
 
     public StringBuilder getBuffer() {
