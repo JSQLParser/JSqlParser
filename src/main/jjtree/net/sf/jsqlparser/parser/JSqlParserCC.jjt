@@ -2688,12 +2688,14 @@ AnalyticExpression AnalyticExpression() :
     WindowElement windowElement = null;
     KeepExpression keep = null;
     boolean distinct = false;
+    boolean ignoreNulls = false;
 }
 {
     token=<S_IDENTIFIER> { retval.setName(token.image); }
         "(" [ 
             [ <K_DISTINCT> {distinct = true;} ]
             (expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } )
+            [ <K_IGNORE> <K_NULLS> {ignoreNulls = true;}]
             ] ")" 
 
     [ keep=KeepExpression() ]
@@ -2707,6 +2709,7 @@ AnalyticExpression AnalyticExpression() :
         
     {
         retval.setDistinct(distinct);
+        retval.setIgnoreNulls(ignoreNulls);
         retval.setExpression(expr);
         retval.setOffset(offset);
         retval.setDefaultValue(defaultValue);

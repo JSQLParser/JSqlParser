@@ -47,6 +47,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private KeepExpression keep = null;
     private AnalyticType type = AnalyticType.OVER;
     private boolean distinct = false;
+    private boolean ignoreNulls = false;
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
@@ -133,6 +134,14 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.distinct = distinct;
     }
 
+    public boolean isIgnoreNulls() {
+        return ignoreNulls;
+    }
+
+    public void setIgnoreNulls(boolean ignoreNulls) {
+        this.ignoreNulls = ignoreNulls;
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -151,6 +160,9 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             }
         } else if (isAllColumns()) {
             b.append("*");
+        }
+        if (isIgnoreNulls()) {
+            b.append(" IGNORE NULLS");
         }
         b.append(") ");
         if (keep != null) {
