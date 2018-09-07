@@ -1,7 +1,6 @@
 package net.sf.jsqlparser.statement.insert;
 
 import java.io.StringReader;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -12,10 +11,8 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 public class InsertTest {
@@ -83,7 +80,7 @@ public class InsertTest {
         String statementToString = "INSERT INTO mytable (col1, col2, col3) SELECT * FROM mytable2";
         assertEquals(statementToString, "" + insert);
     }
-    
+
     @Test
     public void testInsertFromSet() throws JSQLParserException {
         String statement = "INSERT INTO mytable SET col1 = 12, col2 = name1 * name2";
@@ -97,7 +94,7 @@ public class InsertTest {
         assertEquals("name1 * name2", insert.getSetExpressionList().get(1).toString());
         assertEquals(statement, "" + insert);
     }
-    
+
     @Test
     public void testInsertValuesWithDuplicateElimination() throws JSQLParserException {
         String statement = "INSERT INTO TEST (ID, COUNTER) VALUES (123, 0) "
@@ -121,7 +118,7 @@ public class InsertTest {
         assertTrue(insert.isUseDuplicate());
         assertEquals(statement, "" + insert);
     }
-    
+
     @Test
     public void testInsertFromSetWithDuplicateElimination() throws JSQLParserException {
         String statement = "INSERT INTO mytable SET col1 = 122 "
@@ -238,7 +235,7 @@ public class InsertTest {
     public void testIssue223() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO user VALUES (2001, '\\'Clark\\'', 'Kent')");
     }
-    
+
     @Test
     public void testKeywordPrecisionIssue363() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO test (user_id, precision) VALUES (1, '111')");
@@ -248,31 +245,36 @@ public class InsertTest {
     public void testWithDeparsingIssue406() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("insert into mytab3 (a,b,c) select a,b,c from mytab where exists(with t as (select * from mytab2) select * from t)", true);
     }
-    
+
     @Test
     public void testInsertSetInDeparsing() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable SET col1 = 12, col2 = name1 * name2");
     }
-    
+
     @Test
     public void testInsertValuesWithDuplicateEliminationInDeparsing() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO TEST (ID, COUNTER) VALUES (123, 0) "
                 + "ON DUPLICATE KEY UPDATE COUNTER = COUNTER + 1");
     }
-    
+
     @Test
     public void testInsertSetWithDuplicateEliminationInDeparsing() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable SET col1 = 122 "
                 + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'");
     }
-    
+
     @Test
     public void testInsertTableWithAliasIssue526() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO account t (name, addr, phone) SELECT * FROM user");
     }
-    
+
     @Test
     public void testInsertKeyWordEnableIssue592() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO T_USER (ID, EMAIL_VALIDATE, ENABLE, PASSWORD) VALUES (?, ?, ?, ?)");
+    }
+
+    @Test
+    public void testWithAtFront() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("WITH foo AS ( SELECT attr FROM bar ) INSERT INTO lalelu (attr) SELECT attr FROM foo");
     }
 }

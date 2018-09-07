@@ -376,6 +376,7 @@ Statement SingleStatement() :
 {
     try {
         (
+        LOOKAHEAD(3)
         stm = Select()
         |
         stm = Update()
@@ -674,6 +675,7 @@ Insert Insert():
     boolean useAs = false;
 }
 {
+    [ WithList() ]
     <K_INSERT>
     [(tk = <K_LOW_PRIORITY> | tk = <K_DELAYED> | tk = <K_HIGH_PRIORITY>)
     {if (tk!=null)
