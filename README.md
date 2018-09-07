@@ -34,7 +34,7 @@ JSqlParser is a SQL statement parser. It translates SQLs in a traversable hierar
 If you need help using JSqlParser feel free to file an issue or contact me.
 
 ## Contributions
-To help JSqlParsers development you are encouraged to provide 
+To help JSqlParser's development you are encouraged to provide 
 * feedback
 * bugreports
 * pull requests for new features
@@ -42,12 +42,13 @@ To help JSqlParsers development you are encouraged to provide
 * fund new features
 * a little donation
 
-**Please write in english, since it's the language most of the dev team knows.**
+**Please write in English, since it's the language most of the dev team knows.**
 
 Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.3
 
+* support for **with - selects** statements in **create view** definitions
 * support for block statements (begin ... end)
 * support for additional raw string and byte prefixes (issue #659)
 * support for special oracle type syntax **varchar2(255 BYTE)** (issue #273) 
@@ -64,7 +65,7 @@ Also I would like to know about needed examples or documentation stuff.
 ## Extensions of JSqlParser releases
 
 * [Release Notes](https://github.com/JSQLParser/JSqlParser/releases)
-* Modifications before GitHubs release tagging are listed in the [Older Releases](https://github.com/JSQLParser/JSqlParser/wiki/Older-Releases) page.
+* Modifications before GitHub's release tagging are listed in the [Older Releases](https://github.com/JSQLParser/JSqlParser/wiki/Older-Releases) page.
 
 
 ## Building from the sources
@@ -79,7 +80,7 @@ The project requires the following to build:
 
 This will produce the jsqlparser-VERSION.jar file in the target/ directory.
 
-**To build this project without using Maven, one has to build the parser by JavaCC using the CLI options it provids.**
+**To build this project without using Maven, one has to build the parser by JavaCC using the CLI options it provides.**
 
 ## Debugging through problems
 

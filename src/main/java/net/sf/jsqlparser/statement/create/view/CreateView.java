@@ -26,7 +26,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.Select;
 
 /**
  * A "CREATE VIEW" statement
@@ -34,7 +34,7 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 public class CreateView implements Statement {
 
     private Table view;
-    private SelectBody selectBody;
+    private Select select;
     private boolean orReplace = false;
     private List<String> columnNames = null;
     private boolean materialized = false;
@@ -73,15 +73,12 @@ public class CreateView implements Statement {
         this.orReplace = orReplace;
     }
 
-    /**
-     * @return the SelectBody
-     */
-    public SelectBody getSelectBody() {
-        return selectBody;
+    public Select getSelect() {
+        return select;
     }
 
-    public void setSelectBody(SelectBody selectBody) {
-        this.selectBody = selectBody;
+    public void setSelect(Select select) {
+        this.select = select;
     }
 
     public List<String> getColumnNames() {
@@ -143,7 +140,7 @@ public class CreateView implements Statement {
         if (columnNames != null) {
             sql.append(PlainSelect.getStringList(columnNames, true, true));
         }
-        sql.append(" AS ").append(selectBody);
+        sql.append(" AS ").append(select);
         return sql.toString();
     }
 }
