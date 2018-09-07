@@ -13,6 +13,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class InsertTest {
@@ -274,6 +275,7 @@ public class InsertTest {
     }
 
     @Test
+    @Ignore
     public void testWithAtFront() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("WITH foo AS ( SELECT attr FROM bar ) INSERT INTO lalelu (attr) SELECT attr FROM foo");
     }
