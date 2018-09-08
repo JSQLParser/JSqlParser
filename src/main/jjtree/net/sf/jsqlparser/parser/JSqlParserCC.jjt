@@ -2775,13 +2775,13 @@ WindowOffset WindowOffset():
 ExtractExpression ExtractExpression() :
 {
     ExtractExpression retval = new ExtractExpression();
-    Token token = null;
+    String token = null;
     Expression expr = null;
 }
 {
     <K_EXTRACT>
     "("
-        token=<S_IDENTIFIER> { retval.setName(token.image); }
+        token=RelObjectName() { retval.setName(token); }
         <K_FROM>
         expr=SimpleExpression() { retval.setExpression(expr); }
     ")"

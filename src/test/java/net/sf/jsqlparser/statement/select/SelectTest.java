@@ -1,5 +1,7 @@
 package net.sf.jsqlparser.statement.select;
 
+import java.io.*;
+import java.util.*;
 import net.sf.jsqlparser.*;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
@@ -7,12 +9,8 @@ import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.parser.*;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
-import org.apache.commons.io.*;
-
-import java.io.*;
-import java.util.*;
-
 import static net.sf.jsqlparser.test.TestUtils.*;
+import org.apache.commons.io.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -1025,7 +1023,7 @@ public class SelectTest {
         assertTrue(fun.isAllColumns());
         assertStatementCanBeDeparsedAs(select, statement);
     }
-    
+
     @Test
     public void testEscapedFunctionsIssue647() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT {fn test(0)} AS COL");
@@ -1939,6 +1937,11 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
+//    @Test
+//    public void testExtractFromIssue673() throws JSQLParserException {
+//        String stmt = "select EXTRACT(DAY FROM (SYSDATE - to_date('20180101', 'YYYYMMDD' ) ) DAY TO SECOND) from dual";
+//        assertSqlCanBeParsedAndDeparsed(stmt);
+//    }
     @Test
     public void testProblemFunction() throws JSQLParserException {
         String stmt = "SELECT test() FROM testtable";
@@ -3182,59 +3185,59 @@ public class SelectTest {
     public void testNestedCast() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT acolumn::bit (64)::bigint FROM mytable");
     }
-  
+
     @Test
     public void testAndOperator() throws JSQLParserException {
         String stmt = "SELECT name from customers where name = 'John' && lastname = 'Doh'";
         Statement parsed = parserManager.parse(new StringReader(stmt));
         assertStatementCanBeDeparsedAs(parsed, "SELECT name FROM customers WHERE name = 'John' AND lastname = 'Doh'");
     }
-    
-     @Test
+
+    @Test
     public void testNamedParametersIssue612() throws Exception {
-        assertSqlCanBeParsedAndDeparsed( "SELECT a FROM b LIMIT 10 OFFSET :param");
+        assertSqlCanBeParsedAndDeparsed("SELECT a FROM b LIMIT 10 OFFSET :param");
     }
-    
+
     @Test
     public void testMissingOffsetIssue620() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a, b FROM test OFFSET 0");
         assertSqlCanBeParsedAndDeparsed("SELECT a, b FROM test LIMIT 1 OFFSET 0");
     }
-    
+
     @Test
     public void testMultiPartNames1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a.b");
     }
-    
+
     @Test
     public void testMultiPartNames2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a.b.*");
     }
-    
+
     @Test
     public void testMultiPartNames3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a.*");
     }
-    
+
     @Test
     public void testMultiPartNames4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a.b.c.d.e.f.g.h");
     }
-    
+
     @Test
     public void testMultiPartNames5() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM a.b.c.d.e.f.g.h");
     }
-    
+
     @Test
     public void testMultiPartNamesIssue163() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT mymodel.name FROM com.myproject.MyModelClass AS mymodel");
     }
-    
+
     @Test
     public void testMultiPartNamesIssue608() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @@session.tx_read_only");
-    } 
+    }
 
 //    Teradata allows SEL to be used in place of SELECT
 //    Deparse to the non-contracted form
@@ -3245,7 +3248,7 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statementSrc));
         assertStatementCanBeDeparsedAs(select, statementTgt);
     }
-  
+
     @Test
     public void testMultiPartNamesIssue643() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT id, bid, pid, devnum, pointdesc, sysid, zone, sort FROM fault ORDER BY id DESC LIMIT ?, ?");
@@ -3253,28 +3256,28 @@ public class SelectTest {
 
     @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
-      for(String c : new String[] {"u", "e", "n", "r", "b", "rb"} ) {
-        final String prefix = c;
-        String sql = "select " + c + "'test' from foo";
-        Statement statement = CCJSqlParserUtil.parse(sql);
-        assertNotNull(statement);
-        statement.accept(new StatementVisitorAdapter() {
-          @Override
-          public void visit(Select select) {
-            select.getSelectBody().accept(new SelectVisitorAdapter() {
-              @Override
-              public void visit(PlainSelect plainSelect) {
-                SelectExpressionItem typedExpression =
-                    (SelectExpressionItem) plainSelect.getSelectItems().get(0);
-                assertNotNull(typedExpression);
-                assertNull(typedExpression.getAlias());
-                StringValue value = (StringValue) typedExpression.getExpression();
-                assertEquals(prefix.toUpperCase(), value.getPrefix());
-                assertEquals("test", value.getValue());
-              }
+        for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {
+            final String prefix = c;
+            String sql = "select " + c + "'test' from foo";
+            Statement statement = CCJSqlParserUtil.parse(sql);
+            assertNotNull(statement);
+            statement.accept(new StatementVisitorAdapter() {
+                @Override
+                public void visit(Select select) {
+                    select.getSelectBody().accept(new SelectVisitorAdapter() {
+                        @Override
+                        public void visit(PlainSelect plainSelect) {
+                            SelectExpressionItem typedExpression
+                                    = (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+                            assertNotNull(typedExpression);
+                            assertNull(typedExpression.getAlias());
+                            StringValue value = (StringValue) typedExpression.getExpression();
+                            assertEquals(prefix.toUpperCase(), value.getPrefix());
+                            assertEquals("test", value.getValue());
+                        }
+                    });
+                }
             });
-          }
-        });
-      }
+        }
     }
 }
