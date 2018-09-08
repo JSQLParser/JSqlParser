@@ -945,7 +945,7 @@ MergeInsert MergeInsertClause() : {
 }
 {
     <K_WHEN> <K_NOT> <K_MATCHED> <K_THEN> 
-        <K_INSERT> "(" col=Column() { columns.add(col); } ("," col=Column() { columns.add(col); } )* ")"  <K_VALUES> 
+        <K_INSERT> ["(" col=Column() { columns.add(col); } ("," col=Column() { columns.add(col); } )* ")"]  <K_VALUES> 
            "(" exp=SimpleExpression() { expList.add(exp); } ("," exp=SimpleExpression() { expList.add(exp); } )* ")" 
     {
         mi.setColumns(columns);

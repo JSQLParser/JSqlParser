@@ -21,9 +21,9 @@ package net.sf.jsqlparser.statement.merge;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import org.junit.Test;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.Assert.fail;
+import org.junit.Test;
 
 /**
  *
@@ -60,6 +60,21 @@ public class MergeTest {
                 + "UPDATE SET abc = sysdate "
                 + "WHEN NOT matched THEN "
                 + "INSERT (custom_id) VALUES (?)";
+
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testMergeIssue676() throws JSQLParserException {
+        String sql = "merge INTO M_KC21 USING\n"
+                + "(SELECT AAA, BBB FROM I_KC21 WHERE I_KC21.aaa = 'li_kun'\n"
+                + ") TEMP ON (TEMP.AAA = M_KC21.AAA)\n"
+                + "WHEN MATCHED THEN\n"
+                + "UPDATE SET M_KC21.BBB = 6 WHERE enterprise_id IN (0, 1)\n"
+                + "WHEN NOT MATCHED THEN\n"
+                + "INSERT VALUES\n"
+                + "(TEMP.AAA,TEMP.BBB\n"
+                + ")";
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
