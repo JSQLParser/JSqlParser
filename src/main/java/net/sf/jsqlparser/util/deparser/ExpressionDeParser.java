@@ -23,7 +23,6 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 import java.util.List;
-
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -45,7 +44,6 @@ import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
-import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
@@ -59,6 +57,7 @@ import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
+import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.WindowElement;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
@@ -623,6 +622,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
             }
         } else if (isAllColumns) {
             buffer.append("*");
+        }
+        if (aexpr.isIgnoreNulls()) {
+            buffer.append(" IGNORE NULLS");
         }
         buffer.append(") ");
         if (keep != null) {
