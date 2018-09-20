@@ -12,6 +12,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class AlterTest {
@@ -309,5 +310,11 @@ public class AlterTest {
     @Test
     public void testIssue633() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE team_phases ADD CONSTRAINT team_phases_id_key UNIQUE (id)");
+    }
+
+    @Test
+    @Ignore
+    public void testIssue679() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_session_status ADD INDEX idx_user_id(user_id)");
     }
 }

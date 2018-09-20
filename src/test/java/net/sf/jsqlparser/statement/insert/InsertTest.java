@@ -275,6 +275,11 @@ public class InsertTest {
     }
 
     @Test
+    public void testInsertKeyWordIntervalIssue682() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO BILLING_TASKS (TIMEOUT, INTERVAL, RETRY_UPON_FAILURE, END_DATE, MAX_RETRY_COUNT, CONTINUOUS, NAME, LAST_RUN, START_TIME, NEXT_RUN, ID, UNIQUE_NAME, INTERVAL_TYPE) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?)");
+    }
+
+    @Test
     @Ignore
     public void testWithAtFront() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("WITH foo AS ( SELECT attr FROM bar ) INSERT INTO lalelu (attr) SELECT attr FROM foo");

@@ -1024,7 +1024,7 @@ Normal names.
 String RelObjectName() :
 {    Token tk = null; String result = null; }
 {
-    (result = RelObjectNameWithoutValue() | tk=<K_VALUE> | tk=<K_VALUES>)
+    (result = RelObjectNameWithoutValue() | tk=<K_VALUE> | tk=<K_VALUES> | tk=<K_INTERVAL>)
 
     { 
 		if (tk!=null) result=tk.image;
@@ -2550,6 +2550,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
 
+	| LOOKAHEAD(2) retval = IntervalExpression()
+
     | retval=Column()
 
     | LOOKAHEAD("(" SimpleExpression() ")") "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
@@ -2563,8 +2565,6 @@ Expression PrimaryExpression() #PrimaryExpression:
     | "{t" token=<S_CHAR_LITERAL> "}"  { retval = new TimeValue(token.image); }
 
     | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
-
-    | retval = IntervalExpression()
 )
 
     ( "::" type=ColDataType() {
@@ -3571,6 +3571,21 @@ AlterExpression AlterExpression():
       (
 		LOOKAHEAD(2) ( <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); } ) constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
 		|
+          LOOKAHEAD(2) ( 
+                tk=<K_INDEX>
+                  sk3=ColumnsNamesListItem()
+                  {
+					  columnNames = new ArrayList();
+				      columnNames.add(sk3);
+
+                      index = new NamedConstraint();
+                      index.setType(tk.image);
+                      index.setColumnsNames(columnNames);
+                      alterExp.setIndex(index);
+                  }
+                  constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+            )
+		|
         ( (LOOKAHEAD(2) <K_COLUMN>)?
             alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
         )
@@ -3657,7 +3672,8 @@ AlterExpression AlterExpression():
                       alterExp.setIndex(index);
                   }
                   constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-            ) )
+            )
+			 )
         )
         )
     )
