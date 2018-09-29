@@ -11,7 +11,9 @@ import net.sf.jsqlparser.expression.OracleHint;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -45,8 +47,8 @@ public class TablesNamesFinderTest {
     }
 
     private void runTestOnResource(String resPath) throws Exception {
-        BufferedReader in = new BufferedReader(new InputStreamReader(TablesNamesFinderTest.class.
-                getResourceAsStream(resPath)));
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(TablesNamesFinderTest.class.getResourceAsStream(resPath)));
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
 
         try {
@@ -114,8 +116,10 @@ public class TablesNamesFinderTest {
                 + " WHERE ID = (SELECT MAX(ID) FROM MY_TABLE5) AND ID2 IN (SELECT * FROM MY_TABLE6)";
         net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
 
-        // now you should use a class that implements StatementVisitor to decide what to do
-        // based on the kind of the statement, that is SELECT or INSERT etc. but here we are only
+        // now you should use a class that implements StatementVisitor to decide what to
+        // do
+        // based on the kind of the statement, that is SELECT or INSERT etc. but here we
+        // are only
         // interested in SELECTS
         if (statement instanceof Select) {
             Select selectStatement = (Select) statement;
@@ -192,7 +196,7 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("MY_TABLE1"));
     }
-    
+
     @Test
     public void testGetTableListFromDeleteWithJoin() throws Exception {
         String sql = "DELETE t1, t2 FROM MY_TABLE1 t1 JOIN MY_TABLE2 t2 ON t1.id = t2.id";
@@ -391,8 +395,8 @@ public class TablesNamesFinderTest {
 
     @Test
     public void testUpdateGetTableListIssue295() throws JSQLParserException {
-        Update statement = (Update) CCJSqlParserUtil.
-                parse("UPDATE component SET col = 0 WHERE (component_id,ver_num) IN (SELECT component_id,ver_num FROM component_temp)");
+        Update statement = (Update) CCJSqlParserUtil.parse(
+                "UPDATE component SET col = 0 WHERE (component_id,ver_num) IN (SELECT component_id,ver_num FROM component_temp)");
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
         List<String> tableList = tablesNamesFinder.getTableList(statement);
         assertEquals(2, tableList.size());
@@ -475,7 +479,7 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("mytable2"));
     }
-    
+
     @Test
     public void testExpressionIssue515() throws JSQLParserException {
         TablesNamesFinder finder = new TablesNamesFinder();
@@ -483,7 +487,7 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("SOME_TABLE"));
     }
-    
+
     @Test
     public void testSelectHavingSubquery() throws Exception {
         String sql = "SELECT * FROM TABLE1 GROUP BY COL1 HAVING SUM(COL2) > (SELECT COUNT(*) FROM TABLE2)";
@@ -496,7 +500,7 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("TABLE1"));
         assertTrue(tableList.contains("TABLE2"));
     }
-    
+
     @Test
     public void testMySQLValueListExpression() throws JSQLParserException {
         String sql = "SELECT * FROM TABLE1 WHERE (a, b) = (c, d)";
@@ -505,7 +509,7 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("TABLE1"));
     }
-    
+
     @Test
     public void testSkippedSchemaIssue600() throws JSQLParserException {
         String sql = "delete from schema.table where id = 1";
@@ -514,5 +518,31 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("schema.table"));
     }
-    
+
+    @Test
+    public void testCommentTable() throws JSQLParserException {
+        String sql = "comment on table schema.table is 'comment1'";
+        TablesNamesFinder finder = new TablesNamesFinder();
+        List<String> tableList = finder.getTableList(CCJSqlParserUtil.parse(sql));
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("schema.table"));
+    }
+
+    @Test
+    public void testCommentColumn() throws JSQLParserException {
+        String sql = "comment on column schema.table.column1 is 'comment1'";
+        TablesNamesFinder finder = new TablesNamesFinder();
+        List<String> tableList = finder.getTableList(CCJSqlParserUtil.parse(sql));
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("schema.table"));
+    }
+
+    @Test
+    public void testCommentColumn2() throws JSQLParserException {
+        Comment comment = new Comment();
+        comment.setColumn(new Column());
+        TablesNamesFinder finder = new TablesNamesFinder();
+        List<String> tableList = finder.getTableList(comment);
+        assertEquals(0, tableList.size());
+    }
 }

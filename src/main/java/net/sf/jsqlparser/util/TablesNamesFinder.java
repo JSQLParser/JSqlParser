@@ -23,6 +23,7 @@ package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -100,6 +101,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -809,6 +811,19 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(Block block) {
         if (block.getStatements() != null) {
             visit(block.getStatements());
+        }
+    }
+
+    @Override
+    public void visit(Comment comment) {
+        if (comment.getTable() != null) {
+            visit(comment.getTable());
+        }
+        if (comment.getColumn() != null) {
+            Table table = comment.getColumn().getTable();
+            if (table != null) {
+                visit(table);
+            }
         }
     }
 }
