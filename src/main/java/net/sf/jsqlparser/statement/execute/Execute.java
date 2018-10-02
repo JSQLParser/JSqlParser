@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.execute;
 
+import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -42,6 +43,16 @@ public class Execute implements Statement {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setName(List<String> names) {
+        for (String item : names) {
+            if (this.name != null) {
+                this.name = this.name + "." + item;
+            } else {
+                this.name = item;
+            }
+        }
     }
 
     public ExpressionList getExprList() {
@@ -67,10 +78,11 @@ public class Execute implements Statement {
 
     @Override
     public String toString() {
-        return execType.name() + " " + name + " " + PlainSelect.
-                getStringList(exprList.getExpressions(), true, false);
+        return execType.name() + " " + name
+                + (exprList != null && exprList.getExpressions() != null ? " "
+                + PlainSelect.getStringList(exprList.getExpressions(), true, false) : "");
     }
-    
+
     public static enum EXEC_TYPE {
         EXECUTE,
         EXEC,

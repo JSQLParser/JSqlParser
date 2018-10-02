@@ -954,17 +954,29 @@ MergeInsert MergeInsertClause() : {
     }
 }
 
+List<String> RelObjectNameList() : {
+    String token = null;
+    List<String> data = new ArrayList<String>();
+} {
+    token = RelObjectName() { data.add(token); }
+    ( LOOKAHEAD (2) "." ("." { data.add(null); })* token = RelObjectName() { data.add(token); } ) *
+
+    { return data; }
+}
+
 // See: http://technet.microsoft.com/en-us/library/ms187879%28v=sql.105%29.aspx
 
 Column Column() #Column :
 {
     //String databaseName = null, schemaName = null, tableName = null, columnName = null;
-    String token = null;
+    //String token = null;
     List<String> data = new ArrayList<String>();
 }
 {
-    token = RelObjectName() { data.add(token); }
+    /* token = RelObjectName() { data.add(token); }
     ( LOOKAHEAD (2) "." ("." { data.add(null); })* token = RelObjectName() { data.add(token); } ) *
+    */
+    data = RelObjectNameList()
 
 	/*columnName = RelObjectName()
     ( "." [LOOKAHEAD(2) token = RelObjectName()] { tableName = columnName; columnName = token; token = null;} 
@@ -2882,7 +2894,7 @@ RowConstructor RowConstructor(): {
 }
 
 Execute Execute(): {
-    String funcName = null;
+    List<String> funcName;
     ExpressionList expressionList = null;
     Execute execute = new Execute();
 }
@@ -2891,7 +2903,7 @@ Execute Execute(): {
         | <K_EXECUTE> { execute.setExecType(Execute.EXEC_TYPE.EXECUTE); } 
         | <K_CALL> { execute.setExecType(Execute.EXEC_TYPE.CALL); } )
 
-    funcName=RelObjectName() { execute.setName(funcName); }
+    funcName=RelObjectNameList() { execute.setName(funcName); }
 
     [ expressionList=SimpleExpressionList() ]
 
