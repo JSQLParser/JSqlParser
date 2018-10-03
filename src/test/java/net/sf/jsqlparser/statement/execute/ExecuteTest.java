@@ -75,4 +75,9 @@ public class ExecuteTest {
     public void testCallWithMultiname() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CALL BAR.FOO");
     }
+
+    @Test
+    public void testAcceptCallWithParenthesis() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CALL myproc ('a', 2, 'b')");
+    }
 }

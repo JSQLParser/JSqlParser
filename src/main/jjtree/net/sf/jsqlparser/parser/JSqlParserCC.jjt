@@ -2905,7 +2905,11 @@ Execute Execute(): {
 
     funcName=RelObjectNameList() { execute.setName(funcName); }
 
-    [ expressionList=SimpleExpressionList() ]
+    ( 
+        LOOKAHEAD(3) expressionList=SimpleExpressionList() 
+        |
+        ("(" expressionList=SimpleExpressionList() ")" { execute.setParenthesis(true); })
+    )?
 
     { 
         execute.setExprList(expressionList);

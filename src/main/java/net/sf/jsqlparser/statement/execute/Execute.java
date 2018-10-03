@@ -36,6 +36,7 @@ public class Execute implements Statement {
     private EXEC_TYPE execType = EXEC_TYPE.EXECUTE;
     private String name;
     private ExpressionList exprList;
+    private boolean parenthesis = false;
 
     public String getName() {
         return name;
@@ -71,6 +72,14 @@ public class Execute implements Statement {
         this.execType = execType;
     }
 
+    public boolean isParenthesis() {
+        return parenthesis;
+    }
+
+    public void setParenthesis(boolean parenthesis) {
+        this.parenthesis = parenthesis;
+    }
+
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
@@ -80,7 +89,7 @@ public class Execute implements Statement {
     public String toString() {
         return execType.name() + " " + name
                 + (exprList != null && exprList.getExpressions() != null ? " "
-                + PlainSelect.getStringList(exprList.getExpressions(), true, false) : "");
+                + PlainSelect.getStringList(exprList.getExpressions(), true, parenthesis) : "");
     }
 
     public static enum EXEC_TYPE {
