@@ -132,6 +132,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
  * Find all used tables within an select statement.
@@ -809,6 +810,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(Block block) {
         if (block.getStatements() != null) {
             visit(block.getStatements());
+        }
+    }
+
+    @Override
+    public void visit(ValuesStatement values) {
+        for (Expression expr : values.getExpressions()) {
+            expr.accept(this);
         }
     }
 }

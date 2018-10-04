@@ -45,6 +45,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public class StatementDeParser implements StatementVisitor {
 
@@ -239,5 +240,11 @@ public class StatementDeParser implements StatementVisitor {
             }
         }
         buffer.append("END");
+    }
+
+    @Override
+    public void visit(ValuesStatement values) {
+        expressionDeParser.setBuffer(buffer);
+        new ValuesStatementDeParser(expressionDeParser, buffer).deParse(values);
     }
 }

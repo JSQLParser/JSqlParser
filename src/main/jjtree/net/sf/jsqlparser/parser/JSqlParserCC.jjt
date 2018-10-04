@@ -83,6 +83,7 @@ import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
 import net.sf.jsqlparser.statement.upsert.*;
 import net.sf.jsqlparser.statement.merge.*;
+import net.sf.jsqlparser.statement.values.*;
 import java.util.*;
 
 /**
@@ -379,6 +380,8 @@ Statement SingleStatement() :
         LOOKAHEAD(3)
         stm = Select()
         |
+        stm = Values()
+        |
         stm = Update()
         |
         stm = Insert()
@@ -512,6 +515,20 @@ UseStatement Use(): {
     <K_USE> name = RelObjectNameExt()
     {
         return new UseStatement(name);
+    }
+}
+
+ValuesStatement Values(): {
+    List<Expression> expList = new ArrayList<Expression>();
+    Expression exp;
+} {
+    <K_VALUES> 
+    "(" 
+        exp=PrimaryExpression() { expList.add(exp); }
+                        ("," exp=PrimaryExpression()  { expList.add(exp); } )*
+    ")"
+    {
+        return new ValuesStatement(expList);
     }
 }
 
