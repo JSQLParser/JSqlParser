@@ -152,9 +152,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     /**
      * Main entry for this Tool class. A list of found tables is returned.
-     *
-     * @param delete
-     * @return
      */
     public List<String> getTableList(Statement statement) {
         init(false);
@@ -174,9 +171,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     /**
      * Main entry for this Tool class. A list of found tables is returned.
-     *
-     * @param update
-     * @return
      */
     public List<String> getTableList(Expression expr) {
         init(true);

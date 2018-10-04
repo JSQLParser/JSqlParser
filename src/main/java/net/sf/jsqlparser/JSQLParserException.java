@@ -48,7 +48,7 @@ public class JSQLParserException extends Exception {
     }
 
     @Override
-    public Throwable getCause() {
+    public synchronized Throwable getCause() {
         return cause;
     }
 
