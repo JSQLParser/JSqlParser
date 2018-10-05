@@ -21,10 +21,10 @@
  */
 package net.sf.jsqlparser.util;
 
+import java.util.*;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.statement.select.*;
-
-import java.util.*;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
  * Add aliases to every column and expression selected by a select - statement. Existing aliases are
@@ -115,5 +115,10 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
     @Override
     public void visit(AllColumns allColumns) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void visit(ValuesStatement aThis) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.statement.values.ValuesStatement;
+
 public interface SelectVisitor {
 
     void visit(PlainSelect plainSelect);
@@ -28,4 +30,6 @@ public interface SelectVisitor {
     void visit(SetOperationList setOpList);
 
     void visit(WithItem withItem);
+
+    void visit(ValuesStatement aThis);
 }

@@ -1251,7 +1251,7 @@ SelectBody SetOperationList() #SetOperationList:
 
         (
             (("(" select=SelectBody() ")" { bracket=true;} ) 
-                    | select=PlainSelect() { bracket=false;} ) {selects.add(select);brackets.add(bracket); }
+                    | ( select=PlainSelect() | select=Values() ) { bracket=false;} ) {selects.add(select);brackets.add(bracket); }
             (
                 ((<K_UNION> { UnionOp union = new UnionOp();linkAST(union,jjtThis);operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
                 | <K_INTERSECT> { operations.add(new IntersectOp()); }
@@ -1259,7 +1259,7 @@ SelectBody SetOperationList() #SetOperationList:
                 | <K_EXCEPT> { operations.add(new ExceptOp()); }
                 )
 
-                (("(" select=SelectBody() ")" { bracket=true;} ) | select=PlainSelect() { bracket=false;} ) {selects.add(select);brackets.add(bracket);}
+                (("(" select=SelectBody() ")" { bracket=true;} ) | ( select=PlainSelect() | select=Values() ) { bracket=false;} ) {selects.add(select);brackets.add(bracket);}
             )*
         )
 

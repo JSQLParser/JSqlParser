@@ -21,10 +21,10 @@
  */
 package net.sf.jsqlparser.util;
 
+import java.util.*;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.statement.select.*;
-
-import java.util.*;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
  * Connect all selected expressions with a binary expression. Out of select a,b from table one gets
@@ -104,4 +104,10 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
     public void visit(SelectExpressionItem selectExpressionItem) {
         itemsExpr.add(selectExpressionItem);
     }
+
+    @Override
+    public void visit(ValuesStatement aThis) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

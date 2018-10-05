@@ -21,6 +21,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.statement.values.ValuesStatement;
+
 public class SelectVisitorAdapter implements SelectVisitor {
 
     @Override
@@ -35,6 +37,11 @@ public class SelectVisitorAdapter implements SelectVisitor {
 
     @Override
     public void visit(WithItem withItem) {
+
+    }
+
+    @Override
+    public void visit(ValuesStatement aThis) {
 
     }
 }

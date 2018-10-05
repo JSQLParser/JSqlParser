@@ -21,11 +21,11 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import java.util.*;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.*;
-
-import java.util.*;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
@@ -466,5 +466,10 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         if (parenthesis.getAlias() != null) {
             buffer.append(parenthesis.getAlias().toString());
         }
+    }
+
+    @Override
+    public void visit(ValuesStatement values) {
+        new ValuesStatementDeParser(expressionVisitor, buffer).deParse(values);
     }
 }

@@ -23,7 +23,6 @@ package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -37,6 +36,7 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
  * Utility function for select statements.
@@ -123,6 +123,11 @@ public final class SelectUtils {
             public void visit(WithItem withItem) {
                 throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
             }
+
+            @Override
+            public void visit(ValuesStatement aThis) {
+                throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+            }
         });
     }
 
@@ -173,6 +178,11 @@ public final class SelectUtils {
 
             @Override
             public void visit(WithItem withItem) {
+                throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+            }
+
+            @Override
+            public void visit(ValuesStatement aThis) {
                 throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
             }
         });
