@@ -60,18 +60,20 @@ public class WindowOffset {
                 buffer.append(type);
             }
         } else {
-            switch (type) {
-                case PRECEDING:
-                    buffer.append(" UNBOUNDED PRECEDING");
-                    break;
-                case FOLLOWING:
-                    buffer.append(" UNBOUNDED FOLLOWING");
-                    break;
-                case CURRENT:
-                    buffer.append(" CURRENT ROW");
-                    break;
-                default:
-                    break;
+            if (type != null) {
+                switch (type) {
+                    case PRECEDING:
+                        buffer.append(" UNBOUNDED PRECEDING");
+                        break;
+                    case FOLLOWING:
+                        buffer.append(" UNBOUNDED FOLLOWING");
+                        break;
+                    case CURRENT:
+                        buffer.append(" CURRENT ROW");
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         return buffer.toString();
