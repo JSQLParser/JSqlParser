@@ -120,4 +120,12 @@ public class CCJSqlParserUtilTest {
                 + "SELECT * FROM dual;\n"
                 + "SELECT * FROM dual;\n", result.toString());
     }
+
+    @Test
+    public void testParseStatementsIssue691_2() throws Exception {
+        Statements result = CCJSqlParserUtil.parseStatements(
+                "select * from dual;\n"
+                + "---test");
+        assertEquals("SELECT * FROM dual;\n", result.toString());
+    }
 }
