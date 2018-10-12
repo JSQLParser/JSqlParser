@@ -68,7 +68,7 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
 
     @Override
     public String toString() {
-        return (not ? "NOT " : "") + getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
+        return getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
     }
 
     public abstract String getStringExpression();
