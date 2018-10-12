@@ -107,7 +107,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     private static final String NOT = "NOT ";
-    private StringBuilder buffer = new StringBuilder();
+    protected StringBuilder buffer = new StringBuilder();
     private SelectVisitor selectVisitor;
     private boolean useBracketsInExprList = true;
     private OrderByDeParser orderByDeParser = new OrderByDeParser();

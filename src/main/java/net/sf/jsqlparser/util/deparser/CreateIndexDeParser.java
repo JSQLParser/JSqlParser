@@ -34,7 +34,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
  */
 public class CreateIndexDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
 
     /**
      * @param buffer the buffer that will be filled with the create

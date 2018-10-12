@@ -43,7 +43,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
  */
 public class UpdateDeParser implements OrderByVisitor {
 
-    private StringBuilder buffer = new StringBuilder();
+    protected StringBuilder buffer = new StringBuilder();
     private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
     private SelectVisitor selectVisitor = new SelectVisitorAdapter();
 

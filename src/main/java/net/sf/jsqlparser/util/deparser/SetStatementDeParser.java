@@ -26,7 +26,7 @@ import net.sf.jsqlparser.statement.SetStatement;
 
 public class SetStatementDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
 
     /**

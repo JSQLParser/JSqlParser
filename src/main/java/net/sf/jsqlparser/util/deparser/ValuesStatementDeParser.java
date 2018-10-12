@@ -27,7 +27,7 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public class ValuesStatementDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
     private final ExpressionVisitor expressionVisitor;
 
     public ValuesStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {

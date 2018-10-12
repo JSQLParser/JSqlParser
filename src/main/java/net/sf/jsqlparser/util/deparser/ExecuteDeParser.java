@@ -28,7 +28,7 @@ import net.sf.jsqlparser.statement.execute.Execute;
 
 public class ExecuteDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
 
     /**

@@ -29,7 +29,7 @@ import java.util.List;
 
 public class OrderByDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
 
     OrderByDeParser() {

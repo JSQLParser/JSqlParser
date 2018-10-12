@@ -34,7 +34,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
  */
 public class CreateViewDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
     private final SelectVisitor selectVisitor;
 
     /**

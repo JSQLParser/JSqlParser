@@ -33,7 +33,7 @@ import net.sf.jsqlparser.statement.select.Join;
  */
 public class DeleteDeParser {
 
-    private StringBuilder buffer = new StringBuilder();
+    protected StringBuilder buffer = new StringBuilder();
     private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
 
     public DeleteDeParser() {

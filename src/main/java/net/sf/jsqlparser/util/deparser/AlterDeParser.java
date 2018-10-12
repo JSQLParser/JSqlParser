@@ -30,7 +30,7 @@ import net.sf.jsqlparser.statement.alter.Alter;
  */
 public class AlterDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
 
     public AlterDeParser(StringBuilder buffer) {
         this.buffer = buffer;

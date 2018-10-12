@@ -31,7 +31,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
  */
 public class AlterViewDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
     private SelectVisitor selectVisitor;
 
     /**

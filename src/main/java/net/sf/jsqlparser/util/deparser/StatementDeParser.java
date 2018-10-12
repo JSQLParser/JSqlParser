@@ -53,7 +53,7 @@ public class StatementDeParser implements StatementVisitor {
 
     private SelectDeParser selectDeParser;
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
 
     public StatementDeParser(StringBuilder buffer) {
         this(new ExpressionDeParser(), new SelectDeParser(), buffer);

@@ -29,7 +29,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  */
 public class DropDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
 
     public DropDeParser(StringBuilder buffer) {
         this.buffer = buffer;

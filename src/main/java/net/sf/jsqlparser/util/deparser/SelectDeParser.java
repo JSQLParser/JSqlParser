@@ -33,7 +33,7 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
  */
 public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
-    private StringBuilder buffer = new StringBuilder();
+    protected StringBuilder buffer = new StringBuilder();
     private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
 
     public SelectDeParser() {

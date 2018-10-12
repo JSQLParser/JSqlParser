@@ -25,7 +25,7 @@ import net.sf.jsqlparser.statement.UseStatement;
 
 public class UseStatementDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
 
     public UseStatementDeParser(StringBuilder buffer) {
         this.buffer = buffer;
