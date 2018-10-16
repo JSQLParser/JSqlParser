@@ -2329,6 +2329,20 @@ ExpressionList SimpleExpressionList():
     }
 }
 
+ExpressionList SimpleExpressionListIncludingBoolean():
+{
+    ExpressionList retval = new ExpressionList();
+    List<Expression> expressions = new ArrayList<Expression>();
+    Expression expr = null;
+}
+{
+    expr=SimpleExpressionIncludingBoolean() { expressions.add(expr); } ("," expr=SimpleExpressionIncludingBoolean() { expressions.add(expr); })*
+    {
+        retval.setExpressions(expressions);
+        return retval;
+    }
+}
+
 ExpressionList SimpleExpressionListAtLeastTwoItems():
 {
     ExpressionList retval = new ExpressionList();
@@ -2385,6 +2399,55 @@ Expression AnyComparisonExpression() :
    {
       return retval;
    }
+}
+
+Expression SimpleExpressionIncludingBoolean():
+{
+    Expression retval = null;
+}
+{
+  (
+        retval=BooleanBinaryExpression()
+  )
+
+   {
+      return retval;
+   }
+}
+
+Expression BooleanBinaryExpression():
+{
+    Expression result = null;
+    Expression leftExpression = null;
+    Expression rightExpression = null;
+}
+{
+    (
+      leftExpression=ConcatExpression()
+    )
+      { result = leftExpression; }
+    (
+    
+	    LOOKAHEAD(2) (
+	    	">" { result = new GreaterThan(); }
+		    | "<" { result = new MinorThan(); }
+		    | "=" { result = new EqualsTo(); }
+		    | token=<OP_GREATERTHANEQUALS> { result = new GreaterThanEquals(token.image); }
+		    | token=<OP_MINORTHANEQUALS> { result = new MinorThanEquals(token.image); }
+		    | token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }
+		    | token=<OP_NOTEQUALSBANG> { result = new NotEqualsTo(token.image); }
+	    )
+
+        rightExpression=ConcatExpression()
+
+        {
+            BinaryExpression binExp = (BinaryExpression) result;
+            binExp.setLeftExpression(leftExpression);
+            binExp.setRightExpression(rightExpression);
+            leftExpression = result;
+        }
+    )*
+    { return result; }
 }
 
 Expression SimpleExpression():
@@ -2949,7 +3012,7 @@ Function Function() #Function:
     funcName=RelObjectNameExt()
 
     [ "." tmp=RelObjectNameExt() { funcName+= "." + tmp; } ["." tmp=RelObjectNameExt() { funcName+= "." + tmp; }]]
-    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] (LOOKAHEAD(3) expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }
+    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] (LOOKAHEAD(3) expressionList=SimpleExpressionListIncludingBoolean() | "*" { retval.setAllColumns(true); }
         | expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); } ) ] ")"
 
     [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]
