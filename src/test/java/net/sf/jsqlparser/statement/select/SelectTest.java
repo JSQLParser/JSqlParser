@@ -3260,6 +3260,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testNotNotIssue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT VALUE1, VALUE2 FROM FOO WHERE NOT BAR LIKE '*%'");
+    }
+
+    @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
         for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {
             final String prefix = c;
