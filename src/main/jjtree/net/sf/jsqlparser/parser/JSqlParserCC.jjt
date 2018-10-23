@@ -3593,7 +3593,7 @@ AlterExpression AlterExpression():
     List<String> columnNames = null;
     List<ConstraintState> constraints = null;
     ForeignKeyIndex fkIndex = null;
-    NamedConstraint index = null;
+    Index index = null;
     Table fkTable = null;
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
 }
@@ -3604,20 +3604,19 @@ AlterExpression AlterExpression():
       (
 		LOOKAHEAD(2) ( <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); } ) constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
 		|
-          LOOKAHEAD(2) ( 
-                tk=<K_INDEX>
-                  sk3=ColumnsNamesListItem()
-                  {
-					  columnNames = new ArrayList();
-				      columnNames.add(sk3);
-
-                      index = new NamedConstraint();
-                      index.setType(tk.image);
-                      index.setColumnsNames(columnNames);
-                      alterExp.setIndex(index);
-                  }
-                  constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-            )
+        LOOKAHEAD(2) (
+          tk = < K_INDEX > 
+          sk3 = RelObjectName() 
+          columnNames = ColumnsNamesList()
+          {
+            index = new Index();
+            index.setType(tk.image);
+            index.setName(sk3);
+            index.setColumnsNames(columnNames);
+            alterExp.setIndex(index);
+          }
+          constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+        )
 		|
         ( (LOOKAHEAD(2) <K_COLUMN>)?
             alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
