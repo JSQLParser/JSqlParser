@@ -22,6 +22,7 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
@@ -31,6 +32,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     private String name;
     private ExpressionList parameters;
+    private NamedExpressionList namedParameters;
     private boolean allColumns = false;
     private boolean distinct = false;
     private boolean isEscaped = false;
@@ -96,6 +98,20 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     /**
+     * the parameters might be named parameters, e.g. substring('foobar' from 2 for 3)
+     *
+     * @return the list of named parameters of the function (if any, else null)
+     */
+
+    public NamedExpressionList getNamedParameters() {
+        return namedParameters;
+    }
+
+    public void setNamedParameters(NamedExpressionList list) {
+        namedParameters = list;
+    }
+
+    /**
      * Return true if it's in the form "{fn function_body() }"
      *
      * @return true if it's java-escaped
@@ -128,12 +144,16 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         String params;
 
-        if (parameters != null) {
-            params = parameters.toString();
-            if (isDistinct()) {
-                params = params.replaceFirst("\\(", "(DISTINCT ");
-            } else if (isAllColumns()) {
-                params = params.replaceFirst("\\(", "(ALL ");
+        if (parameters != null || namedParameters != null) {
+            if(parameters != null){
+                params = parameters.toString();
+                if (isDistinct()) {
+                    params = params.replaceFirst("\\(", "(DISTINCT ");
+                } else if (isAllColumns()) {
+                    params = params.replaceFirst("\\(", "(ALL ");
+                }
+            } else{
+                params = namedParameters.toString();
             }
         } else if (isAllColumns()) {
             params = "(*)";

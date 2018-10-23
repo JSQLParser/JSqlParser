@@ -148,6 +148,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_BETWEEN:"BETWEEN">
 |   <K_BINARY: "BINARY">  
 |   <K_BIT:"BIT">
+|   <K_BOTH:"BOTH">
 |   <K_BY:"BY">
 |   <K_BYTE: "BYTE">
 |   <K_CALL : "CALL">
@@ -215,6 +216,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_KEY:"KEY">
 |   <K_LAST: "LAST">
 |   <K_LATERAL:"LATERAL">
+|   <K_LEADING:"LEADING">
 |   <K_LEFT:"LEFT">
 |   <K_LIKE:"LIKE">
 |   <K_LIMIT:"LIMIT">
@@ -244,6 +246,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PARTITION:"PARTITION">
 |   <K_PERCENT:"PERCENT">
 |   <K_PIVOT:"PIVOT">
+|   <K_PLACING:"PLACING">
 |   <K_PRECEDING: "PRECEDING">
 |   <K_PRECISION : "PRECISION">
 |   <K_PRIMARY:"PRIMARY">
@@ -274,6 +277,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TEMPORARY:"TEMPORARY">
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
 |   <K_TOP:"TOP">
+|   <K_TRAILING:"TRAILING">
 |   <K_TRUNCATE:"TRUNCATE">
 |   <K_UNBOUNDED: "UNBOUNDED"> 
 |   <K_UNION:"UNION">
@@ -1025,6 +1029,7 @@ String RelObjectNameWithoutValue() :
 	  | tk=<K_UNSIGNED>
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_ISNULL> 
 	  | tk=<K_ZONE>
+/*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
 
     { return tk.image; }
@@ -2312,6 +2317,73 @@ ExpressionList SimpleExpressionList():
     }
 }
 
+// trim( [leading|trailing|both] expr from expr)
+// The [leading|trailing|both] token has already been consumed
+NamedExpressionList NamedExpressionList1():
+{
+    NamedExpressionList retval = new NamedExpressionList();
+    List<Expression> expressions = new ArrayList<Expression>();
+    List<String> names = new ArrayList<String>();
+    Expression expr1 = null;
+    Expression expr2 = null;
+    Expression expr3 = null;
+    Expression expr4 = null;
+	String name = "";
+    Token tk1 = null;
+    Token tk2 = null;
+    Token tk3 = null;
+    Token tk4 = null;
+}
+{
+    ( 
+     expr1=SimpleExpression()  (tk2=<K_FROM>|tk2=<K_IN>|tk2=<K_PLACING>) expr2=SimpleExpression() { expressions.add(expr1); names.add(tk2.image); expressions.add(expr2);}
+    )
+
+    {
+        retval.setNames(names);
+        retval.setExpressions(expressions);
+        return retval;
+    }
+}
+
+// substring(expr1 from expr2)
+// substring(expr1 from expr2 for expr3)
+// trim(expr1 from expr2)
+// position(expr1 in expr2)
+// overlay(expr1 placing expr2 from expr3)
+// overlay(expr1 placing expr2 from expr3 for expr4)
+// expr1 has already been consumed
+NamedExpressionList NamedExpressionList2():
+{
+    NamedExpressionList retval = new NamedExpressionList();
+    List<Expression> expressions = new ArrayList<Expression>();
+    List<String> names = new ArrayList<String>();
+    Expression expr1 = null;
+    Expression expr2 = null;
+    Expression expr3 = null;
+    Expression expr4 = null;
+	String name = "";
+    Token tk1 = null;
+    Token tk2 = null;
+    Token tk3 = null;
+    Token tk4 = null;
+}
+{
+    ( 
+        expr2=SimpleExpression() { names.add(""); expressions.add(expr2);}
+     ( (tk3=<K_FOR>|tk3=<K_FROM>) expr3=SimpleExpression() {names.add(tk3.image); expressions.add(expr3);} 
+       ( (tk4=<K_FOR>) expr4=SimpleExpression() {names.add(tk4.image); expressions.add(expr4);} )?
+     )?
+    )
+
+    {
+        retval.setNames(names);
+        retval.setExpressions(expressions);
+        return retval;
+    }
+}
+
+
 ExpressionList SimpleExpressionListAtLeastTwoItems():
 {
     ExpressionList retval = new ExpressionList();
@@ -2922,9 +2994,14 @@ Function Function() #Function:
     Function retval = new Function();
     String funcName = null;
     String tmp = null;
+    List<Expression> expressions = new ArrayList<Expression>();
     ExpressionList expressionList = null;
+    NamedExpressionList namedExpressionList = null;
     KeepExpression keep = null;
     SubSelect expr = null;
+    Token tk1 = null;
+    Token tk2 = null;
+    Expression expr1 = null;
 }
 {
     ["{fn" { retval.setEscaped(true); } ]
@@ -2932,8 +3009,20 @@ Function Function() #Function:
     funcName=RelObjectNameExt()
 
     [ "." tmp=RelObjectNameExt() { funcName+= "." + tmp; } ["." tmp=RelObjectNameExt() { funcName+= "." + tmp; }]]
-    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }] (LOOKAHEAD(3) expressionList=SimpleExpressionList() | "*" { retval.setAllColumns(true); }
-        | expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); } ) ] ")"
+    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }]
+// The addition of functions with named parameters (see NamedExpressionList1, NamedExpressionList2) complicates
+// the parsing of the paramter lists.  JavaCC needs factorization here so that the tokens which indicate branch points
+// are exposed.
+        ( LOOKAHEAD(4)
+        ( (tk1=<K_BOTH>|tk1=<K_LEADING>|tk1=<K_TRAILING>) namedExpressionList=NamedExpressionList1() {namedExpressionList.getNames().add(0,tk1.image);})
+
+        | ( expr1=SimpleExpression() ( ((tk2=<K_FROM>|tk2=<K_IN>|tk2=<K_PLACING>) namedExpressionList=NamedExpressionList2() {namedExpressionList.getNames().set(0,tk2.image); namedExpressionList.getNames().add(0, ""); namedExpressionList.getExpressions().add(0, expr1);}) 
+          | ("," expressionList=SimpleExpressionList() {expressionList.getExpressions().add(0,expr1);}  )? ) )
+
+        | "*" { retval.setAllColumns(true); }
+        |  expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); } 
+        )
+        ] ")"
 
     [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]
 
@@ -2941,7 +3030,16 @@ Function Function() #Function:
 
     ["}"]
     {
+        if(expr1 != null && expressionList==null && namedExpressionList == null){
+// If the function has a single parameter, it is consumed before the choice point between
+// named vs. simple expression list.  Put it in a simple ExpressionList here.
+            expressions = new ArrayList<Expression>();
+            expressions.add(expr1);
+            expressionList = new ExpressionList();
+            expressionList.setExpressions(expressions);
+        }
         retval.setParameters(expressionList);
+        retval.setNamedParameters(namedExpressionList);
         retval.setName(funcName);
         retval.setKeep(keep);
         linkAST(retval,jjtThis);

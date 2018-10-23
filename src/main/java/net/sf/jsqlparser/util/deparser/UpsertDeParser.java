@@ -26,6 +26,7 @@ import java.util.Iterator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
@@ -147,6 +148,11 @@ public class UpsertDeParser implements ItemsListVisitor {
             }
         }
         buffer.append(")");
+    }
+
+// not used by top-level upsert
+    @Override
+    public void visit(NamedExpressionList namedExpressionList) {
     }
 
     @Override
