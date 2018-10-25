@@ -70,6 +70,7 @@ import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.alter.*;
+import net.sf.jsqlparser.statement.comment.*;
 import net.sf.jsqlparser.statement.create.index.*;
 import net.sf.jsqlparser.statement.create.table.*;
 import net.sf.jsqlparser.statement.create.view.*;
@@ -160,6 +161,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CHAR:"CHAR">
 |   <K_COLUMN:"COLUMN">
 |   <K_COMMIT:"COMMIT">
+|   <K_COMMENT:"COMMENT">
 |   <K_CONNECT:"CONNECT">
 |   <K_CONSTRAINT:"CONSTRAINT">
 |   <K_CREATE:"CREATE">
@@ -419,6 +421,8 @@ Statement SingleStatement() :
         stm = Use()
         |
         stm = Commit() 
+        |
+        stm = Comment() 
         )
 		{ return stm; }
     } catch (ParseException e) {
@@ -1031,7 +1035,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_BYTE> | <K_CHAR>
-      | tk=<K_CAST> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> 
+      | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> 
       | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE> 
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_XML>
       | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>
@@ -3782,4 +3786,28 @@ Commit Commit():
   {
     return commit;
   }
+}
+
+Comment Comment():
+{
+    Comment result = new Comment();
+    Table table;
+    Column column;
+    Token comment;
+}
+{
+    <K_COMMENT> <K_ON>
+    (
+        (
+            <K_TABLE> table = Table() { result.setTable(table); }
+        )
+        |
+        (
+            <K_COLUMN> column = Column() { result.setColumn(column); }
+        )
+    )
+    <K_IS> comment=<S_CHAR_LITERAL> { result.setComment(new StringValue(comment.image)); }
+    {
+        return result;
+    }
 }
