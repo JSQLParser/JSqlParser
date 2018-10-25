@@ -77,6 +77,7 @@ import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
@@ -405,6 +406,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(ExpressionList expressionList) {
         for (Expression expression : expressionList.getExpressions()) {
+            expression.accept(this);
+        }
+    }
+
+    @Override
+    public void visit(NamedExpressionList namedExpressionList) {
+        for (Expression expression : namedExpressionList.getExpressions()) {
             expression.accept(this);
         }
     }

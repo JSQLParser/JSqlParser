@@ -77,6 +77,7 @@ import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
@@ -435,7 +436,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         buffer.append(function.getName());
         if (function.isAllColumns() && function.getParameters() == null) {
             buffer.append("(*)");
-        } else if (function.getParameters() == null) {
+        } else if (function.getParameters() == null && function.getNamedParameters() == null) {
             buffer.append("()");
         } else {
             boolean oldUseBracketsInExprList = useBracketsInExprList;
@@ -446,7 +447,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
                 useBracketsInExprList = false;
                 buffer.append("(ALL ");
             }
-            visit(function.getParameters());
+            if(function.getNamedParameters() != null){
+                visit(function.getNamedParameters());
+            }
+            if(function.getParameters() != null){
+                visit(function.getParameters());
+            }
             useBracketsInExprList = oldUseBracketsInExprList;
             if (function.isDistinct() || function.isAllColumns()) {
                 buffer.append(")");
@@ -476,6 +482,29 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
             if (iter.hasNext()) {
                 buffer.append(", ");
             }
+        }
+        if (useBracketsInExprList) {
+            buffer.append(")");
+        }
+    }
+
+    @Override
+    public void visit(NamedExpressionList namedExpressionList) {
+        if (useBracketsInExprList) {
+            buffer.append("(");
+        }
+        List<String> names = namedExpressionList.getNames();
+        List<Expression> expressions = namedExpressionList.getExpressions();
+        for (int i=0; i<names.size(); i++){
+            if(i>0){
+                buffer.append(" ");
+            }
+            String name = names.get(i);
+            if(! name.equals("")){
+                buffer.append(name);
+                buffer.append(" ");
+            }
+            expressions.get(i).accept(this);
         }
         if (useBracketsInExprList) {
             buffer.append(")");

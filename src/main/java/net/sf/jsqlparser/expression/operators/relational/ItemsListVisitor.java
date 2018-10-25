@@ -29,5 +29,7 @@ public interface ItemsListVisitor {
 
     void visit(ExpressionList expressionList);
 
+    void visit(NamedExpressionList namedExpressionList);
+
     void visit(MultiExpressionList multiExprList);
 }

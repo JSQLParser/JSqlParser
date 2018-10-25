@@ -31,6 +31,11 @@ public class ItemsListVisitorAdapter implements ItemsListVisitor {
     }
 
     @Override
+    public void visit(NamedExpressionList namedExpressionList) {
+
+    }
+
+    @Override
     public void visit(ExpressionList expressionList) {
 
     }
