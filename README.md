@@ -51,6 +51,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 1.4
 
+* support of **substring(col from 2), position('test' in col), ..** and more (pull request #702)
 * support of db2 **VALUES** syntax (issue #561)
 
 ## Extensions of JSqlParser releases

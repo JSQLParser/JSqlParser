@@ -2347,17 +2347,17 @@ NamedExpressionList NamedExpressionList1():
     List<String> names = new ArrayList<String>();
     Expression expr1 = null;
     Expression expr2 = null;
-    Expression expr3 = null;
-    Expression expr4 = null;
 	String name = "";
     Token tk1 = null;
     Token tk2 = null;
-    Token tk3 = null;
-    Token tk4 = null;
 }
 {
     ( 
-     expr1=SimpleExpression()  (tk2=<K_FROM>|tk2=<K_IN>|tk2=<K_PLACING>) expr2=SimpleExpression() { expressions.add(expr1); names.add(tk2.image); expressions.add(expr2);}
+		(tk1=<K_BOTH>|tk1=<K_LEADING>|tk1=<K_TRAILING>) { names.add(tk1.image); }
+		expr1=SimpleExpression()  
+		(tk2=<K_FROM>|tk2=<K_IN>|tk2=<K_PLACING>) 
+		expr2=SimpleExpression() 
+		{ expressions.add(expr1); names.add(tk2.image); expressions.add(expr2);}
     )
 
     {
@@ -2374,7 +2374,7 @@ NamedExpressionList NamedExpressionList1():
 // overlay(expr1 placing expr2 from expr3)
 // overlay(expr1 placing expr2 from expr3 for expr4)
 // expr1 has already been consumed
-NamedExpressionList NamedExpressionList2():
+NamedExpressionList NamedExpressionListExprFirst():
 {
     NamedExpressionList retval = new NamedExpressionList();
     List<Expression> expressions = new ArrayList<Expression>();
@@ -2383,18 +2383,28 @@ NamedExpressionList NamedExpressionList2():
     Expression expr2 = null;
     Expression expr3 = null;
     Expression expr4 = null;
-	String name = "";
-    Token tk1 = null;
     Token tk2 = null;
     Token tk3 = null;
     Token tk4 = null;
 }
 {
+	expr1=SimpleExpression() 
+	(tk2=<K_FROM>|tk2=<K_IN>|tk2=<K_PLACING>) 
+	{
+		names.add("");
+		expressions.add(expr1);
+		names.add(tk2.image);
+	}
     ( 
-        expr2=SimpleExpression() { names.add(""); expressions.add(expr2);}
-     ( (tk3=<K_FOR>|tk3=<K_FROM>) expr3=SimpleExpression() {names.add(tk3.image); expressions.add(expr3);} 
-       ( (tk4=<K_FOR>) expr4=SimpleExpression() {names.add(tk4.image); expressions.add(expr4);} )?
-     )?
+        expr2=SimpleExpression() { expressions.add(expr2);}
+		( 
+			(tk3=<K_FOR>|tk3=<K_FROM>) 
+			expr3=SimpleExpression() {names.add(tk3.image); expressions.add(expr3);} 
+			(	
+				(tk4=<K_FOR>) 
+				expr4=SimpleExpression() {names.add(tk4.image); expressions.add(expr4);} 
+			)?
+		)?
     )
 
     {
@@ -3031,19 +3041,18 @@ Function Function() #Function:
 
     [ "." tmp=RelObjectNameExt() { funcName+= "." + tmp; } ["." tmp=RelObjectNameExt() { funcName+= "." + tmp; }]]
     "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }]
-// The addition of functions with named parameters (see NamedExpressionList1, NamedExpressionList2) complicates
-// the parsing of the paramter lists.  JavaCC needs factorization here so that the tokens which indicate branch points
-// are exposed.
         ( LOOKAHEAD(4)
-        ( (tk1=<K_BOTH>|tk1=<K_LEADING>|tk1=<K_TRAILING>) namedExpressionList=NamedExpressionList1() {namedExpressionList.getNames().add(0,tk1.image);})
-
-        | ( expr1=SimpleExpression() ( ((tk2=<K_FROM>|tk2=<K_IN>|tk2=<K_PLACING>) namedExpressionList=NamedExpressionList2() {namedExpressionList.getNames().set(0,tk2.image); namedExpressionList.getNames().add(0, ""); namedExpressionList.getExpressions().add(0, expr1);}) 
-          | ("," expressionList=SimpleExpressionList() {expressionList.getExpressions().add(0,expr1);}  )? ) )
-
-        | "*" { retval.setAllColumns(true); }
-        |  expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); } 
-        )
-        ] ")"
+			namedExpressionList=NamedExpressionList1()
+			| 
+			LOOKAHEAD(NamedExpressionListExprFirst()) namedExpressionList = NamedExpressionListExprFirst()
+			|
+			LOOKAHEAD(3) expressionList=SimpleExpressionList()
+			| 
+			"*" { retval.setAllColumns(true); }
+			|  
+			expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); } 
+        )] 
+	")"
 
     [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]
 
@@ -3051,14 +3060,6 @@ Function Function() #Function:
 
     ["}"]
     {
-        if(expr1 != null && expressionList==null && namedExpressionList == null){
-// If the function has a single parameter, it is consumed before the choice point between
-// named vs. simple expression list.  Put it in a simple ExpressionList here.
-            expressions = new ArrayList<Expression>();
-            expressions.add(expr1);
-            expressionList = new ExpressionList();
-            expressionList.setExpressions(expressions);
-        }
         retval.setParameters(expressionList);
         retval.setNamedParameters(namedExpressionList);
         retval.setName(funcName);
