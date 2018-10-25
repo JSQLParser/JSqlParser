@@ -25,7 +25,7 @@ import net.sf.jsqlparser.statement.select.Limit;
 
 public class LimitDeparser {
 
-    private final StringBuilder buffer;
+    protected final StringBuilder buffer;
 
     public LimitDeparser(StringBuilder buffer) {
         this.buffer = buffer;

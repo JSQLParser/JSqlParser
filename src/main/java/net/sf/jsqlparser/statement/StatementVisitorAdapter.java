@@ -37,6 +37,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public class StatementVisitorAdapter implements StatementVisitor {
 
@@ -141,5 +142,9 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(Block block) {
+    }
+
+    @Override
+    public void visit(ValuesStatement values) {
     }
 }

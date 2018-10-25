@@ -36,7 +36,7 @@ import net.sf.jsqlparser.statement.select.Select;
  */
 public class CreateTableDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
     private StatementDeParser statementDeParser;
 
     /**

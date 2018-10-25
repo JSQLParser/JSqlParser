@@ -84,6 +84,7 @@ import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
 import net.sf.jsqlparser.statement.upsert.*;
 import net.sf.jsqlparser.statement.merge.*;
+import net.sf.jsqlparser.statement.values.*;
 import java.util.*;
 
 /**
@@ -381,6 +382,8 @@ Statement SingleStatement() :
         LOOKAHEAD(3)
         stm = Select()
         |
+        stm = Values()
+        |
         stm = Update()
         |
         stm = Insert()
@@ -516,6 +519,20 @@ UseStatement Use(): {
     <K_USE> name = RelObjectNameExt()
     {
         return new UseStatement(name);
+    }
+}
+
+ValuesStatement Values(): {
+    List<Expression> expList = new ArrayList<Expression>();
+    Expression exp;
+} {
+    <K_VALUES> 
+    "(" 
+        exp=PrimaryExpression() { expList.add(exp); }
+                        ("," exp=PrimaryExpression()  { expList.add(exp); } )*
+    ")"
+    {
+        return new ValuesStatement(expList);
     }
 }
 
@@ -1238,7 +1255,7 @@ SelectBody SetOperationList() #SetOperationList:
 
         (
             (("(" select=SelectBody() ")" { bracket=true;} ) 
-                    | select=PlainSelect() { bracket=false;} ) {selects.add(select);brackets.add(bracket); }
+                    | ( select=PlainSelect() | select=Values() ) { bracket=false;} ) {selects.add(select);brackets.add(bracket); }
             (
                 ((<K_UNION> { UnionOp union = new UnionOp();linkAST(union,jjtThis);operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
                 | <K_INTERSECT> { operations.add(new IntersectOp()); }
@@ -1246,7 +1263,7 @@ SelectBody SetOperationList() #SetOperationList:
                 | <K_EXCEPT> { operations.add(new ExceptOp()); }
                 )
 
-                (("(" select=SelectBody() ")" { bracket=true;} ) | select=PlainSelect() { bracket=false;} ) {selects.add(select);brackets.add(bracket);}
+                (("(" select=SelectBody() ")" { bracket=true;} ) | ( select=PlainSelect() | select=Values() ) { bracket=false;} ) {selects.add(select);brackets.add(bracket);}
             )*
         )
 
@@ -3580,7 +3597,7 @@ AlterExpression AlterExpression():
     List<String> columnNames = null;
     List<ConstraintState> constraints = null;
     ForeignKeyIndex fkIndex = null;
-    NamedConstraint index = null;
+    Index index = null;
     Table fkTable = null;
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
 }
@@ -3591,20 +3608,19 @@ AlterExpression AlterExpression():
       (
 		LOOKAHEAD(2) ( <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); } ) constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
 		|
-          LOOKAHEAD(2) ( 
-                tk=<K_INDEX>
-                  sk3=ColumnsNamesListItem()
-                  {
-					  columnNames = new ArrayList();
-				      columnNames.add(sk3);
-
-                      index = new NamedConstraint();
-                      index.setType(tk.image);
-                      index.setColumnsNames(columnNames);
-                      alterExp.setIndex(index);
-                  }
-                  constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-            )
+        LOOKAHEAD(2) (
+          tk = < K_INDEX > 
+          sk3 = RelObjectName() 
+          columnNames = ColumnsNamesList()
+          {
+            index = new Index();
+            index.setType(tk.image);
+            index.setName(sk3);
+            index.setColumnsNames(columnNames);
+            alterExp.setIndex(index);
+          }
+          constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+        )
 		|
         ( (LOOKAHEAD(2) <K_COLUMN>)?
             alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }

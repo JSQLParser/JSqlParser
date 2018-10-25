@@ -39,7 +39,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
  */
 public class ReplaceDeParser implements ItemsListVisitor {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
 

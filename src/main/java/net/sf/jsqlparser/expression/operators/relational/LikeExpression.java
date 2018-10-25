@@ -38,7 +38,6 @@ public class LikeExpression extends BinaryExpression {
 //    public void setNot(boolean b) {
 //        not = b;
 //    }
-
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
@@ -46,7 +45,7 @@ public class LikeExpression extends BinaryExpression {
 
     @Override
     public String getStringExpression() {
-        return (isNot() ? "NOT " : "") + (caseInsensitive ? "ILIKE" : "LIKE");
+        return caseInsensitive ? "ILIKE" : "LIKE";
     }
 
     @Override

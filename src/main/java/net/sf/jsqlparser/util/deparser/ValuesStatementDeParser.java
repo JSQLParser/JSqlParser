@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2015 JSQLParser
+ * Copyright (C) 2004 - 2017 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,23 +21,18 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
-/**
- * very simple alter statement deparser
- *
- * @author toben
- */
-public class AlterDeParser {
+public class ValuesStatementDeParser {
 
     protected StringBuilder buffer;
+    private final ExpressionVisitor expressionVisitor;
 
-    public AlterDeParser(StringBuilder buffer) {
+    public ValuesStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
         this.buffer = buffer;
-    }
-
-    public void deParse(Alter alter) {
-        buffer.append(alter.toString());
+        this.expressionVisitor = expressionVisitor;
     }
 
     public StringBuilder getBuffer() {
@@ -46,5 +41,19 @@ public class AlterDeParser {
 
     public void setBuffer(StringBuilder buffer) {
         this.buffer = buffer;
+    }
+
+    public void deParse(ValuesStatement values) {
+        boolean first = true;
+        buffer.append("VALUES (");
+        for (Expression expr : values.getExpressions()) {
+            if (first) {
+                first = false;
+            } else {
+                buffer.append(", ");
+            }
+            expr.accept(expressionVisitor);
+        }
+        buffer.append(")");
     }
 }
