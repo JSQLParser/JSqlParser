@@ -19,7 +19,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 
 ## Discussion
 
-Please provide feedback on #677, about removing bracket identifier quotation to support array processing.
+Please provide feedback on https://github.com/JSQLParser/JSqlParser/issues/677, about removing bracket identifier quotation to support array processing.
 
 ## News
 * Released version **1.3** of JSqlParser
