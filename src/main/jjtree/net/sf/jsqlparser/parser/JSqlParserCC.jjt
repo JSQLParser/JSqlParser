@@ -3730,7 +3730,7 @@ AlterExpression AlterExpression():
                 ("," alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); } )* ")"
         )
         |
-        ( <K_UNIQUE> <K_KEY> (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) columnNames=ColumnsNamesList() { alterExp.setUkName(tk.image); alterExp.setUkColumns(columnNames); } )
+        ( <K_UNIQUE> (<K_KEY> (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } )? columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); } )
         |
 //following two choices regarding foreign keys should be merged
         ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); }
