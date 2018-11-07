@@ -3827,7 +3827,7 @@ AlterExpression AlterExpression():
                   
              )
              |
-       (  <K_CONSTRAINT>
+       (  <K_CONSTRAINT> [<K_IF> <K_EXISTS> ]
        (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>)
            {
               alterExp.setConstraintName(tk.image);
