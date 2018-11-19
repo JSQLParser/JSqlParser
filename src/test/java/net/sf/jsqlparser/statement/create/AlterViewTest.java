@@ -11,4 +11,10 @@ public class AlterViewTest {
         String stmt = "ALTER VIEW myview AS SELECT * FROM mytab";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+
+    @Test
+    public void testReplaceView() throws JSQLParserException {
+        String stmt = "REPLACE VIEW myview AS SELECT * FROM mytab";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 }
