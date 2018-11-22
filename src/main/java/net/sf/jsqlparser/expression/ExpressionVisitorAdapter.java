@@ -347,6 +347,14 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(NamedExpressionList namedExpressionList) {
+        for (Expression expr : namedExpressionList.getExpressions()) {
+            expr.accept(this);
+        }
+    }
+
+
+    @Override
     public void visit(MultiExpressionList multiExprList) {
         for (ExpressionList list : multiExprList.getExprList()) {
             visit(list);
