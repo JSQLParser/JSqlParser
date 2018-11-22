@@ -3265,6 +3265,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testTrueFalseLiteral() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM tbl WHERE true OR clm1 = 3");
+    }
+
+    @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
         for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {
             final String prefix = c;
