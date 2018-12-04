@@ -52,7 +52,11 @@ public class AlterViewDeParser {
     }
 
     public void deParse(AlterView alterView) {
-        buffer.append("ALTER ");
+        if(alterView.isUseReplace()){
+            buffer.append("REPLACE ");
+        }else{
+            buffer.append("ALTER ");
+        }
         buffer.append("VIEW ").append(alterView.getView().getFullyQualifiedName());
         if (alterView.getColumnNames() != null) {
             buffer.append(PlainSelect.getStringList(alterView.getColumnNames(), true, true));

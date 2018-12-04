@@ -396,6 +396,7 @@ Statement SingleStatement() :
         |
         stm = Delete()
         |
+		LOOKAHEAD(2)
         stm = Replace()
         |
         LOOKAHEAD(2)
@@ -618,7 +619,7 @@ Replace Replace():
     Expression exp = null;
 }
 {
-    <K_REPLACE> [<K_INTO> { replace.setUseIntoTables(true); }] table=Table()
+    ( <K_REPLACE> [LOOKAHEAD(2) <K_INTO> { replace.setUseIntoTables(true); }] table=Table() )
 
     (
         (
@@ -3445,7 +3446,7 @@ AlterView AlterView():
     List<String> columnNames = null;
 }
 {
-    <K_ALTER>
+    ( (<K_ALTER> ) | (<K_REPLACE> {alterView.setUseReplace(true);}) )
     <K_VIEW> view=Table() { alterView.setView(view); }
     [ columnNames = ColumnsNamesList() { alterView.setColumnNames(columnNames); } ]
     <K_AS>

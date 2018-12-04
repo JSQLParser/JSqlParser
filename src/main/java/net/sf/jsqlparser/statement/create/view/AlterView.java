@@ -35,6 +35,7 @@ public class AlterView implements Statement {
 
     private Table view;
     private SelectBody selectBody;
+    private boolean useReplace = false;
     private List<String> columnNames = null;
 
     @Override
@@ -74,9 +75,23 @@ public class AlterView implements Statement {
         this.columnNames = columnNames;
     }
 
+    public boolean isUseReplace() {
+        return useReplace;
+    }
+
+    public void setUseReplace(boolean useReplace) {
+        this.useReplace = useReplace;
+    }
+
+
     @Override
     public String toString() {
-        StringBuilder sql = new StringBuilder("ALTER ");
+        StringBuilder sql;
+        if(useReplace){
+            sql = new StringBuilder("REPLACE ");
+        }else{
+            sql = new StringBuilder("ALTER ");
+        }
         sql.append("VIEW ");
         sql.append(view);
         if (columnNames != null) {
