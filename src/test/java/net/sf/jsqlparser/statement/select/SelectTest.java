@@ -3280,6 +3280,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testCharNotParsedIssue718() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a FROM x WHERE a LIKE '%' + char(9) + '%'");
+    }
+
+    @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
         for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {
             final String prefix = c;
