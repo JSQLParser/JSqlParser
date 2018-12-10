@@ -70,13 +70,8 @@ public class TestUtils {
         assertEquals(buildSqlString(statement, laxDeparsingCheck),
                 buildSqlString(parsed.toString(), laxDeparsingCheck));
 
-        System.out.println("DeParser starting");
         StatementDeParser deParser = new StatementDeParser(new StringBuilder());
         parsed.accept(deParser);
-        System.out.println("DeParser statement: ");
-        System.out.println(buildSqlString(statement, laxDeparsingCheck));
-        System.out.println("DeParser buffer: ");
-        System.out.println(buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
         assertEquals(buildSqlString(statement, laxDeparsingCheck),
                 buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
     }

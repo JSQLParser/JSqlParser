@@ -33,8 +33,6 @@ public class KSQLTest {
         assertEquals("table2", ((Table) plainSelect.getJoins().get(0).getRightItem()).
                 getFullyQualifiedName());
         assertTrue(plainSelect.getJoins().get(0).isWindowJoin());
-
-        System.out.println("Danger zone");
         assertStatementCanBeDeparsedAs(select, sql, true);
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
