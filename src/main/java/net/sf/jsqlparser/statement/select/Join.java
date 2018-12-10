@@ -44,6 +44,7 @@ public class Join extends ASTNodeAccessImpl {
     private FromItem rightItem;
     private Expression onExpression;
     private List<Column> usingColumns;
+    private KSQLJoinWindow joinWindow;
 
     /**
      * Whether is a tab1,tab2 join
@@ -190,6 +191,21 @@ public class Join extends ASTNodeAccessImpl {
         usingColumns = list;
     }
 
+
+    public boolean isWindowJoin() {
+        return joinWindow != null;
+    }
+    /**
+     * Return the "WITHIN" join window (if any)
+     */
+    public KSQLJoinWindow getJoinWindow() {
+        return joinWindow;
+    }
+
+    public void setJoinWindow(KSQLJoinWindow joinWindow) {
+        this.joinWindow = joinWindow;
+    }
+
     @Override
     public String toString() {
         if (isSimple()) {
@@ -218,6 +234,7 @@ public class Join extends ASTNodeAccessImpl {
             }
 
             return type + "JOIN " + rightItem + ((onExpression != null) ? " ON " + onExpression + "" : "")
+                    + ((joinWindow != null) ? " WITHIN " + joinWindow : "")
                     + PlainSelect.getFormatedList(usingColumns, "USING", true, true);
         }
 

@@ -27,6 +27,9 @@ import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
  * {@link net.sf.jsqlparser.statement.select.Select}
@@ -378,6 +381,13 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         if (join.getOnExpression() != null) {
             buffer.append(" ON ");
             join.getOnExpression().accept(expressionVisitor);
+        }
+        if (join.isWindowJoin()) {
+            buffer.append(" WITHIN (");
+            buffer.append(join.getJoinWindow().getDuration());
+            buffer.append(" ");
+            buffer.append(join.getJoinWindow().getTimeUnit());
+            buffer.append(")");
         }
         if (join.getUsingColumns() != null) {
             buffer.append(" USING (");

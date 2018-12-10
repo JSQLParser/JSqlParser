@@ -1705,6 +1705,7 @@ Join JoinerExpression() #JoinerExpression:
     Expression onExpression = null;
     Column tableColumn;
     List<Column> columns = null;
+    KSQLJoinWindow joinWindow = null;
 }
 {
     [
@@ -1723,7 +1724,7 @@ Join JoinerExpression() #JoinerExpression:
 
 
     [ 
-    LOOKAHEAD(2) (( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); } )
+    LOOKAHEAD(2) (( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); } [ <K_WITHIN> "(" joinWindow = JoinWindow() ")" {join.setJoinWindow(joinWindow);}])
         |
         ( <K_USING> "(" tableColumn=Column() { columns = new ArrayList(); columns.add(tableColumn); }
                 ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"
@@ -1734,6 +1735,22 @@ Join JoinerExpression() #JoinerExpression:
       join.setRightItem(right);
     return join; 
   }
+
+}
+
+KSQLJoinWindow JoinWindow():
+{
+    KSQLJoinWindow retval = new KSQLJoinWindow();
+    Token durationToken;
+    Token timeUnitToken;
+}
+{
+    durationToken=<S_LONG> timeUnitToken=<S_IDENTIFIER>
+ {
+    retval.setDuration(Long.parseLong(durationToken.image));
+    retval.setTimeUnit(timeUnitToken.image);
+    return retval;
+ }
 }
 
 Expression WhereClause():
