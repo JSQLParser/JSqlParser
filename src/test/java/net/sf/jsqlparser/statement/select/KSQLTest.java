@@ -21,7 +21,7 @@ public class KSQLTest {
                 + "FROM table1 t1\n"
                 + "INNER JOIN table2 t2\n"
                 + "ON t1.id = t2.id\n"
-                + "WITHIN (1 HOURS)\n";
+                + "WITHIN (5 HOURS)\n";
 
         statement = CCJSqlParserUtil.parse(sql);
 
@@ -33,6 +33,8 @@ public class KSQLTest {
         assertEquals("table2", ((Table) plainSelect.getJoins().get(0).getRightItem()).
                 getFullyQualifiedName());
         assertTrue(plainSelect.getJoins().get(0).isWindowJoin());
+        assertEquals(5L, plainSelect.getJoins().get(0).getJoinWindow().getDuration());
+        assertEquals("HOURS", plainSelect.getJoins().get(0).getJoinWindow().getTimeUnit());
         assertStatementCanBeDeparsedAs(select, sql, true);
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
