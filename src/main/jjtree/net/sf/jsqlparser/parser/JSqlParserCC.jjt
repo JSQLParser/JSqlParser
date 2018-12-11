@@ -1724,7 +1724,8 @@ Join JoinerExpression() #JoinerExpression:
 
 
     [ 
-    LOOKAHEAD(2) (( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); } [ <K_WITHIN> "(" joinWindow = JoinWindow() ")" {join.setJoinWindow(joinWindow);}])
+    LOOKAHEAD(2) (( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); }
+                    [ <K_WITHIN> "(" joinWindow = JoinWindow() ")" {join.setJoinWindow(joinWindow);}])
         |
         ( <K_USING> "(" tableColumn=Column() { columns = new ArrayList(); columns.add(tableColumn); }
                 ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"
@@ -1741,16 +1742,29 @@ Join JoinerExpression() #JoinerExpression:
 KSQLJoinWindow JoinWindow():
 {
     KSQLJoinWindow retval = new KSQLJoinWindow();
-    Token durationToken;
-    Token timeUnitToken;
+    boolean beforeAfter;
+    Token beforeDurationToken = null;
+    Token beforeTimeUnitToken = null;
+    Token afterDurationToken = null;
+    Token afterTimeUnitToken = null;
 }
 {
-    durationToken=<S_LONG> timeUnitToken=<S_IDENTIFIER>
- {
-    retval.setDuration(Long.parseLong(durationToken.image));
-    retval.setTimeUnit(timeUnitToken.image);
-    return retval;
- }
+    (beforeDurationToken=<S_LONG> beforeTimeUnitToken=<S_IDENTIFIER>
+        [ "," afterDurationToken=<S_LONG> afterTimeUnitToken=<S_IDENTIFIER> ]
+    {
+        if (afterDurationToken == null) {
+            retval.setDuration(Long.parseLong(beforeDurationToken.image));
+            retval.setTimeUnit(KSQLJoinWindow.TimeUnit.valueOf(beforeTimeUnitToken.image));
+            retval.setBeforeAfterWindow(false);
+            return retval;
+        }
+        retval.setBeforeDuration(Long.parseLong(beforeDurationToken.image));
+        retval.setBeforeTimeUnit(KSQLJoinWindow.TimeUnit.valueOf(beforeTimeUnitToken.image));
+        retval.setAfterDuration(Long.parseLong(afterDurationToken.image));
+        retval.setAfterTimeUnit(KSQLJoinWindow.TimeUnit.valueOf(afterTimeUnitToken.image));
+        retval.setBeforeAfterWindow(true);
+        return retval;
+    })
 }
 
 Expression WhereClause():
