@@ -1705,6 +1705,7 @@ Join JoinerExpression() #JoinerExpression:
     Expression onExpression = null;
     Column tableColumn;
     List<Column> columns = null;
+    KSQLJoinWindow joinWindow = null;
 }
 {
     [
@@ -1723,7 +1724,8 @@ Join JoinerExpression() #JoinerExpression:
 
 
     [ 
-    LOOKAHEAD(2) (( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); } )
+    LOOKAHEAD(2) ([ <K_WITHIN> "(" joinWindow = JoinWindow() ")" {join.setJoinWindow(joinWindow);}]
+                    ( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); })
         |
         ( <K_USING> "(" tableColumn=Column() { columns = new ArrayList(); columns.add(tableColumn); }
                 ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"
@@ -1734,6 +1736,35 @@ Join JoinerExpression() #JoinerExpression:
       join.setRightItem(right);
     return join; 
   }
+
+}
+
+KSQLJoinWindow JoinWindow():
+{
+    KSQLJoinWindow retval = new KSQLJoinWindow();
+    boolean beforeAfter;
+    Token beforeDurationToken = null;
+    Token beforeTimeUnitToken = null;
+    Token afterDurationToken = null;
+    Token afterTimeUnitToken = null;
+}
+{
+    (beforeDurationToken=<S_LONG> beforeTimeUnitToken=<S_IDENTIFIER>
+        [ "," afterDurationToken=<S_LONG> afterTimeUnitToken=<S_IDENTIFIER> ]
+    {
+        if (afterDurationToken == null) {
+            retval.setDuration(Long.parseLong(beforeDurationToken.image));
+            retval.setTimeUnit(KSQLJoinWindow.TimeUnit.valueOf(beforeTimeUnitToken.image));
+            retval.setBeforeAfterWindow(false);
+            return retval;
+        }
+        retval.setBeforeDuration(Long.parseLong(beforeDurationToken.image));
+        retval.setBeforeTimeUnit(KSQLJoinWindow.TimeUnit.valueOf(beforeTimeUnitToken.image));
+        retval.setAfterDuration(Long.parseLong(afterDurationToken.image));
+        retval.setAfterTimeUnit(KSQLJoinWindow.TimeUnit.valueOf(afterTimeUnitToken.image));
+        retval.setBeforeAfterWindow(true);
+        return retval;
+    })
 }
 
 Expression WhereClause():
