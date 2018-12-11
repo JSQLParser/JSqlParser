@@ -21,8 +21,8 @@ public class KSQLTest {
         sql = "SELECT *\n"
                 + "FROM table1 t1\n"
                 + "INNER JOIN table2 t2\n"
-                + "ON t1.id = t2.id\n"
-                + "WITHIN (5 HOURS)\n";
+                + "WITHIN (5 HOURS)\n"
+                + "ON t1.id = t2.id\n";
 
         statement = CCJSqlParserUtil.parse(sql);
 
@@ -49,8 +49,8 @@ public class KSQLTest {
         sql = "SELECT *\n"
                 + "FROM table1 t1\n"
                 + "INNER JOIN table2 t2\n"
-                + "ON t1.id = t2.id\n"
-                + "WITHIN (2 MINUTES, 5 MINUTES)\n";
+                + "WITHIN (2 MINUTES, 5 MINUTES)\n"
+                + "ON t1.id = t2.id\n";
 
         statement = CCJSqlParserUtil.parse(sql);
 

@@ -233,8 +233,8 @@ public class Join extends ASTNodeAccessImpl {
                 type += "SEMI ";
             }
 
-            return type + "JOIN " + rightItem + ((onExpression != null) ? " ON " + onExpression + "" : "")
-                    + ((joinWindow != null) ? " WITHIN " + joinWindow : "")
+            return type + "JOIN " + rightItem + ((joinWindow != null) ? " WITHIN " + joinWindow : "")
+                    + ((onExpression != null) ? " ON " + onExpression + "" : "")
                     + PlainSelect.getFormatedList(usingColumns, "USING", true, true);
         }
 

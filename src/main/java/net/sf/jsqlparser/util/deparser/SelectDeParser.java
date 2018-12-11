@@ -378,13 +378,13 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
 
         FromItem fromItem = join.getRightItem();
         fromItem.accept(this);
-        if (join.getOnExpression() != null) {
-            buffer.append(" ON ");
-            join.getOnExpression().accept(expressionVisitor);
-        }
         if (join.isWindowJoin()) {
             buffer.append(" WITHIN ");
             buffer.append(join.getJoinWindow().toString());
+        }
+        if (join.getOnExpression() != null) {
+            buffer.append(" ON ");
+            join.getOnExpression().accept(expressionVisitor);
         }
         if (join.getUsingColumns() != null) {
             buffer.append(" USING (");
