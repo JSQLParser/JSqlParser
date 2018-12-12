@@ -148,10 +148,7 @@ public class AlterTest {
 
     @Test
     public void testAlterTableDropConstraintIfExists() throws JSQLParserException {
-        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE Persons DROP CONSTRAINT IF EXISTS UC_Person");
-
-        // not yet interesting enough to remember 'IF EXISTS' flag on constraint
-        assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE Persons DROP CONSTRAINT UC_Person");
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE Persons DROP CONSTRAINT IF EXISTS UC_Person");
     }
 
     @Test

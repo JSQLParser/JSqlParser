@@ -47,6 +47,7 @@ public class AlterExpression {
     private String ukName;
     private Index index = null;
     private String constraintName;
+    private boolean constraintIfExists;
     private boolean onDeleteRestrict;
     private boolean onDeleteSetNull;
     private boolean onDeleteCascade;
@@ -143,6 +144,14 @@ public class AlterExpression {
     public void setConstraintName(final String constraintName) {
         this.constraintName = constraintName;
     }
+    
+    public boolean isConstraintIfExists() {
+        return constraintIfExists;
+    }
+    
+    public void setConstraintIfExists( boolean constraintIfExists ) {
+        this.constraintIfExists = constraintIfExists;
+    }
 
     public List<String> getPkColumns() {
         return pkColumns;
@@ -215,7 +224,11 @@ public class AlterExpression {
                 b.append(")");
             }
         } else if (constraintName != null) {
-            b.append("CONSTRAINT ").append(constraintName);
+            b.append("CONSTRAINT ");
+            if(constraintIfExists) {
+               b.append("IF EXISTS ");
+            }
+            b.append(constraintName);
         } else if (pkColumns != null) {
             b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
         } else if (ukColumns != null) {
