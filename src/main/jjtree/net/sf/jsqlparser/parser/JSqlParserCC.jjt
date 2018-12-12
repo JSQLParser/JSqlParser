@@ -282,6 +282,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TOP:"TOP">
 |   <K_TRAILING:"TRAILING">
 |   <K_TRUNCATE:"TRUNCATE">
+|   <K_TYPE:"TYPE">
 |   <K_UNBOUNDED: "UNBOUNDED"> 
 |   <K_UNION:"UNION">
 |   <K_UNIQUE:"UNIQUE">
@@ -1048,7 +1049,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
       | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_ENABLE>
 	  | tk=<K_UNSIGNED>
-      | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_ISNULL> 
+      | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TYPE> | tk=<K_ISNULL> 
 	  | tk=<K_ZONE>
 /*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
@@ -3535,6 +3536,8 @@ List<String> CreateParameter():
             tk=<K_BY> { param.add(tk.image); }
 			|
             tk=<K_IN> { param.add(tk.image); }
+			|
+            tk=<K_TYPE> { param.add(tk.image); }
         )
     {return param;}
 }
@@ -3564,7 +3567,7 @@ String ColumnsNamesListItem():
     String item = null;
 } 
 {
-	(tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { item = tk.image; }
+	( item = RelObjectName() )
 	[ "(" tk = <S_LONG>  ")" { item = item + "(" + tk.image + ")"; } ]
 	{
 		return item;
@@ -3636,16 +3639,18 @@ Truncate Truncate():
 AlterExpression.ColumnDataType AlterExpressionColumnDataType():
 {
     String columnName = null;
+    boolean withType = false;
     ColDataType dataType = null;
     List<String> columnSpecs = null;
     List<String> parameter = null;
 }
 {
     columnName = RelObjectName()
+    (<K_TYPE> { withType = true; } )?
     dataType = ColDataType() { columnSpecs = new ArrayList(); }
     ( parameter = CreateParameter() { columnSpecs.addAll(parameter); } )*
     {
-        return new AlterExpression.ColumnDataType(columnName, dataType, columnSpecs);
+        return new AlterExpression.ColumnDataType(columnName, withType, dataType, columnSpecs);
     }
 }
 
@@ -3703,7 +3708,7 @@ AlterExpression AlterExpression():
 {
 
     (
-    ((<K_ADD>    { alterExp.setOperation(AlterOperation.ADD); } | <K_MODIFY> { alterExp.setOperation(AlterOperation.MODIFY); })
+    ((<K_ADD>    { alterExp.setOperation(AlterOperation.ADD); } | <K_ALTER>    { alterExp.setOperation(AlterOperation.ALTER); } | <K_MODIFY> { alterExp.setOperation(AlterOperation.MODIFY); })
       (
 		LOOKAHEAD(2) ( <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); } ) constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
 		|

@@ -110,7 +110,7 @@ public class AlterExpression {
     }
 
     public void addColDataType(String columnName, ColDataType colDataType) {
-        addColDataType(new ColumnDataType(columnName, colDataType, null));
+        addColDataType(new ColumnDataType(columnName, false, colDataType, null));
     }
 
     public void addColDataType(ColumnDataType columnDataType) {
@@ -248,11 +248,13 @@ public class AlterExpression {
     public static class ColumnDataType {
 
         private final String columnName;
+        private final boolean withType;
         private final ColDataType colDataType;
         private final List<String> columnSpecs;
 
-        public ColumnDataType(String columnName, ColDataType colDataType, List<String> columnSpecs) {
+        public ColumnDataType(String columnName, boolean withType, ColDataType colDataType, List<String> columnSpecs) {
             this.columnName = columnName;
+            this.withType = withType;
             this.colDataType = colDataType;
             this.columnSpecs = columnSpecs;
         }
@@ -274,7 +276,7 @@ public class AlterExpression {
 
         @Override
         public String toString() {
-            return columnName + " " + colDataType + parametersToString();
+            return columnName + ( withType ? " TYPE " : " " ) + colDataType + parametersToString();
         }
 
         private String parametersToString() {

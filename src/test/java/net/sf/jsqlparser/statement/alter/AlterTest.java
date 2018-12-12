@@ -245,6 +245,12 @@ public class AlterTest {
         assertEquals(AlterOperation.MODIFY, ((Alter) stmt).getAlterExpressions().get(0).
                 getOperation());
     }
+    
+    @Test
+    public void testAlterTableAlterColumn() throws JSQLParserException {
+      // http://www.postgresqltutorial.com/postgresql-change-column-type/
+      assertSqlCanBeParsedAndDeparsed("ALTER TABLE table_name ALTER COLUMN column_name_1 TYPE TIMESTAMP, ALTER COLUMN column_name_2 TYPE BOOLEAN");
+    }
 
     @Test
     public void testAlterTableAddColumnWithZone() throws JSQLParserException {
