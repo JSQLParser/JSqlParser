@@ -147,6 +147,11 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableDropConstraintIfExists() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE Persons DROP CONSTRAINT IF EXISTS UC_Person");
+    }
+
+    @Test
     public void testAlterTablePK() throws JSQLParserException {
         final String sql = "ALTER TABLE `Author` ADD CONSTRAINT `AuthorPK` PRIMARY KEY (`ID`)";
         Statement stmt = CCJSqlParserUtil.parse(sql);
