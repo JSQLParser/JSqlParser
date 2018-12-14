@@ -2103,7 +2103,7 @@ public class SelectTest {
         assertTrue(sub.getRightExpression() instanceof IntervalExpression);
         IntervalExpression iexpr = (IntervalExpression) sub.getRightExpression();
 
-        assertEquals("'45 MINUTE'", iexpr.getParameter());
+        assertEquals("'45 MINUTE'", iexpr.getParameter().toString());
     }
 
     @Test
@@ -2118,6 +2118,12 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
+    @Test
+    public void testInterval5() throws JSQLParserException {
+        String stmt = "SELECT INTERVAL (UNIX_TIMESTAMP(CAST('2018-12-03 19:40:00' AS DATETIME)) / 300) * 300 SECOND";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+    
     @Test
     public void testInterval5_Issue228() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ADDDATE(timeColumn1, INTERVAL 420 MINUTES) AS timeColumn1 FROM tbl");

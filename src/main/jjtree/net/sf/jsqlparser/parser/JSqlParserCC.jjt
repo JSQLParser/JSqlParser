@@ -2683,8 +2683,6 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     | LOOKAHEAD(JsonExpression()) retval=JsonExpression()
 
-    | LOOKAHEAD(Function()) retval=Function()
-
     | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
 
     | token=<S_LONG> { retval = new LongValue(token.image); }
@@ -2698,7 +2696,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
 
-	| LOOKAHEAD(2) retval = IntervalExpression()
+    | LOOKAHEAD(2) retval = IntervalExpression()
+
+    | LOOKAHEAD(Function()) retval=Function()
 
     | retval=Column()
 
@@ -2798,12 +2798,18 @@ JsonExpression JsonExpression() : {
 
 IntervalExpression IntervalExpression() : {
     IntervalExpression interval = new IntervalExpression();
+    Expression item;
+    Expression intermediate;
     Token token;
     boolean signed = false;
 }
 {
-    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL>) 
-    { interval.setParameter((signed?"-":"") + token.image); }
+    
+     <K_INTERVAL> (LOOKAHEAD(ConcatExpression()) item = ConcatExpression() 
+                   |LOOKAHEAD("(" ConcatExpression() ")") "(" intermediate=ConcatExpression() ")" {item = new Parenthesis(intermediate); }
+                   |LOOKAHEAD("(" PrimaryExpression() ")") "(" intermediate=PrimaryExpression() ")" {item = new Parenthesis(intermediate); }
+                   | item = PrimaryExpression())
+    { interval.setParameter(item); }
     [ LOOKAHEAD(2) token = <S_IDENTIFIER> { interval.setIntervalType(token.image); } ]
     {
         return interval;
