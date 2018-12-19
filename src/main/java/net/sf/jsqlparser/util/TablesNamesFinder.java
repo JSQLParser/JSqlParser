@@ -97,6 +97,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
@@ -744,6 +745,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(SetStatement set) {
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+    }
+
+    @Override
+    public void visit(ShowStatement set) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
