@@ -83,14 +83,19 @@ public class CreateIndex implements Statement {
         if (index.getColumnsNames() != null) {
             buffer.append(" (");
 
-            for (Iterator iter = index.getColumnsNames().iterator(); iter.hasNext();) {
-                String columnName = (String) iter.next();
+            int i = 0;
+            for (Iterator<String> iter = index.getColumnsNames().iterator(); iter.hasNext();) {
+                String columnName = iter.next();
 
                 buffer.append(columnName);
+                if(index.getIndexSpec().size() > i && index.getIndexSpec().get(i) != null) {
+                    buffer.append(" ").append(index.getIndexSpec().get(i));
+                }
 
                 if (iter.hasNext()) {
                     buffer.append(", ");
                 }
+                i++;
             }
 
             buffer.append(")");
