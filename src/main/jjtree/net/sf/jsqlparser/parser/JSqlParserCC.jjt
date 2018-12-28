@@ -161,6 +161,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CHECK:"CHECK">
 |   <K_CHAR:"CHAR">
 |   <K_COLUMN:"COLUMN">
+|   <K_COLUMNS:"COLUMNS">
 |   <K_COMMIT:"COMMIT">
 |   <K_COMMENT:"COMMENT">
 |   <K_CONNECT:"CONNECT">
@@ -269,6 +270,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SEMI : "SEMI">
 |   <K_SEPARATOR:"SEPARATOR">
 |   <K_SET:"SET">
+|   <K_SHOW : "SHOW">
 |   <K_SIBLINGS:"SIBLINGS">
 |   <K_SKIP: "SKIP">
 |   <K_SOME:"SOME">
@@ -424,6 +426,8 @@ Statement SingleStatement() :
         |
         stm = Set()
         |
+        stm = Show()
+        |
         stm = Use()
         |
         stm = Commit() 
@@ -525,6 +529,16 @@ UseStatement Use(): {
     <K_USE> name = RelObjectNameExt()
     {
         return new UseStatement(name);
+    }
+}
+
+ShowStatement Show(): {
+    String tableName;
+}
+{
+    <K_SHOW> <K_COLUMNS> <K_FROM> tableName = RelObjectNameExt()
+    {
+        return new ShowStatement(tableName);
     }
 }
 
@@ -1387,6 +1401,7 @@ MySQLIndexHint MySQLIndexHint():
 }
 {
 	(actionToken = <K_USE>
+	| actionToken = <K_SHOW>
 	| actionToken = <K_IGNORE>
 	| actionToken = <K_FORCE> )
 	(indexToken = <K_INDEX>
