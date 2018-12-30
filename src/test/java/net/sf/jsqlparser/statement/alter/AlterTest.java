@@ -102,6 +102,11 @@ public class AlterTest {
     public void testAlterTableAddConstraintWithConstraintState2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT RESOURCELINKTYPE_PRIMARYKEY PRIMARY KEY (PRIMARYKEY) DEFERRABLE NOVALIDATE");
     }
+    
+    @Test
+    public void testAlterTableAddUniqueConstraint() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE Persons ADD UNIQUE (ID)");
+    }
 
     @Test
     public void testAlterTableForgeignKey2() throws JSQLParserException {

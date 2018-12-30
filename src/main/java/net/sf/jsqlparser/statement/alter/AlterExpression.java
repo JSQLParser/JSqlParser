@@ -232,8 +232,11 @@ public class AlterExpression {
         } else if (pkColumns != null) {
             b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
         } else if (ukColumns != null) {
-            b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.
-                    getStringList(ukColumns)).append(")");
+            b.append("UNIQUE");
+            if (ukName != null) {
+              b.append(" KEY ").append(ukName);    
+            }
+            b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
             b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).
                     append(") REFERENCES ").append(fkSourceTable).append(" (").append(
