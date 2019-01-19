@@ -2799,6 +2799,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testCastToSignedInteger() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST(contact_id AS SIGNED INTEGER) FROM contact WHERE contact_id = 20");
+    }
+
+    @Test
     public void testWhereIssue240_notBoolean() {
         try {
             CCJSqlParserUtil.parse("SELECT count(*) FROM mytable WHERE 5");
