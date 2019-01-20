@@ -8,10 +8,11 @@ import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
-
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -20,10 +21,10 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.test.TestException;
-import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -552,5 +553,14 @@ public class TablesNamesFinderTest {
         TablesNamesFinder finder = new TablesNamesFinder();
         List<String> tableList = finder.getTableList(comment);
         assertEquals(0, tableList.size());
+    }
+
+    @Test
+    public void testDescribe() throws JSQLParserException {
+        DescribeStatement describe = new DescribeStatement(new Table("foo", "product"));
+        TablesNamesFinder finder = new TablesNamesFinder();
+        List<String> tableList = finder.getTableList(describe);
+        assertEquals(1, tableList.size());
+        assertEquals("foo.product", tableList.get(0));
     }
 }
