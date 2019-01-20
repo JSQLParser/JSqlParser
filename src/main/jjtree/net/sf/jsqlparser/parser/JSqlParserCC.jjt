@@ -433,6 +433,8 @@ Statement SingleStatement() :
         stm = Commit() 
         |
         stm = Comment() 
+        |
+        stm = Describe()
         )
 		{ return stm; }
     } catch (ParseException e) {
@@ -1014,34 +1016,9 @@ Column Column() #Column :
     List<String> data = new ArrayList<String>();
 }
 {
-    /* token = RelObjectName() { data.add(token); }
-    ( LOOKAHEAD (2) "." ("." { data.add(null); })* token = RelObjectName() { data.add(token); } ) *
-    */
     data = RelObjectNameList()
 
-	/*columnName = RelObjectName()
-    ( "." [LOOKAHEAD(2) token = RelObjectName()] { tableName = columnName; columnName = token; token = null;} 
-		( "." token = RelObjectName() { schemaName = tableName; tableName = columnName; columnName = token; token = null;} 
-			( "." token = RelObjectName() { databaseName = schemaName; schemaName = tableName; tableName = columnName; columnName = token; } 
-			)?
-		)?
-	)?
-    */
-
-    /*(
-          LOOKAHEAD(7) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." tableName=RelObjectName() "." columnName=RelObjectName()
-        | LOOKAHEAD(5) schemaName=RelObjectName() "." tableName=RelObjectName() "." columnName=RelObjectName()
-        | LOOKAHEAD(3) tableName=RelObjectName() "." columnName=RelObjectName()
-        | columnName=RelObjectName()
-    )*/
-
     {
-		/*if (tableName==null && (databaseName!=null || schemaName!=null)) {
-			throw generateParseException();
-		}*/
-
-        //final Database database = new Database(databaseName);
-        //final Table table = new Table(database, schemaName, tableName);
         Column col = new Column(data);
         linkAST(col,jjtThis);
         return col;
@@ -1126,15 +1103,7 @@ Table Table() #Table :
     token = RelObjectName() { data.add(token); }
     ( LOOKAHEAD(2) "." ("." { data.add(null); })* token = RelObjectName() { data.add(token); } ) *
 
-   /* (
-          LOOKAHEAD(7) serverName=RelObjectName() "." [databaseName=RelObjectName()] "." [schemaName=RelObjectName()] "." tableName=RelObjectName()
-        | LOOKAHEAD(5) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." tableName=RelObjectName()
-        | LOOKAHEAD(3) schemaName=RelObjectName() "." tableName=RelObjectName()
-        | tableName=RelObjectName()
-    )*/
     {
-        //final Server server = new Server(serverName);
-        //final Database database = new Database(server, databaseName);
         Table table = new Table(data);
         return table;
     }
