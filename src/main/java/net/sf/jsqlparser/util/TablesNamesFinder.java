@@ -851,6 +851,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(DescribeStatement describe) {
-        describe.accept(this);
+        describe.getTable().accept(this);
     }
 }

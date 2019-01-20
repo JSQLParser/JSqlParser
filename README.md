@@ -22,6 +22,7 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 Please provide feedback on https://github.com/JSQLParser/JSqlParser/issues/677, about removing bracket identifier quotation to support array processing.
 
 ## News
+* Released version **1.4** of JSqlParser
 * Released version **1.3** of JSqlParser
 * Changed behaviour of dotted multipart names for user variables, tables and columns to accept e.g. ORM class names. To achieve this some behaviour of name parsing had to be changed. Before this the parser would fail missing databasenames for SqlServer queries (server..schema.table). But this is allowed for the schema (server.database..table). Now the parser accepts missing inner names per se to avoid some very complicated parsing rules.
 * Released version **1.2** of JSqlParser
@@ -52,10 +53,9 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 1.4
+## Extensions in the latest SNAPSHOT version 2.0
 
-* support of **substring(col from 2), position('test' in col), ..** and more (pull request #702)
-* support of db2 **VALUES** syntax (issue #561)
+* support of **describe**
 
 ## Extensions of JSqlParser releases
 
