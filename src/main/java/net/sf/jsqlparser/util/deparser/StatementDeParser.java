@@ -25,6 +25,7 @@ import java.util.Iterator;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
@@ -265,5 +266,11 @@ public class StatementDeParser implements StatementVisitor {
     public void visit(DescribeStatement describe) {
         buffer.append("DESCRIBE ");
         buffer.append(describe.getTable());
+    }
+
+    @Override
+    public void visit(ExplainStatement explain) {
+        buffer.append("EXPLAIN ");
+        explain.getStatement().accept(this);
     }
 }

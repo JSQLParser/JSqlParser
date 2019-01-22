@@ -155,4 +155,8 @@ public class StatementVisitorAdapter implements StatementVisitor {
     @Override
     public void visit(DescribeStatement describe) {
     }
+
+    @Override
+    public void visit(ExplainStatement aThis) {
+    }
 }

@@ -190,6 +190,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXEC: "EXEC">
 |   <K_EXECUTE: "EXECUTE">
 |   <K_EXISTS:"EXISTS">
+|   <K_EXPLAIN:"EXPLAIN">
 |   <K_EXTRACT:"EXTRACT">
 |   <K_FETCH:"FETCH">
 |   <K_FIRST: "FIRST">
@@ -436,6 +437,8 @@ Statement SingleStatement() :
         stm = Comment() 
         |
         stm = Describe()
+        |
+        stm = Explain()
         )
 		{ return stm; }
     } catch (ParseException e) {
@@ -534,6 +537,14 @@ DescribeStatement Describe(): {
     }
 }
 
+ExplainStatement Explain(): {
+    Select select;
+} {
+    <K_EXPLAIN> select = Select()
+    {
+        return new ExplainStatement(select);
+    }
+}
 
 UseStatement Use(): {
     String name;
