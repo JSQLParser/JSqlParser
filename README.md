@@ -56,6 +56,7 @@ Also I would like to know about needed examples or documentation stuff.
 ## Extensions in the latest SNAPSHOT version 2.0
 
 * support of **describe**
+* support of **explain**
 
 ## Extensions of JSqlParser releases
 
