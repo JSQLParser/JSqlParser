@@ -58,6 +58,7 @@ Also I would like to know about needed examples or documentation stuff.
 * support of **describe**
 * support of **explain**
 * support of prefix **_utf8'strings'**
+* allow top keyword as table / column / alias name
 
 ## Extensions of JSqlParser releases
 
