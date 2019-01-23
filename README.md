@@ -15,7 +15,7 @@ Look here for more information and examples: https://github.com/JSQLParser/JSqlP
 
 ## License
 
-JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, Version 2.0**.
+JSqlParser is dual licensed under **LGPL V2.1** or **Apache Software License, Version 2.0**.
 
 ## Discussion
 
