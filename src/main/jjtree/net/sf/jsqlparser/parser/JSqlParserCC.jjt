@@ -297,6 +297,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
 |   <K_SQL_NO_CACHE: "SQL_NO_CACHE">
 |   <K_USING:"USING">
+|   <K_SIGNED:"SIGNED">
 |   <K_UNSIGNED:"UNSIGNED">
 |   <K_VALIDATE : "VALIDATE">
 |   <K_VALUE:"VALUE">
@@ -3436,6 +3437,7 @@ ColDataType ColDataType():
 		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> | tk=<K_CHAR> )  
 				{ colDataType.setDataType(tk.image); }
 		| tk=<K_UNSIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
+		| tk=<K_SIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
 	)
 
     [LOOKAHEAD(2) "(" {tk2 =null;} ( (tk=<S_LONG> [ tk2=<K_BYTE> | tk2=<K_CHAR> ] | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> ) 
