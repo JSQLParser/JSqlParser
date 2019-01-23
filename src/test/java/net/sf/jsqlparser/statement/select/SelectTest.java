@@ -3300,6 +3300,21 @@ public class SelectTest {
     }
 
     @Test
+    public void testTopKeyWord() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT top.date AS mycol1 FROM mytable top WHERE top.myid = :myid AND top.myid2 = 123");
+    }
+
+    @Test
+    public void testTopKeyWord2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT top.date");
+    }
+
+    @Test
+    public void testTopKeyWord3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable top");
+    }
+
+    @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
         for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {
             final String prefix = c;
