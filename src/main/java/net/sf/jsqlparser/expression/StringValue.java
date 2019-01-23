@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -41,18 +41,18 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
     B - Cloud Spanner Byte string
     RB - Cloud Spanner Raw Byte string 
      */
-    public static final List<String> ALLOWED_PREFIXES = Arrays.asList("N", "U", "E", "R", "B", "RB");
+    public static final List<String> ALLOWED_PREFIXES = Arrays.asList("N", "U", "E", "R", "B", "RB", "_utf8");
 
     public StringValue(String escapedValue) {
-        // romoving "'" at the start and at the end
+        // removing "'" at the start and at the end
         if (escapedValue.startsWith("'") && escapedValue.endsWith("'")) {
             value = escapedValue.substring(1, escapedValue.length() - 1);
             return;
         }
 
         if (escapedValue.length() > 2) {
-            for(String p : ALLOWED_PREFIXES) {
-                if(escapedValue.length() > p.length() && escapedValue.substring(0, p.length()).equalsIgnoreCase(p) && escapedValue.charAt(p.length())=='\'') {
+            for (String p : ALLOWED_PREFIXES) {
+                if (escapedValue.length() > p.length() && escapedValue.substring(0, p.length()).equalsIgnoreCase(p) && escapedValue.charAt(p.length()) == '\'') {
                     this.prefix = p;
                     value = escapedValue.substring(p.length() + 1, escapedValue.length() - 1);
                     return;

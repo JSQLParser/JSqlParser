@@ -57,6 +57,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 * support of **describe**
 * support of **explain**
+* support of prefix **_utf8'strings'**
 
 ## Extensions of JSqlParser releases
 
