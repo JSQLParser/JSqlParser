@@ -521,12 +521,15 @@ SetStatement Set(): {
     String name;
     Expression value;
     boolean useEqual = false;
+    SetStatement set;
 }
 {
     <K_SET> name = RelObjectNameExt() ["=" { useEqual=true; } ] value=SimpleExpression()
-    {
-        return new SetStatement(name,value).setUseEqual(useEqual);
-    }
+    { set = new SetStatement(name,value).setUseEqual(useEqual); }
+    ( { useEqual=false; } "," name = RelObjectNameExt() ["=" { useEqual=true; } ] value=SimpleExpression()
+        { set.add(name, value, useEqual); } )*
+
+    { return set; }
 }
 
 DescribeStatement Describe(): {

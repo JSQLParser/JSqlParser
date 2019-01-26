@@ -20,10 +20,6 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -31,25 +27,6 @@ import org.junit.Test;
  * @author toben
  */
 public class SetStatementTest {
-
-    public SetStatementTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     @Test
     public void testSimpleSet() throws JSQLParserException {
@@ -64,5 +41,10 @@ public class SetStatementTest {
     @Test
     public void testIssue373_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET tester 5");
+    }
+
+    @Test
+    public void testMultiValue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SET v=1, c=3");
     }
 }

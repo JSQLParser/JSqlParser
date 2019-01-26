@@ -39,55 +39,84 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 
 /**
  *
  * @author toben
  */
-public class SetStatement implements Statement {
+public final class SetStatement implements Statement {
 
-    private String name;
-    private Expression expression;
-    private boolean useEqual;
+    private final List<NameExpr> values = new ArrayList<>();
 
     public SetStatement(String name, Expression expression) {
-        this.name = name;
-        this.expression = expression;
+        add(name, expression, true);
+    }
+
+    public void add(String name, Expression expression, boolean useEqual) {
+        values.add(new NameExpr(name, expression, useEqual));
     }
 
     public boolean isUseEqual() {
-        return useEqual;
+        return values.get(0).useEqual;
     }
 
     public SetStatement setUseEqual(boolean useEqual) {
-        this.useEqual = useEqual;
+        values.get(0).useEqual = useEqual;
         return this;
     }
 
     public String getName() {
-        return name;
+        return values.get(0).name;
     }
 
     public void setName(String name) {
-        this.name = name;
+        values.get(0).name = name;
     }
 
     public Expression getExpression() {
-        return expression;
+        return values.get(0).expression;
     }
 
     public void setExpression(Expression expression) {
-        this.expression = expression;
+        values.get(0).expression = expression;
+    }
+
+    private String toString(NameExpr ne) {
+        return "SET " + ne.name + (ne.useEqual ? " = " : " ") + ne.expression.toString();
     }
 
     @Override
     public String toString() {
-        return "SET " + name + (useEqual ? " = " : " ") + expression.toString();
+        StringBuilder b = new StringBuilder("SET ");
+
+        for (NameExpr ne : values) {
+            if (b.length() != 4) {
+                b.append(", ");
+            }
+            b.append(toString(ne));
+        }
+
+        return b.toString();
     }
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
+    }
+
+    static class NameExpr {
+
+        private String name;
+        private Expression expression;
+        private boolean useEqual;
+
+        public NameExpr(String name, Expression expr, boolean useEqual) {
+            this.name = name;
+            this.expression = expr;
+            this.useEqual = useEqual;
+        }
     }
 }
