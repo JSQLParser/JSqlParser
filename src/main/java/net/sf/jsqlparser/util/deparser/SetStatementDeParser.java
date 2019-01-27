@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2015 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -49,12 +49,20 @@ public class SetStatementDeParser {
     }
 
     public void deParse(SetStatement set) {
-        buffer.append("SET ").append(set.getName());
-        if (set.isUseEqual()) {
-            buffer.append(" =");
+        buffer.append("SET ");
+
+        for (int i = 0; i < set.getCount(); i++) {
+            if (i > 0) {
+                buffer.append(", ");
+            }
+            buffer.append(set.getName(i));
+            if (set.isUseEqual(i)) {
+                buffer.append(" =");
+            }
+            buffer.append(" ");
+            set.getExpression(i).accept(expressionVisitor);
         }
-        buffer.append(" ");
-        set.getExpression().accept(expressionVisitor);
+
     }
 
     public ExpressionVisitor getExpressionVisitor() {

@@ -45,6 +45,6 @@ public class SetStatementTest {
 
     @Test
     public void testMultiValue() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SET v=1, c=3");
+        assertSqlCanBeParsedAndDeparsed("SET v = 1, c = 3");
     }
 }

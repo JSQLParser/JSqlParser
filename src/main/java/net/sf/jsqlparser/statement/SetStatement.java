@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2015 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,24 +18,6 @@
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
- */
- /*
- * Copyright (C) 2015 JSQLParser.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
  */
 package net.sf.jsqlparser.statement;
 
@@ -59,33 +41,65 @@ public final class SetStatement implements Statement {
         values.add(new NameExpr(name, expression, useEqual));
     }
 
-    public boolean isUseEqual() {
-        return values.get(0).useEqual;
+    public void remove(int idx) {
+        values.remove(idx);
     }
 
-    public SetStatement setUseEqual(boolean useEqual) {
-        values.get(0).useEqual = useEqual;
+    public int getCount() {
+        return values.size();
+    }
+
+    public boolean isUseEqual(int idx) {
+        return values.get(idx).useEqual;
+    }
+
+    public boolean isUseEqual() {
+        return isUseEqual(0);
+    }
+
+    public SetStatement setUseEqual(int idx, boolean useEqual) {
+        values.get(idx).useEqual = useEqual;
         return this;
     }
 
+    public SetStatement setUseEqual(boolean useEqual) {
+        return setUseEqual(0, useEqual);
+    }
+
     public String getName() {
-        return values.get(0).name;
+        return getName(0);
+    }
+
+    public String getName(int idx) {
+        return values.get(idx).name;
     }
 
     public void setName(String name) {
-        values.get(0).name = name;
+        setName(0, name);
+    }
+
+    public void setName(int idx, String name) {
+        values.get(idx).name = name;
+    }
+
+    public Expression getExpression(int idx) {
+        return values.get(idx).expression;
     }
 
     public Expression getExpression() {
-        return values.get(0).expression;
+        return getExpression(0);
+    }
+
+    public void setExpression(int idx, Expression expression) {
+        values.get(idx).expression = expression;
     }
 
     public void setExpression(Expression expression) {
-        values.get(0).expression = expression;
+        setExpression(0, expression);
     }
 
     private String toString(NameExpr ne) {
-        return "SET " + ne.name + (ne.useEqual ? " = " : " ") + ne.expression.toString();
+        return ne.name + (ne.useEqual ? " = " : " ") + ne.expression.toString();
     }
 
     @Override
