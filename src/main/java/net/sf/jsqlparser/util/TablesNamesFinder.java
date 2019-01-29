@@ -91,6 +91,8 @@ import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
+import net.sf.jsqlparser.expression.operators.relational.TSQLLeftJoin;
+import net.sf.jsqlparser.expression.operators.relational.TSQLRightJoin;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Block;
@@ -858,5 +860,15 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(ExplainStatement explain) {
         explain.getStatement().accept(this);
+    }
+
+    @Override
+    public void visit(TSQLLeftJoin tsqlLeftJoin) {
+        visitBinaryExpression(tsqlLeftJoin);
+    }
+
+    @Override
+    public void visit(TSQLRightJoin tsqlRightJoin) {
+        visitBinaryExpression(tsqlRightJoin);
     }
 }

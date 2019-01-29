@@ -2182,6 +2182,8 @@ Expression RegularCondition() #RegularCondition:
     ">" { result = new GreaterThan(); }
     | "<" { result = new MinorThan(); }
     | "=" { result = new EqualsTo(); }
+    | "*=" { result = new TSQLLeftJoin(); }
+    | "=*" { result = new TSQLRightJoin(); }
     | token=<OP_GREATERTHANEQUALS> { result = new GreaterThanEquals(token.image); }
     | token=<OP_MINORTHANEQUALS> { result = new MinorThanEquals(token.image); }
     | token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }

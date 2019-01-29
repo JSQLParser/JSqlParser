@@ -1811,11 +1811,23 @@ public class SelectTest {
     }
 
     @Test
+    public void testTSQLJoin() throws JSQLParserException {
+        String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a *= tabelle2.b";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testTSQLJoin2() throws JSQLParserException {
+        String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a =* tabelle2.b";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+    
+    @Test
     public void testOracleJoin() throws JSQLParserException {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-
+    
     @Test
     public void testOracleJoin2() throws JSQLParserException {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a(+) = tabelle2.b";

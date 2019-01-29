@@ -48,6 +48,8 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
+import net.sf.jsqlparser.expression.operators.relational.TSQLLeftJoin;
+import net.sf.jsqlparser.expression.operators.relational.TSQLRightJoin;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
@@ -179,5 +181,9 @@ public interface ExpressionVisitor {
     void visit(DateTimeLiteralExpression literal);
 
     public void visit(NotExpression aThis);
+
+    public void visit(TSQLLeftJoin tsqlLeftJoin);
+
+    public void visit(TSQLRightJoin tsqlRightJoin);
 
 }
