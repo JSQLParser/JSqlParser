@@ -23,6 +23,8 @@ package net.sf.jsqlparser.statement.insert;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
@@ -218,7 +220,11 @@ public class Insert implements Statement {
         sql.append("INTO ");
         sql.append(table).append(" ");
         if (columns != null) {
-            sql.append(PlainSelect.getStringList(columns, true, true)).append(" ");
+            List<String> simpleNamedColumns = Lists.newArrayListWithCapacity(columns.size());
+        	for (Column column : columns) {
+				simpleNamedColumns.add(column.getName());
+			}
+            sql.append(PlainSelect.getStringList(simpleNamedColumns, true, true)).append(" ");
         }
 
         if (useValues) {
