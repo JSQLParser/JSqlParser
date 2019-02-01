@@ -55,6 +55,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 2.0
 
+* support of named parameters for execute: **EXEC procedure @param = 'foo'**
 * support multivalue set statement
 * support of **describe**
 * support of **explain**

@@ -80,4 +80,24 @@ public class ExecuteTest {
     public void testAcceptCallWithParenthesis() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CALL myproc ('a', 2, 'b')");
     }
+
+    @Test
+    public void testAcceptExecNamesParameters() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("EXEC procedure @param");
+    }
+
+    @Test
+    public void testAcceptExecNamesParameters2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("EXEC procedure @param = 1");
+    }
+
+    @Test
+    public void testAcceptExecNamesParameters3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("EXEC procedure @param = 'foo'");
+    }
+
+    @Test
+    public void testAcceptExecNamesParameters4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("EXEC procedure @param = 'foo', @param2 = 'foo2'");
+    }
 }
