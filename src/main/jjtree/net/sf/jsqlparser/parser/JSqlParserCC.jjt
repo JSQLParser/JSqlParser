@@ -1726,7 +1726,7 @@ Join JoinerExpression() #JoinerExpression:
         | <K_CROSS> { join.setCross(true); } 
     ]
 
-          ( <K_JOIN> | "," { join.setSimple(true); } ) 
+          ( <K_JOIN> | "," { join.setSimple(true); } (<K_OUTER> { join.setOuter(true); } )? ) 
 
         right=FromItem()
 

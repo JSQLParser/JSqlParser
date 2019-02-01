@@ -963,7 +963,9 @@ public class SelectTest {
         statement = "SELECT * FROM foo AS f LEFT OUTER JOIN (bar AS b RIGHT OUTER JOIN baz AS z ON f.id = z.id) ON f.id = b.id";
         select = (Select) parserManager.parse(new StringReader(statement));
         assertStatementCanBeDeparsedAs(select, statement);
-
+        statement = "SELECT * FROM foo AS f, OUTER bar AS b WHERE f.id = b.id";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        assertStatementCanBeDeparsedAs(select, statement);
     }
 
     @Test
