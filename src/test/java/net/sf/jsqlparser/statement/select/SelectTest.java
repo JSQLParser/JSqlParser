@@ -3315,6 +3315,16 @@ public class SelectTest {
     }
 
     @Test
+    public void testNotProblem1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select * from col where not v in (1,2,3,4,5,6,7)");
+    }
+
+    @Test
+    public void testNotProblem2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select * from col where not func(5)");
+    }
+
+    @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
         for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {
             final String prefix = c;
