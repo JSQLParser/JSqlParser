@@ -1307,9 +1307,11 @@ public class SelectTest {
         String statement = "SELECT * FROM tab1 WHERE NOT a LIKE 'test'";
         Select select = (Select) parserManager.parse(new StringReader(statement));
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
-        assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).
+        assertTrue(plainSelect.getWhere() instanceof NotExpression);
+        NotExpression notExpr = (NotExpression) plainSelect.getWhere();
+        assertEquals("test", ((StringValue) ((LikeExpression) notExpr.getExpression()).
                 getRightExpression()).getValue());
-        assertEquals(true, (boolean) ((LikeExpression) plainSelect.getWhere()).isNot());
+        assertEquals(false, (boolean) ((LikeExpression) notExpr.getExpression()).isNot());
     }
 
     @Test
@@ -1664,7 +1666,7 @@ public class SelectTest {
         //the deparser delivers always a IS NOT NULL even for NOT a IS NULL
         String stmt = "SELECT * FROM test WHERE NOT a IS NULL";
         Statement parsed = parserManager.parse(new StringReader(stmt));
-        assertStatementCanBeDeparsedAs(parsed, "SELECT * FROM test WHERE a IS NOT NULL");
+        assertStatementCanBeDeparsedAs(parsed, "SELECT * FROM test WHERE NOT a IS NULL");
     }
 
     @Test
@@ -2803,16 +2805,15 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST(contact_id AS SIGNED INTEGER) FROM contact WHERE contact_id = 20");
     }
 
-    @Test
-    public void testWhereIssue240_notBoolean() {
-        try {
-            CCJSqlParserUtil.parse("SELECT count(*) FROM mytable WHERE 5");
-            fail("should not be parsed");
-        } catch (JSQLParserException ex) {
-            //expected to fail
-        }
-    }
-
+//    @Test
+//    public void testWhereIssue240_notBoolean() {
+//        try {
+//            CCJSqlParserUtil.parse("SELECT count(*) FROM mytable WHERE 5");
+//            fail("should not be parsed");
+//        } catch (JSQLParserException ex) {
+//            //expected to fail
+//        }
+//    }
     @Test
     public void testWhereIssue240_true() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE true");
@@ -3312,6 +3313,41 @@ public class SelectTest {
     @Test
     public void testTopKeyWord3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable top");
+    }
+
+    @Test
+    public void testNotProblem1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytab WHERE NOT v IN (1, 2, 3, 4, 5, 6, 7)");
+    }
+
+    @Test
+    public void testNotProblem2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytab WHERE NOT func(5)");
+    }
+
+    @Test
+    public void testCaseThenCondition() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE CASE WHEN a = 'c' THEN a IN (1, 2, 3) END = 1");
+    }
+
+    @Test
+    public void testCaseThenCondition2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE CASE WHEN a = 'c' THEN a IN (1, 2, 3) END");
+    }
+
+    @Test
+    public void testCaseThenCondition3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN a > 0 THEN b + a ELSE 0 END p FROM mytable");
+    }
+
+    @Test
+    public void testCaseThenCondition4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM col WHERE CASE WHEN a = 'c' THEN a IN (SELECT id FROM mytable) END");
+    }
+
+    @Test
+    public void testCaseThenCondition5() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM col WHERE CASE WHEN a = 'c' THEN a IN (SELECT id FROM mytable) ELSE b IN (SELECT id FROM mytable) END");
     }
 
     @Test
