@@ -2155,12 +2155,10 @@ Expression Condition():
 }
 {
     [ <K_NOT> { not = true; }]
-    (LOOKAHEAD(SQLCondition()) result=SQLCondition()
-    | LOOKAHEAD(RegularCondition()) result=RegularCondition()
-    | LOOKAHEAD(Function()) result=Function()
-    /* | <K_NOT> result=Column() { result = new NotExpression(result); } */
-    | result=Column()
-    | LOOKAHEAD({ "0".equals(getToken(1).image) || "1".equals(getToken(1).image) }) token=<S_LONG> { result = new LongValue(token.image); }
+    (
+        LOOKAHEAD(SQLCondition()) result=SQLCondition()
+        | LOOKAHEAD(RegularCondition()) result=RegularCondition()
+        | result=SimpleExpression()
     )
 
     { return not?new NotExpression(result):result; }
@@ -2968,7 +2966,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
             (LOOKAHEAD(RegularCondition()) switchExp=RegularCondition() | switchExp=BitwiseAndOr())
              ( clause=WhenThenValue() { whenClauses.add(clause); } )+
     )
-   [<K_ELSE> elseExp=SimpleExpression()]
+   [<K_ELSE> elseExp=Condition()]
     <K_END>
     {
         caseExp.setSwitchExpression(switchExp);
@@ -2985,7 +2983,8 @@ WhenClause WhenThenSearchCondition():
     Expression thenExp = null;
 }
 {
-    <K_WHEN> (LOOKAHEAD(Expression()) whenExp=Expression() | whenExp=SimpleExpression()) <K_THEN> thenExp=SimpleExpression()
+    <K_WHEN> (LOOKAHEAD(Expression()) whenExp=Expression() | whenExp=SimpleExpression()) 
+        <K_THEN> thenExp=Condition()
     {
        whenThen.setWhenExpression(whenExp);
        whenThen.setThenExpression(thenExp);
