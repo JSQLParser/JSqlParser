@@ -1307,9 +1307,11 @@ public class SelectTest {
         String statement = "SELECT * FROM tab1 WHERE NOT a LIKE 'test'";
         Select select = (Select) parserManager.parse(new StringReader(statement));
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
-        assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).
+        assertTrue(plainSelect.getWhere() instanceof NotExpression);
+        NotExpression notExpr = (NotExpression) plainSelect.getWhere();
+        assertEquals("test", ((StringValue) ((LikeExpression) notExpr.getExpression()).
                 getRightExpression()).getValue());
-        assertEquals(true, (boolean) ((LikeExpression) plainSelect.getWhere()).isNot());
+        assertEquals(false, (boolean) ((LikeExpression) notExpr.getExpression()).isNot());
     }
 
     @Test
@@ -1664,7 +1666,7 @@ public class SelectTest {
         //the deparser delivers always a IS NOT NULL even for NOT a IS NULL
         String stmt = "SELECT * FROM test WHERE NOT a IS NULL";
         Statement parsed = parserManager.parse(new StringReader(stmt));
-        assertStatementCanBeDeparsedAs(parsed, "SELECT * FROM test WHERE a IS NOT NULL");
+        assertStatementCanBeDeparsedAs(parsed, "SELECT * FROM test WHERE NOT a IS NULL");
     }
 
     @Test
@@ -3316,12 +3318,12 @@ public class SelectTest {
 
     @Test
     public void testNotProblem1() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("select * from col where not v in (1,2,3,4,5,6,7)");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM col WHERE NOT v IN (1, 2, 3, 4, 5, 6, 7)");
     }
 
     @Test
     public void testNotProblem2() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("select * from col where not func(5)");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM col WHERE NOT func(5)");
     }
 
     @Test

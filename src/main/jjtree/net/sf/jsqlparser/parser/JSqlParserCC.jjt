@@ -2151,17 +2151,19 @@ Expression Condition():
 {
     Expression result;
     Token token;
+    boolean not = false;
 }
 {
+    [ <K_NOT> { not = true; }]
     (LOOKAHEAD(SQLCondition()) result=SQLCondition()
     | LOOKAHEAD(RegularCondition()) result=RegularCondition()
     | LOOKAHEAD(Function()) result=Function()
-    | <K_NOT> result=Column() { result = new NotExpression(result); }
+    /* | <K_NOT> result=Column() { result = new NotExpression(result); } */
     | result=Column()
     | LOOKAHEAD({ "0".equals(getToken(1).image) || "1".equals(getToken(1).image) }) token=<S_LONG> { result = new LongValue(token.image); }
     )
 
-    { return result; }
+    { return not?new NotExpression(result):result; }
 }
 
 Expression RegularCondition() #RegularCondition:
@@ -2169,14 +2171,14 @@ Expression RegularCondition() #RegularCondition:
     Expression result = null;
     Expression leftExpression;
     Expression rightExpression;
-    boolean not = false;
+    //boolean not = false;
     int oracleJoin=EqualsTo.NO_ORACLE_JOIN;
     int oraclePrior=EqualsTo.NO_ORACLE_PRIOR;
     boolean binary = false;
 }
 {
     [ LOOKAHEAD(2) <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; }]
-    [ <K_NOT> { not = true; } ]
+    //[ <K_NOT> { not = true; } ]
     leftExpression=ComparisonItem() { result = leftExpression; }
 
     [ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
@@ -2216,8 +2218,8 @@ Expression RegularCondition() #RegularCondition:
         BinaryExpression regCond = (BinaryExpression) result;
         regCond.setLeftExpression(leftExpression);
         regCond.setRightExpression(rightExpression);
-        if (not)
-            regCond.setNot();
+        //if (not)
+        //    regCond.setNot();
 
         if (oracleJoin>0)
             ((SupportsOldOracleJoinSyntax)result).setOldOracleJoinSyntax(oracleJoin);
@@ -2300,18 +2302,19 @@ Expression LikeExpression() #LikeExpression:
     Expression rightExpression = null;
 }
 {
-    (
-        LOOKAHEAD(3) (
+    //(
+        //LOOKAHEAD(3) 
+        (
             leftExpression=SimpleExpression()
             [<K_NOT> { result.setNot(); } ] ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
             [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
         )
-        |
+   /*     |
         (
             [<K_NOT> { result.setNot(); } ] leftExpression=SimpleExpression() ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
             [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
         )
-    )
+    )*/
     {
         result.setLeftExpression(leftExpression);
         result.setRightExpression(rightExpression);
@@ -2327,9 +2330,9 @@ Expression IsNullExpression():
 }
 {
     (
-    <K_NOT> { result.setNot(true); } leftExpression=SimpleExpression() 
+    /* <K_NOT> { result.setNot(true); } leftExpression=SimpleExpression() 
         ( <K_ISNULL> { result.setUseIsNull(true); } | <K_IS> <K_NULL> )
-    |
+    | */
     leftExpression=SimpleExpression() 
         (<K_ISNULL> { result.setUseIsNull(true); } | <K_IS> [<K_NOT> { result.setNot(true); } ] <K_NULL> )
     )
@@ -2346,7 +2349,8 @@ Expression ExistsExpression():
     Expression rightExpression = null;
 }
 {
-    [<K_NOT> { result.setNot(true); } ] <K_EXISTS> rightExpression=SimpleExpression()
+    // [<K_NOT> { result.setNot(true); } ] 
+    <K_EXISTS> rightExpression=SimpleExpression()
     {
         result.setRightExpression(rightExpression);
         return result;
