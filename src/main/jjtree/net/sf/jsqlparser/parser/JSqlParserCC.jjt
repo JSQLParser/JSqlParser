@@ -2243,7 +2243,7 @@ Expression SQLCondition():
     { return result; }
 }
 
-Expression InExpression() :
+Expression InExpression() #InExpression :
 {
     InExpression result = new InExpression();
     ItemsList leftItemsList = null;
@@ -2265,6 +2265,7 @@ Expression InExpression() :
     [<K_NOT> { result.setNot(true); } ] <K_IN> "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")"
     {
         result.setRightItemsList(rightItemsList);
+        linkAST(result,jjtThis);
         return result;
     }
 }
@@ -2349,7 +2350,7 @@ ExpressionList SQLExpressionList():
     }
 }
 
-ExpressionList SimpleExpressionList():
+ExpressionList SimpleExpressionList() #ExpressionList:
 {
     ExpressionList retval = new ExpressionList();
     List<Expression> expressions = new ArrayList<Expression>();
