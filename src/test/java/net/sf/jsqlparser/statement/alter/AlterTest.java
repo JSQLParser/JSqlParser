@@ -1,18 +1,18 @@
 package net.sf.jsqlparser.statement.alter;
 
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
-import static org.junit.Assert.*;
-
 import java.util.Arrays;
 import java.util.List;
-
-import org.junit.Test;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 public class AlterTest {
 
