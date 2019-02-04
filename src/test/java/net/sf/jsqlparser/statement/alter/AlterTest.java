@@ -1,18 +1,18 @@
 package net.sf.jsqlparser.statement.alter;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
+import static org.junit.Assert.*;
+
 import java.util.Arrays;
 import java.util.List;
+
+import org.junit.Test;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
 public class AlterTest {
 
@@ -260,6 +260,24 @@ public class AlterTest {
     public void testAlterTableAlterColumn() throws JSQLParserException {
       // http://www.postgresqltutorial.com/postgresql-change-column-type/
       assertSqlCanBeParsedAndDeparsed("ALTER TABLE table_name ALTER COLUMN column_name_1 TYPE TIMESTAMP, ALTER COLUMN column_name_2 TYPE BOOLEAN");
+    }
+
+    @Test
+    public void testAlterTableChangeColumn1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE COLUMN c1 c2 INT (10)");
+    }
+
+    @Test
+    public void testAlterTableChangeColumn2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE c1 c2 INT (10)");
+    }
+
+    @Test
+    public void testAlterTableChangeColumn3() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE tb_test CHANGE c1 c2 INT (10)");
+        Alter alter = (Alter) stmt;
+        assertEquals(AlterOperation.CHANGE, alter.getAlterExpressions().get(0).getOperation());
+        assertEquals("c1", alter.getAlterExpressions().get(0).getColOldName());
     }
 
     @Test
