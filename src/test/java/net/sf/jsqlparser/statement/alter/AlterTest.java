@@ -264,20 +264,20 @@ public class AlterTest {
 
     @Test
     public void testAlterTableChangeColumn1() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE COLUMN c1 c2 INT (10)");
+        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE tb_test CHANGE COLUMN c1 c2 INT (10)");
+        Alter alter = (Alter) stmt;
+        assertEquals(AlterOperation.CHANGE, alter.getAlterExpressions().get(0).getOperation());
+        assertEquals("c1", alter.getAlterExpressions().get(0).getColOldName());
+        assertEquals("COLUMN", alter.getAlterExpressions().get(0).getOptionalSpecifier());
     }
 
     @Test
     public void testAlterTableChangeColumn2() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE c1 c2 INT (10)");
-    }
-
-    @Test
-    public void testAlterTableChangeColumn3() throws JSQLParserException {
         Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE tb_test CHANGE c1 c2 INT (10)");
         Alter alter = (Alter) stmt;
         assertEquals(AlterOperation.CHANGE, alter.getAlterExpressions().get(0).getOperation());
         assertEquals("c1", alter.getAlterExpressions().get(0).getColOldName());
+        assertNull(alter.getAlterExpressions().get(0).getOptionalSpecifier());
     }
 
     @Test
