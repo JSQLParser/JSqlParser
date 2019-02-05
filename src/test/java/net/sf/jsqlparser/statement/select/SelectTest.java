@@ -966,6 +966,12 @@ public class SelectTest {
         statement = "SELECT * FROM foo AS f, OUTER bar AS b WHERE f.id = b.id";
         select = (Select) parserManager.parse(new StringReader(statement));
         assertStatementCanBeDeparsedAs(select, statement);
+        plainSelect = (PlainSelect) select.getSelectBody();
+        assertEquals(1, plainSelect.getJoins().size());
+        assertTrue(plainSelect.getJoins().get(0).isOuter());
+        assertTrue(plainSelect.getJoins().get(0).isSimple());
+        assertEquals("bar", ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
+        assertEquals("b", ((Table) plainSelect.getJoins().get(0).getRightItem()).getAlias().getName());
     }
 
     @Test
