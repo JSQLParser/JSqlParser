@@ -128,4 +128,17 @@ public class CCJSqlParserUtilTest {
                 + "---test");
         assertEquals("SELECT * FROM dual;\n", result.toString());
     }
+
+    @Test
+    public void testParseStatementIssue742() throws Exception {
+        Statements result = CCJSqlParserUtil.parseStatements("CREATE TABLE `table_name` (\n" +
+                "  `id` bigint(20) NOT NULL AUTO_INCREMENT,\n" +
+                "  `another_column_id` bigint(20) NOT NULL COMMENT 'column id as sent by SYSTEM',\n" +
+                "  PRIMARY KEY (`id`),\n" +
+                "  UNIQUE KEY `uk_another_column_id` (`another_column_id`)\n" +
+                ")");
+        assertEquals("CREATE TABLE `table_name` (`id` bigint (20) NOT NULL AUTO_INCREMENT, `another_column_id` " +
+                "bigint (20) NOT NULL COMMENT 'column id as sent by SYSTEM', PRIMARY KEY (`id`), UNIQUE KEY `uk_another_column_id` " +
+                "(`another_column_id`)", result.toString());
+    }
 }

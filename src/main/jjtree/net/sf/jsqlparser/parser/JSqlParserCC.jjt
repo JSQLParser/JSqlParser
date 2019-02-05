@@ -3584,6 +3584,8 @@ List<String> CreateParameter():
             tk=<K_IN> { param.add(tk.image); }
 			|
             tk=<K_TYPE> { param.add(tk.image); }
+			|
+            tk=<K_COMMENT> { param.add(tk.image); }
         )
     {return param;}
 }
