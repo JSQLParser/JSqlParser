@@ -55,8 +55,8 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     public Table(String schemaName, String name) {
-        setSchemaName(schemaName);
         setName(name);
+        setSchemaName(schemaName);
     }
 
     public Table(Database database, String schemaName, String name) {
