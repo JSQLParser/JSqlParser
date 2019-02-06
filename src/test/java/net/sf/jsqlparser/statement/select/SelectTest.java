@@ -2000,22 +2000,22 @@ public class SelectTest {
 
     @Test
     public void testAdditionalLettersGerman() throws JSQLParserException {
-        String stmt = "SELECT col�, col�, col� FROM testtable���";
+        String stmt = "SELECT colä, colö, colü FROM testtableäöü";
         assertSqlCanBeParsedAndDeparsed(stmt);
 
-        stmt = "SELECT colA, col�, col� FROM testtable���";
+        stmt = "SELECT colA, colÖ, colÜ FROM testtableÄÖÜ";
         assertSqlCanBeParsedAndDeparsed(stmt);
 
-        stmt = "SELECT �col FROM testtable���";
+        stmt = "SELECT Äcol FROM testtableÄÖÜ";
         assertSqlCanBeParsedAndDeparsed(stmt);
 
-        stmt = "SELECT �col� FROM testtable�";
+        stmt = "SELECT ßcolß FROM testtableß";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
     @Test
     public void testAdditionalLettersSpanish() throws JSQLParserException {
-        String stmt = "SELECT * FROM a�os";
+        String stmt = "SELECT * FROM años";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
