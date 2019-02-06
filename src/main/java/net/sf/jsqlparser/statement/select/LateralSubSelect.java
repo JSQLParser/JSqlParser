@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -11,11 +11,6 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
 
-/**
- * A lateral subselect followed by an alias.
- *
- * @author Tobias Warneke
- */
 public class LateralSubSelect implements FromItem {
 
     private SubSelect subSelect;

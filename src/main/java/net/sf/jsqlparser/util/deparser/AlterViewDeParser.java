@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -13,18 +13,11 @@ import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 
-/**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
- * {@link net.sf.jsqlparser.statement.create.view.AlterView}
- */
 public class AlterViewDeParser {
 
     protected StringBuilder buffer;
     private SelectVisitor selectVisitor;
 
-    /**
-     * @param buffer the buffer that will be filled with the select
-     */
     public AlterViewDeParser(StringBuilder buffer) {
         SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);

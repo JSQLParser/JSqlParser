@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -17,9 +17,6 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
-/**
- * A "CREATE TABLE" statement
- */
 public class CreateTable implements Statement {
 
     private Table table;
@@ -37,9 +34,6 @@ public class CreateTable implements Statement {
         statementVisitor.visit(this);
     }
 
-    /**
-     * The name of the table to be created
-     */
     public Table getTable() {
         return table;
     }
@@ -48,11 +42,6 @@ public class CreateTable implements Statement {
         this.table = table;
     }
 
-    /**
-     * Whether the table is unlogged or not (PostgreSQL 9.1+ feature)
-     *
-     * @return
-     */
     public boolean isUnlogged() {
         return unlogged;
     }

@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -14,10 +14,6 @@ import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
 
-/**
- * A list of named expressions, as in 
- * as in select substr('xyzzy' from 2 for 3)
- */
 public class NamedExpressionList implements ItemsList {
 
     private List<Expression> expressions;

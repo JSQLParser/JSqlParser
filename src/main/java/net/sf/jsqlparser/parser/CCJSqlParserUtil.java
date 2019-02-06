@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -16,11 +16,6 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
 
-/**
- * Toolfunctions to start and use JSqlParser.
- *
- * @author toben
- */
 public final class CCJSqlParserUtil {
 
     private CCJSqlParserUtil() {
@@ -72,13 +67,6 @@ public final class CCJSqlParserUtil {
         }
     }
 
-    /**
-     * Parse an expression.
-     *
-     * @param expression
-     * @return
-     * @throws JSQLParserException
-     */
     public static Expression parseExpression(String expression) throws JSQLParserException {
         return parseExpression(expression, true);
     }
@@ -98,13 +86,6 @@ public final class CCJSqlParserUtil {
         }
     }
 
-    /**
-     * Parse an conditional expression. This is the expression after a where clause.
-     *
-     * @param condExpr
-     * @return
-     * @throws JSQLParserException
-     */
     public static Expression parseCondExpression(String condExpr) throws JSQLParserException {
         return parseCondExpression(condExpr, true);
     }

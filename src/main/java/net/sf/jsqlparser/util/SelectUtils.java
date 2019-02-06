@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2014 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -26,11 +26,6 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
-/**
- * Utility function for select statements.
- *
- * @author toben
- */
 public final class SelectUtils {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
@@ -38,13 +33,6 @@ public final class SelectUtils {
     private SelectUtils() {
     }
 
-    /**
-     * Builds select expr1, expr2 from table.
-     *
-     * @param table
-     * @param expr
-     * @return
-     */
     public static Select buildSelectFromTableAndExpressions(Table table, Expression... expr) {
         SelectItem[] list = new SelectItem[expr.length];
         for (int i = 0; i < expr.length; i++) {
@@ -53,14 +41,6 @@ public final class SelectUtils {
         return buildSelectFromTableAndSelectItems(table, list);
     }
 
-    /**
-     * Builds select expr1, expr2 from table.
-     *
-     * @param table
-     * @param expr
-     * @return
-     * @throws net.sf.jsqlparser.JSQLParserException
-     */
     public static Select buildSelectFromTableAndExpressions(Table table, String... expr) throws JSQLParserException {
         SelectItem[] list = new SelectItem[expr.length];
         for (int i = 0; i < expr.length; i++) {

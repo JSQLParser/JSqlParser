@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.select;
 
 import java.io.*;
@@ -1991,22 +2000,22 @@ public class SelectTest {
 
     @Test
     public void testAdditionalLettersGerman() throws JSQLParserException {
-        String stmt = "SELECT colä, colö, colü FROM testtableäöü";
+        String stmt = "SELECT col�, col�, col� FROM testtable���";
         assertSqlCanBeParsedAndDeparsed(stmt);
 
-        stmt = "SELECT colA, colÖ, colÜ FROM testtableÄÖÜ";
+        stmt = "SELECT colA, col�, col� FROM testtable���";
         assertSqlCanBeParsedAndDeparsed(stmt);
 
-        stmt = "SELECT Äcol FROM testtableÄÖÜ";
+        stmt = "SELECT �col FROM testtable���";
         assertSqlCanBeParsedAndDeparsed(stmt);
 
-        stmt = "SELECT ßcolß FROM testtableß";
+        stmt = "SELECT �col� FROM testtable�";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
     @Test
     public void testAdditionalLettersSpanish() throws JSQLParserException {
-        String stmt = "SELECT * FROM años";
+        String stmt = "SELECT * FROM a�os";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
@@ -2597,9 +2606,6 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT 'ab\\'ab'");
     }
 
-    /**
-     * These are accepted due to reading one backslash and a double quote.
-     */
     @Test
     public void testIssue167_singleQuoteEscape2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT '\\'''");

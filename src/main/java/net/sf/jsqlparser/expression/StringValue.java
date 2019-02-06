@@ -1,4 +1,4 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
@@ -13,22 +13,11 @@ import java.util.Arrays;
 import java.util.List;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-/**
- * A string as in 'example_string'
- */
 public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
     private String value = "";
     private String prefix = null;
 
-    /*
-    N - SQLServer Unicode encoding
-    U - Oracle Unicode encoding
-    E - Postgresql Unicode encoding
-    R - Cloud Spanner Raw string
-    B - Cloud Spanner Byte string
-    RB - Cloud Spanner Raw Byte string 
-     */
     public static final List<String> ALLOWED_PREFIXES = Arrays.asList("N", "U", "E", "R", "B", "RB", "_utf8");
 
     public StringValue(String escapedValue) {

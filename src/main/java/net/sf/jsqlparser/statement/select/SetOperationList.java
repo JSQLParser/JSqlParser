@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -11,12 +11,6 @@ package net.sf.jsqlparser.statement.select;
 
 import java.util.List;
 
-/**
- * A database set operation. This operation consists of a list of plainSelects connected by set
- * operations (UNION,INTERSECT,MINUS,EXCEPT). All these operations have the same priority.
- *
- * @author tw
- */
 public class SetOperationList implements SelectBody {
 
     private List<SelectBody> selects;
@@ -120,9 +114,6 @@ public class SetOperationList implements SelectBody {
         return buffer.toString();
     }
 
-    /**
-     * list of set operations.
-     */
     public enum SetOperationType {
 
         INTERSECT,

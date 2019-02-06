@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -24,9 +24,6 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
-/**
- * The update statement.
- */
 public class Update implements Statement {
 
     private List<Table> tables;
@@ -64,21 +61,10 @@ public class Update implements Statement {
         where = expression;
     }
 
-    /**
-     * The {@link net.sf.jsqlparser.schema.Column}s in this update (as col1 and col2 in UPDATE
-     * col1='a', col2='b')
-     *
-     * @return a list of {@link net.sf.jsqlparser.schema.Column}s
-     */
     public List<Column> getColumns() {
         return columns;
     }
 
-    /**
-     * The {@link Expression}s in this update (as 'a' and 'b' in UPDATE col1='a', col2='b')
-     *
-     * @return a list of {@link Expression}s
-     */
     public List<Expression> getExpressions() {
         return expressions;
     }

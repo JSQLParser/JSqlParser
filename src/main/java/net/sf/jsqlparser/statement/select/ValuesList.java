@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -16,12 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import net.sf.jsqlparser.expression.Alias;
 
-/**
- * This is a container for a values item within a select statement. It holds some syntactical stuff
- * that differs from values within an insert statement.
- *
- * @author toben
- */
 public class ValuesList implements FromItem {
 
     private Alias alias;

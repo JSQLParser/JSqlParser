@@ -1,4 +1,4 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
@@ -11,10 +11,6 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.select.Select;
 
-/**
- *
- * @author tw
- */
 public class ExplainStatement implements Statement {
 
     private Select select;

@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -15,9 +15,6 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 
-/**
- * A join clause
- */
 public class Join extends ASTNodeAccessImpl {
 
     private boolean outer = false;
@@ -34,11 +31,6 @@ public class Join extends ASTNodeAccessImpl {
     private List<Column> usingColumns;
     private KSQLJoinWindow joinWindow;
 
-    /**
-     * Whether is a tab1,tab2 join
-     *
-     * @return true if is a "tab1,tab2" join
-     */
     public boolean isSimple() {
         return simple;
     }
@@ -47,11 +39,6 @@ public class Join extends ASTNodeAccessImpl {
         simple = b;
     }
 
-    /**
-     * Whether is a "INNER" join
-     *
-     * @return true if is a "INNER" join
-     */
     public boolean isInner() {
         return inner;
     }

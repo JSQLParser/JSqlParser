@@ -1,4 +1,4 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
@@ -13,10 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 
-/**
- *
- * @author toben
- */
 public final class SetStatement implements Statement {
 
     private final List<NameExpr> values = new ArrayList<>();

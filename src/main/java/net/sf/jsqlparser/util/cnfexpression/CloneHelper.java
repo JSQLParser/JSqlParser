@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2017 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -19,30 +19,8 @@ import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 
-/**
- * This class is mainly used for handling the cloning of an expression tree.
- * Note this is the shallow copy of the tree. That means I do not modify
- * or copy the expression other than these expressions:
- * AND, OR, NOT, (), MULTI-AND, MULTI-OR.
- * Since the CNF conversion only change the condition part of the tree. 
- * @author messfish
- *
- */
 class CloneHelper {
 
-    /**
-     * This method is used for changing the logical structure of the tree.
-     * The main method is to convert and operator and or operator to let
-     * them have multiple children (reflected in MultipleExpression.java
-     * from the conditional package). Note if the value from the conditional
-     * operator has a not attached to it we need to append an not operator
-     * ahead of it since the not operator needed to be pushed down during
-     * the second step. Also, I will leave out all the parenthesis expression
-     * which is connected to the conditional operator.
-     * @param express the expression that will be modified
-     * @return the modified expression.
-     *
-     */
     public Expression modify(Expression express) {
         if(express instanceof NotExpression) {
             return new NotExpression(modify(((NotExpression) express).getExpression()));
@@ -84,7 +62,6 @@ class CloneHelper {
                 return new NotExpression(modify(binary));
              }
         }
-        /* at this stage, there is no need to modify, just simply return. */
         return express;
     }
     

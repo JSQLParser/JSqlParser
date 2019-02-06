@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -127,26 +127,14 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
-/**
- * Find all used tables within an select statement.
- *
- * Override extractTableName method to modify the extracted table names (e.g. without schema).
- */
 public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor, StatementVisitor {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
     private List<String> tables;
     private boolean allowColumnProcessing = false;
 
-    /**
-     * There are special names, that are not table names but are parsed as tables. These names are
-     * collected here and are not included in the tables - names anymore.
-     */
     private List<String> otherItemNames;
 
-    /**
-     * Main entry for this Tool class. A list of found tables is returned.
-     */
     public List<String> getTableList(Statement statement) {
         init(false);
         statement.accept(this);

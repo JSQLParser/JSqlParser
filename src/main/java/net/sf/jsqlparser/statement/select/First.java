@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2015 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -11,13 +11,6 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.JdbcParameter;
 
-/**
- * A FIRST clause in the form [FIRST row_count] the alternative form [LIMIT row_count] is also
- * supported.
- *
- * Initial implementation was done for informix special syntax:
- * http://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqls.doc/ids_sqs_0156.htm
- */
 public class First {
 
     public enum Keyword {

@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -18,9 +18,6 @@ import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-/**
- * A subselect followed by an optional alias.
- */
 public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression, ItemsList {
 
     private SelectBody selectBody;

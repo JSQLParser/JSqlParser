@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -12,9 +12,6 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-/**
- * A limit clause in the form [LIMIT {[offset,] row_count) | (row_count | ALL) OFFSET offset}]
- */
 public class Limit extends ASTNodeAccessImpl {
 
     private Expression rowCount;
@@ -38,9 +35,6 @@ public class Limit extends ASTNodeAccessImpl {
         rowCount = l;
     }
 
-    /**
-     * @return true if the limit is "LIMIT ALL [OFFSET ...])
-     */
     public boolean isLimitAll() {
         return limitAll;
     }
@@ -49,9 +43,6 @@ public class Limit extends ASTNodeAccessImpl {
         limitAll = b;
     }
 
-    /**
-     * @return true if the limit is "LIMIT NULL [OFFSET ...])
-     */
     public boolean isLimitNull() {
         return limitNull;
     }

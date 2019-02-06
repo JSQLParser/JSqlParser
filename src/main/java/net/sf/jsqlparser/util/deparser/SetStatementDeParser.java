@@ -1,4 +1,4 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
@@ -17,12 +17,6 @@ public class SetStatementDeParser {
     protected StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
 
-    /**
-     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share
-     * the same<br>
-     * StringBuilder (buffer parameter) as this object in order to work
-     * @param buffer the buffer that will be filled with the select
-     */
     public SetStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
         this.buffer = buffer;
         this.expressionVisitor = expressionVisitor;

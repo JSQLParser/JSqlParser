@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -16,9 +16,6 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
-/**
- * A "CREATE VIEW" statement
- */
 public class CreateView implements Statement {
 
     private Table view;
@@ -34,11 +31,6 @@ public class CreateView implements Statement {
         statementVisitor.visit(this);
     }
 
-    /**
-     * In the syntax tree, a view looks and acts just like a Table.
-     *
-     * @return The name of the view to be created.
-     */
     public Table getView() {
         return view;
     }
@@ -47,9 +39,6 @@ public class CreateView implements Statement {
         this.view = view;
     }
 
-    /**
-     * @return was "OR REPLACE" specified?
-     */
     public boolean isOrReplace() {
         return orReplace;
     }

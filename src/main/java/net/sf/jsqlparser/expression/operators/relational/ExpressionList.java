@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -15,9 +15,6 @@ import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-/**
- * A list of expressions, as in SELECT A FROM TAB WHERE B IN (expr1,expr2,expr3)
- */
 public class ExpressionList implements ItemsList {
 
     private List<Expression> expressions;

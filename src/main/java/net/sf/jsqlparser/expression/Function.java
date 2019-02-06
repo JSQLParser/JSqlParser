@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -13,9 +13,6 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-/**
- * A function as MAX,COUNT...
- */
 public class Function extends ASTNodeAccessImpl implements Expression {
 
     private String name;
@@ -32,11 +29,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         expressionVisitor.visit(this);
     }
 
-    /**
-     * The name of he function, i.e. "MAX"
-     *
-     * @return the name of he function
-     */
     public String getName() {
         return name;
     }
@@ -45,11 +37,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         name = string;
     }
 
-    /**
-     * true if the parameter to the function is "*"
-     *
-     * @return true if the parameter to the function is "*"
-     */
     public boolean isAllColumns() {
         return allColumns;
     }

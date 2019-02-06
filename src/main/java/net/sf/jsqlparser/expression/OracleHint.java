@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -14,11 +14,6 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Oracle Hint Expression
- *
- * @author valdo
- */
 public class OracleHint extends ASTNodeAccessImpl implements Expression {
 
     private static final Pattern SINGLE_LINE = Pattern.compile("--\\+ *([^ ].*[^ ])");
@@ -74,7 +69,6 @@ public class OracleHint extends ASTNodeAccessImpl implements Expression {
         if (singleLine) {
             return "--+ " + value + "\n";
         } else {
-            return "/*+ " + value + " */";
         }
     }
 

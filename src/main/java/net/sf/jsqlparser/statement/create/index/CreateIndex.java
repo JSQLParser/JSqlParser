@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -15,11 +15,6 @@ import net.sf.jsqlparser.statement.create.table.*;
 
 import java.util.*;
 
-/**
- * A "CREATE INDEX" statement
- *
- * @author Raymond Augé
- */
 public class CreateIndex implements Statement {
 
     private Table table;
@@ -30,9 +25,6 @@ public class CreateIndex implements Statement {
         statementVisitor.visit(this);
     }
 
-    /**
-     * The index to be created
-     */
     public Index getIndex() {
         return index;
     }
@@ -41,9 +33,6 @@ public class CreateIndex implements Statement {
         this.index = index;
     }
 
-    /**
-     * The table on which the index is to be created
-     */
     public Table getTable() {
         return table;
     }

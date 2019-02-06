@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -18,10 +18,6 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
- * {@link net.sf.jsqlparser.statement.select.Select}
- */
 public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     protected StringBuilder buffer = new StringBuilder();
@@ -30,12 +26,6 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     public SelectDeParser() {
     }
 
-    /**
-     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse expressions. It has to share
-     * the same<br>
-     * StringBuilder (buffer parameter) as this object in order to work
-     * @param buffer the buffer that will be filled with the select
-     */
     public SelectDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
         this.buffer = buffer;
         this.expressionVisitor = expressionVisitor;

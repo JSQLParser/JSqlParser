@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -24,10 +24,6 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
-/**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) an
- * {@link net.sf.jsqlparser.statement.insert.Insert}
- */
 public class InsertDeParser implements ItemsListVisitor {
 
     protected StringBuilder buffer;
@@ -37,15 +33,6 @@ public class InsertDeParser implements ItemsListVisitor {
     public InsertDeParser() {
     }
 
-    /**
-     * @param expressionVisitor a {@link ExpressionVisitor} to de-parse
-     * {@link net.sf.jsqlparser.expression.Expression}s. It has to share the same<br>
-     * StringBuilder (buffer parameter) as this object in order to work
-     * @param selectVisitor a {@link SelectVisitor} to de-parse {@link net.sf.jsqlparser.statement.select.Select}s. It
-     * has to share the same<br>
-     * StringBuilder (buffer parameter) as this object in order to work
-     * @param buffer the buffer that will be filled with the insert
-     */
     public InsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
         this.buffer = buffer;
         this.expressionVisitor = expressionVisitor;

@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -20,9 +20,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * The core of a "SELECT" statement (no UNION, no ORDER BY)
- */
 public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     private Distinct distinct = null;
@@ -58,11 +55,6 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.useBrackets = useBrackets;
     }
 
-    /**
-     * The {@link FromItem} in this query
-     *
-     * @return the {@link FromItem}
-     */
     public FromItem getFromItem() {
         return fromItem;
     }
@@ -71,11 +63,6 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return intoTables;
     }
 
-    /**
-     * The {@link SelectItem}s in this query (for example the A,B,C in "SELECT A,B,C")
-     *
-     * @return a list of {@link SelectItem}s
-     */
     public List<SelectItem> getSelectItems() {
         return selectItems;
     }

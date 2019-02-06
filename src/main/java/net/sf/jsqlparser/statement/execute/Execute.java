@@ -1,4 +1,4 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
@@ -15,10 +15,6 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-/**
- *
- * @author toben
- */
 public class Execute implements Statement {
 
     private EXEC_TYPE execType = EXEC_TYPE.EXECUTE;

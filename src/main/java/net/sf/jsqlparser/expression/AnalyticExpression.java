@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -15,14 +15,6 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
-/**
- * Analytic function. The name of the function is variable but the parameters following the special
- * analytic function path. e.g. row_number() over (order by test). Additional there can be an
- * expression for an analytical aggregate like sum(col) or the "all collumns" wildcard like
- * count(*).
- *
- * @author tw
- */
 public class AnalyticExpression extends ASTNodeAccessImpl implements Expression {
 
     private final OrderByClause orderBy = new OrderByClause();

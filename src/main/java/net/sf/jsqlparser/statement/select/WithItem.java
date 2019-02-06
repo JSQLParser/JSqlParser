@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -11,9 +11,6 @@ package net.sf.jsqlparser.statement.select;
 
 import java.util.List;
 
-/**
- * One of the parts of a "WITH" clause of a "SELECT" statement
- */
 public class WithItem implements SelectBody {
 
     private String name;
@@ -21,11 +18,6 @@ public class WithItem implements SelectBody {
     private SelectBody selectBody;
     private boolean recursive;
 
-    /**
-     * The name of this WITH item (for example, "myWITH" in "WITH myWITH AS (SELECT A,B,C))"
-     *
-     * @return the name of this WITH
-     */
     public String getName() {
         return name;
     }
@@ -42,11 +34,6 @@ public class WithItem implements SelectBody {
         this.recursive = recursive;
     }
 
-    /**
-     * The {@link SelectBody} of this WITH item is the part after the "AS" keyword
-     *
-     * @return {@link SelectBody} of this WITH item
-     */
     public SelectBody getSelectBody() {
         return selectBody;
     }

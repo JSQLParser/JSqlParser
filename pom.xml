@@ -142,9 +142,6 @@
                     <canUpdateDescription>false</canUpdateDescription>
                     <licenseName>dual_lgpl_ap2</licenseName>
                     <licenseResolver>${project.baseUri}/src/license</licenseResolver>
-                    <roots>
-                        <root>src/main/java</root>
-                    </roots>
                 </configuration>
                 <executions>
                     <execution>

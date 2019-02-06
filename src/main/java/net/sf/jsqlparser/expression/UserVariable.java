@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2015 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -11,21 +11,11 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-/**
- * Simple uservariables like @test.
- *
- * @author aud
- */
 public class UserVariable extends ASTNodeAccessImpl implements Expression {
 
     private String name;
     private boolean doubleAdd = false;
 
-    /**
-     * The name of the parameter
-     *
-     * @return the name of the parameter
-     */
     public String getName() {
         return name;
     }

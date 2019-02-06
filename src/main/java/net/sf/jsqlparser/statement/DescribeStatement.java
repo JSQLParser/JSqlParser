@@ -1,4 +1,4 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
@@ -11,10 +11,6 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.schema.Table;
 
-/**
- *
- * @author tw
- */
 public class DescribeStatement implements Statement {
 
     private Table table;

@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2017 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -16,11 +16,6 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-/**
- * This is a helper class that mainly used for handling the CNF conversion.
- * @author messfish
- *
- */
 public abstract class MultipleExpression extends ASTNodeAccessImpl implements Expression {
 
     private final List<Expression> childlist;

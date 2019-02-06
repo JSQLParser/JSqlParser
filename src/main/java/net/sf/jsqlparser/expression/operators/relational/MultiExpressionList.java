@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -15,12 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 
-/**
- * A list of ExpressionList items. e.g. multi values of insert statements. This one allows only
- * equally sized ExpressionList.
- *
- * @author toben
- */
 public class MultiExpressionList implements ItemsList {
 
     private List<ExpressionList> exprList;

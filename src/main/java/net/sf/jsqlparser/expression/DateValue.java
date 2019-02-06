@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -13,9 +13,6 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.sql.Date;
 
-/**
- * A Date in the form {d 'yyyy-mm-dd'}
- */
 public class DateValue extends ASTNodeAccessImpl implements Expression {
 
     private Date value;
