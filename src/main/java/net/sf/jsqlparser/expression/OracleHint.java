@@ -9,10 +9,9 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class OracleHint extends ASTNodeAccessImpl implements Expression {
 
@@ -69,6 +68,7 @@ public class OracleHint extends ASTNodeAccessImpl implements Expression {
         if (singleLine) {
             return "--+ " + value + "\n";
         } else {
+            return "/*+ " + value + " */";
         }
     }
 
