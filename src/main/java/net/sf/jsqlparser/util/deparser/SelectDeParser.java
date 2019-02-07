@@ -21,7 +21,6 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.*;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.*;
@@ -187,6 +186,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
                 // wait's toString will do the formatting for us
                 buffer.append(plainSelect.getWait());
             }
+        }
+        if (plainSelect.getOptimizeFor() != null) {
+            deparseOptimizeFor(plainSelect.getOptimizeFor());
         }
         if (plainSelect.isUseBrackets()) {
             buffer.append(")");
@@ -478,5 +480,11 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     @Override
     public void visit(ValuesStatement values) {
         new ValuesStatementDeParser(expressionVisitor, buffer).deParse(values);
+    }
+
+    private void deparseOptimizeFor(OptimizeFor optimizeFor) {
+        buffer.append(" OPTIMIZE FOR ");
+        buffer.append(optimizeFor.getRowCount());
+        buffer.append(" ROWS");
     }
 }

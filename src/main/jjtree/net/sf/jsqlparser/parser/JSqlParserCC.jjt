@@ -249,6 +249,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ORDER:"ORDER">
 |   <K_OUTER:"OUTER">
 |   <K_OVER:"OVER">
+|   <K_OPTIMIZE: "OPTIMIZE" >
 |   <K_PARTITION:"PARTITION">
 |   <K_PERCENT:"PERCENT">
 |   <K_PIVOT:"PIVOT">
@@ -1097,7 +1098,7 @@ String RelObjectNameExt():
   String result=null;
 } 
 {
-    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> | tk=<K_DOUBLE> | tk=<K_IF>)
+    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> | tk=<K_DOUBLE> | tk=<K_IF> | <K_OPTIMIZE>)
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -1181,6 +1182,7 @@ PlainSelect PlainSelect() #PlainSelect:
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
+    OptimizeFor optimize = null;
     Top top = null;
         Skip skip = null;
         First first = null;
@@ -1189,6 +1191,7 @@ PlainSelect PlainSelect() #PlainSelect:
     Table updateTable = null;
     Wait wait = null;
     boolean mySqlSqlCalcFoundRows = false;
+    Token token;
 }
 {
     <K_SELECT>
@@ -1242,6 +1245,8 @@ PlainSelect PlainSelect() #PlainSelect:
     [ <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
         [ <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ]
         [ LOOKAHEAD(<K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ] ]
+
+    [LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
 
     {
         plainSelect.setSelectItems(selectItems);
@@ -1992,6 +1997,18 @@ Fetch Fetch():
         )
     {
         return fetch;
+    }
+}
+
+OptimizeFor OptimizeFor():
+{
+    Token token;
+    LongValue value;
+}
+{
+    <K_OPTIMIZE> <K_FOR> token=<S_LONG> <K_ROWS> { value = new LongValue(token.image); }
+    {
+        return new OptimizeFor(value.getValue());
     }
 }
 

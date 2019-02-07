@@ -21,16 +21,15 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.schema.Table;
 
 /**
  * The core of a "SELECT" statement (no UNION, no ORDER BY)
@@ -49,6 +48,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private Limit limit;
     private Offset offset;
     private Fetch fetch;
+    private OptimizeFor optimizeFor;
     private Skip skip;
     private First first;
     private Top top;
@@ -167,6 +167,14 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     public void setFetch(Fetch fetch) {
         this.fetch = fetch;
+    }
+
+    public OptimizeFor getOptimizeFor() {
+        return optimizeFor;
+    }
+
+    public void setOptimizeFor(OptimizeFor optimizeFor) {
+        this.optimizeFor = optimizeFor;
     }
 
     public Top getTop() {
@@ -376,6 +384,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
                     // Wait's toString will do the formatting for us
                     sql.append(wait);
                 }
+            }
+            if (optimizeFor != null) {
+                sql.append(optimizeFor);
             }
         } else {
             //without from

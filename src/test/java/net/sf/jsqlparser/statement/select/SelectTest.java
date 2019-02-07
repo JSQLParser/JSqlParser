@@ -3351,6 +3351,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testOptimizeForIssue348() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM EMP ORDER BY SALARY DESC OPTIMIZE FOR 20 ROWS");
+    }
+
+    @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
         for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {
             final String prefix = c;
