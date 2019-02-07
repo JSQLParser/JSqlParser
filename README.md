@@ -55,6 +55,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 2.0
 
+* support of **OPTIMIZE FOR 20 ROWS** like expressions
 * allowed conditions within **then** and **else** of a **case** statement
     * **SELECT * FROM mytable WHERE CASE WHEN a = 1 THEN b IN (1,2,3) ELSE c IN (1,2,3) END**
 * **change of parsing** for not within condition: outer not is represented now by NotExpression
