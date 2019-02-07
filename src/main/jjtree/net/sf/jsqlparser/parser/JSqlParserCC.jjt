@@ -158,6 +158,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CASE:"CASE">
 |   <K_CAST:"CAST">
 |   <K_CHARACTER:"CHARACTER">
+|   <K_CHANGE:"CHANGE">
 |   <K_CHECK:"CHECK">
 |   <K_CHAR:"CHAR">
 |   <K_COLUMN:"COLUMN">
@@ -3864,6 +3865,22 @@ AlterExpression AlterExpression():
 			 )
         )
         )
+    )
+    |
+    (<K_CHANGE>
+      {
+        alterExp.setOperation(AlterOperation.CHANGE);
+      }
+      (
+        <K_COLUMN> { alterExp.setOptionalSpecifier("COLUMN"); } | {}
+      )
+      (
+        (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>)
+        alterExpressionColumnDataType = AlterExpressionColumnDataType() {
+            alterExp.setColOldName(tk.image);
+            alterExp.addColDataType(alterExpressionColumnDataType);
+        }
+      )
     )
     |
     (<K_DROP>
