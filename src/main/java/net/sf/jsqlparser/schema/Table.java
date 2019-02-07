@@ -51,19 +51,18 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     public Table(String name) {
-        setIndex(NAME_IDX, name);
+        setName(name);
     }
 
     public Table(String schemaName, String name) {
-        setIndex(NAME_IDX, name);
-        setIndex(SCHEMA_IDX, schemaName);
+        setName(name);
+        setSchemaName(schemaName);
     }
 
     public Table(Database database, String schemaName, String name) {
-        setIndex(NAME_IDX, name);
-        setIndex(SCHEMA_IDX, schemaName);
-        setIndex(DATABASE_IDX, database.getDatabaseName());
-        setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
+        setName(name);
+        setSchemaName(schemaName);
+        setDatabase(database);
     }
 
     public Table(List<String> partItems) {
@@ -77,6 +76,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     public void setDatabase(Database database) {
         setIndex(DATABASE_IDX, database.getDatabaseName());
+        setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
     }
 
     public String getSchemaName() {
@@ -173,3 +173,4 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
                 + ((hint != null) ? hint.toString() : "");
     }
 }
+

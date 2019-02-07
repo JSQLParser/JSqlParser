@@ -37,7 +37,9 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class AlterExpression {
 
     private AlterOperation operation;
+    private String optionalSpecifier;
     private String columnName;
+    private String columnOldName;
     //private ColDataType dataType;
 
     private List<ColumnDataType> colDataTypeList;
@@ -64,6 +66,14 @@ public class AlterExpression {
 
     public void setOperation(AlterOperation operation) {
         this.operation = operation;
+    }
+
+    public String getOptionalSpecifier() {
+        return optionalSpecifier;
+    }
+
+    public void setOptionalSpecifier(String optionalSpecifier) {
+        this.optionalSpecifier = optionalSpecifier;
     }
 
     public boolean isOnDeleteCascade() {
@@ -135,6 +145,14 @@ public class AlterExpression {
 
     public void setColumnName(String columnName) {
         this.columnName = columnName;
+    }
+
+    public String getColOldName() {
+        return columnOldName;
+    }
+
+    public void setColOldName(String columnOldName) {
+        this.columnOldName = columnOldName;
     }
 
     public String getConstraintName() {
@@ -214,7 +232,12 @@ public class AlterExpression {
         if (columnName != null) {
             b.append("COLUMN ").append(columnName);
         } else if (getColDataTypeList() != null) {
-            if (colDataTypeList.size() > 1) {
+            if(operation == AlterOperation.CHANGE) {
+                if(optionalSpecifier != null) {
+                    b.append(optionalSpecifier).append(" ");
+                }
+                b.append(columnOldName).append(" ");
+            } else if (colDataTypeList.size() > 1) {
                 b.append("(");
             } else {
                 b.append("COLUMN ");
