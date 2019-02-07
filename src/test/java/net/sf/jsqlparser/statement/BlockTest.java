@@ -23,6 +23,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -76,4 +77,18 @@ public class BlockTest {
                 + "", stmts.toString());
 
     }
+    @Test
+    public void testBlock3() throws JSQLParserException {
+        Statements stmts = CCJSqlParserUtil.parseStatements("begin\nselect * from feature;\nend");
+        Block block =(Block) stmts.getStatements().get(0);
+        assertFalse(block.getStatements().getStatements().isEmpty());
+    }
+    @Test
+    public void testBlockToStringIsNullSafe() throws JSQLParserException {
+        Block block = new Block();
+        block.setStatements(null);
+        assertEquals("BEGIN\n"
+                 + "END", block.toString());
+    }
+
 }
