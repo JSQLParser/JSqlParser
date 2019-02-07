@@ -281,6 +281,16 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableChangeColumn3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE COLUMN c1 c2 INT (10)");
+    }
+
+    @Test
+    public void testAlterTableChangeColumn4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE c1 c2 INT (10)");
+    }
+
+    @Test
     public void testAlterTableAddColumnWithZone() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 timestamp with time zone");
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 timestamp without time zone");
