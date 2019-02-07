@@ -1,3 +1,12 @@
+---
+-- #%L
+-- JSQLParser library
+-- %%
+-- Copyright (C) 2004 - 2019 JSQLParser
+-- %%
+-- Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+-- #L%
+---
 with
   org_chart (eid, emp_last, mgr_id, reportlevel, salary, job_id) as
   (

@@ -135,11 +135,13 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>1.6</version>
+                <version>1.17</version>
                 <configuration>
                     <verbose>false</verbose>
                     <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
                     <canUpdateDescription>false</canUpdateDescription>
+                    <licenseName>dual_lgpl_ap2</licenseName>
+                    <licenseResolver>${project.baseUri}/src/license</licenseResolver>
                 </configuration>
                 <executions>
                     <execution>
@@ -148,12 +150,6 @@
                             <goal>update-file-header</goal>
                         </goals>
                         <phase>process-sources</phase>
-                        <configuration>
-                            <licenseName>lgpl_v2_1</licenseName>
-                            <roots>
-                                <root>src/main/java</root>
-                            </roots>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -401,7 +397,7 @@
                                         <module name="RedundantImport" />
                                         <module name="UnusedImports" />
                                         
-										<module name="WhitespaceAfter" />
+                                        <module name="WhitespaceAfter" />
 										
                                         <module name="NeedBraces" />
                                         <module name="UnnecessaryParentheses" />

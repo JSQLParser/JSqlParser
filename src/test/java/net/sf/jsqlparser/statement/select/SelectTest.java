@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.select;
 
 import java.io.*;
@@ -2597,9 +2606,6 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT 'ab\\'ab'");
     }
 
-    /**
-     * These are accepted due to reading one backslash and a double quote.
-     */
     @Test
     public void testIssue167_singleQuoteEscape2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT '\\'''");

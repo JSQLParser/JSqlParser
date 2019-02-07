@@ -1,3 +1,12 @@
+---
+-- #%L
+-- JSQLParser library
+-- %%
+-- Copyright (C) 2004 - 2019 JSQLParser
+-- %%
+-- Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+-- #L%
+---
 -- http://asktom.oracle.com/pls/asktom/f?p=100:11:0::::P11_QUESTION_ID:8912311513313
 select
   name, to_char(dt,'DD-MM-YYYY') dt, amt, cum_amt

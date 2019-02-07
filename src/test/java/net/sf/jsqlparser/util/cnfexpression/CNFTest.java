@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.util.cnfexpression;
 
 import static org.junit.Assert.*;
@@ -7,13 +16,6 @@ import org.junit.Test;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 
-/**
- * this class is mainly used for testing whether we generate the 
- * correct CNF form of an expression tree. We use the name of 
- * variables that is reflected in the steps defined in the class.
- * @author messfish
- *
- */
 public class CNFTest {
     
     /**

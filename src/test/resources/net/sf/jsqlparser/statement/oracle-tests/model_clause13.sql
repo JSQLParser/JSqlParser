@@ -1,3 +1,12 @@
+---
+-- #%L
+-- JSQLParser library
+-- %%
+-- Copyright (C) 2004 - 2019 JSQLParser
+-- %%
+-- Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+-- #L%
+---
 -- http://oracle101.blogspot.de/2008/08/oracle-model-clause.html
 select organisation,
 level1, nvl(level2,level1) as level2, nvl(level3,nvl(level2,level1)) as level3,

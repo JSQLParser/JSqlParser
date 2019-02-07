@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2017 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 2.1 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.util.cnfexpression;
@@ -31,187 +19,6 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 
-/**
- * This class handles the conversion from a normal expression tree into
- * the CNF form.
- *
- * Here is the definition of CNF form:
- * https://en.wikipedia.org/wiki/Conjunctive_normal_form
- *
- * Basically it will follow these steps:
- *
- * To help understanding, I will generate an example:
- * Here is the original tree:
- * OR
- *             / \
- * OR NOT
- *         / \ |
- * NOT H AND
- * | / \
- * NOT G OR
- * | / \
- * F H NOT
- * |
- * OR
- *                             / \
- * AND L
- *                           / \
- * ( ) ( )
- * | |
- * J K
- *
- * 1. rebuild the tree by replacing the "and" and "or" operators
- * (which are binary) into their counterparts node that could hold
- * multiple elements. Also, leave out the parenthesis node between the
- * conditional operators to make the tree uniform.
- *
- * After the transform, the result should be like this:
- * OR(M)
- *             / \
- * OR(M) NOT
- *         / \ |
- * NOT H AND(M)
- * | / \
- * NOT G OR(M)
- * | / \
- * F H NOT
- * |
- * OR(M)
- *                             / \
- * AND(M) L
- *                           / \
- * J K
- *
- * 2. push the not operators into the bottom of the expression. That
- * means the not operator will be the root of the expression tree
- * where no "and" or "or" exists. Be sure use the De Morgan's law
- * and double not law.
- *
- * How to use De Morgan law:
- * For example, here is the original expression tree:
- * NOT
- * |
- * AND(M)
- *              / \
- * G H
- *
- * After we use the De Morgan law, the result should be like this:
- * OR(M)
- *              / \
- * NOT NOT
- * | |
- * G H
- *
- * After the transform, the result should be like this:
- * OR(M)
- *              / \
- * OR(M) OR(M)
- *          / \ / \
- * F H NOT AND(M)
- * | / \
- * G NOT OR(M)
- * | / \
- * H AND(M) L
- *                                   / \
- * J K
- *
- * 3. gather all the adjacent "and" or "or" operator together.
- * After doing that, the expression tree will be presented as:
- * all the and expression will be in either odd or even levels,
- * this will be the same for the or operator.
- *
- * After the transform, the expression tree should be like this:
- * OR(M)
- *               / / \ \
- * F H NOT AND(M)
- * | / \
- * G NOT OR(M)
- * | / \
- * H AND(M) L
- *                                      / \
- * J K
- *
- * 4. push the and operator upwards until the root is an and
- * operator and all the children are or operators with multiple
- * components. At this time we get the result: an expression in CNF form.
- * How do we push and up? Use distribution law!
- *
- * For example, here is the way to push the and up and merge them.
- * OR
- *                    / \
- * AND L
- *                / \
- * J K
- *
- * In the normal form, it could be: (J AND K) OR L.
- * If we apply the distribution law, we will get the result like this:
- * (J OR L) AND (K OR L), the tree form of this should be like:
- * AND
- *                   / \
- * OR OR
- *                / \ / \
- * J L K L
- *
- * So after we push the AND at the deepest level up and merge it with the
- * existing add, we get this result.
- * OR(M)
- *           / / \ \
- * F H NOT AND(M)
- * | / | \
- * G NOT OR(M) OR(M)
- * | / \ / \
- * H J L K L
- *
- * Now let us push the and up and we will get the result like this:
- * AND(M)
- *             / | \
- * OR(M) OR(M) OR(M)
- *     / / \ \ / / | \ \ / / | \ \
- * F H NOT NOT F H NOT J L F H NOT K L
- * | | | |
- * G H G G
- *
- * 5. The last step, convert the Multiple Expression back to the binary
- * form. Note the final tree shall be left-inclined.
- *
- * The final expression tree shall be like this:
- * AND
- *                                       / \
- * AND ( )
- *                             / \ |
- * ( ) ( ) part1
- * | |
- * OR part2
- *                        / \
- * OR NOT
- *                  / \ |
- * OR NOT H
- *            / \ |
- * F H G
- *
- * part1: OR
- *                                          / \
- * OR L
- *                                    / \
- * OR K
- *                              / \
- * OR NOT
- *                         / \ |
- * F H G
- *
- * part2: OR
- *                                         / \
- * OR L
- *                                   / \
- * OR J
- *                            / \
- * OR NOT
- *                      / \ |
- * F H G
- *
- * @author messfish
- *
- */
 public class CNFConverter {
 
     private Expression root;
@@ -229,14 +36,6 @@ public class CNFConverter {
     private boolean isUsed = false;
     private CloneHelper clone = new CloneHelper();
 
-    /**
-     * this class is mainly used for gather the parent expression,
-     * children expression and the level of the children expression
-     * in the expression tree together.
-     *
-     * @author messfish
-     *
-     */
     private class Mule {
 
         private Expression parent;
@@ -250,13 +49,6 @@ public class CNFConverter {
         }
     }
 
-    /**
-     * Since the class is only used once, I create this method to make the rest
-     * of the methods private.
-     *
-     * @param expr the expression that will be converted.
-     * @return the converted expression.
-     */
     public static Expression convertToCNF(Expression expr) {
         CNFConverter cnf = new CNFConverter();
         return cnf.convert(expr);

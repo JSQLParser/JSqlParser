@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.select;
 
 import java.io.StringReader;
@@ -12,36 +21,6 @@ public class MemoryTest {
         System.out.println(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
         CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
-        /*
-         * String longQuery = new String(
-         * "select  *  from  (  SELECT  intermediate.id  as  id  ,  intermediate.date  as          " +
-         * "date  FROM  (  SELECT  DISTINCT   (  id  )   FROM  (  SELECT                           " +
-         * "wct_workflows.workflow_id  as  id  ,  wct_transaction.date  as  date  FROM             " +
-         * "wct_audit_entry  ,  wct_transaction  ,  wct_workflows  WHERE                           " +
-         * "(  wct_audit_entry.privilege  =  'W'  or  wct_audit_entry.privilege  =                 " +
-         * "'C'  )  and  wct_audit_entry.outcome  =  't'  and                                      " +
-         * "wct_audit_entry.transaction_id  =  wct_transaction.transaction_id  and                 " +
-         * "wct_transaction.user_id  = 164 and  wct_audit_entry.object_id  =                       " +
-         * "wct_workflows.active_version_id ))) UNION  SELECT  wct_workflows.workflow_id  as       " +
-         * "id  ,  wct_transaction.date  as  date  FROM  wct_audit_entry  ,                        " +
-         * "wct_transaction  ,  wct_workflows  WHERE  (  wct_audit_entry.privilege  =              " +
-         * "'W'  or  wct_audit_entry.privilege  =  'C'  )  and  wct_audit_entry.outcome            " +
-         * "=  't'  and  wct_audit_entry.transaction_id  =                                         " +
-         * "wct_transaction.transaction_id  and  wct_transaction.user_id  = 164 and                " +
-         * "afdf=  (  select  wct_audit_entry.object_id  from  wct_audit_entry  ,                  " +
-         * "wct_workflow_archive  where  wct_audit_entry.object_id  =                              " +
-         * "wct_workflow_archive.archive_id  and  wct_workflows.workflow_id  =                     " +
-         * "wct_workflow_archive.workflow_id  )                                                    " +
-         * "UNION  SELECT  wct_workflows.workflow_id                                               " +
-         * "as  id  ,  wct_transaction.date  as  date  FROM  wct_audit_entry  ,                    " +
-         * "wct_transaction  ,  wct_workflows  WHERE  (  wct_audit_entry.privilege  =              " +
-         * "'W'  OR  wct_audit_entry.privilege  =  'E'  OR  wct_audit_entry.privilege  =           " +
-         * "'A'  )  and  wct_audit_entry.outcome  =  't'  and                                      " +
-         * "wct_audit_entry.transaction_id  =  wct_transaction.transaction_id  and                 " +
-         * "wct_transaction.user_id  = 164 and  wct_audit_entry.object_id  =                       " +
-         * "wct_workflows.workflow_id    UNION SELECT * FROM interm2  ,  wct_workflow_docs  WHERE  " +
-         * "interm2.id  =  wct_workflow_docs.document_id  ORDER BY  id  ,  date  DESC              ");
-         */
         String longQuery = "select * from k where ID > 4";
 
         /*

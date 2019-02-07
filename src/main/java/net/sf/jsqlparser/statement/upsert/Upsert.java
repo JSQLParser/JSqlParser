@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2017 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 2.1 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.statement.upsert;
@@ -32,20 +20,6 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
-/**
- * The UPSERT INTO statement. This statement is basically the combination of
- * "insert" and "update". That means it will operate inserts if not present
- * and updates otherwise the value in the table. Note the values modified
- * will be either a list of values or a select statement.
- * 
- * 
- * Here is the documentation of the grammar of this operation:
- * http://phoenix.apache.org/language/#upsert_values
- * http://phoenix.apache.org/language/#upsert_select
- * 
- * @author messfish
- *
- */
 public class Upsert implements Statement {
 
     private Table table;
