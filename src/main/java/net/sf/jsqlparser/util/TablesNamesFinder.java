@@ -542,6 +542,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(IntervalExpression iexpr) {
+        iexpr.getParameter().accept(this);
     }
 
     @Override
