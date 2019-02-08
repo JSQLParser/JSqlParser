@@ -328,9 +328,11 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     }
 
     public void deparseJoin(Join join) {
-        if (join.isSimple()) {
-            buffer.append(", ");
-        } else {
+            if (join.isSimple() && join.isOuter()) {
+               buffer.append(", OUTER ");
+            } else if (join.isSimple()) {
+               buffer.append(", ");
+            } else {
 
             if (join.isRight()) {
                 buffer.append(" RIGHT");
