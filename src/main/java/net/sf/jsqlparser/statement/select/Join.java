@@ -183,7 +183,9 @@ public class Join extends ASTNodeAccessImpl {
 
     @Override
     public String toString() {
-        if (isSimple()) {
+        if (isSimple() && isOuter()) {
+            return "OUTER " + rightItem;
+        } else if (isSimple()) {
             return "" + rightItem;
         } else {
             String type = "";
