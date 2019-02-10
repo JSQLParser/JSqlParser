@@ -2149,6 +2149,22 @@ Expression Condition():
     { return not?new NotExpression(result):result; }
 }
 
+Expression LightCondition():
+{
+    Expression result;
+    Token token;
+    boolean not = false;
+}
+{
+    [ <K_NOT> { not = true; }]
+    (
+        LOOKAHEAD(RegularCondition()) result=RegularCondition()
+        | result=SimpleExpression()
+    )
+
+    { return not?new NotExpression(result):result; }
+}
+
 Expression RegularCondition() #RegularCondition:
 {
     Expression result = null;
@@ -2343,6 +2359,20 @@ ExpressionList SimpleExpressionList() #ExpressionList:
 }
 {
     expr=SimpleExpression() { expressions.add(expr); } ("," expr=SimpleExpression() { expressions.add(expr); })*
+    {
+        retval.setExpressions(expressions);
+        return retval;
+    }
+}
+
+ExpressionList ConditionExpressionList() #ExpressionList:
+{
+    ExpressionList retval = new ExpressionList();
+    List<Expression> expressions = new ArrayList<Expression>();
+    Expression expr = null;
+}
+{
+    expr=Condition() { expressions.add(expr); } ("," expr=Condition() { expressions.add(expr); })*
     {
         retval.setExpressions(expressions);
         return retval;
@@ -2678,7 +2708,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
 	| LOOKAHEAD(2) retval = IntervalExpression()
 
-    | retval=Column()
+    | retval=Column() 
 
     | LOOKAHEAD("(" SimpleExpression() ")") "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
 
@@ -3071,15 +3101,17 @@ Function Function() #Function:
     funcName=RelObjectNameExt()
 
     [ "." tmp=RelObjectNameExt() { funcName+= "." + tmp; } ["." tmp=RelObjectNameExt() { funcName+= "." + tmp; }]]
-    "(" [ [<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }]
+    "(" [ [ LOOKAHEAD(2)(<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }) ]
         ( LOOKAHEAD(4)
+            "*" { retval.setAllColumns(true); }
+            |
 			namedExpressionList=NamedExpressionList1()
 			| 
 			LOOKAHEAD(NamedExpressionListExprFirst()) namedExpressionList = NamedExpressionListExprFirst()
-			|
-			LOOKAHEAD(3) expressionList=SimpleExpressionList()
 			| 
-			"*" { retval.setAllColumns(true); }
+            LOOKAHEAD(SimpleExpressionList()) expressionList=SimpleExpressionList()
+            //| 
+            //LOOKAHEAD(ConditionExpressionList()) expressionList=ConditionExpressionList()
 			|  
 			expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); } 
         )] 

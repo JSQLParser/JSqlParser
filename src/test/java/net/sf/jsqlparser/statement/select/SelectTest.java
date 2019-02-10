@@ -26,12 +26,23 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 public class SelectTest {
 
+    @Rule
+    public TestName name = new TestName();
+
     private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
+
+    @Before
+    public void setup() {
+        System.out.println(name.getMethodName());
+    }
 
     // From statement multipart
     @Test
@@ -3359,6 +3370,21 @@ public class SelectTest {
     @Test
     public void testOptimizeForIssue348() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM EMP ORDER BY SALARY DESC OPTIMIZE FOR 20 ROWS");
+    }
+
+    @Test
+    public void testFuncConditionParameter() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT func(a < b)");
+    }
+
+    @Test
+    public void testFuncConditionParameter2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT func(a < b, c)");
+    }
+
+    @Test
+    public void testFuncConditionParameter3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST((MAX(CAST(IIF(isnumeric(license_no) = 1, license_no, 0) AS INT )) + 2) as varchar) FROM lcps.t_license WHERE profession_id = 60 and license_type = 100 and YEAR(issue_date) % 2 = case when YEAR(issue_date) % 2 = 0 then 0 else 1 end and ISNUMERIC(license_no) = 1");
     }
 
     @Test
