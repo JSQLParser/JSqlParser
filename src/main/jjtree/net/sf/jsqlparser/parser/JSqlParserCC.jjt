@@ -174,6 +174,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_HAVING:"HAVING">
 |   <K_HIGH_PRIORITY : "HIGH_PRIORITY">
 |   <K_IF:"IF">
+|   <K_IIF:"IIF">
 |   <K_IGNORE : "IGNORE">
 |   <K_ILIKE:"ILIKE">
 |   <K_IN:"IN">
@@ -2691,6 +2692,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     | LOOKAHEAD(JsonExpression()) retval=JsonExpression()
 
+    | LOOKAHEAD(FunctionWithCondParams()) retval = FunctionWithCondParams()
+
     | LOOKAHEAD(Function()) retval=Function()
 
     | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
@@ -3081,6 +3084,28 @@ Execute Execute(): {
     }
 }
 
+Function FunctionWithCondParams() #Function: {
+    Function retval = new Function();
+    String funcName = null;
+    ExpressionList expressionList = null;
+    Token token = null;
+}
+{
+    (token = <K_IF> | token = <K_IIF>) { funcName=token.image; }
+
+    "(" 
+        expressionList=ConditionExpressionList()
+	")"
+
+    {
+        retval.setParameters(expressionList);
+        retval.setName(funcName);
+        linkAST(retval,jjtThis);
+        return retval;
+    }
+} 
+
+
 Function Function() #Function:
 {
     Function retval = new Function();
@@ -3109,7 +3134,7 @@ Function Function() #Function:
 			| 
 			LOOKAHEAD(NamedExpressionListExprFirst()) namedExpressionList = NamedExpressionListExprFirst()
 			| 
-            LOOKAHEAD(SimpleExpressionList()) expressionList=SimpleExpressionList()
+            LOOKAHEAD(3) expressionList=SimpleExpressionList()
             //| 
             //LOOKAHEAD(ConditionExpressionList()) expressionList=ConditionExpressionList()
 			|  

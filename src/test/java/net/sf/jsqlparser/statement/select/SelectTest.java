@@ -3374,17 +3374,17 @@ public class SelectTest {
 
     @Test
     public void testFuncConditionParameter() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT func(a < b)");
+        assertSqlCanBeParsedAndDeparsed("SELECT if(a < b)");
     }
 
     @Test
     public void testFuncConditionParameter2() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT func(a < b, c)");
+        assertSqlCanBeParsedAndDeparsed("SELECT if(a < b, c)");
     }
 
     @Test
     public void testFuncConditionParameter3() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT CAST((MAX(CAST(IIF(isnumeric(license_no) = 1, license_no, 0) AS INT )) + 2) as varchar) FROM lcps.t_license WHERE profession_id = 60 and license_type = 100 and YEAR(issue_date) % 2 = case when YEAR(issue_date) % 2 = 0 then 0 else 1 end and ISNUMERIC(license_no) = 1");
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST((MAX(CAST(IIF(isnumeric(license_no) = 1, license_no, 0) AS INT)) + 2) AS varchar) FROM lcps.t_license WHERE profession_id = 60 and license_type = 100 and YEAR(issue_date) % 2 = case when YEAR(issue_date) % 2 = 0 then 0 else 1 end and ISNUMERIC(license_no) = 1", true);
     }
 
     @Test
