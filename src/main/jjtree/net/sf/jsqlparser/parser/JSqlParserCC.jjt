@@ -2150,22 +2150,6 @@ Expression Condition():
     { return not?new NotExpression(result):result; }
 }
 
-Expression LightCondition():
-{
-    Expression result;
-    Token token;
-    boolean not = false;
-}
-{
-    [ <K_NOT> { not = true; }]
-    (
-        LOOKAHEAD(RegularCondition()) result=RegularCondition()
-        | result=SimpleExpression()
-    )
-
-    { return not?new NotExpression(result):result; }
-}
-
 Expression RegularCondition() #RegularCondition:
 {
     Expression result = null;
