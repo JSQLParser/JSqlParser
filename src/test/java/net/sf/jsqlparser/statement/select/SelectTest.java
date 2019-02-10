@@ -3396,6 +3396,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testSqlContainIsNullFunctionShouldBeParsed3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT name, age FROM person WHERE NOT ISNULL(home, 'earn more money')");
+    }
+
+    @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
         for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {
             final String prefix = c;
