@@ -65,7 +65,6 @@ import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
@@ -77,6 +76,7 @@ import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
@@ -342,7 +342,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         visitBinaryExpression(subtraction, " - ");
     }
 
-    private void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
+    protected void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
         if (binaryExpression.isNot()) {
             buffer.append(NOT);
         }
@@ -416,10 +416,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
                 useBracketsInExprList = false;
                 buffer.append("(ALL ");
             }
-            if(function.getNamedParameters() != null){
+            if (function.getNamedParameters() != null) {
                 visit(function.getNamedParameters());
             }
-            if(function.getParameters() != null){
+            if (function.getParameters() != null) {
                 visit(function.getParameters());
             }
             useBracketsInExprList = oldUseBracketsInExprList;
@@ -464,12 +464,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         }
         List<String> names = namedExpressionList.getNames();
         List<Expression> expressions = namedExpressionList.getExpressions();
-        for (int i=0; i<names.size(); i++){
-            if(i>0){
+        for (int i = 0; i < names.size(); i++) {
+            if (i > 0) {
                 buffer.append(" ");
             }
             String name = names.get(i);
-            if(! name.equals("")){
+            if (!name.equals("")) {
                 buffer.append(name);
                 buffer.append(" ");
             }
