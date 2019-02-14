@@ -41,7 +41,7 @@ public class SelectTest {
 
     @Before
     public void setup() {
-        System.out.println(name.getMethodName());
+//        System.out.println(name.getMethodName());
     }
 
     // From statement multipart

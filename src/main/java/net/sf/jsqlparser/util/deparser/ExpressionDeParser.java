@@ -32,6 +32,7 @@ import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
+import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
@@ -779,6 +780,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(DateTimeLiteralExpression literal) {
         buffer.append(literal.toString());
+    }
+
+    @Override
+    public void visit(NextValExpression nextVal) {
+        buffer.append("NEXTVAL FOR ").append(nextVal.getName());
     }
 
 }

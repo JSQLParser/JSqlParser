@@ -55,6 +55,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 2.0
 
+* support for **NEXTVAL FOR**
 * changed all source code license headers to reflect the dual license of JSqlParser more correctly
 * support of **OPTIMIZE FOR 20 ROWS** like expressions
 * allowed conditions within **then** and **else** of a **case** statement

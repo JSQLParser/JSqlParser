@@ -203,6 +203,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MODIFY: "MODIFY">
 |   <K_NATURAL:"NATURAL">
 |   <K_NEXT:"NEXT">
+|   <K_NEXTVAL:"NEXTVAL">
 |   <K_NO:"NO">
 |   <K_NOCYCLE:"NOCYCLE">
 |   <K_NOT:"NOT">
@@ -2695,6 +2696,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
 	| LOOKAHEAD(2) retval = IntervalExpression()
 
+    | retval = NextValExpression()
+
     | retval=Column() 
 
     | LOOKAHEAD("(" SimpleExpression() ")") "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
@@ -2723,6 +2726,16 @@ Expression PrimaryExpression() #PrimaryExpression:
             retval = new SignedExpression(sign.image.charAt(0), retval);
         }
         return retval;
+    }
+}
+
+NextValExpression NextValExpression() : {
+    List<String> data = new ArrayList<String>();
+}
+{
+    <K_NEXTVAL> <K_FOR> data = RelObjectNameList()
+    {
+        return new NextValExpression(data);
     }
 }
 
