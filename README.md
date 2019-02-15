@@ -34,7 +34,7 @@ Please provide feedback on https://github.com/JSQLParser/JSqlParser/issues/677, 
 More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
 
 ## Alternatives to JSqlParser?
-**General SQL Parser** looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
+[**General SQL Parser**](http://www.sqlparser.com/gspjava.php?ref=jsqlparser) looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
 
 ## JSqlParser
 
