@@ -33,6 +33,9 @@ Please provide feedback on https://github.com/JSQLParser/JSqlParser/issues/677, 
 
 More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
 
+## Alternatives to JSqlParser?
+**General SQL Parser** looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
+
 ## JSqlParser
 
 JSqlParser is a SQL statement parser. It translates SQLs in a traversable hierarchy of Java classes. JSqlParser is not limited to one database but provides support for a lot of specials of Oracle, SqlServer, MySQL, PostgreSQL ... To name some, it has support for Oracles join syntax using (+), PostgreSQLs cast syntax using ::, relational operators like != and so on.
