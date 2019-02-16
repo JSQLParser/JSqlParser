@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.statement.update;
@@ -36,9 +24,6 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
-/**
- * The update statement.
- */
 public class Update implements Statement {
 
     private List<Table> tables;
@@ -76,21 +61,10 @@ public class Update implements Statement {
         where = expression;
     }
 
-    /**
-     * The {@link net.sf.jsqlparser.schema.Column}s in this update (as col1 and col2 in UPDATE
-     * col1='a', col2='b')
-     *
-     * @return a list of {@link net.sf.jsqlparser.schema.Column}s
-     */
     public List<Column> getColumns() {
         return columns;
     }
 
-    /**
-     * The {@link Expression}s in this update (as 'a' and 'b' in UPDATE col1='a', col2='b')
-     *
-     * @return a list of {@link Expression}s
-     */
     public List<Expression> getExpressions() {
         return expressions;
     }

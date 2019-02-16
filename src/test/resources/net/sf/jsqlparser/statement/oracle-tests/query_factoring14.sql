@@ -1,3 +1,12 @@
+---
+-- #%L
+-- JSQLParser library
+-- %%
+-- Copyright (C) 2004 - 2019 JSQLParser
+-- %%
+-- Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+-- #L%
+---
 with emp_count (eid, emp_last, mgr_id, mgrlevel, salary, cnt_employees) as (
   select employee_id, last_name, manager_id, 0 mgrlevel, salary, 0 cnt_employees
   from employees

@@ -33,6 +33,9 @@ Please provide feedback on https://github.com/JSQLParser/JSqlParser/issues/677, 
 
 More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
 
+## Alternatives to JSqlParser?
+[**General SQL Parser**](http://www.sqlparser.com/gspjava.php?ref=jsqlparser) looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
+
 ## JSqlParser
 
 JSqlParser is a SQL statement parser. It translates SQLs in a traversable hierarchy of Java classes. JSqlParser is not limited to one database but provides support for a lot of specials of Oracle, SqlServer, MySQL, PostgreSQL ... To name some, it has support for Oracles join syntax using (+), PostgreSQLs cast syntax using ::, relational operators like != and so on.
@@ -55,6 +58,9 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 2.0
 
+* support for **NEXTVAL FOR**
+* changed all source code license headers to reflect the dual license of JSqlParser more correctly
+* support of **OPTIMIZE FOR 20 ROWS** like expressions
 * allowed conditions within **then** and **else** of a **case** statement
     * **SELECT * FROM mytable WHERE CASE WHEN a = 1 THEN b IN (1,2,3) ELSE c IN (1,2,3) END**
 * **change of parsing** for not within condition: outer not is represented now by NotExpression

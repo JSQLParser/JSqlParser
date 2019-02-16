@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.util;
 
 import java.io.BufferedReader;
@@ -562,5 +571,16 @@ public class TablesNamesFinderTest {
         List<String> tableList = finder.getTableList(describe);
         assertEquals(1, tableList.size());
         assertEquals("foo.product", tableList.get(0));
+    }
+    @Test
+    public void testBetween() throws JSQLParserException {
+        String sql = "mycol BETWEEN (select col2 from mytable) AND (select col3 from mytable2)";
+        Expression expr = (Expression) CCJSqlParserUtil.parseCondExpression(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(expr);
+        assertEquals(2, tableList.size());
+        assertTrue(tableList.contains("mytable"));
+        assertTrue(tableList.contains("mytable2"));
+
     }
 }

@@ -1,3 +1,12 @@
+---
+-- #%L
+-- JSQLParser library
+-- %%
+-- Copyright (C) 2004 - 2019 JSQLParser
+-- %%
+-- Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+-- #L%
+---
 with col_generator as (
 select t1.batch_id, decode(t1.action, 'sent', t1.actdate) sent,
 decode(t2.action,'recv', t2.actdate) received

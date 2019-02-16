@@ -1,3 +1,12 @@
+---
+-- #%L
+-- JSQLParser library
+-- %%
+-- Copyright (C) 2004 - 2019 JSQLParser
+-- %%
+-- Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+-- #L%
+---
 with dup_hiredate (eid, emp_last, mgr_id, reportlevel, hire_date, job_id) as (
   select employee_id, last_name, manager_id, 0 reportlevel, hire_date, job_id
   from employees

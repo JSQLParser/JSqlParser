@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2016 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 2.1 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.statement.alter;
@@ -30,14 +18,12 @@ import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-/**
- *
- * @author toben & wrobstory
- */
 public class AlterExpression {
 
     private AlterOperation operation;
+    private String optionalSpecifier;
     private String columnName;
+    private String columnOldName;
     //private ColDataType dataType;
 
     private List<ColumnDataType> colDataTypeList;
@@ -64,6 +50,14 @@ public class AlterExpression {
 
     public void setOperation(AlterOperation operation) {
         this.operation = operation;
+    }
+
+    public String getOptionalSpecifier() {
+        return optionalSpecifier;
+    }
+
+    public void setOptionalSpecifier(String optionalSpecifier) {
+        this.optionalSpecifier = optionalSpecifier;
     }
 
     public boolean isOnDeleteCascade() {
@@ -135,6 +129,14 @@ public class AlterExpression {
 
     public void setColumnName(String columnName) {
         this.columnName = columnName;
+    }
+
+    public String getColOldName() {
+        return columnOldName;
+    }
+
+    public void setColOldName(String columnOldName) {
+        this.columnOldName = columnOldName;
     }
 
     public String getConstraintName() {
@@ -214,7 +216,12 @@ public class AlterExpression {
         if (columnName != null) {
             b.append("COLUMN ").append(columnName);
         } else if (getColDataTypeList() != null) {
-            if (colDataTypeList.size() > 1) {
+            if(operation == AlterOperation.CHANGE) {
+                if(optionalSpecifier != null) {
+                    b.append(optionalSpecifier).append(" ");
+                }
+                b.append(columnOldName).append(" ");
+            } else if (colDataTypeList.size() > 1) {
                 b.append("(");
             } else {
                 b.append("COLUMN ");

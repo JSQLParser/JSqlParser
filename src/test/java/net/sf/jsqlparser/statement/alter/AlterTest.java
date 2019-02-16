@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.alter;
 
 import java.util.Arrays;
@@ -260,6 +269,34 @@ public class AlterTest {
     public void testAlterTableAlterColumn() throws JSQLParserException {
       // http://www.postgresqltutorial.com/postgresql-change-column-type/
       assertSqlCanBeParsedAndDeparsed("ALTER TABLE table_name ALTER COLUMN column_name_1 TYPE TIMESTAMP, ALTER COLUMN column_name_2 TYPE BOOLEAN");
+    }
+
+    @Test
+    public void testAlterTableChangeColumn1() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE tb_test CHANGE COLUMN c1 c2 INT (10)");
+        Alter alter = (Alter) stmt;
+        assertEquals(AlterOperation.CHANGE, alter.getAlterExpressions().get(0).getOperation());
+        assertEquals("c1", alter.getAlterExpressions().get(0).getColOldName());
+        assertEquals("COLUMN", alter.getAlterExpressions().get(0).getOptionalSpecifier());
+    }
+
+    @Test
+    public void testAlterTableChangeColumn2() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE tb_test CHANGE c1 c2 INT (10)");
+        Alter alter = (Alter) stmt;
+        assertEquals(AlterOperation.CHANGE, alter.getAlterExpressions().get(0).getOperation());
+        assertEquals("c1", alter.getAlterExpressions().get(0).getColOldName());
+        assertNull(alter.getAlterExpressions().get(0).getOptionalSpecifier());
+    }
+
+    @Test
+    public void testAlterTableChangeColumn3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE COLUMN c1 c2 INT (10)");
+    }
+
+    @Test
+    public void testAlterTableChangeColumn4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE c1 c2 INT (10)");
     }
 
     @Test

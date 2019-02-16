@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.select;
 
 import java.io.*;
@@ -17,12 +26,23 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 public class SelectTest {
 
+    @Rule
+    public TestName name = new TestName();
+
     private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
+
+    @Before
+    public void setup() {
+//        System.out.println(name.getMethodName());
+    }
 
     // From statement multipart
     @Test
@@ -963,7 +983,15 @@ public class SelectTest {
         statement = "SELECT * FROM foo AS f LEFT OUTER JOIN (bar AS b RIGHT OUTER JOIN baz AS z ON f.id = z.id) ON f.id = b.id";
         select = (Select) parserManager.parse(new StringReader(statement));
         assertStatementCanBeDeparsedAs(select, statement);
-
+        statement = "SELECT * FROM foo AS f, OUTER bar AS b WHERE f.id = b.id";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        assertStatementCanBeDeparsedAs(select, statement);
+        plainSelect = (PlainSelect) select.getSelectBody();
+        assertEquals(1, plainSelect.getJoins().size());
+        assertTrue(plainSelect.getJoins().get(0).isOuter());
+        assertTrue(plainSelect.getJoins().get(0).isSimple());
+        assertEquals("bar", ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
+        assertEquals("b", ((Table) plainSelect.getJoins().get(0).getRightItem()).getAlias().getName());
     }
 
     @Test
@@ -2597,9 +2625,6 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT 'ab\\'ab'");
     }
 
-    /**
-     * These are accepted due to reading one backslash and a double quote.
-     */
     @Test
     public void testIssue167_singleQuoteEscape2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT '\\'''");
@@ -3350,6 +3375,35 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM col WHERE CASE WHEN a = 'c' THEN a IN (SELECT id FROM mytable) ELSE b IN (SELECT id FROM mytable) END");
     }
 
+    @Test
+    public void testOptimizeForIssue348() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM EMP ORDER BY SALARY DESC OPTIMIZE FOR 20 ROWS");
+    }
+
+    @Test
+    public void testFuncConditionParameter() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT if(a < b)");
+    }
+
+    @Test
+    public void testFuncConditionParameter2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT if(a < b, c)");
+    }
+
+    @Test
+    public void testFuncConditionParameter3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST((MAX(CAST(IIF(isnumeric(license_no) = 1, license_no, 0) AS INT)) + 2) AS varchar) FROM lcps.t_license WHERE profession_id = 60 and license_type = 100 and YEAR(issue_date) % 2 = case when YEAR(issue_date) % 2 = 0 then 0 else 1 end and ISNUMERIC(license_no) = 1", true);
+    }
+
+    @Test
+    public void testSqlContainIsNullFunctionShouldBeParsed3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT name, age FROM person WHERE NOT ISNULL(home, 'earn more money')");
+    }
+
+//    @Test
+//    public void testIntervalExpression() throws JSQLParserException {
+//        assertSqlCanBeParsedAndDeparsed("SELECT count(emails.id) FROM emails WHERE (emails.date_entered + 30 DAYS) > CURRENT_DATE");
+//    }
     @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
         for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {

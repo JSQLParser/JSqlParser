@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.statement.insert;
@@ -33,10 +21,6 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
-/**
- * The insert statement. Every column name in <code>columnNames</code> matches an item in
- * <code>itemsList</code>
- */
 public class Insert implements Statement {
 
     private Table table;
@@ -55,8 +39,6 @@ public class Insert implements Statement {
 
     private List<SelectExpressionItem> returningExpressionList = null;
     
-    /* these lines of codes are used to handle SET syntax in the insert part. 
-     * the SET syntax is based on this: https://dev.mysql.com/doc/refman/5.6/en/insert.html. */
     private boolean useSet = false;
     private List<Column> setColumns;
     private List<Expression> setExpressionList;
@@ -74,11 +56,6 @@ public class Insert implements Statement {
         table = name;
     }
 
-    /**
-     * Get the columns (found in "INSERT INTO (col1,col2..) [...]" )
-     *
-     * @return a list of {@link net.sf.jsqlparser.schema.Column}
-     */
     public List<Column> getColumns() {
         return columns;
     }
