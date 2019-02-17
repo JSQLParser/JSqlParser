@@ -106,6 +106,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 {
     <K_ACTION: "ACTION">
 |   <K_ADD:"ADD">
+|   <K_ALGORITHM: "ALGORITHM">
 |   <K_ALL:"ALL">
 |   <K_ALTER:"ALTER">
 |   <K_AND:"AND">
@@ -3784,6 +3785,7 @@ AlterExpression AlterExpression():
     Token tk;
     Token tk2 = null;
     String sk3 = null;
+    String sk4 = null;
     ColDataType dataType;
     List<String> columnNames = null;
     List<ConstraintState> constraints = null;
@@ -3797,10 +3799,13 @@ AlterExpression AlterExpression():
     (
     ((<K_ADD>    { alterExp.setOperation(AlterOperation.ADD); } | <K_ALTER>    { alterExp.setOperation(AlterOperation.ALTER); } | <K_MODIFY> { alterExp.setOperation(AlterOperation.MODIFY); })
       (
-		LOOKAHEAD(2) ( <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); } ) constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+		LOOKAHEAD(2) (
+                    <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); }
+                ) constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
 		|
         LOOKAHEAD(2) (
-          tk = < K_INDEX > 
+          (tk=<K_KEY> { alterExp.setUk(true); } | tk=<K_INDEX>)
           sk3 = RelObjectName() 
           columnNames = ColumnsNamesList()
           {
@@ -3811,6 +3816,7 @@ AlterExpression AlterExpression():
             alterExp.setIndex(index);
           }
           constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+          [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
         )
 		|
         ( (LOOKAHEAD(2) <K_COLUMN>)?
@@ -3822,7 +3828,9 @@ AlterExpression AlterExpression():
                 ("," alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); } )* ")"
         )
         |
-        ( <K_UNIQUE> (<K_KEY> (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } )? columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); } )
+        ( <K_UNIQUE> ((<K_KEY> { alterExp.setUk(true); } | <K_INDEX>) (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } )?
+            columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
+            [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }])
         |
 //following two choices regarding foreign keys should be merged
         ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); }
@@ -3864,6 +3872,7 @@ AlterExpression AlterExpression():
                     alterExp.setIndex(index);
                 }
                 constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
             )
             |
             (
@@ -3876,7 +3885,7 @@ AlterExpression AlterExpression():
             )
             |
             (
-                tk=<K_UNIQUE> (tk2=<K_KEY>)?
+                tk=<K_UNIQUE> (tk2=<K_KEY> { alterExp.setUk(true); } | tk2=<K_INDEX>)?
                   columnNames=ColumnsNamesList()
                   {
                       index = new NamedConstraint();
@@ -3886,6 +3895,7 @@ AlterExpression AlterExpression():
                       alterExp.setIndex(index);
                   }
                   constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                  [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
             )
             |
             (
@@ -3935,6 +3945,16 @@ AlterExpression AlterExpression():
                   
              )
              |
+             (  tk=<K_INDEX>
+                (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>)
+                     {
+                         index = new Index();
+			 index.setType(tk.image);
+			 index.setName(tk2.image);
+			 alterExp.setIndex(index);
+		     }
+             )
+             |
        (  <K_CONSTRAINT> [<K_IF> <K_EXISTS> { alterExp.setConstraintIfExists(true); } ]
        (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>)
            {
@@ -3942,6 +3962,14 @@ AlterExpression AlterExpression():
            }
        )
        )
+    )
+    |
+    (<K_ALGORITHM>
+       {
+          alterExp.setOperation(AlterOperation.ALGORITHM);
+       }
+       ["=" { alterExp.setUseEqual(true);} ]
+       sk3 = RelObjectName() {alterExp.addParameters(sk3); }
     )
     )
 

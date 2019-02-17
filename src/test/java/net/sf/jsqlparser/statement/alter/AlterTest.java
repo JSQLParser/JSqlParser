@@ -368,4 +368,14 @@ public class AlterTest {
     public void testIssue679() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_session_status ADD INDEX idx_user_id_name (user_id, user_name(10)), ADD INDEX idx_user_name (user_name)");
     }
+
+    @Test
+    public void testAlterTableIndex586() throws Exception {
+        Statement result = CCJSqlParserUtil.parse("ALTER TABLE biz_add_fee DROP INDEX operation_time, " +
+                "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) " +
+                "USING BTREE, ALGORITHM = INPLACE");
+        assertEquals("ALTER TABLE biz_add_fee DROP INDEX operation_time , " +
+                "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) " +
+                "USING BTREE, ALGORITHM = INPLACE", result.toString());
+    }
 }

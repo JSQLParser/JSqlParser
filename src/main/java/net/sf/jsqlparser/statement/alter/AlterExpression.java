@@ -40,6 +40,8 @@ public class AlterExpression {
     private List<String> fkColumns;
     private String fkSourceTable;
     private List<String> fkSourceColumns;
+    private boolean uk;
+    private boolean useEqual;
 
     private List<ConstraintState> constraints;
     private List<String> parameters;
@@ -206,6 +208,22 @@ public class AlterExpression {
         return parameters;
     }
 
+    public boolean getUseEqual() {
+        return useEqual;
+    }
+
+    public void setUseEqual(boolean useEqual) {
+        this.useEqual = useEqual;
+    }
+
+    public boolean getUk() {
+        return uk;
+    }
+
+    public void setUk(boolean uk) {
+        this.uk = uk;
+    }
+
     @Override
     public String toString() {
 
@@ -241,7 +259,12 @@ public class AlterExpression {
         } else if (ukColumns != null) {
             b.append("UNIQUE");
             if (ukName != null) {
-              b.append(" KEY ").append(ukName);    
+                if (getUk()) {
+                    b.append(" KEY ");
+                } else {
+                    b.append(" INDEX ");
+                }
+              b.append(ukName);    
             }
             b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
@@ -260,6 +283,9 @@ public class AlterExpression {
         }
         if (getConstraints() != null && !getConstraints().isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
+        }
+        if (getUseEqual()) {
+            b.append('=');
         }
         if (parameters!=null && !parameters.isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
