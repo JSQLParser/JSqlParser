@@ -1064,6 +1064,13 @@ public class SelectTest {
     }
 
     @Test
+    public void testEscapedFunctionsIssue753() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("SELECT { fn test(0)} AS COL");
+        assertEquals("SELECT {fn test(0)} AS COL", stmt.toString());
+        assertSqlCanBeParsedAndDeparsed("SELECT fn FROM fn");
+    }
+
+    @Test
     public void testNamedParametersPR702() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT substring(id, 2, 3), substring(id from 2 for 3), substring(id from 2), trim(BOTH ' ' from 'foo bar '), trim(LEADING ' ' from 'foo bar '), trim(TRAILING ' ' from 'foo bar '), trim(' ' from 'foo bar '), position('foo' in 'bar'), overlay('foo' placing 'bar' from 1), overlay('foo' placing 'bar' from 1 for 2) FROM my table");
     }

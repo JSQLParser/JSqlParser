@@ -189,6 +189,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_JOIN:"JOIN">
 |   <K_KEEP:"KEEP">
 |   <K_KEY:"KEY">
+|   <K_FN:"FN">
 |   <K_LAST: "LAST">
 |   <K_LATERAL:"LATERAL">
 |   <K_LEADING:"LEADING">
@@ -1039,7 +1040,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_ENABLE>
 	  | tk=<K_UNSIGNED>
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TYPE> | tk=<K_ISNULL> 
-	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE>
+	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN>
 /*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
 
@@ -3118,7 +3119,7 @@ Function Function() #Function:
     Expression expr1 = null;
 }
 {
-    ["{fn" { retval.setEscaped(true); } ]
+    ["{" <K_FN> { retval.setEscaped(true); } ]
 
     funcName=RelObjectNameExt()
 
