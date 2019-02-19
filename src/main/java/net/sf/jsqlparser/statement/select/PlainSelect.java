@@ -46,6 +46,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private Wait wait;
     private boolean mySqlSqlCalcFoundRows = false;
     private boolean sqlNoCacheFlag = false;
+    private String forXmlPath;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -271,6 +272,14 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return wait;
     }
 
+    public String getForXmlPath() {
+        return forXmlPath;
+    }
+
+    public void setForXmlPath(String forXmlPath) {
+        this.forXmlPath = forXmlPath;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder();
@@ -368,6 +377,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             if (where != null) {
                 sql.append(" WHERE ").append(where);
             }
+        }
+        if (forXmlPath != null) {
+            sql.append(" FOR XML PATH(").append(forXmlPath).append(")");
         }
         if (useBrackets) {
             sql.append(")");

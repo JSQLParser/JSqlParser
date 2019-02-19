@@ -9,13 +9,12 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import java.util.Iterator;
+import java.util.List;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
-
-import java.util.Iterator;
-import java.util.List;
 
 public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
@@ -167,6 +166,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         }
         if (plainSelect.getOptimizeFor() != null) {
             deparseOptimizeFor(plainSelect.getOptimizeFor());
+        }
+        if (plainSelect.getForXmlPath() != null) {
+            buffer.append(" FOR XML PATH(" + plainSelect.getForXmlPath() + ")");
         }
         if (plainSelect.isUseBrackets()) {
             buffer.append(")");
@@ -328,11 +330,11 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     }
 
     public void deparseJoin(Join join) {
-            if (join.isSimple() && join.isOuter()) {
-               buffer.append(", OUTER ");
-            } else if (join.isSimple()) {
-               buffer.append(", ");
-            } else {
+        if (join.isSimple() && join.isOuter()) {
+            buffer.append(", OUTER ");
+        } else if (join.isSimple()) {
+            buffer.append(", ");
+        } else {
 
             if (join.isRight()) {
                 buffer.append(" RIGHT");
