@@ -3111,6 +3111,20 @@ Function FunctionWithCondParams() #Function: {
 Function Function() #Function:
 {
     Function retval = new Function();
+}
+{
+    (
+        "{" <K_FN> { retval.setEscaped(true); }  InternalFunction(retval) "}"
+        | InternalFunction(retval)
+    ) 
+    {
+        linkAST(retval,jjtThis);
+        return retval;
+    }
+}
+
+Function InternalFunction(Function retval) :
+{
     String funcName = null;
     String tmp = null;
     List<Expression> expressions = new ArrayList<Expression>();
@@ -3123,8 +3137,6 @@ Function Function() #Function:
     Expression expr1 = null;
 }
 {
-    ["{" <K_FN> { retval.setEscaped(true); } ]
-
     funcName=RelObjectNameExt()
 
     [ "." tmp=RelObjectNameExt() { funcName+= "." + tmp; } ["." tmp=RelObjectNameExt() { funcName+= "." + tmp; }]]
@@ -3144,17 +3156,19 @@ Function Function() #Function:
         )] 
 	")"
 
-    [ "." tmp=RelObjectName() { retval.setAttribute(tmp); }]
+    [ "." ( 
+            LOOKAHEAD(2) expr1=Function() { retval.setAttribute(expr1); }
+            | tmp=RelObjectName() { retval.setAttributeName(tmp); }
+          )
+    ]
 
-    [ keep = KeepExpression() ]
+    [ LOOKAHEAD(2) keep = KeepExpression() ]
 
-    ["}"]
     {
         retval.setParameters(expressionList);
         retval.setNamedParameters(namedExpressionList);
         retval.setName(funcName);
         retval.setKeep(keep);
-        linkAST(retval,jjtThis);
         return retval;
     }
 } 

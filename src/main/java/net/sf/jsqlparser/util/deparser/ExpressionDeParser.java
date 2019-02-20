@@ -431,6 +431,8 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
         if (function.getAttribute() != null) {
             buffer.append(".").append(function.getAttribute());
+        } else if (function.getAttributeName() != null) {
+            buffer.append(".").append(function.getAttributeName());
         }
         if (function.getKeep() != null) {
             buffer.append(" ").append(function.getKeep());

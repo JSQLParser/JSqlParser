@@ -21,7 +21,8 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private boolean allColumns = false;
     private boolean distinct = false;
     private boolean isEscaped = false;
-    private String attribute;
+    private Expression attribute;
+    private String attributeName;
     private KeepExpression keep = null;
 
     @Override
@@ -77,7 +78,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
      *
      * @return the list of named parameters of the function (if any, else null)
      */
-
     public NamedExpressionList getNamedParameters() {
         return namedParameters;
     }
@@ -99,12 +99,20 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         this.isEscaped = isEscaped;
     }
 
-    public String getAttribute() {
+    public Expression getAttribute() {
         return attribute;
     }
 
-    public void setAttribute(String attribute) {
+    public void setAttribute(Expression attribute) {
         this.attribute = attribute;
+    }
+
+    public String getAttributeName() {
+        return attributeName;
+    }
+
+    public void setAttributeName(String attributeName) {
+        this.attributeName = attributeName;
     }
 
     public KeepExpression getKeep() {
@@ -120,14 +128,14 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         String params;
 
         if (parameters != null || namedParameters != null) {
-            if(parameters != null){
+            if (parameters != null) {
                 params = parameters.toString();
                 if (isDistinct()) {
                     params = params.replaceFirst("\\(", "(DISTINCT ");
                 } else if (isAllColumns()) {
                     params = params.replaceFirst("\\(", "(ALL ");
                 }
-            } else{
+            } else {
                 params = namedParameters.toString();
             }
         } else if (isAllColumns()) {
@@ -139,7 +147,9 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         String ans = name + "" + params + "";
 
         if (attribute != null) {
-            ans += "." + attribute;
+            ans += "." + attribute.toString();
+        } else if (attributeName != null) {
+            ans += "." + attributeName;
         }
 
         if (keep != null) {

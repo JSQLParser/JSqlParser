@@ -3412,6 +3412,11 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT '|' + person_name FROM person JOIN person_group ON person.person_id = person_group.person_id WHERE person_group.group_id = 1 FOR XML PATH('')");
     }
 
+    @Test
+    public void testChainedunctions() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT func('').func2('') AS foo FROM some_tables");
+    }
+
 //    @Test
 //    public void testIntervalExpression() throws JSQLParserException {
 //        assertSqlCanBeParsedAndDeparsed("SELECT count(emails.id) FROM emails WHERE (emails.date_entered + 30 DAYS) > CURRENT_DATE");
