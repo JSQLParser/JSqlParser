@@ -188,7 +188,8 @@ public class SpecialOracleTest {
             "union07.sql",
             "union08.sql",
             "union09.sql",
-            "union10.sql");
+            "union10.sql",
+            "xmltable02.sql");
 
     @Test
     public void testAllSqlsParseDeparse() throws IOException {
@@ -219,13 +220,15 @@ public class SpecialOracleTest {
 
                 if (!parsed && successes.contains(file.getName())) {
                     LOG.log(Level.WARNING, "   -> regression on file {0}", file.getName());
+                } else if (parsed && !successes.contains(file.getName())) {
+                    LOG.log(Level.WARNING, "   -> not logged success on file {0}", file.getName());
                 }
             }
         }
 
         LOG.
                 log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
-        assertTrue(success >= 150);
+        assertTrue(success >= 151);
     }
 
     @Test
