@@ -587,7 +587,9 @@ Update Update():
 
     |
 
-    ["(" { useColumnsBrackets = true; }] tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* [ ")" ] "="
+    ( "(" { useColumnsBrackets = true; } tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"
+    | tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* )
+     "="
         "("
         (
             { update.setUseSelect(true); }
