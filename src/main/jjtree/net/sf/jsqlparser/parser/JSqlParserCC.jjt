@@ -2708,9 +2708,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | retval=Column() 
 
-        | LOOKAHEAD("(" SimpleExpression() ")") "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
+        | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
 
-        | LOOKAHEAD(3) "(" retval=SubSelect() ")"
+        | "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
 
         | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
 
