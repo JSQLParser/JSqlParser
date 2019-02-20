@@ -497,4 +497,8 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(NextValExpression nextVal) {
     }
 
+    @Override
+    public void visit(CollateExpression col) {
+        col.getLeftExpression().accept(this);
+    }
 }

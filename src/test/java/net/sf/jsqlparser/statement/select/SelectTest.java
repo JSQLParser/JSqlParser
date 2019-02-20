@@ -3417,6 +3417,11 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT func('').func2('') AS foo FROM some_tables");
     }
 
+    @Test
+    public void testCollateExprIssue164() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT u.name COLLATE Latin1_General_CI_AS AS User FROM users u");
+    }
+
 //    @Test
 //    public void testIntervalExpression() throws JSQLParserException {
 //        assertSqlCanBeParsedAndDeparsed("SELECT count(emails.id) FROM emails WHERE (emails.date_entered + 30 DAYS) > CURRENT_DATE");

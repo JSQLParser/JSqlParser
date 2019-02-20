@@ -170,4 +170,6 @@ public interface ExpressionVisitor {
 
     public void visit(NextValExpression aThis);
 
+    public void visit(CollateExpression aThis);
+
 }

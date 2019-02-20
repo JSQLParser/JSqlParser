@@ -17,6 +17,7 @@ import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
+import net.sf.jsqlparser.expression.CollateExpression;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -787,6 +788,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(NextValExpression nextVal) {
         buffer.append("NEXTVAL FOR ").append(nextVal.getName());
+    }
+
+    @Override
+    public void visit(CollateExpression col) {
+        buffer.append(col.getLeftExpression().toString()).append(" COLLATE ").append(col.getCollate());
     }
 
 }

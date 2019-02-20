@@ -129,6 +129,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CHANGE:"CHANGE">
 |   <K_CHECK:"CHECK">
 |   <K_CHAR:"CHAR">
+|   <K_COLLATE:"COLLATE">
 |   <K_COLUMN:"COLUMN">
 |   <K_COLUMNS:"COLUMNS">
 |   <K_COMMIT:"COMMIT">
@@ -2660,63 +2661,67 @@ Expression PrimaryExpression() #PrimaryExpression:
     ColDataType type = null;
 }
 {
-[sign="+" | sign="-" | sign="~"]
-(
-    <K_NULL> { retval = new NullValue(); }
+    [sign="+" | sign="-" | sign="~"]
+    (
+        <K_NULL> { retval = new NullValue(); }
 
-    | retval=CaseWhenExpression()
+        | retval=CaseWhenExpression()
 
-    | retval = SimpleJdbcParameter()
+        | retval = SimpleJdbcParameter()
 
-    | LOOKAHEAD(2) retval=JdbcNamedParameter()
+        | LOOKAHEAD(2) retval=JdbcNamedParameter()
 
-    | retval=UserVariable()
+        | retval=UserVariable()
 
-    | LOOKAHEAD(2) retval=NumericBind()
+        | LOOKAHEAD(2) retval=NumericBind()
 
-    | LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
+        | LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
 
-    | LOOKAHEAD(3) retval=ExtractExpression()
+        | LOOKAHEAD(3) retval=ExtractExpression()
 
-    | retval=MySQLGroupConcat()
+        | retval=MySQLGroupConcat()
 
-    | LOOKAHEAD(JsonExpression()) retval=JsonExpression()
+        | LOOKAHEAD(JsonExpression()) retval=JsonExpression()
 
-    | LOOKAHEAD(FunctionWithCondParams()) retval = FunctionWithCondParams()
+        | LOOKAHEAD(FunctionWithCondParams()) retval = FunctionWithCondParams()
 
-    | LOOKAHEAD(Function()) retval=Function()
+        | LOOKAHEAD(Function()) retval=Function()
 
-    | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
+        | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
 
-    | token=<S_LONG> { retval = new LongValue(token.image); }
+        | token=<S_LONG> { retval = new LongValue(token.image); }
 
-    | token=<S_HEX>  { retval = new HexValue(token.image); }
+        | token=<S_HEX>  { retval = new HexValue(token.image); }
 
-    | LOOKAHEAD(2) retval=CastExpression()
+        | LOOKAHEAD(2) retval=CastExpression()
 
-    // support timestamp expressions
-    | token=<K_TIME_KEY_EXPR> { retval = new TimeKeyExpression(token.image); }
+        // support timestamp expressions
+        | token=<K_TIME_KEY_EXPR> { retval = new TimeKeyExpression(token.image); }
 
-    | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
+        | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
 
-	| LOOKAHEAD(2) retval = IntervalExpression()
+        | LOOKAHEAD(2) retval = IntervalExpression()
 
-    | retval = NextValExpression()
+        | retval = NextValExpression()
 
-    | retval=Column() 
+        | retval=Column() 
 
-    | LOOKAHEAD("(" SimpleExpression() ")") "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
+        | LOOKAHEAD("(" SimpleExpression() ")") "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
 
-    | LOOKAHEAD(3) "(" retval=SubSelect() ")"
+        | LOOKAHEAD(3) "(" retval=SubSelect() ")"
 
-    | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
+        | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
 
-    | "{d" token=<S_CHAR_LITERAL> "}"  { retval = new DateValue(token.image); }
+        | "{d" token=<S_CHAR_LITERAL> "}"  { retval = new DateValue(token.image); }
 
-    | "{t" token=<S_CHAR_LITERAL> "}"  { retval = new TimeValue(token.image); }
+        | "{t" token=<S_CHAR_LITERAL> "}"  { retval = new TimeValue(token.image); }
 
-    | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
-)
+        | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
+    )
+
+    [
+        <K_COLLATE> token=<S_IDENTIFIER> { retval = new CollateExpression(retval, token.image); } 
+    ]
 
     ( "::" type=ColDataType() {
         castExpr = new CastExpression();
