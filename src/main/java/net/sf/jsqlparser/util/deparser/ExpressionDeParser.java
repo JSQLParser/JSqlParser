@@ -166,7 +166,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(NotExpression notExpr) {
-        buffer.append(NOT);
+        if (notExpr.isExclamationMark()) {
+            buffer.append("! ");
+        } else {
+            buffer.append(NOT);
+        }
         notExpr.getExpression().accept(this);
     }
 
@@ -320,14 +324,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(Parenthesis parenthesis) {
-        if (parenthesis.isNot()) {
-            buffer.append(NOT);
-        }
-
         buffer.append("(");
         parenthesis.getExpression().accept(this);
         buffer.append(")");
-
     }
 
     @Override

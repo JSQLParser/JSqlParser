@@ -3412,6 +3412,10 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT '|' + person_name FROM person JOIN person_group ON person.person_id = person_group.person_id WHERE person_group.group_id = 1 FOR XML PATH('')");
     }
 
+//    @Test
+//    public void testForXmlPath2() throws JSQLParserException {
+//        assertSqlCanBeParsedAndDeparsed("SELECT ( STUFF( (SELECT '|' + person_name FROM person JOIN person_group ON person.person_id = person_group.person_id WHERE person_group.group_id = 1 FOR XML PATH(''), TYPE).value('.', 'varchar(max)'),1,1,'')) AS person_name");
+//    }
     @Test
     public void testChainedunctions() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT func('').func2('') AS foo FROM some_tables");
@@ -3426,6 +3430,46 @@ public class SelectTest {
 //    public void testIntervalExpression() throws JSQLParserException {
 //        assertSqlCanBeParsedAndDeparsed("SELECT count(emails.id) FROM emails WHERE (emails.date_entered + 30 DAYS) > CURRENT_DATE");
 //    }
+    @Test
+    public void testNotVariant() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ! (1 + 1)");
+    }
+
+    @Test
+    public void testNotVariant2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ! 1 + 1");
+    }
+
+    @Test
+    public void testNotVariant3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT NOT (1 + 1)");
+    }
+
+    @Test
+    public void testDateArithmentic() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CURRENT_DATE + (1 DAY) FROM SYSIBM.SYSDUMMY1");
+    }
+
+    @Test
+    public void testDateArithmentic2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CURRENT_DATE + 1 DAY AS NEXT_DATE FROM SYSIBM.SYSDUMMY1");
+    }
+
+    @Test
+    public void testDateArithmentic3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CURRENT_DATE + 1 DAY NEXT_DATE FROM SYSIBM.SYSDUMMY1");
+    }
+
+    @Test
+    public void testDateArithmentic4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CURRENT_DATE - 1 DAY + 1 YEAR - 1 MONTH FROM SYSIBM.SYSDUMMY1");
+    }
+
+    @Test
+    public void testDateArithmentic5() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN CURRENT_DATE BETWEEN (CURRENT_DATE - 1 DAY) AND ('2019-01-01') THEN 1 ELSE 0 END FROM SYSIBM.SYSDUMMY1");
+    }
+
     @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
         for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {

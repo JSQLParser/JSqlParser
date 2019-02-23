@@ -14,8 +14,6 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class Parenthesis extends ASTNodeAccessImpl implements Expression {
 
     private Expression expression;
-    
-    private boolean not = false;
 
     public Parenthesis() {
     }
@@ -37,16 +35,8 @@ public class Parenthesis extends ASTNodeAccessImpl implements Expression {
         expressionVisitor.visit(this);
     }
 
-    public void setNot() {
-        not = true;
-    }
-
-    public boolean isNot() {
-        return not;
-    }
-
     @Override
     public String toString() {
-        return (not ? "NOT " : "") + "(" + expression + ")";
+        return "(" + expression + ")";
     }
 }

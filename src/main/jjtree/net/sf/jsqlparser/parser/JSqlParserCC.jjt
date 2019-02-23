@@ -140,6 +140,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CROSS:"CROSS">
 |   <K_CURRENT: "CURRENT">
 |   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
+|   <K_DATE_LITERAL : ( "YEAR" | "MONTH" | "DAY" ) >
 |   <K_DEFERRABLE : "DEFERRABLE">
 |   <K_DELAYED : "DELAYED">
 |   <K_DELETE:"DELETE">
@@ -1046,6 +1047,7 @@ String RelObjectNameWithoutValue() :
 	  | tk=<K_UNSIGNED>
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TYPE> | tk=<K_ISNULL> 
 	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
+      | tk=<K_DATE_LITERAL>
 /*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
 
@@ -2119,7 +2121,7 @@ Expression AndExpression() :
         left=Condition()
         |
         [ <K_NOT> { not = true; } ]
-        "(" left=OrExpression() ")" {left = new Parenthesis(left); if (not) { ((Parenthesis)left).setNot(); not = false; } }
+        "(" left=OrExpression() ")" {left = new Parenthesis(left); if (not) { left = new NotExpression(left); not = false; } }
     )
     { result = left; }
 
@@ -2130,7 +2132,7 @@ Expression AndExpression() :
             right=Condition()
             |
             [ <K_NOT> { not = true; } ]
-            "(" right=OrExpression() ")" {right = new Parenthesis(right); if (not) { ((Parenthesis)right).setNot(); not = false; } }
+            "(" right=OrExpression() ")" {right = new Parenthesis(right); if (not) { right = new NotExpression(right); not = false; } }
         )
         {
             result = new AndExpression(left, right);
@@ -2149,7 +2151,7 @@ Expression Condition():
     boolean not = false;
 }
 {
-    [ <K_NOT> { not = true; }]
+    [ LOOKAHEAD(2) <K_NOT> { not = true; }]
     (
         LOOKAHEAD(SQLCondition()) result=SQLCondition()
         | LOOKAHEAD(RegularCondition()) result=RegularCondition()
@@ -2661,8 +2663,11 @@ Expression PrimaryExpression() #PrimaryExpression:
     Token sign = null;
     String tmp = "";
     ColDataType type = null;
+    boolean not = false;
+    boolean exclamationMarkNot = false;
 }
 {
+    [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
     [sign="+" | sign="-" | sign="~"]
     (
         <K_NULL> { retval = new NullValue(); }
@@ -2689,6 +2694,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(Function()) retval=Function()
 
+        | LOOKAHEAD(2) retval = IntervalExpression()
+
         | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
 
         | token=<S_LONG> { retval = new LongValue(token.image); }
@@ -2702,14 +2709,12 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
 
-        | LOOKAHEAD(2) retval = IntervalExpression()
-
         | retval = NextValExpression()
 
         | retval=Column() 
 
         | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
-
+        
         | "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
 
         | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
@@ -2736,6 +2741,9 @@ Expression PrimaryExpression() #PrimaryExpression:
     {
         if (sign != null) {
             retval = new SignedExpression(sign.image.charAt(0), retval);
+        }
+        if (not) {
+            retval = new NotExpression(retval, exclamationMarkNot);
         }
         return retval;
     }
@@ -2817,14 +2825,22 @@ JsonExpression JsonExpression() : {
 }
 
 IntervalExpression IntervalExpression() : {
-    IntervalExpression interval = new IntervalExpression();
+    IntervalExpression interval;
     Token token;
     boolean signed = false;
 }
 {
-    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL>) 
-    { interval.setParameter((signed?"-":"") + token.image); }
-    [ LOOKAHEAD(2) token = <S_IDENTIFIER> { interval.setIntervalType(token.image); } ]
+    (
+        { interval = new IntervalExpression(); }
+        <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> ) 
+        { interval.setParameter((signed?"-":"") + token.image); }
+        [ LOOKAHEAD(2) (token = <S_IDENTIFIER> | token = <K_DATE_LITERAL>) { interval.setIntervalType(token.image); } ]
+    |
+        { interval = new IntervalExpression(false); }
+        ( token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> ) 
+        { interval.setParameter((signed?"-":"") + token.image); }
+        token = <K_DATE_LITERAL> { interval.setIntervalType(token.image); }
+    )
     {
         return interval;
     }

@@ -15,6 +15,15 @@ public class IntervalExpression extends ASTNodeAccessImpl implements Expression 
 
     private String parameter = null;
     private String intervalType = null;
+    private final boolean intervalKeyword;
+
+    public IntervalExpression() {
+        this(true);
+    }
+
+    public IntervalExpression(boolean intervalKeyword) {
+        this.intervalKeyword = intervalKeyword;
+    }
 
     public String getParameter() {
         return parameter;
@@ -34,7 +43,7 @@ public class IntervalExpression extends ASTNodeAccessImpl implements Expression 
 
     @Override
     public String toString() {
-        return "INTERVAL " + parameter + (intervalType != null ? " " + intervalType : "");
+        return (intervalKeyword ? "INTERVAL " : "") + parameter + (intervalType != null ? " " + intervalType : "");
     }
 
     @Override
