@@ -3471,6 +3471,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testNotProblemIssue721() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM dual WHERE NOT regexp_like('a', '[\\w]+')");
+    }
+
+    @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
         for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {
             final String prefix = c;
