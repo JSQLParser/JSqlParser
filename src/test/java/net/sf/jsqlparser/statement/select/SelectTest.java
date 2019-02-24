@@ -3476,6 +3476,19 @@ public class SelectTest {
     }
 
     @Test
+    @Ignore
+    public void testIssue699() throws JSQLParserException {
+        String sql = "SELECT count(1) "
+                + "FROM table_name "
+                + "WHERE 1 = 1 "
+                + "AN D uid = 1 "
+                + "AND type IN (1, 2, 3) "
+                + "AND time >= TIMESTAMP(DATE_SUB(CURDATE(),INTERVAL 2 DAY),'00:00:00') "
+                + "AND time < TIMESTAMP(DATE_SUB(CURDATE(),INTERVAL (2 - 1) DAY),'00:00:00')";
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
         for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {
             final String prefix = c;
