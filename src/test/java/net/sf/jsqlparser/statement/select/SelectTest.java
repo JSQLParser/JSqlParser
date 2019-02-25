@@ -3471,6 +3471,21 @@ public class SelectTest {
     }
 
     @Test
+    public void testDateArithmentic6() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CURRENT_DATE + HOURS_OFFSET HOUR AS NEXT_DATE FROM SYSIBM.SYSDUMMY1");
+    }
+
+    @Test
+    public void testDateArithmentic7() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CURRENT_DATE + MINUTE_OFFSET MINUTE AS NEXT_DATE FROM SYSIBM.SYSDUMMY1");
+    }
+
+    @Test
+    public void testDateArithmentic8() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CURRENT_DATE + SECONDS_OFFSET SECOND AS NEXT_DATE FROM SYSIBM.SYSDUMMY1");
+    }
+
+    @Test
     public void testNotProblemIssue721() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM dual WHERE NOT regexp_like('a', '[\\w]+')");
     }

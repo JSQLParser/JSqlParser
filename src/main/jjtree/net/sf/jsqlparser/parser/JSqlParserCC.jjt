@@ -140,7 +140,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CROSS:"CROSS">
 |   <K_CURRENT: "CURRENT">
 |   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
-|   <K_DATE_LITERAL : ( "YEAR" | "MONTH" | "DAY" ) >
+|   <K_DATE_LITERAL : ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" ) >
 |   <K_DEFERRABLE : "DEFERRABLE">
 |   <K_DELAYED : "DELAYED">
 |   <K_DELETE:"DELETE">
@@ -2837,7 +2837,7 @@ IntervalExpression IntervalExpression() : {
         [ LOOKAHEAD(2) (token = <S_IDENTIFIER> | token = <K_DATE_LITERAL>) { interval.setIntervalType(token.image); } ]
     |
         { interval = new IntervalExpression(false); }
-        ( token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> ) 
+        ( token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | token = <S_IDENTIFIER>)
         { interval.setParameter((signed?"-":"") + token.image); }
         token = <K_DATE_LITERAL> { interval.setIntervalType(token.image); }
     )
