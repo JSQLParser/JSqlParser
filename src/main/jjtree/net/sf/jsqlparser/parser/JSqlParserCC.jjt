@@ -2665,6 +2665,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     ColDataType type = null;
     boolean not = false;
     boolean exclamationMarkNot = false;
+    boolean dateExpressionAllowed = true;
 }
 {
     [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -2694,7 +2695,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(Function()) retval=Function()
 
-        | LOOKAHEAD(2) retval = IntervalExpression()
+        | LOOKAHEAD(2) retval = IntervalExpression() { dateExpressionAllowed = false; }
 
         | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
 
@@ -2728,6 +2729,10 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     [
         <K_COLLATE> token=<S_IDENTIFIER> { retval = new CollateExpression(retval, token.image); } 
+    ]
+
+    [
+        LOOKAHEAD(2, { dateExpressionAllowed } ) retval = IntervalExpressionWithoutInterval(retval)
     ]
 
     ( "::" type=ColDataType() {
@@ -2830,17 +2835,26 @@ IntervalExpression IntervalExpression() : {
     boolean signed = false;
 }
 {
-    (
-        { interval = new IntervalExpression(); }
-        <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> ) 
-        { interval.setParameter((signed?"-":"") + token.image); }
-        [ LOOKAHEAD(2) (token = <S_IDENTIFIER> | token = <K_DATE_LITERAL>) { interval.setIntervalType(token.image); } ]
-    |
-        { interval = new IntervalExpression(false); }
-        ( token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | token = <S_IDENTIFIER>)
-        { interval.setParameter((signed?"-":"") + token.image); }
-        token = <K_DATE_LITERAL> { interval.setIntervalType(token.image); }
-    )
+    { interval = new IntervalExpression(); }
+    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> ) 
+    { interval.setParameter((signed?"-":"") + token.image); }
+    [ LOOKAHEAD(2) (token = <S_IDENTIFIER> | token = <K_DATE_LITERAL>) { interval.setIntervalType(token.image); } ]
+    {
+        return interval;
+    }
+}
+
+IntervalExpression IntervalExpressionWithoutInterval(Expression expr) : {
+    IntervalExpression interval;
+    Token token;
+    boolean signed = false;
+}
+{
+    { 
+        interval = new IntervalExpression(false);
+        interval.setExpression(expr);
+    }
+    token = <K_DATE_LITERAL> { interval.setIntervalType(token.image); }
     {
         return interval;
     }

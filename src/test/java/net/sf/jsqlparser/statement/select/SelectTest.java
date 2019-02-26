@@ -3504,6 +3504,68 @@ public class SelectTest {
     }
 
     @Test
+    public void testDateArithmentic9() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CURRENT_DATE + (RAND() * 12 MONTH) AS new_date FROM mytable");
+    }
+
+    @Test
+    public void testDateArithmentic10() throws JSQLParserException {
+        String sql = "select CURRENT_DATE + CASE WHEN CAST(RAND() * 3 AS INTEGER) = 1 THEN 100 ELSE 0 END DAY AS NEW_DATE from mytable";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+
+    }
+
+    @Test
+    public void testDateArithmentic11() throws JSQLParserException {
+        String sql = "select CURRENT_DATE + (dayofweek(MY_DUE_DATE) + 5) DAY FROM mytable";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        final List<SelectItem> list = new ArrayList<>();
+        select.getSelectBody().accept(new SelectVisitorAdapter() {
+            @Override
+            public void visit(PlainSelect plainSelect) {
+                list.addAll(plainSelect.getSelectItems());
+            }
+        });
+
+        assertEquals(1, list.size());
+        assertTrue(list.get(0) instanceof SelectExpressionItem);
+        SelectExpressionItem item = (SelectExpressionItem) list.get(0);
+        assertTrue(item.getExpression() instanceof Addition);
+        Addition add = (Addition) item.getExpression();
+
+        assertTrue(add.getRightExpression() instanceof IntervalExpression);
+    }
+
+    @Test
+    public void testDateArithmentic12() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select CASE WHEN CAST(RAND() * 3 AS INTEGER) = 1 THEN NULL ELSE CURRENT_DATE + (month_offset MONTH) END FROM mytable", true);
+    }
+
+    @Test
+    public void testDateArithmentic13() throws JSQLParserException {
+        String sql = "SELECT INTERVAL 5 MONTH MONTH FROM mytable";
+        assertSqlCanBeParsedAndDeparsed(sql);
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        final List<SelectItem> list = new ArrayList<>();
+        select.getSelectBody().accept(new SelectVisitorAdapter() {
+            @Override
+            public void visit(PlainSelect plainSelect) {
+                list.addAll(plainSelect.getSelectItems());
+            }
+        });
+
+        assertEquals(1, list.size());
+        assertTrue(list.get(0) instanceof SelectExpressionItem);
+        SelectExpressionItem item = (SelectExpressionItem) list.get(0);
+        assertTrue(item.getExpression() instanceof IntervalExpression);
+        IntervalExpression interval = (IntervalExpression) item.getExpression();
+        assertEquals("INTERVAL 5 MONTH", interval.toString());
+        assertEquals("MONTH", item.getAlias().getName());
+    }
+
+    @Test
     public void testRawStringExpressionIssue656() throws JSQLParserException {
         for (String c : new String[]{"u", "e", "n", "r", "b", "rb"}) {
             final String prefix = c;

@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Objects;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class IntervalExpression extends ASTNodeAccessImpl implements Expression {
@@ -16,6 +17,7 @@ public class IntervalExpression extends ASTNodeAccessImpl implements Expression 
     private String parameter = null;
     private String intervalType = null;
     private final boolean intervalKeyword;
+    private Expression expression = null;
 
     public IntervalExpression() {
         this(true);
@@ -41,9 +43,19 @@ public class IntervalExpression extends ASTNodeAccessImpl implements Expression 
         this.intervalType = intervalType;
     }
 
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
+
     @Override
     public String toString() {
-        return (intervalKeyword ? "INTERVAL " : "") + parameter + (intervalType != null ? " " + intervalType : "");
+        return (intervalKeyword ? "INTERVAL " : "")
+                + Objects.toString(expression, parameter)
+                + (intervalType != null ? " " + intervalType : "");
     }
 
     @Override
