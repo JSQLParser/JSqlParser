@@ -1130,17 +1130,17 @@ public class SelectTest {
         String statement = "SELECT * FROM tab1 WHERE a > 34 GROUP BY tab1.b";
         Select select = (Select) parserManager.parse(new StringReader(statement));
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
-        assertEquals(1, plainSelect.getGroupByColumnReferences().size());
-        assertEquals("tab1.b", ((Column) plainSelect.getGroupByColumnReferences().get(0)).
+        assertEquals(1, plainSelect.getGroupBy().getGroupByExpressions().size());
+        assertEquals("tab1.b", ((Column) plainSelect.getGroupBy().getGroupByExpressions().get(0)).
                 getFullyQualifiedName());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT * FROM tab1 WHERE a > 34 GROUP BY 2, 3";
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select.getSelectBody();
-        assertEquals(2, plainSelect.getGroupByColumnReferences().size());
-        assertEquals(2, ((LongValue) plainSelect.getGroupByColumnReferences().get(0)).getValue());
-        assertEquals(3, ((LongValue) plainSelect.getGroupByColumnReferences().get(1)).getValue());
+        assertEquals(2, plainSelect.getGroupBy().getGroupByExpressions().size());
+        assertEquals(2, ((LongValue) plainSelect.getGroupBy().getGroupByExpressions().get(0)).getValue());
+        assertEquals(3, ((LongValue) plainSelect.getGroupBy().getGroupByExpressions().get(1)).getValue());
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -3590,5 +3590,22 @@ public class SelectTest {
                 }
             });
         }
+    }
+
+    @Test
+    public void testGroupingSets1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COL_1, COL_2, COL_3, COL_4, COL_5, COL_6 FROM TABLE_1 "
+                + "GROUP  BY "
+                + " GROUPING SETS( (COL_1, COL_2, COL_3, COL_4), (COL_5, COL_6))");
+    }
+
+    @Test
+    public void testGroupingSets2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COL_1 FROM TABLE_1 GROUP  BY GROUPING SETS( COL_1 )");
+    }
+
+    @Test
+    public void testGroupingSets3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COL_1 FROM TABLE_1 GROUP  BY GROUPING SETS( COL_1, () )");
     }
 }

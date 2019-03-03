@@ -1155,7 +1155,7 @@ PlainSelect PlainSelect() #PlainSelect:
     List<SelectItem> distinctOn = null;
     Expression where = null;
     List<OrderByElement> orderByElements;
-    List<Expression> groupByColumnReferences = null;
+    GroupByElement groupBy = null;
     Expression having = null;
     Limit limit = null;
     Offset offset = null;
@@ -1212,7 +1212,7 @@ PlainSelect PlainSelect() #PlainSelect:
 
     [ where=WhereClause() { plainSelect.setWhere(where); }]
     [ oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
-    [ groupByColumnReferences=GroupByColumnReferences() { plainSelect.setGroupByColumnReferences(groupByColumnReferences); }]
+    [ groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
     [ having=Having() { plainSelect.setHaving(having); }]
     [LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
     [LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements);    }   ]
@@ -1795,16 +1795,16 @@ OracleHierarchicalExpression OracleHierarchicalQueryClause():
     }
 }
 
-List<Expression> GroupByColumnReferences():
+GroupByElement GroupByColumnReferences():
 {
-    Expression columnReference = null;
-    List<Expression> columnReferences = new ArrayList<Expression>();
+    Expression columnReference;
+    GroupByElement groupBy = new GroupByElement();
 }
 {
-    <K_GROUP> <K_BY> columnReference=SimpleExpression() {columnReferences.add(columnReference); }
-    ("," columnReference=SimpleExpression()  {columnReferences.add(columnReference); } )*
+    <K_GROUP> <K_BY> columnReference=SimpleExpression() {groupBy.addGroupByExpression(columnReference); }
+    ("," columnReference=SimpleExpression()  {groupBy.addGroupByExpression(columnReference); } )*
     {
-        return columnReferences;
+        return groupBy;
     }
 }
 

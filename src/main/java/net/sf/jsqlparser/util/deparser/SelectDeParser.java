@@ -123,16 +123,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             plainSelect.getOracleHierarchical().accept(expressionVisitor);
         }
 
-        if (plainSelect.getGroupByColumnReferences() != null) {
-            buffer.append(" GROUP BY ");
-            for (Iterator<Expression> iter = plainSelect.getGroupByColumnReferences().iterator(); iter.
-                    hasNext();) {
-                Expression columnReference = iter.next();
-                columnReference.accept(expressionVisitor);
-                if (iter.hasNext()) {
-                    buffer.append(", ");
-                }
-            }
+        if (plainSelect.getGroupBy() != null) {
+            buffer.append(" ");
+            new GroupByDeParser(expressionVisitor, buffer).deParse(plainSelect.getGroupBy());
         }
 
         if (plainSelect.getHaving() != null) {
@@ -168,7 +161,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             deparseOptimizeFor(plainSelect.getOptimizeFor());
         }
         if (plainSelect.getForXmlPath() != null) {
-            buffer.append(" FOR XML PATH(" + plainSelect.getForXmlPath() + ")");
+            buffer.append(" FOR XML PATH(").append(plainSelect.getForXmlPath()).append(")");
         }
         if (plainSelect.isUseBrackets()) {
             buffer.append(")");
