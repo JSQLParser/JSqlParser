@@ -107,9 +107,18 @@ public class SpecialOracleTest {
             "for_update05.sql",
             "function01.sql",
             "function02.sql",
+            "groupby01.sql",
+            "groupby02.sql",
+            "groupby03.sql",
+            "groupby04.sql",
+            "groupby05.sql",
+            "groupby06.sql",
             "groupby08.sql",
             "groupby09.sql",
+            "groupby10.sql",
+            "groupby11.sql",
             "groupby12.sql",
+            "groupby13.sql",
             "groupby14.sql",
             "groupby19.sql",
             "groupby20.sql",
@@ -228,7 +237,7 @@ public class SpecialOracleTest {
 
         LOG.
                 log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
-        assertTrue(success >= 151);
+        assertTrue(success >= 159);
     }
 
     @Test
