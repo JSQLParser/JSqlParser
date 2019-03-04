@@ -3595,17 +3595,17 @@ public class SelectTest {
     @Test
     public void testGroupingSets1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT COL_1, COL_2, COL_3, COL_4, COL_5, COL_6 FROM TABLE_1 "
-                + "GROUP  BY "
-                + " GROUPING SETS( (COL_1, COL_2, COL_3, COL_4), (COL_5, COL_6))");
+                + "GROUP BY "
+                + "GROUPING SETS ((COL_1, COL_2, COL_3, COL_4), (COL_5, COL_6))");
     }
 
     @Test
     public void testGroupingSets2() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT COL_1 FROM TABLE_1 GROUP  BY GROUPING SETS( COL_1 )");
+        assertSqlCanBeParsedAndDeparsed("SELECT COL_1 FROM TABLE_1 GROUP BY GROUPING SETS (COL_1)");
     }
 
     @Test
     public void testGroupingSets3() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT COL_1 FROM TABLE_1 GROUP  BY GROUPING SETS( COL_1, () )");
+        assertSqlCanBeParsedAndDeparsed("SELECT COL_1 FROM TABLE_1 GROUP BY GROUPING SETS (COL_1, ())");
     }
 }
