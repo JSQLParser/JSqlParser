@@ -572,6 +572,7 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertEquals("foo.product", tableList.get(0));
     }
+
     @Test
     public void testBetween() throws JSQLParserException {
         String sql = "mycol BETWEEN (select col2 from mytable) AND (select col3 from mytable2)";
@@ -582,5 +583,15 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("mytable"));
         assertTrue(tableList.contains("mytable2"));
 
+    }
+
+    @Test
+    public void testRemoteLink() throws JSQLParserException {
+        String sql = "select * from table1@remote";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("table1@remote"));
     }
 }
