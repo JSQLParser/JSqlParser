@@ -9,13 +9,12 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import java.util.Iterator;
+import java.util.List;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
-
-import java.util.Iterator;
-import java.util.List;
 
 public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
@@ -124,16 +123,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             plainSelect.getOracleHierarchical().accept(expressionVisitor);
         }
 
-        if (plainSelect.getGroupByColumnReferences() != null) {
-            buffer.append(" GROUP BY ");
-            for (Iterator<Expression> iter = plainSelect.getGroupByColumnReferences().iterator(); iter.
-                    hasNext();) {
-                Expression columnReference = iter.next();
-                columnReference.accept(expressionVisitor);
-                if (iter.hasNext()) {
-                    buffer.append(", ");
-                }
-            }
+        if (plainSelect.getGroupBy() != null) {
+            buffer.append(" ");
+            new GroupByDeParser(expressionVisitor, buffer).deParse(plainSelect.getGroupBy());
         }
 
         if (plainSelect.getHaving() != null) {
@@ -167,6 +159,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         }
         if (plainSelect.getOptimizeFor() != null) {
             deparseOptimizeFor(plainSelect.getOptimizeFor());
+        }
+        if (plainSelect.getForXmlPath() != null) {
+            buffer.append(" FOR XML PATH(").append(plainSelect.getForXmlPath()).append(")");
         }
         if (plainSelect.isUseBrackets()) {
             buffer.append(")");
@@ -328,11 +323,11 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     }
 
     public void deparseJoin(Join join) {
-            if (join.isSimple() && join.isOuter()) {
-               buffer.append(", OUTER ");
-            } else if (join.isSimple()) {
-               buffer.append(", ");
-            } else {
+        if (join.isSimple() && join.isOuter()) {
+            buffer.append(", OUTER ");
+        } else if (join.isSimple()) {
+            buffer.append(", ");
+        } else {
 
             if (join.isRight()) {
                 buffer.append(" RIGHT");

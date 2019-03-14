@@ -17,6 +17,7 @@ import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
+import net.sf.jsqlparser.expression.CollateExpression;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -32,6 +33,7 @@ import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
+import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
@@ -65,7 +67,6 @@ import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
@@ -77,6 +78,7 @@ import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
@@ -164,7 +166,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(NotExpression notExpr) {
-        buffer.append(NOT);
+        if (notExpr.isExclamationMark()) {
+            buffer.append("! ");
+        } else {
+            buffer.append(NOT);
+        }
         notExpr.getExpression().accept(this);
     }
 
@@ -318,14 +324,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(Parenthesis parenthesis) {
-        if (parenthesis.isNot()) {
-            buffer.append(NOT);
-        }
-
         buffer.append("(");
         parenthesis.getExpression().accept(this);
         buffer.append(")");
-
     }
 
     @Override
@@ -342,7 +343,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         visitBinaryExpression(subtraction, " - ");
     }
 
-    private void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
+    protected void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
         if (binaryExpression.isNot()) {
             buffer.append(NOT);
         }
@@ -416,10 +417,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
                 useBracketsInExprList = false;
                 buffer.append("(ALL ");
             }
-            if(function.getNamedParameters() != null){
+            if (function.getNamedParameters() != null) {
                 visit(function.getNamedParameters());
             }
-            if(function.getParameters() != null){
+            if (function.getParameters() != null) {
                 visit(function.getParameters());
             }
             useBracketsInExprList = oldUseBracketsInExprList;
@@ -430,6 +431,8 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
         if (function.getAttribute() != null) {
             buffer.append(".").append(function.getAttribute());
+        } else if (function.getAttributeName() != null) {
+            buffer.append(".").append(function.getAttributeName());
         }
         if (function.getKeep() != null) {
             buffer.append(" ").append(function.getKeep());
@@ -464,12 +467,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         }
         List<String> names = namedExpressionList.getNames();
         List<Expression> expressions = namedExpressionList.getExpressions();
-        for (int i=0; i<names.size(); i++){
-            if(i>0){
+        for (int i = 0; i < names.size(); i++) {
+            if (i > 0) {
                 buffer.append(" ");
             }
             String name = names.get(i);
-            if(! name.equals("")){
+            if (!name.equals("")) {
                 buffer.append(name);
                 buffer.append(" ");
             }
@@ -779,6 +782,16 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(DateTimeLiteralExpression literal) {
         buffer.append(literal.toString());
+    }
+
+    @Override
+    public void visit(NextValExpression nextVal) {
+        buffer.append("NEXTVAL FOR ").append(nextVal.getName());
+    }
+
+    @Override
+    public void visit(CollateExpression col) {
+        buffer.append(col.getLeftExpression().toString()).append(" COLLATE ").append(col.getCollate());
     }
 
 }

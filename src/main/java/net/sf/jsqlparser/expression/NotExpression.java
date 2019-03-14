@@ -15,8 +15,15 @@ public class NotExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression expression;
 
+    private boolean exclamationMark = false;
+
     public NotExpression(Expression expression) {
+        this(expression, false);
+    }
+
+    public NotExpression(Expression expression, boolean useExclamationMark) {
         setExpression(expression);
+        this.exclamationMark = useExclamationMark;
     }
 
     public Expression getExpression() {
@@ -34,6 +41,14 @@ public class NotExpression extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public String toString() {
-        return "NOT " + expression.toString();
+        return (exclamationMark ? "! " : "NOT ") + expression.toString();
+    }
+
+    public boolean isExclamationMark() {
+        return exclamationMark;
+    }
+
+    public void setExclamationMark(boolean exclamationMark) {
+        this.exclamationMark = exclamationMark;
     }
 }

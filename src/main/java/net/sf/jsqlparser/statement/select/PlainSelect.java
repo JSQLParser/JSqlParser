@@ -27,7 +27,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private FromItem fromItem;
     private List<Join> joins;
     private Expression where;
-    private List<Expression> groupByColumnReferences;
+    private GroupByElement groupBy;
     private List<OrderByElement> orderByElements;
     private Expression having;
     private Limit limit;
@@ -46,6 +46,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private Wait wait;
     private boolean mySqlSqlCalcFoundRows = false;
     private boolean sqlNoCacheFlag = false;
+    private String forXmlPath;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -198,19 +199,19 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
      *
      * @return a list of {@link Expression}s
      */
-    public List<Expression> getGroupByColumnReferences() {
-        return groupByColumnReferences;
+    public GroupByElement getGroupBy() {
+        return this.groupBy;
     }
 
-    public void setGroupByColumnReferences(List<Expression> list) {
-        groupByColumnReferences = list;
+    public void setGroupByElement(GroupByElement groupBy) {
+        this.groupBy = groupBy;
     }
 
     public void addGroupByColumnReference(Expression expr) {
-        if (groupByColumnReferences == null) {
-            groupByColumnReferences = new ArrayList<Expression>();
+        if (groupBy == null) {
+            groupBy = new GroupByElement();
         }
-        groupByColumnReferences.add(expr);
+        groupBy.addGroupByExpression(expr);
     }
 
     public OracleHierarchicalExpression getOracleHierarchical() {
@@ -269,6 +270,14 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
      */
     public Wait getWait() {
         return wait;
+    }
+
+    public String getForXmlPath() {
+        return forXmlPath;
+    }
+
+    public void setForXmlPath(String forXmlPath) {
+        this.forXmlPath = forXmlPath;
     }
 
     @Override
@@ -334,7 +343,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             if (oracleHierarchical != null) {
                 sql.append(oracleHierarchical.toString());
             }
-            sql.append(getFormatedList(groupByColumnReferences, "GROUP BY"));
+            if (groupBy != null) {
+                sql.append(" ").append(groupBy.toString());
+            }
             if (having != null) {
                 sql.append(" HAVING ").append(having);
             }
@@ -368,6 +379,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             if (where != null) {
                 sql.append(" WHERE ").append(where);
             }
+        }
+        if (forXmlPath != null) {
+            sql.append(" FOR XML PATH(").append(forXmlPath).append(")");
         }
         if (useBrackets) {
             sql.append(")");

@@ -7,8 +7,9 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.statement.alter;
+package net.sf.jsqlparser.statement.select;
 
-public enum AlterOperation {
-    ADD, ALTER, DROP, MODIFY, CHANGE, ALGORITHM;
+public interface GroupByVisitor {
+
+    void visit(GroupByElement groupBy);
 }
