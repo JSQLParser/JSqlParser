@@ -60,7 +60,7 @@ Also I would like to know about needed examples or documentation stuff.
 ## Extensions in the latest SNAPSHOT version 2.0
 
 * support for **GROUPING SETS**
-* first support for db date arithmentic
+* first support for db date arithmetic
 * support for chained functions
 * first support for **FOR XML PATH**
 * support for **NEXTVAL FOR**
