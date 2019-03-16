@@ -3608,4 +3608,9 @@ public class SelectTest {
     public void testGroupingSets3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT COL_1 FROM TABLE_1 GROUP BY GROUPING SETS (COL_1, ())");
     }
+
+    @Test
+    public void testLongQualifiedNamesIssue763() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT mongodb.test.test.intField, postgres.test.test.intField, postgres.test.test.datefield FROM mongodb.test.test JOIN postgres.postgres.test.test ON mongodb.test.test.intField = postgres.test.test.intField WHERE mongodb.test.test.intField = 123");
+    }
 }
