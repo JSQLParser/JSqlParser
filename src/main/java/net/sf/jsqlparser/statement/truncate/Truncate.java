@@ -31,18 +31,18 @@ public class Truncate implements Statement {
         this.table = table;
     }
 
-    public boolean getCascade(){
+    public boolean getCascade() {
         return cascade;
     }
 
-    public void setCascade(boolean c){
-        cascade=c;
+    public void setCascade(boolean c) {
+        cascade = c;
     }
 
     @Override
     public String toString() {
-        if(cascade){
-            return "TRUNCATE TABLE " + table+" CASCADE";
+        if (cascade) {
+            return "TRUNCATE TABLE " + table + " CASCADE";
         }
         return "TRUNCATE TABLE " + table;
     }
