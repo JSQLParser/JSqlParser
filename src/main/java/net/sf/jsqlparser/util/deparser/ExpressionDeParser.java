@@ -410,6 +410,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
             buffer.append("()");
         } else {
             boolean oldUseBracketsInExprList = useBracketsInExprList;
+            useBracketsInExprList = true;
             if (function.isDistinct()) {
                 useBracketsInExprList = false;
                 buffer.append("(DISTINCT ");

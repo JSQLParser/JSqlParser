@@ -39,7 +39,7 @@ public class SpecialOracleTest {
     private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/statement/oracle-tests");
     private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
 
-    private List<String> successes = Arrays.asList("aggregate01.sql",
+    private final List<String> successes = Arrays.asList("aggregate01.sql",
             "analytic_query06.sql",
             "analytic_query08.sql",
             "analytic_query09.sql",
