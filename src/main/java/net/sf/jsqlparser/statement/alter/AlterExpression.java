@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -148,12 +147,12 @@ public class AlterExpression {
     public void setConstraintName(final String constraintName) {
         this.constraintName = constraintName;
     }
-    
+
     public boolean isConstraintIfExists() {
         return constraintIfExists;
     }
-    
-    public void setConstraintIfExists( boolean constraintIfExists ) {
+
+    public void setConstraintIfExists(boolean constraintIfExists) {
         this.constraintIfExists = constraintIfExists;
     }
 
@@ -234,8 +233,8 @@ public class AlterExpression {
         if (columnName != null) {
             b.append("COLUMN ").append(columnName);
         } else if (getColDataTypeList() != null) {
-            if(operation == AlterOperation.CHANGE) {
-                if(optionalSpecifier != null) {
+            if (operation == AlterOperation.CHANGE) {
+                if (optionalSpecifier != null) {
                     b.append(optionalSpecifier).append(" ");
                 }
                 b.append(columnOldName).append(" ");
@@ -250,8 +249,8 @@ public class AlterExpression {
             }
         } else if (constraintName != null) {
             b.append("CONSTRAINT ");
-            if(constraintIfExists) {
-               b.append("IF EXISTS ");
+            if (constraintIfExists) {
+                b.append("IF EXISTS ");
             }
             b.append(constraintName);
         } else if (pkColumns != null) {
@@ -264,7 +263,7 @@ public class AlterExpression {
                 } else {
                     b.append(" INDEX ");
                 }
-              b.append(ukName);    
+                b.append(ukName);
             }
             b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
@@ -287,7 +286,7 @@ public class AlterExpression {
         if (getUseEqual()) {
             b.append('=');
         }
-        if (parameters!=null && !parameters.isEmpty()) {
+        if (parameters != null && !parameters.isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
         }
 
@@ -325,7 +324,7 @@ public class AlterExpression {
 
         @Override
         public String toString() {
-            return columnName + ( withType ? " TYPE " : " " ) + colDataType + parametersToString();
+            return columnName + (withType ? " TYPE " : " ") + colDataType + parametersToString();
         }
 
         private String parametersToString() {

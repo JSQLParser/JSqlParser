@@ -33,9 +33,9 @@ public class AlterViewDeParser {
     }
 
     public void deParse(AlterView alterView) {
-        if(alterView.isUseReplace()){
+        if (alterView.isUseReplace()) {
             buffer.append("REPLACE ");
-        }else{
+        } else {
             buffer.append("ALTER ");
         }
         buffer.append("VIEW ").append(alterView.getView().getFullyQualifiedName());

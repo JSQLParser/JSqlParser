@@ -60,13 +60,12 @@ public class AlterView implements Statement {
         this.useReplace = useReplace;
     }
 
-
     @Override
     public String toString() {
         StringBuilder sql;
-        if(useReplace){
+        if (useReplace) {
             sql = new StringBuilder("REPLACE ");
-        }else{
+        } else {
             sql = new StringBuilder("ALTER ");
         }
         sql.append("VIEW ");
