@@ -2700,7 +2700,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2) retval=NumericBind()
 
-        | LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression()
+        /* | LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression() */
 
         | LOOKAHEAD(3) retval=ExtractExpression()
 
