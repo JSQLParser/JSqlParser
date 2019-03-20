@@ -24,6 +24,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private Expression attribute;
     private String attributeName;
     private KeepExpression keep = null;
+    private boolean ignoreNulls = false;
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
@@ -44,6 +45,20 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public void setAllColumns(boolean b) {
         allColumns = b;
+    }
+
+    public boolean isIgnoreNulls() {
+        return ignoreNulls;
+    }
+
+    /**
+     * This is at the moment only necessary for AnalyticExpression initialization and not for normal
+     * functions. Therefore there is no deparsing for it for normal functions.
+     *
+     * @param ignoreNulls
+     */
+    public void setIgnoreNulls(boolean ignoreNulls) {
+        this.ignoreNulls = ignoreNulls;
     }
 
     /**
