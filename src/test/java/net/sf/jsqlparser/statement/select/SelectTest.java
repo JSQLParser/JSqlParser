@@ -3619,4 +3619,9 @@ public class SelectTest {
         Statement parse = CCJSqlParserUtil.parse(new StringReader("SELECT mongodb.test.test.intField, postgres.test.test.intField, postgres.test.test.datefield FROM mongodb.test.test JOIN postgres.postgres.test.test ON mongodb.test.test.intField = postgres.test.test.intField WHERE mongodb.test.test.intField = 123"));
         System.out.println(parse.toString());
     }
+
+    @Test
+    public void testSubQueryAliasIssue754() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT C0 FROM T0 INNER JOIN T1 ON C1 = C0 INNER JOIN (SELECT W1 FROM T2) S1 ON S1.W1 = C0 ORDER BY C0");
+    }
 }
