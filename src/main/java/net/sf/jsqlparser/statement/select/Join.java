@@ -26,6 +26,7 @@ public class Join extends ASTNodeAccessImpl {
     private boolean simple = false;
     private boolean cross = false;
     private boolean semi = false;
+    private boolean straight = false;
     private FromItem rightItem;
     private Expression onExpression;
     private List<Column> usingColumns;
@@ -45,6 +46,14 @@ public class Join extends ASTNodeAccessImpl {
 
     public void setInner(boolean b) {
         inner = b;
+    }
+
+    public boolean isStraight() {
+        return straight;
+    }
+
+    public void setStraight(boolean b) {
+        straight = b;
     }
 
     /**
@@ -210,7 +219,13 @@ public class Join extends ASTNodeAccessImpl {
                 type += "SEMI ";
             }
 
-            return type + "JOIN " + rightItem + ((joinWindow != null) ? " WITHIN " + joinWindow : "")
+            if (!isStraight()) {
+                type += "JOIN ";
+            } else {
+                type = "STRAIGHT_JOIN ";
+            }
+
+            return type + rightItem + ((joinWindow != null) ? " WITHIN " + joinWindow : "")
                     + ((onExpression != null) ? " ON " + onExpression + "" : "")
                     + PlainSelect.getFormatedList(usingColumns, "USING", true, true);
         }
