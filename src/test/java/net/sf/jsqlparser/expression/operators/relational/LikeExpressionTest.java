@@ -9,7 +9,8 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
@@ -22,7 +23,7 @@ public class LikeExpressionTest {
     public void testLikeNotIssue660() {
         LikeExpression instance = new LikeExpression();
         assertFalse(instance.isNot());
-        instance.setNot();
+        instance.setNot(true);
         assertTrue(instance.isNot());
     }
 }

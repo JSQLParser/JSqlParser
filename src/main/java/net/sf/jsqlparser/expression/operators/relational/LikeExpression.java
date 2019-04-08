@@ -14,18 +14,18 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class LikeExpression extends BinaryExpression {
 
-    //private boolean not = false;
+    private boolean not = false;
     private String escape = null;
     private boolean caseInsensitive = false;
 
-//    @Override
-//    public boolean isNot() {
-//        return not;
-//    }
-//
-//    public void setNot(boolean b) {
-//        not = b;
-//    }
+    public boolean isNot() {
+        return not;
+    }
+
+    public void setNot(boolean b) {
+        not = b;
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
@@ -38,7 +38,7 @@ public class LikeExpression extends BinaryExpression {
 
     @Override
     public String toString() {
-        String retval = super.toString();
+        String retval = getLeftExpression() + " " + (not ? "NOT " : "") + getStringExpression() + " " + getRightExpression();
         if (escape != null) {
             retval += " ESCAPE " + "'" + escape + "'";
         }

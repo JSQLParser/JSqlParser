@@ -1350,6 +1350,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testNotLikeIssue775() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mybatisplus WHERE id NOT LIKE ?");
+    }
+
+    @Test
     public void testIlike() throws JSQLParserException {
         String statement = "SELECT col1 FROM table1 WHERE col1 ILIKE '%hello%'";
         assertSqlCanBeParsedAndDeparsed(statement);

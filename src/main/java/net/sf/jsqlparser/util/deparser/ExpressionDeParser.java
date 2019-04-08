@@ -185,9 +185,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     }
 
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
-        if (expression.isNot()) {
-            buffer.append(NOT);
-        }
+//        if (expression.isNot()) {
+//            buffer.append(NOT);
+//        }
         expression.getLeftExpression().accept(this);
         if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_RIGHT) {
             buffer.append("(+)");
@@ -263,7 +263,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(LikeExpression likeExpression) {
-        visitBinaryExpression(likeExpression, likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE ");
+        visitBinaryExpression(likeExpression,
+                (likeExpression.isNot() ? " NOT" : "")
+                + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
         String escape = likeExpression.getEscape();
         if (escape != null) {
             buffer.append(" ESCAPE '").append(escape).append('\'');
@@ -344,9 +346,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     }
 
     protected void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
-        if (binaryExpression.isNot()) {
-            buffer.append(NOT);
-        }
+//        if (binaryExpression.isNot()) {
+//            buffer.append(NOT);
+//        }
         binaryExpression.getLeftExpression().accept(this);
         buffer.append(operator);
         binaryExpression.getRightExpression().accept(this);
