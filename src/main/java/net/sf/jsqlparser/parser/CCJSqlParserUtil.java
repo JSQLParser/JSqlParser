@@ -70,7 +70,7 @@ public final class CCJSqlParserUtil {
     public static Expression parseExpression(String expression) throws JSQLParserException {
         return parseExpression(expression, true);
     }
-    
+
     public static Expression parseExpression(String expression, boolean allowPartialParse) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(expression));
         try {
@@ -119,6 +119,25 @@ public final class CCJSqlParserUtil {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqls));
         try {
             return parser.Statements();
+        } catch (Exception ex) {
+            throw new JSQLParserException(ex);
+        }
+    }
+
+    public static void streamStatements(StatementListener listener, InputStream is, String encoding) throws JSQLParserException {
+        try {
+            CCJSqlParser parser = new CCJSqlParser(new StreamProvider(is, encoding));
+            while (true) {
+                Statement stmt = parser.SingleStatement();
+                listener.accept(stmt);
+                if (parser.getToken(1).kind == CCJSqlParserTokenManager.ST_SEMICOLON) {
+                    parser.getNextToken();
+                }
+
+                if (parser.getToken(1).kind == CCJSqlParserTokenManager.EOF) {
+                    break;
+                }
+            }
         } catch (Exception ex) {
             throw new JSQLParserException(ex);
         }
