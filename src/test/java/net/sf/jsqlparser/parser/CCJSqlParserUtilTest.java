@@ -9,6 +9,11 @@
  */
 package net.sf.jsqlparser.parser;
 
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -16,15 +21,11 @@ import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -81,12 +82,12 @@ public class CCJSqlParserUtilTest {
 
     @Test(expected = JSQLParserException.class)
     public void testParseExpressionFromStringFail() throws Exception {
-         CCJSqlParserUtil.parse("whatever$");
+        CCJSqlParserUtil.parse("whatever$");
     }
 
     @Test(expected = JSQLParserException.class)
     public void testParseExpressionFromRaderFail() throws Exception {
-         CCJSqlParserUtil.parse(new StringReader("whatever$"));
+        CCJSqlParserUtil.parse(new StringReader("whatever$"));
     }
 
     @Test
@@ -103,19 +104,19 @@ public class CCJSqlParserUtilTest {
 
     @Test(expected = JSQLParserException.class)
     public void testParseCondExpressionFail() throws Exception {
-       CCJSqlParserUtil.parseCondExpression(";");
+        CCJSqlParserUtil.parseCondExpression(";");
 
     }
 
     @Test(expected = JSQLParserException.class)
     public void testParseFromStreamFail() throws Exception {
-       CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)));
+        CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)));
 
     }
 
     @Test(expected = JSQLParserException.class)
     public void testParseFromStreamWithEncodingFail() throws Exception {
-       CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8.name());
+        CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8.name());
 
     }
 
@@ -160,14 +161,36 @@ public class CCJSqlParserUtilTest {
                 + "SELECT * FROM dual;\n", result.toString());
     }
 
+    @Test
+    public void testStreamStatementsIssue777() throws Exception {
+        final List<Statement> list = new ArrayList<>();
+
+        CCJSqlParserUtil.streamStatements(new StatementListener() {
+            @Override
+            public void accept(Statement statement) {
+                list.add(statement);
+            }
+        }, new ByteArrayInputStream(("select * from dual;\n"
+                + "select\n"
+                + "*\n"
+                + "from\n"
+                + "dual;\n"
+                + "\n"
+                + "-- some comment\n"
+                + "select *\n"
+                + "from dual;").getBytes(StandardCharsets.UTF_8)), "UTF-8");
+
+        assertEquals(list.size(), 3);
+    }
+
     @Test(expected = JSQLParserException.class)
     public void testParseStatementsFail() throws Exception {
-       CCJSqlParserUtil.parseStatements("select * from dual;WHATEVER!!");
+        CCJSqlParserUtil.parseStatements("select * from dual;WHATEVER!!");
     }
 
     @Test(expected = JSQLParserException.class)
     public void testParseASTFail() throws Exception {
-       CCJSqlParserUtil.parseAST("select * from dual;WHATEVER!!");
+        CCJSqlParserUtil.parseAST("select * from dual;WHATEVER!!");
     }
 
     @Test
@@ -180,14 +203,14 @@ public class CCJSqlParserUtilTest {
 
     @Test
     public void testParseStatementIssue742() throws Exception {
-        Statements result = CCJSqlParserUtil.parseStatements("CREATE TABLE `table_name` (\n" +
-                "  `id` bigint(20) NOT NULL AUTO_INCREMENT,\n" +
-                "  `another_column_id` bigint(20) NOT NULL COMMENT 'column id as sent by SYSTEM',\n" +
-                "  PRIMARY KEY (`id`),\n" +
-                "  UNIQUE KEY `uk_another_column_id` (`another_column_id`)\n" +
-                ")");
-        assertEquals("CREATE TABLE `table_name` (`id` bigint (20) NOT NULL AUTO_INCREMENT, `another_column_id` " +
-                "bigint (20) NOT NULL COMMENT 'column id as sent by SYSTEM', PRIMARY KEY (`id`), UNIQUE KEY `uk_another_column_id` " +
-                "(`another_column_id`));\n", result.toString());
+        Statements result = CCJSqlParserUtil.parseStatements("CREATE TABLE `table_name` (\n"
+                + "  `id` bigint(20) NOT NULL AUTO_INCREMENT,\n"
+                + "  `another_column_id` bigint(20) NOT NULL COMMENT 'column id as sent by SYSTEM',\n"
+                + "  PRIMARY KEY (`id`),\n"
+                + "  UNIQUE KEY `uk_another_column_id` (`another_column_id`)\n"
+                + ")");
+        assertEquals("CREATE TABLE `table_name` (`id` bigint (20) NOT NULL AUTO_INCREMENT, `another_column_id` "
+                + "bigint (20) NOT NULL COMMENT 'column id as sent by SYSTEM', PRIMARY KEY (`id`), UNIQUE KEY `uk_another_column_id` "
+                + "(`another_column_id`));\n", result.toString());
     }
 }

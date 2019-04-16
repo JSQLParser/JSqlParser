@@ -11,7 +11,6 @@ package net.sf.jsqlparser.util.cnfexpression;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.Parenthesis;
@@ -35,9 +34,9 @@ class CloneHelper {
             list.add(modify(and.getLeftExpression()));
             list.add(modify(and.getRightExpression()));
             MultiAndExpression result = new MultiAndExpression(list);
-            if (and.isNot()) {
-                return new NotExpression(result);
-            }
+//            if (and.isNot()) {
+//                return new NotExpression(result);
+//            }
             return result;
         }
         if (express instanceof OrExpression) {
@@ -46,18 +45,18 @@ class CloneHelper {
             list.add(modify(or.getLeftExpression()));
             list.add(modify(or.getRightExpression()));
             MultiOrExpression result = new MultiOrExpression(list);
-            if (or.isNot()) {
-                return new NotExpression(result);
-            }
+//            if (or.isNot()) {
+//                return new NotExpression(result);
+//            }
             return result;
         }
-        if (express instanceof BinaryExpression) {
-            BinaryExpression binary = (BinaryExpression) express;
-            if (binary.isNot()) {
-                binary.removeNot();
-                return new NotExpression(modify(binary));
-            }
-        }
+//        if (express instanceof BinaryExpression) {
+//            BinaryExpression binary = (BinaryExpression) express;
+//            if (binary.isNot()) {
+//                binary.removeNot();
+//                return new NotExpression(modify(binary));
+//            }
+//        }
         return express;
     }
 

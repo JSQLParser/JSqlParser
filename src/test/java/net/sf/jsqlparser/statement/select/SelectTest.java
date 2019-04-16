@@ -1350,6 +1350,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testNotLikeIssue775() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mybatisplus WHERE id NOT LIKE ?");
+    }
+
+    @Test
     public void testIlike() throws JSQLParserException {
         String statement = "SELECT col1 FROM table1 WHERE col1 ILIKE '%hello%'";
         assertSqlCanBeParsedAndDeparsed(statement);
@@ -3618,5 +3623,10 @@ public class SelectTest {
     public void testLongQualifiedNamesIssue763_2() throws JSQLParserException {
         Statement parse = CCJSqlParserUtil.parse(new StringReader("SELECT mongodb.test.test.intField, postgres.test.test.intField, postgres.test.test.datefield FROM mongodb.test.test JOIN postgres.postgres.test.test ON mongodb.test.test.intField = postgres.test.test.intField WHERE mongodb.test.test.intField = 123"));
         System.out.println(parse.toString());
+    }
+
+    @Test
+    public void testSubQueryAliasIssue754() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT C0 FROM T0 INNER JOIN T1 ON C1 = C0 INNER JOIN (SELECT W1 FROM T2) S1 ON S1.W1 = C0 ORDER BY C0");
     }
 }

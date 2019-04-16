@@ -28,8 +28,8 @@ public abstract class OldOracleJoinBinaryExpression extends BinaryExpression imp
 
     @Override
     public String toString() {
-        return (isNot() ? "NOT " : "")
-                + (oraclePriorPosition == ORACLE_PRIOR_START ? "PRIOR " : "")
+        return //(isNot() ? "NOT " : "")
+                (oraclePriorPosition == ORACLE_PRIOR_START ? "PRIOR " : "")
                 + getLeftExpression()
                 + (oldOracleJoinSyntax == ORACLE_JOIN_RIGHT ? "(+)" : "") + " "
                 + getStringExpression() + " "

@@ -60,6 +60,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 2.1
 
+* introduces Statement streaming support by **CCJSqlParserUtil.streamStatements**
+* improved nested bracket parsing performance by a large scale
 
 ## Extensions of JSqlParser releases
 

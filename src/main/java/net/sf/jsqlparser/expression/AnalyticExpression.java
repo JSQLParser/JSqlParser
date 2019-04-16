@@ -9,11 +9,10 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-
 import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 
 /**
  * Analytic function. The name of the function is variable but the parameters following the special
@@ -36,6 +35,32 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private AnalyticType type = AnalyticType.OVER;
     private boolean distinct = false;
     private boolean ignoreNulls = false;
+
+    public AnalyticExpression() {
+    }
+
+    public AnalyticExpression(Function function) {
+        name = function.getName();
+        allColumns = function.isAllColumns();
+        distinct = function.isDistinct();
+
+        ExpressionList list = function.getParameters();
+        if (list != null) {
+            if (list.getExpressions().size() > 3) {
+                throw new IllegalArgumentException("function object not valid to initialize analytic expression");
+            }
+
+            expression = list.getExpressions().get(0);
+            if (list.getExpressions().size() > 1) {
+                offset = list.getExpressions().get(1);
+            }
+            if (list.getExpressions().size() > 2) {
+                defaultValue = list.getExpressions().get(2);
+            }
+        }
+        ignoreNulls = function.isIgnoreNulls();
+        keep = function.getKeep();
+    }
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {

@@ -2312,7 +2312,7 @@ Expression LikeExpression() #LikeExpression:
 }
 {
     leftExpression=SimpleExpression()
-    [<K_NOT> { result.setNot(); } ] ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
+    [<K_NOT> { result.setNot(true); } ] ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
     [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
     {
         result.setLeftExpression(leftExpression);
@@ -2700,8 +2700,6 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2) retval=NumericBind()
 
-        | LOOKAHEAD(AnalyticExpression()) retval=AnalyticExpression() 
-
         | LOOKAHEAD(3) retval=ExtractExpression()
 
         | retval=MySQLGroupConcat()
@@ -2710,7 +2708,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(FunctionWithCondParams()) retval = FunctionWithCondParams()
 
-        | LOOKAHEAD(Function()) retval=Function()
+        | LOOKAHEAD(Function()) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression((Function)retval) ]
 
         | LOOKAHEAD(2) retval = IntervalExpression() { dateExpressionAllowed = false; }
 
@@ -2893,9 +2891,9 @@ KeepExpression KeepExpression() : {
     }
 }
 
-AnalyticExpression AnalyticExpression() :
+AnalyticExpression AnalyticExpression(Function function) :
 {
-    AnalyticExpression retval = new AnalyticExpression();
+    AnalyticExpression retval = new AnalyticExpression(function);
     ExpressionList expressionList = null;
     List<OrderByElement> olist = null;
     Token token = null;
@@ -2903,19 +2901,19 @@ AnalyticExpression AnalyticExpression() :
     Expression offset = null;
     Expression defaultValue = null;
     WindowElement windowElement = null;
-    KeepExpression keep = null;
-    boolean distinct = false;
-    boolean ignoreNulls = false;
+    //KeepExpression keep = null;
+    //boolean distinct = false;
+    //boolean ignoreNulls = false;
 }
 {
-    token=<S_IDENTIFIER> { retval.setName(token.image); }
+    /* token=<S_IDENTIFIER> { retval.setName(token.image); }
         "(" [ 
             [ <K_DISTINCT> {distinct = true;} ]
             (expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } )
             [ <K_IGNORE> <K_NULLS> {ignoreNulls = true;}]
-            ] ")" 
+            ] ")" */
 
-    [ keep=KeepExpression() ]
+    /* [ keep=KeepExpression() ] */
 
     (<K_OVER> {retval.setType(AnalyticType.OVER);} 
         | <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);} )
@@ -2925,12 +2923,12 @@ AnalyticExpression AnalyticExpression() :
         [olist=OrderByElements() [windowElement = WindowElement() ] ]
         
     {
-        retval.setDistinct(distinct);
-        retval.setIgnoreNulls(ignoreNulls);
-        retval.setExpression(expr);
-        retval.setOffset(offset);
-        retval.setDefaultValue(defaultValue);
-        retval.setKeep(keep);
+        //retval.setDistinct(distinct);
+        //retval.setIgnoreNulls(ignoreNulls);
+        //retval.setExpression(expr);
+        //retval.setOffset(offset);
+        //retval.setDefaultValue(defaultValue);
+        //retval.setKeep(keep);
         retval.setPartitionExpressionList(expressionList);
         retval.setOrderByElements(olist);
         retval.setWindowElement(windowElement);
@@ -3189,6 +3187,7 @@ Function InternalFunction(Function retval) :
     Token tk1 = null;
     Token tk2 = null;
     Expression expr1 = null;
+    boolean ignoreNulls = false;
 }
 {
     funcName=RelObjectNameExt()
@@ -3203,11 +3202,10 @@ Function InternalFunction(Function retval) :
 			LOOKAHEAD(NamedExpressionListExprFirst()) namedExpressionList = NamedExpressionListExprFirst()
 			| 
             LOOKAHEAD(3) expressionList=SimpleExpressionList()
-            //| 
-            //LOOKAHEAD(ConditionExpressionList()) expressionList=ConditionExpressionList()
 			|  
 			expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); } 
         )] 
+        [ <K_IGNORE> <K_NULLS> {retval.setIgnoreNulls(true); }]
 	")"
 
     [ "." ( 
@@ -3698,6 +3696,8 @@ List<String> CreateParameter():
             tk=<K_TYPE> { param.add(tk.image); }
 			|
             tk=<K_COMMENT> { param.add(tk.image); }
+            |
+            tk=<K_USING> { param.add(tk.image); }
         )
     {return param;}
 }
