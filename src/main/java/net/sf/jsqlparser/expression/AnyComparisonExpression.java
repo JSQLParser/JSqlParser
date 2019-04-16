@@ -12,6 +12,11 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
+/**
+ * Combines ANY and SOME expressions.
+ *
+ * @author toben
+ */
 public class AnyComparisonExpression extends ASTNodeAccessImpl implements Expression {
 
     private final SubSelect subSelect;

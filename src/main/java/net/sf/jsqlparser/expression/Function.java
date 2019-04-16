@@ -13,6 +13,9 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * A function as MAX,COUNT...
+ */
 public class Function extends ASTNodeAccessImpl implements Expression {
 
     private String name;

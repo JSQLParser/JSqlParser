@@ -11,6 +11,9 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * Every number with a point or a exponential format is a DoubleValue
+ */
 public class DoubleValue extends ASTNodeAccessImpl implements Expression {
 
     private double value;

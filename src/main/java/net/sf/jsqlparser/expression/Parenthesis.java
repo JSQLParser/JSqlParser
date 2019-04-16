@@ -11,6 +11,9 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * It represents an expression like "(" expression ")"
+ */
 public class Parenthesis extends ASTNodeAccessImpl implements Expression {
 
     private Expression expression;

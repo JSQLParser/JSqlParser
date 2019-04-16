@@ -11,6 +11,9 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * It represents a "not " or "!" before an expression.
+ */
 public class NotExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression expression;

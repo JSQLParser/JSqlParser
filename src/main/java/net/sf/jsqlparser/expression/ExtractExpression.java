@@ -11,6 +11,12 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * Extract value from date/time expression. The name stores the part - name to get from the
+ * following date/time expression.
+ *
+ * @author tw
+ */
 public class ExtractExpression extends ASTNodeAccessImpl implements Expression {
 
     private String name;

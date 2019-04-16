@@ -11,6 +11,9 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * It represents a "-" or "+" or "~" before an expression
+ */
 public class SignedExpression extends ASTNodeAccessImpl implements Expression {
 
     private char sign;

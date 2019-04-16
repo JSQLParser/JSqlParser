@@ -12,6 +12,12 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * Models a list of expressions usable as condition.<br>
+ * This allows for instance the following expression :
+ * <code>"[WHERE] (a, b) [OPERATOR] (c, d)"</code>
+ * where "(a, b)" and "(c, d)" are instances of this class.
+ */
 public class ValueListExpression extends ASTNodeAccessImpl implements Expression {
 
     private ExpressionList expressionList;

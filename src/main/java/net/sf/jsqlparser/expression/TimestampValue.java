@@ -13,6 +13,9 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.sql.Timestamp;
 
+/**
+ * A Timestamp in the form {ts 'yyyy-mm-dd hh:mm:ss.f . . .'}
+ */
 public class TimestampValue extends ASTNodeAccessImpl implements Expression {
 
     private Timestamp value;

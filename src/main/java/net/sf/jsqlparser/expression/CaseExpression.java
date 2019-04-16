@@ -14,6 +14,30 @@ import java.util.List;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
+/**
+ * CASE/WHEN expression.
+ *
+ * Syntax:  <code><pre>
+ * CASE
+ * WHEN condition THEN expression
+ * [WHEN condition THEN expression]...
+ * [ELSE expression]
+ * END
+ * </pre></code>
+ *
+ * <br/>
+ * or <br/>
+ * <br/>
+ *
+ * <code><pre>
+ * CASE expression
+ * WHEN condition THEN expression
+ * [WHEN condition THEN expression]...
+ * [ELSE expression]
+ * END
+ * </pre></code>
+ *
+ */
 public class CaseExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression switchExpression;

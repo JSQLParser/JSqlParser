@@ -13,6 +13,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * Oracle Hint Expression
+ */
 public class OracleHint extends ASTNodeAccessImpl implements Expression {
 
     private static final Pattern SINGLE_LINE = Pattern.compile("--\\+ *([^ ].*[^ ])");

@@ -11,6 +11,9 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * A clause of following syntax: WHEN condition THEN expression. Which is part of a CaseExpression.
+ */
 public class WhenClause extends ASTNodeAccessImpl implements Expression {
 
     private Expression whenExpression;

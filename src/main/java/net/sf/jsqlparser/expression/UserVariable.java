@@ -11,6 +11,9 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * Simple uservariables like @test.
+ */
 public class UserVariable extends ASTNodeAccessImpl implements Expression {
 
     private String name;

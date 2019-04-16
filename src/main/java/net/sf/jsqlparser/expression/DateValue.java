@@ -13,6 +13,9 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.sql.Date;
 
+/**
+ * A Date in the form {d 'yyyy-mm-dd'}
+ */
 public class DateValue extends ASTNodeAccessImpl implements Expression {
 
     private Date value;

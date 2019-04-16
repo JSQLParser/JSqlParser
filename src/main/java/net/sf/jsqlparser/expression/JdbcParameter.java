@@ -11,6 +11,9 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * A '?' in a statement or a ?<number> e.g. ?4
+ */
 public class JdbcParameter extends ASTNodeAccessImpl implements Expression {
 
     private Integer index;
