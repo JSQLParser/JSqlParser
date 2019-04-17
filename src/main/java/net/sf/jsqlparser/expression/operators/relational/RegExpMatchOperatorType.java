@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+/**
+ * PostgresSQL match operators.
+ */
 public enum RegExpMatchOperatorType {
     MATCH_CASESENSITIVE,
     MATCH_CASEINSENSITIVE,

@@ -15,6 +15,10 @@ import java.util.Iterator;
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 
+/**
+ * A list of ExpressionList items. e.g. multi values of insert statements. This one allows only
+ * equally sized ExpressionList.
+ */
 public class MultiExpressionList implements ItemsList {
 
     private List<ExpressionList> exprList;

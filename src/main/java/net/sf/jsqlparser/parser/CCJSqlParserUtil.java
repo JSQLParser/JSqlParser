@@ -16,6 +16,11 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
 
+/**
+ * Toolfunctions to start and use JSqlParser.
+ *
+ * @author toben
+ */
 public final class CCJSqlParserUtil {
 
     private CCJSqlParserUtil() {

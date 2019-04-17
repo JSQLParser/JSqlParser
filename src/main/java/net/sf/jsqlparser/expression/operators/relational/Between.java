@@ -13,6 +13,9 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * A "BETWEEN" expr1 expr2 statement
+ */
 public class Between extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
