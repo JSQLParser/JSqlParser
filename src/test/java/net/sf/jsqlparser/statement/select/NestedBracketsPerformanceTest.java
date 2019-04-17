@@ -51,6 +51,7 @@ public class NestedBracketsPerformanceTest {
     @Test
     public void testIncreaseOfParseTime() throws JSQLParserException {
         long oldDurationTime = 1000;
+        int countProblematic = 0;
         for (int i = 0; i < 20; i++) {
             String sql = "SELECT " + buildRecursiveBracketExpression("concat($1,'B')", "'A'", i) + " FROM mytbl";
             long startTime = System.currentTimeMillis();
@@ -60,8 +61,10 @@ public class NestedBracketsPerformanceTest {
             if (i > 0) {
                 System.out.println("old duration " + oldDurationTime + " new duration time " + durationTime + " for " + sql);
             }
-
             if (oldDurationTime * 10 < durationTime) {
+                countProblematic++;
+            }
+            if (countProblematic > 5) {
                 fail("too large increment of parsing time");
             }
 
