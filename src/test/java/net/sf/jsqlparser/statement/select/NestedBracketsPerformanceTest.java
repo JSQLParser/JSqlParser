@@ -61,7 +61,7 @@ public class NestedBracketsPerformanceTest {
                 System.out.println("old duration " + oldDurationTime + " new duration time " + durationTime + " for " + sql);
             }
 
-            if (oldDurationTime * 4 < durationTime) {
+            if (oldDurationTime * 10 < durationTime) {
                 fail("too large increment of parsing time");
             }
 
