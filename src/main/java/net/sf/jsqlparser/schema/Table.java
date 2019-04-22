@@ -94,7 +94,8 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     private void setIndex(int idx, String value) {
-        for (int i = 0; i < idx - partItems.size() + 1; i++) {
+        int size = partItems.size();
+        for (int i = 0; i < idx - size + 1; i++) {
             partItems.add(null);
         }
         partItems.set(idx, value);
