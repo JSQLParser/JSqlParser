@@ -14,6 +14,13 @@ import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
+/**
+ * Add aliases to every column and expression selected by a select - statement. Existing aliases are
+ * recognized and preserved. This class standard uses a prefix of A and a counter to generate new
+ * aliases (e.g. A1, A5, ...). This behaviour can be altered.
+ *
+ * @author tw
+ */
 public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";

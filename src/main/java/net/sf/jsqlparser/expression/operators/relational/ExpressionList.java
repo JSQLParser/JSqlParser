@@ -15,6 +15,9 @@ import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
+/**
+ * A list of expressions, as in SELECT A FROM TAB WHERE B IN (expr1,expr2,expr3)
+ */
 public class ExpressionList implements ItemsList {
 
     private List<Expression> expressions;

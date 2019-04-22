@@ -13,6 +13,9 @@ import java.util.List;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * A column. It can have the table name it belongs to.
+ */
 public final class Column extends ASTNodeAccessImpl implements Expression, MultiPartName {
 
     private Table table;

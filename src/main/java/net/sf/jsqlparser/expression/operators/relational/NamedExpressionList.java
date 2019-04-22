@@ -13,6 +13,10 @@ import java.util.Arrays;
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 
+/**
+ * A list of named expressions, as in
+ * as in select substr('xyzzy' from 2 for 3)
+ */
 public class NamedExpressionList implements ItemsList {
 
     private List<Expression> expressions;

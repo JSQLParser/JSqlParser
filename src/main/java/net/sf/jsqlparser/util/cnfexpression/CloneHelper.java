@@ -17,6 +17,16 @@ import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 
+/**
+ * This class is mainly used for handling the cloning of an expression tree.
+ * Note this is the shallow copy of the tree. That means I do not modify
+ * or copy the expression other than these expressions:
+ * AND, OR, NOT, (), MULTI-AND, MULTI-OR.
+ * Since the CNF conversion only change the condition part of the tree.
+ *
+ * @author messfish
+ *
+ */
 class CloneHelper {
 
     public Expression modify(Expression express) {
