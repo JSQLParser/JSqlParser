@@ -1587,6 +1587,20 @@ public class SelectTest {
     }
 
     @Test
+    public void testLimitColumnNameForOracle() throws JSQLParserException {
+        // 'limit' is not a restricted keyword in Oracle.
+        String sql = "SELECT limit FROM (SELECT * FROM table2 WHERE col1 = 'val')";
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testLimitColumnInWhereClauseForOracle() throws JSQLParserException {
+        // 'limit' is not a restricted keyword in Oracle.
+        String sql = "SELECT * FROM table2 WHERE limit > 200";
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
     public void testCast() throws JSQLParserException {
         String stmt = "SELECT CAST(a AS varchar) FROM tabelle1";
         assertSqlCanBeParsedAndDeparsed(stmt);

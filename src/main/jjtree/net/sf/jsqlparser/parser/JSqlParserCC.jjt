@@ -1013,6 +1013,16 @@ List<String> RelObjectNameList() : {
     { return data; }
 }
 
+List<String> ColumnNameList() : {
+    String token = null;
+    List<String> data = new ArrayList<String>();
+} {
+    token = ColumnName() { data.add(token); }
+    ( LOOKAHEAD (2) "." ("." { data.add(null); })* token = ColumnName() { data.add(token); } ) *
+
+    { return data; }
+}
+
 // See: http://technet.microsoft.com/en-us/library/ms187879%28v=sql.105%29.aspx
 
 Column Column() #Column :
@@ -1022,7 +1032,7 @@ Column Column() #Column :
     List<String> data = new ArrayList<String>();
 }
 {
-    data = RelObjectNameList()
+    data = ColumnNameList()
 
     {
         Column col = new Column(data);
@@ -1067,6 +1077,20 @@ String RelObjectName() :
     { 
 		if (tk!=null) result=tk.image;
 		return result; 
+	}
+}
+
+/*
+Column names.
+*/
+String ColumnName() :
+{    Token tk = null; String result = null; }
+{
+    (result = RelObjectNameWithoutValue() | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> | tk=<K_INTERVAL> | tk = "LIMIT")
+
+    {
+		if (tk!=null) result=tk.image;
+		return result;
 	}
 }
 
