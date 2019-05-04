@@ -494,4 +494,9 @@ public class CreateTableTest {
 
         return line;
     }
+
+    @Test
+    public void testCollateUtf8Issue785() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE DEMO_SQL (SHARE_PWD varchar (128) COLLATE utf8_bin NOT NULL DEFAULT '' COMMENT 'COMMENT') ENGINE = InnoDB AUTO_INCREMENT = 34 DEFAULT CHARSET = utf8 COLLATE = utf8_bin COMMENT = 'COMMENT'");
+    }
 }
