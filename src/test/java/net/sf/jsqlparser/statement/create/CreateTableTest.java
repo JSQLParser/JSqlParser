@@ -499,4 +499,9 @@ public class CreateTableTest {
     public void testCollateUtf8Issue785() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE DEMO_SQL (SHARE_PWD varchar (128) COLLATE utf8_bin NOT NULL DEFAULT '' COMMENT 'COMMENT') ENGINE = InnoDB AUTO_INCREMENT = 34 DEFAULT CHARSET = utf8 COLLATE = utf8_bin COMMENT = 'COMMENT'");
     }
+
+    @Test
+    public void testCreateTableWithSetTypeIssue796() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE `tables_priv` (`Host` char (60) COLLATE utf8_bin NOT NULL DEFAULT '', `Table_priv` set ('Select', 'Insert', 'Update', 'Delete', 'Create', 'Drop', 'Grant', 'References', 'Index', 'Alter', 'Create View', 'Show view', 'Trigger') CHARACTER SET utf8 NOT NULL DEFAULT '') ENGINE = MyISAM DEFAULT CHARSET = utf8 COLLATE = utf8_bin COMMENT = 'Table privileges'");
+    }
 }
