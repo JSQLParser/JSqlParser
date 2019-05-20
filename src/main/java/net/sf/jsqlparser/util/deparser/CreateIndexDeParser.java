@@ -58,6 +58,12 @@ public class CreateIndexDeParser {
         buffer.append(" ON ");
         buffer.append(createIndex.getTable().getFullyQualifiedName());
 
+        String using = index.getUsing();
+        if(using != null){
+            buffer.append(" USING ");
+            buffer.append(using);
+        }
+
         if (index.getColumnsNames() != null) {
             buffer.append(" (");
             for (Iterator iter = index.getColumnsNames().iterator(); iter.hasNext();) {

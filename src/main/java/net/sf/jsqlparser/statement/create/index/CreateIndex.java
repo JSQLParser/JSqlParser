@@ -80,6 +80,11 @@ public class CreateIndex implements Statement {
         buffer.append(" ON ");
         buffer.append(table.getFullyQualifiedName());
 
+        if(index.getUsing() != null){
+            buffer.append(" USING ");
+            buffer.append(index.getUsing());
+        }
+
         if (index.getColumnsNames() != null) {
             buffer.append(" (");
 

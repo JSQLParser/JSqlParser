@@ -27,10 +27,15 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * An index (unique, primary etc.) in a CREATE TABLE statement
+ *    Postgres has a USING syntax for indicating the kind of index
+ *    (BTree, GIST, etc.)
+ * TODO: a CREATE INDEX statement can have a collection of options
+ *       at the end, these are parsed but discarded.
  */
 public class Index {
 
     private String type;
+    private String using;
     private List<String> columnsNames;
     private String name;
     private List<String> idxSpec;
@@ -53,6 +58,17 @@ public class Index {
         return type;
     }
 
+    /**
+     * In postgresql, the index type (Btree, GIST, etc.) is indicated
+     * with a USING clause.
+     * Please note that:
+     *  Oracle - the type might be BITMAP, indicating a bitmap kind of index
+     *  MySQL - the type might be FULLTEXT or SPATIAL
+    */
+    public String getUsing() {
+        return using;
+    }
+
     public void setColumnsNames(List<String> list) {
         columnsNames = list;
     }
@@ -63,6 +79,10 @@ public class Index {
 
     public void setType(String string) {
         type = string;
+    }
+
+    public void setUsing(String string) {
+        using = string;
     }
 
     public List<String> getIndexSpec() {
@@ -77,6 +97,6 @@ public class Index {
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
         return type + (name != null ? " " + name : "") + " " + PlainSelect.
-                getStringList(columnsNames, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
+            getStringList(columnsNames, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
     }
 }
