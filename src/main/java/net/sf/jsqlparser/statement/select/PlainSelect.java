@@ -1,40 +1,24 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.statement.select;
-
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.schema.Table;
 
-/**
- * The core of a "SELECT" statement (no UNION, no ORDER BY)
- */
 public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     private Distinct distinct = null;
@@ -43,12 +27,13 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private FromItem fromItem;
     private List<Join> joins;
     private Expression where;
-    private List<Expression> groupByColumnReferences;
+    private GroupByElement groupBy;
     private List<OrderByElement> orderByElements;
     private Expression having;
     private Limit limit;
     private Offset offset;
     private Fetch fetch;
+    private OptimizeFor optimizeFor;
     private Skip skip;
     private First first;
     private Top top;
@@ -61,6 +46,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private Wait wait;
     private boolean mySqlSqlCalcFoundRows = false;
     private boolean sqlNoCacheFlag = false;
+    private String forXmlPath;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -70,11 +56,6 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.useBrackets = useBrackets;
     }
 
-    /**
-     * The {@link FromItem} in this query
-     *
-     * @return the {@link FromItem}
-     */
     public FromItem getFromItem() {
         return fromItem;
     }
@@ -83,11 +64,6 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return intoTables;
     }
 
-    /**
-     * The {@link SelectItem}s in this query (for example the A,B,C in "SELECT A,B,C")
-     *
-     * @return a list of {@link SelectItem}s
-     */
     public List<SelectItem> getSelectItems() {
         return selectItems;
     }
@@ -169,6 +145,14 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.fetch = fetch;
     }
 
+    public OptimizeFor getOptimizeFor() {
+        return optimizeFor;
+    }
+
+    public void setOptimizeFor(OptimizeFor optimizeFor) {
+        this.optimizeFor = optimizeFor;
+    }
+
     public Top getTop() {
         return top;
     }
@@ -215,19 +199,19 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
      *
      * @return a list of {@link Expression}s
      */
-    public List<Expression> getGroupByColumnReferences() {
-        return groupByColumnReferences;
+    public GroupByElement getGroupBy() {
+        return this.groupBy;
     }
 
-    public void setGroupByColumnReferences(List<Expression> list) {
-        groupByColumnReferences = list;
+    public void setGroupByElement(GroupByElement groupBy) {
+        this.groupBy = groupBy;
     }
 
     public void addGroupByColumnReference(Expression expr) {
-        if (groupByColumnReferences == null) {
-            groupByColumnReferences = new ArrayList<Expression>();
+        if (groupBy == null) {
+            groupBy = new GroupByElement();
         }
-        groupByColumnReferences.add(expr);
+        groupBy.addGroupByExpression(expr);
     }
 
     public OracleHierarchicalExpression getOracleHierarchical() {
@@ -286,6 +270,14 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
      */
     public Wait getWait() {
         return wait;
+    }
+
+    public String getForXmlPath() {
+        return forXmlPath;
+    }
+
+    public void setForXmlPath(String forXmlPath) {
+        this.forXmlPath = forXmlPath;
     }
 
     @Override
@@ -351,7 +343,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             if (oracleHierarchical != null) {
                 sql.append(oracleHierarchical.toString());
             }
-            sql.append(getFormatedList(groupByColumnReferences, "GROUP BY"));
+            if (groupBy != null) {
+                sql.append(" ").append(groupBy.toString());
+            }
             if (having != null) {
                 sql.append(" HAVING ").append(having);
             }
@@ -377,11 +371,17 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
                     sql.append(wait);
                 }
             }
+            if (optimizeFor != null) {
+                sql.append(optimizeFor);
+            }
         } else {
             //without from
             if (where != null) {
                 sql.append(" WHERE ").append(where);
             }
+        }
+        if (forXmlPath != null) {
+            sql.append(" FOR XML PATH(").append(forXmlPath).append(")");
         }
         if (useBrackets) {
             sql.append(")");

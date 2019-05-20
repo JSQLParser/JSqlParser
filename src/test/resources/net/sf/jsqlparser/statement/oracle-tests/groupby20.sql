@@ -1,3 +1,12 @@
+---
+-- #%L
+-- JSQLParser library
+-- %%
+-- Copyright (C) 2004 - 2019 JSQLParser
+-- %%
+-- Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+-- #L%
+---
 select channels.channel_desc, calendar_month_desc, 
        countries.country_iso_code,
        to_char(sum(amount_sold), '9,999,999,999') sales$

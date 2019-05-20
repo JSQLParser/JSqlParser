@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.alter;
 
 import java.util.Arrays;
@@ -102,6 +111,11 @@ public class AlterTest {
     public void testAlterTableAddConstraintWithConstraintState2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT RESOURCELINKTYPE_PRIMARYKEY PRIMARY KEY (PRIMARYKEY) DEFERRABLE NOVALIDATE");
     }
+    
+    @Test
+    public void testAlterTableAddUniqueConstraint() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE Persons ADD UNIQUE (ID)");
+    }
 
     @Test
     public void testAlterTableForgeignKey2() throws JSQLParserException {
@@ -144,6 +158,11 @@ public class AlterTest {
         assertStatementCanBeDeparsedAs(stmt, sql);
         AlterExpression alterExpression = ((Alter) stmt).getAlterExpressions().get(0);
         assertEquals(alterExpression.getConstraintName(), "YYY");
+    }
+
+    @Test
+    public void testAlterTableDropConstraintIfExists() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE Persons DROP CONSTRAINT IF EXISTS UC_Person");
     }
 
     @Test
@@ -245,6 +264,40 @@ public class AlterTest {
         assertEquals(AlterOperation.MODIFY, ((Alter) stmt).getAlterExpressions().get(0).
                 getOperation());
     }
+    
+    @Test
+    public void testAlterTableAlterColumn() throws JSQLParserException {
+      // http://www.postgresqltutorial.com/postgresql-change-column-type/
+      assertSqlCanBeParsedAndDeparsed("ALTER TABLE table_name ALTER COLUMN column_name_1 TYPE TIMESTAMP, ALTER COLUMN column_name_2 TYPE BOOLEAN");
+    }
+
+    @Test
+    public void testAlterTableChangeColumn1() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE tb_test CHANGE COLUMN c1 c2 INT (10)");
+        Alter alter = (Alter) stmt;
+        assertEquals(AlterOperation.CHANGE, alter.getAlterExpressions().get(0).getOperation());
+        assertEquals("c1", alter.getAlterExpressions().get(0).getColOldName());
+        assertEquals("COLUMN", alter.getAlterExpressions().get(0).getOptionalSpecifier());
+    }
+
+    @Test
+    public void testAlterTableChangeColumn2() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE tb_test CHANGE c1 c2 INT (10)");
+        Alter alter = (Alter) stmt;
+        assertEquals(AlterOperation.CHANGE, alter.getAlterExpressions().get(0).getOperation());
+        assertEquals("c1", alter.getAlterExpressions().get(0).getColOldName());
+        assertNull(alter.getAlterExpressions().get(0).getOptionalSpecifier());
+    }
+
+    @Test
+    public void testAlterTableChangeColumn3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE COLUMN c1 c2 INT (10)");
+    }
+
+    @Test
+    public void testAlterTableChangeColumn4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE c1 c2 INT (10)");
+    }
 
     @Test
     public void testAlterTableAddColumnWithZone() throws JSQLParserException {
@@ -314,5 +367,15 @@ public class AlterTest {
     @Test
     public void testIssue679() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_session_status ADD INDEX idx_user_id_name (user_id, user_name(10)), ADD INDEX idx_user_name (user_name)");
+    }
+
+    @Test
+    public void testAlterTableIndex586() throws Exception {
+        Statement result = CCJSqlParserUtil.parse("ALTER TABLE biz_add_fee DROP INDEX operation_time, " +
+                "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) " +
+                "USING BTREE, ALGORITHM = INPLACE");
+        assertEquals("ALTER TABLE biz_add_fee DROP INDEX operation_time , " +
+                "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) " +
+                "USING BTREE, ALGORITHM = INPLACE", result.toString());
     }
 }

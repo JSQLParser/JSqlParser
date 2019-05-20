@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.parser;
@@ -84,17 +72,10 @@ public final class CCJSqlParserUtil {
         }
     }
 
-    /**
-     * Parse an expression.
-     *
-     * @param expression
-     * @return
-     * @throws JSQLParserException
-     */
     public static Expression parseExpression(String expression) throws JSQLParserException {
         return parseExpression(expression, true);
     }
-    
+
     public static Expression parseExpression(String expression, boolean allowPartialParse) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(expression));
         try {
@@ -110,13 +91,6 @@ public final class CCJSqlParserUtil {
         }
     }
 
-    /**
-     * Parse an conditional expression. This is the expression after a where clause.
-     *
-     * @param condExpr
-     * @return
-     * @throws JSQLParserException
-     */
     public static Expression parseCondExpression(String condExpr) throws JSQLParserException {
         return parseCondExpression(condExpr, true);
     }
@@ -150,6 +124,25 @@ public final class CCJSqlParserUtil {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqls));
         try {
             return parser.Statements();
+        } catch (Exception ex) {
+            throw new JSQLParserException(ex);
+        }
+    }
+
+    public static void streamStatements(StatementListener listener, InputStream is, String encoding) throws JSQLParserException {
+        try {
+            CCJSqlParser parser = new CCJSqlParser(new StreamProvider(is, encoding));
+            while (true) {
+                Statement stmt = parser.SingleStatement();
+                listener.accept(stmt);
+                if (parser.getToken(1).kind == CCJSqlParserTokenManager.ST_SEMICOLON) {
+                    parser.getNextToken();
+                }
+
+                if (parser.getToken(1).kind == CCJSqlParserTokenManager.EOF) {
+                    break;
+                }
+            }
         } catch (Exception ex) {
             throw new JSQLParserException(ex);
         }

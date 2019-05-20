@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.create;
 
 import java.io.BufferedReader;
@@ -231,6 +240,11 @@ public class CreateTableTest {
     }
 
     @Test
+    public void testCreateTableWithCheckNotNull() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE table2 (id INT (10) NOT NULL, name TEXT, url TEXT, CONSTRAINT name_not_null CHECK (name IS NOT NULL))");
+    }
+
+    @Test
     public void testCreateTableIssue270() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE item (i_item_sk integer NOT NULL, i_item_id character (16) NOT NULL, i_rec_start_date date, i_rec_end_date date, i_item_desc character varying(200), i_current_price numeric(7,2), i_wholesale_cost numeric(7,2), i_brand_id integer, i_brand character(50), i_class_id integer, i_class character(50), i_category_id integer, i_category character(50), i_manufact_id integer, i_manufact character(50), i_size character(20), i_formulation character(20), i_color character(20), i_units character(10), i_container character(10), i_manager_id integer, i_product_name character(50) )", true);
     }
@@ -343,6 +357,11 @@ public class CreateTableTest {
     @Test
     public void testIssue661Partition() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE T_TEST_PARTITION (PART_COLUMN VARCHAR2 (32) NOT NULL, OTHER_COLS VARCHAR2 (10) NOT NULL) TABLESPACE TBS_DATA_01 PARTITION BY HASH (PART_COLUMN) PARTITIONS 4 STORE IN (TBS_DATA_01) COMPRESS");
+    }
+
+    @Test
+    public void testIssue770Using() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE `department_region` (`ID` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键', `DEPARTMENT_ID` int(10) unsigned NOT NULL COMMENT '部门ID', PRIMARY KEY (`ID`) KEY `DISTRICT_CODE` (`DISTRICT_CODE`)  USING BTREE) ENGINE=InnoDB AUTO_INCREMENT=420 DEFAULT CHARSET=utf8", true);
     }
 
     @Test
@@ -474,5 +493,15 @@ public class CreateTableTest {
         }
 
         return line;
+    }
+
+    @Test
+    public void testCollateUtf8Issue785() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE DEMO_SQL (SHARE_PWD varchar (128) COLLATE utf8_bin NOT NULL DEFAULT '' COMMENT 'COMMENT') ENGINE = InnoDB AUTO_INCREMENT = 34 DEFAULT CHARSET = utf8 COLLATE = utf8_bin COMMENT = 'COMMENT'");
+    }
+
+    @Test
+    public void testCreateTableWithSetTypeIssue796() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE `tables_priv` (`Host` char (60) COLLATE utf8_bin NOT NULL DEFAULT '', `Table_priv` set ('Select', 'Insert', 'Update', 'Delete', 'Create', 'Drop', 'Grant', 'References', 'Index', 'Alter', 'Create View', 'Show view', 'Trigger') CHARACTER SET utf8 NOT NULL DEFAULT '') ENGINE = MyISAM DEFAULT CHARSET = utf8 COLLATE = utf8_bin COMMENT = 'Table privileges'");
     }
 }

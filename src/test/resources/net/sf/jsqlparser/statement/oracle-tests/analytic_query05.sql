@@ -1,3 +1,12 @@
+---
+-- #%L
+-- JSQLParser library
+-- %%
+-- Copyright (C) 2004 - 2019 JSQLParser
+-- %%
+-- Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+-- #L%
+---
  select metric_id ,bsln_guid ,timegroup ,obs_value as obs_value 
  , cume_dist () over (partition by metric_id, bsln_guid, timegroup order by obs_value ) as cume_dist 
  , count(1) over (partition by metric_id, bsln_guid, timegroup ) as n 

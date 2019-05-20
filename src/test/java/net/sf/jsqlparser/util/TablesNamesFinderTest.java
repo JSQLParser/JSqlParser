@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.util;
 
 import java.io.BufferedReader;
@@ -8,10 +17,11 @@ import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
-
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -20,10 +30,10 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.test.TestException;
-import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -195,6 +205,14 @@ public class TablesNamesFinderTest {
         List<String> tableList = tablesNamesFinder.getTableList(deleteStatement);
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("MY_TABLE1"));
+    }
+
+    @Test
+    public void testGetTableListFromTruncate() throws Exception {
+        String sql = "TRUNCATE TABLE MY_TABLE1";
+        List<String> tables = new TablesNamesFinder().getTableList(pm.parse(new StringReader(sql)));
+        assertEquals(1, tables.size());
+        assertTrue(tables.contains("MY_TABLE1"));
     }
 
     @Test
@@ -544,5 +562,36 @@ public class TablesNamesFinderTest {
         TablesNamesFinder finder = new TablesNamesFinder();
         List<String> tableList = finder.getTableList(comment);
         assertEquals(0, tableList.size());
+    }
+
+    @Test
+    public void testDescribe() throws JSQLParserException {
+        DescribeStatement describe = new DescribeStatement(new Table("foo", "product"));
+        TablesNamesFinder finder = new TablesNamesFinder();
+        List<String> tableList = finder.getTableList(describe);
+        assertEquals(1, tableList.size());
+        assertEquals("foo.product", tableList.get(0));
+    }
+
+    @Test
+    public void testBetween() throws JSQLParserException {
+        String sql = "mycol BETWEEN (select col2 from mytable) AND (select col3 from mytable2)";
+        Expression expr = (Expression) CCJSqlParserUtil.parseCondExpression(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(expr);
+        assertEquals(2, tableList.size());
+        assertTrue(tableList.contains("mytable"));
+        assertTrue(tableList.contains("mytable2"));
+
+    }
+
+    @Test
+    public void testRemoteLink() throws JSQLParserException {
+        String sql = "select * from table1@remote";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("table1@remote"));
     }
 }

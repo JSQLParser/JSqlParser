@@ -1,31 +1,18 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-
 import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 
 /**
  * Analytic function. The name of the function is variable but the parameters following the special
@@ -48,6 +35,32 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private AnalyticType type = AnalyticType.OVER;
     private boolean distinct = false;
     private boolean ignoreNulls = false;
+
+    public AnalyticExpression() {
+    }
+
+    public AnalyticExpression(Function function) {
+        name = function.getName();
+        allColumns = function.isAllColumns();
+        distinct = function.isDistinct();
+
+        ExpressionList list = function.getParameters();
+        if (list != null) {
+            if (list.getExpressions().size() > 3) {
+                throw new IllegalArgumentException("function object not valid to initialize analytic expression");
+            }
+
+            expression = list.getExpressions().get(0);
+            if (list.getExpressions().size() > 1) {
+                offset = list.getExpressions().get(1);
+            }
+            if (list.getExpressions().size() > 2) {
+                defaultValue = list.getExpressions().get(2);
+            }
+        }
+        ignoreNulls = function.isIgnoreNulls();
+        keep = function.getKeep();
+    }
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {

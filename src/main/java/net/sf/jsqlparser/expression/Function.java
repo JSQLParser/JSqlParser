@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.expression;
@@ -36,19 +24,16 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private boolean allColumns = false;
     private boolean distinct = false;
     private boolean isEscaped = false;
-    private String attribute;
+    private Expression attribute;
+    private String attributeName;
     private KeepExpression keep = null;
+    private boolean ignoreNulls = false;
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
     }
 
-    /**
-     * The name of he function, i.e. "MAX"
-     *
-     * @return the name of he function
-     */
     public String getName() {
         return name;
     }
@@ -57,17 +42,26 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         name = string;
     }
 
-    /**
-     * true if the parameter to the function is "*"
-     *
-     * @return true if the parameter to the function is "*"
-     */
     public boolean isAllColumns() {
         return allColumns;
     }
 
     public void setAllColumns(boolean b) {
         allColumns = b;
+    }
+
+    public boolean isIgnoreNulls() {
+        return ignoreNulls;
+    }
+
+    /**
+     * This is at the moment only necessary for AnalyticExpression initialization and not for normal
+     * functions. Therefore there is no deparsing for it for normal functions.
+     *
+     * @param ignoreNulls
+     */
+    public void setIgnoreNulls(boolean ignoreNulls) {
+        this.ignoreNulls = ignoreNulls;
     }
 
     /**
@@ -102,7 +96,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
      *
      * @return the list of named parameters of the function (if any, else null)
      */
-
     public NamedExpressionList getNamedParameters() {
         return namedParameters;
     }
@@ -124,12 +117,20 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         this.isEscaped = isEscaped;
     }
 
-    public String getAttribute() {
+    public Expression getAttribute() {
         return attribute;
     }
 
-    public void setAttribute(String attribute) {
+    public void setAttribute(Expression attribute) {
         this.attribute = attribute;
+    }
+
+    public String getAttributeName() {
+        return attributeName;
+    }
+
+    public void setAttributeName(String attributeName) {
+        this.attributeName = attributeName;
     }
 
     public KeepExpression getKeep() {
@@ -145,14 +146,14 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         String params;
 
         if (parameters != null || namedParameters != null) {
-            if(parameters != null){
+            if (parameters != null) {
                 params = parameters.toString();
                 if (isDistinct()) {
                     params = params.replaceFirst("\\(", "(DISTINCT ");
                 } else if (isAllColumns()) {
                     params = params.replaceFirst("\\(", "(ALL ");
                 }
-            } else{
+            } else {
                 params = namedParameters.toString();
             }
         } else if (isAllColumns()) {
@@ -164,7 +165,9 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         String ans = name + "" + params + "";
 
         if (attribute != null) {
-            ans += "." + attribute;
+            ans += "." + attribute.toString();
+        } else if (attributeName != null) {
+            ans += "." + attributeName;
         }
 
         if (keep != null) {

@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.util.deparser;
@@ -29,6 +17,7 @@ import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
+import net.sf.jsqlparser.expression.CollateExpression;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -44,6 +33,7 @@ import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
+import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
@@ -77,7 +67,6 @@ import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
@@ -89,6 +78,7 @@ import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
@@ -101,10 +91,6 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
-/**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) an
- * {@link net.sf.jsqlparser.expression.Expression}
- */
 public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     private static final String NOT = "NOT ";
@@ -116,21 +102,6 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     public ExpressionDeParser() {
     }
 
-    /**
-     * @param selectVisitor a SelectVisitor to de-parse SubSelects. It has to share the same<br>
-     * StringBuilder as this object in order to work, as:
-     *
-     * <pre>
-     * <code>
-     * StringBuilder myBuf = new StringBuilder();
-     * MySelectDeparser selectDeparser = new  MySelectDeparser();
-     * selectDeparser.setBuffer(myBuf);
-     * ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeparser, myBuf);
-     * </code>
-     * </pre>
-     *
-     * @param buffer the buffer that will be filled with the expression
-     */
     public ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer) {
         this(selectVisitor, buffer, new OrderByDeParser());
     }
@@ -195,7 +166,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(NotExpression notExpr) {
-        buffer.append(NOT);
+        if (notExpr.isExclamationMark()) {
+            buffer.append("! ");
+        } else {
+            buffer.append(NOT);
+        }
         notExpr.getExpression().accept(this);
     }
 
@@ -210,9 +185,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     }
 
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
-        if (expression.isNot()) {
-            buffer.append(NOT);
-        }
+//        if (expression.isNot()) {
+//            buffer.append(NOT);
+//        }
         expression.getLeftExpression().accept(this);
         if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_RIGHT) {
             buffer.append("(+)");
@@ -288,7 +263,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(LikeExpression likeExpression) {
-        visitBinaryExpression(likeExpression, likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE ");
+        visitBinaryExpression(likeExpression,
+                (likeExpression.isNot() ? " NOT" : "")
+                + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
         String escape = likeExpression.getEscape();
         if (escape != null) {
             buffer.append(" ESCAPE '").append(escape).append('\'');
@@ -349,14 +326,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(Parenthesis parenthesis) {
-        if (parenthesis.isNot()) {
-            buffer.append(NOT);
-        }
-
         buffer.append("(");
         parenthesis.getExpression().accept(this);
         buffer.append(")");
-
     }
 
     @Override
@@ -373,10 +345,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         visitBinaryExpression(subtraction, " - ");
     }
 
-    private void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
-        if (binaryExpression.isNot()) {
-            buffer.append(NOT);
-        }
+    protected void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
+//        if (binaryExpression.isNot()) {
+//            buffer.append(NOT);
+//        }
         binaryExpression.getLeftExpression().accept(this);
         buffer.append(operator);
         binaryExpression.getRightExpression().accept(this);
@@ -440,6 +412,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
             buffer.append("()");
         } else {
             boolean oldUseBracketsInExprList = useBracketsInExprList;
+            useBracketsInExprList = true;
             if (function.isDistinct()) {
                 useBracketsInExprList = false;
                 buffer.append("(DISTINCT ");
@@ -447,10 +420,10 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
                 useBracketsInExprList = false;
                 buffer.append("(ALL ");
             }
-            if(function.getNamedParameters() != null){
+            if (function.getNamedParameters() != null) {
                 visit(function.getNamedParameters());
             }
-            if(function.getParameters() != null){
+            if (function.getParameters() != null) {
                 visit(function.getParameters());
             }
             useBracketsInExprList = oldUseBracketsInExprList;
@@ -461,6 +434,8 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
         if (function.getAttribute() != null) {
             buffer.append(".").append(function.getAttribute());
+        } else if (function.getAttributeName() != null) {
+            buffer.append(".").append(function.getAttributeName());
         }
         if (function.getKeep() != null) {
             buffer.append(" ").append(function.getKeep());
@@ -495,12 +470,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         }
         List<String> names = namedExpressionList.getNames();
         List<Expression> expressions = namedExpressionList.getExpressions();
-        for (int i=0; i<names.size(); i++){
-            if(i>0){
+        for (int i = 0; i < names.size(); i++) {
+            if (i > 0) {
                 buffer.append(" ");
             }
             String name = names.get(i);
-            if(! name.equals("")){
+            if (!name.equals("")) {
                 buffer.append(name);
                 buffer.append(" ");
             }
@@ -607,12 +582,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     public void visit(CastExpression cast) {
         if (cast.isUseCastKeyword()) {
             buffer.append("CAST(");
-            buffer.append(cast.getLeftExpression());
+            cast.getLeftExpression().accept(this);
             buffer.append(" AS ");
             buffer.append(cast.getType());
             buffer.append(")");
         } else {
-            buffer.append(cast.getLeftExpression());
+            cast.getLeftExpression().accept(this);
             buffer.append("::");
             buffer.append(cast.getType());
         }
@@ -810,6 +785,16 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(DateTimeLiteralExpression literal) {
         buffer.append(literal.toString());
+    }
+
+    @Override
+    public void visit(NextValExpression nextVal) {
+        buffer.append("NEXTVAL FOR ").append(nextVal.getName());
+    }
+
+    @Override
+    public void visit(CollateExpression col) {
+        buffer.append(col.getLeftExpression().toString()).append(" COLLATE ").append(col.getCollate());
     }
 
 }

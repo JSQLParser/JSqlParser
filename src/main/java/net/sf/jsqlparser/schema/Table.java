@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.schema;
@@ -51,19 +39,18 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     public Table(String name) {
-        setIndex(NAME_IDX, name);
+        setName(name);
     }
 
     public Table(String schemaName, String name) {
-        setIndex(NAME_IDX, name);
-        setIndex(SCHEMA_IDX, schemaName);
+        setName(name);
+        setSchemaName(schemaName);
     }
 
     public Table(Database database, String schemaName, String name) {
-        setIndex(NAME_IDX, name);
-        setIndex(SCHEMA_IDX, schemaName);
-        setIndex(DATABASE_IDX, database.getDatabaseName());
-        setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
+        setName(name);
+        setSchemaName(schemaName);
+        setDatabase(database);
     }
 
     public Table(List<String> partItems) {
@@ -77,6 +64,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     public void setDatabase(Database database) {
         setIndex(DATABASE_IDX, database.getDatabaseName());
+        setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
     }
 
     public String getSchemaName() {
@@ -106,7 +94,8 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     private void setIndex(int idx, String value) {
-        for (int i = 0; i < idx - partItems.size() + 1; i++) {
+        int size = partItems.size();
+        for (int i = 0; i < idx - size + 1; i++) {
             partItems.add(null);
         }
         partItems.set(idx, value);
@@ -173,3 +162,4 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
                 + ((hint != null) ? hint.toString() : "");
     }
 }
+
