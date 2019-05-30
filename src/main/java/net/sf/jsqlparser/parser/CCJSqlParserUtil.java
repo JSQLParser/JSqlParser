@@ -105,7 +105,7 @@ public final class CCJSqlParserUtil {
     public static Expression parseCondExpression(String condExpr, boolean allowPartialParse) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(condExpr));
         try {
-            Expression expr = parser.Expression();
+            Expression expr = parser.Condition();
             if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
                 throw new JSQLParserException("could only parse partial expression " + expr.toString());
             }
