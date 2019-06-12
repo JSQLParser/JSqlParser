@@ -4,7 +4,19 @@
  * %%
  * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
 package net.sf.jsqlparser.statement.create.table;
@@ -16,6 +28,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Index {
 
     private String type;
+    private String using;
     private List<String> columnsNames;
     private String name;
     private List<String> idxSpec;
@@ -32,6 +45,17 @@ public class Index {
         return type;
     }
 
+    /**
+     * In postgresql, the index type (Btree, GIST, etc.) is indicated
+     * with a USING clause.
+     * Please note that:
+     *  Oracle - the type might be BITMAP, indicating a bitmap kind of index
+     *  MySQL - the type might be FULLTEXT or SPATIAL
+    */
+    public void setUsing(String string) {
+        using = string;
+    }
+
     public void setColumnsNames(List<String> list) {
         columnsNames = list;
     }
@@ -42,6 +66,10 @@ public class Index {
 
     public void setType(String string) {
         type = string;
+    }
+
+    public String getUsing() {
+        return using;
     }
 
     public List<String> getIndexSpec() {

@@ -3290,6 +3290,7 @@ CreateIndex CreateIndex():
     Table table = null;
     List<String> colNames = new ArrayList<String>();
     Token columnName;
+    Token using;
     Index index = null;
     String name = null;
     List<String> parameter = new ArrayList<String>();
@@ -3306,6 +3307,8 @@ CreateIndex CreateIndex():
     }
 
     <K_ON> table=Table()
+
+    [ <K_USING> using=<S_IDENTIFIER> {index.setUsing(using.image);} ]
 
     "("
     (columnName=<S_IDENTIFIER>
