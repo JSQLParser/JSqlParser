@@ -61,7 +61,7 @@ public interface StatementVisitor {
 
     void visit(SetStatement set);
 
-    void visit(ShowStatement set);
+    void visit(ShowColumnsStatement set);
 
     void visit(Merge merge);
 
@@ -78,4 +78,6 @@ public interface StatementVisitor {
     void visit(DescribeStatement describe);
 
     public void visit(ExplainStatement aThis);
+
+    public void visit(ShowStatement aThis);
 }

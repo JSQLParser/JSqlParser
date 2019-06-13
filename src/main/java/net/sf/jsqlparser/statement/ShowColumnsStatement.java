@@ -9,25 +9,25 @@
  */
 package net.sf.jsqlparser.statement;
 
-public class ShowStatement implements Statement {
+public class ShowColumnsStatement implements Statement {
 
-    private String name;
+    private String tableName;
 
-    public ShowStatement(String name) {
-        this.name = name;
+    public ShowColumnsStatement(String tableName) {
+        this.tableName = tableName;
     }
 
-    public String getName() {
-        return name;
+    public String getTableName() {
+        return tableName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 
     @Override
     public String toString() {
-        return "SHOW " + name;
+        return "SHOW COLUMNS FROM " + tableName;
     }
 
     @Override

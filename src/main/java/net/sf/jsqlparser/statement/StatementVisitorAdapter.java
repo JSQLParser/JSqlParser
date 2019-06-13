@@ -112,7 +112,7 @@ public class StatementVisitorAdapter implements StatementVisitor {
     }
 
     @Override
-    public void visit(ShowStatement set) {
+    public void visit(ShowColumnsStatement set) {
     }
 
     @Override
@@ -146,5 +146,9 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(ExplainStatement aThis) {
+    }
+
+    @Override
+    public void visit(ShowStatement aThis) {
     }
 }

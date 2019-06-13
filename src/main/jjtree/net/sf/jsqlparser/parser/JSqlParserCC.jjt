@@ -407,6 +407,8 @@ Statement SingleStatement() :
         |
         stm = Set()
         |
+        LOOKAHEAD(2) stm = ShowColumns()
+        |
         stm = Show()
         |
         stm = Use()
@@ -538,13 +540,23 @@ UseStatement Use(): {
     }
 }
 
-ShowStatement Show(): {
+ShowColumnsStatement ShowColumns(): {
     String tableName;
 }
 {
     <K_SHOW> <K_COLUMNS> <K_FROM> tableName = RelObjectNameExt()
     {
-        return new ShowStatement(tableName);
+        return new ShowColumnsStatement(tableName);
+    }
+}
+
+ShowStatement Show(): {
+    String name;
+}
+{
+    <K_SHOW> name = RelObjectNameExt()
+    {
+        return new ShowStatement(name);
     }
 }
 
