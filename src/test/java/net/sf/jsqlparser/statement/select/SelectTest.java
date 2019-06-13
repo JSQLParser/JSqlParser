@@ -3629,4 +3629,9 @@ public class SelectTest {
     public void testSubQueryAliasIssue754() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT C0 FROM T0 INNER JOIN T1 ON C1 = C0 INNER JOIN (SELECT W1 FROM T2) S1 ON S1.W1 = C0 ORDER BY C0");
     }
+
+    @Test
+    public void testSubQueryOrderByIssue705() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a.* FROM ((SELECT T1.SACOJA FROM SOLARB t1) ORDER BY sacoja ASC) a");
+    }
 }

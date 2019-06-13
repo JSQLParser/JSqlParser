@@ -1277,9 +1277,9 @@ SelectBody SetOperationList() #SetOperationList:
     )
 
     {
-        if (selects.size()==1 && selects.get(0) instanceof PlainSelect) {
+        if (selects.size()==1 && selects.get(0) instanceof PlainSelect && orderByElements==null) {
             if (brackets.get(0)) 
-                ((PlainSelect)selects.get(0)).setUseBrackets(true);
+                ((PlainSelect)selects.get(0)).setUseBrackets(true);           
             return selects.get(0);
         } else {
             list.setBracketsOpsAndSelects(brackets,selects,operations);
