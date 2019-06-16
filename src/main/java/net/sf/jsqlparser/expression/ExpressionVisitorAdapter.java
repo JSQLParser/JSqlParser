@@ -501,4 +501,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(CollateExpression col) {
         col.getLeftExpression().accept(this);
     }
+
+    @Override
+    public void visit(SimilarToExpression expr) {
+        visitBinaryExpression(expr);
+    }
 }

@@ -252,6 +252,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SETS:"SETS">
 |   <K_SHOW : "SHOW">
 |   <K_SIBLINGS:"SIBLINGS">
+|   <K_SIMILAR:"SIMILAR">
 |   <K_SKIP: "SKIP">
 |   <K_SOME:"SOME">
 |   <K_START:"START">
@@ -261,6 +262,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TEMP:"TEMP">
 |   <K_TEMPORARY:"TEMPORARY">
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
+|   <K_TO:"TO">
 |   <K_TOP:"TOP">
 |   <K_TRAILING:"TRAILING">
 |   <K_TRUNCATE:"TRUNCATE">
@@ -2260,11 +2262,12 @@ Expression SQLCondition():
 }
 {
     (
-    LOOKAHEAD(InExpression()) result=InExpression()
+    result=ExistsExpression()
+    | LOOKAHEAD(InExpression()) result=InExpression()
     | LOOKAHEAD(Between()) result=Between()
     | LOOKAHEAD(IsNullExpression()) result=IsNullExpression()
-    | LOOKAHEAD(ExistsExpression()) result=ExistsExpression()
-    |  result=LikeExpression()
+    | LOOKAHEAD(3) result=LikeExpression()
+    | result=SimilarToExpression()
     )
     { return result; }
 }
@@ -2325,6 +2328,26 @@ Expression LikeExpression() #LikeExpression:
 {
     leftExpression=SimpleExpression()
     [<K_NOT> { result.setNot(true); } ] ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
+    [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
+    {
+        result.setLeftExpression(leftExpression);
+        result.setRightExpression(rightExpression);
+        linkAST(result,jjtThis);
+        return result;
+    }
+}
+
+Expression SimilarToExpression() #SimilarToExpression:
+{
+    SimilarToExpression result = new SimilarToExpression();
+    Expression leftExpression = null;
+    Expression rightExpression = null;
+}
+{
+    leftExpression=SimpleExpression()
+    [<K_NOT> { result.setNot(true); } ]
+    <K_SIMILAR> <K_TO> 
+    rightExpression=SimpleExpression()
     [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
     {
         result.setLeftExpression(leftExpression);

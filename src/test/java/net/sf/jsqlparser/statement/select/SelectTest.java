@@ -3631,7 +3631,12 @@ public class SelectTest {
     }
 
     @Test
-    public void testSubQueryOrderByIssue705() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT a.* FROM ((SELECT T1.SACOJA FROM SOLARB t1) ORDER BY sacoja ASC) a");
+    public void testSimilarToIssue789() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (w_id SIMILAR TO '/foo/__/bar/(left|right)/[0-9]{4}-[0-9]{2}-[0-9]{2}(/[0-9]*)?')");
+    }
+
+    @Test
+    public void testSimilarToIssue789_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (w_id NOT SIMILAR TO '/foo/__/bar/(left|right)/[0-9]{4}-[0-9]{2}-[0-9]{2}(/[0-9]*)?')");
     }
 }
