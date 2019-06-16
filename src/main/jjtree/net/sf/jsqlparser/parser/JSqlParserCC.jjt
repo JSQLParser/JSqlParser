@@ -2259,15 +2259,18 @@ Expression RegularCondition() #RegularCondition:
 Expression SQLCondition():
 {
     Expression result;
+    Expression left;
 }
 {
     (
     result=ExistsExpression()
     | LOOKAHEAD(InExpression()) result=InExpression()
-    | LOOKAHEAD(Between()) result=Between()
-    | LOOKAHEAD(IsNullExpression()) result=IsNullExpression()
-    | LOOKAHEAD(3) result=LikeExpression()
-    | result=SimilarToExpression()
+    | left = SimpleExpression() 
+        (LOOKAHEAD(2) result=Between(left)
+         | LOOKAHEAD(2) result=IsNullExpression(left)
+         | LOOKAHEAD(2) result=LikeExpression(left)
+         | result=SimilarToExpression(left)
+        )
     )
     { return result; }
 }
@@ -2299,15 +2302,13 @@ Expression InExpression() #InExpression :
     }
 }
 
-Expression Between() :
+Expression Between(Expression leftExpression) :
 {
     Between result = new Between();
-    Expression leftExpression = null;
     Expression betweenExpressionStart = null;
     Expression betweenExpressionEnd = null;
 }
 {
-    leftExpression=SimpleExpression()
         [<K_NOT> { result.setNot(true); }]
         <K_BETWEEN> betweenExpressionStart=SimpleExpression() <K_AND> betweenExpressionEnd=SimpleExpression()
 
@@ -2319,14 +2320,12 @@ Expression Between() :
     }
 }
 
-Expression LikeExpression() #LikeExpression:
+Expression LikeExpression(Expression leftExpression) #LikeExpression:
 {
     LikeExpression result = new LikeExpression();
-    Expression leftExpression = null;
     Expression rightExpression = null;
 }
 {
-    leftExpression=SimpleExpression()
     [<K_NOT> { result.setNot(true); } ] ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
     [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
     {
@@ -2337,14 +2336,12 @@ Expression LikeExpression() #LikeExpression:
     }
 }
 
-Expression SimilarToExpression() #SimilarToExpression:
+Expression SimilarToExpression(Expression leftExpression) #SimilarToExpression:
 {
     SimilarToExpression result = new SimilarToExpression();
-    Expression leftExpression = null;
     Expression rightExpression = null;
 }
 {
-    leftExpression=SimpleExpression()
     [<K_NOT> { result.setNot(true); } ]
     <K_SIMILAR> <K_TO> 
     rightExpression=SimpleExpression()
@@ -2357,13 +2354,11 @@ Expression SimilarToExpression() #SimilarToExpression:
     }
 }
 
-Expression IsNullExpression():
+Expression IsNullExpression(Expression leftExpression):
 {
     IsNullExpression result = new IsNullExpression();
-    Expression leftExpression = null;
 }
 {
-    leftExpression=SimpleExpression() 
         (<K_ISNULL> { result.setUseIsNull(true); } | <K_IS> [<K_NOT> { result.setNot(true); } ] <K_NULL> )
 
     {
