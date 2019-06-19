@@ -9,13 +9,13 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.statement.ShowStatement;
+import net.sf.jsqlparser.statement.ShowColumnsStatement;
 
-public class ShowStatementDeParser {
+public class ShowColumnsStatementDeParser {
 
     protected StringBuilder buffer;
 
-    public ShowStatementDeParser(StringBuilder buffer) {
+    public ShowColumnsStatementDeParser(StringBuilder buffer) {
         this.buffer = buffer;
     }
 
@@ -27,7 +27,7 @@ public class ShowStatementDeParser {
         this.buffer = buffer;
     }
 
-    public void deParse(ShowStatement show) {
-        buffer.append("SHOW ").append(show.getName());
+    public void deParse(ShowColumnsStatement show) {
+        buffer.append("SHOW COLUMNS FROM ").append(show.getTableName());
     }
 }

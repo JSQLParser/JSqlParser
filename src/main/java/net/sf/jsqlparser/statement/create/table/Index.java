@@ -16,6 +16,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Index {
 
     private String type;
+    private String using;
     private List<String> columnsNames;
     private String name;
     private List<String> idxSpec;
@@ -32,6 +33,17 @@ public class Index {
         return type;
     }
 
+    /**
+     * In postgresql, the index type (Btree, GIST, etc.) is indicated
+     * with a USING clause.
+     * Please note that:
+     *  Oracle - the type might be BITMAP, indicating a bitmap kind of index
+     *  MySQL - the type might be FULLTEXT or SPATIAL
+    */
+    public void setUsing(String string) {
+        using = string;
+    }
+
     public void setColumnsNames(List<String> list) {
         columnsNames = list;
     }
@@ -42,6 +54,10 @@ public class Index {
 
     public void setType(String string) {
         type = string;
+    }
+
+    public String getUsing() {
+        return using;
     }
 
     public List<String> getIndexSpec() {

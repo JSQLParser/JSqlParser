@@ -37,6 +37,7 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
+import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
@@ -171,5 +172,7 @@ public interface ExpressionVisitor {
     public void visit(NextValExpression aThis);
 
     public void visit(CollateExpression aThis);
+
+    public void visit(SimilarToExpression aThis);
 
 }

@@ -10,9 +10,8 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
-import org.junit.Test;
-
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import org.junit.Test;
 
 /**
  *
@@ -20,9 +19,13 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
  */
 public class ShowStatementTest {
 
-
     @Test
     public void testSimpleUse() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SHOW COLUMNS FROM mydatabase");
+        assertSqlCanBeParsedAndDeparsed("SHOW mydatabase");
+    }
+
+    @Test
+    public void testSimpleUse2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SHOW transaction_isolation");
     }
 }

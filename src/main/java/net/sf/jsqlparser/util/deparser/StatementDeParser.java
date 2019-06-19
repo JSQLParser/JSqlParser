@@ -15,6 +15,7 @@ import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -223,8 +224,8 @@ public class StatementDeParser implements StatementVisitor {
     }
 
     @Override
-    public void visit(ShowStatement show) {
-        new ShowStatementDeParser(buffer).deParse(show);
+    public void visit(ShowColumnsStatement show) {
+        new ShowColumnsStatementDeParser(buffer).deParse(show);
     }
 
     @Override
@@ -260,5 +261,10 @@ public class StatementDeParser implements StatementVisitor {
     public void visit(ExplainStatement explain) {
         buffer.append("EXPLAIN ");
         explain.getStatement().accept(this);
+    }
+
+    @Override
+    public void visit(ShowStatement show) {
+        new ShowStatementDeParser(buffer).deParse(show);
     }
 }

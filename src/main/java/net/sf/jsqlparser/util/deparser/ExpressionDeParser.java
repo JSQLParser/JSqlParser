@@ -83,6 +83,7 @@ import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
+import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -346,9 +347,6 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     }
 
     protected void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
-//        if (binaryExpression.isNot()) {
-//            buffer.append(NOT);
-//        }
         binaryExpression.getLeftExpression().accept(this);
         buffer.append(operator);
         binaryExpression.getRightExpression().accept(this);
@@ -795,6 +793,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(CollateExpression col) {
         buffer.append(col.getLeftExpression().toString()).append(" COLLATE ").append(col.getCollate());
+    }
+
+    @Override
+    public void visit(SimilarToExpression expr) {
+        visitBinaryExpression(expr, (expr.isNot() ? " NOT" : "") + " SIMILAR TO ");
     }
 
 }

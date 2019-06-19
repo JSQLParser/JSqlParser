@@ -252,6 +252,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SETS:"SETS">
 |   <K_SHOW : "SHOW">
 |   <K_SIBLINGS:"SIBLINGS">
+|   <K_SIMILAR:"SIMILAR">
 |   <K_SKIP: "SKIP">
 |   <K_SOME:"SOME">
 |   <K_START:"START">
@@ -261,6 +262,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TEMP:"TEMP">
 |   <K_TEMPORARY:"TEMPORARY">
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
+|   <K_TO:"TO">
 |   <K_TOP:"TOP">
 |   <K_TRAILING:"TRAILING">
 |   <K_TRUNCATE:"TRUNCATE">
@@ -407,6 +409,8 @@ Statement SingleStatement() :
         |
         stm = Set()
         |
+        LOOKAHEAD(2) stm = ShowColumns()
+        |
         stm = Show()
         |
         stm = Use()
@@ -538,13 +542,23 @@ UseStatement Use(): {
     }
 }
 
-ShowStatement Show(): {
+ShowColumnsStatement ShowColumns(): {
     String tableName;
 }
 {
     <K_SHOW> <K_COLUMNS> <K_FROM> tableName = RelObjectNameExt()
     {
-        return new ShowStatement(tableName);
+        return new ShowColumnsStatement(tableName);
+    }
+}
+
+ShowStatement Show(): {
+    String name;
+}
+{
+    <K_SHOW> name = RelObjectNameExt()
+    {
+        return new ShowStatement(name);
     }
 }
 
@@ -1277,9 +1291,9 @@ SelectBody SetOperationList() #SetOperationList:
     )
 
     {
-        if (selects.size()==1 && selects.get(0) instanceof PlainSelect) {
+        if (selects.size()==1 && selects.get(0) instanceof PlainSelect && orderByElements==null) {
             if (brackets.get(0)) 
-                ((PlainSelect)selects.get(0)).setUseBrackets(true);
+                ((PlainSelect)selects.get(0)).setUseBrackets(true);           
             return selects.get(0);
         } else {
             list.setBracketsOpsAndSelects(brackets,selects,operations);
@@ -2245,14 +2259,18 @@ Expression RegularCondition() #RegularCondition:
 Expression SQLCondition():
 {
     Expression result;
+    Expression left;
 }
 {
     (
-    LOOKAHEAD(InExpression()) result=InExpression()
-    | LOOKAHEAD(Between()) result=Between()
-    | LOOKAHEAD(IsNullExpression()) result=IsNullExpression()
-    | LOOKAHEAD(ExistsExpression()) result=ExistsExpression()
-    |  result=LikeExpression()
+    result=ExistsExpression()
+    | LOOKAHEAD(InExpression()) result=InExpression()
+    | left = SimpleExpression() 
+        (LOOKAHEAD(2) result=Between(left)
+         | LOOKAHEAD(2) result=IsNullExpression(left)
+         | LOOKAHEAD(2) result=LikeExpression(left)
+         | result=SimilarToExpression(left)
+        )
     )
     { return result; }
 }
@@ -2284,15 +2302,13 @@ Expression InExpression() #InExpression :
     }
 }
 
-Expression Between() :
+Expression Between(Expression leftExpression) :
 {
     Between result = new Between();
-    Expression leftExpression = null;
     Expression betweenExpressionStart = null;
     Expression betweenExpressionEnd = null;
 }
 {
-    leftExpression=SimpleExpression()
         [<K_NOT> { result.setNot(true); }]
         <K_BETWEEN> betweenExpressionStart=SimpleExpression() <K_AND> betweenExpressionEnd=SimpleExpression()
 
@@ -2304,14 +2320,12 @@ Expression Between() :
     }
 }
 
-Expression LikeExpression() #LikeExpression:
+Expression LikeExpression(Expression leftExpression) #LikeExpression:
 {
     LikeExpression result = new LikeExpression();
-    Expression leftExpression = null;
     Expression rightExpression = null;
 }
 {
-    leftExpression=SimpleExpression()
     [<K_NOT> { result.setNot(true); } ] ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
     [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
     {
@@ -2322,13 +2336,29 @@ Expression LikeExpression() #LikeExpression:
     }
 }
 
-Expression IsNullExpression():
+Expression SimilarToExpression(Expression leftExpression) #SimilarToExpression:
 {
-    IsNullExpression result = new IsNullExpression();
-    Expression leftExpression = null;
+    SimilarToExpression result = new SimilarToExpression();
+    Expression rightExpression = null;
 }
 {
-    leftExpression=SimpleExpression() 
+    [<K_NOT> { result.setNot(true); } ]
+    <K_SIMILAR> <K_TO> 
+    rightExpression=SimpleExpression()
+    [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
+    {
+        result.setLeftExpression(leftExpression);
+        result.setRightExpression(rightExpression);
+        linkAST(result,jjtThis);
+        return result;
+    }
+}
+
+Expression IsNullExpression(Expression leftExpression):
+{
+    IsNullExpression result = new IsNullExpression();
+}
+{
         (<K_ISNULL> { result.setUseIsNull(true); } | <K_IS> [<K_NOT> { result.setNot(true); } ] <K_NULL> )
 
     {
@@ -3290,6 +3320,7 @@ CreateIndex CreateIndex():
     Table table = null;
     List<String> colNames = new ArrayList<String>();
     Token columnName;
+    Token using;
     Index index = null;
     String name = null;
     List<String> parameter = new ArrayList<String>();
@@ -3306,6 +3337,8 @@ CreateIndex CreateIndex():
     }
 
     <K_ON> table=Table()
+
+    [ <K_USING> using=<S_IDENTIFIER> {index.setUsing(using.image);} ]
 
     "("
     (columnName=<S_IDENTIFIER>
@@ -3550,7 +3583,7 @@ ColDataType ColDataType():
     ( 
 		(tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 		| tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> | tk=<K_CHAR> )  
+		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> )  
 				{ colDataType.setDataType(tk.image); }
 		| tk=<K_UNSIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
 		| tk=<K_SIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
@@ -3698,6 +3731,8 @@ List<String> CreateParameter():
             tk=<K_COMMENT> { param.add(tk.image); }
             |
             tk=<K_USING> { param.add(tk.image); }
+            |
+            tk=<K_COLLATE> { param.add(tk.image); }
         )
     {return param;}
 }
