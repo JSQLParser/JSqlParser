@@ -47,6 +47,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private boolean mySqlSqlCalcFoundRows = false;
     private boolean sqlNoCacheFlag = false;
     private String forXmlPath;
+    private KSQLWindow ksqlWindow = null;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -280,6 +281,14 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.forXmlPath = forXmlPath;
     }
 
+    public KSQLWindow getKsqlWindow() {
+        return ksqlWindow;
+    }
+
+    public void setKsqlWindow(KSQLWindow ksqlWindow) {
+        this.ksqlWindow = ksqlWindow;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder();
@@ -336,6 +345,10 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
                         sql.append(" ").append(join);
                     }
                 }
+            }
+
+            if (ksqlWindow != null) {
+                sql.append(" WINDOW ").append(ksqlWindow.toString());
             }
             if (where != null) {
                 sql.append(" WHERE ").append(where);
