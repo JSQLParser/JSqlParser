@@ -64,7 +64,9 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     public void setDatabase(Database database) {
         setIndex(DATABASE_IDX, database.getDatabaseName());
-        setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
+        if (database.getServer() != null) {
+            setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
+        }
     }
 
     public String getSchemaName() {
@@ -113,7 +115,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     public String getFullyQualifiedName() {
         StringBuilder fqn = new StringBuilder();
 
-        for (int i = partItems.size()-1 ; i >=0; i--) {
+        for (int i = partItems.size() - 1; i >= 0; i--) {
             String part = partItems.get(i);
             if (part == null) {
                 part = "";
@@ -162,4 +164,3 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
                 + ((hint != null) ? hint.toString() : "");
     }
 }
-
