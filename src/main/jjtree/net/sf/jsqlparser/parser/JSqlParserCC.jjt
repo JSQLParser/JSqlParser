@@ -2987,15 +2987,6 @@ AnalyticExpression AnalyticExpression(Function function) :
     //boolean ignoreNulls = false;
 }
 {
-    /* token=<S_IDENTIFIER> { retval.setName(token.image); }
-        "(" [ 
-            [ <K_DISTINCT> {distinct = true;} ]
-            (expr=SimpleExpression() ["," offset=SimpleExpression() ["," defaultValue=SimpleExpression() ]] | "*" { retval.setAllColumns(true); } )
-            [ <K_IGNORE> <K_NULLS> {ignoreNulls = true;}]
-            ] ")" */
-
-    /* [ keep=KeepExpression() ] */
-
     (<K_OVER> {retval.setType(AnalyticType.OVER);} 
         | <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);} )
 
@@ -3004,12 +2995,6 @@ AnalyticExpression AnalyticExpression(Function function) :
         [olist=OrderByElements() [windowElement = WindowElement() ] ]
         
     {
-        //retval.setDistinct(distinct);
-        //retval.setIgnoreNulls(ignoreNulls);
-        //retval.setExpression(expr);
-        //retval.setOffset(offset);
-        //retval.setDefaultValue(defaultValue);
-        //retval.setKeep(keep);
         retval.setPartitionExpressionList(expressionList);
         retval.setOrderByElements(olist);
         retval.setWindowElement(windowElement);
