@@ -378,4 +378,9 @@ public class AlterTest {
                 "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) " +
                 "USING BTREE, ALGORITHM = INPLACE", result.toString());
     }
+
+    @Test
+    public void testIssue259() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE feature_v2 ADD COLUMN third_user_id int (10) unsigned DEFAULT '0' COMMENT '第三方用户id' after kdt_id");
+    }
 }
