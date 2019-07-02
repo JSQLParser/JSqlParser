@@ -1853,6 +1853,30 @@ public class SelectTest {
     }
 
     @Test
+    public void testIsTrue() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl WHERE col IS TRUE";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testIsFalse() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl WHERE col IS FALSE";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testIsNotTrue() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl WHERE col IS NOT TRUE";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testIsNotFalse() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl WHERE col IS NOT FALSE";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
     public void testOracleJoin() throws JSQLParserException {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
         assertSqlCanBeParsedAndDeparsed(stmt);

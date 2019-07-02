@@ -173,6 +173,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(IsBooleanExpression expr) {
+        expr.getLeftExpression().accept(this);
+    }
+
+    @Override
     public void visit(LikeExpression expr) {
         visitBinaryExpression(expr);
     }
