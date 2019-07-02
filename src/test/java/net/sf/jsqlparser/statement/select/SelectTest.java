@@ -3639,4 +3639,9 @@ public class SelectTest {
     public void testSimilarToIssue789_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (w_id NOT SIMILAR TO '/foo/__/bar/(left|right)/[0-9]{4}-[0-9]{2}-[0-9]{2}(/[0-9]*)?')");
     }
+
+    @Test
+    public void testCaseWhenExpressionIssue262() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT X1, (CASE WHEN T.ID IS NULL THEN CASE P.WEIGHT * SUM(T.QTY) WHEN 0 THEN NULL ELSE P.WEIGHT END ELSE SUM(T.QTY) END) AS W FROM A LEFT JOIN T ON T.ID = ? RIGHT JOIN P ON P.ID = ?");
+    }
 }
