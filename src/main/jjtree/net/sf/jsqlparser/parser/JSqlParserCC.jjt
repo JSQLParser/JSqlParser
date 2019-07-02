@@ -3651,6 +3651,7 @@ List<String> CreateParameter():
     StringBuilder identifier = new StringBuilder("");
     Expression exp = null;
     List<String> param = new ArrayList<String>();
+    ColDataType colDataType;
 }
 {
         (
@@ -3733,6 +3734,8 @@ List<String> CreateParameter():
             tk=<K_USING> { param.add(tk.image); }
             |
             tk=<K_COLLATE> { param.add(tk.image); }
+			|
+			tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
         )
     {return param;}
 }
