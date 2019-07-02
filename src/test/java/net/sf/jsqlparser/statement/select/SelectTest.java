@@ -3644,4 +3644,9 @@ public class SelectTest {
     public void testCaseWhenExpressionIssue262() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT X1, (CASE WHEN T.ID IS NULL THEN CASE P.WEIGHT * SUM(T.QTY) WHEN 0 THEN NULL ELSE P.WEIGHT END ELSE SUM(T.QTY) END) AS W FROM A LEFT JOIN T ON T.ID = ? RIGHT JOIN P ON P.ID = ?");
     }
+
+    @Test
+    public void testCaseWhenExpressionIssue200() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1, t2 WHERE CASE WHEN t1.id = 1 THEN t2.name = 'Marry' WHEN t1.id = 2 THEN t2.age = 10 END");
+    }
 }
