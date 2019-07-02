@@ -3304,7 +3304,7 @@ public class SelectTest {
 
     @Test
     public void testMultiPartNamesIssue608() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT @@session.tx_read_only");
+        assertSqlCanBeParsedAndDeparsed("SELECT @@sessions.tx_read_only");
     }
 
 //    Teradata allows SEL to be used in place of SELECT

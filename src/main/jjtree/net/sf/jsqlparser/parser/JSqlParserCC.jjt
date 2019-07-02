@@ -106,6 +106,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 {
     <K_ACTION: "ACTION">
 |   <K_ADD:"ADD">
+|   <K_ADVANCE:"ADVANCE">
 |   <K_ALGORITHM: "ALGORITHM">
 |   <K_ALL:"ALL">
 |   <K_ALTER:"ALTER">
@@ -177,6 +178,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_GROUP_CONCAT:"GROUP_CONCAT">
 |   <K_HAVING:"HAVING">
 |   <K_HIGH_PRIORITY : "HIGH_PRIORITY">
+|   <K_HOPPING:"HOPPING">
 |   <K_IF:"IF">
 |   <K_IIF:"IIF">
 |   <K_IGNORE : "IGNORE">
@@ -248,11 +250,13 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SELECT: ("SELECT" | "SEL")>
 |   <K_SEMI : "SEMI">
 |   <K_SEPARATOR:"SEPARATOR">
+|   <K_SESSION:"SESSION">
 |   <K_SET:"SET">
 |   <K_SETS:"SETS">
 |   <K_SHOW : "SHOW">
 |   <K_SIBLINGS:"SIBLINGS">
 |   <K_SIMILAR:"SIMILAR">
+|   <K_SIZE:"SIZE">
 |   <K_SKIP: "SKIP">
 |   <K_SOME:"SOME">
 |   <K_START:"START">
@@ -266,6 +270,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TOP:"TOP">
 |   <K_TRAILING:"TRAILING">
 |   <K_TRUNCATE:"TRUNCATE">
+|   <K_TUMBLING:"TUMBLING">
 |   <K_TYPE:"TYPE">
 |   <K_UNBOUNDED: "UNBOUNDED"> 
 |   <K_UNION:"UNION">
@@ -287,6 +292,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WAIT : "WAIT">
 |   <K_WHEN:"WHEN">
 |   <K_WHERE:"WHERE">
+|   <K_WINDOW:"WINDOW">
 |   <K_WITH:"WITH">
 |   <K_WITHIN:"WITHIN">
 |   <K_WITHOUT:"WITHOUT">
@@ -1186,6 +1192,7 @@ PlainSelect PlainSelect() #PlainSelect:
     Wait wait = null;
     boolean mySqlSqlCalcFoundRows = false;
     Token token;
+    KSQLWindow ksqlWindow=null;
 }
 {
     <K_SELECT>
@@ -1226,6 +1233,7 @@ PlainSelect PlainSelect() #PlainSelect:
       fromItem=FromItem()
       joins=JoinsList() ]
 
+    [ ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
     [ where=WhereClause() { plainSelect.setWhere(where); }]
     [ oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
     [ groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
@@ -1777,6 +1785,49 @@ KSQLJoinWindow JoinWindow():
         retval.setBeforeAfterWindow(true);
         return retval;
     })
+}
+
+KSQLWindow KSQLWindowClause():
+{
+    KSQLWindow retval = null;
+    Token sizeDurationToken = null;
+    Token sizeTimeUnitToken = null;
+    Token advanceDurationToken = null;
+    Token advanceTimeUnitToken = null;
+}
+{
+    <K_WINDOW>
+    {
+        retval=new KSQLWindow();
+        retval.setHoppingWindow(false);
+        retval.setSessionWindow(false);
+        retval.setTumblingWindow(false);
+    }
+    (
+        <K_HOPPING> "("
+            <K_SIZE> sizeDurationToken=<S_LONG> sizeTimeUnitToken=<S_IDENTIFIER> ","
+            <K_ADVANCE> <K_BY> advanceDurationToken=<S_LONG> advanceTimeUnitToken=<S_IDENTIFIER> ")"
+        {
+            retval.setHoppingWindow(true);
+        } |
+        <K_SESSION> "(" sizeDurationToken=<S_LONG> sizeTimeUnitToken=<S_IDENTIFIER> ")"
+        {
+            retval.setSessionWindow(true);
+        } |
+        <K_TUMBLING> "(" <K_SIZE> sizeDurationToken=<S_LONG> sizeTimeUnitToken=<S_IDENTIFIER> ")"
+        {
+            retval.setTumblingWindow(true);
+        }
+    )
+    {
+            retval.setSizeDuration(Long.parseLong(sizeDurationToken.image));
+            retval.setSizeTimeUnit(KSQLWindow.TimeUnit.valueOf(sizeTimeUnitToken.image));
+            if (advanceDurationToken != null) {
+                retval.setAdvanceDuration(Long.parseLong(advanceDurationToken.image));
+                retval.setAdvanceTimeUnit(KSQLWindow.TimeUnit.valueOf(advanceTimeUnitToken.image));
+            }
+            return retval;
+    }
 }
 
 Expression WhereClause():

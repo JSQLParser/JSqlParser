@@ -19,9 +19,13 @@ JSqlParser is dual licensed under **LGPL V2.1** or **Apache Software License, Ve
 
 ## Discussion
 
-Please provide feedback on https://github.com/JSQLParser/JSqlParser/issues/677, about removing bracket identifier quotation to support array processing.
+Please provide feedback on:
+
+* https://github.com/JSQLParser/JSqlParser/issues/677, about removing bracket identifier quotation to support array processing.
+* Is there any need for a Java 7 JSqlParser build, or can we move on to at least Java 8? (https://github.com/JSQLParser/JSqlParser/issues/814)
 
 ## News
+* Released version **2.1** of JSqlParser
 * Released version **2.0** of JSqlParser
 * breaking **API** change: to support chained functions attribute type was changed to **Expression**
 * Released version **1.4** of JSqlParser
@@ -58,12 +62,7 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 2.1
-
-* support for **similar to** statement
-* support for **show** statment (API - change)
-* introduces Statement streaming support by **CCJSqlParserUtil.streamStatements**
-* improved nested bracket parsing performance by a large scale
+## Extensions in the latest SNAPSHOT version 2.2
 
 ## Extensions of JSqlParser releases
 

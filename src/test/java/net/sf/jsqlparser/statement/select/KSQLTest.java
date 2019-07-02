@@ -80,4 +80,77 @@ public class KSQLTest {
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
+
+    @Test
+    public void testKSQLHoppingWindows() throws Exception {
+        String sql;
+        Statement statement;
+        sql = "SELECT *\n"
+                + "FROM table1 t1\n"
+                + "WINDOW HOPPING (SIZE 30 SECONDS, ADVANCE BY 10 MINUTES)\n"
+                + "GROUP BY region.id\n";
+
+        statement = CCJSqlParserUtil.parse(sql);
+        System.out.println(statement.toString());
+
+        Select select = (Select) statement;
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertTrue(plainSelect.getKsqlWindow().isHoppingWindow());
+        assertFalse(plainSelect.getKsqlWindow().isSessionWindow());
+        assertFalse(plainSelect.getKsqlWindow().isTumblingWindow());
+        assertEquals(30L, plainSelect.getKsqlWindow().getSizeDuration());
+        assertEquals("SECONDS", plainSelect.getKsqlWindow().getSizeTimeUnit().toString());
+        assertEquals(10L, plainSelect.getKsqlWindow().getAdvanceDuration());
+        assertEquals("MINUTES", plainSelect.getKsqlWindow().getAdvanceTimeUnit().toString());
+        assertStatementCanBeDeparsedAs(select, sql, true);
+
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testKSQLSessionWindows() throws Exception {
+        String sql;
+        Statement statement;
+        sql = "SELECT *\n"
+                + "FROM table1 t1\n"
+                + "WINDOW SESSION (5 MINUTES)\n"
+                + "GROUP BY region.id\n";
+
+        statement = CCJSqlParserUtil.parse(sql);
+        System.out.println(statement.toString());
+
+        Select select = (Select) statement;
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertTrue(plainSelect.getKsqlWindow().isSessionWindow());
+        assertFalse(plainSelect.getKsqlWindow().isHoppingWindow());
+        assertFalse(plainSelect.getKsqlWindow().isTumblingWindow());
+        assertEquals(5L, plainSelect.getKsqlWindow().getSizeDuration());
+        assertEquals("MINUTES", plainSelect.getKsqlWindow().getSizeTimeUnit().toString());
+
+        assertStatementCanBeDeparsedAs(select, sql, true);
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testKSQLTumblingWindows() throws Exception {
+        String sql;
+        Statement statement;
+        sql = "SELECT *\n"
+                + "FROM table1 t1\n"
+                + "WINDOW TUMBLING (SIZE 30 SECONDS)\n"
+                + "GROUP BY region.id\n";
+
+        statement = CCJSqlParserUtil.parse(sql);
+        System.out.println(statement.toString());
+                Select select = (Select) statement;
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertTrue(plainSelect.getKsqlWindow().isTumblingWindow());
+        assertFalse(plainSelect.getKsqlWindow().isSessionWindow());
+        assertFalse(plainSelect.getKsqlWindow().isHoppingWindow());
+        assertEquals(30L, plainSelect.getKsqlWindow().getSizeDuration());
+        assertEquals("SECONDS", plainSelect.getKsqlWindow().getSizeTimeUnit().toString());
+
+        assertStatementCanBeDeparsedAs(select, sql, true);
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
 }
