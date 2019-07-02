@@ -149,6 +149,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DESCRIBE:"DESCRIBE">
 |   <K_DISABLE : "DISABLE">
 |   <K_DISTINCT:"DISTINCT">
+|   <K_DIV:"DIV">
 |   <K_DO:"DO">
 |   <K_DOUBLE : "DOUBLE">
 |   <K_DROP:"DROP">
@@ -2715,6 +2716,7 @@ Expression MultiplicativeExpression():
     (
         LOOKAHEAD(2) ("*" { result = new Multiplication(); }
                                     | "/" { result = new Division(); }
+                                    | <K_DIV> { result = new IntegerDivision(); }
                                     | "%" { result = new Modulo(); }
                     )
 
