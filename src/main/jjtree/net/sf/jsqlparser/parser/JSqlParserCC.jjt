@@ -149,6 +149,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DESCRIBE:"DESCRIBE">
 |   <K_DISABLE : "DISABLE">
 |   <K_DISTINCT:"DISTINCT">
+|   <K_DIV:"DIV">
 |   <K_DO:"DO">
 |   <K_DOUBLE : "DOUBLE">
 |   <K_DROP:"DROP">
@@ -166,6 +167,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXTRACT:"EXTRACT">
 |   <K_FETCH:"FETCH">
 |   <K_FIRST: "FIRST">
+|   <K_FALSE: "FALSE">
 |   <K_FOLLOWING: "FOLLOWING">
 |   <K_FOR:"FOR">
 |   <K_FORCE : "FORCE">
@@ -270,6 +272,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TOP:"TOP">
 |   <K_TRAILING:"TRAILING">
 |   <K_TRUNCATE:"TRUNCATE">
+|   <K_TRUE:"TRUE">
 |   <K_TUMBLING:"TUMBLING">
 |   <K_TYPE:"TYPE">
 |   <K_UNBOUNDED: "UNBOUNDED"> 
@@ -1069,7 +1072,7 @@ String RelObjectNameWithoutValue() :
 	  | tk=<K_UNSIGNED>
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TYPE> | tk=<K_ISNULL> 
 	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
-      | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL>
+      | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE>
 /*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
 
@@ -2316,9 +2319,10 @@ Expression SQLCondition():
     (
     result=ExistsExpression()
     | LOOKAHEAD(InExpression()) result=InExpression()
-    | left = SimpleExpression() 
+    | left = SimpleExpression()
         (LOOKAHEAD(2) result=Between(left)
-         | LOOKAHEAD(2) result=IsNullExpression(left)
+         | LOOKAHEAD(IsNullExpression()) result=IsNullExpression(left)
+         | LOOKAHEAD(IsBooleanExpression()) result=IsBooleanExpression(left)
          | LOOKAHEAD(2) result=LikeExpression(left)
          | result=SimilarToExpression(left)
         )
@@ -2411,6 +2415,21 @@ Expression IsNullExpression(Expression leftExpression):
 }
 {
         (<K_ISNULL> { result.setUseIsNull(true); } | <K_IS> [<K_NOT> { result.setNot(true); } ] <K_NULL> )
+
+    {
+        result.setLeftExpression(leftExpression);
+        return result;
+    }
+}
+
+Expression IsBooleanExpression(Expression leftExpression):
+{
+    IsBooleanExpression result = new IsBooleanExpression();
+}
+{
+        (
+          <K_IS> [<K_NOT> { result.setNot(true); } ] (<K_TRUE> { result.setIsTrue(true); } | <K_FALSE> { result.setIsTrue(false); })
+        )
 
     {
         result.setLeftExpression(leftExpression);
@@ -2715,6 +2734,7 @@ Expression MultiplicativeExpression():
     (
         LOOKAHEAD(2) ("*" { result = new Multiplication(); }
                                     | "/" { result = new Division(); }
+                                    | <K_DIV> { result = new IntegerDivision(); }
                                     | "%" { result = new Modulo(); }
                     )
 
@@ -3687,6 +3707,7 @@ List<String> CreateParameter():
     StringBuilder identifier = new StringBuilder("");
     Expression exp = null;
     List<String> param = new ArrayList<String>();
+    ColDataType colDataType;
 }
 {
         (
@@ -3769,6 +3790,8 @@ List<String> CreateParameter():
             tk=<K_USING> { param.add(tk.image); }
             |
             tk=<K_COLLATE> { param.add(tk.image); }
+			|
+			tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
         )
     {return param;}
 }

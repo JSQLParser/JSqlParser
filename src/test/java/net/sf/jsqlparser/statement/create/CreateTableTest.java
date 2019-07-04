@@ -537,4 +537,9 @@ public class CreateTableTest {
                 + "KEY PARENT_DIRTY_IDX (DIRTY_STATUS)\n"
                 + ") ENGINE=InnoDB AUTO_INCREMENT=2663 DEFAULT CHARSET=utf8", true);
     }
+
+    @Test
+    public void testCreateTableIssue113() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE foo (reason character varying (255) DEFAULT 'Test' :: character varying NOT NULL)");
+    }
 }

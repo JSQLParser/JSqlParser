@@ -1853,6 +1853,30 @@ public class SelectTest {
     }
 
     @Test
+    public void testIsTrue() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl WHERE col IS TRUE";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testIsFalse() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl WHERE col IS FALSE";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testIsNotTrue() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl WHERE col IS NOT TRUE";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testIsNotFalse() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl WHERE col IS NOT FALSE";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
     public void testOracleJoin() throws JSQLParserException {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -1911,6 +1935,12 @@ public class SelectTest {
         stmt = "SELECT * FROM a INTERSECT SELECT * FROM b";
         Statement parsed = parserManager.parse(new StringReader(stmt));
         assertStatementCanBeDeparsedAs(parsed, "SELECT * FROM a INTERSECT SELECT * FROM b");
+    }
+
+    @Test
+    public void testIntegerDivOperator() throws Exception {
+        String stmt = "SELECT col DIV 3";
+        assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
     @Test
@@ -3638,5 +3668,15 @@ public class SelectTest {
     @Test
     public void testSimilarToIssue789_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (w_id NOT SIMILAR TO '/foo/__/bar/(left|right)/[0-9]{4}-[0-9]{2}-[0-9]{2}(/[0-9]*)?')");
+    }
+
+    @Test
+    public void testCaseWhenExpressionIssue262() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT X1, (CASE WHEN T.ID IS NULL THEN CASE P.WEIGHT * SUM(T.QTY) WHEN 0 THEN NULL ELSE P.WEIGHT END ELSE SUM(T.QTY) END) AS W FROM A LEFT JOIN T ON T.ID = ? RIGHT JOIN P ON P.ID = ?");
+    }
+
+    @Test
+    public void testCaseWhenExpressionIssue200() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1, t2 WHERE CASE WHEN t1.id = 1 THEN t2.name = 'Marry' WHEN t1.id = 2 THEN t2.age = 10 END");
     }
 }

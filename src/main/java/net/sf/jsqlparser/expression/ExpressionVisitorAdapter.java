@@ -116,6 +116,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(IntegerDivision expr) {
+        visitBinaryExpression(expr);
+    }
+
+    @Override
     public void visit(Multiplication expr) {
         visitBinaryExpression(expr);
     }
@@ -169,6 +174,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(IsNullExpression expr) {
+        expr.getLeftExpression().accept(this);
+    }
+
+    @Override
+    public void visit(IsBooleanExpression expr) {
         expr.getLeftExpression().accept(this);
     }
 
