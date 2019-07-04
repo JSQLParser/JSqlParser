@@ -66,6 +66,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 * DIV operator
 * improved performance for SQLCondition production
+* support for full text search (MATCH..AGAINST)
 
 ## Extensions of JSqlParser releases
 
