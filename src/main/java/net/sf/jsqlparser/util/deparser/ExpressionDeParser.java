@@ -204,6 +204,21 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     }
 
     @Override
+    public void visit(FullTextSearch fullTextSearch) {
+        // Build a list of matched columns
+        String columnsListCommaSeperated = "";
+        Iterator<Column> iterator = fullTextSearch.getMatchColumns().iterator();
+        while (iterator.hasNext()) {
+            Column col = iterator.next();
+            columnsListCommaSeperated += col.getFullyQualifiedName();
+            if (iterator.hasNext()) {
+                columnsListCommaSeperated += ",";
+            }
+        }
+        buffer.append("MATCH (" + columnsListCommaSeperated + ") AGAINST (" + fullTextSearch.getAgainstValue() + " " + fullTextSearch.getSearchModifier() + ")");
+    }
+
+    @Override
     public void visit(SignedExpression signedExpression) {
         buffer.append(signedExpression.getSign());
         signedExpression.getExpression().accept(this);

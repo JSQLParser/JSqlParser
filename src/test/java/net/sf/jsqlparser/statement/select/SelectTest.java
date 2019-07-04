@@ -1853,6 +1853,18 @@ public class SelectTest {
     }
 
     @Test
+    public void testOneColumnFullTextSearchMySQL() throws JSQLParserException {
+        String statement = "SELECT MATCH (col1) AGAINST ('test' IN NATURAL LANGUAGE MODE) relevance FROM tbl";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testSeveralColumnsFullTextSearchMySQL() throws JSQLParserException {
+        String statement = "SELECT MATCH (col1,col2,col3) AGAINST ('test' IN NATURAL LANGUAGE MODE) relevance FROM tbl";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
     public void testIsTrue() throws JSQLParserException {
         String statement = "SELECT col FROM tbl WHERE col IS TRUE";
         assertSqlCanBeParsedAndDeparsed(statement);

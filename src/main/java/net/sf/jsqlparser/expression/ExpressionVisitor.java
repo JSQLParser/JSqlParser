@@ -72,6 +72,8 @@ public interface ExpressionVisitor {
 
     void visit(InExpression inExpression);
 
+    void visit(FullTextSearch fullTextSearch);
+
     void visit(IsNullExpression isNullExpression);
 
     void visit(IsBooleanExpression isBooleanExpression);

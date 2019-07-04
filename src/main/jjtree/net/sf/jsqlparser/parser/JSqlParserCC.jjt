@@ -107,6 +107,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
     <K_ACTION: "ACTION">
 |   <K_ADD:"ADD">
 |   <K_ADVANCE:"ADVANCE">
+|   <K_AGAINST:"AGAINST">
 |   <K_ALGORITHM: "ALGORITHM">
 |   <K_ALL:"ALL">
 |   <K_ALTER:"ALTER">
@@ -205,6 +206,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_LIKE:"LIKE">
 |   <K_LIMIT:"LIMIT">
 |   <K_LOW_PRIORITY : "LOW_PRIORITY">
+|   <K_MATCH: "MATCH">
 |   <K_MATCHED: "MATCHED">
 |   <K_MATERIALIZED:"MATERIALIZED">
 |   <K_MERGE: "MERGE">
@@ -2809,6 +2811,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(FunctionWithCondParams()) retval = FunctionWithCondParams()
 
+        | LOOKAHEAD(FullTextSearch()) retval = FullTextSearch()
+
         | LOOKAHEAD(Function()) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression((Function)retval) ]
 
         | LOOKAHEAD(2) retval = IntervalExpression() { dateExpressionAllowed = false; }
@@ -3221,6 +3225,31 @@ Execute Execute(): {
     { 
         execute.setExprList(expressionList);
         return execute; 
+    }
+}
+
+FullTextSearch FullTextSearch() : {
+    Column col;
+    Token searchModifier;
+    Token againstValue;
+    FullTextSearch fs = new FullTextSearch();
+    List<Column> matchedColumns = new ArrayList<Column>();
+    List<Expression> expList = new ArrayList<Expression>();
+}
+{
+    <K_MATCH> "(" col=Column() { matchedColumns.add(col); } ("," col=Column() { matchedColumns.add(col); } )* ")" <K_AGAINST>
+    "(" againstValue=<S_CHAR_LITERAL> { fs.setAgainstValue(new StringValue(againstValue.image)); }
+        (
+            searchModifier="IN NATURAL LANGUAGE MODE"
+            | searchModifier="IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION"
+            | searchModifier="IN BOOLEAN MODE"
+            | searchModifier="WITH QUERY EXPANSION"
+        )
+        { fs.setSearchModifier(searchModifier.image); }
+    ")"
+    {
+        fs.setMatchColumns(matchedColumns);
+        return fs;
     }
 }
 
