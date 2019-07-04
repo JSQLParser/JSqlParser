@@ -178,6 +178,13 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(FullTextSearch expr) {
+        for (Column col : expr.getMatchColumns()) {
+            col.accept(this);
+        }
+    }
+
+    @Override
     public void visit(IsBooleanExpression expr) {
         expr.getLeftExpression().accept(this);
     }

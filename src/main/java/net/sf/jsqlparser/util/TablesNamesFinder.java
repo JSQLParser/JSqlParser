@@ -277,6 +277,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
+    public void visit(FullTextSearch fullTextSearch) {
+    }
+
+    @Override
     public void visit(SignedExpression signedExpression) {
         signedExpression.getExpression().accept(this);
     }
