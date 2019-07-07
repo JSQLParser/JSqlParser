@@ -1865,6 +1865,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testFullTextSearchInDefaultMode() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl WHERE MATCH (col1,col2,col3) AGAINST ('test') ORDER BY col";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
     public void testIsTrue() throws JSQLParserException {
         String statement = "SELECT col FROM tbl WHERE col IS TRUE";
         assertSqlCanBeParsedAndDeparsed(statement);
