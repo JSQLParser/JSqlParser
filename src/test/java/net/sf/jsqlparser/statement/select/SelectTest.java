@@ -2220,6 +2220,11 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
+//    @Test
+//    public void testMultiValueIn3() throws JSQLParserException {
+//        String stmt = "SELECT * FROM mytable WHERE (SSN,SSM) IN (('11111111111111', '22222222222222'))";
+//        assertSqlCanBeParsedAndDeparsed(stmt);
+//    }
     @Test
     public void testPivot1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN ('val1'))";
