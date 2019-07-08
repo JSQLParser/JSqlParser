@@ -69,6 +69,8 @@ public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
                 columnsListCommaSeperated += ",";
             }
         }
-        return "MATCH (" + columnsListCommaSeperated + ") AGAINST (" + this._againstValue + " " + this._searchModifier + ")";
+
+        return "MATCH (" + columnsListCommaSeperated + ") AGAINST (" + this._againstValue +
+                (this._searchModifier != null ? " " + this._searchModifier : "") + ")";
     }
 }
