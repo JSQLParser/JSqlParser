@@ -189,6 +189,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_IN:"IN">
 |   <K_INDEX: "INDEX">
 |   <K_INNER:"INNER">
+|   <K_STRAIGHT:"STRAIGHT_JOIN">
 |   <K_INSERT:"INSERT">
 |   <K_INTERSECT:"INTERSECT">
 |   <K_INTERVAL:"INTERVAL">
@@ -1740,10 +1741,11 @@ Join JoinerExpression() #JoinerExpression:
            ) [ <K_OUTER> { join.setOuter(true); } ]
         | <K_INNER> { join.setInner(true); }
         | <K_NATURAL> { join.setNatural(true); }
-        | <K_CROSS> { join.setCross(true); } 
+        | <K_CROSS> { join.setCross(true); }
     ]
 
-          ( <K_JOIN> | "," { join.setSimple(true); } (<K_OUTER> { join.setOuter(true); } )? ) 
+          ( <K_JOIN> | "," { join.setSimple(true); } (<K_OUTER> { join.setOuter(true); } )?
+           | <K_STRAIGHT> { join.setStraight(true); } )
 
         right=FromItem()
 
