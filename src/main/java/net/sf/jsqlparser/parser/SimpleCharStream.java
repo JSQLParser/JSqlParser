@@ -88,7 +88,7 @@ public class SimpleCharStream {
                 maxNextCharInd = bufpos -= tokenBegin;
             }
         } catch (Throwable t) {
-            throw new Error(t.getMessage());
+            throw new RuntimeException(t.getMessage());
         }
 
         bufsize += 2048;
@@ -385,7 +385,7 @@ public class SimpleCharStream {
         int i = 0;
         int j = 0;
         int k = 0;
-        int nextColDiff = 0; 
+        int nextColDiff = 0;
         int columnDiff = 0;
 
         while (i < len && bufline[j = start % bufsize] == bufline[k = ++start % bufsize]) {
