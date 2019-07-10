@@ -1619,6 +1619,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testStraightJoin() throws JSQLParserException {
+        String stmt = "SELECT col FROM tbl STRAIGHT_JOIN tbl2 ON tbl.id = tbl2.id";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testCastTypeProblem3() throws JSQLParserException {
         String stmt = "SELECT col1::varchar (256) FROM tabelle1";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -1861,6 +1867,12 @@ public class SelectTest {
     @Test
     public void testSeveralColumnsFullTextSearchMySQL() throws JSQLParserException {
         String statement = "SELECT MATCH (col1,col2,col3) AGAINST ('test' IN NATURAL LANGUAGE MODE) relevance FROM tbl";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testFullTextSearchInDefaultMode() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl WHERE MATCH (col1,col2,col3) AGAINST ('test') ORDER BY col";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
