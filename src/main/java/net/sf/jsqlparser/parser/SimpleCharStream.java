@@ -33,6 +33,7 @@ public class SimpleCharStream {
     protected boolean prevCharIsLF = false;
 
     protected Provider inputStream;
+    private boolean externalBuffer;
 
     protected char[] buffer;
     protected int maxNextCharInd = 0;
@@ -97,7 +98,7 @@ public class SimpleCharStream {
     }
 
     protected void FillBuff() throws java.io.IOException {
-        if (maxNextCharInd == available) {
+        if (!externalBuffer && maxNextCharInd == available) {
             if (available == bufsize) {
                 if (tokenBegin > 2048) {
                     bufpos = maxNextCharInd = 0;
@@ -287,13 +288,21 @@ public class SimpleCharStream {
     public SimpleCharStream(Provider dstream, int startline,
             int startcolumn, int buffersize) {
         inputStream = dstream;
+        externalBuffer = dstream instanceof StringProvider;
         line = startline;
         column = startcolumn - 1;
 
-        available = bufsize = buffersize;
-        buffer = new char[buffersize];
-        bufline = new int[buffersize];
-        bufcolumn = new int[buffersize];
+        if (externalBuffer) {
+            int bs = ((StringProvider) inputStream)._string.length();
+            available = bufsize = bs;
+            bufline = new int[bs];
+            bufcolumn = new int[bs];
+        } else {
+            available = bufsize = buffersize;
+            buffer = new char[buffersize];
+            bufline = new int[buffersize];
+            bufcolumn = new int[buffersize];
+        }
     }
 
     /**
@@ -317,14 +326,21 @@ public class SimpleCharStream {
     public void ReInit(Provider dstream, int startline,
             int startcolumn, int buffersize) {
         inputStream = dstream;
+        externalBuffer = dstream instanceof StringProvider;
         line = startline;
         column = startcolumn - 1;
-
-        if (buffer == null || buffersize != buffer.length) {
-            available = bufsize = buffersize;
-            buffer = new char[buffersize];
-            bufline = new int[buffersize];
-            bufcolumn = new int[buffersize];
+        if (externalBuffer) {
+            int bs = ((StringProvider) inputStream)._string.length();
+            available = bufsize = bs;
+            bufline = new int[bs];
+            bufcolumn = new int[bs];
+        } else {
+            if (buffer == null || buffersize != buffer.length) {
+                available = bufsize = buffersize;
+                buffer = new char[buffersize];
+                bufline = new int[buffersize];
+                bufcolumn = new int[buffersize];
+            }
         }
         prevCharIsLF = prevCharIsCR = false;
         tokenBegin = inBuf = maxNextCharInd = 0;
@@ -350,11 +366,21 @@ public class SimpleCharStream {
      * Get token literal value.
      */
     public String GetImage() {
-        if (bufpos >= tokenBegin) {
-            return new String(buffer, tokenBegin, bufpos - tokenBegin + 1);
+        if (externalBuffer) {
+            String data = ((StringProvider) inputStream)._string;
+            if (bufpos >= tokenBegin) {
+                return data.substring(tokenBegin, bufpos + 1);
+            } else {
+                return data.substring(tokenBegin, bufsize)
+                        + data.substring(0, bufpos + 1);
+            }
         } else {
-            return new String(buffer, tokenBegin, bufsize - tokenBegin)
-                    + new String(buffer, 0, bufpos + 1);
+            if (bufpos >= tokenBegin) {
+                return new String(buffer, tokenBegin, bufpos - tokenBegin + 1);
+            } else {
+                return new String(buffer, tokenBegin, bufsize - tokenBegin)
+                        + new String(buffer, 0, bufpos + 1);
+            }
         }
     }
 
@@ -362,6 +388,7 @@ public class SimpleCharStream {
      * Get the suffix.
      */
     public char[] GetSuffix(int len) {
+
         char[] ret = new char[len];
 
         if ((bufpos + 1) >= len) {
