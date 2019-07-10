@@ -118,11 +118,19 @@ public class SimpleCharStream {
 
         int i;
         try {
-            if ((i = inputStream.read(buffer, maxNextCharInd, available - maxNextCharInd)) == -1) {
-                inputStream.close();
-                throw new java.io.IOException();
+            if (inputStream instanceof StringProvider) {
+                i = ((StringProvider) inputStream)._string.length();
+                if (maxNextCharInd == i) {
+                    throw new java.io.IOException();
+                }
+                maxNextCharInd = i;
             } else {
-                maxNextCharInd += i;
+                if ((i = inputStream.read(buffer, maxNextCharInd, available - maxNextCharInd)) == -1) {
+                    inputStream.close();
+                    throw new java.io.IOException();
+                } else {
+                    maxNextCharInd += i;
+                }
             }
             return;
         } catch (java.io.IOException e) {
@@ -180,6 +188,14 @@ public class SimpleCharStream {
         bufcolumn[bufpos] = column;
     }
 
+    private char readChar(int pos) {
+        if (this.inputStream instanceof StringProvider) {
+            return ((StringProvider) inputStream)._string.charAt(pos);
+        } else {
+            return buffer[pos];
+        }
+    }
+
     /**
      * Read a character.
      */
@@ -192,7 +208,7 @@ public class SimpleCharStream {
             }
 
             totalCharsRead++;
-            return buffer[bufpos];
+            return readChar(bufpos);
         }
 
         if (++bufpos >= maxNextCharInd) {
@@ -201,7 +217,7 @@ public class SimpleCharStream {
 
         totalCharsRead++;
 
-        char c = buffer[bufpos];
+        char c = readChar(bufpos);
 
         UpdateLineColumn(c);
         return c;
