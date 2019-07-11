@@ -504,7 +504,10 @@ Statements Statements() #Statements :
 JAVACODE
 void error_skipto(int kind) {
   ParseException e = generateParseException();
-  System.out.println(e.toString());
+
+  // Could this please be made switchable by some verbose flag. It would even be Ok to me if was switched on by default.
+  // System.out.println(e.toString());
+
   Token t;
   do {
     t = getNextToken();
@@ -1138,6 +1141,10 @@ Table Table() #Table :
 
     {
         Table table = new Table(data);
+
+        // For SQuirreL the position of the table is needed. Because if the table doesn't exist in the database itl be marked as error.
+        linkAST(table,jjtn000);
+
         return table;
     }
 }
