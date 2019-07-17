@@ -33,7 +33,7 @@ public class SimpleCharStream {
     protected boolean prevCharIsLF = false;
 
     protected Provider inputStream;
-    private boolean externalBuffer;
+    private boolean isStringProvider;
 
     protected char[] buffer;
     protected int maxNextCharInd = 0;
@@ -98,7 +98,7 @@ public class SimpleCharStream {
     }
 
     protected void FillBuff() throws java.io.IOException {
-        if (!externalBuffer && maxNextCharInd == available) {
+        if (!isStringProvider && maxNextCharInd == available) {
             if (available == bufsize) {
                 if (tokenBegin > 2048) {
                     bufpos = maxNextCharInd = 0;
@@ -288,11 +288,11 @@ public class SimpleCharStream {
     public SimpleCharStream(Provider dstream, int startline,
             int startcolumn, int buffersize) {
         inputStream = dstream;
-        externalBuffer = dstream instanceof StringProvider;
+        isStringProvider = dstream instanceof StringProvider;
         line = startline;
         column = startcolumn - 1;
 
-        if (externalBuffer) {
+        if (isStringProvider) {
             int bs = ((StringProvider) inputStream)._string.length();
             available = bufsize = bs;
             bufline = new int[bs];
@@ -326,10 +326,10 @@ public class SimpleCharStream {
     public void ReInit(Provider dstream, int startline,
             int startcolumn, int buffersize) {
         inputStream = dstream;
-        externalBuffer = dstream instanceof StringProvider;
+        isStringProvider = dstream instanceof StringProvider;
         line = startline;
         column = startcolumn - 1;
-        if (externalBuffer) {
+        if (isStringProvider) {
             int bs = ((StringProvider) inputStream)._string.length();
             available = bufsize = bs;
             bufline = new int[bs];
@@ -366,7 +366,7 @@ public class SimpleCharStream {
      * Get token literal value.
      */
     public String GetImage() {
-        if (externalBuffer) {
+        if (isStringProvider) {
             String data = ((StringProvider) inputStream)._string;
             if (bufpos >= tokenBegin) {
                 return data.substring(tokenBegin, bufpos + 1);
