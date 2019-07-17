@@ -1104,7 +1104,7 @@ String RelObjectNameExt():
   String result=null;
 } 
 {
-    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> | tk=<K_DOUBLE> | tk=<K_IF> | <K_OPTIMIZE>)
+    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> | tk=<K_DOUBLE> | tk=<K_IF> | <K_OPTIMIZE> | tk=<K_LIMIT> | tk=<K_OFFSET>)
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -1952,10 +1952,10 @@ JdbcParameter SimpleJdbcParameter() : {
 }
 
 JdbcNamedParameter SimpleJdbcNamedParameter() : {
-    Token token;
+    String name;
 }
 {
-    ":" token = <S_IDENTIFIER>
+    ":" name = RelObjectNameExt()
     {
         return new JdbcNamedParameter(token.image);
     }
@@ -1965,6 +1965,7 @@ Limit LimitWithOffset() #LimitWithOffset:
 {
     Limit limit = new Limit();
     Token token = null;
+    String name;
     JdbcParameter jdbc = null;
 }
 {
@@ -1977,7 +1978,7 @@ Limit LimitWithOffset() #LimitWithOffset:
                          |
                          jdbc = SimpleJdbcParameter() { limit.setOffset(jdbc); }
                          |
-                         ":" { limit.setOffset(new JdbcNamedParameter()); } [ LOOKAHEAD(2) token = <S_IDENTIFIER> { ((JdbcNamedParameter)limit.getOffset()).setName(token.image); } ]
+                         ":" { limit.setOffset(new JdbcNamedParameter()); } [ LOOKAHEAD(2) name = RelObjectNameExt() { ((JdbcNamedParameter)limit.getOffset()).setName(name); } ]
 
                      )
                      ","
@@ -1987,7 +1988,7 @@ Limit LimitWithOffset() #LimitWithOffset:
                 |
                  jdbc = SimpleJdbcParameter() { limit.setRowCount(jdbc); } 
                  |
-                 ":" { limit.setRowCount(new JdbcNamedParameter()); } [ LOOKAHEAD(2) token = <S_IDENTIFIER> { ((JdbcNamedParameter)limit.getRowCount()).setName(token.image); } ]
+                 ":" { limit.setRowCount(new JdbcNamedParameter()); } [ LOOKAHEAD(2) name = RelObjectNameExt() { ((JdbcNamedParameter)limit.getRowCount()).setName(name); } ]
                 )
             |
             limit = PlainLimit()
@@ -2003,6 +2004,7 @@ Limit PlainLimit() #PlainLimit:
     Limit limit = new Limit();
     Token token = null;
     JdbcParameter jdbc;
+    String name;
 }
 {
     // mysql-postgresql-> LIMIT (row_count | ALL | NULL)
@@ -2012,7 +2014,7 @@ Limit PlainLimit() #PlainLimit:
          |
          jdbc = SimpleJdbcParameter() { limit.setRowCount(jdbc); } 
          |
-        ":" { limit.setRowCount(new JdbcNamedParameter()); } [ LOOKAHEAD(2) token = <S_IDENTIFIER> { ((JdbcNamedParameter)limit.getRowCount()).setName(token.image); } ]
+        ":" { limit.setRowCount(new JdbcNamedParameter()); } [ LOOKAHEAD(2) name = RelObjectNameExt() { ((JdbcNamedParameter)limit.getRowCount()).setName(name); } ]
          |
          <K_ALL> { limit.setLimitAll(true);}
          |

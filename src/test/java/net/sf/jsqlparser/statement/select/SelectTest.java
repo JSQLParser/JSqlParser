@@ -589,6 +589,16 @@ public class SelectTest {
     }
 
     @Test
+    public void testLimitOffsetKeyWordAsNamedParameter() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable LIMIT :limit");
+    }
+
+    @Test
+    public void testLimitOffsetKeyWordAsNamedParameter2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable LIMIT :limit OFFSET :offset");
+    }
+
+    @Test
     public void testTop() throws JSQLParserException {
         String statement = "SELECT TOP 3 * FROM mytable WHERE mytable.col = 9";
 
