@@ -63,6 +63,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 2.2
 
+* make it JDK 11 buildable
 * switched to minimum JDK 8 
 * avoid buffer copy of input data if a normal String input is used
 * allow **limit** and **offset** as keywords in specific places
