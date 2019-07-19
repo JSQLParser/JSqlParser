@@ -54,8 +54,7 @@ To help JSqlParser's development you are encouraged to provide
 * bugreports
 * pull requests for new features
 * improvement requests
-* fund new features or sponsor JSqlParser (look at **Sponsor** button)
-* a little donation
+* fund new features or sponsor JSqlParser ([**Sponsor**](https://www.paypal.me/wumpz))
 
 **Please write in English, since it's the language most of the dev team knows.**
 
