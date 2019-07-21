@@ -542,4 +542,14 @@ public class CreateTableTest {
     public void testCreateTableIssue113() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE foo (reason character varying (255) DEFAULT 'Test' :: character varying NOT NULL)");
     }
+
+    @Test
+    public void testCreateTableIssue830() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE testyesr (id int, yy year)");
+    }
+
+    @Test
+    public void testCreateTableIssue830_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE testyesr (id int, yy year, mm month, dd day)");
+    }
 }
