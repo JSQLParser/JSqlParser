@@ -3718,4 +3718,14 @@ public class SelectTest {
     public void testCaseWhenExpressionIssue200() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1, t2 WHERE CASE WHEN t1.id = 1 THEN t2.name = 'Marry' WHEN t1.id = 2 THEN t2.age = 10 END");
     }
+
+    @Test
+    public void testKeywordDuplicate() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT mytable.duplicate FROM mytable");
+    }
+
+    @Test
+    public void testKeywordDuplicate2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE duplicate = 5");
+    }
 }
