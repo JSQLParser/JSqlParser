@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
@@ -25,6 +26,7 @@ import net.sf.jsqlparser.test.TestException;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
@@ -551,5 +553,20 @@ public class CreateTableTest {
     @Test
     public void testCreateTableIssue830_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE testyesr (id int, yy year, mm month, dd day)");
+    }
+
+    @Test
+    public void testSettingCharacterSetIssue829() throws JSQLParserException {
+        String sql = "CREATE TABLE test (id int (11) NOT NULL, name varchar (64) CHARACTER SET GBK NOT NULL, age int (11) NOT NULL, score decimal (8, 2) DEFAULT NULL, description varchar (64) DEFAULT NULL, creationDate datetime DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id)) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4";
+        assertSqlCanBeParsedAndDeparsed(sql);
+        CreateTable stmt = (CreateTable) CCJSqlParserUtil.parse(sql);
+
+        ColumnDefinition colName = stmt.getColumnDefinitions().stream()
+                .filter(col -> col.getColumnName().equals("name"))
+                .findFirst().orElse(null);
+
+        assertNotNull(colName);
+
+        assertEquals("GBK", colName.getColDataType().getCharacterSet());
     }
 }
