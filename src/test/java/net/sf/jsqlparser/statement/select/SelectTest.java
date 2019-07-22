@@ -3730,7 +3730,12 @@ public class SelectTest {
     }
 
     @Test
-    public void testBackslashEscapingIssue827() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("INSERT INTO my_table (my_column_1, my_column_2) VALUES ('my_value_1\\\\', 'my_value_2')");
+    public void testEmptyDoubleQuotes() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE col = \"\"");
+    }
+
+    @Test
+    public void testEmptyDoubleQuotes_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE col = \" \"");
     }
 }
