@@ -9,7 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-public interface GroupByVisitor {
+public interface GroupByVisitor { // default implementation ignored
 
-    void visit(GroupByElement groupBy);
+    default void visit(GroupByElement groupBy) { // default implementation ignored
+    }
 }

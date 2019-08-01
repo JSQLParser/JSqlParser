@@ -29,55 +29,81 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public interface StatementVisitor {
 
-    void visit(Comment comment);
+    default void visit(Comment comment) { // default implementation ignored
+    }
 
-    void visit(Commit commit);
+    default void visit(Commit commit) { // default implementation ignored
+    }
 
-    void visit(Delete delete);
+    default void visit(Delete delete) { // default implementation ignored
+    }
 
-    void visit(Update update);
+    default void visit(Update update) { // default implementation ignored
+    }
 
-    void visit(Insert insert);
+    default void visit(Insert insert) { // default implementation ignored
+    }
 
-    void visit(Replace replace);
+    default void visit(Replace replace) { // default implementation ignored
+    }
 
-    void visit(Drop drop);
+    default void visit(Drop drop) { // default implementation ignored
+    }
 
-    void visit(Truncate truncate);
+    default void visit(Truncate truncate) { // default implementation ignored
+    }
 
-    void visit(CreateIndex createIndex);
+    default void visit(CreateIndex createIndex) { // default implementation ignored
+    }
 
-    void visit(CreateTable createTable);
+    default void visit(CreateTable createTable) { // default implementation ignored
+    }
 
-    void visit(CreateView createView);
+    default void visit(CreateView createView) { // default implementation ignored
+    }
 
-    void visit(AlterView alterView);
+    default void visit(AlterView alterView) { // default implementation ignored
+    }
 
-    void visit(Alter alter);
+    default void visit(Alter alter) { // default implementation ignored
+    }
 
-    void visit(Statements stmts);
+    default void visit(Statements stmts) { // default implementation ignored
+    }
 
-    void visit(Execute execute);
+    default void visit(Execute execute) { // default implementation ignored
+    }
 
-    void visit(SetStatement set);
+    default void visit(SetStatement set) { // default implementation ignored
+    }
 
-    void visit(ShowColumnsStatement set);
+    default void visit(ShowColumnsStatement set) { // default implementation ignored
+    }
 
-    void visit(Merge merge);
+    default void visit(Merge merge) { // default implementation ignored
+    }
 
-    void visit(Select select);
+    default void visit(Select select) { // default implementation ignored
+    }
 
-    void visit(Upsert upsert);
+    default void visit(Upsert upsert) { // default implementation ignored
+    }
 
-    void visit(UseStatement use);
+    default void visit(UseStatement use) { // default implementation ignored
+    }
 
-    void visit(Block block);
+    default void visit(Block block) { // default implementation ignored
+    }
 
-    void visit(ValuesStatement values);
+    default void visit(ValuesStatement values) { // default implementation ignored
+    }
 
-    void visit(DescribeStatement describe);
+    default void visit(DescribeStatement describe) { // default implementation ignored
+    }
 
-    public void visit(ExplainStatement aThis);
+    default void visit(ExplainStatement aThis) { // default implementation ignored
+    }
 
-    public void visit(ShowStatement aThis);
+    default void visit(ShowStatement aThis) { // default implementation ignored
+    }
 }

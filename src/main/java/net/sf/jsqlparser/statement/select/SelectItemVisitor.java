@@ -11,9 +11,12 @@ package net.sf.jsqlparser.statement.select;
 
 public interface SelectItemVisitor {
 
-    void visit(AllColumns allColumns);
+    default void visit(AllColumns allColumns) { // default implementation ignored
+    }
 
-    void visit(AllTableColumns allTableColumns);
+    default void visit(AllTableColumns allTableColumns) { // default implementation ignored
+    }
 
-    void visit(SelectExpressionItem selectExpressionItem);
+    default void visit(SelectExpressionItem selectExpressionItem) { // default implementation ignored
+    }
 }

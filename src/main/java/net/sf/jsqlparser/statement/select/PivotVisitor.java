@@ -11,8 +11,10 @@ package net.sf.jsqlparser.statement.select;
 
 public interface PivotVisitor {
 
-    void visit(Pivot pivot);
+    default void visit(Pivot pivot) { // default implementation ignored
+    }
 
-    void visit(PivotXml pivot);
+    default void visit(PivotXml pivot) { // default implementation ignored
+    }
 
 }

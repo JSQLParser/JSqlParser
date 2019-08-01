@@ -9,151 +9,248 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.expression.operators.arithmetic.*;
+import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
+import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
+import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
+import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
+import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
+import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
-import net.sf.jsqlparser.expression.operators.relational.*;
+import net.sf.jsqlparser.expression.operators.relational.Between;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
+import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
+import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
+import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
+import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
+import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.expression.operators.relational.Matches;
+import net.sf.jsqlparser.expression.operators.relational.MinorThan;
+import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
+import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
+import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
+import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 public interface ExpressionVisitor {
 
-    public void visit(BitwiseRightShift aThis);
+    default void visit(BitwiseRightShift aThis) { // default implementation ignored
+    }
 
-    public void visit(BitwiseLeftShift aThis);
+    default void visit(BitwiseLeftShift aThis) { // default implementation ignored
+    }
 
-    void visit(NullValue nullValue);
+    default void visit(NullValue nullValue) { // default implementation ignored
+    }
 
-    void visit(Function function);
+    default void visit(Function function) { // default implementation ignored
+    }
 
-    void visit(SignedExpression signedExpression);
+    default void visit(SignedExpression signedExpression) { // default implementation ignored
+    }
 
-    void visit(JdbcParameter jdbcParameter);
+    default void visit(JdbcParameter jdbcParameter) { // default implementation ignored
+    }
 
-    void visit(JdbcNamedParameter jdbcNamedParameter);
+    default void visit(JdbcNamedParameter jdbcNamedParameter) { // default implementation ignored
+    }
 
-    void visit(DoubleValue doubleValue);
+    default void visit(DoubleValue doubleValue) { // default implementation ignored
+    }
 
-    void visit(LongValue longValue);
+    default void visit(LongValue longValue) { // default implementation ignored
+    }
 
-    void visit(HexValue hexValue);
+    default void visit(HexValue hexValue) { // default implementation ignored
+    }
 
-    void visit(DateValue dateValue);
+    default void visit(DateValue dateValue) { // default implementation ignored
+    }
 
-    void visit(TimeValue timeValue);
+    default void visit(TimeValue timeValue) { // default implementation ignored
+    }
 
-    void visit(TimestampValue timestampValue);
+    default void visit(TimestampValue timestampValue) { // default implementation ignored
+    }
 
-    void visit(Parenthesis parenthesis);
+    default void visit(Parenthesis parenthesis) { // default implementation ignored
+    }
 
-    void visit(StringValue stringValue);
+    default void visit(StringValue stringValue) { // default implementation ignored
+    }
 
-    void visit(Addition addition);
+    default void visit(Addition addition) { // default implementation ignored
+    }
 
-    void visit(Division division);
+    default void visit(Division division) { // default implementation ignored
+    }
 
-    void visit(IntegerDivision division);
+    default void visit(IntegerDivision division) { // default implementation ignored
+    }
 
-    void visit(Multiplication multiplication);
+    default void visit(Multiplication multiplication) { // default implementation ignored
+    }
 
-    void visit(Subtraction subtraction);
+    default void visit(Subtraction subtraction) { // default implementation ignored
+    }
 
-    void visit(AndExpression andExpression);
+    default void visit(AndExpression andExpression) { // default implementation ignored
+    }
 
-    void visit(OrExpression orExpression);
+    default void visit(OrExpression orExpression) { // default implementation ignored
+    }
 
-    void visit(Between between);
+    default void visit(Between between) { // default implementation ignored
+    }
 
-    void visit(EqualsTo equalsTo);
+    default void visit(EqualsTo equalsTo) { // default implementation ignored
+    }
 
-    void visit(GreaterThan greaterThan);
+    default void visit(GreaterThan greaterThan) { // default implementation ignored
+    }
 
-    void visit(GreaterThanEquals greaterThanEquals);
+    default void visit(GreaterThanEquals greaterThanEquals) { // default implementation ignored
+    }
 
-    void visit(InExpression inExpression);
+    default void visit(InExpression inExpression) { // default implementation ignored
+    }
 
-    void visit(FullTextSearch fullTextSearch);
+    default void visit(FullTextSearch fullTextSearch) { // default implementation ignored
+    }
 
-    void visit(IsNullExpression isNullExpression);
+    default void visit(IsNullExpression isNullExpression) { // default implementation ignored
+    }
 
-    void visit(IsBooleanExpression isBooleanExpression);
+    default void visit(IsBooleanExpression isBooleanExpression) { // default implementation ignored
+    }
 
-    void visit(LikeExpression likeExpression);
+    default void visit(LikeExpression likeExpression) { // default implementation ignored
+    }
 
-    void visit(MinorThan minorThan);
+    default void visit(MinorThan minorThan) { // default implementation ignored
+    }
 
-    void visit(MinorThanEquals minorThanEquals);
+    default void visit(MinorThanEquals minorThanEquals) { // default implementation ignored
+    }
 
-    void visit(NotEqualsTo notEqualsTo);
+    default void visit(NotEqualsTo notEqualsTo) { // default implementation ignored
+    }
 
-    void visit(Column tableColumn);
+    default void visit(Column tableColumn) { // default implementation ignored
+    }
 
-    void visit(SubSelect subSelect);
+    default void visit(SubSelect subSelect) { // default implementation ignored
+    }
 
-    void visit(CaseExpression caseExpression);
+    default void visit(CaseExpression caseExpression) { // default implementation ignored
+    }
 
-    void visit(WhenClause whenClause);
+    default void visit(WhenClause whenClause) { // default implementation ignored
+    }
 
-    void visit(ExistsExpression existsExpression);
+    default void visit(ExistsExpression existsExpression) { // default implementation ignored
+    }
 
-    void visit(AllComparisonExpression allComparisonExpression);
+    default void visit(AllComparisonExpression allComparisonExpression) { // default implementation ignored
+    }
 
-    void visit(AnyComparisonExpression anyComparisonExpression);
+    default void visit(AnyComparisonExpression anyComparisonExpression) { // default implementation ignored
+    }
 
-    void visit(Concat concat);
+    default void visit(Concat concat) { // default implementation ignored
+    }
 
-    void visit(Matches matches);
+    default void visit(Matches matches) { // default implementation ignored
+    }
 
-    void visit(BitwiseAnd bitwiseAnd);
+    default void visit(BitwiseAnd bitwiseAnd) { // default implementation ignored
+    }
 
-    void visit(BitwiseOr bitwiseOr);
+    default void visit(BitwiseOr bitwiseOr) { // default implementation ignored
+    }
 
-    void visit(BitwiseXor bitwiseXor);
+    default void visit(BitwiseXor bitwiseXor) { // default implementation ignored
+    }
 
-    void visit(CastExpression cast);
+    default void visit(CastExpression cast) { // default implementation ignored
+    }
 
-    void visit(Modulo modulo);
+    default void visit(Modulo modulo) { // default implementation ignored
+    }
 
-    void visit(AnalyticExpression aexpr);
+    default void visit(AnalyticExpression aexpr) { // default implementation ignored
+    }
 
-    void visit(ExtractExpression eexpr);
+    default void visit(ExtractExpression eexpr) { // default implementation ignored
+    }
 
-    void visit(IntervalExpression iexpr);
+    default void visit(IntervalExpression iexpr) { // default implementation ignored
+    }
 
-    void visit(OracleHierarchicalExpression oexpr);
+    default void visit(OracleHierarchicalExpression oexpr) { // default implementation ignored
+    }
 
-    void visit(RegExpMatchOperator rexpr);
+    default void visit(RegExpMatchOperator rexpr) { // default implementation ignored
+    }
 
-    void visit(JsonExpression jsonExpr);
+    default void visit(JsonExpression jsonExpr) { // default implementation ignored
+    }
 
-    void visit(JsonOperator jsonExpr);
+    default void visit(JsonOperator jsonExpr) { // default implementation ignored
+    }
 
-    void visit(RegExpMySQLOperator regExpMySQLOperator);
+    default void visit(RegExpMySQLOperator regExpMySQLOperator) { // default implementation ignored
+    }
 
-    void visit(UserVariable var);
+    default void visit(UserVariable var) { // default implementation ignored
+    }
 
-    void visit(NumericBind bind);
+    default void visit(NumericBind bind) { // default implementation ignored
+    }
 
-    void visit(KeepExpression aexpr);
+    default void visit(KeepExpression aexpr) { // default implementation ignored
+    }
 
-    void visit(MySQLGroupConcat groupConcat);
+    default void visit(MySQLGroupConcat groupConcat) { // default implementation ignored
+    }
 
-    void visit(ValueListExpression valueList);
+    default void visit(ValueListExpression valueList) { // default implementation ignored
+    }
 
-    void visit(RowConstructor rowConstructor);
+    default void visit(RowConstructor rowConstructor) { // default implementation ignored
+    }
 
-    void visit(OracleHint hint);
+    default void visit(OracleHint hint) { // default implementation ignored
+    }
 
-    void visit(TimeKeyExpression timeKeyExpression);
+    default void visit(TimeKeyExpression timeKeyExpression) { // default implementation ignored
+    }
 
-    void visit(DateTimeLiteralExpression literal);
+    default void visit(DateTimeLiteralExpression literal) { // default implementation ignored
+    }
 
-    public void visit(NotExpression aThis);
+    default void visit(NotExpression aThis) { // default implementation ignored
+    }
 
-    public void visit(NextValExpression aThis);
+    default void visit(NextValExpression aThis) { // default implementation ignored
+    }
 
-    public void visit(CollateExpression aThis);
+    default void visit(CollateExpression aThis) { // default implementation ignored
+    }
 
-    public void visit(SimilarToExpression aThis);
+    default void visit(SimilarToExpression aThis) { // default implementation ignored
+    }
 
 }

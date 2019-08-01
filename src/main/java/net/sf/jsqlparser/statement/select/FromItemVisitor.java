@@ -13,17 +13,24 @@ import net.sf.jsqlparser.schema.Table;
 
 public interface FromItemVisitor {
 
-    void visit(Table tableName);
+    default void visit(Table tableName) { // default implementation ignored
+    }
 
-    void visit(SubSelect subSelect);
+    default void visit(SubSelect subSelect) { // default implementation ignored
+    }
 
-    void visit(SubJoin subjoin);
+    default void visit(SubJoin subjoin) { // default implementation ignored
+    }
 
-    void visit(LateralSubSelect lateralSubSelect);
+    default void visit(LateralSubSelect lateralSubSelect) { // default implementation ignored
+    }
 
-    void visit(ValuesList valuesList);
+    default void visit(ValuesList valuesList) { // default implementation ignored
+    }
 
-    void visit(TableFunction tableFunction);
+    default void visit(TableFunction tableFunction) { // default implementation ignored
+    }
 
-    public void visit(ParenthesisFromItem aThis);
+    default void visit(ParenthesisFromItem aThis) { // default implementation ignored
+    }
 }

@@ -11,5 +11,6 @@ package net.sf.jsqlparser.statement.select;
 
 public interface OrderByVisitor {
 
-    void visit(OrderByElement orderBy);
+    default void visit(OrderByElement orderBy) { // default implementation ignored
+    }
 }

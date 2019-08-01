@@ -13,11 +13,15 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 
 public interface ItemsListVisitor {
 
-    void visit(SubSelect subSelect);
+    default void visit(SubSelect subSelect) { // default implementation ignored
+    }
 
-    void visit(ExpressionList expressionList);
+    default void visit(ExpressionList expressionList) { // default implementation ignored
+    }
 
-    void visit(NamedExpressionList namedExpressionList);
+    default void visit(NamedExpressionList namedExpressionList) { // default implementation ignored
+    }
 
-    void visit(MultiExpressionList multiExprList);
+    default void visit(MultiExpressionList multiExprList) { // default implementation ignored
+    }
 }

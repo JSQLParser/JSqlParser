@@ -13,5 +13,6 @@ import net.sf.jsqlparser.schema.Table;
 
 public interface IntoTableVisitor {
 
-    void visit(Table tableName);
+    default void visit(Table tableName) { // default implementation ignored
+    }
 }

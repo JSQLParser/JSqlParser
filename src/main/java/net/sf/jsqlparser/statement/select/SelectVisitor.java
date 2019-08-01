@@ -13,11 +13,15 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public interface SelectVisitor {
 
-    void visit(PlainSelect plainSelect);
+    default void visit(PlainSelect plainSelect) { // default implementation ignored
+    }
 
-    void visit(SetOperationList setOpList);
+    default void visit(SetOperationList setOpList) { // default implementation ignored
+    }
 
-    void visit(WithItem withItem);
+    default void visit(WithItem withItem) { // default implementation ignored
+    }
 
-    void visit(ValuesStatement aThis);
+    default void visit(ValuesStatement aThis) { // default implementation ignored
+    }
 }
