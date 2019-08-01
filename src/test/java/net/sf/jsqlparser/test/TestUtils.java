@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.test;
 
-import java.io.StringReader;
 import java.util.regex.Pattern;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
@@ -49,7 +48,7 @@ public class TestUtils {
      * @throws JSQLParserException
      */
     public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck) throws JSQLParserException {
-        Statement parsed = CCJSqlParserUtil.parse(new StringReader(statement));
+        Statement parsed = CCJSqlParserUtil.parse(statement);
         assertStatementCanBeDeparsedAs(parsed, statement, laxDeparsingCheck);
     }
 

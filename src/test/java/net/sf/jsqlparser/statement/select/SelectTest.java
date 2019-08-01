@@ -589,6 +589,16 @@ public class SelectTest {
     }
 
     @Test
+    public void testLimitOffsetKeyWordAsNamedParameter() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable LIMIT :limit");
+    }
+
+    @Test
+    public void testLimitOffsetKeyWordAsNamedParameter2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable LIMIT :limit OFFSET :offset");
+    }
+
+    @Test
     public void testTop() throws JSQLParserException {
         String statement = "SELECT TOP 3 * FROM mytable WHERE mytable.col = 9";
 
@@ -2232,6 +2242,11 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
+//    @Test
+//    public void testMultiValueIn3() throws JSQLParserException {
+//        String stmt = "SELECT * FROM mytable WHERE (SSN,SSM) IN (('11111111111111', '22222222222222'))";
+//        assertSqlCanBeParsedAndDeparsed(stmt);
+//    }
     @Test
     public void testPivot1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN ('val1'))";
@@ -3702,5 +3717,25 @@ public class SelectTest {
     @Test
     public void testCaseWhenExpressionIssue200() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM t1, t2 WHERE CASE WHEN t1.id = 1 THEN t2.name = 'Marry' WHEN t1.id = 2 THEN t2.age = 10 END");
+    }
+
+    @Test
+    public void testKeywordDuplicate() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT mytable.duplicate FROM mytable");
+    }
+
+    @Test
+    public void testKeywordDuplicate2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE duplicate = 5");
+    }
+
+    @Test
+    public void testEmptyDoubleQuotes() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE col = \"\"");
+    }
+
+    @Test
+    public void testEmptyDoubleQuotes_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE col = \" \"");
     }
 }

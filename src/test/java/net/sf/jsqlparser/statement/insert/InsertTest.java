@@ -304,4 +304,8 @@ public class InsertTest {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO tableA (ID, c1, c2) SELECT hibernate_sequence.nextval, c1, c2 FROM tableB");
     }
 
+    @Test
+    public void testBackslashEscapingIssue827() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO my_table (my_column_1, my_column_2) VALUES ('my_value_1\\\\', 'my_value_2')");
+    }
 }
