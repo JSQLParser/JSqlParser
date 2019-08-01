@@ -504,7 +504,6 @@ Statements Statements() #Statements :
 JAVACODE
 void error_skipto(int kind) {
   ParseException e = generateParseException();
-  System.out.println(e.toString());
   Token t;
   do {
     t = getNextToken();
@@ -1138,6 +1137,7 @@ Table Table() #Table :
 
     {
         Table table = new Table(data);
+		linkAST(table,jjtThis);
         return table;
     }
 }
