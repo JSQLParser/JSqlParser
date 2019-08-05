@@ -2010,6 +2010,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testSubjoinWithJoins() throws JSQLParserException {
+        String stmt = "SELECT COUNT(DISTINCT `tbl1`.`id`) FROM (`tbl1`, `tbl2`, `tbl3`)";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testWithUnionProblem() throws JSQLParserException {
         String stmt = "WITH test AS ((SELECT mslink FROM tablea) UNION (SELECT mslink FROM tableb)) SELECT * FROM tablea WHERE mslink IN (SELECT mslink FROM test)";
         assertSqlCanBeParsedAndDeparsed(stmt);
