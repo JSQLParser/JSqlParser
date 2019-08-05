@@ -65,7 +65,7 @@ public class SubJoin implements FromItem {
         StringBuilder sb = new StringBuilder();
         sb.append("(").append(left);
         for (Join j : joinList) {
-            sb.append(" ").append(j);
+            sb.append(j.isSimple() ? "" : " ").append(j);
         }
 
         sb.append(")").append((alias != null) ? (" " + alias.toString()) : "").append((pivot != null) ? " " + pivot : "");

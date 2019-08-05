@@ -195,7 +195,7 @@ public class Join extends ASTNodeAccessImpl {
         if (isSimple() && isOuter()) {
             return "OUTER " + rightItem;
         } else if (isSimple()) {
-            return "" + rightItem;
+            return ", " + rightItem;
         } else {
             String type = "";
 
