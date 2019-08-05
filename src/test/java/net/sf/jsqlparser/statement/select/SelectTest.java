@@ -2011,7 +2011,7 @@ public class SelectTest {
 
     @Test
     public void testSubjoinWithJoins() throws JSQLParserException {
-        String stmt = "SELECT COUNT(DISTINCT `webProduct`.`id`) FROM (`webProduct`, `base`, `protectedBase`)";
+        String stmt = "SELECT COUNT(DISTINCT `tbl1`.`id`) FROM (`tbl1`, `tbl2`, `tbl3`)";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
