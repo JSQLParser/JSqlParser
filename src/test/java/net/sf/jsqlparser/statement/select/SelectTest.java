@@ -3738,4 +3738,9 @@ public class SelectTest {
     public void testEmptyDoubleQuotes_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE col = \" \"");
     }
+    
+    @Test
+    public void testArrayTest() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT col[1 + 2]");
+    }
 }
