@@ -11,19 +11,19 @@
 options{
     IGNORE_CASE = true ;
     STATIC = false;
-    DEBUG_PARSER = false;
+    DEBUG_PARSER = true;
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
-	CACHE_TOKENS = false;
+    CACHE_TOKENS = false;
 //  FORCE_LA_CHECK = true;
     UNICODE_INPUT = true;
-	JAVA_TEMPLATE_TYPE = "modern";
-	JDK_VERSION = "1.7";
+    JAVA_TEMPLATE_TYPE = "modern";
+    JDK_VERSION = "1.7";
     TOKEN_EXTENDS = "BaseToken";
     COMMON_TOKEN_ACTION = true;
-	NODE_DEFAULT_VOID = true;
-	TRACK_TOKENS = true;
-	VISITOR = true;
+    NODE_DEFAULT_VOID = true;
+    TRACK_TOKENS = true;
+    VISITOR = true;
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -141,6 +141,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CREATE:"CREATE">
 |   <K_CROSS:"CROSS">
 |   <K_CURRENT: "CURRENT">
+|   <K_DECLARE: "DECLARE">
 |   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
 |   <K_DATE_LITERAL : ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" ) >
 |   <K_DEFERRABLE : "DEFERRABLE">
@@ -434,6 +435,8 @@ Statement SingleStatement() :
         stm = Describe()
         |
         stm = Explain()
+        |
+        stm = Declare()
         )
 		{ return stm; }
     } catch (ParseException e) {
@@ -508,6 +511,40 @@ void error_skipto(int kind) {
   do {
     t = getNextToken();
   } while (t.kind != kind && t.kind != EOF);
+}
+
+DeclareStatement Declare(): {
+    UserVariable userVariable;
+    ColDataType colDataType;
+    Expression defaultExpr = null;
+    DeclareStatement stmt = new DeclareStatement();
+    String typeName;
+    String columnName;
+} { 
+    <K_DECLARE> userVariable = UserVariable() 
+    (
+            ( <K_TABLE> "(" columnName = RelObjectName() colDataType = ColDataType() 
+                {   stmt.setUserVariable(userVariable);
+                    stmt.setDeclareType(DeclareType.TABLE); 
+                    stmt.addType(columnName, colDataType, null); } 
+                        ("," columnName = RelObjectName() colDataType = ColDataType())* { stmt.addType(columnName, colDataType, null); } ")" 
+            )
+        |
+            <K_AS> typeName = RelObjectName() 
+                { stmt.setUserVariable(userVariable); 
+                  stmt.setDeclareType(DeclareType.AS); 
+                  stmt.setTypeName(typeName); }
+        |
+            (colDataType = ColDataType() ["=" defaultExpr = Expression()] 
+                { stmt.setDeclareType(DeclareType.TYPE); 
+                  stmt.addType(userVariable, colDataType, defaultExpr); }
+                ("," userVariable = UserVariable() colDataType = ColDataType() { defaultExpr = null; }  
+                ["=" defaultExpr = Expression()] { stmt.addType(userVariable, colDataType, defaultExpr); } )* 
+            )
+    )
+    {
+       return stmt;
+    }
 }
 
 SetStatement Set(): {
@@ -1118,7 +1155,7 @@ String RelObjectNameExt2():
   String result=null;
 } 
 {
-    ( result=RelObjectNameExt() | tk=<K_FROM> )
+    ( result=RelObjectNameExt() | tk=<K_FROM> | tk=<K_GROUP> )
     {
         if (tk!=null) result=tk.image;
         return result;

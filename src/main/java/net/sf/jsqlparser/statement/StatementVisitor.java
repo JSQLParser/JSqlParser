@@ -80,4 +80,6 @@ public interface StatementVisitor {
     public void visit(ExplainStatement aThis);
 
     public void visit(ShowStatement aThis);
+
+    public void visit(DeclareStatement aThis);
 }

@@ -151,4 +151,8 @@ public class StatementVisitorAdapter implements StatementVisitor {
     @Override
     public void visit(ShowStatement aThis) {
     }
+
+    @Override
+    public void visit(DeclareStatement aThis) {
+    }
 }
