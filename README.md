@@ -62,6 +62,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 2.2
 
+* support for **declare** statement
 * allow empty double quotes
 * allow **year**, **month** ... as column data type for **create table**
 * allow **duplicate** as object name
