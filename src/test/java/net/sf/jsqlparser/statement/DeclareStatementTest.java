@@ -44,7 +44,7 @@ public class DeclareStatementTest {
     
     @Test
     public void testDeclareTable() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("DECLARE @MyTableVar table(EmpID int NOT NULL, OldVacationHours int, NewVacationHours int, ModifiedDate datetime)");
+        assertSqlCanBeParsedAndDeparsed("DECLARE @MyTableVar TABLE (EmpID int NOT NULL, OldVacationHours int, NewVacationHours int, ModifiedDate datetime)");
     }
     
     @Test

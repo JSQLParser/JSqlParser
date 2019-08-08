@@ -520,14 +520,15 @@ DeclareStatement Declare(): {
     DeclareStatement stmt = new DeclareStatement();
     String typeName;
     String columnName;
+    ColumnDefinition colDef;
 } { 
     <K_DECLARE> userVariable = UserVariable() 
     (
-            ( <K_TABLE> "(" columnName = RelObjectName() colDataType = ColDataType() 
+            ( <K_TABLE> "(" colDef = ColumnDefinition()
                 {   stmt.setUserVariable(userVariable);
                     stmt.setDeclareType(DeclareType.TABLE); 
-                    stmt.addType(columnName, colDataType, null); } 
-                        ("," columnName = RelObjectName() colDataType = ColDataType())* { stmt.addType(columnName, colDataType, null); } ")" 
+                    stmt.addColumnDefinition(colDef); } 
+                        ("," colDef = ColumnDefinition() { stmt.addColumnDefinition(colDef); })*  ")" 
             )
         |
             <K_AS> typeName = RelObjectName() 
@@ -3501,6 +3502,29 @@ CreateIndex CreateIndex():
     }
 }
 
+ColumnDefinition ColumnDefinition(): {
+    ColumnDefinition coldef;
+    String columnName;
+    ColDataType colDataType;
+    List<String> columnSpecs = new ArrayList<String>();
+    List<String> parameter;
+} { 
+    columnName=RelObjectName()
+
+    colDataType = ColDataType()
+
+    ( parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
+
+    {
+        coldef = new ColumnDefinition();
+        coldef.setColumnName(columnName);
+        coldef.setColDataType(colDataType);
+        if (columnSpecs.size() > 0)
+            coldef.setColumnSpecStrings(columnSpecs);
+        return coldef;
+    }
+}
+
 CreateTable CreateTable():
 {
     CreateTable createTable = new CreateTable();
@@ -3542,8 +3566,9 @@ CreateTable CreateTable():
     table=Table()
     [
         ("("
-        columnName=RelObjectName()
+        coldef = ColumnDefinition()
 
+        /*
         colDataType = ColDataType()
         {
             columnSpecs = new ArrayList();
@@ -3558,7 +3583,8 @@ CreateTable CreateTable():
             if (columnSpecs.size() > 0)
                 coldef.setColumnSpecStrings(columnSpecs);
             columnDefinitions.add(coldef);
-        }
+        }*/
+        { columnDefinitions.add(coldef); }
 
         (
             ","
@@ -3654,6 +3680,10 @@ CreateTable CreateTable():
                     }
                 |
                 (
+
+                    coldef = ColumnDefinition()
+
+                    /*
                     columnName=RelObjectName()
 
                     colDataType = ColDataType()
@@ -3670,7 +3700,8 @@ CreateTable CreateTable():
                         if (columnSpecs.size() > 0)
                             coldef.setColumnSpecStrings(columnSpecs);
                         columnDefinitions.add(coldef);
-                    }
+                    } */
+                    { columnDefinitions.add(coldef); }
                 )
             )
         )*

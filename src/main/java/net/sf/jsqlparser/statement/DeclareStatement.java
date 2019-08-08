@@ -14,6 +14,7 @@ import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 
 public final class DeclareStatement implements Statement {
 
@@ -21,6 +22,7 @@ public final class DeclareStatement implements Statement {
     private DeclareType type = DeclareType.TYPE;
     private String typeName;
     private List<TypeDefExpr> typeDefExprList = new ArrayList<>();
+    private List<ColumnDefinition> colDefs = new ArrayList<>();
 
     public DeclareStatement() {
     }
@@ -53,8 +55,12 @@ public final class DeclareStatement implements Statement {
         typeDefExprList.add(new TypeDefExpr(userVariable, colDataType, defaultExpr));
     }
 
-    public void addType(String columnName, ColDataType colDataType, Expression defaultExpr) {
-        typeDefExprList.add(new TypeDefExpr(columnName, colDataType, defaultExpr));
+    public void addColumnDefinition(ColumnDefinition colDef) {
+        colDefs.add(colDef);
+    }
+
+    public List<ColumnDefinition> getColumnDefinitions() {
+        return colDefs;
     }
 
     public List<TypeDefExpr> getTypeDefinitions() {
@@ -74,61 +80,53 @@ public final class DeclareStatement implements Statement {
         } else {
             if (type == DeclareType.TABLE) {
                 b.append(userVariable.toString());
-                b.append(" TABLE(");
-            }
-
-            for (int i = 0; i < typeDefExprList.size(); i++) {
-                if (i > 0) {
-                    b.append(", ");
+                b.append(" TABLE (");
+                for (int i = 0; i < colDefs.size(); i++) {
+                    if (i > 0) {
+                        b.append(", ");
+                    }
+                    b.append(colDefs.get(i).toString());
                 }
-                final TypeDefExpr type = typeDefExprList.get(i);
-                if (type.userVariable != null) {
-                    b.append(type.userVariable.toString()).append(" ");
-                } else if (type.columnName != null) {
-                    b.append(type.columnName).append(" ");
-                }
-                b.append(type.colDataType.toString());
-                if (type.defaultExpr != null) {
-                    b.append(" = ").append(type.defaultExpr.toString());
-                }
-            }
-
-            if (type == DeclareType.TABLE) {
                 b.append(")");
+            } else {
+                for (int i = 0; i < typeDefExprList.size(); i++) {
+                    if (i > 0) {
+                        b.append(", ");
+                    }
+                    final TypeDefExpr type = typeDefExprList.get(i);
+                    if (type.userVariable != null) {
+                        b.append(type.userVariable.toString()).append(" ");
+                    }
+                    b.append(type.colDataType.toString());
+                    if (type.defaultExpr != null) {
+                        b.append(" = ").append(type.defaultExpr.toString());
+                    }
+                }
             }
         }
-
         return b.toString();
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
+    public void accept(StatementVisitor statementVisitor
+    ) {
         statementVisitor.visit(this);
     }
 
     public static class TypeDefExpr {
 
-        public final String columnName;
         public final UserVariable userVariable;
         public final ColDataType colDataType;
         public final Expression defaultExpr;
 
         public TypeDefExpr(ColDataType colDataType, Expression defaultExpr) {
-            this((UserVariable) null, colDataType, defaultExpr);
+            this(null, colDataType, defaultExpr);
         }
 
         public TypeDefExpr(UserVariable userVariable, ColDataType colDataType, Expression defaultExpr) {
             this.userVariable = userVariable;
             this.colDataType = colDataType;
             this.defaultExpr = defaultExpr;
-            this.columnName = null;
-        }
-
-        public TypeDefExpr(String colName, ColDataType colDataType, Expression defaultExpr) {
-            this.userVariable = null;
-            this.colDataType = colDataType;
-            this.defaultExpr = defaultExpr;
-            this.columnName = colName;
         }
     }
 }

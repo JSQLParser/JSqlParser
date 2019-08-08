@@ -46,30 +46,31 @@ public class DeclareStatementDeParser {
 
         if (declare.getType() == DeclareType.TABLE) {
             buffer.append(" TABLE (");
-        }
-
-        if (declare.getTypeDefinitions() != null) {
-            for (int i = 0; i < declare.getTypeDefinitions().size(); i++) {
+            for (int i = 0; i < declare.getColumnDefinitions().size(); i++) {
                 if (i > 0) {
                     buffer.append(", ");
                 }
-                DeclareStatement.TypeDefExpr type = declare.getTypeDefinitions().get(i);
-                if (type.userVariable != null) {
-                    type.userVariable.accept(expressionVisitor);
-                    buffer.append(" ");
-                } else if (type.columnName != null) {
-                    buffer.append(type.columnName).append(" ");
-                }
-                buffer.append(type.colDataType.toString());
-                if (type.defaultExpr != null) {
-                    buffer.append(" = ");
-                    type.defaultExpr.accept(expressionVisitor);
+                buffer.append(declare.getColumnDefinitions().get(i).toString());
+            }
+            buffer.append(")");
+        } else {
+            if (declare.getTypeDefinitions() != null) {
+                for (int i = 0; i < declare.getTypeDefinitions().size(); i++) {
+                    if (i > 0) {
+                        buffer.append(", ");
+                    }
+                    DeclareStatement.TypeDefExpr type = declare.getTypeDefinitions().get(i);
+                    if (type.userVariable != null) {
+                        type.userVariable.accept(expressionVisitor);
+                        buffer.append(" ");
+                    }
+                    buffer.append(type.colDataType.toString());
+                    if (type.defaultExpr != null) {
+                        buffer.append(" = ");
+                        type.defaultExpr.accept(expressionVisitor);
+                    }
                 }
             }
-        }
-
-        if (declare.getType() == DeclareType.TABLE) {
-            buffer.append(")");
         }
     }
 
