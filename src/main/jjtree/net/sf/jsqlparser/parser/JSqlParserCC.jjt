@@ -243,6 +243,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PRIOR:"PRIOR">
 |   <K_RANGE: "RANGE">
+|   <K_READ: "READ" >
 |   <K_RECURSIVE:"RECURSIVE">
 |   <K_REFERENCES:"REFERENCES">
 |   <K_REGEXP: "REGEXP">
@@ -680,10 +681,10 @@ Update Update():
        ]
 
    {
-           update.setColumns(columns);
-           update.setExpressions(expList);
-           update.setTable(table);
-           update.setStartJoins(startJoins);
+        update.setColumns(columns);
+        update.setExpressions(expList);
+        update.setTable(table);
+        update.setStartJoins(startJoins);
         update.setFromItem(fromItem);
         update.setJoins(joins);
         update.setSelect(select);
@@ -1115,6 +1116,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TYPE> | tk=<K_ISNULL> 
 	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
+      | tk=<K_READ>
 /*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
 
@@ -3785,6 +3787,7 @@ CreateView CreateView():
     [ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
     <K_AS>
     select=Select() { createView.setSelect(select); }
+    [ <K_WITH> <K_READ> <K_ONLY> { createView.setWithReadOnly(true); } ]
     { return createView; }
 }
 
