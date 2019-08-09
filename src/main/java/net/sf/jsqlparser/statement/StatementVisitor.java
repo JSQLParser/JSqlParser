@@ -106,4 +106,7 @@ public interface StatementVisitor {
 
     default void visit(ShowStatement aThis) { // default implementation ignored
     }
+  
+    default public void visit(DeclareStatement aThis) { // default implementation ignored
+    }
 }

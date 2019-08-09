@@ -14,16 +14,16 @@ options{
     DEBUG_PARSER = false;
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
-	CACHE_TOKENS = false;
+    CACHE_TOKENS = false;
 //  FORCE_LA_CHECK = true;
     UNICODE_INPUT = true;
-	JAVA_TEMPLATE_TYPE = "modern";
-	JDK_VERSION = "1.7";
+    JAVA_TEMPLATE_TYPE = "modern";
+    JDK_VERSION = "1.7";
     TOKEN_EXTENDS = "BaseToken";
     COMMON_TOKEN_ACTION = true;
-	NODE_DEFAULT_VOID = true;
-	TRACK_TOKENS = true;
-	VISITOR = true;
+    NODE_DEFAULT_VOID = true;
+    TRACK_TOKENS = true;
+    VISITOR = true;
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -141,6 +141,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CREATE:"CREATE">
 |   <K_CROSS:"CROSS">
 |   <K_CURRENT: "CURRENT">
+|   <K_DECLARE: "DECLARE">
 |   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
 |   <K_DATE_LITERAL : ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" ) >
 |   <K_DEFERRABLE : "DEFERRABLE">
@@ -434,6 +435,8 @@ Statement SingleStatement() :
         stm = Describe()
         |
         stm = Explain()
+        |
+        stm = Declare()
         )
 		{ return stm; }
     } catch (ParseException e) {
@@ -504,11 +507,45 @@ Statements Statements() #Statements :
 JAVACODE
 void error_skipto(int kind) {
   ParseException e = generateParseException();
-  System.out.println(e.toString());
   Token t;
   do {
     t = getNextToken();
   } while (t.kind != kind && t.kind != EOF);
+}
+
+DeclareStatement Declare(): {
+    UserVariable userVariable;
+    ColDataType colDataType;
+    Expression defaultExpr = null;
+    DeclareStatement stmt = new DeclareStatement();
+    String typeName;
+    String columnName;
+    ColumnDefinition colDef;
+} { 
+    <K_DECLARE> userVariable = UserVariable() 
+    (
+            ( <K_TABLE> "(" colDef = ColumnDefinition()
+                {   stmt.setUserVariable(userVariable);
+                    stmt.setDeclareType(DeclareType.TABLE); 
+                    stmt.addColumnDefinition(colDef); } 
+                        ("," colDef = ColumnDefinition() { stmt.addColumnDefinition(colDef); })*  ")" 
+            )
+        |
+            <K_AS> typeName = RelObjectName() 
+                { stmt.setUserVariable(userVariable); 
+                  stmt.setDeclareType(DeclareType.AS); 
+                  stmt.setTypeName(typeName); }
+        |
+            (colDataType = ColDataType() ["=" defaultExpr = Expression()] 
+                { stmt.setDeclareType(DeclareType.TYPE); 
+                  stmt.addType(userVariable, colDataType, defaultExpr); }
+                ("," userVariable = UserVariable() colDataType = ColDataType() { defaultExpr = null; }  
+                ["=" defaultExpr = Expression()] { stmt.addType(userVariable, colDataType, defaultExpr); } )* 
+            )
+    )
+    {
+       return stmt;
+    }
 }
 
 SetStatement Set(): {
@@ -1119,7 +1156,7 @@ String RelObjectNameExt2():
   String result=null;
 } 
 {
-    ( result=RelObjectNameExt() | tk=<K_FROM> )
+    ( result=RelObjectNameExt() | tk=<K_FROM> | tk=<K_GROUP> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -1138,6 +1175,7 @@ Table Table() #Table :
 
     {
         Table table = new Table(data);
+		linkAST(table,jjtThis);
         return table;
     }
 }
@@ -3464,6 +3502,29 @@ CreateIndex CreateIndex():
     }
 }
 
+ColumnDefinition ColumnDefinition(): {
+    ColumnDefinition coldef;
+    String columnName;
+    ColDataType colDataType;
+    List<String> columnSpecs = new ArrayList<String>();
+    List<String> parameter;
+} { 
+    columnName=RelObjectName()
+
+    colDataType = ColDataType()
+
+    ( parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
+
+    {
+        coldef = new ColumnDefinition();
+        coldef.setColumnName(columnName);
+        coldef.setColDataType(colDataType);
+        if (columnSpecs.size() > 0)
+            coldef.setColumnSpecStrings(columnSpecs);
+        return coldef;
+    }
+}
+
 CreateTable CreateTable():
 {
     CreateTable createTable = new CreateTable();
@@ -3505,8 +3566,9 @@ CreateTable CreateTable():
     table=Table()
     [
         ("("
-        columnName=RelObjectName()
+        coldef = ColumnDefinition()
 
+        /*
         colDataType = ColDataType()
         {
             columnSpecs = new ArrayList();
@@ -3521,7 +3583,8 @@ CreateTable CreateTable():
             if (columnSpecs.size() > 0)
                 coldef.setColumnSpecStrings(columnSpecs);
             columnDefinitions.add(coldef);
-        }
+        }*/
+        { columnDefinitions.add(coldef); }
 
         (
             ","
@@ -3617,6 +3680,10 @@ CreateTable CreateTable():
                     }
                 |
                 (
+
+                    coldef = ColumnDefinition()
+
+                    /*
                     columnName=RelObjectName()
 
                     colDataType = ColDataType()
@@ -3633,7 +3700,8 @@ CreateTable CreateTable():
                         if (columnSpecs.size() > 0)
                             coldef.setColumnSpecStrings(columnSpecs);
                         columnDefinitions.add(coldef);
-                    }
+                    } */
+                    { columnDefinitions.add(coldef); }
                 )
             )
         )*
