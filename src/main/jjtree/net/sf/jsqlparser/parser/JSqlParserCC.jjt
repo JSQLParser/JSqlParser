@@ -1728,13 +1728,15 @@ FromItem SubJoin():
 {
     FromItem fromItem = null;
     Join join = null;
-    List joinList = null;
-    SubJoin subJoin = new SubJoin();
+    List<Join> joinList = null;
 }
 {
-    fromItem=FromItem() { subJoin.setLeft(fromItem); }
-	joinList=SubJoinsList() { subJoin.setJoinList(joinList); }
+    fromItem=FromItem() 
+	joinList=SubJoinsList()
     {
+		SubJoin subJoin = new SubJoin();
+		subJoin.setLeft(fromItem);
+		subJoin.setJoinList(joinList);
         return subJoin;
     }
 }
@@ -1757,7 +1759,6 @@ List SubJoinsList():
 {
 
     (join=JoinerExpression() { joinsList.add(join); })+
-
     { return joinsList; }
 }
 
