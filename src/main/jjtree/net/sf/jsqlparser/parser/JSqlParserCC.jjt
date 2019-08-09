@@ -629,7 +629,7 @@ Update Update():
 {
     Update update = new Update();
     Table table = null;
-    List<Table> tables = new ArrayList<Table>();
+    List<Join> startJoins = null;
     Expression where = null;
     Column tableColumn = null;
     List<Expression> expList = new ArrayList<Expression>();
@@ -644,8 +644,9 @@ Update Update():
     List<SelectExpressionItem> returning = null;
 }
 {
-    <K_UPDATE> table=TableWithAlias() { tables.add(table); } 
-          ("," table=TableWithAlias() { tables.add(table); } )*
+    <K_UPDATE> table=TableWithAlias()
+        startJoins=JoinsList()
+           
     <K_SET> 
     (
     LOOKAHEAD(3) tableColumn=Column() "=" value=SimpleExpression() { columns.add(tableColumn); expList.add(value); }
@@ -681,7 +682,8 @@ Update Update():
    {
            update.setColumns(columns);
            update.setExpressions(expList);
-           update.setTables(tables);
+           update.setTable(table);
+           update.setStartJoins(startJoins);
         update.setFromItem(fromItem);
         update.setJoins(joins);
         update.setSelect(select);

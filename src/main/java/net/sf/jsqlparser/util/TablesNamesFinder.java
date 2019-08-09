@@ -623,8 +623,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Update update) {
-        for (Table table : update.getTables()) {
-            visit(table);
+        visit(update.getTable());
+        if (update.getStartJoins() != null) {
+            for (Join join : update.getStartJoins()) {
+                join.getRightItem().accept(this);
+            }
         }
         if (update.getExpressions() != null) {
             for (Expression expression : update.getExpressions()) {
