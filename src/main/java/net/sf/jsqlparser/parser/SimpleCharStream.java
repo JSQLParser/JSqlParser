@@ -391,12 +391,22 @@ public class SimpleCharStream {
 
         char[] ret = new char[len];
 
-        if ((bufpos + 1) >= len) {
-            System.arraycopy(buffer, bufpos - len + 1, ret, 0, len);
+        if (isStringProvider) {
+            String str = ((StringProvider) inputStream)._string;
+            if ((bufpos + 1) >= len) {            
+                str.getChars(bufpos - len + 1, bufpos - len + 1 + len, ret, 0);
+            } else {
+                str.getChars(bufsize - (len - bufpos - 1), bufsize - (len - bufpos - 1) + len - bufpos - 1, ret, 0);
+                str.getChars(0, bufpos + 1, ret, len - bufpos - 1);
+            }
         } else {
-            System.arraycopy(buffer, bufsize - (len - bufpos - 1), ret, 0,
-                    len - bufpos - 1);
-            System.arraycopy(buffer, 0, ret, len - bufpos - 1, bufpos + 1);
+            if ((bufpos + 1) >= len) {
+                System.arraycopy(buffer, bufpos - len + 1, ret, 0, len);
+            } else {
+                System.arraycopy(buffer, bufsize - (len - bufpos - 1), ret, 0,
+                        len - bufpos - 1);
+                System.arraycopy(buffer, 0, ret, len - bufpos - 1, bufpos + 1);
+            }
         }
 
         return ret;
