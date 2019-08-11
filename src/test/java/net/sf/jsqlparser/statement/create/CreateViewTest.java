@@ -103,4 +103,8 @@ public class CreateViewTest extends TestCase {
     public void testCreateTemporaryViewIssue665() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE VIEW foo(\"BAR\") AS WITH temp AS (SELECT temp_bar FROM foobar) SELECT bar FROM temp");
     }
+    
+    public void testCreateWithReadOnlyViewIssue838() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE VIEW v14(c1, c2) AS SELECT c1, C2 FROM t1 WITH READ ONLY");
+    }
 }

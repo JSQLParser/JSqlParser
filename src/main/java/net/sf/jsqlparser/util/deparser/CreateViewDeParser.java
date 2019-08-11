@@ -76,6 +76,9 @@ public class CreateViewDeParser {
             buffer.append(" ");
         }
         createView.getSelect().getSelectBody().accept(selectVisitor);
+        if (createView.isWithReadOnly()) {
+            buffer.append(" WITH READ ONLY");
+        }
     }
 
     public StringBuilder getBuffer() {

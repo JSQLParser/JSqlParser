@@ -141,6 +141,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CREATE:"CREATE">
 |   <K_CROSS:"CROSS">
 |   <K_CURRENT: "CURRENT">
+|   <K_DECLARE: "DECLARE">
 |   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
 |   <K_DATE_LITERAL : ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" ) >
 |   <K_DEFERRABLE : "DEFERRABLE">
@@ -242,6 +243,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PRIOR:"PRIOR">
 |   <K_RANGE: "RANGE">
+|   <K_READ: "READ" >
 |   <K_RECURSIVE:"RECURSIVE">
 |   <K_REFERENCES:"REFERENCES">
 |   <K_REGEXP: "REGEXP">
@@ -444,6 +446,8 @@ Statement SingleStatement() :
         stm = Describe()
         |
         stm = Explain()
+        |
+        stm = Declare()
         )
 		{ return stm; }
     } catch (ParseException e) {
@@ -518,6 +522,41 @@ void error_skipto(int kind) {
   do {
     t = getNextToken();
   } while (t.kind != kind && t.kind != EOF);
+}
+
+DeclareStatement Declare(): {
+    UserVariable userVariable;
+    ColDataType colDataType;
+    Expression defaultExpr = null;
+    DeclareStatement stmt = new DeclareStatement();
+    String typeName;
+    String columnName;
+    ColumnDefinition colDef;
+} { 
+    <K_DECLARE> userVariable = UserVariable() 
+    (
+            ( <K_TABLE> "(" colDef = ColumnDefinition()
+                {   stmt.setUserVariable(userVariable);
+                    stmt.setDeclareType(DeclareType.TABLE); 
+                    stmt.addColumnDefinition(colDef); } 
+                        ("," colDef = ColumnDefinition() { stmt.addColumnDefinition(colDef); })*  ")" 
+            )
+        |
+            <K_AS> typeName = RelObjectName() 
+                { stmt.setUserVariable(userVariable); 
+                  stmt.setDeclareType(DeclareType.AS); 
+                  stmt.setTypeName(typeName); }
+        |
+            (colDataType = ColDataType() ["=" defaultExpr = Expression()] 
+                { stmt.setDeclareType(DeclareType.TYPE); 
+                  stmt.addType(userVariable, colDataType, defaultExpr); }
+                ("," userVariable = UserVariable() colDataType = ColDataType() { defaultExpr = null; }  
+                ["=" defaultExpr = Expression()] { stmt.addType(userVariable, colDataType, defaultExpr); } )* 
+            )
+    )
+    {
+       return stmt;
+    }
 }
 
 SetStatement Set(): {
@@ -601,7 +640,7 @@ Update Update():
 {
     Update update = new Update();
     Table table = null;
-    List<Table> tables = new ArrayList<Table>();
+    List<Join> startJoins = null;
     Expression where = null;
     Column tableColumn = null;
     List<Expression> expList = new ArrayList<Expression>();
@@ -616,8 +655,9 @@ Update Update():
     List<SelectExpressionItem> returning = null;
 }
 {
-    <K_UPDATE> table=TableWithAlias() { tables.add(table); } 
-          ("," table=TableWithAlias() { tables.add(table); } )*
+    <K_UPDATE> table=TableWithAlias()
+        startJoins=JoinsList()
+           
     <K_SET> 
     (
     LOOKAHEAD(3) tableColumn=Column() "=" value=SimpleExpression() { columns.add(tableColumn); expList.add(value); }
@@ -651,9 +691,10 @@ Update Update():
        ]
 
    {
-           update.setColumns(columns);
-           update.setExpressions(expList);
-           update.setTables(tables);
+        update.setColumns(columns);
+        update.setExpressions(expList);
+        update.setTable(table);
+        update.setStartJoins(startJoins);
         update.setFromItem(fromItem);
         update.setJoins(joins);
         update.setSelect(select);
@@ -1085,6 +1126,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TYPE> | tk=<K_ISNULL> 
 	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
+      | tk=<K_READ>
 /*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
 
@@ -1128,7 +1170,7 @@ String RelObjectNameExt2():
   String result=null;
 } 
 {
-    ( result=RelObjectNameExt() | tk=<K_FROM> )
+    ( result=RelObjectNameExt() | tk=<K_FROM> | tk=<K_GROUP> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -3474,6 +3516,29 @@ CreateIndex CreateIndex():
     }
 }
 
+ColumnDefinition ColumnDefinition(): {
+    ColumnDefinition coldef;
+    String columnName;
+    ColDataType colDataType;
+    List<String> columnSpecs = new ArrayList<String>();
+    List<String> parameter;
+} { 
+    columnName=RelObjectName()
+
+    colDataType = ColDataType()
+
+    ( parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
+
+    {
+        coldef = new ColumnDefinition();
+        coldef.setColumnName(columnName);
+        coldef.setColDataType(colDataType);
+        if (columnSpecs.size() > 0)
+            coldef.setColumnSpecStrings(columnSpecs);
+        return coldef;
+    }
+}
+
 CreateTable CreateTable():
 {
     CreateTable createTable = new CreateTable();
@@ -3515,8 +3580,9 @@ CreateTable CreateTable():
     table=Table()
     [
         ("("
-        columnName=RelObjectName()
+        coldef = ColumnDefinition()
 
+        /*
         colDataType = ColDataType()
         {
             columnSpecs = new ArrayList();
@@ -3531,7 +3597,8 @@ CreateTable CreateTable():
             if (columnSpecs.size() > 0)
                 coldef.setColumnSpecStrings(columnSpecs);
             columnDefinitions.add(coldef);
-        }
+        }*/
+        { columnDefinitions.add(coldef); }
 
         (
             ","
@@ -3627,6 +3694,10 @@ CreateTable CreateTable():
                     }
                 |
                 (
+
+                    coldef = ColumnDefinition()
+
+                    /*
                     columnName=RelObjectName()
 
                     colDataType = ColDataType()
@@ -3643,7 +3714,8 @@ CreateTable CreateTable():
                         if (columnSpecs.size() > 0)
                             coldef.setColumnSpecStrings(columnSpecs);
                         columnDefinitions.add(coldef);
-                    }
+                    } */
+                    { columnDefinitions.add(coldef); }
                 )
             )
         )*
@@ -3725,6 +3797,7 @@ CreateView CreateView():
     [ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
     <K_AS>
     select=Select() { createView.setSelect(select); }
+    [ <K_WITH> <K_READ> <K_ONLY> { createView.setWithReadOnly(true); } ]
     { return createView; }
 }
 

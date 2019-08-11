@@ -25,6 +25,7 @@ public class CreateView implements Statement {
     private boolean materialized = false;
     private ForceOption force = ForceOption.NONE;
     private TemporaryOption temp = TemporaryOption.NONE;
+    private boolean withReadOnly = false;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -90,6 +91,14 @@ public class CreateView implements Statement {
         this.temp = temp;
     }
 
+    public boolean isWithReadOnly() {
+        return withReadOnly;
+    }
+
+    public void setWithReadOnly(boolean withReadOnly) {
+        this.withReadOnly = withReadOnly;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder("CREATE ");
@@ -104,11 +113,11 @@ public class CreateView implements Statement {
                 sql.append("NO FORCE ");
                 break;
         }
-        
+
         if (temp != TemporaryOption.NONE) {
             sql.append(temp.name()).append(" ");
         }
-        
+
         if (isMaterialized()) {
             sql.append("MATERIALIZED ");
         }
@@ -118,6 +127,9 @@ public class CreateView implements Statement {
             sql.append(PlainSelect.getStringList(columnNames, true, true));
         }
         sql.append(" AS ").append(select);
+        if (isWithReadOnly()) {
+            sql.append(" WITH READ ONLY");
+        }
         return sql.toString();
     }
 }

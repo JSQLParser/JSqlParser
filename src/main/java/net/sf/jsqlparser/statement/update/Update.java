@@ -26,12 +26,13 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
 public class Update implements Statement {
 
-    private List<Table> tables;
+    private Table table;
     private Expression where;
     private List<Column> columns;
     private List<Expression> expressions;
     private FromItem fromItem;
     private List<Join> joins;
+    private List<Join> startJoins;
     private Select select;
     private boolean useColumnsBrackets = true;
     private boolean useSelect = false;
@@ -45,16 +46,16 @@ public class Update implements Statement {
         statementVisitor.visit(this);
     }
 
-    public List<Table> getTables() {
-        return tables;
+    public Table getTable() {
+        return table;
     }
 
     public Expression getWhere() {
         return where;
     }
 
-    public void setTables(List<Table> list) {
-        tables = list;
+    public void setTable(Table table) {
+        this.table = table;
     }
 
     public void setWhere(Expression expression) {
@@ -91,6 +92,14 @@ public class Update implements Statement {
 
     public void setJoins(List<Join> joins) {
         this.joins = joins;
+    }
+
+    public List<Join> getStartJoins() {
+        return startJoins;
+    }
+
+    public void setStartJoins(List<Join> startJoins) {
+        this.startJoins = startJoins;
     }
 
     public Select getSelect() {
@@ -152,7 +161,17 @@ public class Update implements Statement {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("UPDATE ");
-        b.append(PlainSelect.getStringList(getTables(), true, false)).append(" SET ");
+        b.append(table);
+        if (startJoins != null) {
+                for (Join join : startJoins) {
+                    if (join.isSimple()) {
+                        b.append(", ").append(join);
+                    } else {
+                        b.append(" ").append(join);
+                    }
+                }
+            }
+        b.append(" SET ");
 
         if (!useSelect) {
             for (int i = 0; i < getColumns().size(); i++) {

@@ -2010,6 +2010,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testSubjoinWithJoins() throws JSQLParserException {
+        String stmt = "SELECT COUNT(DISTINCT `tbl1`.`id`) FROM (`tbl1`, `tbl2`, `tbl3`)";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testWithUnionProblem() throws JSQLParserException {
         String stmt = "WITH test AS ((SELECT mslink FROM tablea) UNION (SELECT mslink FROM tableb)) SELECT * FROM tablea WHERE mslink IN (SELECT mslink FROM test)";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -3475,7 +3481,7 @@ public class SelectTest {
     public void testFuncConditionParameter3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST((MAX(CAST(IIF(isnumeric(license_no) = 1, license_no, 0) AS INT)) + 2) AS varchar) FROM lcps.t_license WHERE profession_id = 60 and license_type = 100 and YEAR(issue_date) % 2 = case when YEAR(issue_date) % 2 = 0 then 0 else 1 end and ISNUMERIC(license_no) = 1", true);
     }
-
+    
     @Test
     public void testSqlContainIsNullFunctionShouldBeParsed3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT name, age FROM person WHERE NOT ISNULL(home, 'earn more money')");
@@ -3737,5 +3743,10 @@ public class SelectTest {
     @Test
     public void testEmptyDoubleQuotes_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE col = \" \"");
+    }
+    
+    @Test
+    public void testInnerWithBlock() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select 1 from (with mytable1 as (select 2 ) select 3 from mytable1 ) first", true);
     }
 }
