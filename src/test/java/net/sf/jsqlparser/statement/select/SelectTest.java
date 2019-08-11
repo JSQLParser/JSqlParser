@@ -3749,4 +3749,9 @@ public class SelectTest {
     public void testInnerWithBlock() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select 1 from (with mytable1 as (select 2 ) select 3 from mytable1 ) first", true);
     }
+    
+    @Test
+    public void testArrayIssue648() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select * from a join b on a.id = b.id[1]", true);
+    }
 }
