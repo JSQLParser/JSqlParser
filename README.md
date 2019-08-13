@@ -94,7 +94,7 @@ As the project is a Maven project, building is rather simple by running:
     
 The project requires the following to build:
 - Maven 
-- JDK 1.7 or later. The jar will target JDK 1.6, but the version of the maven-compiler-plugin that JsqlParser uses requires JDK 1.7+
+- JDK 8 or later. The jar will target JDK 8, but the version of the maven-compiler-plugin that JsqlParser uses requires JDK 8+
 
 This will produce the jsqlparser-VERSION.jar file in the target/ directory.
 
