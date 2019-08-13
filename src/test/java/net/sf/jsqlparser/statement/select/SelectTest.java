@@ -3758,4 +3758,9 @@ public class SelectTest {
     public void testArrayIssue638() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT PAYLOAD[0] FROM MYTABLE");
     }
+    
+    @Test
+    public void testArrayIssue489() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT name[1] FROM MYTABLE");
+    }
 }
