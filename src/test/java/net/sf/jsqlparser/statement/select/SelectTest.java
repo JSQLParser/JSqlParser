@@ -3773,5 +3773,5 @@ public class SelectTest {
     @Test
     public void testArrayIssue378() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select ta.attname, ia.attnum, ic.relname, n.nspname, tc.relname from pg_catalog.pg_attribute ta, pg_catalog.pg_attribute ia, pg_catalog.pg_class tc, pg_catalog.pg_index i, pg_catalog.pg_namespace n, pg_catalog.pg_class ic where tc.relname = 'business' and n.nspname = 'public' and tc.oid = i.indrelid and n.oid = tc.relnamespace and i.indisprimary = 't' and ia.attrelid = i.indexrelid and ta.attrelid = i.indrelid and ta.attnum = i.indkey[ia.attnum-1] and (not ta.attisdropped) and (not ia.attisdropped) and ic.oid = i.indexrelid order by ia.attnum", true);
-    }
+    } 
 }
