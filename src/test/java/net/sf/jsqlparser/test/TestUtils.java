@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.test;
 
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -43,12 +45,16 @@ public class TestUtils {
      * Tries to parse and deparse the given statement.
      *
      * @param statement
-     * @param laxDeparsingCheck removes all linefeeds from the original and removes all double
-     * spaces. The check is caseinsensitive.
+     * @param laxDeparsingCheck removes all linefeeds from the original and
+     * removes all double spaces. The check is caseinsensitive.
      * @throws JSQLParserException
      */
     public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck) throws JSQLParserException {
-        Statement parsed = CCJSqlParserUtil.parse(statement);
+        assertSqlCanBeParsedAndDeparsed(statement, laxDeparsingCheck, null);
+    }
+
+    public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+        Statement parsed = CCJSqlParserUtil.parse(statement, consumer);
         assertStatementCanBeDeparsedAs(parsed, statement, laxDeparsingCheck);
     }
 

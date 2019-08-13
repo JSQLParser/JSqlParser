@@ -11,6 +11,7 @@ package net.sf.jsqlparser.parser;
 
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.function.Consumer;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
@@ -36,7 +37,14 @@ public final class CCJSqlParserUtil {
     }
 
     public static Statement parse(String sql) throws JSQLParserException {
+        return parse(sql, null);
+    }
+
+    public static Statement parse(String sql, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(sql));
+        if (consumer != null) {
+            consumer.accept(parser);
+        }
         try {
             return parser.Statement();
         } catch (Exception ex) {
@@ -96,7 +104,8 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * Parse an conditional expression. This is the expression after a where clause.
+     * Parse an conditional expression. This is the expression after a where
+     * clause.
      *
      * @param condExpr
      * @param allowPartialParse false: needs the whole string to be processed.

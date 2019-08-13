@@ -88,7 +88,7 @@ public class CCJSqlParser {
 PARSER_END(CCJSqlParser)
 
 TOKEN_MGR_DECLS : {
-    public boolean allowSquareBracketQuotation = true;
+    public boolean allowSquareBracketQuotation = false;
 
     public void CommonTokenAction(Token t)
 	{
@@ -2848,7 +2848,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     ColDataType type = null;
     boolean not = false;
     boolean exclamationMarkNot = false;
-    boolean dateExpressionAllowed = true
+    boolean dateExpressionAllowed = true;
     Expression idxExpr;
 }
 {

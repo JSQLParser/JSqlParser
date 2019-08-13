@@ -812,6 +812,8 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(ArrayExpression array) {
         array.getObjExpression().accept(this);
+        buffer.append("[");
         array.getIndexExpression().accept(this);
+        buffer.append("]");
     }
 }

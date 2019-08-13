@@ -48,25 +48,23 @@ public class SelectTest {
     @Test
     public void testMultiPartTableNameWithServerNameAndDatabaseNameAndSchemaName() throws Exception {
         final String statement = "SELECT columnName FROM [server-name\\server-instance].databaseName.schemaName.tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
-
-        assertStatementCanBeDeparsedAs(select, statement);
+        assertSqlCanBeParsedAndDeparsed(statement, false, 
+                parser -> parser.withSquareBracketQuotation(true));
     }
 
     @Test
     public void testMultiPartTableNameWithServerNameAndDatabaseName() throws Exception {
         final String statement = "SELECT columnName FROM [server-name\\server-instance].databaseName..tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertStatementCanBeDeparsedAs(select, statement);
+        assertSqlCanBeParsedAndDeparsed(statement, false, 
+                parser -> parser.withSquareBracketQuotation(true));
     }
 
     @Test
     public void testMultiPartTableNameWithServerNameAndSchemaName() throws Exception {
         final String statement = "SELECT columnName FROM [server-name\\server-instance]..schemaName.tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
-
-        assertStatementCanBeDeparsedAs(select, statement);
+        assertSqlCanBeParsedAndDeparsed(statement, false, 
+                parser -> parser.withSquareBracketQuotation(true));
     }
 
     @Test
@@ -78,9 +76,8 @@ public class SelectTest {
     @Test
     public void testMultiPartTableNameWithServerName() throws Exception {
         final String statement = "SELECT columnName FROM [server-name\\server-instance]...tableName";
-        Select select = (Select) parserManager.parse(new StringReader(statement));
-
-        assertStatementCanBeDeparsedAs(select, statement);
+        assertSqlCanBeParsedAndDeparsed(statement, false, 
+                parser -> parser.withSquareBracketQuotation(true));
     }
 
     @Test
@@ -1679,13 +1676,15 @@ public class SelectTest {
     @Test
     public void testBrackets() throws JSQLParserException {
         String stmt = "SELECT table_a.name AS [Test] FROM table_a";
-        assertSqlCanBeParsedAndDeparsed(stmt);
+        assertSqlCanBeParsedAndDeparsed(stmt, false, 
+                parser -> parser.withSquareBracketQuotation(true));
     }
 
     @Test
     public void testBrackets2() throws JSQLParserException {
         String stmt = "SELECT [a] FROM t";
-        assertSqlCanBeParsedAndDeparsed(stmt);
+        assertSqlCanBeParsedAndDeparsed(stmt, false, 
+                parser -> parser.withSquareBracketQuotation(true));
     }
 
     @Test
@@ -3753,5 +3752,10 @@ public class SelectTest {
     @Test
     public void testArrayIssue648() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select * from a join b on a.id = b.id[1]", true);
+    }
+    
+    @Test
+    public void testArrayIssue638() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT PAYLOAD[0] FROM MYTABLE");
     }
 }
