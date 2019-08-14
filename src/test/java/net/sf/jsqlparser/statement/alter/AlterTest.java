@@ -360,7 +360,7 @@ public class AlterTest {
     }
 
     @Test
-    public void testIssue633() throws JSQLParserException {
+    public void testIssue633() throws JSQLParserException, JSQLParserException, JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE team_phases ADD CONSTRAINT team_phases_id_key UNIQUE (id)");
     }
 
@@ -382,5 +382,10 @@ public class AlterTest {
     @Test
     public void testIssue259() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE feature_v2 ADD COLUMN third_user_id int (10) unsigned DEFAULT '0' COMMENT '第三方用户id' after kdt_id");
+    }
+    
+    @Test
+    public void testIssue633_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)");
     }
 }
