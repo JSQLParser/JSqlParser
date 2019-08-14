@@ -523,4 +523,10 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(SimilarToExpression expr) {
         visitBinaryExpression(expr);
     }
+
+    @Override
+    public void visit(ArrayExpression array) {
+        array.getObjExpression().accept(this);
+        array.getIndexExpression().accept(this);
+    }
 }

@@ -23,6 +23,9 @@ Please provide feedback on:
 * Is there any need for a Java 7 JSqlParser build, or can we move on to at least Java 8? (https://github.com/JSQLParser/JSqlParser/issues/814)
 
 ## News
+* The array parsing is the default behaviour. Square bracket quotation has to be enabled using 
+  a parser flag (**CCJSqlParser.withSquareBracketQuotation**).
+* due to an API change the version will be 3.0
 * JSqlParser uses now Java 8 at the minimum
 * Released version **2.1** of JSqlParser
 * Released version **2.0** of JSqlParser
@@ -60,8 +63,11 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 2.2
+## Extensions in the latest SNAPSHOT version 3.0
 
+* support for array constructs using square brackets. This collides with square bracket 
+  quotation of SqlServer. The parser has now a flag to enable this quotation again (**CCJSqlParser.withSquareBracketQuotation**).
+* support for **update table1 inner join table2 ...** (API change)
 * support for **declare** statement
 * allow empty double quotes
 * allow **year**, **month** ... as column data type for **create table**
@@ -88,7 +94,7 @@ As the project is a Maven project, building is rather simple by running:
     
 The project requires the following to build:
 - Maven 
-- JDK 1.7 or later. The jar will target JDK 1.6, but the version of the maven-compiler-plugin that JsqlParser uses requires JDK 1.7+
+- JDK 8 or later. The jar will target JDK 8, but the version of the maven-compiler-plugin that JsqlParser uses requires JDK 8+
 
 This will produce the jsqlparser-VERSION.jar file in the target/ directory.
 
