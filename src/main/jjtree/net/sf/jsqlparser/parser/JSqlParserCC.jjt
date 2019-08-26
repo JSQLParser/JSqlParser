@@ -3017,13 +3017,22 @@ JsonExpression JsonExpression() : {
 
 IntervalExpression IntervalExpression() : {
     IntervalExpression interval;
-    Token token;
+    Token token = null;
+    Expression expr = null;
     boolean signed = false;
 }
 {
-    { interval = new IntervalExpression(); }
-    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> ) 
-    { interval.setParameter((signed?"-":"") + token.image); }
+    
+{ interval = new IntervalExpression(); }
+    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | expr = Column()) 
+    { 
+        if (expr != null) {
+            if (signed) expr = new SignedExpression('-', expr);
+            interval.setExpression(expr);
+        } else {
+            interval.setParameter((signed?"-":"") + token.image); 
+        }
+    }
     [ LOOKAHEAD(2) (token = <S_IDENTIFIER> | token = <K_DATE_LITERAL>) { interval.setIntervalType(token.image); } ]
     {
         return interval;
