@@ -150,4 +150,9 @@ public class UpdateTest {
                 + "where message_topic.name='test' \n"
                 + "AND message_topic_config.enable_flag='Y'", true);
     }
+
+    @Test
+    public void testUpdateIssue750() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("update a,(select * from c) b set a.id=b.id where a.id=b.id", true);
+    }
 }
