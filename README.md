@@ -23,6 +23,7 @@ Please provide feedback on:
 * Is there any need for a Java 7 JSqlParser build, or can we move on to at least Java 8? (https://github.com/JSQLParser/JSqlParser/issues/814)
 
 ## News
+* Released version **3.0** of JSqlParser
 * The array parsing is the default behaviour. Square bracket quotation has to be enabled using 
   a parser flag (**CCJSqlParser.withSquareBracketQuotation**).
 * due to an API change the version will be 3.0
@@ -63,22 +64,8 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 3.0
+## Extensions in the latest SNAPSHOT version 3.1
 
-* support for array constructs using square brackets. This collides with square bracket 
-  quotation of SqlServer. The parser has now a flag to enable this quotation again (**CCJSqlParser.withSquareBracketQuotation**).
-* support for **update table1 inner join table2 ...** (API change)
-* support for **declare** statement
-* allow empty double quotes
-* allow **year**, **month** ... as column data type for **create table**
-* allow **duplicate** as object name
-* make it JDK 11 buildable
-* switched to minimum JDK 8 
-* avoid buffer copy of input data if a normal String input is used
-* allow **limit** and **offset** as keywords in specific places
-* DIV operator
-* improved performance for SQLCondition production
-* support for full text search (MATCH..AGAINST)
 
 ## Extensions of JSqlParser releases
 
@@ -146,7 +133,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>2.1</version>
+	<version>3.0</version>
 </dependency>
 ```
 
