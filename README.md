@@ -66,10 +66,10 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 3.1
 
-* introduced more positions for *!* instead of *NOT*
-* allowed more complex expressions within *if* function
-* introduced multicolumn alias like *select * from mytab as tab(c1, c2)*
-** additional type definition is possible (issue #849)
+* introduced more positions for **!** instead of **NOT**
+* allowed more complex expressions within **if** function
+* introduced multicolumn alias like **select * from mytab as tab(c1, c2)**
+    * additional type definition is possible (issue #849)
 
 ## Extensions of JSqlParser releases
 
