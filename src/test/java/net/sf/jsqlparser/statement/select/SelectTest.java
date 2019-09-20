@@ -3532,6 +3532,17 @@ public class SelectTest {
     }
 
     @Test
+    public void testNotVariant4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE NOT (1 = 1)");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE ! (1 = 1)");
+    }
+
+    @Test
+    public void testNotVariantIssue850() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE id = 1 AND ! (id = 1 AND id = 2)");
+    }
+
+    @Test
     public void testDateArithmentic() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CURRENT_DATE + (1 DAY) FROM SYSIBM.SYSDUMMY1");
     }

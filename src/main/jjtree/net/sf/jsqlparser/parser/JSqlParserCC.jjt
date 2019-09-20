@@ -2265,14 +2265,15 @@ Expression AndExpression() :
 {
     Expression left, right, result;
     boolean not = false;
+	boolean exclamationMarkNot=false;
 }
 {
     (
     LOOKAHEAD(Condition())
         left=Condition()
         |
-        [ <K_NOT> { not = true; } ]
-        "(" left=OrExpression() ")" {left = new Parenthesis(left); if (not) { left = new NotExpression(left); not = false; } }
+        [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
+        "(" left=OrExpression() ")" {left = new Parenthesis(left); if (not) { left = new NotExpression(left, exclamationMarkNot); not = false; } }
     )
     { result = left; }
 
@@ -2282,8 +2283,8 @@ Expression AndExpression() :
         LOOKAHEAD(Condition())
             right=Condition()
             |
-            [ <K_NOT> { not = true; } ]
-            "(" right=OrExpression() ")" {right = new Parenthesis(right); if (not) { right = new NotExpression(right); not = false; } }
+            [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
+            "(" right=OrExpression() ")" {right = new Parenthesis(right); if (not) { right = new NotExpression(right, exclamationMarkNot); not = false; } }
         )
         {
             result = new AndExpression(left, right);
@@ -2300,16 +2301,17 @@ Expression Condition():
     Expression result;
     Token token;
     boolean not = false;
+	boolean exclamationMarkNot = false;
 }
 {
-    [ LOOKAHEAD(2) <K_NOT> { not = true; }]
+    [ LOOKAHEAD(2) (<K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; })]
     (
         LOOKAHEAD(SQLCondition()) result=SQLCondition()
         | LOOKAHEAD(RegularCondition()) result=RegularCondition()
         | result=SimpleExpression()
     )
 
-    { return not?new NotExpression(result):result; }
+    { return not?new NotExpression(result, exclamationMarkNot):result; }
 }
 
 Expression RegularCondition() #RegularCondition:
