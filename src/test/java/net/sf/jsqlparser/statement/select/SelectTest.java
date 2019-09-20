@@ -3829,4 +3829,14 @@ public class SelectTest {
     public void testIssue848_4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select c1 from T1 where someFunc(select f1 from t2 where t2.id = T1.key) = 10", true);
     }
+
+    @Test
+    public void testMultiColumnAliasIssue849() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable AS mytab2(col1, col2)");
+    }
+
+    @Test
+    public void testMultiColumnAliasIssue849_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM crosstab('select rowid, attribute, value from ct where attribute = ''att2'' or attribute = ''att3'' order by 1,2') AS ct(row_name text, category_1 text, category_2 text, category_3 text)");
+    }
 }

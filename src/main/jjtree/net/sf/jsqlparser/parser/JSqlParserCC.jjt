@@ -1454,11 +1454,22 @@ AllTableColumns AllTableColumns():
 Alias Alias():
 { String name = null;
   Token token = null;
-  boolean useAs = false; }
+  boolean useAs = false; 
+  Alias alias;
+  String colname;
+  ColDataType colDataType = null;
+}
 {
     [<K_AS> { useAs = true; } ] 
 	( name=RelObjectName() | token=<S_CHAR_LITERAL> { name=token.image; } )
-   { return new Alias(name,useAs); }
+	{ alias = new Alias(name,useAs); }
+
+	[ LOOKAHEAD(2) "(" { List<Alias.AliasColumn> list = new ArrayList<Alias.AliasColumn>(); }
+		colname = RelObjectName() [ colDataType = ColDataType() ] { list.add(new Alias.AliasColumn(colname, colDataType)); }   
+		("," { colDataType=null; } colname = RelObjectName() [ colDataType = ColDataType()] { list.add(new Alias.AliasColumn(colname, colDataType)); } )*
+	")" { alias.setAliasColumns(list); } ]
+
+    { return alias; }
 }
 
 MySQLIndexHint MySQLIndexHint():
