@@ -3809,4 +3809,24 @@ public class SelectTest {
     public void testIssue842_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT INTERVAL a.repayment_period DAY");
     }
+
+    @Test
+    public void testIssue848() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT IF(USER_ID > 10 AND SEX = 1, 1, 0)");
+    }
+
+    @Test
+    public void testIssue848_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT IF(USER_ID > 10, 1, 0)");
+    }
+
+    @Test
+    public void testIssue848_3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT c1, multiset(SELECT * FROM mytable WHERE cond = 10) FROM T1 WHERE cond2 = 20");
+    }
+
+    @Test
+    public void testIssue848_4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select c1 from T1 where someFunc(select f1 from t2 where t2.id = T1.key) = 10", true);
+    }
 }

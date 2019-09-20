@@ -2546,14 +2546,14 @@ ExpressionList SimpleExpressionList() #ExpressionList:
     }
 }
 
-ExpressionList ConditionExpressionList() #ExpressionList:
+ExpressionList ComplexExpressionList() #ExpressionList:
 {
     ExpressionList retval = new ExpressionList();
     List<Expression> expressions = new ArrayList<Expression>();
     Expression expr = null;
 }
 {
-    expr=Condition() { expressions.add(expr); } ("," expr=Condition() { expressions.add(expr); })*
+    expr=Expression() { expressions.add(expr); } ("," expr=Expression() { expressions.add(expr); })*
     {
         retval.setExpressions(expressions);
         return retval;
@@ -3343,7 +3343,7 @@ Function FunctionWithCondParams() #Function: {
     (token = <K_IF> | token = <K_IIF>) { funcName=token.image; }
 
     "(" 
-        expressionList=ConditionExpressionList()
+        expressionList=ComplexExpressionList()
 	")"
 
     {
