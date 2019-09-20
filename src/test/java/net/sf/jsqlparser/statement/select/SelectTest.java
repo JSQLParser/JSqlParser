@@ -3839,4 +3839,16 @@ public class SelectTest {
     public void testMultiColumnAliasIssue849_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM crosstab('select rowid, attribute, value from ct where attribute = ''att2'' or attribute = ''att3'' order by 1,2') AS ct(row_name text, category_1 text, category_2 text, category_3 text)");
     }
+
+    @Test
+    public void testLimitClauseDroppedIssue845() throws JSQLParserException {
+        assertEquals(
+                "SELECT * FROM employee ORDER BY emp_id LIMIT 10 OFFSET 2",
+                CCJSqlParserUtil.parse("SELECT * FROM employee ORDER BY emp_id OFFSET 2 LIMIT 10").toString());
+    }
+
+    @Test
+    public void testLimitClauseDroppedIssue845_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM employee ORDER BY emp_id LIMIT 10 OFFSET 2");
+    }
 }
