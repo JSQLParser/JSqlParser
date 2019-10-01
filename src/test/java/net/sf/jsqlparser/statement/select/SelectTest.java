@@ -3851,4 +3851,9 @@ public class SelectTest {
     public void testLimitClauseDroppedIssue845_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM employee ORDER BY emp_id LIMIT 10 OFFSET 2");
     }
+    
+    @Test
+    public void testChangeKeywordIssue859() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM CHANGE.TEST");
+    }
 }
