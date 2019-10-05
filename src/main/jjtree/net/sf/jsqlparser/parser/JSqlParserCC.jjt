@@ -1146,7 +1146,20 @@ Normal names.
 String RelObjectName() :
 {    Token tk = null; String result = null; }
 {
-    (result = RelObjectNameWithoutValue() | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> | tk=<K_INTERVAL>)
+    (result = RelObjectNameWithoutValue() | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> 
+        | tk=<K_INTERVAL> | tk=<K_START>)
+
+    { 
+		if (tk!=null) result=tk.image;
+		return result; 
+	}
+}
+
+String RelObjectNameWithoutStart() :
+{    Token tk = null; String result = null; }
+{
+    (result = RelObjectNameWithoutValue() | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> 
+        | tk=<K_INTERVAL>)
 
     { 
 		if (tk!=null) result=tk.image;
@@ -1162,7 +1175,9 @@ String RelObjectNameExt():
   String result=null;
 } 
 {
-    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> | tk=<K_DOUBLE> | tk=<K_IF> | <K_OPTIMIZE> | tk=<K_LIMIT> | tk=<K_OFFSET>)
+    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> 
+        | tk=<K_DOUBLE> | tk=<K_IF> | <K_OPTIMIZE> | tk=<K_LIMIT> 
+        | tk=<K_OFFSET>)
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -1463,7 +1478,7 @@ Alias Alias():
 }
 {
     [<K_AS> { useAs = true; } ] 
-	( name=RelObjectName() | token=<S_CHAR_LITERAL> { name=token.image; } )
+	( name=RelObjectNameWithoutStart() | token=<S_CHAR_LITERAL> { name=token.image; } )
 	{ alias = new Alias(name,useAs); }
 
 	[ LOOKAHEAD(2) "(" { List<Alias.AliasColumn> list = new ArrayList<Alias.AliasColumn>(); }

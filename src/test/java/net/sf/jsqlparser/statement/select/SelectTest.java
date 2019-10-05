@@ -3856,4 +3856,14 @@ public class SelectTest {
     public void testChangeKeywordIssue859() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM CHANGE.TEST");
     }
+    
+    @Test
+    public void testEndKeyword() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT end AS end_6 FROM mytable");
+    }
+    
+    @Test
+    public void testStartKeyword() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT c0_.start AS start_5 FROM mytable");
+    }
 }
