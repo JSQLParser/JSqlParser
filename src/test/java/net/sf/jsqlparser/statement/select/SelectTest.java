@@ -1632,6 +1632,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testStraightJoinInSelect() throws JSQLParserException {
+        String stmt = "SELECT STRAIGHT_JOIN col, col2 FROM tbl INNER JOIN tbl2 ON tbl.id = tbl2.id";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testCastTypeProblem3() throws JSQLParserException {
         String stmt = "SELECT col1::varchar (256) FROM tabelle1";
         assertSqlCanBeParsedAndDeparsed(stmt);

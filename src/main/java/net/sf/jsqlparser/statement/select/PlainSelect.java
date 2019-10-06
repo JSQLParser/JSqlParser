@@ -35,6 +35,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private Fetch fetch;
     private OptimizeFor optimizeFor;
     private Skip skip;
+    private boolean straightJoin;
     private First first;
     private Top top;
     private OracleHierarchicalExpression oracleHierarchical = null;
@@ -170,6 +171,14 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.skip = skip;
     }
 
+    public boolean getStraightJoin() {
+        return this.straightJoin;
+    }
+
+    public void setStraightJoin(boolean straightJoin) {
+        this.straightJoin = straightJoin;
+    }
+
     public First getFirst() {
         return first;
     }
@@ -296,6 +305,10 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             sql.append("(");
         }
         sql.append("SELECT ");
+
+        if (this.straightJoin) {
+            sql.append("STRAIGHT_JOIN ");
+        }
 
         if (oracleHint != null) {
             sql.append(oracleHint).append(" ");

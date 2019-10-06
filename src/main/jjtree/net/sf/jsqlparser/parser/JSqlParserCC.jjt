@@ -1277,6 +1277,8 @@ PlainSelect PlainSelect() #PlainSelect:
 {
     <K_SELECT>
 
+    [ <K_STRAIGHT> { plainSelect.setStraightJoin(true); } ]
+
     { plainSelect.setOracleHint(getOracleHint()); }
 
     [skip = Skip() { plainSelect.setSkip(skip);    } ]
