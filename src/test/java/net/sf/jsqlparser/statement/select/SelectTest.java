@@ -3866,4 +3866,9 @@ public class SelectTest {
     public void testStartKeyword() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT c0_.start AS start_5 FROM mytable");
     }
+    
+    @Test
+    public void testSizeKeywordIssue867() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT size FROM mytable");
+    }
 }
