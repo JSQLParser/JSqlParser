@@ -3871,4 +3871,10 @@ public class SelectTest {
     public void testSizeKeywordIssue867() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT size FROM mytable");
     }
+    
+    @Test
+    public void testPartitionByWithBracketsIssue865() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT subject_id, student_id, sum(mark) OVER (PARTITION BY subject_id, student_id ) FROM marks");
+        assertSqlCanBeParsedAndDeparsed("SELECT subject_id, student_id, sum(mark) OVER (PARTITION BY (subject_id, student_id) ) FROM marks");
+    }
 }

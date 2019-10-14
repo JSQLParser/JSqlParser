@@ -3114,18 +3114,20 @@ AnalyticExpression AnalyticExpression(Function function) :
     WindowElement windowElement = null;
     //KeepExpression keep = null;
     //boolean distinct = false;
-    //boolean ignoreNulls = false;
+    boolean partitionByBrackets = false;
 }
 {
     (<K_OVER> {retval.setType(AnalyticType.OVER);} 
         | <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);} )
 
     "("
-        [<K_PARTITION> <K_BY> expressionList=SimpleExpressionList() ]
+        [<K_PARTITION> <K_BY> 
+            (LOOKAHEAD(3) expressionList=SimpleExpressionList() | "(" {partitionByBrackets = true;} expressionList=SimpleExpressionList() ")" ) 
+        ]
         [olist=OrderByElements() [windowElement = WindowElement() ] ]
         
     {
-        retval.setPartitionExpressionList(expressionList);
+        retval.setPartitionExpressionList(expressionList, partitionByBrackets);
         retval.setOrderByElements(olist);
         retval.setWindowElement(windowElement);
     }

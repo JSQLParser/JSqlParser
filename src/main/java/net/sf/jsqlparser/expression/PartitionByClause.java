@@ -14,21 +14,31 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class PartitionByClause {
     ExpressionList partitionExpressionList;
+    boolean brackets = false;
 
     public ExpressionList getPartitionExpressionList() {
         return partitionExpressionList;
     }
-
+    
     public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
+        setPartitionExpressionList(partitionExpressionList, false);
+    }
+
+    public void setPartitionExpressionList(ExpressionList partitionExpressionList, boolean brackets) {
         this.partitionExpressionList = partitionExpressionList;
+        this.brackets = brackets;
     }
 
     void toStringPartitionBy(StringBuilder b) {
         if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
             b.append("PARTITION BY ");
             b.append(PlainSelect.
-                    getStringList(partitionExpressionList.getExpressions(), true, false));
+                    getStringList(partitionExpressionList.getExpressions(), true, brackets));
             b.append(" ");
         }
+    }
+    
+    public boolean isBrackets() {
+        return brackets;
     }
 }

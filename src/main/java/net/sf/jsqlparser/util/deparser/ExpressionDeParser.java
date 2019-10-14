@@ -216,8 +216,8 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
                 columnsListCommaSeperated += ",";
             }
         }
-        buffer.append("MATCH (" + columnsListCommaSeperated + ") AGAINST (" + fullTextSearch.getAgainstValue() +
-                (fullTextSearch.getSearchModifier() != null ? " " + fullTextSearch.getSearchModifier() : "") + ")");
+        buffer.append("MATCH (" + columnsListCommaSeperated + ") AGAINST (" + fullTextSearch.getAgainstValue()
+                + (fullTextSearch.getSearchModifier() != null ? " " + fullTextSearch.getSearchModifier() : "") + ")");
     }
 
     @Override
@@ -654,12 +654,18 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
         if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
             buffer.append("PARTITION BY ");
+            if (aexpr.isPartitionByBrackets()) {
+                buffer.append("(");
+            }
             List<Expression> expressions = partitionExpressionList.getExpressions();
             for (int i = 0; i < expressions.size(); i++) {
                 if (i > 0) {
                     buffer.append(", ");
                 }
                 expressions.get(i).accept(this);
+            }
+            if (aexpr.isPartitionByBrackets()) {
+                buffer.append(")");
             }
             buffer.append(" ");
         }

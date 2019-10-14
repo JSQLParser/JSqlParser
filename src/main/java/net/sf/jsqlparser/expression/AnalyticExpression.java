@@ -88,7 +88,14 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
-        partitionBy.setPartitionExpressionList(partitionExpressionList);
+        setPartitionExpressionList(partitionExpressionList, false);
+    }
+    public void setPartitionExpressionList(ExpressionList partitionExpressionList, boolean brackets) {
+        partitionBy.setPartitionExpressionList(partitionExpressionList, brackets);
+    }
+    
+    public boolean isPartitionByBrackets() {
+        return partitionBy.isBrackets();
     }
 
     public String getName() {
