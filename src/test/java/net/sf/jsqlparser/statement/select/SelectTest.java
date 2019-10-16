@@ -1859,6 +1859,11 @@ public class SelectTest {
     public void testAnalyticFunctionIssue670() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT last_value(some_column IGNORE NULLS) OVER (PARTITION BY some_other_column_1, some_other_column_2 ORDER BY some_other_column_3 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) column_alias FROM some_table");
     }
+    
+    @Test
+    public void testAnalyticFunctionFilterIssue866() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) FILTER (WHERE name = 'Raj') OVER (PARTITION BY name ) FROM table");
+    }
 
     @Test
     public void testFunctionLeft() throws JSQLParserException {

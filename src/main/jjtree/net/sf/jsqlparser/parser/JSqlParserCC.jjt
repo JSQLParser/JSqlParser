@@ -175,6 +175,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXPLAIN:"EXPLAIN">
 |   <K_EXTRACT:"EXTRACT">
 |   <K_FETCH:"FETCH">
+|   <K_FILTER: "FILTER">
 |   <K_FIRST: "FIRST">
 |   <K_FALSE: "FALSE">
 |   <K_FOLLOWING: "FOLLOWING">
@@ -3115,8 +3116,12 @@ AnalyticExpression AnalyticExpression(Function function) :
     //KeepExpression keep = null;
     //boolean distinct = false;
     boolean partitionByBrackets = false;
+    Expression filter = null;
 }
 {
+
+    [ <K_FILTER> "(" <K_WHERE> filter = Expression() ")" ]
+
     (<K_OVER> {retval.setType(AnalyticType.OVER);} 
         | <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);} )
 
@@ -3130,6 +3135,7 @@ AnalyticExpression AnalyticExpression(Function function) :
         retval.setPartitionExpressionList(expressionList, partitionByBrackets);
         retval.setOrderByElements(olist);
         retval.setWindowElement(windowElement);
+        retval.setFilterExpression(filter);
     }
     ")"
     {

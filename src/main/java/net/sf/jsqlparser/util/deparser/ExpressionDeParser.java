@@ -642,6 +642,12 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
             keep.accept(this);
             buffer.append(" ");
         }
+        
+        if (aexpr.getFilterExpression() != null) {
+            buffer.append("FILTER (WHERE ");
+            aexpr.getFilterExpression().accept(this);
+            buffer.append(") ");
+        }
 
         switch (aexpr.getType()) {
             case WITHIN_GROUP:

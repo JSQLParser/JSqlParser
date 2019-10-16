@@ -35,6 +35,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private AnalyticType type = AnalyticType.OVER;
     private boolean distinct = false;
     private boolean ignoreNulls = false;
+    private Expression filterExpression = null;
 
     public AnalyticExpression() {
     }
@@ -82,6 +83,8 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     public void setKeep(KeepExpression keep) {
         this.keep = keep;
     }
+    
+    
 
     public ExpressionList getPartitionExpressionList() {
         return partitionBy.getPartitionExpressionList();
@@ -189,6 +192,12 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             b.append(keep.toString()).append(" ");
         }
 
+        if (filterExpression != null) {
+            b.append("FILTER (WHERE ");
+            b.append(filterExpression.toString());
+            b.append(") ");
+        }
+        
         switch (type) {
             case WITHIN_GROUP:
                 b.append("WITHIN GROUP");
@@ -214,4 +223,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.allColumns = allColumns;
     }
 
+    public Expression getFilterExpression() {
+        return filterExpression;
+    }
+
+    public void setFilterExpression(Expression filterExpression) {
+        this.filterExpression = filterExpression;
+    }
 }
