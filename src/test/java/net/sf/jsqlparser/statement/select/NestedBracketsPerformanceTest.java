@@ -42,6 +42,12 @@ public class NestedBracketsPerformanceTest {
     public void testIssue496() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select isNull(charLen(TEST_ID,0)+ isNull(charLen(TEST_DVC,0)+ isNull(charLen(TEST_NO,0)+ isNull(charLen(ATEST_ID,0)+ isNull(charLen(TESTNO,0)+ isNull(charLen(TEST_CTNT,0)+ isNull(charLen(TEST_MESG_CTNT,0)+ isNull(charLen(TEST_DTM,0)+ isNull(charLen(TEST_DTT,0)+ isNull(charLen(TEST_ADTT,0)+ isNull(charLen(TEST_TCD,0)+ isNull(charLen(TEST_PD,0)+ isNull(charLen(TEST_VAL,0)+ isNull(charLen(TEST_YN,0)+ isNull(charLen(TEST_DTACM,0)+ isNull(charLen(TEST_MST,0) from test_info_m");
     }
+    
+    @Test
+    public void testIssue856() throws JSQLParserException {
+        String sql = "SELECT " + buildRecursiveBracketExpression("if(month(today()) = 3, sum(\"Table5\".\"Month 002\"), $1)", "0", 5) + " FROM mytbl";
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
 
     /**
      * Try to avoid or border exceptionally big parsing time increments by adding more bracket constructs.
