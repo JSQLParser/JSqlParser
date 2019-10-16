@@ -65,6 +65,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 3.1
 
+* allow more complex expressions for **CASE**.
 * allowed **start** as object name as column name or table name
 * introduced more positions for **!** instead of **NOT**
 * allowed more complex expressions within **if** function

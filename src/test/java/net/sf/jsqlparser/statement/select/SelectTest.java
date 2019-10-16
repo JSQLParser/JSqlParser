@@ -1297,6 +1297,11 @@ public class SelectTest {
     public void testIssue235SimplifiedCase4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN (CASE WHEN (CASE WHEN (CASE WHEN (1) THEN 0 END) THEN 0 END) THEN 0 END) THEN 0 END FROM a");
     }
+    
+    @Test
+    public void testIssue862CaseWhenConcat() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT c1, CASE c1 || c2 WHEN '091' THEN '2' ELSE '1' END AS c11 FROM T2");
+    }
 
     @Test
     public void testReplaceAsFunction() throws JSQLParserException {

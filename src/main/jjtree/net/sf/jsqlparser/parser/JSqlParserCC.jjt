@@ -3234,7 +3234,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
     (
             ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
         |
-            (LOOKAHEAD(RegularCondition()) switchExp=RegularCondition() | switchExp=BitwiseAndOr())
+            switchExp=Condition()
              ( clause=WhenThenValue() { whenClauses.add(clause); } )+
     )
    [<K_ELSE> elseExp=Condition()]
