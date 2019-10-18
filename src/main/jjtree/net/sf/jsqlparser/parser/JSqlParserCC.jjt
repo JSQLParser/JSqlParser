@@ -3129,7 +3129,8 @@ AnalyticExpression AnalyticExpression(Function function) :
         [<K_PARTITION> <K_BY> 
             (LOOKAHEAD(3) expressionList=SimpleExpressionList() | "(" {partitionByBrackets = true;} expressionList=SimpleExpressionList() ")" ) 
         ]
-        [olist=OrderByElements() [windowElement = WindowElement() ] ]
+        [olist=OrderByElements() ]
+        [windowElement = WindowElement() ]
         
     {
         retval.setPartitionExpressionList(expressionList, partitionByBrackets);

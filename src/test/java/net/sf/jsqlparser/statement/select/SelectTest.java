@@ -3897,4 +3897,9 @@ public class SelectTest {
     public void testSessionKeywordIssue876() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ID_COMPANY FROM SESSION.COMPANY");
     }
+    
+    @Test
+    public void testWindowClauseWithoutOrderByIssue869() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT subject_id, student_id, mark, sum(mark) OVER (PARTITION BY (subject_id) ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) FROM marks");
+    }
 }

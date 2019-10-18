@@ -36,6 +36,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private boolean distinct = false;
     private boolean ignoreNulls = false;
     private Expression filterExpression = null;
+    private WindowElement windowElement = null;
 
     public AnalyticExpression() {
     }
@@ -83,8 +84,6 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     public void setKeep(KeepExpression keep) {
         this.keep = keep;
     }
-    
-    
 
     public ExpressionList getPartitionExpressionList() {
         return partitionBy.getPartitionExpressionList();
@@ -93,10 +92,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
         setPartitionExpressionList(partitionExpressionList, false);
     }
+
     public void setPartitionExpressionList(ExpressionList partitionExpressionList, boolean brackets) {
         partitionBy.setPartitionExpressionList(partitionExpressionList, brackets);
     }
-    
+
     public boolean isPartitionByBrackets() {
         return partitionBy.isBrackets();
     }
@@ -134,11 +134,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     public WindowElement getWindowElement() {
-        return orderBy.getWindowElement();
+        return windowElement;
     }
 
     public void setWindowElement(WindowElement windowElement) {
-        orderBy.setWindowElement(windowElement);
+        this.windowElement = windowElement;
     }
 
     public AnalyticType getType() {
@@ -197,7 +197,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             b.append(filterExpression.toString());
             b.append(") ");
         }
-        
+
         switch (type) {
             case WITHIN_GROUP:
                 b.append("WITHIN GROUP");
@@ -209,6 +209,13 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
 
         partitionBy.toStringPartitionBy(b);
         orderBy.toStringOrderByElements(b);
+
+        if (windowElement != null) {
+            if (orderBy != null && orderBy.getOrderByElements()!=null) {
+                b.append(' ');
+            }
+            b.append(windowElement);
+        }
 
         b.append(")");
 

@@ -642,7 +642,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
             keep.accept(this);
             buffer.append(" ");
         }
-        
+
         if (aexpr.getFilterExpression() != null) {
             buffer.append("FILTER (WHERE ");
             aexpr.getFilterExpression().accept(this);
@@ -685,11 +685,13 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
                 }
                 orderByDeParser.deParseElement(orderByElements.get(i));
             }
+        }
 
-            if (windowElement != null) {
+        if (windowElement != null) {
+            if (orderByElements != null && !orderByElements.isEmpty()) {
                 buffer.append(' ');
-                buffer.append(windowElement);
             }
+            buffer.append(windowElement);
         }
 
         buffer.append(")");

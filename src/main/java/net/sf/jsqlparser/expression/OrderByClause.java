@@ -15,7 +15,6 @@ import java.util.List;
 
 public class OrderByClause {
     private List<OrderByElement> orderByElements;
-    private WindowElement windowElement;
 
     public List<OrderByElement> getOrderByElements() {
         return orderByElements;
@@ -23,14 +22,6 @@ public class OrderByClause {
 
     public void setOrderByElements(List<OrderByElement> orderByElements) {
         this.orderByElements = orderByElements;
-    }
-
-    public WindowElement getWindowElement() {
-        return windowElement;
-    }
-
-    public void setWindowElement(WindowElement windowElement) {
-        this.windowElement = windowElement;
     }
 
     void toStringOrderByElements(StringBuilder b) {
@@ -41,11 +32,6 @@ public class OrderByClause {
                     b.append(", ");
                 }
                 b.append(orderByElements.get(i).toString());
-            }
-
-            if (windowElement != null) {
-                b.append(' ');
-                b.append(windowElement);
             }
         }
     }
