@@ -3892,4 +3892,9 @@ public class SelectTest {
     public void testWithAsRecursiveIssue874() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("WITH rn AS (SELECT rownum rn FROM dual CONNECT BY level <= (SELECT max(cases) FROM t1)) SELECT pname FROM t1, rn WHERE rn <= cases ORDER BY pname");
     }
+    
+    @Test
+    public void testSessionKeywordIssue876() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ID_COMPANY FROM SESSION.COMPANY");
+    }
 }
