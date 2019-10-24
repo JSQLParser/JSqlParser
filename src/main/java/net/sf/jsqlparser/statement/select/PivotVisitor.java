@@ -15,4 +15,6 @@ public interface PivotVisitor {
 
     void visit(PivotXml pivot);
 
+    void visit(UnPivot unpivot);
+
 }

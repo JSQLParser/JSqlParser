@@ -24,4 +24,13 @@ public class TableFunction extends FunctionItem implements FromItem {
     @Override
     public void setPivot(Pivot pivot) {
     }
+
+    @Override
+    public UnPivot getUnPivot() {
+        return null;
+    }
+
+    @Override
+    public void setUnPivot(UnPivot unpivot) {
+    }
 }

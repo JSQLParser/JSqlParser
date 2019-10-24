@@ -223,6 +223,10 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         if (pivot != null) {
             pivot.accept(this);
         }
+        UnPivot unpivot = tableName.getUnPivot();
+        if (unpivot != null) {
+            unpivot.accept(this);
+        }
         MySQLIndexHint indexHint = tableName.getIndexHint();
         if (indexHint != null) {
             buffer.append(indexHint);
@@ -243,6 +247,21 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         if (pivot.getAlias() != null) {
             buffer.append(pivot.getAlias().toString());
         }
+    }
+
+    @Override
+    public void visit(UnPivot unpivot) {
+        boolean showOptions = unpivot.getIncludeNullsSpecified();
+        boolean includeNulls = unpivot.getIncludeNulls();
+        List<Column> unpivotForClause = unpivot.getUnPivotForClause();
+        buffer.append(" UNPIVOT")
+                .append(showOptions && includeNulls ? " INCLUDE NULLS" : "")
+                .append(showOptions && !includeNulls ? " EXCULDE NULLS" : "")
+                .append(" (")
+                .append(unpivot.getUnPivotClause())
+                .append(" FOR ").append(PlainSelect.getStringList(unpivotForClause, true, unpivotForClause != null && unpivotForClause.size() > 1))
+                .append(" IN ").append(PlainSelect.getStringList(unpivot.getUnPivotInClause(), true, true))
+                .append(")");
     }
 
     @Override

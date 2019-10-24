@@ -16,6 +16,7 @@ public class LateralSubSelect implements FromItem {
     private SubSelect subSelect;
     private Alias alias;
     private Pivot pivot;
+    private UnPivot unpivot;
 
     public void setSubSelect(SubSelect subSelect) {
         this.subSelect = subSelect;
@@ -51,9 +52,20 @@ public class LateralSubSelect implements FromItem {
     }
 
     @Override
+    public UnPivot getUnPivot() {
+        return this.unpivot;
+    }
+
+    @Override
+    public void setUnPivot(UnPivot unpivot) {
+        this.unpivot = unpivot;
+    }
+
+    @Override
     public String toString() {
         return "LATERAL" + subSelect.toString()
                 + ((alias != null) ? alias.toString() : "")
-                + ((pivot != null) ? " " + pivot : "");
+                + ((pivot != null) ? " " + pivot : "")
+                + ((unpivot != null) ? " " + unpivot : "");
     }
 }

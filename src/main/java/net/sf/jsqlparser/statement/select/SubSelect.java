@@ -26,6 +26,7 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
     private List<WithItem> withItemsList;
 
     private Pivot pivot;
+    private UnPivot unpivot;
 
     @Override
     public void accept(FromItemVisitor fromItemVisitor) {
@@ -63,6 +64,16 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
     @Override
     public void setPivot(Pivot pivot) {
         this.pivot = pivot;
+    }
+
+    @Override
+    public UnPivot getUnPivot() {
+        return this.unpivot;
+    }
+
+    @Override
+    public void setUnPivot(UnPivot unpivot) {
+        this.unpivot = unpivot;
     }
 
     public boolean isUseBrackets() {
@@ -113,6 +124,9 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
         }
         if (pivot != null) {
             retval.append(" ").append(pivot);
+        }
+        if (unpivot != null) {
+            retval.append(" ").append(unpivot);
         }
 
         return retval.toString();
