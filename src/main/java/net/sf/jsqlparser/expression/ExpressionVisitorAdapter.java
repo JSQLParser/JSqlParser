@@ -14,7 +14,19 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.ExpressionListItem;
+import net.sf.jsqlparser.statement.select.FunctionItem;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.Pivot;
+import net.sf.jsqlparser.statement.select.PivotVisitor;
+import net.sf.jsqlparser.statement.select.PivotXml;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItemVisitor;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVisitor, PivotVisitor, SelectItemVisitor {
 
@@ -456,7 +468,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             pivot.getInSelect().accept(selectVisitor);
         }
     }
-    
+
     @Override
     public void visit(UnPivot unpivot) {
         unpivot.accept(this);
