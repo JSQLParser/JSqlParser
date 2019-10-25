@@ -26,6 +26,7 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVisitor, PivotVisitor, SelectItemVisitor {
