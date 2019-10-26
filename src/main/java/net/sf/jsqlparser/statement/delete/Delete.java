@@ -19,6 +19,7 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.util.List;
+import static java.util.stream.Collectors.joining;
 
 public class Delete implements Statement {
 
@@ -88,9 +89,9 @@ public class Delete implements Statement {
 
         if (tables != null && tables.size() > 0) {
             b.append(" ");
-            for (Table t : tables) {
-                b.append(t.toString());
-            }
+            b.append(tables.stream()
+                    .map(t -> t.toString())
+                    .collect(joining(", ")));
         }
 
         b.append(" FROM ");

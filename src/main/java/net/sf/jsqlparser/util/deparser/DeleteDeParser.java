@@ -9,9 +9,9 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
-import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.select.Join;
 
@@ -39,9 +39,9 @@ public class DeleteDeParser {
     public void deParse(Delete delete) {
         buffer.append("DELETE");
         if (delete.getTables() != null && delete.getTables().size() > 0) {
-            for (Table table : delete.getTables()) {
-                buffer.append(" ").append(table.getFullyQualifiedName());
-            }
+            buffer.append(delete.getTables().stream()
+                    .map(t -> t.getFullyQualifiedName())
+                    .collect(joining(", ", " " , "")));
         }
         buffer.append(" FROM ").append(delete.getTable().toString());
 
