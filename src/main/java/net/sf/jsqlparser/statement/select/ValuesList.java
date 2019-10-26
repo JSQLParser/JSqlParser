@@ -54,6 +54,15 @@ public class ValuesList implements FromItem {
     public void setPivot(Pivot pivot) {
     }
 
+    @Override
+    public UnPivot getUnPivot() {
+        return null;
+    }
+
+    @Override
+    public void setUnPivot(UnPivot unpivot) {
+    }
+
     public MultiExpressionList getMultiExpressionList() {
         return multiExpressionList;
     }

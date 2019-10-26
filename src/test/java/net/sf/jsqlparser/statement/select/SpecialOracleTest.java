@@ -160,6 +160,7 @@ public class SpecialOracleTest {
             "order_by04.sql",
             "order_by05.sql",
             "order_by06.sql",
+            "pivot01.sql",
             "pivot02.sql",
             "pivot03.sql",
             "pivot05.sql",

@@ -33,6 +33,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     private Alias alias;
     private Pivot pivot;
+    private UnPivot unpivot;
     private MySQLIndexHint hint;
 
     public Table() {
@@ -148,6 +149,16 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         this.pivot = pivot;
     }
 
+    @Override
+    public UnPivot getUnPivot() {
+        return this.unpivot;
+    }
+
+    @Override
+    public void setUnPivot(UnPivot unpivot) {
+        this.unpivot = unpivot;
+    }
+
     public MySQLIndexHint getIndexHint() {
         return hint;
     }
@@ -161,6 +172,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return getFullyQualifiedName()
                 + ((alias != null) ? alias.toString() : "")
                 + ((pivot != null) ? " " + pivot : "")
+                + ((unpivot != null) ? " " + unpivot : "")
                 + ((hint != null) ? hint.toString() : "");
     }
 }

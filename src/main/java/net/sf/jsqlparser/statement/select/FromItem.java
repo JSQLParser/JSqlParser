@@ -23,4 +23,8 @@ public interface FromItem {
 
     void setPivot(Pivot pivot);
 
+    UnPivot getUnPivot();
+
+    void setUnPivot(UnPivot unpivot);
+
 }

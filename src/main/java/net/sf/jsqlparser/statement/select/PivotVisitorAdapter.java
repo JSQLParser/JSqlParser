@@ -20,4 +20,9 @@ public class PivotVisitorAdapter implements PivotVisitor {
     public void visit(PivotXml pivot) {
 
     }
+
+    @Override
+    public void visit(UnPivot unpivot) {
+
+    }
 }
