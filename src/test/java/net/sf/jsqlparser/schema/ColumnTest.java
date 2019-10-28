@@ -15,10 +15,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.lang.reflect.Modifier;
+
 import static org.junit.Assert.*;
 
 /**
- * 
  * @author tw
  */
 public class ColumnTest {
@@ -49,5 +51,15 @@ public class ColumnTest {
         Column myColumn = new Column(myTable, "myColumn");
         assertEquals("tb.myColumn", myColumn.toString());
     }
+
+    @Test
+    public void testColumnNotFinal() {
+        Class<Column> columnClass = Column.class;
+        assertFalse(
+                String.format("%s should not be final", columnClass.getCanonicalName()),
+                Modifier.isFinal(columnClass.getModifiers())
+        );
+    }
+
 
 }
