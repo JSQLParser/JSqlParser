@@ -1626,7 +1626,7 @@ public class SelectTest {
     }
 
     @Test
-    public void testStraightJoin() throws JSQLParserException {
+    public void testMySQLHintStraightJoin() throws JSQLParserException {
         String stmt = "SELECT col FROM tbl STRAIGHT_JOIN tbl2 ON tbl.id = tbl2.id";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }

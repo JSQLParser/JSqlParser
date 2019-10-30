@@ -36,7 +36,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         }
         buffer.append("SELECT ");
 
-        if (plainSelect.getStraightJoin()) {
+        if (plainSelect.getMySqlHintStraightJoin()) {
             buffer.append("STRAIGHT_JOIN ");
         }
 

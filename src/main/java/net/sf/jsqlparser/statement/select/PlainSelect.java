@@ -35,7 +35,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private Fetch fetch;
     private OptimizeFor optimizeFor;
     private Skip skip;
-    private boolean straightJoin;
+    private boolean mySqlHintStraightJoin;
     private First first;
     private Top top;
     private OracleHierarchicalExpression oracleHierarchical = null;
@@ -171,12 +171,12 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.skip = skip;
     }
 
-    public boolean getStraightJoin() {
-        return this.straightJoin;
+    public boolean getMySqlHintStraightJoin() {
+        return this.mySqlHintStraightJoin;
     }
 
-    public void setStraightJoin(boolean straightJoin) {
-        this.straightJoin = straightJoin;
+    public void setMySqlHintStraightJoin(boolean mySqlHintStraightJoin) {
+        this.mySqlHintStraightJoin = mySqlHintStraightJoin;
     }
 
     public First getFirst() {
@@ -306,7 +306,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         }
         sql.append("SELECT ");
 
-        if (this.straightJoin) {
+        if (this.mySqlHintStraightJoin) {
             sql.append("STRAIGHT_JOIN ");
         }
 
