@@ -1215,6 +1215,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testOrderByWithComplexExpression() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl tbl_alias ORDER BY tbl_alias.id = 1 DESC";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
     public void testTimestamp() throws JSQLParserException {
         String statement = "SELECT * FROM tab1 WHERE a > {ts '2004-04-30 04:05:34.56'}";
         Select select = (Select) parserManager.parse(new StringReader(statement));

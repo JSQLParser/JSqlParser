@@ -2046,7 +2046,7 @@ OrderByElement OrderByElement():
     Expression columnReference = null;
 }
 {
-    columnReference = SimpleExpression()
+    columnReference = Expression()
     [ ( <K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )) { orderByElement.setAscDescPresent(true); }  ]
     [<K_NULLS> ( 
         <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }  | 
