@@ -64,7 +64,7 @@ To help JSqlParser's development you are encouraged to provide
 Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 3.1
-
+* support for **cross apply**
 * allowed keyword **character** as object name
 * allowed keyword **size** as object name
 * introduced **FILTER** expression for window functions
