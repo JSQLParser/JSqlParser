@@ -121,6 +121,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_AND:"AND">
 |   <K_AND_OPERATOR:"&&">
 |   <K_ANY:"ANY">
+|   <K_APPLY:"APPLY">
 |   <K_AS: "AS">
 |   <K_ASC:"ASC">
 |   <K_BEGIN:"BEGIN">
@@ -1123,7 +1124,7 @@ Not all names should be allowed for aliases.
 String RelObjectNameWithoutValue() : 
 {    Token tk = null; }
 {
-    (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE>
+    (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE> | tk=<K_CHARACTER>
       | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> 
       | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE> 
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_XML>
@@ -1792,15 +1793,15 @@ FromItem ValuesList():
 
 LateralSubSelect LateralSubSelect():
 {
-    LateralSubSelect lateralSubSelect = new LateralSubSelect();
+    LateralSubSelect specialSubSelect;
     SubSelect subSelect = null;
 }
 {
-    <K_LATERAL>
+    <K_LATERAL> { specialSubSelect = new LateralSubSelect(); } 
      "(" subSelect=SubSelect() ")"
     {
-        lateralSubSelect.setSubSelect(subSelect);
-        return lateralSubSelect;
+        specialSubSelect.setSubSelect(subSelect);
+        return specialSubSelect;
     }
 }
 
@@ -1851,8 +1852,11 @@ Join JoinerExpression() #JoinerExpression:
     Column tableColumn;
     List<Column> columns = null;
     KSQLJoinWindow joinWindow = null;
+    
 }
 {
+    
+
     [
           <K_LEFT> { join.setLeft(true); } [ <K_SEMI> { join.setSemi(true); } | <K_OUTER> { join.setOuter(true); } ]
           |  ( <K_RIGHT> { join.setRight(true); }
@@ -1864,7 +1868,7 @@ Join JoinerExpression() #JoinerExpression:
     ]
 
           ( <K_JOIN> | "," { join.setSimple(true); } (<K_OUTER> { join.setOuter(true); } )?
-           | <K_STRAIGHT> { join.setStraight(true); } )
+           | <K_STRAIGHT> { join.setStraight(true); } | <K_APPLY> {join.setApply(true); } )
 
         right=FromItem()
 
@@ -3855,7 +3859,7 @@ ColDataType ColDataType():
     [LOOKAHEAD(2) "(" {tk2 =null;} ( (tk=<S_LONG> [ tk2=<K_BYTE> | tk2=<K_CHAR> ] | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> ) 
 		{ argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:"")); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
     [( "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
-    [<K_CHARACTER> <K_SET> tk=<S_IDENTIFIER> { colDataType.setCharacterSet(tk.image); } ]
+    [LOOKAHEAD(2) <K_CHARACTER> <K_SET> tk=<S_IDENTIFIER> { colDataType.setCharacterSet(tk.image); } ]
 
     {
         if (argumentsStringList.size() > 0)

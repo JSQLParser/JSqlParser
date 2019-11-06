@@ -1303,7 +1303,7 @@ public class SelectTest {
     public void testIssue235SimplifiedCase4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN (CASE WHEN (CASE WHEN (CASE WHEN (1) THEN 0 END) THEN 0 END) THEN 0 END) THEN 0 END FROM a");
     }
-    
+
     @Test
     public void testIssue862CaseWhenConcat() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT c1, CASE c1 || c2 WHEN '091' THEN '2' ELSE '1' END AS c11 FROM T2");
@@ -1865,7 +1865,7 @@ public class SelectTest {
     public void testAnalyticFunctionIssue670() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT last_value(some_column IGNORE NULLS) OVER (PARTITION BY some_other_column_1, some_other_column_2 ORDER BY some_other_column_3 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) column_alias FROM some_table");
     }
-    
+
     @Test
     public void testAnalyticFunctionFilterIssue866() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) FILTER (WHERE name = 'Raj') OVER (PARTITION BY name ) FROM table");
@@ -3107,8 +3107,7 @@ public class SelectTest {
     }
 
     /**
-     * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> can be parsed and
-     * deparsed
+     * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> can be parsed and deparsed
      */
     @Test
     public void testForUpdateWaitParseDeparse() throws JSQLParserException {
@@ -3116,8 +3115,8 @@ public class SelectTest {
     }
 
     /**
-     * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> correctly sets a
-     * {@link Wait} with the correct timeout value.
+     * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> correctly sets a {@link Wait} with the
+     * correct timeout value.
      */
     @Test
     public void testForUpdateWaitWithTimeout() throws JSQLParserException {
@@ -3867,54 +3866,70 @@ public class SelectTest {
     public void testLimitClauseDroppedIssue845_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM employee ORDER BY emp_id LIMIT 10 OFFSET 2");
     }
-    
+
     @Test
     public void testChangeKeywordIssue859() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM CHANGE.TEST");
     }
-    
+
     @Test
     public void testEndKeyword() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT end AS end_6 FROM mytable");
     }
-    
+
     @Test
     public void testStartKeyword() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT c0_.start AS start_5 FROM mytable");
     }
-    
+
     @Test
     public void testSizeKeywordIssue867() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT size FROM mytable");
     }
-    
+
     @Test
     public void testPartitionByWithBracketsIssue865() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT subject_id, student_id, sum(mark) OVER (PARTITION BY subject_id, student_id ) FROM marks");
         assertSqlCanBeParsedAndDeparsed("SELECT subject_id, student_id, sum(mark) OVER (PARTITION BY (subject_id, student_id) ) FROM marks");
     }
-    
+
     @Test
     public void testWithAsRecursiveIssue874() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("WITH rn AS (SELECT rownum rn FROM dual CONNECT BY level <= (SELECT max(cases) FROM t1)) SELECT pname FROM t1, rn WHERE rn <= cases ORDER BY pname");
     }
-    
+
     @Test
     public void testSessionKeywordIssue876() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ID_COMPANY FROM SESSION.COMPANY");
     }
-    
+
     @Test
     public void testWindowClauseWithoutOrderByIssue869() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT subject_id, student_id, mark, sum(mark) OVER (PARTITION BY (subject_id) ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) FROM marks");
     }
-    
+
     @Test
     public void testKeywordSizeIssue880() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT b.pattern_size_id, b.pattern_id, b.variation, b.measure_remark, b.pake_name, b.ident_size, CONCAT( GROUP_CONCAT(a.size) ) AS 'title', CONCAT( '[', GROUP_CONCAT( '{\"patternSizeDetailId\":', a.pattern_size_detail_id, ',\"patternSizeId\":', a.pattern_size_id, ',\"size\":\"', a.size, '\",\"sizeValue\":', a.size_value SEPARATOR '},' ), '}]' ) AS 'designPatternSizeDetailJson' FROM design_pattern_size_detail a LEFT JOIN design_pattern_size b ON a.pattern_size_id = b.pattern_size_id WHERE b.pattern_id = 792679713905573986 GROUP BY b.pake_name,b.pattern_size_id", true);
     }
-    
+
+    @Test
     public void testKeywordCharacterIssue884() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT Character, Duration FROM actor");
+    }
+
+    @Test
+    public void testCrossApplyIssue344() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select s.*, c.*, calc2.summary\n"
+                + "from student s\n"
+                + "join class c on s.class_id = c.id\n"
+                + "cross apply (\n"
+                + "  select s.first_name + ' ' + s.last_name + ' (' + s.sex + ')' as student_full_name\n"
+                + ") calc1\n"
+                + "cross apply (\n"
+                + "  select case c.some_styling_type when 'A' then c.name + ' - ' + calc1.student_full_name\n"
+                + "            when 'B' then calc1.student_full_name + ' - ' + c.name\n"
+                + "            else calc1.student_full_name end as summary\n"
+                + ") calc2", true);
     }
 }
