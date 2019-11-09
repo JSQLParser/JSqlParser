@@ -1281,6 +1281,8 @@ PlainSelect PlainSelect() #PlainSelect:
 {
     <K_SELECT>
 
+    [ <K_STRAIGHT> { plainSelect.setMySqlHintStraightJoin(true); } ]
+
     { plainSelect.setOracleHint(getOracleHint()); }
 
     [skip = Skip() { plainSelect.setSkip(skip);    } ]
