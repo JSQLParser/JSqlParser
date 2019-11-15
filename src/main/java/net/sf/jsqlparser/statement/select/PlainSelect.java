@@ -49,6 +49,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private boolean sqlNoCacheFlag = false;
     private String forXmlPath;
     private KSQLWindow ksqlWindow = null;
+    private boolean noWait = false;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -396,6 +397,10 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
                     // Wait's toString will do the formatting for us
                     sql.append(wait);
                 }
+
+                if (isNoWait()) {
+                    sql.append(" NOWAIT");
+                }
             }
             if (optimizeFor != null) {
                 sql.append(optimizeFor);
@@ -505,5 +510,13 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     public boolean getMySqlSqlNoCache() {
         return this.sqlNoCacheFlag;
+    }
+
+    public void setNoWait(boolean noWait) {
+        this.noWait = noWait;
+    }
+
+    public boolean isNoWait() {
+        return this.noWait;
     }
 }
