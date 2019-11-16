@@ -165,6 +165,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
                 // wait's toString will do the formatting for us
                 buffer.append(plainSelect.getWait());
             }
+            if (plainSelect.isNoWait()) {
+                buffer.append(" NOWAIT");
+            }
         }
         if (plainSelect.getOptimizeFor() != null) {
             deparseOptimizeFor(plainSelect.getOptimizeFor());

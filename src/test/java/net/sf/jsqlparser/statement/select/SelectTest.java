@@ -3136,6 +3136,11 @@ public class SelectTest {
         assertEquals("wait time should be 60", waitTime, 60L);
     }
 
+    @Test
+    public void testForUpdateNoWait() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable FOR UPDATE NOWAIT");
+    }
+
 //    @Test public void testSubSelectFailsIssue394() throws JSQLParserException {
 //        assertSqlCanBeParsedAndDeparsed("select aa.* , t.* from accenter.all aa, (select a.* from pacioli.emc_plan a) t");
 //    }
