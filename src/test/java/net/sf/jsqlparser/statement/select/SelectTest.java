@@ -20,6 +20,7 @@ import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import org.apache.commons.io.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -3931,5 +3932,20 @@ public class SelectTest {
                 + "            when 'B' then calc1.student_full_name + ' - ' + c.name\n"
                 + "            else calc1.student_full_name end as summary\n"
                 + ") calc2", true);
+    }
+
+    @Test
+    public void testWrongParseTreeIssue89() throws JSQLParserException {
+        Select unionQuery = (Select) CCJSqlParserUtil.parse("SELECT * FROM table1 UNION SELECT * FROM table2 ORDER BY col");
+        SetOperationList unionQueries = (SetOperationList) unionQuery.getSelectBody();
+
+        assertThat(unionQueries.getSelects())
+                .extracting(select -> (PlainSelect) select).allSatisfy(ps -> assertNull(ps.getOrderByElements()));
+
+        assertThat(unionQueries.getOrderByElements())
+                .isNotNull()
+                .hasSize(1)
+                .extracting(item -> item.toString())
+                .contains("col");
     }
 }

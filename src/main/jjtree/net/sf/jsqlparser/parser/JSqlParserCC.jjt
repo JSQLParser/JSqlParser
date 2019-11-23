@@ -1390,6 +1390,13 @@ SelectBody SetOperationList() #SetOperationList:
                 ((PlainSelect)selects.get(0)).setUseBrackets(true);           
             return selects.get(0);
         } else {
+            if (selects.size()>1 && selects.get(selects.size()-1) instanceof PlainSelect) {
+                PlainSelect ps = (PlainSelect)selects.get(selects.size()-1);
+                if (ps.getOrderByElements() != null) {
+                    list.setOrderByElements(ps.getOrderByElements());
+                    ps.setOrderByElements(null);
+                }
+            } 
             list.setBracketsOpsAndSelects(brackets,selects,operations);
             return list;
         }
