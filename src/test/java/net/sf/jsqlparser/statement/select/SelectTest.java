@@ -1638,8 +1638,14 @@ public class SelectTest {
     }
 
     @Test
-    public void testStraightJoin() throws JSQLParserException {
+    public void testMySQLHintStraightJoin() throws JSQLParserException {
         String stmt = "SELECT col FROM tbl STRAIGHT_JOIN tbl2 ON tbl.id = tbl2.id";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testStraightJoinInSelect() throws JSQLParserException {
+        String stmt = "SELECT STRAIGHT_JOIN col, col2 FROM tbl INNER JOIN tbl2 ON tbl.id = tbl2.id";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
@@ -2939,6 +2945,11 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST(contact_id AS SIGNED INTEGER) FROM contact WHERE contact_id = 20");
     }
 
+    @Test
+    public void testCastToSigned() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST(contact_id AS SIGNED) FROM contact WHERE contact_id = 20");
+    }
+
 //    @Test
 //    public void testWhereIssue240_notBoolean() {
 //        try {
@@ -3129,6 +3140,11 @@ public class SelectTest {
 
         long waitTime = wait.getTimeout();
         assertEquals("wait time should be 60", waitTime, 60L);
+    }
+
+    @Test
+    public void testForUpdateNoWait() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable FOR UPDATE NOWAIT");
     }
 
 //    @Test public void testSubSelectFailsIssue394() throws JSQLParserException {

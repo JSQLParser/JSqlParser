@@ -35,6 +35,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private Fetch fetch;
     private OptimizeFor optimizeFor;
     private Skip skip;
+    private boolean mySqlHintStraightJoin;
     private First first;
     private Top top;
     private OracleHierarchicalExpression oracleHierarchical = null;
@@ -48,6 +49,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private boolean sqlNoCacheFlag = false;
     private String forXmlPath;
     private KSQLWindow ksqlWindow = null;
+    private boolean noWait = false;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -168,6 +170,14 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     public void setSkip(Skip skip) {
         this.skip = skip;
+    }
+
+    public boolean getMySqlHintStraightJoin() {
+        return this.mySqlHintStraightJoin;
+    }
+
+    public void setMySqlHintStraightJoin(boolean mySqlHintStraightJoin) {
+        this.mySqlHintStraightJoin = mySqlHintStraightJoin;
     }
 
     public First getFirst() {
@@ -297,6 +307,10 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         }
         sql.append("SELECT ");
 
+        if (this.mySqlHintStraightJoin) {
+            sql.append("STRAIGHT_JOIN ");
+        }
+
         if (oracleHint != null) {
             sql.append(oracleHint).append(" ");
         }
@@ -382,6 +396,10 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
                 if (wait != null) {
                     // Wait's toString will do the formatting for us
                     sql.append(wait);
+                }
+
+                if (isNoWait()) {
+                    sql.append(" NOWAIT");
                 }
             }
             if (optimizeFor != null) {
@@ -492,5 +510,13 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     public boolean getMySqlSqlNoCache() {
         return this.sqlNoCacheFlag;
+    }
+
+    public void setNoWait(boolean noWait) {
+        this.noWait = noWait;
+    }
+
+    public boolean isNoWait() {
+        return this.noWait;
     }
 }

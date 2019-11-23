@@ -36,6 +36,10 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         }
         buffer.append("SELECT ");
 
+        if (plainSelect.getMySqlHintStraightJoin()) {
+            buffer.append("STRAIGHT_JOIN ");
+        }
+
         OracleHint hint = plainSelect.getOracleHint();
         if (hint != null) {
             buffer.append(hint).append(" ");
@@ -160,6 +164,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             if (plainSelect.getWait() != null) {
                 // wait's toString will do the formatting for us
                 buffer.append(plainSelect.getWait());
+            }
+            if (plainSelect.isNoWait()) {
+                buffer.append(" NOWAIT");
             }
         }
         if (plainSelect.getOptimizeFor() != null) {

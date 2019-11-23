@@ -133,7 +133,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>3.0</version>
+	<version>3.1</version>
 </dependency>
 ```
 

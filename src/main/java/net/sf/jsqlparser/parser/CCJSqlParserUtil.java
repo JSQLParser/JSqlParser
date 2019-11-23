@@ -40,6 +40,20 @@ public final class CCJSqlParserUtil {
         return parse(sql, null);
     }
 
+    /**
+     * Parses an sql statement while allowing via consumer to configure the used parser before.
+     * 
+     * For instance to activate SQLServer bracket quotation on could use:
+     * 
+     * {@code 
+     * CCJSqlParserUtil.parse("select * from [mytable]", parser -> parser.withSquareBracketQuotation(true));
+     * }
+     * 
+     * @param sql
+     * @param consumer
+     * @return
+     * @throws JSQLParserException 
+     */
     public static Statement parse(String sql, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(sql));
         if (consumer != null) {
