@@ -24,12 +24,16 @@ public class LimitDeparser {
         if (limit.isLimitNull()) {
             buffer.append("NULL");
         } else {
-            if (null != limit.getOffset()) {
-                buffer.append(limit.getOffset()).append(", ");
-            }
+            if (limit.isLimitAll()) {
+                buffer.append("ALL");
+            } else {
+                if (null != limit.getOffset()) {
+                    buffer.append(limit.getOffset()).append(", ");
+                }
 
-            if (null != limit.getRowCount()) {
-                buffer.append(limit.getRowCount());
+                if (null != limit.getRowCount()) {
+                    buffer.append(limit.getRowCount());
+                }
             }
         }
     }
