@@ -19,7 +19,7 @@ JSqlParser is dual licensed under **LGPL V2.1** or **Apache Software License, Ve
 
 Please provide feedback on:
 
-* API changes: extend visitor with return values (#901)
+* API changes: extend visitor with return values (https://github.com/JSQLParser/JSqlParser/issues/901)
 
 ## News
 * Released version **3.1** of JSqlParser
