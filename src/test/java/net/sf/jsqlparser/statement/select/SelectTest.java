@@ -1310,6 +1310,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testExpressionsInIntervalExpression() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT DATE_SUB(mydate, INTERVAL DAY(anotherdate) - 1 DAY) FROM tbl");
+    }
+
+    @Test
     public void testReplaceAsFunction() throws JSQLParserException {
         String statement = "SELECT REPLACE(a, 'b', c) FROM tab1";
         assertSqlCanBeParsedAndDeparsed(statement);
