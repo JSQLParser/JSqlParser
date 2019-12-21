@@ -11,11 +11,13 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class SelectExpressionItem extends ASTNodeAccessImpl implements SelectItem {
 
     private Expression expression;
+    private UserVariable userVariable;
     private Alias alias;
 
     public SelectExpressionItem() {
@@ -33,6 +35,14 @@ public class SelectExpressionItem extends ASTNodeAccessImpl implements SelectIte
         return expression;
     }
 
+    public UserVariable getUserVariable() {
+        return userVariable;
+    }
+
+    public void setUserVariable(UserVariable userVariable) {
+        this.userVariable = userVariable;
+    }
+
     public void setAlias(Alias alias) {
         this.alias = alias;
     }
@@ -48,6 +58,8 @@ public class SelectExpressionItem extends ASTNodeAccessImpl implements SelectIte
 
     @Override
     public String toString() {
-        return expression + ((alias != null) ? alias.toString() : "");
+        return  (userVariable != null ? userVariable.toString() + " = " : "") +
+                expression +
+                ((alias != null) ? alias.toString() : "");
     }
 }

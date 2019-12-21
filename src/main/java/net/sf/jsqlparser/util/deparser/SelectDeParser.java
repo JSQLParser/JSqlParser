@@ -187,6 +187,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
 
     @Override
     public void visit(SelectExpressionItem selectExpressionItem) {
+        if (selectExpressionItem.getUserVariable() != null) {
+            buffer.append(selectExpressionItem.getUserVariable()).append(" = ");
+        }
         selectExpressionItem.getExpression().accept(expressionVisitor);
         if (selectExpressionItem.getAlias() != null) {
             buffer.append(selectExpressionItem.getAlias().toString());

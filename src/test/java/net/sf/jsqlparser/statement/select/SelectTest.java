@@ -3981,4 +3981,9 @@ public class SelectTest {
                 .extracting(item -> item.toString())
                 .contains("col");
     }
+
+    @Test
+    public void testSqlServerAssignVariableIssue913() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT @var = 1");
+    }
 }

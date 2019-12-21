@@ -1449,10 +1449,16 @@ SelectExpressionItem SelectExpressionItem():
 {
     SelectExpressionItem selectExpressionItem = null;
     Expression expression = null;
+    UserVariable userVariable = null;
     Alias alias = null;
 }
 {
-     expression=SimpleExpression() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
+     [LOOKAHEAD(3) userVariable=UserVariable() "="]
+     expression=SimpleExpression() {
+         selectExpressionItem = new SelectExpressionItem();
+         selectExpressionItem.setExpression(expression);
+         selectExpressionItem.setUserVariable(userVariable);
+     }
              [alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
 }
 
