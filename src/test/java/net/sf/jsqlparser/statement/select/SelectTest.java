@@ -3994,20 +3994,13 @@ public class SelectTest {
     }
 
     @Test
-    @Ignore("Not working yet")
     public void testSqlServerTableVariableIssue911Case3() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("UPDATE @tableName set id=2");
+        assertSqlCanBeParsedAndDeparsed("UPDATE @tableName SET id = 2");
     }
 
     @Test
     @Ignore("Not working yet")
     public void testSqlServerTableVariableIssue911Case4() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("UPDATE @tableName set id=2");
-    }
-
-    @Test
-    @Ignore("Not working yet")
-    public void testSqlServerTableVariableIssue911Case5() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DELETE FROM @tableName");
     }
 }

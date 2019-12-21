@@ -652,6 +652,7 @@ Update Update():
 {
     Update update = new Update();
     Table table = null;
+    UserVariable userVariable = null;
     List<Join> startJoins = null;
     Expression where = null;
     Column tableColumn = null;
@@ -667,7 +668,11 @@ Update Update():
     List<SelectExpressionItem> returning = null;
 }
 {
-    <K_UPDATE> table=TableWithAlias()
+    <K_UPDATE> (
+        table=TableWithAlias()
+        |
+        userVariable=UserVariable()
+    )
         startJoins=JoinsList()
            
     <K_SET> 
@@ -706,6 +711,7 @@ Update Update():
         update.setColumns(columns);
         update.setExpressions(expList);
         update.setTable(table);
+        update.setUserVariable(userVariable);
         update.setStartJoins(startJoins);
         update.setFromItem(fromItem);
         update.setJoins(joins);
