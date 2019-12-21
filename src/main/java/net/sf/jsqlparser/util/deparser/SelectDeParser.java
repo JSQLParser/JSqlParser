@@ -242,7 +242,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
 
     @Override
     public void visit(UserVariable userVariable) {
-        buffer.append(userVariable.toString());
+        buffer.append(userVariable.getAtName());
         Alias alias = userVariable.getAlias();
         if (alias != null) {
             buffer.append(alias);

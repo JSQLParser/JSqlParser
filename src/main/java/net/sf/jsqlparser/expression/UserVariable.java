@@ -85,6 +85,13 @@ public class UserVariable extends ASTNodeAccessImpl implements Expression, FromI
 
     @Override
     public String toString() {
+        return getAtName()
+                + ((alias != null) ? alias.toString() : "")
+                + ((pivot != null) ? " " + pivot : "")
+                + ((unpivot != null) ? " " + unpivot : "");
+    }
+
+    public String getAtName() {
         return "@" + (doubleAdd ? "@" : "") + name;
     }
 }

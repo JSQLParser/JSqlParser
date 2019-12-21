@@ -3984,6 +3984,13 @@ public class SelectTest {
 
     @Test
     public void testSqlServerTableVariableIssue911() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT columnName FROM @tableName");
+        final String statement = "SELECT columnName FROM @tableName AS a";
+        assertSqlCanBeParsedAndDeparsed(statement);
+
+        UserVariable userVariable = (UserVariable) ((PlainSelect) ((Select) CCJSqlParserUtil.parse(statement)).getSelectBody()).getFromItem();
+        assertEquals(userVariable.getName(), "tableName");
+        assertEquals("a", userVariable.getAlias().getName());
+        assertNull(userVariable.getPivot());
+        assertNull(userVariable.getUnPivot());
     }
 }
