@@ -90,5 +90,6 @@ public class DeleteTest {
     @Ignore("Not working yet")
     public void testSqlServerTableVariableIssue911() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DELETE FROM @tableName");
+        assertSqlCanBeParsedAndDeparsed("DELETE t FROM @tableName as t");
     }
 }
