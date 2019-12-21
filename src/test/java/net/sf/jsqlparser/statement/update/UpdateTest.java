@@ -155,4 +155,9 @@ public class UpdateTest {
     public void testUpdateIssue750() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("update a,(select * from c) b set a.id=b.id where a.id=b.id", true);
     }
+
+    @Test
+    public void testSqlServerTableVariableIssue911() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE @tableName SET id = 2");
+    }
 }

@@ -13,6 +13,7 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
 import java.io.StringReader;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import net.sf.jsqlparser.JSQLParserException;
@@ -83,5 +84,11 @@ public class DeleteTest {
      @Test
     public void testDeleteMultiTableIssue878() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DELETE table1, table2 FROM table1, table2");
+    }
+
+    @Test
+    @Ignore("Not working yet")
+    public void testSqlServerTableVariableIssue911() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DELETE FROM @tableName");
     }
 }
