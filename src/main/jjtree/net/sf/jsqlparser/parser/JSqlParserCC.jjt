@@ -11,7 +11,7 @@
 options{
     IGNORE_CASE = true ;
     STATIC = false;
-    DEBUG_PARSER = false; 
+    DEBUG_PARSER = false;
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
     CACHE_TOKENS = false;
@@ -789,6 +789,7 @@ Insert Insert():
 {
     Insert insert = new Insert();
     Table table = null;
+    UserVariable userVariable = null;
     Column tableColumn = null;
     List<Column> columns = new ArrayList<Column>();
     List<Expression> primaryExpList = new ArrayList<Expression>();
@@ -819,7 +820,11 @@ Insert Insert():
         modifierPriority = InsertModifierPriority.valueOf(tk.image.toUpperCase());
     }]
     [<K_IGNORE>{ modifierIgnore = true; }]
-    [<K_INTO>] table=Table()
+    [<K_INTO>] (
+        table=Table()
+        |
+        userVariable=UserVariable()
+    )
   
     [ [<K_AS> { useAs = true; } ] name=RelObjectNameWithoutValue() { table.setAlias(new Alias(name,useAs)); }]
 
@@ -895,6 +900,7 @@ Insert Insert():
         insert.setUseSelectBrackets(useSelectBrackets);
         insert.setSelect(select);
         insert.setTable(table);
+        insert.setUserVariable(userVariable);
         if (columns.size() > 0)
             insert.setColumns(columns);
         insert.setUseDuplicate(useDuplicate);

@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.insert;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -24,6 +25,7 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 public class Insert implements Statement {
 
     private Table table;
+    private UserVariable userVariable;
     private List<Column> columns;
     private ItemsList itemsList;
     private boolean useValues = true;
@@ -38,7 +40,7 @@ public class Insert implements Statement {
     private boolean returningAllColumns = false;
 
     private List<SelectExpressionItem> returningExpressionList = null;
-    
+
     private boolean useSet = false;
     private List<Column> setColumns;
     private List<Expression> setExpressionList;
@@ -54,6 +56,14 @@ public class Insert implements Statement {
 
     public void setTable(Table name) {
         table = name;
+    }
+
+    public UserVariable getUserVariable() {
+        return userVariable;
+    }
+
+    public void setUserVariable(UserVariable userVariable) {
+        this.userVariable = userVariable;
     }
 
     public List<Column> getColumns() {
@@ -156,27 +166,27 @@ public class Insert implements Statement {
     public void setModifierIgnore(boolean modifierIgnore) {
         this.modifierIgnore = modifierIgnore;
     }
-    
+
     public void setUseSet(boolean useSet) {
         this.useSet = useSet;
     }
-    
+
     public boolean isUseSet() {
         return useSet;
     }
-    
+
     public void setSetColumns(List<Column> setColumns) {
         this.setColumns = setColumns;
     }
-    
+
     public List<Column> getSetColumns() {
         return setColumns;
     }
-    
+
     public void setSetExpressionList(List<Expression> setExpressionList) {
         this.setExpressionList = setExpressionList;
     }
-    
+
     public List<Expression> getSetExpressionList() {
         return setExpressionList;
     }
@@ -193,7 +203,13 @@ public class Insert implements Statement {
             sql.append("IGNORE ");
         }
         sql.append("INTO ");
-        sql.append(table).append(" ");
+        if (table != null) {
+            sql.append(table);
+        } else {
+            sql.append(userVariable);
+        }
+        sql.append(" ");
+
         if (columns != null) {
             sql.append(PlainSelect.getStringList(columns, true, true)).append(" ");
         }
@@ -215,7 +231,7 @@ public class Insert implements Statement {
                 sql.append(")");
             }
         }
-        
+
         if (useSet) {
             sql.append("SET ");
             for (int i = 0; i < getSetColumns().size(); i++) {
@@ -247,5 +263,5 @@ public class Insert implements Statement {
 
         return sql.toString();
     }
-    
+
 }

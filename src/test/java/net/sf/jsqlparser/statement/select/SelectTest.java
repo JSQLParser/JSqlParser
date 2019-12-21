@@ -3989,7 +3989,6 @@ public class SelectTest {
     }
 
     @Test
-    @Ignore("Not working yet")
     public void testSqlServerTableVariableIssue911Case2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO @tableName VALUES (1)");
     }
