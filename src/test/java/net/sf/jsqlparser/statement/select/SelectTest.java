@@ -3981,4 +3981,42 @@ public class SelectTest {
                 .extracting(item -> item.toString())
                 .contains("col");
     }
+
+    @Test
+    public void testSqlserverHintsIssue915Case1() throws JSQLParserException {
+        final String statement = "SELECT 1 FROM tableName1 WITH (NOLOCK)";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        Select select = (Select) CCJSqlParserUtil.parse(statement);
+        final List<SqlServerTableHint> hints = ((Table) ((PlainSelect) select.getSelectBody()).getFromItem()).getSqlServerHints();
+        assertEquals(1, hints.size());
+        assertEquals(SqlServerTableHintType.NOLOCK, hints.get(0).getHintType());
+        assertNull(hints.get(0).getIndexName());
+    }
+
+    @Test
+    public void testSqlserverHintsIssue915Case2() throws JSQLParserException {
+        final String statement = "SELECT 1 FROM tableName1 AS t1 WITH (INDEX(idx1)) JOIN tableName2 AS t2 WITH (NOLOCK) ON t1.id = t2.id";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        Select select = (Select) CCJSqlParserUtil.parse(statement);
+        final List<SqlServerTableHint> hints = ((Table) ((PlainSelect) select.getSelectBody()).getFromItem()).getSqlServerHints();
+        assertEquals(1, hints.size());
+        assertEquals(SqlServerTableHintType.INDEX, hints.get(0).getHintType());
+        assertEquals("idx1", hints.get(0).getIndexName());
+
+        final SqlServerTableHint hint2 = ((Table) ((PlainSelect) select.getSelectBody()).getJoins().get(0).getRightItem()).getSqlServerHints().get(0);
+        assertEquals(SqlServerTableHintType.NOLOCK, hint2.getHintType());
+    }
+
+    @Test
+    public void testSqlserverHintsIssue915Case3() throws JSQLParserException {
+        final String statement = "SELECT 1 FROM tableName1 WITH (INDEX(idx1), NOLOCK)";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        Select select = (Select) CCJSqlParserUtil.parse(statement);
+        final List<SqlServerTableHint> hints = ((Table) ((PlainSelect) select.getSelectBody()).getFromItem()).getSqlServerHints();
+        assertEquals(2, hints.size());
+        assertEquals(SqlServerTableHintType.INDEX, hints.get(0).getHintType());
+        assertEquals("idx1", hints.get(0).getIndexName());
+        assertEquals(SqlServerTableHintType.NOLOCK, hints.get(1).getHintType());
+        assertNull(hints.get(1).getIndexName());
+    }
 }
