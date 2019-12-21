@@ -1528,6 +1528,38 @@ MySQLIndexHint MySQLIndexHint():
 	}
 }
 
+List<SqlServerTableHint> SqlServerTableHints():
+{
+    SqlServerTableHint sqlServerTableHint = null;
+    List<SqlServerTableHint> sqlServerTableHints = new ArrayList();
+}
+{
+    <K_WITH> "("
+  	sqlServerTableHint = SqlServerTableHint() { sqlServerTableHints.add(sqlServerTableHint); }
+  	("," sqlServerTableHint = SqlServerTableHint() { sqlServerTableHints.add(sqlServerTableHint); })*
+    ")"
+    {
+        return sqlServerTableHints;
+    }
+}
+
+SqlServerTableHint SqlServerTableHint():
+{
+    String indexType= null;
+    String indexName= null;
+	SqlServerTableHint sqlServerTableHint = null;
+}
+{
+    (
+        <K_INDEX> "(" indexName = Identifier() {sqlServerTableHint = SqlServerTableHint.createIndexHint(SqlServerTableHintType.INDEX, indexName);} ")"
+        |
+        indexType = Identifier() {sqlServerTableHint = SqlServerTableHint.createHint(indexType);}
+    )
+    {
+        return sqlServerTableHint;
+    }
+}
+
 String Identifier():
 {
 	Token tk = null;
@@ -1715,6 +1747,7 @@ FromItem FromItem():
     UnPivot unpivot = null;
     Alias alias = null;
     MySQLIndexHint indexHint = null;
+    List<SqlServerTableHint> sqlServerTableHints = null;
 }
 {
     (
@@ -1753,6 +1786,12 @@ FromItem FromItem():
                 indexHint=MySQLIndexHint() {
                     if (fromItem instanceof Table)
 						((Table) fromItem).setHint(indexHint);
+                }
+                |
+                LOOKAHEAD(3)
+                sqlServerTableHints=SqlServerTableHints() {
+                    if (fromItem instanceof Table)
+						((Table) fromItem).setSqlServerHints(sqlServerTableHints);
                 }
             ]
         )
