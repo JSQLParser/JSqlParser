@@ -11,7 +11,7 @@
 options{
     IGNORE_CASE = true ;
     STATIC = false;
-    DEBUG_PARSER = false; 
+    DEBUG_PARSER = false;
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
     CACHE_TOKENS = false;
@@ -652,6 +652,7 @@ Update Update():
 {
     Update update = new Update();
     Table table = null;
+    UserVariable userVariable = null;
     List<Join> startJoins = null;
     Expression where = null;
     Column tableColumn = null;
@@ -667,7 +668,11 @@ Update Update():
     List<SelectExpressionItem> returning = null;
 }
 {
-    <K_UPDATE> table=TableWithAlias()
+    <K_UPDATE> (
+        table=TableWithAlias()
+        |
+        userVariable=UserVariable()
+    )
         startJoins=JoinsList()
            
     <K_SET> 
@@ -706,6 +711,7 @@ Update Update():
         update.setColumns(columns);
         update.setExpressions(expList);
         update.setTable(table);
+        update.setUserVariable(userVariable);
         update.setStartJoins(startJoins);
         update.setFromItem(fromItem);
         update.setJoins(joins);
@@ -789,6 +795,7 @@ Insert Insert():
 {
     Insert insert = new Insert();
     Table table = null;
+    UserVariable userVariable = null;
     Column tableColumn = null;
     List<Column> columns = new ArrayList<Column>();
     List<Expression> primaryExpList = new ArrayList<Expression>();
@@ -819,7 +826,11 @@ Insert Insert():
         modifierPriority = InsertModifierPriority.valueOf(tk.image.toUpperCase());
     }]
     [<K_IGNORE>{ modifierIgnore = true; }]
-    [<K_INTO>] table=Table()
+    [<K_INTO>] (
+        table=Table()
+        |
+        userVariable=UserVariable()
+    )
   
     [ [<K_AS> { useAs = true; } ] name=RelObjectNameWithoutValue() { table.setAlias(new Alias(name,useAs)); }]
 
@@ -895,6 +906,7 @@ Insert Insert():
         insert.setUseSelectBrackets(useSelectBrackets);
         insert.setSelect(select);
         insert.setTable(table);
+        insert.setUserVariable(userVariable);
         if (columns.size() > 0)
             insert.setColumns(columns);
         insert.setUseDuplicate(useDuplicate);
@@ -1742,6 +1754,8 @@ FromItem FromItem():
                 fromItem=TableFunction()
                 |
                 fromItem=Table()
+                |
+                fromItem=UserVariable()
                 |
                 fromItem=LateralSubSelect()
             )

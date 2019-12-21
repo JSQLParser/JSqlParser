@@ -48,7 +48,12 @@ public class UpdateDeParser implements OrderByVisitor {
     }
 
     public void deParse(Update update) {
-        buffer.append("UPDATE ").append(update.getTable());
+        buffer.append("UPDATE ");
+        if (update.getTable() != null) {
+            buffer.append(update.getTable());
+        }else {
+            buffer.append(update.getUserVariable());
+        }
         if (update.getStartJoins() != null) {
             for (Join join : update.getStartJoins()) {
                 if (join.isSimple()) {

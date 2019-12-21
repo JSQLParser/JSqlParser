@@ -9,19 +9,22 @@
  */
 package net.sf.jsqlparser.statement.update;
 
-import java.io.StringReader;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
-import static net.sf.jsqlparser.test.TestUtils.*;
+import org.junit.Test;
+
+import java.io.StringReader;
+
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
 public class UpdateTest {
 
@@ -154,5 +157,21 @@ public class UpdateTest {
     @Test
     public void testUpdateIssue750() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("update a,(select * from c) b set a.id=b.id where a.id=b.id", true);
+    }
+
+    @Test
+    public void testSqlServerTableVariableIssue911Case1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE @tableName SET id = 2");
+    }
+
+    @Test
+    public void testSqlServerTableVariableIssue911Case2() throws JSQLParserException {
+        final String statement = "UPDATE t SET id = 3 FROM @tableName AS t";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        final Update update = (Update) CCJSqlParserUtil.parse(statement);
+        final UserVariable userVariable = (UserVariable) update.getFromItem();
+        assertEquals("tableName", userVariable.getName());
+        assertEquals("@tableName", userVariable.getAtName());
+        assertEquals("t", userVariable.getAlias().getName());
     }
 }

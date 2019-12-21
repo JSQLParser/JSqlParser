@@ -9,12 +9,18 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.schema.Table;
 
 public class FromItemVisitorAdapter implements FromItemVisitor {
 
     @Override
     public void visit(Table table) {
+
+    }
+
+    @Override
+    public void visit(UserVariable userVariable) {
 
     }
 

@@ -308,4 +308,9 @@ public class InsertTest {
     public void testBackslashEscapingIssue827() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO my_table (my_column_1, my_column_2) VALUES ('my_value_1\\\\', 'my_value_2')");
     }
+
+    @Test
+    public void testSqlServerTableVariableIssue911() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO @tableName VALUES (1)");
+    }
 }

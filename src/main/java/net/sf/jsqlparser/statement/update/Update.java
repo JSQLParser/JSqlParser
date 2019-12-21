@@ -9,24 +9,20 @@
  */
 package net.sf.jsqlparser.statement.update;
 
-import java.util.List;
-
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.Limit;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.*;
+
+import java.util.List;
 
 public class Update implements Statement {
 
     private Table table;
+    private UserVariable userVariable;
     private Expression where;
     private List<Column> columns;
     private List<Expression> expressions;
@@ -56,6 +52,14 @@ public class Update implements Statement {
 
     public void setTable(Table table) {
         this.table = table;
+    }
+
+    public UserVariable getUserVariable() {
+        return userVariable;
+    }
+
+    public void setUserVariable(UserVariable userVariable) {
+        this.userVariable = userVariable;
     }
 
     public void setWhere(Expression expression) {
@@ -161,7 +165,11 @@ public class Update implements Statement {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("UPDATE ");
-        b.append(table);
+        if (table != null) {
+            b.append(table);
+        } else {
+            b.append(userVariable);
+        }
         if (startJoins != null) {
                 for (Join join : startJoins) {
                     if (join.isSimple()) {
