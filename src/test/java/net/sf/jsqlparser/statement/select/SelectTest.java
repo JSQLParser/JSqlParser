@@ -3984,6 +3984,11 @@ public class SelectTest {
 
     @Test
     public void testSqlServerAssignVariableIssue913() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT @var = 1");
+        final String statement = "SELECT @var = 1";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        Select select = (Select) CCJSqlParserUtil.parse(statement);
+        final SelectExpressionItem selectExpressionItem = (SelectExpressionItem) ((PlainSelect) select.getSelectBody()).getSelectItems().get(0);
+        assertEquals("1", ((LongValue) selectExpressionItem.getExpression()).getStringValue());
+        assertEquals("var", selectExpressionItem.getUserVariable().getName());
     }
 }
