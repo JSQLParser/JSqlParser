@@ -3981,4 +3981,34 @@ public class SelectTest {
                 .extracting(item -> item.toString())
                 .contains("col");
     }
+
+    @Test
+    public void testSqlServerTableVariableIssue911Case1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT columnName FROM @tableName");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM @tableName");
+    }
+
+    @Test
+    @Ignore("Not working yet")
+    public void testSqlServerTableVariableIssue911Case2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO @tableName VALUES (1)");
+    }
+
+    @Test
+    @Ignore("Not working yet")
+    public void testSqlServerTableVariableIssue911Case3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE @tableName set id=2");
+    }
+
+    @Test
+    @Ignore("Not working yet")
+    public void testSqlServerTableVariableIssue911Case4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE @tableName set id=2");
+    }
+
+    @Test
+    @Ignore("Not working yet")
+    public void testSqlServerTableVariableIssue911Case5() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DELETE FROM @tableName");
+    }
 }

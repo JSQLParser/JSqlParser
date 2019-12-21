@@ -1743,6 +1743,8 @@ FromItem FromItem():
                 |
                 fromItem=Table()
                 |
+                fromItem=UserVariable()
+                |
                 fromItem=LateralSubSelect()
             )
             [ alias=Alias() { fromItem.setAlias(alias); } ]

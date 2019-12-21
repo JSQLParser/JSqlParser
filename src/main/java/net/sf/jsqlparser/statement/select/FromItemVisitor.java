@@ -9,11 +9,14 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.schema.Table;
 
 public interface FromItemVisitor {
 
     void visit(Table tableName);
+
+    void visit(UserVariable userVariable);
 
     void visit(SubSelect subSelect);
 

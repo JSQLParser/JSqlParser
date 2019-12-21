@@ -241,6 +241,23 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     }
 
     @Override
+    public void visit(UserVariable userVariable) {
+        buffer.append(userVariable.toString());
+        Alias alias = userVariable.getAlias();
+        if (alias != null) {
+            buffer.append(alias);
+        }
+        Pivot pivot = userVariable.getPivot();
+        if (pivot != null) {
+            pivot.accept(this);
+        }
+        UnPivot unpivot = userVariable.getUnPivot();
+        if (unpivot != null) {
+            unpivot.accept(this);
+        }
+    }
+
+    @Override
     public void visit(Pivot pivot) {
         List<Column> forColumns = pivot.getForColumns();
         buffer.append(" PIVOT (")
