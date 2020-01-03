@@ -1323,6 +1323,7 @@ public class SelectTest {
     }
 
     @Test
+    @Ignore
     public void testExpressionsInIntervalExpression() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT DATE_SUB(mydate, INTERVAL DAY(anotherdate) - 1 DAY) FROM tbl");
     }
