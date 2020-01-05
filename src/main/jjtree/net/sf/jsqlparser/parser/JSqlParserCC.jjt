@@ -3308,7 +3308,7 @@ WhenClause WhenThenSearchCondition():
 }
 {
     <K_WHEN> (LOOKAHEAD(Expression()) whenExp=Expression() | whenExp=SimpleExpression()) 
-        <K_THEN> thenExp=Condition()
+        <K_THEN> thenExp=Expression()
     {
        whenThen.setWhenExpression(whenExp);
        whenThen.setThenExpression(thenExp);

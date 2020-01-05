@@ -3982,4 +3982,18 @@ public class SelectTest {
                 .extracting(item -> item.toString())
                 .contains("col");
     }
+
+    @Test
+    public void testCaseWithComplexWhenExpression() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT av.app_id, MAX(av.version_no) AS version_no\n"
+                + "FROM app_version av\n"
+                + "JOIN app_version_policy avp ON av.id = avp.app_version_id\n"
+                + "WHERE av.`status` = 1\n"
+                + "AND CASE \n"
+                + "WHEN avp.area IS NOT NULL\n"
+                + "AND length(avp.area) > 0 THEN avp.area LIKE CONCAT('%,', '12', ',%')\n"
+                + "OR avp.area LIKE CONCAT('%,', '13', ',%')\n"
+                + "ELSE 1 = 1\n"
+                + "END\n", true);
+    }
 }
