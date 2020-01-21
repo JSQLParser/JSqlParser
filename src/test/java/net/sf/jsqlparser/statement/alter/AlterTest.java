@@ -388,4 +388,9 @@ public class AlterTest {
     public void testIssue633_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)");
     }
+    
+    @Test
+    public void testAlterOnlyIssue928() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE ONLY categories ADD CONSTRAINT pk_categories PRIMARY KEY (category_id)");
+    }
 }

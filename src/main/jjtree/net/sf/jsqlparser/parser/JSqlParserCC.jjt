@@ -4378,7 +4378,7 @@ Alter AlterTable():
 
 }
 {
-    <K_ALTER> <K_TABLE> table=Table() { alter.setTable(table); }
+    <K_ALTER> <K_TABLE> [ <K_ONLY> { alter.setUseOnly(true); } ] table=Table() { alter.setTable(table); }
      ( alterExp=AlterExpression() { alter.addAlterExpression(alterExp); }
        ("," alterExp=AlterExpression() { alter.addAlterExpression(alterExp); } )*
      )
