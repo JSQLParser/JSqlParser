@@ -11,7 +11,7 @@
 options{
     IGNORE_CASE = true ;
     STATIC = false;
-    DEBUG_PARSER = false; 
+    DEBUG_PARSER = true; 
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
     CACHE_TOKENS = false;
@@ -3688,22 +3688,6 @@ CreateTable CreateTable():
         ("("
         coldef = ColumnDefinition()
 
-        /*
-        colDataType = ColDataType()
-        {
-            columnSpecs = new ArrayList();
-        }
-
-        ( parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
-
-        {
-            coldef = new ColumnDefinition();
-            coldef.setColumnName(columnName);
-            coldef.setColDataType(colDataType);
-            if (columnSpecs.size() > 0)
-                coldef.setColumnSpecStrings(columnSpecs);
-            columnDefinitions.add(coldef);
-        }*/
         { columnDefinitions.add(coldef); }
 
         (
@@ -3862,7 +3846,8 @@ ColDataType ColDataType():
     ( 
 		(tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 		| tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_DATE_LITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> )  
+		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_DATE_LITERAL> | tk=<K_XML> | tk=<K_INTERVAL> 
+			| tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> | tk=<K_BINARY> )  
 				{ colDataType.setDataType(tk.image); }
 		| tk=<K_UNSIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
 		| LOOKAHEAD(2) tk=<K_SIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
