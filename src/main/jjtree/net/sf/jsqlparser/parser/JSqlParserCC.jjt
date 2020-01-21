@@ -4224,8 +4224,8 @@ AlterExpression AlterExpression():
             [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }])
         |
 //following two choices regarding foreign keys should be merged
-        ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); }
-             <K_REFERENCES> tk=<S_IDENTIFIER> columnNames=ColumnsNamesList()
+        ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); columnNames = null; }
+             <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
                     { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
             [<K_ON> <K_DELETE>
                             (<K_CASCADE> { alterExp.setOnDeleteCascade(true); }
@@ -4243,8 +4243,9 @@ AlterExpression AlterExpression():
                     fkIndex.setName(sk3);
                     fkIndex.setType(tk.image + " " + tk2.image);
                     fkIndex.setColumnsNames(columnNames);
+					columnNames = null;
                 }
-                <K_REFERENCES> fkTable=Table() columnNames=ColumnsNamesList()
+                <K_REFERENCES> fkTable=Table() [ columnNames=ColumnsNamesList() ]
                 {
                     fkIndex.setTable(fkTable);
                     fkIndex.setReferencedColumnNames(columnNames);

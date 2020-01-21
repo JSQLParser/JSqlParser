@@ -68,6 +68,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 * allow **ON** as a value in a set statement (`SET myvalue = ON`)
 * support for **ALTER TABLE ONLY mytable ... **
+* allow foreign key definition in alter statements without referenced columns specification
 
 ## Extensions of JSqlParser releases
 
