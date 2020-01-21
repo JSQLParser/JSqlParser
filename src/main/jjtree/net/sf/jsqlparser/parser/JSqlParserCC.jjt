@@ -3102,7 +3102,7 @@ IntervalExpression IntervalExpression() : {
 {
     
 { interval = new IntervalExpression(); }
-    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | expr = Column()) 
+    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | expr = Column())
     { 
         if (expr != null) {
             if (signed) expr = new SignedExpression('-', expr);
@@ -3308,7 +3308,7 @@ WhenClause WhenThenSearchCondition():
 }
 {
     <K_WHEN> (LOOKAHEAD(Expression()) whenExp=Expression() | whenExp=SimpleExpression()) 
-        <K_THEN> thenExp=Condition()
+        <K_THEN> thenExp=Expression()
     {
        whenThen.setWhenExpression(whenExp);
        whenThen.setThenExpression(thenExp);
