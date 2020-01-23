@@ -4133,6 +4133,24 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     }
 }
 
+AlterExpression.ColumnDropNotNull AlterExpressionColumnDropNotNull():
+{
+    String columnName = null;
+    boolean withNot = false;
+    ColDataType dataType = null;
+    List<String> columnSpecs = null;
+    List<String> parameter = null;
+}
+{
+    columnName = RelObjectName()
+    <K_DROP>
+    (<K_NOT> { withNot = true; } )?
+    <K_NULL>
+    {
+        return new AlterExpression.ColumnDropNotNull(columnName, withNot);
+    }
+}
+
 List<ConstraintState> AlterExpressionConstraintState():
 {
     List<ConstraintState> retval = new ArrayList<ConstraintState>();
@@ -4184,6 +4202,7 @@ AlterExpression AlterExpression():
     Index index = null;
     Table fkTable = null;
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
+    AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
 }
 {
 
@@ -4211,7 +4230,9 @@ AlterExpression AlterExpression():
         )
 		|
         ( (LOOKAHEAD(2) <K_COLUMN>)?
-            alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
+            (LOOKAHEAD(2) alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
+            |
+            alterExpressionColumnDropNotNull = AlterExpressionColumnDropNotNull() { alterExp.addColDropNotNull( alterExpressionColumnDropNotNull); })
         )
         |
         (

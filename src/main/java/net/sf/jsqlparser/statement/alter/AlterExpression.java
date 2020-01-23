@@ -26,6 +26,7 @@ public class AlterExpression {
     //private ColDataType dataType;
 
     private List<ColumnDataType> colDataTypeList;
+    private List<ColumnDropNotNull> columnDropNotNullList;
 
     private List<String> pkColumns;
     private List<String> ukColumns;
@@ -115,6 +116,13 @@ public class AlterExpression {
         }
         colDataTypeList.add(columnDataType);
     }
+    
+    public void addColDropNotNull(ColumnDropNotNull columnDropNotNull) {
+        if (columnDropNotNullList == null) {
+            columnDropNotNullList = new ArrayList<ColumnDropNotNull>();
+        }
+        columnDropNotNullList.add(columnDropNotNull);
+    }
 
     public List<String> getFkSourceColumns() {
         return fkSourceColumns;
@@ -196,6 +204,10 @@ public class AlterExpression {
         this.constraints = constraints;
     }
 
+    public List<ColumnDropNotNull> getColumnDropNotNullList() {
+        return columnDropNotNullList;
+    }
+
     public void addParameters(String... params) {
         if (parameters == null) {
             parameters = new ArrayList<String>();
@@ -245,6 +257,21 @@ public class AlterExpression {
             }
             b.append(PlainSelect.getStringList(colDataTypeList));
             if (colDataTypeList.size() > 1) {
+                b.append(")");
+            }
+        } else if ( getColumnDropNotNullList() != null) {
+            if (operation == AlterOperation.CHANGE) {
+                if (optionalSpecifier != null) {
+                    b.append(optionalSpecifier).append(" ");
+                }
+                b.append(columnOldName).append(" ");
+            } else if (columnDropNotNullList.size() > 1) {
+                b.append("(");
+            } else {
+                b.append("COLUMN ");
+            }
+            b.append(PlainSelect.getStringList(columnDropNotNullList));
+            if (columnDropNotNullList.size() > 1) {
                 b.append(")");
             }
         } else if (constraintName != null) {
@@ -335,4 +362,28 @@ public class AlterExpression {
         }
     }
 
+    public static class ColumnDropNotNull {
+
+        private final String columnName;
+        private final boolean withNot;
+
+        public ColumnDropNotNull(String columnName, boolean withNot) {
+            this.columnName = columnName;
+            this.withNot = withNot;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+        public boolean isWithNot() {
+            return withNot;
+        }
+
+        @Override
+        public String toString() {
+            return columnName + " DROP" +
+                     (withNot ? " NOT " : " ") + "NULL";
+        }
+    }
 }

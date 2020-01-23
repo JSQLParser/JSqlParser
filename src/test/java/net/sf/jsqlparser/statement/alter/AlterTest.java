@@ -388,4 +388,9 @@ public class AlterTest {
     public void testIssue633_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)");
     }
+    
+    @Test
+    public void testAlterTableAlterColumnDropNotNullIssue918() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE \"user_table_t\" ALTER COLUMN name DROP NOT NULL");
+    }
 }
