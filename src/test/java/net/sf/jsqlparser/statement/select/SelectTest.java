@@ -3998,8 +3998,44 @@ public class SelectTest {
     }
     
     @Test
-    public void testSessionKeywordIssue932() throws JSQLParserException {
+    public void testOrderKeywordIssue932() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT order FROM tmp3");
         assertSqlCanBeParsedAndDeparsed("SELECT tmp3.order FROM tmp3");
     }
+    
+    @Test
+    public void testTableFunctionInExprIssue923() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE func(a) IN func(b)");
+    }
+    
+    @Test
+    public void testTableFunctionInExprIssue923_2() throws JSQLParserException, IOException {
+        String stmt = IOUtils.toString(
+                SelectTest.class.getResourceAsStream("large-sql-issue-923.txt"), "UTF-8");
+        assertSqlCanBeParsedAndDeparsed(stmt, true);
+    }
+    
+    @Test
+    public void testTableFunctionInExprIssue923_3() throws JSQLParserException, IOException {
+        String stmt = IOUtils.toString(
+                SelectTest.class.getResourceAsStream("large-sql-issue-923-2.txt"), "UTF-8");
+        assertSqlCanBeParsedAndDeparsed(stmt, true);
+    }
+    
+    @Test
+    public void testTableFunctionInExprIssue923_4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '1' THEN COALESCE(CLAIM_STATUS2,CLAIM_STATUS1) ELSE NULL END) AS DUPE_1_KINAL_CLAIM_STATUS");
+    }
+    
+    @Test
+    public void testTableFunctionInExprIssue923_5() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '1' THEN COALESCE(CLAIM_STATUS2,CLAIM_STATUS1) ELSE NULL END");
+    }
+    
+    @Test
+    public void testTableFunctionInExprIssue923_6() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE func(a) IN '1'");
+    }
+    
+    
 }

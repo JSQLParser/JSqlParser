@@ -1,0 +1,660 @@
+WITH 
+---------------------------------------------------------------------------------------------------------
+AP_CLAIMS AS 
+ (
+      SELECT CLM.INTERNAL_ID AS CLAIM_ID,
+      AP.CLAIM_ID AS CLM,
+      ADJST_CLM_ID,
+      TOT_BILLED_AMT,
+      TOT_NET_PAYABLE,
+      ENTRY_DATE,
+      ORIG_REV_CLM_ID,
+      ORIG_ADJST_CLM_ID,
+      EPM.PAYOR_NAME,
+      CKR.CHECK_NUMBER,
+      CKR.CHECK_DATE,
+      
+      COALESCE(CLM_EOB.CLM_CD_1,'') ||CASE WHEN CLM_EOB.CLM_CD_2 IS NULL OR CLM_EOB.CLM_CD_2='' THEN '' ELSE ', ' END ||
+      COALESCE(CLM_EOB.CLM_CD_2,'') ||CASE WHEN CLM_EOB.CLM_CD_3 IS NULL OR CLM_EOB.CLM_CD_3='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_3,'') || CASE WHEN CLM_EOB.CLM_CD_4 IS NULL OR CLM_EOB.CLM_CD_4='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_4,'') ||CASE WHEN CLM_EOB.CLM_CD_5 IS NULL OR CLM_EOB.CLM_CD_5='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_5,'') ||CASE WHEN CLM_EOB.CLM_CD_6 IS NULL OR CLM_EOB.CLM_CD_6='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_6,'') ||CASE WHEN CLM_EOB.CLM_CD_7 IS NULL OR CLM_EOB.CLM_CD_7='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_7,'') ||CASE WHEN CLM_EOB.CLM_CD_8 IS NULL OR CLM_EOB.CLM_CD_8='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_8,'') ||CASE WHEN CLM_EOB.CLM_CD_9 IS NULL OR CLM_EOB.CLM_CD_9='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_9,'') ||CASE WHEN CLM_EOB.CLM_CD_10 IS NULL OR CLM_EOB.CLM_CD_10='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_10,'') AS CLM_EOB,
+      
+      MIN_EOB_DATE,
+       CASE AP.STATUS_C WHEN 1 THEN 'NEW' WHEN 2 THEN 'PENDING'WHEN 3 THEN 'DENIED'WHEN 4 THEN 'CLEAN'WHEN 5 THEN 'VOID' ELSE ' ' END AS CLAIM_STATUS,
+      CKR.AP_RUN_DATE,
+      MAILED_DATE AS CHK_MAIL_DATE,
+      AP2.PENALTY_AMT ,
+      AP2.INTEREST_TOTAL 
+      FROM AP_CLAIM AP 
+       INNER JOIN CLM_MAP CLM ON AP.CLAIM_ID = CLM.CID
+       LEFT OUTER JOIN AP_CLAIM_CHECK DOFR ON AP.CLAIM_ID = DOFR.CLAIM_ID /*1-9-2019 Matt: Switched to AP_CLAIM_CHECK for Epic 2018 upgrade */
+       LEFT OUTER JOIN AP_CHECK CKR ON DOFR.CHECK_ID = CKR.CHECK_ID 
+       LEFT OUTER JOIN ANTHEM_EPM EPM ON EPM.PAYOR_ID = AP.PAYOR_ID
+       LEFT JOIN AP_CLAIM_2 AP2 ON AP.CLAIM_ID = AP2.CLAIM_ID
+       LEFT OUTER JOIN 
+                               (
+                                    SELECT CEOB.CLAIM_ID,
+                                    'Y' AS CLM_LVL_PND,
+                                    MIN(CEOB.ENTRY_DATE) AS MIN_EOB_DATE,
+                                    MAX(CASE WHEN CEOB.LINE=1 THEN EOB.MNEMONIC ELSE NULL END) AS CLM_CD_1,
+                                    MAX(CASE WHEN CEOB.LINE=2 THEN EOB.MNEMONIC ELSE NULL END) AS CLM_CD_2,
+                                    MAX(CASE WHEN CEOB.LINE=3 THEN EOB.MNEMONIC ELSE NULL END) AS CLM_CD_3,
+                                    MAX( CASE WHEN CEOB.LINE=4 THEN EOB.MNEMONIC ELSE NULL END) AS CLM_CD_4,
+                                    MAX(CASE WHEN CEOB.LINE=5 THEN EOB.MNEMONIC ELSE NULL END) AS CLM_CD_5,
+                                    MAX(CASE WHEN CEOB.LINE=6 THEN EOB.MNEMONIC ELSE NULL END) AS CLM_CD_6,
+                                    MAX(CASE WHEN CEOB.LINE=7 THEN EOB.MNEMONIC ELSE NULL END) AS CLM_CD_7,
+                                    MAX(CASE WHEN CEOB.LINE=8 THEN EOB.MNEMONIC ELSE NULL END) AS CLM_CD_8,
+                                    MAX(CASE WHEN CEOB.LINE=9 THEN EOB.MNEMONIC ELSE NULL END) AS CLM_CD_9,
+                                    MAX(CASE WHEN CEOB.LINE=10 THEN EOB.MNEMONIC ELSE NULL END) AS CLM_CD_10
+                                    
+                                    FROM
+                                    AP_CLAIM_EOB_CD CEOB 
+                                    LEFT OUTER JOIN ANTHEM_EOB_CODE EOB ON CEOB.EOB_CODE_ID=EOB.EOB_CODE_ID
+                                    WHERE EOB.CODE_TYPE_C = 2
+                                    GROUP BY CEOB.CLAIM_ID
+                              )CLM_EOB ON CLM_EOB.CLAIM_ID = AP.CLAIM_ID --WHERE CLM.INTERNAL_ID IN (2350795,3416519,4239160,6151259)
+      WHERE
+	NVL(DOFR.SERVICE_COUNT,0)  >  0 /*1-9-2019 Matt: Switched to AP_CLAIM_CHECK for Epic 2018 upgrade */
+       GROUP BY 
+	   CLM.INTERNAL_ID,
+      AP.CLAIM_ID,
+      ADJST_CLM_ID,
+      TOT_BILLED_AMT,
+      TOT_NET_PAYABLE,
+      ENTRY_DATE,
+      ORIG_REV_CLM_ID,
+      ORIG_ADJST_CLM_ID,
+      EPM.PAYOR_NAME,
+      CKR.CHECK_NUMBER,
+      CKR.CHECK_DATE,
+      
+      COALESCE(CLM_EOB.CLM_CD_1,'') ||CASE WHEN CLM_EOB.CLM_CD_2 IS NULL OR CLM_EOB.CLM_CD_2='' THEN '' ELSE ', ' END ||
+      COALESCE(CLM_EOB.CLM_CD_2,'') ||CASE WHEN CLM_EOB.CLM_CD_3 IS NULL OR CLM_EOB.CLM_CD_3='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_3,'') || CASE WHEN CLM_EOB.CLM_CD_4 IS NULL OR CLM_EOB.CLM_CD_4='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_4,'') ||CASE WHEN CLM_EOB.CLM_CD_5 IS NULL OR CLM_EOB.CLM_CD_5='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_5,'') ||CASE WHEN CLM_EOB.CLM_CD_6 IS NULL OR CLM_EOB.CLM_CD_6='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_6,'') ||CASE WHEN CLM_EOB.CLM_CD_7 IS NULL OR CLM_EOB.CLM_CD_7='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_7,'') ||CASE WHEN CLM_EOB.CLM_CD_8 IS NULL OR CLM_EOB.CLM_CD_8='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_8,'') ||CASE WHEN CLM_EOB.CLM_CD_9 IS NULL OR CLM_EOB.CLM_CD_9='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_9,'') ||CASE WHEN CLM_EOB.CLM_CD_10 IS NULL OR CLM_EOB.CLM_CD_10='' THEN '' ELSE ', 'END ||
+      COALESCE(CLM_EOB.CLM_CD_10,''),
+      
+      MIN_EOB_DATE,
+       CASE AP.STATUS_C WHEN 1 THEN 'NEW' WHEN 2 THEN 'PENDING'WHEN 3 THEN 'DENIED'WHEN 4 THEN 'CLEAN'WHEN 5 THEN 'VOID' ELSE ' ' END,
+      CKR.AP_RUN_DATE,
+      MAILED_DATE,
+      AP2.PENALTY_AMT ,
+      AP2.INTEREST_TOTAL 
+
+)
+----------------------------------------------------------------------------------------------------- 
+,DUPROW AS 
+
+(
+            SELECT 
+            CLM.INTERNAL_ID AS ORIG_INTERNAL_ID,
+             AP.CLAIM_ID AS ORIG_CLAIM_ID,
+             AP.DATE_RECEIVED AS ORIG_DATE_RECEIVED,  ---ADD FIELD HERE
+             AP2.INTEREST_TOTAL,
+            AP2.PENALTY_AMT,
+            REF1.EXTERNAL_ID_NUM AS AUTH_NUM,
+            LOB.LOB_NAME,
+             AP.SERV_DATE,
+             AP.TOT_BILLED_AMT,
+             AP.TOT_NET_PAYABLE,
+             OAJ.CLM_EOB AS TRUE_ORIG_EOB,
+             ADJ.CLM_EOB AS ORIG_EOB,
+             ADJ2.CLM_EOB AS AJ1_EOB,
+             ADJ3.CLM_EOB AS AJ2_EOB,
+             ADJ4.CLM_EOB AS AJ3_EOB,
+             ADJ5.CLM_EOB AS AJ4_EOB,
+             ADJ6.CLM_EOB AS AJ5_EOB,
+             OAJ.MIN_EOB_DATE AS TRUE_ORIG_EOB_DATE,
+             ADJ.MIN_EOB_DATE AS AJ1_MIN_EOB_DATE,
+             ADJ2.MIN_EOB_DATE AS AJ2_MIN_EOB_DATE,
+             ADJ3.MIN_EOB_DATE AS AJ3_MIN_EOB_DATE,
+           ADJ4.MIN_EOB_DATE AS AJ4_MIN_EOB_DATE,
+             ADJ5.MIN_EOB_DATE AS AJ5_MIN_EOB_DATE,
+              CASE AP.STATUS_C WHEN 1 THEN 'NEW' WHEN 2 THEN 'PENDING'WHEN 3 THEN 'DENIED'WHEN 4 THEN 'CLEAN'WHEN 5 THEN 'VOID' ELSE ' ' END AS STATUS_C,
+             VEN.VENDOR_NAME,
+             COALESCE ( ADJ5.CLAIM_STATUS,ADJ4.CLAIM_STATUS,ADJ3.CLAIM_STATUS,ADJ2.CLAIM_STATUS ,ADJ.CLAIM_STATUS, (CASE AP.STATUS_C WHEN 1 THEN 'NEW' WHEN 2 THEN 'PENDING'WHEN 3 THEN 'DENIED'WHEN 4 THEN 'CLEAN'WHEN 5 THEN 'VOID' ELSE ' ' END)) AS KINAL_CLAIM_STATUS,
+             COALESCE(ADJ5.TOT_NET_PAYABLE, ADJ4.TOT_NET_PAYABLE, ADJ3.TOT_NET_PAYABLE, ADJ2.TOT_NET_PAYABLE, ADJ.TOT_NET_PAYABLE, AP.TOT_NET_PAYABLE) AS KINAL_TOT_NET_PAYBALE,
+             
+             COALESCE(ADJ5.PENALTY_AMT, ADJ4.PENALTY_AMT, ADJ3.PENALTY_AMT, ADJ2.PENALTY_AMT, ADJ.PENALTY_AMT, AP2.PENALTY_AMT) AS KINAL_PENALTY_AMT,
+             COALESCE(ADJ5.INTEREST_TOTAL, ADJ4.INTEREST_TOTAL, ADJ3.INTEREST_TOTAL, ADJ2.INTEREST_TOTAL, ADJ.INTEREST_TOTAL, AP2.INTEREST_TOTAL) AS KINAL_INTEREST_AMT,
+             DUP.INTERNAL_ID AS DUPE_INTERNAL_ID,
+             DUP.CLAIM_ID AS DUPE_CLAIM_ID,
+             CRM,
+             CRM_DATE,
+             CRM_TOPIC,
+             CRM_SUBTOPIC,
+             ROW_NUMBER() OVER(PARTITION BY CLM.INTERNAL_ID ORDER BY DUP.INTERNAL_ID ) AS ROW_NUM
+             FROM AP_CLAIM AP
+              INNER JOIN CLM_MAP CLM ON AP.CLAIM_ID = CLM.CID AND AP.ORIG_ADJST_CLM_ID IS NULL AND AP.ORIG_REV_CLM_ID IS NULL 
+             INNER JOIN PATIENT PAT ON PAT.PAT_ID = AP.PAT_ID
+             INNER JOIN AP_CLAIM_2 AP2 ON AP2.CLAIM_ID = AP.CLAIM_ID
+             LEFT OUTER JOIN ANTHEM_VENDOR VEN ON VEN.VENDOR_ID = AP.VENDOR_ID -- ADD JOIN HERE
+             LEFT OUTER JOIN CLAIM_REFERRAL_LK REF ON REF.CLAIM_ID = AP.CLAIM_ID AND REF.LINE = 1  
+            LEFT OUTER JOIN REFERRAL REF1 ON REF1.REFERRAL_ID = REF.REFERRAL_ID
+             LEFT OUTER JOIN ANTHEM_LOB LOB ON LOB.LOB_ID = AP.CLM_LOB_ID
+             LEFT OUTER JOIN (
+                                                             SELECT A.SUBJ_CLAIM_ID,
+                                                            MAX(CASE WHEN ROWNUMB = 1 THEN CRM END) AS CRM,
+                                                             MAX(CASE WHEN ROWNUMB = 1 THEN ENTRY_DATE ELSE NULL END) AS CRM_DATE,
+                                                             MAX(CASE WHEN ROWNUMB = 1 THEN NAME ELSE NULL    END) AS CRM_TOPIC,
+                                                             MAX( CASE WHEN ROWNUMB = 1 THEN SUBNAME ELSE NULL END) AS CRM_SUBTOPIC
+                                                                      FROM( SELECT CSS.SUBJ_CLAIM_ID,
+                                                                                         CSS.ENTRY_DATE,
+                                                                                        TOPIC.NAME,
+                                                                                         SUB.NAME AS SUBNAME,
+                                                                                         NMAP.INTERNAL_ID AS CRM,
+                                                                                         ROW_NUMBER() OVER (PARTITION BY CSS.SUBJ_CLAIM_ID
+                                                                                         ORDER BY RECORD_ENTRY_TIME) AS ROWNUMB
+                                                                                     FROM CUST_SERVICE CSS 
+                                                                                     LEFT OUTER JOIN ZC_NCS_TOPIC TOPIC ON TOPIC.TOPIC_C = CSS.TOPIC_C
+                                                                                     LEFT OUTER JOIN ZC_SUB_TOPIC SUB ON SUB.SUB_TOPIC_C = CSS.SUB_TOPIC_C
+                                                                                     LEFT OUTER JOIN NCS_MAP NMAP ON CSS.COMM_ID=NMAP.CID
+                                                                                     WHERE SUB.NAME LIKE ('%Itemized%' )
+                                                                          ) A
+                                                                         GROUP BY A.SUBJ_CLAIM_ID
+                                                   ) CRM_NUM ON CRM_NUM.SUBJ_CLAIM_ID = AP.CLAIM_ID
+            LEFT JOIN AP_CLAIMS ADJ ON AP.CLAIM_ID = ADJ.ORIG_ADJST_CLM_ID 
+            LEFT JOIN AP_CLAIMS ADJ2 ON ADJ.CLM= ADJ2.ORIG_ADJST_CLM_ID 
+            LEFT JOIN AP_CLAIMS ADJ3 ON ADJ2.CLM = ADJ3.ORIG_ADJST_CLM_ID 
+            LEFT JOIN AP_CLAIMS ADJ4 ON ADJ3.CLM = ADJ4.ORIG_ADJST_CLM_ID 
+            LEFT JOIN AP_CLAIMS ADJ5 ON ADJ4.CLM = ADJ5.ORIG_ADJST_CLM_ID 
+            LEFT JOIN AP_CLAIMS ADJ6 ON ADJ5.CLM = ADJ6.ORIG_ADJST_CLM_ID 
+            LEFT OUTER JOIN AP_CLAIMS OAJ ON OAJ.CLM = AP.CLAIM_ID
+            INNER JOIN (
+                             SELECT 
+                             AP.CLAIM_ID
+                             FROM AP_CLAIM AP 
+                             LEFT OUTER JOIN AP_CLAIM_EOB_CODE CLMEOB ON CLMEOB.CLAIM_ID = AP.CLAIM_ID
+                             LEFT OUTER JOIN ANTHEM_EOB_CODE CODE ON CODE.EOB_CODE_ID = CLMEOB.EOB_CODE_ID
+                             WHERE 
+                             CLMEOB.EOB_CODE_ID IN (124306)-- CED23
+                             AND CODE.CODE_TYPE_C = 2 --DENIAL CODES ONLY
+                              GROUP BY AP.CLAIM_ID) EOB1 ON EOB1.CLAIM_ID = AP.CLAIM_ID 
+
+            LEFT OUTER JOIN (
+                                                           SELECT CLAIM_ID,
+                                                           SERV_DATE,
+                                                           TOT_BILLED_AMT,
+                                                           VENDOR_ID,
+                                                           TOT_NET_PAYABLE,
+                                                           CLM.INTERNAL_ID,
+                                                           PAT_ID
+                                                           FROM AP_CLAIM AP2
+                                                           INNER JOIN CLM_MAP CLM ON CLM.CID = AP2.CLAIM_ID
+                                                           WHERE AP2.ORIG_ADJST_CLM_ID IS NULL
+                                                           AND AP2.ORIG_REV_CLM_ID IS NULL --FIRST PASS ORIGINAL DUPLICATES ONLY
+                                                            AND AP2.STATUS_C <>5
+                                                         )DUP ON DUP.SERV_DATE <= AP.SERV_DATE +3 AND DUP.SERV_DATE >= AP.SERV_DATE -3 AND AP.TOT_BILLED_AMT <= DUP.TOT_BILLED_AMT + 500 AND AP.TOT_BILLED_AMT >= DUP.TOT_BILLED_AMT - 500 AND AP.VENDOR_ID = DUP.VENDOR_ID AND DUP.PAT_ID = AP.PAT_ID AND DUP.CLAIM_ID <> AP.CLAIM_ID --ON DUP.SERV_DATE >= AP.SERV_DATE +3
+
+            WHERE AP.STATUS_C IN (1,2,3) --ORIGINAL CLAIM HAS TO BE DENIED AND NO PAYMENT 
+            AND AP.TOT_NET_PAYABLE = 0
+            AND AP.TOT_BILLED_AMT >=10000.00
+            AND AP.ORIG_REV_CLM_ID IS NULL        
+            AND AP.ORIG_ADJST_CLM_ID IS NULL
+)
+   
+-----------------------------------------------------------------------------------------------------------------------
+,CODE1 AS 
+(
+    SELECT A.ORIG_INTERNAL_ID,
+    A.ORIG_CLAIM_ID,
+     A.SERV_DATE AS ORIG_SERV_DATE,
+     A.ORIG_DATE_RECEIVED,  -----ADD NEW FIELD HERE
+    A.AUTH_NUM,
+    A.LOB_NAME,
+     A.TOT_BILLED_AMT AS ORIG_BILLED_AMT,
+      A.INTEREST_TOTAL,
+     A.PENALTY_AMT,
+     A.TOT_NET_PAYABLE AS ORIG_TOT_NET_PAYABLE,
+     A.VENDOR_NAME AS ORIG_VENDOR,
+     A.STATUS_C AS ORIG_STATUS,
+     A.KINAL_CLAIM_STATUS AS ORIG_KINAL_CLAIM_STATUS,
+     A.KINAL_TOT_NET_PAYBALE AS ORIG_KINAL_NET_PAYABLE,
+     A.KINAL_PENALTY_AMT AS ORIG_KINAL_PENALTY_AMT,
+     A.KINAL_INTEREST_AMT AS ORIG_KINAL_INTEREST_AMT,
+     A.TRUE_ORIG_EOB AS ORIG_EOB,
+     A.ORIG_EOB AS ADJ1_EOB,
+     A.AJ1_EOB AS ADJ2_EOB,
+     A.AJ2_EOB AS ADJ3_EOB,
+     A.AJ3_EOB AS ADJ4_EOB,
+     A.AJ4_EOB AS ADJ5_EOB, 
+     A.TRUE_ORIG_EOB_DATE,
+     A.AJ1_MIN_EOB_DATE,
+     A.AJ2_MIN_EOB_DATE,
+     A.AJ3_MIN_EOB_DATE,
+     A.AJ4_MIN_EOB_DATE,
+     A.AJ5_MIN_EOB_DATE,
+     COALESCE(A.AJ5_MIN_EOB_DATE, A.AJ4_MIN_EOB_DATE, A.AJ3_MIN_EOB_DATE, A.AJ2_MIN_EOB_DATE, A.AJ1_MIN_EOB_DATE ,A.TRUE_ORIG_EOB_DATE) AS ORIGINAL_KINAL_EOB_DATE,
+     CRM,
+     CRM_DATE,
+     CRM_TOPIC,
+     CRM_SUBTOPIC,
+     MAX( CASE WHEN A.ROW_NUM = 1 THEN A.DUPE_INTERNAL_ID END) AS DUP_CLM_1,
+     MAX( CASE WHEN A.ROW_NUM = 1 THEN A.DUPE_CLAIM_ID     END) AS DUP_CLM_ID_1,
+     MAX( CASE WHEN A.ROW_NUM = 2 THEN A.DUPE_INTERNAL_ID END) AS DUP_CLM_2,
+     MAX( CASE WHEN A.ROW_NUM = 2 THEN A.DUPE_CLAIM_ID     END) AS DUP_CLM_ID_2,
+     MAX( CASE WHEN A.ROW_NUM = 3 THEN A.DUPE_INTERNAL_ID END) AS DUP_CLM_3,
+     MAX( CASE WHEN A.ROW_NUM = 3 THEN A.DUPE_CLAIM_ID     END) AS DUP_CLM_ID_3,
+     MAX( CASE WHEN A.ROW_NUM = 4 THEN A.DUPE_INTERNAL_ID END) AS DUP_CLM_4,
+     MAX( CASE WHEN A.ROW_NUM = 4 THEN A.DUPE_CLAIM_ID END) AS DUP_CLM_ID_4,
+     MAX( CASE WHEN A.ROW_NUM = 5 THEN A.DUPE_INTERNAL_ID END) AS DUP_CLM_5,
+     MAX( CASE WHEN A.ROW_NUM = 5 THEN A.DUPE_CLAIM_ID     END) AS DUP_CLM_ID_5
+     FROM DUPROW A
+     GROUP BY  
+	 A.ORIG_INTERNAL_ID,
+    A.ORIG_CLAIM_ID,
+     A.SERV_DATE,
+     A.ORIG_DATE_RECEIVED,  -----ADD NEW FIELD HERE
+    A.AUTH_NUM,
+    A.LOB_NAME,
+     A.TOT_BILLED_AMT,
+      A.INTEREST_TOTAL,
+     A.PENALTY_AMT,
+     A.TOT_NET_PAYABLE,
+     A.VENDOR_NAME,
+     A.STATUS_C,
+     A.KINAL_CLAIM_STATUS,
+     A.KINAL_TOT_NET_PAYBALE,
+     A.KINAL_PENALTY_AMT,
+     A.KINAL_INTEREST_AMT,
+     A.TRUE_ORIG_EOB,
+     A.ORIG_EOB,
+     A.AJ1_EOB,
+     A.AJ2_EOB,
+     A.AJ3_EOB,
+     A.AJ4_EOB, 
+     A.TRUE_ORIG_EOB_DATE,
+     A.AJ1_MIN_EOB_DATE,
+     A.AJ2_MIN_EOB_DATE,
+     A.AJ3_MIN_EOB_DATE,
+     A.AJ4_MIN_EOB_DATE,
+     A.AJ5_MIN_EOB_DATE,
+     COALESCE(A.AJ5_MIN_EOB_DATE, A.AJ4_MIN_EOB_DATE, A.AJ3_MIN_EOB_DATE, A.AJ2_MIN_EOB_DATE, A.AJ1_MIN_EOB_DATE ,A.TRUE_ORIG_EOB_DATE),
+     CRM,
+     CRM_DATE,
+     CRM_TOPIC,
+     CRM_SUBTOPIC
+
+)
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+--MAIN QUERY SELECT STARTS HERE
+
+
+SELECT 
+
+--ORIGINAL
+
+ORIG_INTERNAL_ID AS CLAIM_ID,
+ORIG_SERV_DATE,
+--INTEREST_TOTAL,
+--PENALTY_AMT,
+ORIG_VENDOR,
+PAYOR_NAME AS ORIG_PAYOR,
+ORIG_BILLED_AMT,
+ORIG_STATUS,
+ORIG_EOB,
+ORIG_EOB_DATE,
+ORIG_KINAL_NET_PAYABLE,
+ORIG_KINAL_CLAIM_STATUS,
+TRIM(REPLACE(ORIG_KINAL_EOB,',','')) AS ORIG_KINAL_EOB,
+ORIG_KINAL_EOB_DATE,
+
+DUP_CLM_1,
+DUPE_1_KINAL_TOT_NET_PAYBALE,
+DUPE_1_KINAL_CLAIM_STATUS,
+CASE WHEN DUPE_1_KINAL_CLAIM_STATUS = 'CLEAN' THEN NULL ELSE TRIM(REPLACE(DUP_1_KINAL_EOB,',','')) END AS DUP_1_KINAL_EOB,
+DUP_1_KINAL_EOB_DATE,
+DUP_1_KINAL_INTEREST,
+DUP_1_KINAL_PENALTY,
+
+DUP_CLM_2,
+DUPE_2_KINAL_TOT_NET_PAYBALE,
+DUPE_2_KINAL_CLAIM_STATUS,
+CASE WHEN DUPE_2_KINAL_CLAIM_STATUS = 'CLEAN' THEN NULL ELSE TRIM(REPLACE(DUP_2_KINAL_EOB,',','')) END AS DUP_2_KINAL_EOB,
+DUP_2_KINAL_EOB_DATE,
+DUP_2_KINAL_INTEREST,
+DUP_2_KINAL_PENALTY,
+
+DUP_CLM_3,
+DUPE_3_KINAL_TOT_NET_PAYBALE,
+DUPE_3_KINAL_CLAIM_STATUS,
+CASE WHEN DUPE_3_KINAL_CLAIM_STATUS = 'CLEAN' THEN NULL ELSE TRIM(REPLACE(DUP_3_KINAL_EOB,',',''))END AS DUP_3_KINAL_EOB,
+DUP_3_KINAL_EOB_DATE,
+DUP_3_KINAL_INTEREST,
+DUP_3_KINAL_PENALTY,
+
+DUP_CLM_4,
+DUPE_4_KINAL_TOT_NET_PAYBALE,
+DUPE_4_KINAL_CLAIM_STATUS,
+CASE WHEN DUPE_4_KINAL_CLAIM_STATUS = 'CLEAN' THEN NULL ELSE TRIM(REPLACE(DUP_4_KINAL_EOB,',','')) END AS DUP_4_KINAL_EOB,
+DUP_4_KINAL_EOB_DATE,
+DUP_4_KINAL_INTEREST,
+DUP_4_KINAL_PENALTY,
+
+ALL_KINAL_NET_PAYABLE,
+ALL_KINAL_NET_PENALTY,
+ALL_KINAL_NET_INTEREST,
+ALL_KINAL_STATUS,
+
+
+-- DUP 5
+
+CASE WHEN ALL_KINAL_STATUS = 'CLEAN' THEN NULL ELSE TRIM(REPLACE(ALL_KINAL_EOB,',',''))END AS ALL_KINAL_EOB,
+
+ALL_KINAL_EOB_DATE,
+CRM,
+CRM_DATE,
+CRM_TOPIC,
+CRM_SUBTOPIC
+,ENTRY_DATE AS CLH66_ENTRY_DATE
+,RESOLUTION_DATETIME AS CLH66_RESOLVED_DATETIME
+,INFO_CODE1
+,INFO_CODE1_ENTRY_DATE
+,INFO_CODE2
+,INFO_CODE2_ENTRY_DATE
+,INFO_CODE3
+,INFO_CODE3_ENTRY_DATE
+
+
+
+  FROM 
+ 
+--MAIN QUERY  TABLE BEGINS  TEST3 
+    (
+        SELECT 
+        AP.ORIG_INTERNAL_ID
+        ,AP.ORIG_CLAIM_ID
+        ,AP.ORIG_SERV_DATE
+        ,AP.ORIG_DATE_RECEIVED  -- ADD FIELD HERE
+        ,AP.INTEREST_TOTAL
+        ,AP.PENALTY_AMT
+        ,AP.AUTH_NUM
+        ,AP.LOB_NAME
+        ,AP.ORIG_VENDOR
+        ,AP.ORIG_BILLED_AMT
+        ,AP.ORIG_TOT_NET_PAYABLE
+        ,AP.ORIG_STATUS
+        ,AP.ORIG_EOB
+        ,AP.TRUE_ORIG_EOB_DATE AS ORIG_EOB_DATE
+        ,AP.ORIG_KINAL_NET_PAYABLE
+        ,AP.ORIG_KINAL_CLAIM_STATUS
+        ,AP_CLAIMS.PAYOR_NAME
+        ,COALESCE(ADJ5_EOB, ADJ4_EOB, ADJ3_EOB, ADJ2_EOB, ADJ1_EOB, ORIG_EOB) AS ORIG_KINAL_EOB --,AJ1_MIN_EOB_DATE, AJ2_MIN_EOB_DATE, AJ3_MIN_EOB_DATE, AJ4_MIN_EOB_DATE, AJ5_MIN_EOB_DATE 
+        ,COALESCE(AJ5_MIN_EOB_DATE, AJ4_MIN_EOB_DATE, AJ3_MIN_EOB_DATE, AJ2_MIN_EOB_DATE, AJ1_MIN_EOB_DATE , TRUE_ORIG_EOB_DATE) AS ORIG_KINAL_EOB_DATE ------,COALESCE(REPLACE(ADJ5_EOB, '',NULL), REPLACE(ADJ4_EOB, '',NULL), REPLACE(ADJ3_EOB, '',NULL), REPLACE(ADJ2_EOB, '',NULL), REPLACE(ADJ1_EOB, '',NULL), REPLACE(ORIG_EOB, '',NULL)) AS ORIG_KINAL_EOB REPLACE BLANK WITH NULLS NO LONGER NEEDED
+        ,(COALESCE(TEST2.DUPE_1_KINAL_TOT_NET_PAYBALE,0)+COALESCE(TEST2.DUPE_2_KINAL_TOT_NET_PAYBALE,0)+COALESCE( TEST2.DUPE_3_KINAL_TOT_NET_PAYBALE,0)+COALESCE( TEST2.DUPE_4_KINAL_TOT_NET_PAYBALE,0)+COALESCE( TEST2.DUPE_5_KINAL_TOT_NET_PAYBALE,0)) AS ALL_DUPES_TOT_NET_PAYABLE
+        ,CASE WHEN (( COALESCE(TEST2.DUPE_1_KINAL_TOT_NET_PAYBALE,0)+COALESCE(TEST2.DUPE_2_KINAL_TOT_NET_PAYBALE,0)+COALESCE( TEST2.DUPE_3_KINAL_TOT_NET_PAYBALE,0) +COALESCE( TEST2.DUPE_4_KINAL_TOT_NET_PAYBALE,0) +COALESCE( TEST2.DUPE_5_KINAL_TOT_NET_PAYBALE,0)) >0 )OR AP.ORIG_KINAL_NET_PAYABLE >0 THEN 'Y' ELSE 'N'END AS IS_CLAIM_SATISFIED
+
+        --DUP 1
+        ,AP.DUP_CLM_1
+        ,TEST2.DUPE_1_KINAL_TOT_NET_PAYBALE
+        ,TEST2.DUPE_1_KINAL_CLAIM_STATUS AS DUPE_1_KINAL_CLAIM_STATUS
+        ,REPLACE(TEST2.DUP_1_KINAL_EOB,'',NULL) AS DUP_1_KINAL_EOB
+        ,TEST2.DUP_1_KINAL_EOB_DATE
+        ,TEST2.DUP_1_KINAL_INTEREST
+        ,TEST2.DUP_1_KINAL_PENALTY
+
+        --DUP 2
+        ,AP.DUP_CLM_2
+        ,TEST2.DUPE_2_KINAL_TOT_NET_PAYBALE
+        ,TEST2.DUPE_2_KINAL_CLAIM_STATUS AS DUPE_2_KINAL_CLAIM_STATUS
+        ,REPLACE(TEST2.DUP_2_KINAL_EOB,'',NULL) AS DUP_2_KINAL_EOB
+        ,TEST2.DUP_2_KINAL_EOB_DATE
+        ,TEST2.DUP_2_KINAL_INTEREST
+        ,TEST2.DUP_2_KINAL_PENALTY
+        ---DUP 3
+
+        ,AP.DUP_CLM_3
+        ,TEST2.DUPE_3_KINAL_TOT_NET_PAYBALE
+        ,TEST2.DUPE_3_KINAL_CLAIM_STATUS AS DUPE_3_KINAL_CLAIM_STATUS
+        ,REPLACE(TEST2.DUP_3_KINAL_EOB,'',NULL) AS DUP_3_KINAL_EOB
+        ,TEST2.DUP_3_KINAL_EOB_DATE
+        ,TEST2.DUP_3_KINAL_INTEREST
+        ,TEST2.DUP_3_KINAL_PENALTY
+
+        --DUP 4
+        ,AP.DUP_CLM_4
+        ,TEST2.DUPE_4_KINAL_TOT_NET_PAYBALE
+        ,TEST2.DUPE_4_KINAL_CLAIM_STATUS AS DUPE_4_KINAL_CLAIM_STATUS
+        ,REPLACE(TEST2.DUP_4_KINAL_EOB,'',NULL) AS DUP_4_KINAL_EOB
+        ,TEST2.DUP_4_KINAL_EOB_DATE
+        ,TEST2.DUP_4_KINAL_INTEREST
+        ,TEST2.DUP_4_KINAL_PENALTY
+
+        --ALL KINAL
+
+        ,COALESCE(TEST2.DUPE_4_KINAL_TOT_NET_PAYBALE,TEST2.DUPE_3_KINAL_TOT_NET_PAYBALE,TEST2.DUPE_2_KINAL_TOT_NET_PAYBALE,TEST2.DUPE_1_KINAL_TOT_NET_PAYBALE,AP.ORIG_KINAL_NET_PAYABLE) ALL_KINAL_NET_PAYABLE
+        ,COALESCE(TEST2.DUPE_4_KINAL_CLAIM_STATUS,TEST2.DUPE_3_KINAL_CLAIM_STATUS,TEST2.DUPE_2_KINAL_CLAIM_STATUS,TEST2.DUPE_1_KINAL_CLAIM_STATUS,AP.ORIG_KINAL_CLAIM_STATUS) AS ALL_KINAL_STATUS
+        ,COALESCE(REPLACE(TEST2.DUP_4_KINAL_EOB,'',NULL), REPLACE(TEST2.DUP_3_KINAL_EOB,'',NULL),REPLACE(TEST2.DUP_2_KINAL_EOB,'',NULL),REPLACE(TEST2.DUP_1_KINAL_EOB,'',NULL),AP.ADJ5_EOB,AP.ADJ4_EOB, AP.ADJ3_EOB, AP.ADJ2_EOB, AP.ADJ1_EOB, AP.ORIG_EOB) AS ALL_KINAL_EOB
+        ,COALESCE(TEST2.DUP_4_KINAL_EOB_DATE, TEST2.DUP_3_KINAL_EOB_DATE, TEST2.DUP_2_KINAL_EOB_DATE, TEST2.DUP_1_KINAL_EOB_DATE, AJ5_MIN_EOB_DATE, AJ4_MIN_EOB_DATE,AJ3_MIN_EOB_DATE, AJ2_MIN_EOB_DATE,AJ1_MIN_EOB_DATE , AP.TRUE_ORIG_EOB_DATE) AS ALL_KINAL_EOB_DATE
+        ,COALESCE(TEST2.DUP_4_KINAL_PENALTY, TEST2.DUP_3_KINAL_PENALTY, TEST2.DUP_2_KINAL_PENALTY, TEST2.DUP_1_KINAL_PENALTY, AP.ORIG_KINAL_PENALTY_AMT) AS ALL_KINAL_NET_PENALTY
+        ,COALESCE(TEST2.DUP_4_KINAL_INTEREST, TEST2.DUP_3_KINAL_INTEREST, TEST2.DUP_2_KINAL_INTEREST, TEST2.DUP_1_KINAL_INTEREST, AP.ORIG_KINAL_INTEREST_AMT) AS ALL_KINAL_NET_INTEREST
+        ,AP.CRM
+        ,AP.CRM_DATE
+        ,AP.CRM_TOPIC
+        ,AP.CRM_SUBTOPIC
+		,CLH.ENTRY_DATE
+		,CLH.RESOLUTION_DATETIME
+		,INFO_CODE.INFO_CODE1
+		,INFO_CODE.INFO_CODE1_ENTRY_DATE
+		,INFO_CODE.INFO_CODE2
+		,INFO_CODE.INFO_CODE2_ENTRY_DATE
+		,INFO_CODE.INFO_CODE3
+		,INFO_CODE.INFO_CODE3_ENTRY_DATE
+
+        FROM CODE1 AP
+        LEFT OUTER JOIN AP_CLAIMS ON AP_CLAIMS.CLM = AP.ORIG_CLAIM_ID
+		left outer join (select ap.claim_id, clm.internal_id,  eob.mnemonic, eob.code_type_c, apc.entry_Date,  apc.resolution_datetime
+									from ap_claim ap 
+									inner join ap_Claim_eob_code apc on apc.claim_id = ap.claim_id
+									inner join ANTHEM_Eob_code eob on eob.eob_code_id = apc.eob_code_id 
+									inner join clm_map clm on clm.cid = ap.claim_id
+									where
+									eob.mnemonic = ('CLH66')
+									) clh on clh.internal_id = ap.orig_internal_id
+									
+		left outer join (select a.internal_id
+									,max(case when rownuma = 1 then mnemonic else null end) as Info_code1
+									,max(case when rownuma = 1 then entry_Date else null end) as Info_Code1_Entry_date
+									,max(case when rownuma = 2 then mnemonic else null end) as Info_code2
+									,max(case when rownuma = 2 then entry_Date else null end) as Info_Code2_Entry_date
+									,max(case when rownuma = 3 then mnemonic else null end) as Info_code3
+									,max(case when rownuma = 3 then entry_Date else null end) as Info_Code3_Entry_date
+									from(
+												select clm.internal_id, EOB.MNEMONIC, APC.ENTRY_DATE,	ROW_NUMBER() OVER(PARTITION BY Ap.claim_id ORDER BY apc.entry_Date ) AS ROWNUMA
+												from
+												ap_claim ap 
+												inner join ap_Claim_eob_code apc on apc.claim_id = ap.claim_id
+												inner join ANTHEM_Eob_code eob on eob.eob_code_id = apc.eob_code_id 
+												inner join clm_map clm on clm.cid = ap.claim_id
+												where
+												 eob.code_type_c = 3 --information  AND
+												) a  group by a.internal_id
+								) info_code on info_code.internal_id = ap.orig_internal_id
+          --- GETTING THE INFO OF THE DUPS ------
+          LEFT OUTER JOIN (
+                                                        SELECT 
+                                                        ORIG_INTERNAL_ID,
+                                                        ORIG_CLAIM_ID,
+                                                        ORIG_STATUS,
+                                                        ORIG_KINAL_CLAIM_STATUS,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '1' THEN COALESCE(CLAIM_STATUS2,CLAIM_STATUS1) ELSE NULL END) AS DUPE_1_KINAL_CLAIM_STATUS,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '2' THEN COALESCE(CLAIM_STATUS2,CLAIM_STATUS1) ELSE NULL END) AS DUPE_2_KINAL_CLAIM_STATUS,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '3' THEN COALESCE(CLAIM_STATUS2,CLAIM_STATUS1) ELSE NULL END) AS DUPE_3_KINAL_CLAIM_STATUS,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '4' THEN COALESCE(CLAIM_STATUS2,CLAIM_STATUS1) ELSE NULL END) AS DUPE_4_KINAL_CLAIM_STATUS,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '5' THEN COALESCE(CLAIM_STATUS2,CLAIM_STATUS1) ELSE NULL END) AS DUPE_5_KINAL_CLAIM_STATUS,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '1' THEN COALESCE(TOT_NET_PAYABLE2,TOT_NET_PAYABLE1) ELSE NULL END) AS DUPE_1_KINAL_TOT_NET_PAYBALE,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '2' THEN COALESCE(TOT_NET_PAYABLE2,TOT_NET_PAYABLE1) ELSE NULL END) AS DUPE_2_KINAL_TOT_NET_PAYBALE,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '3' THEN COALESCE(TOT_NET_PAYABLE2,TOT_NET_PAYABLE1) ELSE NULL END) AS DUPE_3_KINAL_TOT_NET_PAYBALE,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '4' THEN COALESCE(TOT_NET_PAYABLE2,TOT_NET_PAYABLE1) ELSE NULL END) AS DUPE_4_KINAL_TOT_NET_PAYBALE,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '5' THEN COALESCE(TOT_NET_PAYABLE2,TOT_NET_PAYABLE1) ELSE NULL END) AS DUPE_5_KINAL_TOT_NET_PAYBALE,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '1' THEN COALESCE(CLM_EOB2,CLM_EOB1) ELSE NULL END) AS DUP_1_KINAL_EOB,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '2' THEN COALESCE(CLM_EOB2,CLM_EOB1) ELSE NULL END) AS DUP_2_KINAL_EOB,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '3' THEN COALESCE(CLM_EOB2,CLM_EOB1) ELSE NULL END) AS DUP_3_KINAL_EOB,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '4' THEN COALESCE(CLM_EOB2,CLM_EOB1) ELSE NULL END) AS DUP_4_KINAL_EOB,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '5' THEN COALESCE(CLM_EOB2,CLM_EOB1) ELSE NULL END) AS DUP_5_KINAL_EOB,
+                                                       MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '1' THEN COALESCE(MIN_EOB_DATE2,MIN_EOB_DATE1) ELSE NULL END) AS DUP_1_KINAL_EOB_DATE,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '2' THEN COALESCE(MIN_EOB_DATE2,MIN_EOB_DATE1) ELSE NULL END) AS DUP_2_KINAL_EOB_DATE,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '3' THEN COALESCE(MIN_EOB_DATE2,MIN_EOB_DATE1) ELSE NULL END) AS DUP_3_KINAL_EOB_DATE,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '4' THEN COALESCE(MIN_EOB_DATE2,MIN_EOB_DATE1) ELSE NULL END) AS DUP_4_KINAL_EOB_DATE,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '5' THEN COALESCE(MIN_EOB_DATE2,MIN_EOB_DATE1) ELSE NULL END) AS DUP_5_KINAL_EOB_DATE,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '1' THEN COALESCE(PENALTY2, PENALTY1) ELSE NULL END) AS DUP_1_KINAL_PENALTY,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '2' THEN COALESCE(PENALTY2, PENALTY1) ELSE NULL END) AS DUP_2_KINAL_PENALTY,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '3' THEN COALESCE(PENALTY2, PENALTY1) ELSE NULL END) AS DUP_3_KINAL_PENALTY,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '4' THEN COALESCE(PENALTY2, PENALTY1) ELSE NULL END) AS DUP_4_KINAL_PENALTY,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '5' THEN COALESCE(PENALTY2, PENALTY1) ELSE NULL END) AS DUP_5_KINAL_PENALTY,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '1' THEN COALESCE(INTEREST2, INTEREST1) ELSE NULL END) AS DUP_1_KINAL_INTEREST,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '2' THEN COALESCE(INTEREST2, INTEREST1) ELSE NULL END) AS DUP_2_KINAL_INTEREST,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '3' THEN COALESCE(INTEREST2, INTEREST1) ELSE NULL END) AS DUP_3_KINAL_INTEREST,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '4' THEN COALESCE(INTEREST2, INTEREST1) ELSE NULL END) AS DUP_4_KINAL_INTEREST,
+                                                        MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '5' THEN COALESCE(INTEREST2, INTEREST1) ELSE NULL END) AS DUP_5_KINAL_INTEREST
+                                                        
+                                                        
+                                                        FROM
+                                                             --- DUP UNION BEGINS ( CALLED TEST)
+                                                                          (
+                                                        
+                                                                      
+                                                                                  SELECT 
+                                                                                   ORIG_INTERNAL_ID AS ORIG_INTERNAL_ID,
+                                                                                  ORIG_CLAIM_ID AS ORIG_CLAIM_ID,
+                                                                                    ORIG_STATUS AS ORIG_STATUS,
+                                                                                    ORIG_KINAL_CLAIM_STATUS AS ORIG_KINAL_CLAIM_STATUS,
+                                                                                    AP1.CLAIM_STATUS AS CLAIM_STATUS1,
+                                                                                    ADJ.CLAIM_STATUS AS CLAIM_STATUS2,
+                                                                                    AP1.TOT_NET_PAYABLE AS TOT_NET_PAYABLE1,
+                                                                                    ADJ.TOT_NET_PAYABLE AS TOT_NET_PAYABLE2,
+                                                                                    AP1.CLM_EOB AS CLM_EOB1,
+                                                                                    ADJ.CLM_EOB AS CLM_EOB2,
+                                                                                    AP1.MIN_EOB_DATE AS MIN_EOB_DATE1,
+                                                                                    ADJ.MIN_EOB_DATE AS MIN_EOB_DATE2,
+                                                                                      AP1.PENALTY_AMT AS PENALTY1 ,
+                                                                                      ADJ.PENALTY_AMT  AS PENALTY2,
+                                                                                      AP1.INTEREST_TOTAL AS INTEREST1,
+                                                                                      ADJ.INTEREST_TOTAL AS INTEREST2,
+                                                                                   '1' AS DUPLICATE_CLAIM_NUMBER
+                                                                                  FROM CODE1 AP 
+                                                                                   LEFT JOIN AP_CLAIMS AP1 ON AP.DUP_CLM_ID_1 = AP1.CLM
+                                                                                  LEFT JOIN AP_CLAIMS ADJ ON AP.DUP_CLM_ID_1 = ADJ.ORIG_ADJST_CLM_ID -- ADJ FOR DUP1
+
+                                                                                   UNION ALL 
+                                                                                    SELECT 
+                                                                                    ORIG_INTERNAL_ID AS ORIG_INTERNAL_ID,
+                                                                                  ORIG_CLAIM_ID AS ORIG_CLAIM_ID,
+                                                                                    ORIG_STATUS AS ORIG_STATUS,
+                                                                                    ORIG_KINAL_CLAIM_STATUS AS ORIG_KINAL_CLAIM_STATUS,
+                                                                                    AP2.CLAIM_STATUS  ,
+                                                                                    ADJ_2.CLAIM_STATUS ,
+                                                                                    AP2.TOT_NET_PAYABLE  ,
+                                                                                    ADJ_2.TOT_NET_PAYABLE ,
+                                                                                    AP2.CLM_EOB AS CLM_EOB1,
+                                                                                    ADJ_2.CLM_EOB AS CLM_EOB2,
+                                                                                    AP2.MIN_EOB_DATE AS MIN_EOB_DATE1,
+                                                                                    ADJ_2.MIN_EOB_DATE AS MIN_EOB_DATE2,
+                                                                                    
+                                                                                    AP2.PENALTY_AMT  AS PENALTY1,
+                                                                                      ADJ_2.PENALTY_AMT AS PENALTY2 ,
+                                                                                      AP2.INTEREST_TOTAL AS INTEREST1,
+                                                                                      ADJ_2.INTEREST_TOTAL AS INTEREST2,
+                                                                                      
+                                                                                    '2' AS DUPLICATE_CLAIM_NUMBER
+                                                                                  FROM CODE1 AP
+                                                                                  LEFT JOIN AP_CLAIMS AP2 ON AP.DUP_CLM_ID_2 = AP2.CLM 
+                                                                                   LEFT JOIN AP_CLAIMS ADJ_2 ON AP.DUP_CLM_ID_2 = ADJ_2.ORIG_ADJST_CLM_ID 
+                                                                                   
+                                                                                    UNION ALL 
+                                                                                   
+                                                                                   SELECT 
+                                                                                    ORIG_INTERNAL_ID AS ORIG_INTERNAL_ID,
+                                                                                  ORIG_CLAIM_ID AS ORIG_CLAIM_ID,
+                                                                                    ORIG_STATUS AS ORIG_STATUS,
+                                                                                    ORIG_KINAL_CLAIM_STATUS AS ORIG_KINAL_CLAIM_STATUS,
+                                                                                    AP3.CLAIM_STATUS ,
+                                                                                    ADJ_3.CLAIM_STATUS,
+                                                                                   AP3.TOT_NET_PAYABLE  ,
+                                                                                    ADJ_3.TOT_NET_PAYABLE ,
+                                                                                    AP3.CLM_EOB AS CLM_EOB1,
+                                                                                    ADJ_3.CLM_EOB AS CLM_EOB2,
+                                                                                    AP3.MIN_EOB_DATE AS MIN_EOB_DATE1,
+                                                                                    ADJ_3.MIN_EOB_DATE AS MIN_EOB_DATE2,
+                                                                                      AP3.PENALTY_AMT  AS PENALTY1,
+                                                                                     ADJ_3.PENALTY_AMT AS PENALTY2 ,
+                                                                                      AP3.INTEREST_TOTAL AS INTEREST1,
+                                                                                      ADJ_3.INTEREST_TOTAL AS INTEREST2,
+                                                                                    '3' AS DUPLICATE_CLAIM_NUMBER
+                                                                                  FROM CODE1 AP
+                                                                                  LEFT JOIN AP_CLAIMS AP3 ON AP.DUP_CLM_ID_3 = AP3.CLM
+                                                                                  LEFT JOIN AP_CLAIMS ADJ_3 ON AP.DUP_CLM_ID_3 = ADJ_3.ORIG_ADJST_CLM_ID 
+                                                                                   
+                                                                                    UNION ALL 
+                                                                                   
+                                                                                   SELECT 
+                                                                                    ORIG_INTERNAL_ID AS ORIG_INTERNAL_ID,
+                                                                                  ORIG_CLAIM_ID AS ORIG_CLAIM_ID,
+                                                                                    ORIG_STATUS AS ORIG_STATUS,
+                                                                                    ORIG_KINAL_CLAIM_STATUS AS ORIG_KINAL_CLAIM_STATUS,
+                                                                                    AP4.CLAIM_STATUS,
+                                                                                    ADJ_4.CLAIM_STATUS,
+                                                                                    AP4.TOT_NET_PAYABLE  ,
+                                                                                    ADJ_4.TOT_NET_PAYABLE ,
+                                                                                    AP4.CLM_EOB AS CLM_EOB1,
+                                                                                    ADJ_4.CLM_EOB AS CLM_EOB2,
+                                                                                    AP4.MIN_EOB_DATE AS MIN_EOB_DATE1,
+                                                                                    ADJ_4.MIN_EOB_DATE AS MIN_EOB_DATE2,
+                                                                                      AP4.PENALTY_AMT  AS PENALTY1,
+                                                                                      ADJ_4.PENALTY_AMT AS PENALTY2 ,
+                                                                                      AP4.INTEREST_TOTAL AS INTEREST1,
+                                                                                      ADJ_4.INTEREST_TOTAL AS INTEREST2,
+                                                                                    '4' AS DUPLICATE_CLAIM_NUMBER
+                                                                                  FROM CODE1 AP
+                                                                                  LEFT JOIN AP_CLAIMS AP4 ON AP.DUP_CLM_ID_4 = AP4.CLM
+                                                                                  LEFT JOIN AP_CLAIMS ADJ_4 ON AP.DUP_CLM_ID_4 = ADJ_4.ORIG_ADJST_CLM_ID 
+                                                                                   
+                                                                                    UNION ALL 
+                                                                                   
+                                                                                   SELECT 
+                                                                                    ORIG_INTERNAL_ID AS ORIG_INTERNAL_ID,
+                                                                                  ORIG_CLAIM_ID AS ORIG_CLAIM_ID,
+                                                                                    ORIG_STATUS AS ORIG_STATUS,
+                                                                                    ORIG_KINAL_CLAIM_STATUS AS ORIG_KINAL_CLAIM_STATUS,
+                                                                                    AP5.CLAIM_STATUS,
+                                                                                    ADJ_5.CLAIM_STATUS,
+                                                                                    AP5.TOT_NET_PAYABLE  ,
+                                                                                    ADJ_5.TOT_NET_PAYABLE ,
+                                                                                    AP5.CLM_EOB AS CLM_EOB1,
+                                                                                    ADJ_5.CLM_EOB AS CLM_EOB2,
+                                                                                    AP5.MIN_EOB_DATE AS MIN_EOB_DATE1,
+                                                                                    ADJ_5.MIN_EOB_DATE AS MIN_EOB_DATE2,
+                                                                                      AP5.PENALTY_AMT  AS PENALTY1,
+                                                                                      ADJ_5.PENALTY_AMT AS PENALTY2 ,
+                                                                                      AP5.INTEREST_TOTAL AS INTEREST1,
+                                                                                      ADJ_5.INTEREST_TOTAL AS INTEREST2,
+                                                                                    '5' AS DUPLICATE_CLAIM_NUMBER
+                                                                                  FROM CODE1 AP
+                                                                                  LEFT JOIN AP_CLAIMS AP5 ON AP.DUP_CLM_ID_5 = AP5.CLM
+                                                                                  LEFT JOIN AP_CLAIMS ADJ_5 ON AP.DUP_CLM_ID_5 = ADJ_5.ORIG_ADJST_CLM_ID 
+                                                                   
+                                                                       )TEST
+                                                                       --- DUP UNION ENDS ( CALLED TEST)
+                                                        GROUP BY 
+														ORIG_INTERNAL_ID,
+                                                        ORIG_CLAIM_ID,
+                                                        ORIG_STATUS,
+                                                        ORIG_KINAL_CLAIM_STATUS
+                                        )TEST2  ON TEST2.ORIG_INTERNAL_ID=AP.ORIG_INTERNAL_ID
+                                        
+                                      -- GETTING DUP INFO ENDS TEST1
+
+  )TEST3;

@@ -72,6 +72,7 @@ Also I would like to know about needed examples or documentation stuff.
 * allow datatype **binary** for column definitions
 * support for **ALTER TABLE COLUMN DROP NOT NULL**
 * allow **order** as column name
+* support for table function in **IN** expression
 
 ## Extensions of JSqlParser releases
 

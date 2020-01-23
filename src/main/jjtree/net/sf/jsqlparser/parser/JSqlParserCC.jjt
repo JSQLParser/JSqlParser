@@ -2478,6 +2478,7 @@ Expression InExpression() #InExpression :
     ItemsList leftItemsList = null;
     ItemsList rightItemsList = null;
     Expression leftExpression = null;
+    Expression rightExpression = null;
 }
 {
     ( LOOKAHEAD(3) "(" (
@@ -2491,9 +2492,12 @@ Expression InExpression() #InExpression :
         leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
         [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
     )
-    [<K_NOT> { result.setNot(true); } ] <K_IN> "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")"
+    [<K_NOT> { result.setNot(true); } ] <K_IN> 
+        ( rightExpression = Function() 
+            | "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")")
     {
         result.setRightItemsList(rightItemsList);
+        result.setRightExpression(rightExpression);
         linkAST(result,jjtThis);
         return result;
     }
