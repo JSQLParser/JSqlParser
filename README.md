@@ -71,6 +71,7 @@ Also I would like to know about needed examples or documentation stuff.
 * allow foreign key definition in alter statements without referenced columns specification
 * allow datatype **binary** for column definitions
 * support for **ALTER TABLE COLUMN DROP NOT NULL**
+* allow **order** as column name
 
 ## Extensions of JSqlParser releases
 

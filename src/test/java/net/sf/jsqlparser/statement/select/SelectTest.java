@@ -3996,4 +3996,10 @@ public class SelectTest {
                 + "ELSE 1 = 1\n"
                 + "END\n", true);
     }
+    
+    @Test
+    public void testSessionKeywordIssue932() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT order FROM tmp3");
+        assertSqlCanBeParsedAndDeparsed("SELECT tmp3.order FROM tmp3");
+    }
 }

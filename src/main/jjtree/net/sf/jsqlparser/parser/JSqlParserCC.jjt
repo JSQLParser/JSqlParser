@@ -1003,8 +1003,7 @@ Delete Delete():
           ("," table=TableWithAlias() { tables.add(table); } )* 
     <K_FROM> | <K_FROM>)]
 
-    [ table=TableWithAlias()
-      joins=JoinsList() ]
+    [ LOOKAHEAD(3) table=TableWithAlias()  joins=JoinsList() ]
     [where=WhereClause() { delete.setWhere(where); } ]
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]
@@ -1152,7 +1151,7 @@ String RelObjectName() :
 {    Token tk = null; String result = null; }
 {
     (result = RelObjectNameWithoutValue() | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> 
-        | tk=<K_INTERVAL> | tk=<K_START> | tk=<K_ON>)
+        | tk=<K_INTERVAL> | tk=<K_START> | tk=<K_ON> | tk=<K_ORDER>)
 
     { 
 		if (tk!=null) result=tk.image;
