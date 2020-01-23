@@ -390,6 +390,15 @@ public class AlterTest {
     }
     
     @Test
+    public void testAlterOnlyIssue928() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE ONLY categories ADD CONSTRAINT pk_categories PRIMARY KEY (category_id)");
+    }
+    
+    @Test
+    public void testAlterConstraintWithoutFKSourceColumnsIssue929() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE orders ADD CONSTRAINT fk_orders_customers FOREIGN KEY (customer_id) REFERENCES customers");
+    }
+    
     public void testAlterTableAlterColumnDropNotNullIssue918() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE \"user_table_t\" ALTER COLUMN name DROP NOT NULL");
     }

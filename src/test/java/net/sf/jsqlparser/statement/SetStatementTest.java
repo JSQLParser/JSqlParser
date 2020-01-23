@@ -38,4 +38,9 @@ public class SetStatementTest {
     public void testMultiValue() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET v = 1, c = 3");
     }
+    
+    @Test
+    public void testValueOnIssue927() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SET standard_conforming_strings = on");
+    }
 }

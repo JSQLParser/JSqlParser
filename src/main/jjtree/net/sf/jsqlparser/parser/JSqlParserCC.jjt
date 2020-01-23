@@ -1152,7 +1152,7 @@ String RelObjectName() :
 {    Token tk = null; String result = null; }
 {
     (result = RelObjectNameWithoutValue() | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> 
-        | tk=<K_INTERVAL> | tk=<K_START>)
+        | tk=<K_INTERVAL> | tk=<K_START> | tk=<K_ON>)
 
     { 
 		if (tk!=null) result=tk.image;
@@ -1182,7 +1182,7 @@ String RelObjectNameExt():
 {
     ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET> 
         | tk=<K_DOUBLE> | tk=<K_IF> | <K_OPTIMIZE> | tk=<K_LIMIT> 
-        | tk=<K_OFFSET>)
+        | tk=<K_OFFSET> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -1296,7 +1296,7 @@ PlainSelect PlainSelect() #PlainSelect:
         |
             (
                 <K_DISTINCT> { Distinct distinct = new Distinct(); plainSelect.setDistinct(distinct); }
-                    [ "ON" "(" distinctOn=SelectItemsList()  { plainSelect.getDistinct().setOnSelectItems(distinctOn); } ")" ]
+                    [ LOOKAHEAD(2) "ON" "(" distinctOn=SelectItemsList()  { plainSelect.getDistinct().setOnSelectItems(distinctOn); } ")" ]
             )
         |
             (
@@ -3688,22 +3688,6 @@ CreateTable CreateTable():
         ("("
         coldef = ColumnDefinition()
 
-        /*
-        colDataType = ColDataType()
-        {
-            columnSpecs = new ArrayList();
-        }
-
-        ( parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
-
-        {
-            coldef = new ColumnDefinition();
-            coldef.setColumnName(columnName);
-            coldef.setColDataType(colDataType);
-            if (columnSpecs.size() > 0)
-                coldef.setColumnSpecStrings(columnSpecs);
-            columnDefinitions.add(coldef);
-        }*/
         { columnDefinitions.add(coldef); }
 
         (
@@ -3862,7 +3846,8 @@ ColDataType ColDataType():
     ( 
 		(tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 		| tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_DATE_LITERAL> | tk=<K_XML> | tk=<K_INTERVAL> | tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> )  
+		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_DATE_LITERAL> | tk=<K_XML> | tk=<K_INTERVAL> 
+			| tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> | tk=<K_BINARY> )  
 				{ colDataType.setDataType(tk.image); }
 		| tk=<K_UNSIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
 		| LOOKAHEAD(2) tk=<K_SIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
@@ -4245,8 +4230,8 @@ AlterExpression AlterExpression():
             [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }])
         |
 //following two choices regarding foreign keys should be merged
-        ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); }
-             <K_REFERENCES> tk=<S_IDENTIFIER> columnNames=ColumnsNamesList()
+        ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); columnNames = null; }
+             <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
                     { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
             [<K_ON> <K_DELETE>
                             (<K_CASCADE> { alterExp.setOnDeleteCascade(true); }
@@ -4264,8 +4249,9 @@ AlterExpression AlterExpression():
                     fkIndex.setName(sk3);
                     fkIndex.setType(tk.image + " " + tk2.image);
                     fkIndex.setColumnsNames(columnNames);
+					columnNames = null;
                 }
-                <K_REFERENCES> fkTable=Table() columnNames=ColumnsNamesList()
+                <K_REFERENCES> fkTable=Table() [ columnNames=ColumnsNamesList() ]
                 {
                     fkIndex.setTable(fkTable);
                     fkIndex.setReferencedColumnNames(columnNames);
@@ -4399,7 +4385,7 @@ Alter AlterTable():
 
 }
 {
-    <K_ALTER> <K_TABLE> table=Table() { alter.setTable(table); }
+    <K_ALTER> <K_TABLE> [ <K_ONLY> { alter.setUseOnly(true); } ] table=Table() { alter.setTable(table); }
      ( alterExp=AlterExpression() { alter.addAlterExpression(alterExp); }
        ("," alterExp=AlterExpression() { alter.addAlterExpression(alterExp); } )*
      )
