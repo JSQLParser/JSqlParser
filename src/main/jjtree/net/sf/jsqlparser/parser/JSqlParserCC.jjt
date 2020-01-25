@@ -2479,6 +2479,7 @@ Expression InExpression() #InExpression :
     ItemsList rightItemsList = null;
     Expression leftExpression = null;
     Expression rightExpression = null;
+    Token token;
 }
 {
     ( LOOKAHEAD(3) "(" (
@@ -2494,6 +2495,7 @@ Expression InExpression() #InExpression :
     )
     [<K_NOT> { result.setNot(true); } ] <K_IN> 
         ( rightExpression = Function() 
+            | token=<S_CHAR_LITERAL> { rightExpression = new StringValue(token.image); }
             | "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")")
     {
         result.setRightItemsList(rightItemsList);
@@ -2979,10 +2981,6 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | retval=Column() 
 
-        | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
-        
-        | "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
-
         | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
 
         | "{d" token=<S_CHAR_LITERAL> "}"  { retval = new DateValue(token.image); }
@@ -2990,6 +2988,10 @@ Expression PrimaryExpression() #PrimaryExpression:
         | "{t" token=<S_CHAR_LITERAL> "}"  { retval = new TimeValue(token.image); }
 
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
+
+        | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
+
+        | "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
     )
 
     [
