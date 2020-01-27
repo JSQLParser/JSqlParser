@@ -1150,8 +1150,8 @@ Normal names.
 String RelObjectName() :
 {    Token tk = null; String result = null; }
 {
-    (result = RelObjectNameWithoutValue() | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> 
-        | tk=<K_INTERVAL> | tk=<K_START> | tk=<K_ON> | tk=<K_ORDER>)
+    (result = RelObjectNameWithoutValue() 
+		| tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON> | tk=<K_ORDER> | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> )
 
     { 
 		if (tk!=null) result=tk.image;
@@ -1196,7 +1196,7 @@ String RelObjectNameExt2():
   String result=null;
 } 
 {
-    ( result=RelObjectNameExt() | tk=<K_FROM> | tk=<K_GROUP> )
+    ( result=RelObjectNameExt() | tk=<K_FROM> )
     {
         if (tk!=null) result=tk.image;
         return result;
