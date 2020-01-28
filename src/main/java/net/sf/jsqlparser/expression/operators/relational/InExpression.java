@@ -19,6 +19,7 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     private ItemsList leftItemsList;
     private ItemsList rightItemsList;
     private boolean not = false;
+    private Expression rightExpression;
 
     private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
 
@@ -75,6 +76,14 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         this.leftItemsList = leftItemsList;
     }
 
+    public Expression getRightExpression() {
+        return rightExpression;
+    }
+
+    public void setRightExpression(Expression rightExpression) {
+        this.rightExpression = rightExpression;
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
@@ -86,7 +95,8 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
 
     @Override
     public String toString() {
-        return (leftExpression == null ? leftItemsList : getLeftExpressionString()) + " " + (not ? "NOT " : "") + "IN " + rightItemsList + "";
+        return (leftExpression == null ? leftItemsList : getLeftExpressionString()) + " " 
+                + (not ? "NOT " : "") + "IN " + (rightExpression == null ? rightItemsList : rightExpression) + "";
     }
 
     @Override

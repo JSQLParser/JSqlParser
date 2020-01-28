@@ -201,7 +201,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         }
         buffer.append(" IN ");
 
-        inExpression.getRightItemsList().accept(this);
+        if (inExpression.getRightExpression() != null) {
+            inExpression.getRightExpression().accept(this);
+        } else {
+            inExpression.getRightItemsList().accept(this);
+        }
     }
 
     @Override

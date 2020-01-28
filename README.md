@@ -19,7 +19,7 @@ JSqlParser is dual licensed under **LGPL V2.1** or **Apache Software License, Ve
 
 Please provide feedback on:
 
-* no discussions at the moment
+* API changes: extend visitor with return values (https://github.com/JSQLParser/JSqlParser/issues/901)
 
 ## News
 * Released version **3.1** of JSqlParser
@@ -66,6 +66,13 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 3.2
 
+* allow **ON** as a value in a set statement (`SET myvalue = ON`)
+* support for **ALTER TABLE ONLY mytable ... **
+* allow foreign key definition in alter statements without referenced columns specification
+* allow datatype **binary** for column definitions
+* support for **ALTER TABLE COLUMN DROP NOT NULL**
+* allow **order** as column name
+* support for table function in **IN** expression
 
 ## Extensions of JSqlParser releases
 

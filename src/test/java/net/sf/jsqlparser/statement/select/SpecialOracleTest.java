@@ -238,7 +238,7 @@ public class SpecialOracleTest {
 
         LOG.
                 log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
-        assertTrue(success >= 162);
+        assertTrue(success >= 164);
     }
 
     @Test

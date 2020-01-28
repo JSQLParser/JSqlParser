@@ -170,7 +170,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         } else if (expr.getLeftItemsList() != null) {
             expr.getLeftItemsList().accept(this);
         }
-        expr.getRightItemsList().accept(this);
+        if (expr.getRightExpression() != null) {
+            expr.getRightExpression().accept(this);
+        } else {
+            expr.getRightItemsList().accept(this);
+        }
     }
 
     @Override
