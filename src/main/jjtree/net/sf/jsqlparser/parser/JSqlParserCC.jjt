@@ -3271,12 +3271,13 @@ Expression CaseWhenExpression() #CaseWhenExpression:
 {
     CaseExpression caseExp = new CaseExpression();
     Expression switchExp = null;
+    Expression caseExpr = null;
     WhenClause clause;
     List<WhenClause> whenClauses = new ArrayList<WhenClause>();
     Expression elseExp = null;
 }
 {
-    <K_CASE>
+    <K_CASE> [ (LOOKAHEAD(Expression()) caseExpr=Expression() | caseExpr=SimpleExpression()) ]
     (
             ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
         |
@@ -3286,6 +3287,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
    [<K_ELSE> elseExp=Condition()]
     <K_END>
     {
+        caseExp.setCaseExpression(caseExpr);
         caseExp.setSwitchExpression(switchExp);
         caseExp.setWhenClauses(whenClauses);
         caseExp.setElseExpression(elseExp);

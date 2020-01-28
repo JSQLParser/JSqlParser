@@ -519,6 +519,13 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(CaseExpression caseExpression) {
         buffer.append("CASE ");
+
+        Expression caseExp = caseExpression.getCaseExpression();
+        if (caseExp != null) {
+            caseExp.accept(this);
+            buffer.append(" ");
+        }
+
         Expression switchExp = caseExpression.getSwitchExpression();
         if (switchExp != null) {
             switchExp.accept(this);

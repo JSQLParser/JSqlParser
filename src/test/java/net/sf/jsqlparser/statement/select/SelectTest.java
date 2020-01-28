@@ -1310,6 +1310,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testExpressionsInCaseBeforeWhen() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a FROM tbl1 LEFT JOIN tbl2 ON CASE tbl1.col1 WHEN tbl1.col1 = 1 THEN tbl1.col2 = tbl2.col2 ELSE tbl1.col3 = tbl2.col3 END");
+    }
+
+    @Test
     public void testReplaceAsFunction() throws JSQLParserException {
         String statement = "SELECT REPLACE(a, 'b', c) FROM tab1";
         assertSqlCanBeParsedAndDeparsed(statement);

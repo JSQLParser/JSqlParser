@@ -409,6 +409,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      */
     @Override
     public void visit(CaseExpression caseExpression) {
+        if (caseExpression.getCaseExpression() != null) {
+            caseExpression.getCaseExpression().accept(this);
+        }
         if (caseExpression.getSwitchExpression() != null) {
             caseExpression.getSwitchExpression().accept(this);
         }
