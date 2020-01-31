@@ -111,4 +111,14 @@ public class CreateIndexTest {
     public void testCreateIndexIssue633() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)");
     }
+    
+    @Test
+    public void testFullIndexNameIssue936() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX \"TS\".\"IDX\" ON \"TEST\" (\"ID\" ASC) TABLESPACE \"TS\"");
+    }
+    
+    @Test
+    public void testFullIndexNameIssue936_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX \"TS\".\"IDX\" ON \"TEST\" (\"ID\") TABLESPACE \"TS\"");
+    }
 }

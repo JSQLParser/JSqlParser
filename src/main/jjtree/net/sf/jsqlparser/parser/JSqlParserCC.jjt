@@ -1207,11 +1207,9 @@ Table Table() #Table :
 {
     //String serverName = null, databaseName = null, schemaName = null, tableName = null;
     List<String> data = new ArrayList<String>();
-    String token;
 }
 {
-    token = RelObjectName() { data.add(token); }
-    ( LOOKAHEAD(2) "." ("." { data.add(null); })* token = RelObjectName() { data.add(token); } ) *
+    data = RelObjectNameList()
 
     {
         Table table = new Table(data);
@@ -3289,13 +3287,9 @@ Expression CaseWhenExpression() #CaseWhenExpression:
 }
 {
     <K_CASE>
-    (
-            ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
-        |
-            switchExp=Condition()
-             ( clause=WhenThenValue() { whenClauses.add(clause); } )+
-    )
-   [<K_ELSE> elseExp=Condition()]
+    [ switchExp=Condition() ]
+    ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
+    [<K_ELSE> elseExp=Condition()]
     <K_END>
     {
         caseExp.setSwitchExpression(switchExp);
@@ -3321,7 +3315,7 @@ WhenClause WhenThenSearchCondition():
     }
 }
 
-WhenClause WhenThenValue():
+/*WhenClause WhenThenValue():
 {
     WhenClause whenThen = new WhenClause();
     Expression whenExp = null;
@@ -3334,7 +3328,7 @@ WhenClause WhenThenValue():
        whenThen.setThenExpression(thenExp);
        return whenThen;
     }
-}
+}*/
 
 RowConstructor RowConstructor(): {
     ExpressionList list = null;
@@ -3572,18 +3566,21 @@ CreateIndex CreateIndex():
 {
     CreateIndex createIndex = new CreateIndex();
     Table table = null;
-    List<String> colNames = new ArrayList<String>();
+    List<Index.ColumnParams> colNames = new ArrayList<Index.ColumnParams>();
     Token columnName;
     Token using;
     Index index = null;
-    String name = null;
+    //String name = null;
     List<String> parameter = new ArrayList<String>();
+    List<String> tailParameter = null;
+    List<String> name;
 }
 {
     <K_CREATE>
-    ( parameter=CreateParameter() )*
+    [ parameter=CreateParameter() ]
 
-    <K_INDEX> name=RelObjectName()
+    <K_INDEX> name= RelObjectNameList()
+
     {
         index = new Index();
         index.setName(name);
@@ -3599,9 +3596,10 @@ CreateIndex CreateIndex():
     |
     columnName=<S_QUOTED_IDENTIFIER>)
 
-    (CreateParameter() | <K_ASC> | <K_DESC>)*
+    { parameter = null; }
+    [ parameter = CreateParameter() ]
     {
-        colNames.add(columnName.image);
+        colNames.add(new Index.ColumnParams(columnName.image,parameter));
     }
 
     (
@@ -3610,19 +3608,21 @@ CreateIndex CreateIndex():
         |
         columnName=<S_QUOTED_IDENTIFIER>)
 
-        (CreateParameter() | <K_ASC> | <K_DESC>)*
+        { parameter = null; }
+        [ parameter = CreateParameter() ]
         {
-            colNames.add(columnName.image);
+            colNames.add(new Index.ColumnParams(columnName.image,parameter));
         }
     )*
 
     ")"
-    (CreateParameter() {})*
+    [ tailParameter = CreateParameter() {} ]
 
     {
-        index.setColumnsNames(colNames);
+        index.setColumnNamesWithParams(colNames);
         createIndex.setIndex(index);
         createIndex.setTable(table);
+        createIndex.setTailParameters(tailParameter);
         return createIndex;
     }
 }
@@ -4005,8 +4005,12 @@ List<String> CreateParameter():
             tk=<K_USING> { param.add(tk.image); }
             |
             tk=<K_COLLATE> { param.add(tk.image); }
-			|
-			tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
+            |
+            tk=<K_ASC> { param.add(tk.image); }
+	    |
+            tk=<K_DESC> { param.add(tk.image); }
+            |
+	    tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
         )
     {return param;}
 }

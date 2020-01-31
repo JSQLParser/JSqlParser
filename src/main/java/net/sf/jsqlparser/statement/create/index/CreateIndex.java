@@ -14,11 +14,13 @@ import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.create.table.*;
 
 import java.util.*;
+import static java.util.stream.Collectors.joining;
 
 public class CreateIndex implements Statement {
 
     private Table table;
     private Index index;
+    private List<String> tailParameters;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -41,6 +43,14 @@ public class CreateIndex implements Statement {
         this.table = table;
     }
 
+    public List<String> getTailParameters() {
+        return tailParameters;
+    }
+
+    public void setTailParameters(List<String> tailParameters) {
+        this.tailParameters = tailParameters;
+    }
+
     @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
@@ -57,7 +67,7 @@ public class CreateIndex implements Statement {
         buffer.append(" ON ");
         buffer.append(table.getFullyQualifiedName());
 
-        if (index.getUsing() != null){
+        if (index.getUsing() != null) {
             buffer.append(" USING ");
             buffer.append(index.getUsing());
         }
@@ -65,17 +75,18 @@ public class CreateIndex implements Statement {
         if (index.getColumnsNames() != null) {
             buffer.append(" (");
 
-            for (Iterator iter = index.getColumnsNames().iterator(); iter.hasNext();) {
-                String columnName = (String) iter.next();
-
-                buffer.append(columnName);
-
-                if (iter.hasNext()) {
-                    buffer.append(", ");
-                }
-            }
+            buffer.append(
+                    index.getColumnWithParams().stream()
+                            .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : "")).collect(joining(", "))
+            );
 
             buffer.append(")");
+
+            if (tailParameters != null) {
+                for (String param : tailParameters) {
+                    buffer.append(" ").append(param);
+                }
+            }
         }
 
         return buffer.toString();
