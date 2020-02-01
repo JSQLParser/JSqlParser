@@ -343,7 +343,7 @@ public class CreateTableTest {
 
     @Test
     public void testKeySyntaxWithLengthColumnParameter() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE TABLE basic (BASIC_TITLE varchar (255) NOT NULL, KEY BASIC_TITLE (BASIC_TITLE(255)))");
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE basic (BASIC_TITLE varchar (255) NOT NULL, KEY BASIC_TITLE (BASIC_TITLE (255)))");
     }
 
     @Test
@@ -570,15 +570,15 @@ public class CreateTableTest {
         assertEquals("GBK", colName.getColDataType().getCharacterSet());
     }
     
-//    @Test
-//    public void testCreateTableIssue924() throws JSQLParserException {
-//        assertSqlCanBeParsedAndDeparsed("CREATE TABLE test_descending_indexes (c1 INT, c2 INT, INDEX idx1 (c1 ASC, c2 DESC))");
-//    }
-//    
-//    @Test
-//    public void testCreateTableIssue924_2() throws JSQLParserException {
-//        assertSqlCanBeParsedAndDeparsed("CREATE TABLE test_descending_indexes (c1 INT, c2 INT, INDEX idx1 (c1 ASC, c2 ASC), INDEX idx2 (c1 ASC, c2 DESC), INDEX idx3 (c1 DESC, c2 ASC), INDEX idx4 (c1 DESC, c2 DESC))");
-//    }
+    @Test
+    public void testCreateTableIssue924() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE test_descending_indexes (c1 INT, c2 INT, INDEX idx1 (c1 ASC, c2 DESC))");
+    }
+    
+    @Test
+    public void testCreateTableIssue924_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE test_descending_indexes (c1 INT, c2 INT, INDEX idx1 (c1 ASC, c2 ASC), INDEX idx2 (c1 ASC, c2 DESC), INDEX idx3 (c1 DESC, c2 ASC), INDEX idx4 (c1 DESC, c2 DESC))");
+    }
     
     @Test
     public void testCreateTableIssue921() throws JSQLParserException {

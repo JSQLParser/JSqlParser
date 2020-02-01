@@ -3562,12 +3562,43 @@ SubSelect SubSelect() #SubSelect:
     }
 }
 
+List<Index.ColumnParams> ColumnNamesWithParamsList() : {
+    List<Index.ColumnParams> colNames = new ArrayList<Index.ColumnParams>();
+    String columnName;
+    List<String> parameter = null;
+}
+{
+     "("
+    columnName=RelObjectName()
+
+    { parameter = null; }
+    [ parameter = CreateParameter() ]
+    {
+        colNames.add(new Index.ColumnParams(columnName,parameter));
+    }
+
+    (
+        ","
+        columnName=RelObjectName()
+
+        { parameter = null; }
+        [ parameter = CreateParameter() ]
+        {
+            colNames.add(new Index.ColumnParams(columnName,parameter));
+        }
+    )*
+
+    ")"
+
+    { return colNames; }
+}
+
 CreateIndex CreateIndex():
 {
     CreateIndex createIndex = new CreateIndex();
     Table table = null;
-    List<Index.ColumnParams> colNames = new ArrayList<Index.ColumnParams>();
-    Token columnName;
+    List<Index.ColumnParams> colNames; 
+    //Token columnName;
     Token using;
     Index index = null;
     //String name = null;
@@ -3591,31 +3622,8 @@ CreateIndex CreateIndex():
 
     [ <K_USING> using=<S_IDENTIFIER> {index.setUsing(using.image);} ]
 
-    "("
-    (columnName=<S_IDENTIFIER>
-    |
-    columnName=<S_QUOTED_IDENTIFIER>)
+    colNames = ColumnNamesWithParamsList()
 
-    { parameter = null; }
-    [ parameter = CreateParameter() ]
-    {
-        colNames.add(new Index.ColumnParams(columnName.image,parameter));
-    }
-
-    (
-        ","
-        (columnName=<S_IDENTIFIER>
-        |
-        columnName=<S_QUOTED_IDENTIFIER>)
-
-        { parameter = null; }
-        [ parameter = CreateParameter() ]
-        {
-            colNames.add(new Index.ColumnParams(columnName.image,parameter));
-        }
-    )*
-
-    ")"
     [ tailParameter = CreateParameter() {} ]
 
     {
@@ -3667,7 +3675,8 @@ CreateTable CreateTable():
     String stringList = null;
     ColumnDefinition coldef = null;
     List indexes = new ArrayList();
-    List colNames = null;
+    List<Index.ColumnParams> colNames = null;
+    List<String> colNames2 = null;
     Index index = null;
     ForeignKeyIndex fkIndex = null;
     List<String> parameter = new ArrayList<String>();
@@ -3702,12 +3711,13 @@ CreateTable CreateTable():
                 LOOKAHEAD(3) (
                     tk=<K_INDEX>
                         sk3=RelObjectName()
-                        colNames=ColumnsNamesList()
+                        /* colNames=ColumnsNamesList() */
+                        colNames = ColumnNamesWithParamsList()
                         {
                             index = new Index();
                             index.setType(tk.image);
                             index.setName(sk3);
-                            index.setColumnsNames(colNames);
+                            index.setColumnNamesWithParams(colNames);
                             indexes.add(index);
                         }
                 )
@@ -3721,10 +3731,11 @@ CreateTable CreateTable():
                     (tk=<K_PRIMARY> tk2=<K_KEY> {index.setType(tk.image + " " + tk2.image);}
                      | tk=<K_UNIQUE> [ tk2=<K_KEY> ] {index.setType(tk.image + (tk2!=null?" " + tk2.image:""));}
                      )
-                        colNames=ColumnsNamesList()
+                        /* colNames=ColumnsNamesList() */
+                        colNames = ColumnNamesWithParamsList()
                         ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                         {
-                            index.setColumnsNames(colNames);
+                            index.setColumnNamesWithParams(colNames);
                             index.setIndexSpec(idxSpec);
                             indexes.add(index);
                         }
@@ -3733,12 +3744,13 @@ CreateTable CreateTable():
                 LOOKAHEAD(3) ( {tk=null;}
                      [ tk=<K_UNIQUE> ] [ tk3=<K_FULLTEXT> ] tk2=<K_KEY>
                         sk3=RelObjectName()
-                        colNames=ColumnsNamesList()
+                        /* colNames=ColumnsNamesList() */
+                        colNames = ColumnNamesWithParamsList()
                         {
                             index = new Index();
                             index.setType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + tk2.image);
                             index.setName(sk3);
-                            index.setColumnsNames(colNames);
+                            index.setColumnNamesWithParams(colNames);
                             indexes.add(index);
                         }
                 )
@@ -3749,15 +3761,16 @@ CreateTable CreateTable():
                     }
                     [<K_CONSTRAINT> sk3=RelObjectName() {fkIndex.setName(sk3);} ]
                     tk=<K_FOREIGN> tk2=<K_KEY>
-                        colNames=ColumnsNamesList()
+                        /* colNames=ColumnsNamesList() */
+                        colNames = ColumnNamesWithParamsList()
                         {
                             fkIndex.setType(tk.image + " " + tk2.image);
-                            fkIndex.setColumnsNames(colNames);
+                            fkIndex.setColumnNamesWithParams(colNames);
                         }
-                        <K_REFERENCES> fkTable=Table() colNames=ColumnsNamesList()
+                        <K_REFERENCES> fkTable=Table() colNames2=ColumnsNamesList()
                         {
                             fkIndex.setTable(fkTable);
-                            fkIndex.setReferencedColumnNames(colNames);
+                            fkIndex.setReferencedColumnNames(colNames2);
                             indexes.add(fkIndex);
                         }
                         [LOOKAHEAD(2) (<K_ON> <K_DELETE> 
