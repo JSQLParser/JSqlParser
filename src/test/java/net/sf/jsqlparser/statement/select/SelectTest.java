@@ -4009,6 +4009,12 @@ public class SelectTest {
     }
     
     @Test
+    public void testOrderKeywordIssue932_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT group FROM tmp3");
+        assertSqlCanBeParsedAndDeparsed("SELECT tmp3.group FROM tmp3");
+    }
+    
+    @Test
     public void testTableFunctionInExprIssue923() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE func(a) IN func(b)");
     }
