@@ -73,6 +73,8 @@ Also I would like to know about needed examples or documentation stuff.
 * support for **ALTER TABLE COLUMN DROP NOT NULL**
 * allow **order** as column name
 * support for table function in **IN** expression
+* allow complex expressions within all of a **case when** statement
+* support for parameters in **create index** statement
 
 ## Extensions of JSqlParser releases
 
