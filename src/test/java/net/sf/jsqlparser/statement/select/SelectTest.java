@@ -4049,5 +4049,8 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE func(a) IN '1'");
     }
     
-    
+    @Test
+    public void testKeyWordCreateIssue941() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT b.create FROM table b WHERE b.id = 1");
+    }
 }
