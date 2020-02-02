@@ -1872,6 +1872,7 @@ Join JoinerExpression() #JoinerExpression:
         | <K_INNER> { join.setInner(true); }
         | <K_NATURAL> { join.setNatural(true); }
         | <K_CROSS> { join.setCross(true); }
+        | <K_OUTER> { join.setOuter(true); }
     ]
 
           ( <K_JOIN> | "," { join.setSimple(true); } (<K_OUTER> { join.setOuter(true); } )?

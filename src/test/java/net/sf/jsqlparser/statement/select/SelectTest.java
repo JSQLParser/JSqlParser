@@ -3972,6 +3972,11 @@ public class SelectTest {
                 + "            else calc1.student_full_name end as summary\n"
                 + ") calc2", true);
     }
+    
+    @Test
+    public void testOuterApplyIssue930() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable D OUTER APPLY (SELECT * FROM mytable2 E WHERE E.ColID = D.ColID) A");
+    }
 
     @Test
     public void testWrongParseTreeIssue89() throws JSQLParserException {
