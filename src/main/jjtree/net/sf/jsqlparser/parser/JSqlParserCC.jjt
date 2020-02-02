@@ -1095,7 +1095,7 @@ List<String> RelObjectNameList() : {
     List<String> data = new ArrayList<String>();
 } {
     token = RelObjectName() { data.add(token); }
-    ( LOOKAHEAD (2) "." ("." { data.add(null); })* token = RelObjectName() { data.add(token); } ) *
+    ( LOOKAHEAD (2) "." ("." { data.add(null); })* token = RelObjectNameExt2() { data.add(token); } ) *
 
     { return data; }
 }
@@ -1104,8 +1104,6 @@ List<String> RelObjectNameList() : {
 
 Column Column() #Column :
 {
-    //String databaseName = null, schemaName = null, tableName = null, columnName = null;
-    //String token = null;
     List<String> data = new ArrayList<String>();
 }
 {
@@ -1189,14 +1187,14 @@ String RelObjectNameExt():
 }
 
 /*
-Extended usage of object names - part 2.
+Extended usage of object names - part 2. Using within multipart names as following parts.
 */
 String RelObjectNameExt2():
 { Token tk = null;
   String result=null;
 } 
 {
-    ( result=RelObjectNameExt() | tk=<K_FROM> )
+    ( result=RelObjectNameExt() | tk=<K_FROM> | tk=<K_SELECT> )
     {
         if (tk!=null) result=tk.image;
         return result;

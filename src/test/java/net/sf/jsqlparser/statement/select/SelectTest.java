@@ -4053,4 +4053,10 @@ public class SelectTest {
     public void testKeyWordCreateIssue941() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT b.create FROM table b WHERE b.id = 1");
     }
+    
+    
+    @Test
+    public void testKeyWordCreateIssue941_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select f.select from `from` f", true);
+    }
 }
