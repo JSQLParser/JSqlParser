@@ -3084,8 +3084,8 @@ JsonExpression JsonExpression() : {
 }
 {
     column=Column() (
-        "->" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"->");} | 
-        "->>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"->>");} |
+        "->" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->");} | 
+        "->>" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->>");} |
         "#>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>");} |
         "#>>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>>");}
     )+

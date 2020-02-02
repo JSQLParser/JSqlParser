@@ -75,6 +75,9 @@ Also I would like to know about needed examples or documentation stuff.
 * support for table function in **IN** expression
 * allow complex expressions within all of a **case when** statement
 * support for parameters in **create index** statement
+* support for integer parameters for **->>** and **->** JSON expressions
+* support for more keywords in following parts of multipart object names (e.g. **mytab.select, mytab.create, ...**)
+* support for **OUTER APPLY**
 
 ## Extensions of JSqlParser releases
 

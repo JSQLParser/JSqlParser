@@ -2584,6 +2584,11 @@ public class SelectTest {
             assertStatementCanBeDeparsedAs(select, statement, true);
         }
     }
+    
+    @Test
+    public void testJsonExpressionWithIntegerParameterIssue909() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select uc.\"id\", u.nickname, u.avatar, b.title, uc.images, uc.created_at as createdAt from library.ugc_comment uc INNER JOIN library.book b on (uc.books_id ->> 0)::INTEGER = b.\"id\" INNER JOIN library.users u ON uc.user_id = u.user_id where uc.id = 1", true);
+    }
 
     @Test
     public void testSqlNoCache() throws JSQLParserException {
