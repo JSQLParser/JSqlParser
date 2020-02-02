@@ -2969,7 +2969,7 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD(2) retval=CastExpression()
 
         // support timestamp expressions
-        | token=<K_TIME_KEY_EXPR> { retval = new TimeKeyExpression(token.image); }
+        | (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
 
         | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
 
@@ -3225,7 +3225,7 @@ WindowOffset WindowOffset():
 											<K_FOLLOWING> { offset.setType(WindowOffset.Type.FOLLOWING); } )
 		) 
 		|
-		( <K_CURRENT> <K_ROW> { offset.setType(WindowOffset.Type.CURRENT); } ) 
+		LOOKAHEAD(2) ( <K_CURRENT> <K_ROW> { offset.setType(WindowOffset.Type.CURRENT); } ) 
 		|
 		( expr = SimpleExpression() {
 			offset.setType(WindowOffset.Type.EXPR); 

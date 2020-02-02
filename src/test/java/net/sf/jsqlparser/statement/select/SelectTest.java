@@ -4059,4 +4059,9 @@ public class SelectTest {
     public void testKeyWordCreateIssue941_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select f.select from `from` f", true);
     }
+    
+    @Test
+    public void testCurrentIssue940() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT date(current) AS test_date FROM systables WHERE tabid = 1");
+    }
 }
