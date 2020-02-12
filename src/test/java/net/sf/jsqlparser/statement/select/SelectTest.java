@@ -3202,6 +3202,11 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 IGNORE INDEX (index1,index2)");
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 FORCE INDEX (index1,index2)");
     }
+    
+    @Test
+    public void testSqlServerHints() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM TB_Sys_Pedido WITH(nolock) WHERE ID_Pedido = :ID_Pedido");
+    }
 
     @Test
     public void testProblemIssue435() throws JSQLParserException {
@@ -4073,5 +4078,10 @@ public class SelectTest {
     @Test
     public void testCurrentIssue940() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT date(current) AS test_date FROM systables WHERE tabid = 1");
+    }
+    
+    @Test
+    public void testKeyWordView() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ma.m_a_id, ma.anounsment, ma.max_view, ma.end_date, ma.view FROM member_anounsment as ma WHERE ( ( (ma.end_date > now() ) AND (ma.max_view >= ma.view) ) AND ( (ma.member_id='xxx') ) )", true);
     }
 }

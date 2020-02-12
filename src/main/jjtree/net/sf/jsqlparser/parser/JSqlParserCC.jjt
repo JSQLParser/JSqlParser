@@ -418,7 +418,7 @@ Statement SingleStatement() :
         |
         stm = Delete()
         |
-		LOOKAHEAD(2)
+	LOOKAHEAD(3)
         stm = Replace()
         |
         LOOKAHEAD(2)
@@ -1136,6 +1136,7 @@ String RelObjectNameWithoutValue() :
 	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
       | tk=<K_READ> | tk=<K_SIZE> | tk=<K_SESSION>
+      | tk=<K_VIEW>
 /*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
 
