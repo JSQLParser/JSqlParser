@@ -81,6 +81,7 @@ Also I would like to know about needed examples or documentation stuff.
 * support for **WITH(NOLOCK)**
 * support for **VIEW** as object name
 * functions hold now multipart names
+* support for **DISABLE** as object name
 
 ## Extensions of JSqlParser releases
 

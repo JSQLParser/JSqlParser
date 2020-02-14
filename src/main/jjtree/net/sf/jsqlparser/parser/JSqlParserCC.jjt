@@ -1124,7 +1124,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE> | tk=<K_CHARACTER>
-      | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> 
+      | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_DISABLE> | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> 
       | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE> 
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_XML>
       | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>
