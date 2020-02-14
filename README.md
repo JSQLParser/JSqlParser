@@ -80,6 +80,7 @@ Also I would like to know about needed examples or documentation stuff.
 * support for **OUTER APPLY**
 * support for **WITH(NOLOCK)**
 * support for **VIEW** as object name
+* functions hold now multipart names
 
 ## Extensions of JSqlParser releases
 
