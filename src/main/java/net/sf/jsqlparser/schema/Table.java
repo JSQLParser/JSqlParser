@@ -34,7 +34,8 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     private Alias alias;
     private Pivot pivot;
     private UnPivot unpivot;
-    private MySQLIndexHint hint;
+    private MySQLIndexHint mysqlHints;
+    private SQLServerHints sqlServerHints;
 
     public Table() {
     }
@@ -160,11 +161,19 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     public MySQLIndexHint getIndexHint() {
-        return hint;
+        return mysqlHints;
     }
 
     public void setHint(MySQLIndexHint hint) {
-        this.hint = hint;
+        this.mysqlHints = hint;
+    }
+
+    public SQLServerHints getSqlServerHints() {
+        return sqlServerHints;
+    }
+
+    public void setSqlServerHints(SQLServerHints sqlServerHints) {
+        this.sqlServerHints = sqlServerHints;
     }
 
     @Override
@@ -173,6 +182,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
                 + ((alias != null) ? alias.toString() : "")
                 + ((pivot != null) ? " " + pivot : "")
                 + ((unpivot != null) ? " " + unpivot : "")
-                + ((hint != null) ? hint.toString() : "");
+                + ((mysqlHints != null) ? mysqlHints.toString() : "")
+                + ((sqlServerHints != null) ? sqlServerHints.toString() : "");
     }
 }

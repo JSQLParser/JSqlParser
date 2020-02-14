@@ -238,6 +238,10 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         if (indexHint != null) {
             buffer.append(indexHint);
         }
+        SQLServerHints sqlServerHints = tableName.getSqlServerHints();
+        if (sqlServerHints != null) {
+            buffer.append(sqlServerHints);
+        }
     }
 
     @Override

@@ -229,6 +229,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_NEXTVAL:"NEXTVAL">
 |   <K_NO:"NO">
 |   <K_NOCYCLE:"NOCYCLE">
+|   <K_NOLOCK:"NOLOCK">
 |   <K_NOT:"NOT">
 |   <K_NOVALIDATE : "NOVALIDATE">
 |   <K_NULL:"NULL">
@@ -1136,7 +1137,7 @@ String RelObjectNameWithoutValue() :
 	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
       | tk=<K_READ> | tk=<K_SIZE> | tk=<K_SESSION>
-      | tk=<K_VIEW>
+      | tk=<K_VIEW> | <K_NOLOCK>
 /*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
 
@@ -1501,6 +1502,17 @@ Alias Alias():
     { return alias; }
 }
 
+SQLServerHints SQLServerHints() : {
+    SQLServerHints hints = new SQLServerHints();
+}
+{
+    <K_WITH> "("
+        //at the moment only nolock
+        <K_NOLOCK> { hints.withNoLock(); }
+    ")"
+    { return hints; }
+}
+
 MySQLIndexHint MySQLIndexHint():
 {
 	Token actionToken = null;
@@ -1711,6 +1723,7 @@ FromItem FromItem():
     UnPivot unpivot = null;
     Alias alias = null;
     MySQLIndexHint indexHint = null;
+    SQLServerHints sqlServerHints = null;
 }
 {
     (
@@ -1746,10 +1759,17 @@ FromItem FromItem():
 			[(LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot()) { fromItem.setPivot(pivot); } ]
             [
                 LOOKAHEAD(2)
-                indexHint=MySQLIndexHint() {
-                    if (fromItem instanceof Table)
-						((Table) fromItem).setHint(indexHint);
-                }
+                (
+                    indexHint = MySQLIndexHint() {
+                        if (fromItem instanceof Table)
+                                                    ((Table) fromItem).setHint(indexHint);
+                    }
+                    |
+                    sqlServerHints = SQLServerHints() {
+                        if (fromItem instanceof Table)
+                                                    ((Table) fromItem).setSqlServerHints(sqlServerHints);
+                    }
+                )
             ]
         )
     )
