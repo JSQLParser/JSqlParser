@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Arrays;
+import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -18,7 +20,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
  */
 public class Function extends ASTNodeAccessImpl implements Expression {
 
-    private String name;
+    private List<String> nameparts;
     private ExpressionList parameters;
     private NamedExpressionList namedParameters;
     private boolean allColumns = false;
@@ -35,11 +37,19 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     public String getName() {
-        return name;
+        return nameparts == null ? null : String.join(".", nameparts);
+    }
+    
+    public List<String> getMultipartName() {
+        return nameparts;
     }
 
     public void setName(String string) {
-        name = string;
+        nameparts = Arrays.asList(string);
+    }
+    
+    public void setName(List<String> string) {
+        nameparts = string;
     }
 
     public boolean isAllColumns() {
@@ -162,7 +172,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
             params = "()";
         }
 
-        String ans = name + "" + params + "";
+        String ans = getName() + "" + params + "";
 
         if (attribute != null) {
             ans += "." + attribute.toString();

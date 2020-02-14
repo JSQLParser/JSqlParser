@@ -1095,7 +1095,7 @@ List<String> RelObjectNameList() : {
     String token = null;
     List<String> data = new ArrayList<String>();
 } {
-    token = RelObjectName() { data.add(token); }
+    token = RelObjectNameExt() { data.add(token); }
     ( LOOKAHEAD (2) "." ("." { data.add(null); })* token = RelObjectNameExt2() { data.add(token); } ) *
 
     { return data; }
@@ -3474,7 +3474,7 @@ Function Function() #Function:
 
 Function InternalFunction(Function retval) :
 {
-    String funcName = null;
+    List<String> funcName;
     String tmp = null;
     List<Expression> expressions = new ArrayList<Expression>();
     ExpressionList expressionList = null;
@@ -3487,9 +3487,11 @@ Function InternalFunction(Function retval) :
     boolean ignoreNulls = false;
 }
 {
-    funcName=RelObjectNameExt()
-
+    /*funcName=RelObjectNameExt()
     [ "." tmp=RelObjectNameExt() { funcName+= "." + tmp; } ["." tmp=RelObjectNameExt() { funcName+= "." + tmp; }]]
+    */
+    funcName = RelObjectNameList()
+
     "(" [ [ LOOKAHEAD(2)(<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }) ]
         ( LOOKAHEAD(4)
             "*" { retval.setAllColumns(true); }
@@ -3716,7 +3718,7 @@ CreateTable CreateTable():
     (parameter = CreateParameter() { createOptions.addAll(parameter); })*
 
     <K_TABLE> 
-    [ <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
+    [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
     table=Table()
     [
         ("("
@@ -4116,7 +4118,7 @@ Drop Drop():
     )
     { drop.setType(tk.image); }
 
-    [<K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
 
     name = Table() { drop.setName(name); }
     ((tk=<S_IDENTIFIER> | tk=<K_CASCADE> | tk=<K_RESTRICT> ) { dropArgs.add(tk.image); })*

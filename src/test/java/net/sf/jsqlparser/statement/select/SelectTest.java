@@ -3452,6 +3452,11 @@ public class SelectTest {
     public void testMultiPartNamesIssue608() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @@sessions.tx_read_only");
     }
+    
+    @Test
+    public void testMultiPartNamesForFunctionsIssue944() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT pg_catalog.now()");
+    }
 
 //    Teradata allows SEL to be used in place of SELECT
 //    Deparse to the non-contracted form
