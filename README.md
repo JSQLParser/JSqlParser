@@ -78,6 +78,8 @@ Also I would like to know about needed examples or documentation stuff.
 * support for integer parameters for **->>** and **->** JSON expressions
 * support for more keywords in following parts of multipart object names (e.g. **mytab.select, mytab.create, ...**)
 * support for **OUTER APPLY**
+* support for **WITH(NOLOCK)**
+* support for **VIEW** as object name
 
 ## Extensions of JSqlParser releases
 
