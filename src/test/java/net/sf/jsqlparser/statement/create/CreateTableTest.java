@@ -438,8 +438,8 @@ public class CreateTableTest {
                             }
 
                             if (!unique) {
-                                if (columnDefinition.getColumnSpecStrings() != null) {
-                                    for (Iterator iterator = columnDefinition.getColumnSpecStrings().
+                                if (columnDefinition.getColumnSpecs() != null) {
+                                    for (Iterator iterator = columnDefinition.getColumnSpecs().
                                             iterator(); iterator
                                                     .hasNext();) {
                                         String par = (String) iterator.next();

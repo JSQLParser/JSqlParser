@@ -82,6 +82,7 @@ Also I would like to know about needed examples or documentation stuff.
 * support for **VIEW** as object name
 * functions hold now multipart names
 * support for **DISABLE** as object name
+* API change in `ColumnDefinition.setColumnSpecStrings` to `ColumnDefinition.setColumnSpecs` to better allow the merge between `AlterExpression.ColumnDataType` and `ColumnDefinition`
 
 ## Extensions of JSqlParser releases
 

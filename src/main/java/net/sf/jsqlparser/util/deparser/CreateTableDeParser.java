@@ -68,8 +68,8 @@ public class CreateTableDeParser {
                     buffer.append(columnDefinition.getColumnName());
                     buffer.append(" ");
                     buffer.append(columnDefinition.getColDataType().toString());
-                    if (columnDefinition.getColumnSpecStrings() != null) {
-                        for (String s : columnDefinition.getColumnSpecStrings()) {
+                    if (columnDefinition.getColumnSpecs() != null) {
+                        for (String s : columnDefinition.getColumnSpecs()) {
                             buffer.append(" ");
                             buffer.append(s);
                         }

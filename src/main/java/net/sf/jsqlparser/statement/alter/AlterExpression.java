@@ -11,9 +11,9 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -320,49 +320,21 @@ public class AlterExpression {
         return b.toString();
     }
 
-    public static class ColumnDataType {
-
-        private final String columnName;
+    public final static class ColumnDataType extends ColumnDefinition {
         private final boolean withType;
-        private final ColDataType colDataType;
-        private final List<String> columnSpecs;
 
         public ColumnDataType(String columnName, boolean withType, ColDataType colDataType, List<String> columnSpecs) {
-            this.columnName = columnName;
+            super(columnName, colDataType, columnSpecs);
             this.withType = withType;
-            this.colDataType = colDataType;
-            this.columnSpecs = columnSpecs;
-        }
-
-        public String getColumnName() {
-            return columnName;
-        }
-
-        public ColDataType getColDataType() {
-            return colDataType;
-        }
-
-        public List<String> getColumnSpecs() {
-            if (columnSpecs == null) {
-                return Collections.emptyList();
-            }
-            return Collections.unmodifiableList(columnSpecs);
         }
 
         @Override
         public String toString() {
-            return columnName + (withType ? " TYPE " : " ") + colDataType + parametersToString();
-        }
-
-        private String parametersToString() {
-            if (columnSpecs == null || columnSpecs.isEmpty()) {
-                return "";
-            }
-            return " " + PlainSelect.getStringList(columnSpecs, false, false);
+            return getColumnName() + (withType ? " TYPE " : " ") + toStringDataTypeAndSpec();
         }
     }
 
-    public static class ColumnDropNotNull {
+    public final static class ColumnDropNotNull {
 
         private final String columnName;
         private final boolean withNot;

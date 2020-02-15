@@ -3675,7 +3675,7 @@ ColumnDefinition ColumnDefinition(): {
         coldef.setColumnName(columnName);
         coldef.setColDataType(colDataType);
         if (columnSpecs.size() > 0)
-            coldef.setColumnSpecStrings(columnSpecs);
+            coldef.setColumnSpecs(columnSpecs);
         return coldef;
     }
 }
@@ -3842,7 +3842,7 @@ CreateTable CreateTable():
                         coldef.setColumnName(columnName);
                         coldef.setColDataType(colDataType);
                         if (columnSpecs.size() > 0)
-                            coldef.setColumnSpecStrings(columnSpecs);
+                            coldef.setColumnSpecs(columnSpecs);
                         columnDefinitions.add(coldef);
                     } */
                     { columnDefinitions.add(coldef); }

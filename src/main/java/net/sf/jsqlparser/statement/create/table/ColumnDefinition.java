@@ -13,18 +13,30 @@ import java.util.List;
 
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
+/**
+ * Globally used definition class for columns.
+ */
 public class ColumnDefinition {
 
     private String columnName;
     private ColDataType colDataType;
-    private List<String> columnSpecStrings;
+    private List<String> columnSpecs;
 
-    public List<String> getColumnSpecStrings() {
-        return columnSpecStrings;
+    public ColumnDefinition() {
     }
 
-    public void setColumnSpecStrings(List<String> list) {
-        columnSpecStrings = list;
+    public ColumnDefinition(String columnName, ColDataType colDataType, List<String> columnSpecs) {
+        this.columnName = columnName;
+        this.colDataType = colDataType;
+        this.columnSpecs = columnSpecs;
+    }
+
+    public List<String> getColumnSpecs() {
+        return columnSpecs;
+    }
+
+    public void setColumnSpecs(List<String> list) {
+        columnSpecs = list;
     }
 
     public ColDataType getColDataType() {
@@ -45,7 +57,11 @@ public class ColumnDefinition {
 
     @Override
     public String toString() {
-        return columnName + " " + colDataType + (columnSpecStrings != null ? " " + PlainSelect.
-                getStringList(columnSpecStrings, false, false) : "");
+        return columnName + " " + toStringDataTypeAndSpec();
+    }
+    
+    public String toStringDataTypeAndSpec() {
+        return colDataType + ((columnSpecs != null && !columnSpecs.isEmpty())? " " + PlainSelect.
+                getStringList(columnSpecs, false, false) : "");
     }
 }
