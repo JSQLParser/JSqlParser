@@ -1900,6 +1900,16 @@ public class SelectTest {
     public void testAnalyticFunctionFilterIssue866() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) FILTER (WHERE name = 'Raj') OVER (PARTITION BY name ) FROM table");
     }
+    
+    @Test
+    public void testAnalyticPartitionBooleanExpressionIssue864() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) OVER (PARTITION BY (event = 'admit' OR event = 'family visit') ORDER BY day ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) family_visits FROM patients");
+    }
+    
+    @Test
+    public void testAnalyticPartitionBooleanExpressionIssue864_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) OVER (PARTITION BY (event = 'admit' OR event = 'family visit') ) family_visits FROM patients");
+    }
 
     @Test
     public void testFunctionLeft() throws JSQLParserException {

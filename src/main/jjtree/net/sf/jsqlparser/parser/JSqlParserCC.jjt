@@ -3196,7 +3196,8 @@ AnalyticExpression AnalyticExpression(Function function) :
 
     "("
         [<K_PARTITION> <K_BY> 
-            (LOOKAHEAD(3) expressionList=SimpleExpressionList() | "(" {partitionByBrackets = true;} expressionList=SimpleExpressionList() ")" ) 
+            (LOOKAHEAD(ComplexExpressionList()) expressionList=ComplexExpressionList() 
+            | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" ) 
         ]
         [olist=OrderByElements() ]
         [windowElement = WindowElement() ]
