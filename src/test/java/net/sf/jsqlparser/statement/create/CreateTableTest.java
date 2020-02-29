@@ -569,20 +569,35 @@ public class CreateTableTest {
 
         assertEquals("GBK", colName.getColDataType().getCharacterSet());
     }
-    
+
     @Test
     public void testCreateTableIssue924() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE test_descending_indexes (c1 INT, c2 INT, INDEX idx1 (c1 ASC, c2 DESC))");
     }
-    
+
     @Test
     public void testCreateTableIssue924_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE test_descending_indexes (c1 INT, c2 INT, INDEX idx1 (c1 ASC, c2 ASC), INDEX idx2 (c1 ASC, c2 DESC), INDEX idx3 (c1 DESC, c2 ASC), INDEX idx4 (c1 DESC, c2 DESC))");
     }
-    
+
     @Test
     public void testCreateTableIssue921() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE binary_test (c1 binary (10))");
     }
-}
 
+    @Test
+    public void testCreateTableWithComments() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE IF NOT EXISTS `eai_applications`(\n"
+                + "  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'comment',\n"
+                + "  `name` varchar(64) NOT NULL COMMENT 'comment',\n"
+                + "  `logo` varchar(128) DEFAULT NULL COMMENT 'comment',\n"
+                + "  `description` varchar(128) DEFAULT NULL COMMENT 'comment',\n"
+                + "  `type` int(11) NOT NULL COMMENT 'comment',\n"
+                + "  `status` tinyint(2) NOT NULL COMMENT 'comment',\n"
+                + "  `creator_id` bigint(20) NOT NULL COMMENT 'comment',\n"
+                + "  `created_at` datetime NOT NULL COMMENT 'comment',\n"
+                + "  `updated_at` datetime NOT NULL COMMENT 'comment',\n"
+                + "  PRIMARY KEY (`id`)\n"
+                + ") COMMENT='comment'", true);
+    }
+}
