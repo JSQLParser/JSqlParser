@@ -3769,11 +3769,13 @@ CreateTable CreateTable():
                         sk3=RelObjectName()
                         /* colNames=ColumnsNamesList() */
                         colNames = ColumnNamesWithParamsList()
+                        ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                         {
                             index = new Index();
                             index.setType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + tk2.image);
                             index.setName(sk3);
                             index.setColumnNamesWithParams(colNames);
+                            index.setIndexSpec(idxSpec);
                             indexes.add(index);
                         }
                 )

@@ -600,4 +600,13 @@ public class CreateTableTest {
                 + "  PRIMARY KEY (`id`)\n"
                 + ") COMMENT='comment'", true);
     }
+
+    @Test
+    public void testCreateTableWithCommentIssue922() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE index_with_comment_test (\n"
+                + "id int(11) NOT NULL,\n"
+                + "name varchar(60) DEFAULT NULL,\n"
+                + "KEY name_ind (name) COMMENT 'comment for the name index'\n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8", true);
+    }
 }
