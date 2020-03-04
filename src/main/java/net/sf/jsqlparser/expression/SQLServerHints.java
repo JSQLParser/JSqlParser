@@ -9,9 +9,13 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SQLServerHints {
 
     private Boolean noLock;
+    private String indexName;
 
     public SQLServerHints() {
     }
@@ -29,10 +33,25 @@ public class SQLServerHints {
         this.noLock = noLock;
     }
 
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
+    }
+
     @Override
     public String toString() {
-        return " WITH("
-                + (noLock != null ? "nolock" : "")
+        List<String> hints = new ArrayList<>();
+        if (indexName != null) {
+            hints.add("INDEX (" + indexName + ")");
+        }
+        if (Boolean.TRUE.equals(noLock)) {
+            hints.add("NOLOCK");
+        }
+        return " WITH ("
+                + String.join(", ", hints)
                 + ")";
     }
 }

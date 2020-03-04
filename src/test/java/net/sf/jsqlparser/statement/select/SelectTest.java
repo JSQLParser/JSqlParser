@@ -3215,7 +3215,17 @@ public class SelectTest {
     
     @Test
     public void testSqlServerHints() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT * FROM TB_Sys_Pedido WITH(nolock) WHERE ID_Pedido = :ID_Pedido");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM TB_Sys_Pedido WITH (NOLOCK) WHERE ID_Pedido = :ID_Pedido");
+    }
+    
+    @Test
+    public void testSqlServerHintsWithIndexIssue915() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM tableName1 WITH (INDEX (idx1), NOLOCK)");
+    }
+    
+    @Test
+    public void testSqlServerHintsWithIndexIssue915_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM tableName1 AS t1 WITH (INDEX (idx1)) JOIN tableName2 AS t2 WITH (INDEX (idx2)) ON t1.id = t2.id");
     }
 
     @Test

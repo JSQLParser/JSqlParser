@@ -1502,13 +1502,21 @@ Alias Alias():
     { return alias; }
 }
 
+void SQLServerHint(SQLServerHints hints) : {
+    String str;
+}
+{
+        <K_INDEX> "(" str = RelObjectName() ")" { hints.setIndexName(str); }
+        |
+        <K_NOLOCK> { hints.withNoLock(); }
+}
+
 SQLServerHints SQLServerHints() : {
     SQLServerHints hints = new SQLServerHints();
 }
 {
     <K_WITH> "("
-        //at the moment only nolock
-        <K_NOLOCK> { hints.withNoLock(); }
+        SQLServerHint(hints) ("," SQLServerHint(hints) )*
     ")"
     { return hints; }
 }
