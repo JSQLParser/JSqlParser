@@ -39,6 +39,7 @@ import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.comment.*;
 import net.sf.jsqlparser.statement.create.index.*;
+import net.sf.jsqlparser.statement.create.schema.*;
 import net.sf.jsqlparser.statement.create.table.*;
 import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
@@ -124,6 +125,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_APPLY:"APPLY">
 |   <K_AS: "AS">
 |   <K_ASC:"ASC">
+|   <K_AUTHORIZATION:"AUTHORIZATION">
 |   <K_BEGIN:"BEGIN">
 |   <K_BETWEEN:"BETWEEN">
 |   <K_BINARY: "BINARY">  
@@ -152,6 +154,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DECLARE: "DECLARE">
 |   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
 |   <K_DATE_LITERAL : ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" ) >
+|   <K_DEFAULT : "DEFAULT">
 |   <K_DEFERRABLE : "DEFERRABLE">
 |   <K_DELAYED : "DELAYED">
 |   <K_DELETE:"DELETE">
@@ -266,6 +269,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_RIGHT:"RIGHT">
 |   <K_ROW: "ROW"> 
 |   <K_ROWS: "ROWS">
+|   <K_SCHEMA: "SCHEMA">
 |   <K_SELECT: ("SELECT" | "SEL")>
 |   <K_SEMI : "SEMI">
 |   <K_SEPARATOR:"SEPARATOR">
@@ -429,6 +433,9 @@ Statement SingleStatement() :
         |
         LOOKAHEAD(CreateIndex())
         stm = CreateIndex()
+        |
+        LOOKAHEAD(CreateSchema())
+        stm = CreateSchema()
         |
         LOOKAHEAD(CreateTable())
         stm = CreateTable()
@@ -1136,7 +1143,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TYPE> | tk=<K_ISNULL> 
 	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
-      | tk=<K_READ> | tk=<K_SIZE> | tk=<K_SESSION>
+      | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIZE> | tk=<K_SESSION>
       | tk=<K_VIEW> | <K_NOLOCK>
 /*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
@@ -3689,6 +3696,60 @@ ColumnDefinition ColumnDefinition(): {
     }
 }
 
+CreateSchema CreateSchema():
+{
+    Token tk = null;
+    CreateTable table = null;
+    CreateView view = null;
+    CreateSchema schema = new CreateSchema();
+    //schema.setSchemaName(System.getProperty("user.name"));
+    //schema.setAuthorization(System.getProperty("user.name"));
+    List<String> schemaPath = null;
+    List<Statement> statements = new ArrayList<Statement>();
+}
+{
+    <K_CREATE> <K_SCHEMA>
+    [ ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setSchemaName(tk.image); } ]
+    [ <K_AUTHORIZATION>
+        (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setAuthorization(tk.image); }
+    ]
+       
+    /* [ <K_DEFAULT> <K_CHARACTER> <K_SET> tk=<S_QUOTED_IDENTIFIER> | <S_IDENTIFIER> {} ] */
+
+    [schemaPath=PathSpecification() { schema.setSchemaPath(schemaPath); }]
+
+    (
+        LOOKAHEAD(3)
+        table = CreateTable()
+        {
+            table.getTable().setSchemaName(schema.getSchemaName());
+            schema.addStatement(table);
+        }
+        | view = CreateView()
+        {
+            view.getView().setSchemaName(schema.getSchemaName());
+            schema.addStatement(view);
+        }
+
+    )*
+    {
+        return schema;
+    }
+}
+
+List<String> PathSpecification():
+{
+    Token tk;
+    List<String> pathList = new ArrayList<String>();
+}
+{
+    <K_PATH> (tk=<S_IDENTIFIER>|tk=<S_QUOTED_IDENTIFIER>) { pathList.add(tk.image); }
+        ("," (tk=<S_IDENTIFIER>|tk=<S_QUOTED_IDENTIFIER>) { pathList.add(tk.image); })*
+    {
+        return pathList;
+    }
+}
+
 CreateTable CreateTable():
 {
     CreateTable createTable = new CreateTable();
@@ -3982,6 +4043,8 @@ List<String> CreateParameter():
             |
             tk=<K_PRIMARY> { param.add(tk.image); }
             |
+            tk=<K_DEFAULT> { param.add(tk.image); }
+            |
             tk=<K_FOREIGN> { param.add(tk.image); }
             |
             tk=<K_REFERENCES> { param.add(tk.image); }
@@ -4126,6 +4189,8 @@ Drop Drop():
         tk=<K_INDEX>
         |
         tk=<K_VIEW>
+        |
+        tk=<K_SCHEMA>
     )
     { drop.setType(tk.image); }
 

@@ -63,4 +63,9 @@ public class DropTest {
     public void testDropViewIssue545_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP VIEW IF EXISTS myview");
     }
+    
+    @Test
+    public void testDropSchemaIssue855() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP SCHEMA myschema");
+    }
 }
