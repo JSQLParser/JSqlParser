@@ -56,7 +56,7 @@ public class GrantTest {
     }
 
     @Test
-    public void testDropRestrictIssue510() throws JSQLParserException {
+    public void testGrantRole() throws JSQLParserException {
         String statement = "GRANT role1 TO u, u2";
         Grant grant = (Grant) parserManager.parse(new StringReader(statement));
 
@@ -72,12 +72,12 @@ public class GrantTest {
     }
 
     @Test
-    public void testDropViewIssue545() throws JSQLParserException {
+    public void testGrantQueryWithPrivileges() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("GRANT SELECT, INSERT, UPDATE, DELETE ON T1 TO ADMIN_ROLE");
     }
 
     @Test
-    public void testDropSchemaIssue8556() throws JSQLParserException {
+    public void testGrantQueryWithRole() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("GRANT ROLE_1 TO TEST_ROLE_1, TEST_ROLE_2");
     }
 }
