@@ -53,6 +53,7 @@ import net.sf.jsqlparser.statement.update.*;
 import net.sf.jsqlparser.statement.upsert.*;
 import net.sf.jsqlparser.statement.merge.*;
 import net.sf.jsqlparser.statement.values.*;
+import net.sf.jsqlparser.statement.grant.*;
 import java.util.*;
 
 /**
@@ -144,6 +145,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_COLLATE:"COLLATE">
 |   <K_COLUMN:"COLUMN">
 |   <K_COLUMNS:"COLUMNS">
+|   <K_COMMA: ",">
 |   <K_COMMIT:"COMMIT">
 |   <K_COMMENT:"COMMENT">
 |   <K_CONNECT:"CONNECT">
@@ -189,6 +191,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_FROM:"FROM">
 |   <K_FULL:"FULL">
 |   <K_FULLTEXT:"FULLTEXT">
+|   <K_GRANT:"GRANT">
 |   <K_GROUP:"GROUP">
 |   <K_GROUPING:"GROUPING">
 |   <K_GROUP_CONCAT:"GROUP_CONCAT">
@@ -468,6 +471,8 @@ Statement SingleStatement() :
         stm = Explain()
         |
         stm = Declare()
+        |
+        stm = Grant()
         )
 		{ return stm; }
     } catch (ParseException e) {
@@ -578,6 +583,8 @@ DeclareStatement Declare(): {
        return stmt;
     }
 }
+
+
 
 SetStatement Set(): {
     String name;
@@ -4563,4 +4570,61 @@ Comment Comment():
     {
         return result;
     }
+}
+
+Grant Grant():
+{
+	Grant grant = new Grant();
+	ArrayList<String> privileges = new ArrayList<String>();
+	List<String> users;
+	Token tk = null;
+}
+{
+	<K_GRANT>
+	(
+	    (
+            [readGrantTypes(privileges) (<K_COMMA> readGrantTypes(privileges))*]
+            <K_ON>
+                (
+                    tk=<S_IDENTIFIER> { grant.setObjectName(tk.image); }
+                )
+        )
+        |
+        (
+            tk=<S_IDENTIFIER> { grant.setRole(tk.image); }
+        )
+    )
+	<K_TO> (users = UsersList() {grant.setUsers(users);})
+	{
+        if(privileges.size() > 0) {
+            grant.setPrivileges(privileges);
+        }
+		return grant;
+	}
+}
+
+List<String> UsersList():
+{
+    List<String> users = new ArrayList<String>();
+    String user = null;
+}
+{
+         user=RelObjectName() { users.add(user); }
+         ( "," user=ColumnsNamesListItem() { users.add(user); } )*
+    {
+        return users;
+    }
+}
+
+void readGrantTypes(ArrayList<String> privileges):
+{
+}
+{
+    <K_SELECT> {privileges.add("SELECT");} |
+    <K_INSERT> {privileges.add("INSERT");} |
+    <K_UPDATE> {privileges.add("UPDATE");} |
+    <K_DELETE> {privileges.add("DELETE");} |
+    <K_EXECUTE> {privileges.add("EXECUTE");} |
+    <K_ALTER> {privileges.add("ALTER");} |
+    <K_DROP> {privileges.add("DROP");}
 }
