@@ -243,7 +243,11 @@ public class AlterExpression {
         b.append(operation).append(" ");
 
         if (columnName != null) {
-            b.append("COLUMN ").append(columnName);
+            b.append("COLUMN ");
+            if (operation == AlterOperation.RENAME) {
+                b.append(columnOldName).append(" TO ");
+            }
+            b.append(columnName);
         } else if (getColDataTypeList() != null) {
             if (operation == AlterOperation.CHANGE) {
                 if (optionalSpecifier != null) {

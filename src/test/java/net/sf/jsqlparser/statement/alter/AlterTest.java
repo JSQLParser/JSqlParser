@@ -402,4 +402,16 @@ public class AlterTest {
     public void testAlterTableAlterColumnDropNotNullIssue918() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE \"user_table_t\" ALTER COLUMN name DROP NOT NULL");
     }
+
+    @Test
+    public void testAlterTableRenameColumn() throws JSQLParserException {
+        String sql = "ALTER TABLE \"test_table\" RENAME COLUMN \"test_column\" TO \"test_c\"";
+        assertSqlCanBeParsedAndDeparsed(sql);
+
+        Alter alter= (Alter) CCJSqlParserUtil.parse(sql);
+        AlterExpression expression = alter.getAlterExpressions().get(0);
+        assertEquals(expression.getOperation(), AlterOperation.RENAME);
+        assertEquals(expression.getColOldName(), "\"test_column\"");
+        assertEquals(expression.getColumnName(), "\"test_c\"");
+    }
 }
