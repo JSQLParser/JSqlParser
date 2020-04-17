@@ -266,6 +266,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_REFERENCES:"REFERENCES">
 |   <K_REGEXP: "REGEXP">
 |   <K_RLIKE: "RLIKE">
+|   <K_RENAME:"RENAME">
 |   <K_REPLACE:"REPLACE">
 |   <K_RESTRICT: "RESTRICT">
 |   <K_RETURNING: "RETURNING"> 
@@ -4495,6 +4496,15 @@ AlterExpression AlterExpression():
        }
        ["=" { alterExp.setUseEqual(true);} ]
        sk3 = RelObjectName() {alterExp.addParameters(sk3); }
+    )
+    |
+    (<K_RENAME> {alterExp.setOperation(AlterOperation.RENAME);}
+      (
+        <K_COLUMN>
+        (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setColOldName(tk.image);}
+         (<K_TO>)
+        (tk2=<S_IDENTIFIER>    | tk2=<S_QUOTED_IDENTIFIER>) { alterExp.setColumnName(tk2.image);}
+      )
     )
     )
 
