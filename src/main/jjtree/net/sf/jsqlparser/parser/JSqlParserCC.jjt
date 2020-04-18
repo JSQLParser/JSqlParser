@@ -11,7 +11,7 @@
 options{
     IGNORE_CASE = true ;
     STATIC = false;
-    DEBUG_PARSER = false; 
+    DEBUG_PARSER = false;
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
     CACHE_TOKENS = false;
