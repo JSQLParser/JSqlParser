@@ -9,6 +9,17 @@
  */
 package net.sf.jsqlparser.statement.create;
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.RowMovementMode;
+import net.sf.jsqlparser.test.TestException;
+import org.assertj.core.api.Assertions;
+import org.junit.Test;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -16,19 +27,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
-import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.table.Index;
-import net.sf.jsqlparser.test.TestException;
-import static net.sf.jsqlparser.test.TestUtils.*;
+
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
 public class CreateTableTest {
 
@@ -608,5 +612,27 @@ public class CreateTableTest {
                 + "name varchar(60) DEFAULT NULL,\n"
                 + "KEY name_ind (name) COMMENT 'comment for the name index'\n"
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8", true);
+    }
+
+    @Test
+    public void testEnableRowMovementOption() throws JSQLParserException {
+        String sql = "CREATE TABLE test (startdate DATE) ENABLE ROW MOVEMENT";
+
+        CreateTable createTable = (CreateTable) CCJSqlParserUtil.parse(sql);
+        Assertions.assertThat(createTable.getRowMovement()).isNotNull();
+        Assertions.assertThat(createTable.getRowMovement().getMode()).isEqualTo(RowMovementMode.ENABLE);
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testDisableRowMovementOption() throws JSQLParserException {
+        String sql = "CREATE TABLE test (startdate DATE) DISABLE ROW MOVEMENT";
+
+        CreateTable createTable = (CreateTable) CCJSqlParserUtil.parse(sql);
+        Assertions.assertThat(createTable.getRowMovement()).isNotNull();
+        Assertions.assertThat(createTable.getRowMovement().getMode()).isEqualTo(RowMovementMode.DISABLE);
+
+        assertSqlCanBeParsedAndDeparsed(sql);
     }
 }

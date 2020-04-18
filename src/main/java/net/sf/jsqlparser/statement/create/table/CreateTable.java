@@ -28,6 +28,7 @@ public class CreateTable implements Statement {
     private Select select;
     private boolean selectParenthesis;
     private boolean ifNotExists = false;
+    private RowMovement rowMovement;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -118,6 +119,14 @@ public class CreateTable implements Statement {
         this.selectParenthesis = selectParenthesis;
     }
 
+    public RowMovement getRowMovement() {
+        return rowMovement;
+    }
+
+    public void setRowMovement(RowMovement rowMovement) {
+        this.rowMovement = rowMovement;
+    }
+
     @Override
     public String toString() {
         String sql;
@@ -142,6 +151,10 @@ public class CreateTable implements Statement {
             if (options != null && options.length() > 0) {
                 sql += " " + options;
             }
+        }
+
+        if (rowMovement != null) {
+            sql += " " + rowMovement.getMode().toString() + " ROW MOVEMENT";
         }
 
         return sql;

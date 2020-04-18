@@ -96,6 +96,10 @@ public class CreateTableDeParser {
         if (!"".equals(params)) {
             buffer.append(' ').append(params);
         }
+
+        if (createTable.getRowMovement() != null) {
+            buffer.append(' ').append(createTable.getRowMovement().getMode().toString()).append(" ROW MOVEMENT");
+        }
     }
 
     public StringBuilder getBuffer() {
