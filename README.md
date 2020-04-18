@@ -66,6 +66,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 3.2
 
+* allow **VALIDATE** as column name
 * first support for **CREATE SCHEMA** and **DROP SCHEMA**
 * allow **ON** as a value in a set statement (`SET myvalue = ON`)
 * support for **ALTER TABLE ONLY mytable ...**
