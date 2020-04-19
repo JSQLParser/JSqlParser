@@ -635,4 +635,10 @@ public class CreateTableTest {
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+
+    @Test
+    public void tableMovementWithAS() throws JSQLParserException {
+        String sql = "CREATE TABLE test (startdate DATE) DISABLE ROW MOVEMENT AS SELECT 1 FROM dual";
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
 }

@@ -49,17 +49,7 @@ public class CreateTableDeParser {
             buffer.append("IF NOT EXISTS ");
         }
         buffer.append(createTable.getTable().getFullyQualifiedName());
-        if (createTable.getSelect() != null) {
-            buffer.append(" AS ");
-            if (createTable.isSelectParenthesis()) {
-                buffer.append("(");
-            }
-            Select sel = createTable.getSelect();
-            sel.accept(this.statementDeParser);
-            if (createTable.isSelectParenthesis()) {
-                buffer.append(")");
-            }
-        } else {
+
             if (createTable.getColumnDefinitions() != null) {
                 buffer.append(" (");
                 for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.
@@ -89,7 +79,6 @@ public class CreateTableDeParser {
                 }
 
                 buffer.append(")");
-            }
         }
 
         params = PlainSelect.getStringList(createTable.getTableOptionsStrings(), false, false);
@@ -99,6 +88,17 @@ public class CreateTableDeParser {
 
         if (createTable.getRowMovement() != null) {
             buffer.append(' ').append(createTable.getRowMovement().getMode().toString()).append(" ROW MOVEMENT");
+        }
+        if (createTable.getSelect() != null) {
+            buffer.append(" AS ");
+            if (createTable.isSelectParenthesis()) {
+                buffer.append("(");
+            }
+            Select sel = createTable.getSelect();
+            sel.accept(this.statementDeParser);
+            if (createTable.isSelectParenthesis()) {
+                buffer.append(")");
+            }
         }
     }
 

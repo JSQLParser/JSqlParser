@@ -3935,14 +3935,13 @@ CreateTable CreateTable():
         ")"
         (     parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
         )
-        // table properties
-        // either one or none
-        [ rowMovement = RowMovement() { createTable.setRowMovement(rowMovement); }]
-        |
-        (
-        <K_AS> ( LOOKAHEAD("(" Select() ")") "(" select = Select() { createTable.setSelect(select, true); } ")"
-                 | select = Select() { createTable.setSelect(select, false); } )
-        )
+    ]
+    // see https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2126725
+    // table properties , all these are optional
+    [ rowMovement = RowMovement() { createTable.setRowMovement(rowMovement); }]
+    [
+    <K_AS> ( LOOKAHEAD("(" Select() ")") "(" select = Select() { createTable.setSelect(select, true); } ")"
+             | select = Select() { createTable.setSelect(select, false); } )
     ]
     {
         createTable.setTable(table);

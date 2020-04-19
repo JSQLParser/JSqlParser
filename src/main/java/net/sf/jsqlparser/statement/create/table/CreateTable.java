@@ -136,9 +136,7 @@ public class CreateTable implements Statement {
                 + (!"".equals(createOps) ? createOps + " " : "")
                 + "TABLE " + (ifNotExists ? "IF NOT EXISTS " : "") + table;
 
-        if (select != null) {
-            sql += " AS " + (selectParenthesis ? "(" : "") + select.toString() + (selectParenthesis ? ")" : "");
-        } else {
+        if (columnDefinitions != null && !columnDefinitions.isEmpty()) {
             sql += " (";
 
             sql += PlainSelect.getStringList(columnDefinitions, true, false);
@@ -156,7 +154,9 @@ public class CreateTable implements Statement {
         if (rowMovement != null) {
             sql += " " + rowMovement.getMode().toString() + " ROW MOVEMENT";
         }
-
+        if (select != null) {
+            sql += " AS " + (selectParenthesis ? "(" : "") + select.toString() + (selectParenthesis ? ")" : "");
+        }
         return sql;
     }
 }
