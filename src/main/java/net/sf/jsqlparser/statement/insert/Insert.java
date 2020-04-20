@@ -38,7 +38,7 @@ public class Insert implements Statement {
     private boolean returningAllColumns = false;
 
     private List<SelectExpressionItem> returningExpressionList = null;
-    
+
     private boolean useSet = false;
     private List<Column> setColumns;
     private List<Expression> setExpressionList;
@@ -156,27 +156,27 @@ public class Insert implements Statement {
     public void setModifierIgnore(boolean modifierIgnore) {
         this.modifierIgnore = modifierIgnore;
     }
-    
+
     public void setUseSet(boolean useSet) {
         this.useSet = useSet;
     }
-    
+
     public boolean isUseSet() {
         return useSet;
     }
-    
+
     public void setSetColumns(List<Column> setColumns) {
         this.setColumns = setColumns;
     }
-    
+
     public List<Column> getSetColumns() {
         return setColumns;
     }
-    
+
     public void setSetExpressionList(List<Expression> setExpressionList) {
         this.setExpressionList = setExpressionList;
     }
-    
+
     public List<Expression> getSetExpressionList() {
         return setExpressionList;
     }
@@ -215,7 +215,7 @@ public class Insert implements Statement {
                 sql.append(")");
             }
         }
-        
+
         if (useSet) {
             sql.append("SET ");
             for (int i = 0; i < getSetColumns().size(); i++) {
@@ -241,11 +241,10 @@ public class Insert implements Statement {
         if (isReturningAllColumns()) {
             sql.append(" RETURNING *");
         } else if (getReturningExpressionList() != null) {
-            sql.append(" RETURNING ").append(PlainSelect.
-                    getStringList(getReturningExpressionList(), true, false));
+            sql.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
         }
 
         return sql.toString();
     }
-    
+
 }

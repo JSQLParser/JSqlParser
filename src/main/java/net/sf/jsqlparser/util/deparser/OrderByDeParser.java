@@ -57,8 +57,8 @@ public class OrderByDeParser {
         }
         if (orderBy.getNullOrdering() != null) {
             buffer.append(' ');
-            buffer.
-                    append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
+            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST"
+                    : "NULLS LAST");
         }
     }
 

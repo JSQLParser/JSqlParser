@@ -61,7 +61,7 @@ public class LongValueTest {
             value.getValue();
             fail("should not work");
         } catch (Exception e) {
-            //expected to fail
+            // expected to fail
         }
         assertEquals(new BigInteger(largeNumber), value.getBigIntegerValue());
     }

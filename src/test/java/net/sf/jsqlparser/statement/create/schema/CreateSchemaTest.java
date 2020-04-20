@@ -17,7 +17,7 @@ import org.junit.Test;
  *
  * @author tw
  */
-public class CreateSchemaTest {  
+public class CreateSchemaTest {
     @Test
     public void testSimpleCreateSchema() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE SCHEMA myschema");

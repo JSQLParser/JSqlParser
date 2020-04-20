@@ -20,7 +20,6 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
  */
 public class ShowColumnsStatementTest {
 
-
     @Test
     public void testSimpleUse() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SHOW COLUMNS FROM mydatabase");

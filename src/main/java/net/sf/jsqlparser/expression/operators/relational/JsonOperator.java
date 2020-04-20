@@ -14,7 +14,7 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class JsonOperator extends BinaryExpression {
 
-    private String op; //"@>"
+    private String op; // "@>"
 
     public JsonOperator(String op) {
         this.op = op;

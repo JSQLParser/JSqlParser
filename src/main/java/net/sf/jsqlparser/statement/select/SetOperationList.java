@@ -116,9 +116,6 @@ public class SetOperationList implements SelectBody {
 
     public enum SetOperationType {
 
-        INTERSECT,
-        EXCEPT,
-        MINUS,
-        UNION
+        INTERSECT, EXCEPT, MINUS, UNION
     }
 }

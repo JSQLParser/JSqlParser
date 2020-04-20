@@ -55,7 +55,8 @@ public class StatementDeParser implements StatementVisitor {
         this(new ExpressionDeParser(), new SelectDeParser(), buffer);
     }
 
-    public StatementDeParser(ExpressionDeParser expressionDeParser, SelectDeParser selectDeParser, StringBuilder buffer) {
+    public StatementDeParser(ExpressionDeParser expressionDeParser, SelectDeParser selectDeParser,
+            StringBuilder buffer) {
         this.expressionDeParser = expressionDeParser;
         this.selectDeParser = selectDeParser;
         this.buffer = buffer;
@@ -202,7 +203,7 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Merge merge) {
-        //TODO implementation of a deparser
+        // TODO implementation of a deparser
         buffer.append(merge.toString());
     }
 

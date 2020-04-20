@@ -45,6 +45,6 @@ public class FromItemVisitorAdapter implements FromItemVisitor {
 
     @Override
     public void visit(ParenthesisFromItem aThis) {
-        
+
     }
 }

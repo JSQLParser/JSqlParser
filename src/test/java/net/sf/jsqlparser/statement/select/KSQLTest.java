@@ -27,10 +27,7 @@ public class KSQLTest {
         String sql;
         Statement statement;
 
-        sql = "SELECT *\n"
-                + "FROM table1 t1\n"
-                + "INNER JOIN table2 t2\n"
-                + "WITHIN (5 HOURS)\n"
+        sql = "SELECT *\n" + "FROM table1 t1\n" + "INNER JOIN table2 t2\n" + "WITHIN (5 HOURS)\n"
                 + "ON t1.id = t2.id\n";
 
         statement = CCJSqlParserUtil.parse(sql);
@@ -40,8 +37,7 @@ public class KSQLTest {
         Select select = (Select) statement;
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         assertEquals(1, plainSelect.getJoins().size());
-        assertEquals("table2", ((Table) plainSelect.getJoins().get(0).getRightItem()).
-                getFullyQualifiedName());
+        assertEquals("table2", ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
         assertTrue(plainSelect.getJoins().get(0).isWindowJoin());
         assertEquals(5L, plainSelect.getJoins().get(0).getJoinWindow().getDuration());
         assertEquals("HOURS", plainSelect.getJoins().get(0).getJoinWindow().getTimeUnit().toString());
@@ -55,10 +51,7 @@ public class KSQLTest {
     public void testKSQLBeforeAfterWindowedJoin() throws Exception {
         String sql;
         Statement statement;
-        sql = "SELECT *\n"
-                + "FROM table1 t1\n"
-                + "INNER JOIN table2 t2\n"
-                + "WITHIN (2 MINUTES, 5 MINUTES)\n"
+        sql = "SELECT *\n" + "FROM table1 t1\n" + "INNER JOIN table2 t2\n" + "WITHIN (2 MINUTES, 5 MINUTES)\n"
                 + "ON t1.id = t2.id\n";
 
         statement = CCJSqlParserUtil.parse(sql);
@@ -68,8 +61,7 @@ public class KSQLTest {
         Select select = (Select) statement;
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         assertEquals(1, plainSelect.getJoins().size());
-        assertEquals("table2", ((Table) plainSelect.getJoins().get(0).getRightItem()).
-                getFullyQualifiedName());
+        assertEquals("table2", ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
         assertTrue(plainSelect.getJoins().get(0).isWindowJoin());
         assertEquals(2L, plainSelect.getJoins().get(0).getJoinWindow().getBeforeDuration());
         assertEquals("MINUTES", plainSelect.getJoins().get(0).getJoinWindow().getBeforeTimeUnit().toString());
@@ -85,9 +77,7 @@ public class KSQLTest {
     public void testKSQLHoppingWindows() throws Exception {
         String sql;
         Statement statement;
-        sql = "SELECT *\n"
-                + "FROM table1 t1\n"
-                + "WINDOW HOPPING (SIZE 30 SECONDS, ADVANCE BY 10 MINUTES)\n"
+        sql = "SELECT *\n" + "FROM table1 t1\n" + "WINDOW HOPPING (SIZE 30 SECONDS, ADVANCE BY 10 MINUTES)\n"
                 + "GROUP BY region.id\n";
 
         statement = CCJSqlParserUtil.parse(sql);
@@ -111,10 +101,7 @@ public class KSQLTest {
     public void testKSQLSessionWindows() throws Exception {
         String sql;
         Statement statement;
-        sql = "SELECT *\n"
-                + "FROM table1 t1\n"
-                + "WINDOW SESSION (5 MINUTES)\n"
-                + "GROUP BY region.id\n";
+        sql = "SELECT *\n" + "FROM table1 t1\n" + "WINDOW SESSION (5 MINUTES)\n" + "GROUP BY region.id\n";
 
         statement = CCJSqlParserUtil.parse(sql);
         System.out.println(statement.toString());
@@ -135,14 +122,11 @@ public class KSQLTest {
     public void testKSQLTumblingWindows() throws Exception {
         String sql;
         Statement statement;
-        sql = "SELECT *\n"
-                + "FROM table1 t1\n"
-                + "WINDOW TUMBLING (SIZE 30 SECONDS)\n"
-                + "GROUP BY region.id\n";
+        sql = "SELECT *\n" + "FROM table1 t1\n" + "WINDOW TUMBLING (SIZE 30 SECONDS)\n" + "GROUP BY region.id\n";
 
         statement = CCJSqlParserUtil.parse(sql);
         System.out.println(statement.toString());
-                Select select = (Select) statement;
+        Select select = (Select) statement;
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         assertTrue(plainSelect.getKsqlWindow().isTumblingWindow());
         assertFalse(plainSelect.getKsqlWindow().isSessionWindow());

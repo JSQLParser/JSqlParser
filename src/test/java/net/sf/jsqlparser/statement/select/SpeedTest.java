@@ -33,8 +33,8 @@ public class SpeedTest {
     @Test
     public void testSpeed() throws Exception {
         // all the statements in testfiles/simple_parsing.txt
-        BufferedReader in = new BufferedReader(new InputStreamReader(SpeedTest.class.
-                getResourceAsStream("/simple_parsing.txt")));
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(SpeedTest.class.getResourceAsStream("/simple_parsing.txt")));
         CCJSqlParserManagerTest d;
         ArrayList statementsList = new ArrayList();
 
@@ -46,8 +46,8 @@ public class SpeedTest {
             statementsList.add(statement);
         }
         in.close();
-        in = new BufferedReader(new InputStreamReader(SpeedTest.class.
-                getResourceAsStream("/RUBiS-select-requests.txt")));
+        in = new BufferedReader(
+                new InputStreamReader(SpeedTest.class.getResourceAsStream("/RUBiS-select-requests.txt")));
 
         // all the statements in testfiles/RUBiS-select-requests.txt
         while (true) {
@@ -89,8 +89,7 @@ public class SpeedTest {
         String statement = "";
         int numTests = 0;
         // it seems that the very first parsing takes a while, so I put it aside
-        Statement parsedStm = parserManager.
-                parse(new StringReader(statement = (String) statementsList.get(0)));
+        Statement parsedStm = parserManager.parse(new StringReader(statement = (String) statementsList.get(0)));
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
         ArrayList parsedSelects = new ArrayList(NUM_REPS * statementsList.size());
         long time = System.currentTimeMillis();
@@ -133,8 +132,7 @@ public class SpeedTest {
         }
         elapsedTime = System.currentTimeMillis() - time;
         statementsPerSecond = numTests * 1000 / elapsedTime;
-        System.out.
-                println(numTests + " select scans for table name executed in " + elapsedTime + " milliseconds");
+        System.out.println(numTests + " select scans for table name executed in " + elapsedTime + " milliseconds");
         System.out.println(" (" + statementsPerSecond + " select scans for table name per second,  "
                 + df.format(1.0 / statementsPerSecond) + " seconds per select scans for table name)");
 

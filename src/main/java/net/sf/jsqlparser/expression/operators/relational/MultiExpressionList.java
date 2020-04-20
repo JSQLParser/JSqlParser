@@ -16,8 +16,8 @@ import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 
 /**
- * A list of ExpressionList items. e.g. multi values of insert statements. This one allows only
- * equally sized ExpressionList.
+ * A list of ExpressionList items. e.g. multi values of insert statements. This
+ * one allows only equally sized ExpressionList.
  */
 public class MultiExpressionList implements ItemsList {
 
@@ -37,8 +37,7 @@ public class MultiExpressionList implements ItemsList {
     }
 
     public void addExpressionList(ExpressionList el) {
-        if (!exprList.isEmpty()
-                && exprList.get(0).getExpressions().size() != el.getExpressions().size()) {
+        if (!exprList.isEmpty() && exprList.get(0).getExpressions().size() != el.getExpressions().size()) {
             throw new IllegalArgumentException("different count of parameters");
         }
         exprList.add(el);

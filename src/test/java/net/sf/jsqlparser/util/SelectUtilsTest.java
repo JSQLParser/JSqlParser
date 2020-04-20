@@ -82,8 +82,8 @@ public class SelectUtilsTest {
 
     @Test
     public void testBuildSelectFromTableAndExpressions() {
-        Select select = SelectUtils.
-                buildSelectFromTableAndExpressions(new Table("mytable"), new Column("a"), new Column("b"));
+        Select select = SelectUtils.buildSelectFromTableAndExpressions(new Table("mytable"), new Column("a"),
+                new Column("b"));
         assertEquals("SELECT a, b FROM mytable", select.toString());
     }
 
@@ -95,12 +95,11 @@ public class SelectUtilsTest {
 
     @Test
     public void testBuildSelectFromTableAndParsedExpression() throws JSQLParserException {
-        Select select = SelectUtils.
-                buildSelectFromTableAndExpressions(new Table("mytable"), "a+b", "test");
+        Select select = SelectUtils.buildSelectFromTableAndExpressions(new Table("mytable"), "a+b", "test");
         assertEquals("SELECT a + b, test FROM mytable", select.toString());
 
-        assertTrue(((SelectExpressionItem) ((PlainSelect) select.getSelectBody()).getSelectItems().
-                get(0)).getExpression() instanceof Addition);
+        assertTrue(((SelectExpressionItem) ((PlainSelect) select.getSelectBody()).getSelectItems().get(0))
+                .getExpression() instanceof Addition);
     }
 
     @Test
@@ -117,11 +116,11 @@ public class SelectUtilsTest {
         Table table2 = new Table("mytable2");
         table2.setAlias(new Alias("tab2"));
 
-        List<? extends Expression> colunas = Arrays.
-                asList(new Column(table1, "col1"), new Column(table1, "col2"), new Column(table1, "col3"), new Column(table2, "b1"), new Column(table2, "b2"));
+        List<? extends Expression> colunas = Arrays.asList(new Column(table1, "col1"), new Column(table1, "col2"),
+                new Column(table1, "col3"), new Column(table2, "b1"), new Column(table2, "b2"));
 
-        Select select = SelectUtils.buildSelectFromTableAndExpressions(table1, colunas.
-                toArray(new Expression[colunas.size()]));
+        Select select = SelectUtils.buildSelectFromTableAndExpressions(table1,
+                colunas.toArray(new Expression[colunas.size()]));
 
         final EqualsTo equalsTo = new EqualsTo();
         equalsTo.setLeftExpression(new Column(table1, "col1"));
@@ -129,7 +128,8 @@ public class SelectUtilsTest {
         Join addJoin = SelectUtils.addJoin(select, table2, equalsTo);
         addJoin.setLeft(true);
 
-        assertEquals("SELECT tab1.col1, tab1.col2, tab1.col3, tab2.b1, tab2.b2 FROM mytable1 AS tab1 LEFT JOIN mytable2 AS tab2 ON tab1.col1 = tab2.b1",
+        assertEquals(
+                "SELECT tab1.col1, tab1.col2, tab1.col3, tab2.b1, tab2.b2 FROM mytable1 AS tab1 LEFT JOIN mytable2 AS tab2 ON tab1.col1 = tab2.b1",
                 select.toString());
     }
 

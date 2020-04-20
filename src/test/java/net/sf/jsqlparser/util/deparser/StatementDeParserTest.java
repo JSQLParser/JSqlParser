@@ -118,14 +118,14 @@ public class StatementDeParserTest {
         withItem2.setSelectBody(withItem2SelectBody);
 
         statementDeParser.visit(insert);
-        
+
         then(withItem1).should().accept(selectDeParser);
         then(withItem2).should().accept(selectDeParser);
         then(selectBody).should().accept(selectDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
-    
+
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithoutItemsList() {
@@ -313,7 +313,7 @@ public class StatementDeParserTest {
 //            }
 //        };
 //    }
-    
+
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeparsersWhenDeParsingUpsertWithExpressionList() throws JSQLParserException {
@@ -358,5 +358,5 @@ public class StatementDeParserTest {
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
-    
+
 }

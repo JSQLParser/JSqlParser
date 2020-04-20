@@ -48,7 +48,7 @@ public interface StatementVisitor {
     void visit(Truncate truncate);
 
     void visit(CreateIndex createIndex);
-    
+
     void visit(CreateSchema aThis);
 
     void visit(CreateTable createTable);

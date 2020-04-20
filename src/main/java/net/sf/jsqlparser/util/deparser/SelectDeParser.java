@@ -63,8 +63,8 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
             }
             if (plainSelect.getDistinct().getOnSelectItems() != null) {
                 buffer.append("ON (");
-                for (Iterator<SelectItem> iter = plainSelect.getDistinct().getOnSelectItems().
-                        iterator(); iter.hasNext();) {
+                for (Iterator<SelectItem> iter = plainSelect.getDistinct().getOnSelectItems().iterator(); iter
+                        .hasNext();) {
                     SelectItem selectItem = iter.next();
                     selectItem.accept(this);
                     if (iter.hasNext()) {
@@ -143,8 +143,8 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         }
 
         if (plainSelect.getOrderByElements() != null) {
-            new OrderByDeParser(expressionVisitor, buffer).
-                    deParse(plainSelect.isOracleSiblings(), plainSelect.getOrderByElements());
+            new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
+                    plainSelect.getOrderByElements());
         }
 
         if (plainSelect.getLimit() != null) {
@@ -247,14 +247,9 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
     @Override
     public void visit(Pivot pivot) {
         List<Column> forColumns = pivot.getForColumns();
-        buffer.append(" PIVOT (")
-                .append(PlainSelect.getStringList(pivot.getFunctionItems()))
-                .append(" FOR ")
-                .append(PlainSelect.
-                        getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)).
-                append(" IN ")
-                .append(PlainSelect.getStringList(pivot.getInItems(), true, true))
-                .append(")");
+        buffer.append(" PIVOT (").append(PlainSelect.getStringList(pivot.getFunctionItems())).append(" FOR ")
+                .append(PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1))
+                .append(" IN ").append(PlainSelect.getStringList(pivot.getInItems(), true, true)).append(")");
         if (pivot.getAlias() != null) {
             buffer.append(pivot.getAlias().toString());
         }
@@ -265,25 +260,20 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         boolean showOptions = unpivot.getIncludeNullsSpecified();
         boolean includeNulls = unpivot.getIncludeNulls();
         List<Column> unpivotForClause = unpivot.getUnPivotForClause();
-        buffer.append(" UNPIVOT")
-                .append(showOptions && includeNulls ? " INCLUDE NULLS" : "")
-                .append(showOptions && !includeNulls ? " EXCULDE NULLS" : "")
-                .append(" (")
-                .append(unpivot.getUnPivotClause())
-                .append(" FOR ").append(PlainSelect.getStringList(unpivotForClause, true, unpivotForClause != null && unpivotForClause.size() > 1))
-                .append(" IN ").append(PlainSelect.getStringList(unpivot.getUnPivotInClause(), true, true))
-                .append(")");
+        buffer.append(" UNPIVOT").append(showOptions && includeNulls ? " INCLUDE NULLS" : "")
+                .append(showOptions && !includeNulls ? " EXCULDE NULLS" : "").append(" (")
+                .append(unpivot.getUnPivotClause()).append(" FOR ")
+                .append(PlainSelect.getStringList(unpivotForClause, true,
+                        unpivotForClause != null && unpivotForClause.size() > 1))
+                .append(" IN ").append(PlainSelect.getStringList(unpivot.getUnPivotInClause(), true, true)).append(")");
     }
 
     @Override
     public void visit(PivotXml pivot) {
         List<Column> forColumns = pivot.getForColumns();
-        buffer.append(" PIVOT XML (")
-                .append(PlainSelect.getStringList(pivot.getFunctionItems()))
-                .append(" FOR ")
-                .append(PlainSelect.
-                        getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)).
-                append(" IN (");
+        buffer.append(" PIVOT XML (").append(PlainSelect.getStringList(pivot.getFunctionItems())).append(" FOR ")
+                .append(PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1))
+                .append(" IN (");
         if (pivot.isInAny()) {
             buffer.append("ANY");
         } else if (pivot.getInSelect() != null) {
@@ -454,8 +444,7 @@ public class SelectDeParser implements SelectVisitor, SelectItemVisitor, FromIte
         }
         buffer.append(withItem.getName());
         if (withItem.getWithItemList() != null) {
-            buffer.append(" ").append(PlainSelect.
-                    getStringList(withItem.getWithItemList(), true, true));
+            buffer.append(" ").append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
         }
         buffer.append(" AS (");
         withItem.getSelectBody().accept(this);

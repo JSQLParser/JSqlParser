@@ -83,8 +83,8 @@ public class SubJoin implements FromItem {
             }
         }
 
-        sb.append(")").append((alias != null) ? (" " + alias.toString()) : "").append((pivot != null) ? " " + pivot : "")
-                .append((unpivot != null) ? " " + unpivot : "");
+        sb.append(")").append((alias != null) ? (" " + alias.toString()) : "")
+                .append((pivot != null) ? " " + pivot : "").append((unpivot != null) ? " " + unpivot : "");
         return sb.toString();
     }
 }

@@ -23,7 +23,7 @@ public class AlterExpression {
     private String optionalSpecifier;
     private String columnName;
     private String columnOldName;
-    //private ColDataType dataType;
+    // private ColDataType dataType;
 
     private List<ColumnDataType> colDataTypeList;
     private List<ColumnDropNotNull> columnDropNotNullList;
@@ -116,7 +116,7 @@ public class AlterExpression {
         }
         colDataTypeList.add(columnDataType);
     }
-    
+
     public void addColDropNotNull(ColumnDropNotNull columnDropNotNull) {
         if (columnDropNotNullList == null) {
             columnDropNotNullList = new ArrayList<ColumnDropNotNull>();
@@ -263,7 +263,7 @@ public class AlterExpression {
             if (colDataTypeList.size() > 1) {
                 b.append(")");
             }
-        } else if ( getColumnDropNotNullList() != null) {
+        } else if (getColumnDropNotNullList() != null) {
             if (operation == AlterOperation.CHANGE) {
                 if (optionalSpecifier != null) {
                     b.append(optionalSpecifier).append(" ");
@@ -298,9 +298,8 @@ public class AlterExpression {
             }
             b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
-            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).
-                    append(") REFERENCES ").append(fkSourceTable).append(" (").append(
-                    PlainSelect.getStringList(fkSourceColumns)).append(")");
+            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).append(") REFERENCES ")
+                    .append(fkSourceTable).append(" (").append(PlainSelect.getStringList(fkSourceColumns)).append(")");
             if (isOnDeleteCascade()) {
                 b.append(" ON DELETE CASCADE");
             } else if (isOnDeleteRestrict()) {
@@ -358,8 +357,7 @@ public class AlterExpression {
 
         @Override
         public String toString() {
-            return columnName + " DROP" +
-                     (withNot ? " NOT " : " ") + "NULL";
+            return columnName + " DROP" + (withNot ? " NOT " : " ") + "NULL";
         }
     }
 }

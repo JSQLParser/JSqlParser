@@ -15,8 +15,7 @@ public class OrderByElement {
 
     public enum NullOrdering {
 
-        NULLS_FIRST,
-        NULLS_LAST
+        NULLS_FIRST, NULLS_LAST
     }
 
     private Expression expression;

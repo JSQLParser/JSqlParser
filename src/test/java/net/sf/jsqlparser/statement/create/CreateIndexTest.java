@@ -25,8 +25,7 @@ public class CreateIndexTest {
 
     @Test
     public void testCreateIndex() throws JSQLParserException {
-        String statement
-                = "CREATE INDEX myindex ON mytab (mycol, mycol2)";
+        String statement = "CREATE INDEX myindex ON mytab (mycol, mycol2)";
         CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
         assertEquals(2, createIndex.getIndex().getColumnsNames().size());
         assertEquals("myindex", createIndex.getIndex().getName());
@@ -38,8 +37,7 @@ public class CreateIndexTest {
 
     @Test
     public void testCreateIndex2() throws JSQLParserException {
-        String statement
-                = "CREATE mytype INDEX myindex ON mytab (mycol, mycol2)";
+        String statement = "CREATE mytype INDEX myindex ON mytab (mycol, mycol2)";
         CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
         assertEquals(2, createIndex.getIndex().getColumnsNames().size());
         assertEquals("myindex", createIndex.getIndex().getName());
@@ -51,8 +49,7 @@ public class CreateIndexTest {
 
     @Test
     public void testCreateIndex3() throws JSQLParserException {
-        String statement
-                = "CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2, mycol3)";
+        String statement = "CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2, mycol3)";
         CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
         assertEquals(3, createIndex.getIndex().getColumnsNames().size());
         assertEquals("myindex", createIndex.getIndex().getName());
@@ -63,8 +60,7 @@ public class CreateIndexTest {
 
     @Test
     public void testCreateIndex4() throws JSQLParserException {
-        String statement
-                = "CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2 (75), mycol3)";
+        String statement = "CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2 (75), mycol3)";
         CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
         assertEquals(3, createIndex.getIndex().getColumnsNames().size());
         assertEquals("myindex", createIndex.getIndex().getName());
@@ -75,8 +71,7 @@ public class CreateIndexTest {
 
     @Test
     public void testCreateIndex5() throws JSQLParserException {
-        String statement
-                = "CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2 (75), mycol3) mymodifiers";
+        String statement = "CREATE mytype INDEX myindex ON mytab (mycol ASC, mycol2 (75), mycol3) mymodifiers";
         CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
         assertEquals(3, createIndex.getIndex().getColumnsNames().size());
         assertEquals("myindex", createIndex.getIndex().getName());
@@ -93,15 +88,14 @@ public class CreateIndexTest {
 
     @Test
     public void testCreateIndex7() throws JSQLParserException {
-        String statement
-                = "CREATE INDEX myindex1 ON mytab USING GIST (mycol)";
+        String statement = "CREATE INDEX myindex1 ON mytab USING GIST (mycol)";
         CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
         assertEquals(1, createIndex.getIndex().getColumnsNames().size());
         assertEquals("myindex1", createIndex.getIndex().getName());
         assertNull(createIndex.getIndex().getType());
         assertEquals("mytab", createIndex.getTable().getFullyQualifiedName());
         assertEquals("mycol", createIndex.getIndex().getColumnsNames().get(0));
-        assertEquals("GIST", createIndex.getIndex().getUsing()); 
+        assertEquals("GIST", createIndex.getIndex().getUsing());
         assertEquals(statement, "" + createIndex);
         assertSqlCanBeParsedAndDeparsed(statement);
     }
@@ -109,14 +103,15 @@ public class CreateIndexTest {
     @Test
     @Ignore
     public void testCreateIndexIssue633() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)");
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)");
     }
-    
+
     @Test
     public void testFullIndexNameIssue936() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX \"TS\".\"IDX\" ON \"TEST\" (\"ID\" ASC) TABLESPACE \"TS\"");
     }
-    
+
     @Test
     public void testFullIndexNameIssue936_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX \"TS\".\"IDX\" ON \"TEST\" (\"ID\") TABLESPACE \"TS\"");

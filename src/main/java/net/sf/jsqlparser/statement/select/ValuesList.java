@@ -84,8 +84,7 @@ public class ValuesList implements FromItem {
         StringBuilder b = new StringBuilder();
 
         b.append("(VALUES ");
-        for (Iterator<ExpressionList> it = getMultiExpressionList().getExprList().iterator(); it.
-                hasNext();) {
+        for (Iterator<ExpressionList> it = getMultiExpressionList().getExprList().iterator(); it.hasNext();) {
             b.append(PlainSelect.getStringList(it.next().getExpressions(), true, !isNoBrackets()));
             if (it.hasNext()) {
                 b.append(", ");

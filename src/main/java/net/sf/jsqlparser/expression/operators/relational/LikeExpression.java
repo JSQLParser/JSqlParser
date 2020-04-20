@@ -38,7 +38,8 @@ public class LikeExpression extends BinaryExpression {
 
     @Override
     public String toString() {
-        String retval = getLeftExpression() + " " + (not ? "NOT " : "") + getStringExpression() + " " + getRightExpression();
+        String retval = getLeftExpression() + " " + (not ? "NOT " : "") + getStringExpression() + " "
+                + getRightExpression();
         if (escape != null) {
             retval += " ESCAPE " + "'" + escape + "'";
         }

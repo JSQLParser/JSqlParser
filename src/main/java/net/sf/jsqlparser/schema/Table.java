@@ -178,10 +178,8 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     @Override
     public String toString() {
-        return getFullyQualifiedName()
-                + ((alias != null) ? alias.toString() : "")
-                + ((pivot != null) ? " " + pivot : "")
-                + ((unpivot != null) ? " " + unpivot : "")
+        return getFullyQualifiedName() + ((alias != null) ? alias.toString() : "")
+                + ((pivot != null) ? " " + pivot : "") + ((unpivot != null) ? " " + unpivot : "")
                 + ((mysqlHints != null) ? mysqlHints.toString() : "")
                 + ((sqlServerHints != null) ? sqlServerHints.toString() : "");
     }

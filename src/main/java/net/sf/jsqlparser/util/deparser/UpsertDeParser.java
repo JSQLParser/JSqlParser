@@ -28,7 +28,7 @@ public class UpsertDeParser implements ItemsListVisitor {
     protected StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
-    
+
     public UpsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
         this.buffer = buffer;
         this.expressionVisitor = expressionVisitor;
@@ -64,7 +64,7 @@ public class UpsertDeParser implements ItemsListVisitor {
         }
 
     }
-    
+
     private void appendColumns(Upsert upsert) {
         buffer.append(" (");
         for (Iterator<Column> iter = upsert.getColumns().iterator(); iter.hasNext();) {
@@ -76,7 +76,7 @@ public class UpsertDeParser implements ItemsListVisitor {
         }
         buffer.append(")");
     }
-    
+
     private void appendSelect(Upsert upsert) {
         buffer.append(" ");
         if (upsert.isUseSelectBrackets()) {
@@ -94,7 +94,7 @@ public class UpsertDeParser implements ItemsListVisitor {
             buffer.append(")");
         }
     }
-    
+
     private void appendDuplicate(Upsert upsert) {
         buffer.append(" ON DUPLICATE KEY UPDATE ");
         for (int i = 0; i < upsert.getDuplicateUpdateColumns().size(); i++) {

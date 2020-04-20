@@ -17,7 +17,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 /**
  * CASE/WHEN expression.
  *
- * Syntax:  <code><pre>
+ * Syntax: <code><pre>
  * CASE
  * WHEN condition THEN expression
  * [WHEN condition THEN expression]...

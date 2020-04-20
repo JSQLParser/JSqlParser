@@ -64,11 +64,10 @@ public class UnPivot {
 
     @Override
     public String toString() {
-        return "UNPIVOT"
-                + (includeNullsSpecified && includeNulls ? " INCLUDE NULLS" : "")
-                + (includeNullsSpecified && !includeNulls ? " EXCLUDE NULLS" : "")
-                + " (" + unpivotClause
-                + " FOR " + PlainSelect.getStringList(unpivotForClause, true, unpivotForClause != null && unpivotForClause.size() > 1)
+        return "UNPIVOT" + (includeNullsSpecified && includeNulls ? " INCLUDE NULLS" : "")
+                + (includeNullsSpecified && !includeNulls ? " EXCLUDE NULLS" : "") + " (" + unpivotClause + " FOR "
+                + PlainSelect.getStringList(unpivotForClause, true,
+                        unpivotForClause != null && unpivotForClause.size() > 1)
                 + " IN " + PlainSelect.getStringList(unpivotInClause, true, true) + ")";
     }
 }

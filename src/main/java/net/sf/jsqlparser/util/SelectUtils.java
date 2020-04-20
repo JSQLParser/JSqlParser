@@ -69,7 +69,8 @@ public final class SelectUtils {
     }
 
     /**
-     * Adds an expression to select statements. E.g. a simple column is an expression.
+     * Adds an expression to select statements. E.g. a simple column is an
+     * expression.
      *
      * @param select
      * @param expr
@@ -100,8 +101,8 @@ public final class SelectUtils {
     }
 
     /**
-     * Adds a simple join to a select statement. The introduced join is returned for more
-     * configuration settings on it (e.g. left join, right join).
+     * Adds a simple join to a select statement. The introduced join is returned for
+     * more configuration settings on it (e.g. left join, right join).
      *
      * @param select
      * @param table

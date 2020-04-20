@@ -205,8 +205,8 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     /**
-     * A list of {@link Expression}s of the GROUP BY clause. It is null in case there is no GROUP BY
-     * clause
+     * A list of {@link Expression}s of the GROUP BY clause. It is null in case
+     * there is no GROUP BY clause
      *
      * @return a list of {@link Expression}s
      */
@@ -406,7 +406,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
                 sql.append(optimizeFor);
             }
         } else {
-            //without from
+            // without from
             if (where != null) {
                 sql.append(" WHERE ").append(where);
             }
@@ -447,8 +447,8 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     /**
-     * List the toString out put of the objects in the List comma separated. If the List is null or
-     * empty an empty string is returned.
+     * List the toString out put of the objects in the List comma separated. If the
+     * List is null or empty an empty string is returned.
      *
      * The same as getStringList(list, true, false)
      *
@@ -461,11 +461,11 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     /**
-     * List the toString out put of the objects in the List that can be comma separated. If the List
-     * is null or empty an empty string is returned.
+     * List the toString out put of the objects in the List that can be comma
+     * separated. If the List is null or empty an empty string is returned.
      *
-     * @param list list of objects with toString methods
-     * @param useComma true if the list has to be comma separated
+     * @param list        list of objects with toString methods
+     * @param useComma    true if the list has to be comma separated
      * @param useBrackets true if the list has to be enclosed in brackets
      * @return comma separated list of the elements in the list
      */

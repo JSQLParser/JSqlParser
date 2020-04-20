@@ -122,8 +122,8 @@ public class UpdateDeParser implements OrderByVisitor {
             buffer.append(" RETURNING *");
         } else if (update.getReturningExpressionList() != null) {
             buffer.append(" RETURNING ");
-            for (Iterator<SelectExpressionItem> iter = update.getReturningExpressionList().
-                    iterator(); iter.hasNext();) {
+            for (Iterator<SelectExpressionItem> iter = update.getReturningExpressionList().iterator(); iter
+                    .hasNext();) {
                 buffer.append(iter.next().toString());
                 if (iter.hasNext()) {
                     buffer.append(", ");
@@ -150,8 +150,8 @@ public class UpdateDeParser implements OrderByVisitor {
         }
         if (orderBy.getNullOrdering() != null) {
             buffer.append(' ');
-            buffer.
-                    append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
+            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST"
+                    : "NULLS LAST");
         }
     }
 }

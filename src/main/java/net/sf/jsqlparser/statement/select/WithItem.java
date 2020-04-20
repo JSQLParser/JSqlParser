@@ -43,7 +43,8 @@ public class WithItem implements SelectBody {
     }
 
     /**
-     * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH mywith (A,B,C) AS ...")
+     * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH mywith
+     * (A,B,C) AS ...")
      *
      * @return a list of {@link SelectItem}s
      */
@@ -57,9 +58,9 @@ public class WithItem implements SelectBody {
 
     @Override
     public String toString() {
-        return (recursive ? "RECURSIVE " : "") + name + ((withItemList != null) ? " " + PlainSelect.
-                getStringList(withItemList, true, true) : "")
-                + " AS (" + selectBody + ")";
+        return (recursive ? "RECURSIVE " : "") + name
+                + ((withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "") + " AS ("
+                + selectBody + ")";
     }
 
     @Override

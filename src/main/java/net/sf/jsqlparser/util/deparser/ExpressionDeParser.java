@@ -278,8 +278,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(LikeExpression likeExpression) {
         visitBinaryExpression(likeExpression,
-                (likeExpression.isNot() ? " NOT" : "")
-                + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
+                (likeExpression.isNot() ? " NOT" : "") + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
         String escape = likeExpression.getEscape();
         if (escape != null) {
             buffer.append(" ESCAPE '").append(escape).append('\'');
@@ -374,8 +373,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         if (selectVisitor != null) {
             if (subSelect.getWithItemsList() != null) {
                 buffer.append("WITH ");
-                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.
-                        hasNext();) {
+                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.hasNext();) {
                     iter.next().accept(selectVisitor);
                     if (iter.hasNext()) {
                         buffer.append(", ");
@@ -654,11 +652,11 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         }
 
         switch (aexpr.getType()) {
-            case WITHIN_GROUP:
-                buffer.append("WITHIN GROUP");
-                break;
-            default:
-                buffer.append("OVER");
+        case WITHIN_GROUP:
+            buffer.append("WITHIN GROUP");
+            break;
+        default:
+            buffer.append("OVER");
         }
         buffer.append(" (");
 

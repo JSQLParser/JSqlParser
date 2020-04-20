@@ -106,12 +106,12 @@ public class CreateView implements Statement {
             sql.append("OR REPLACE ");
         }
         switch (force) {
-            case FORCE:
-                sql.append("FORCE ");
-                break;
-            case NO_FORCE:
-                sql.append("NO FORCE ");
-                break;
+        case FORCE:
+            sql.append("FORCE ");
+            break;
+        case NO_FORCE:
+            sql.append("NO FORCE ");
+            break;
         }
 
         if (temp != TemporaryOption.NONE) {

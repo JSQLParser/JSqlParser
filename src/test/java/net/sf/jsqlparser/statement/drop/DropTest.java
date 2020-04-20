@@ -48,22 +48,22 @@ public class DropTest {
     public void testDropIfExists() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP TABLE IF EXISTS my_table");
     }
-    
+
     @Test
     public void testDropRestrictIssue510() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP TABLE TABLE2 RESTRICT");
     }
-    
+
     @Test
     public void testDropViewIssue545() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP VIEW myview");
     }
-    
+
     @Test
     public void testDropViewIssue545_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP VIEW IF EXISTS myview");
     }
-    
+
     @Test
     public void testDropSchemaIssue855() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP SCHEMA myschema");

@@ -13,10 +13,7 @@ public class WindowOffset {
 
     public enum Type {
 
-        PRECEDING,
-        FOLLOWING,
-        CURRENT,
-        EXPR
+        PRECEDING, FOLLOWING, CURRENT, EXPR
     }
 
     private Expression expression;
@@ -50,17 +47,17 @@ public class WindowOffset {
         } else {
             if (type != null) {
                 switch (type) {
-                    case PRECEDING:
-                        buffer.append(" UNBOUNDED PRECEDING");
-                        break;
-                    case FOLLOWING:
-                        buffer.append(" UNBOUNDED FOLLOWING");
-                        break;
-                    case CURRENT:
-                        buffer.append(" CURRENT ROW");
-                        break;
-                    default:
-                        break;
+                case PRECEDING:
+                    buffer.append(" UNBOUNDED PRECEDING");
+                    break;
+                case FOLLOWING:
+                    buffer.append(" UNBOUNDED FOLLOWING");
+                    break;
+                case CURRENT:
+                    buffer.append(" CURRENT ROW");
+                    break;
+                default:
+                    break;
                 }
             }
         }

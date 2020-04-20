@@ -19,15 +19,14 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class OracleHint extends ASTNodeAccessImpl implements Expression {
 
     private static final Pattern SINGLE_LINE = Pattern.compile("--\\+ *([^ ].*[^ ])");
-    private static final Pattern MULTI_LINE = Pattern.
-            compile("\\/\\*\\+ *([^ ].*[^ ]) *\\*+\\/", Pattern.MULTILINE | Pattern.DOTALL);
+    private static final Pattern MULTI_LINE = Pattern.compile("\\/\\*\\+ *([^ ].*[^ ]) *\\*+\\/",
+            Pattern.MULTILINE | Pattern.DOTALL);
 
     private String value;
     private boolean singleLine = false;
 
     public static boolean isHintMatch(String comment) {
-        return SINGLE_LINE.matcher(comment).find()
-                || MULTI_LINE.matcher(comment).find();
+        return SINGLE_LINE.matcher(comment).find() || MULTI_LINE.matcher(comment).find();
     }
 
     public final void setComment(String comment) {

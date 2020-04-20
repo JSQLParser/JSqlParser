@@ -24,7 +24,9 @@ public class NestedBracketsPerformanceTest {
 
     @Test
     public void testIssue766() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('1','2'),'3'),'4'),'5'),'6'),'7'),'8'),'9'),'10'),'11'),'12'),'13'),'14'),'15'),'16'),'17'),'18'),'19'),'20'),'21'),col1 FROM tbl t1", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('1','2'),'3'),'4'),'5'),'6'),'7'),'8'),'9'),'10'),'11'),'12'),'13'),'14'),'15'),'16'),'17'),'18'),'19'),'20'),'21'),col1 FROM tbl t1",
+                true);
     }
 
     @Test
@@ -34,23 +36,29 @@ public class NestedBracketsPerformanceTest {
 
     @Test
     public void testIssue235() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN ( CASE WHEN ( CASE WHEN ( CASE WHEN ( 1 ) THEN 0 END ) THEN 0 END ) THEN 0 END ) THEN 0 END FROM a", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT CASE WHEN ( CASE WHEN ( CASE WHEN ( CASE WHEN ( 1 ) THEN 0 END ) THEN 0 END ) THEN 0 END ) THEN 0 END FROM a",
+                true);
     }
 
     @Test(timeout = 100000)
     @Ignore
     public void testIssue496() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("select isNull(charLen(TEST_ID,0)+ isNull(charLen(TEST_DVC,0)+ isNull(charLen(TEST_NO,0)+ isNull(charLen(ATEST_ID,0)+ isNull(charLen(TESTNO,0)+ isNull(charLen(TEST_CTNT,0)+ isNull(charLen(TEST_MESG_CTNT,0)+ isNull(charLen(TEST_DTM,0)+ isNull(charLen(TEST_DTT,0)+ isNull(charLen(TEST_ADTT,0)+ isNull(charLen(TEST_TCD,0)+ isNull(charLen(TEST_PD,0)+ isNull(charLen(TEST_VAL,0)+ isNull(charLen(TEST_YN,0)+ isNull(charLen(TEST_DTACM,0)+ isNull(charLen(TEST_MST,0) from test_info_m");
+        assertSqlCanBeParsedAndDeparsed(
+                "select isNull(charLen(TEST_ID,0)+ isNull(charLen(TEST_DVC,0)+ isNull(charLen(TEST_NO,0)+ isNull(charLen(ATEST_ID,0)+ isNull(charLen(TESTNO,0)+ isNull(charLen(TEST_CTNT,0)+ isNull(charLen(TEST_MESG_CTNT,0)+ isNull(charLen(TEST_DTM,0)+ isNull(charLen(TEST_DTT,0)+ isNull(charLen(TEST_ADTT,0)+ isNull(charLen(TEST_TCD,0)+ isNull(charLen(TEST_PD,0)+ isNull(charLen(TEST_VAL,0)+ isNull(charLen(TEST_YN,0)+ isNull(charLen(TEST_DTACM,0)+ isNull(charLen(TEST_MST,0) from test_info_m");
     }
-    
+
     @Test
     public void testIssue856() throws JSQLParserException {
-        String sql = "SELECT " + buildRecursiveBracketExpression("if(month(today()) = 3, sum(\"Table5\".\"Month 002\"), $1)", "0", 5) + " FROM mytbl";
+        String sql = "SELECT "
+                + buildRecursiveBracketExpression("if(month(today()) = 3, sum(\"Table5\".\"Month 002\"), $1)", "0", 5)
+                + " FROM mytbl";
         assertSqlCanBeParsedAndDeparsed(sql);
     }
 
     /**
-     * Try to avoid or border exceptionally big parsing time increments by adding more bracket constructs.
+     * Try to avoid or border exceptionally big parsing time increments by adding
+     * more bracket constructs.
      *
      * @throws JSQLParserException
      */
@@ -65,7 +73,8 @@ public class NestedBracketsPerformanceTest {
             long durationTime = System.currentTimeMillis() - startTime;
 
             if (i > 0) {
-                System.out.println("old duration " + oldDurationTime + " new duration time " + durationTime + " for " + sql);
+                System.out.println(
+                        "old duration " + oldDurationTime + " new duration time " + durationTime + " for " + sql);
             }
             if (oldDurationTime * 10 < durationTime) {
                 countProblematic++;
@@ -82,7 +91,8 @@ public class NestedBracketsPerformanceTest {
     public void testRecursiveBracketExpression() {
         assertEquals("concat('A','B')", buildRecursiveBracketExpression("concat($1,'B')", "'A'", 0));
         assertEquals("concat(concat('A','B'),'B')", buildRecursiveBracketExpression("concat($1,'B')", "'A'", 1));
-        assertEquals("concat(concat(concat('A','B'),'B'),'B')", buildRecursiveBracketExpression("concat($1,'B')", "'A'", 2));
+        assertEquals("concat(concat(concat('A','B'),'B'),'B')",
+                buildRecursiveBracketExpression("concat($1,'B')", "'A'", 2));
     }
 
     private String buildRecursiveBracketExpression(String template, String finalExpression, int depth) {

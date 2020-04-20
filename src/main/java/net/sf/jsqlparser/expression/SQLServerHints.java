@@ -50,8 +50,6 @@ public class SQLServerHints {
         if (Boolean.TRUE.equals(noLock)) {
             hints.add("NOLOCK");
         }
-        return " WITH ("
-                + String.join(", ", hints)
-                + ")";
+        return " WITH (" + String.join(", ", hints) + ")";
     }
 }

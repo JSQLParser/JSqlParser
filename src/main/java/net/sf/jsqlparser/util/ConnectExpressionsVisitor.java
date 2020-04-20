@@ -15,9 +15,10 @@ import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
- * Connect all selected expressions with a binary expression. Out of select a,b from table one gets
- * select a || b as expr from table. The type of binary expression is set by overwriting this class
- * abstract method createBinaryExpression.
+ * Connect all selected expressions with a binary expression. Out of select a,b
+ * from table one gets select a || b as expr from table. The type of binary
+ * expression is set by overwriting this class abstract method
+ * createBinaryExpression.
  *
  * @author tw
  */

@@ -81,13 +81,11 @@ public class CreateViewDeParserTest {
         selectDeParser.setExpressionVisitor(expressionDeParser);
 
         CreateViewDeParser instance = new CreateViewDeParser(b, selectDeParser);
-        CreateView vc = (CreateView) CCJSqlParserUtil.
-                parse("CREATE VIEW test AS SELECT a, b FROM mytable");
+        CreateView vc = (CreateView) CCJSqlParserUtil.parse("CREATE VIEW test AS SELECT a, b FROM mytable");
         instance.deParse(vc);
 
         assertEquals("CREATE VIEW test AS SELECT a, b FROM mytable", vc.toString());
-        assertEquals("CREATE VIEW test AS SELECT \"a\", \"b\" FROM mytable", instance.getBuffer().
-                toString());
+        assertEquals("CREATE VIEW test AS SELECT \"a\", \"b\" FROM mytable", instance.getBuffer().toString());
     }
 
     @Test

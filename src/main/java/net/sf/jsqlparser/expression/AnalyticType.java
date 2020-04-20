@@ -10,6 +10,5 @@
 package net.sf.jsqlparser.expression;
 
 public enum AnalyticType {
-    OVER,
-    WITHIN_GROUP
+    OVER, WITHIN_GROUP
 }

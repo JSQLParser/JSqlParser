@@ -11,14 +11,15 @@ package net.sf.jsqlparser.statement.select;
 
 /**
  * lateral sub select
+ * 
  * @author tobens
  */
 public class LateralSubSelect extends SpecialSubSelect {
-    
+
     public LateralSubSelect() {
         super("LATERAL");
     }
-    
+
     @Override
     public void accept(FromItemVisitor fromItemVisitor) {
         fromItemVisitor.visit(this);

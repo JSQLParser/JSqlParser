@@ -127,8 +127,8 @@ public class InsertDeParser implements ItemsListVisitor {
             buffer.append(" RETURNING *");
         } else if (insert.getReturningExpressionList() != null) {
             buffer.append(" RETURNING ");
-            for (Iterator<SelectExpressionItem> iter = insert.getReturningExpressionList().
-                    iterator(); iter.hasNext();) {
+            for (Iterator<SelectExpressionItem> iter = insert.getReturningExpressionList().iterator(); iter
+                    .hasNext();) {
                 buffer.append(iter.next().toString());
                 if (iter.hasNext()) {
                     buffer.append(", ");

@@ -14,8 +14,7 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 public class First {
 
     public enum Keyword {
-        FIRST,
-        LIMIT
+        FIRST, LIMIT
     }
 
     private Keyword keyword;

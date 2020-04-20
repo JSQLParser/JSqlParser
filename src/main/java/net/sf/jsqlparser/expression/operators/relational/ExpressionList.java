@@ -28,8 +28,8 @@ public class ExpressionList implements ItemsList {
     public ExpressionList(List<Expression> expressions) {
         this.expressions = expressions;
     }
-    
-    public ExpressionList(Expression ... expressions) {
+
+    public ExpressionList(Expression... expressions) {
         this.expressions = Arrays.asList(expressions);
     }
 

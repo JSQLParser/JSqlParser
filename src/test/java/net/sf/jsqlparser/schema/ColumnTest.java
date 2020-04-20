@@ -25,7 +25,7 @@ public class ColumnTest {
             public String toString() {
                 return "anonymous class";
             }
-                
+
         };
         assertEquals("anonymous class", myColumn.toString());
     }

@@ -61,7 +61,8 @@ public class UpdateTest {
 
     @Test
     public void testUpdateMultiTable() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("UPDATE T1, T2 SET T1.C2 = T2.C2, T2.C3 = 'UPDATED' WHERE T1.C1 = T2.C1 AND T1.C2 < 10");
+        assertSqlCanBeParsedAndDeparsed(
+                "UPDATE T1, T2 SET T1.C2 = T2.C2, T2.C3 = 'UPDATED' WHERE T1.C1 = T2.C1 AND T1.C2 < 10");
     }
 
     @Test
@@ -76,7 +77,8 @@ public class UpdateTest {
 
     @Test
     public void testUpdateIssue167_SingleQuotes() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET NAME = 'Customer 2', ADDRESS = 'Address \\' ddad2', AUTH_KEY = 'samplekey' WHERE ID = 2");
+        assertSqlCanBeParsedAndDeparsed(
+                "UPDATE tablename SET NAME = 'Customer 2', ADDRESS = 'Address \\' ddad2', AUTH_KEY = 'samplekey' WHERE ID = 2");
     }
 
     @Test
@@ -96,17 +98,23 @@ public class UpdateTest {
 
     @Test
     public void testUpdateWithReturningAll() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = 'thing' WHERE id = 1 ORDER BY col LIMIT 10 RETURNING *");
+        assertSqlCanBeParsedAndDeparsed(
+                "UPDATE tablename SET col = 'thing' WHERE id = 1 ORDER BY col LIMIT 10 RETURNING *");
         assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = 'thing' WHERE id = 1 RETURNING *");
     }
 
     @Test
     public void testUpdateWithReturningList() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = 'thing' WHERE id = 1 ORDER BY col LIMIT 10 RETURNING col_1, col_2, col_3");
-        assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = 'thing' WHERE id = 1 RETURNING col_1, col_2, col_3");
-        assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = 'thing' WHERE id = 1 ORDER BY col LIMIT 10 RETURNING col_1 AS Bar, col_2 AS Baz, col_3 AS Foo");
-        assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = 'thing' WHERE id = 1 RETURNING col_1 AS Bar, col_2 AS Baz, col_3 AS Foo");
-        assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = 'thing' WHERE id = 1 RETURNING ABS(col_1) AS Bar, ABS(col_2), col_3 AS Foo");
+        assertSqlCanBeParsedAndDeparsed(
+                "UPDATE tablename SET col = 'thing' WHERE id = 1 ORDER BY col LIMIT 10 RETURNING col_1, col_2, col_3");
+        assertSqlCanBeParsedAndDeparsed(
+                "UPDATE tablename SET col = 'thing' WHERE id = 1 RETURNING col_1, col_2, col_3");
+        assertSqlCanBeParsedAndDeparsed(
+                "UPDATE tablename SET col = 'thing' WHERE id = 1 ORDER BY col LIMIT 10 RETURNING col_1 AS Bar, col_2 AS Baz, col_3 AS Foo");
+        assertSqlCanBeParsedAndDeparsed(
+                "UPDATE tablename SET col = 'thing' WHERE id = 1 RETURNING col_1 AS Bar, col_2 AS Baz, col_3 AS Foo");
+        assertSqlCanBeParsedAndDeparsed(
+                "UPDATE tablename SET col = 'thing' WHERE id = 1 RETURNING ABS(col_1) AS Bar, ABS(col_2), col_3 AS Foo");
     }
 
     @Test(expected = JSQLParserException.class)
@@ -143,12 +151,9 @@ public class UpdateTest {
     @Test
     public void testUpdateIssue826() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("update message_topic inner join message_topic_config on\n"
-                + " message_topic.id=message_topic_config.topic_id \n"
-                + "set message_topic_config.enable_flag='N', \n"
-                + "message_topic_config.updated_by='test', \n"
-                + "message_topic_config.update_at='2019-07-16' \n"
-                + "where message_topic.name='test' \n"
-                + "AND message_topic_config.enable_flag='Y'", true);
+                + " message_topic.id=message_topic_config.topic_id \n" + "set message_topic_config.enable_flag='N', \n"
+                + "message_topic_config.updated_by='test', \n" + "message_topic_config.update_at='2019-07-16' \n"
+                + "where message_topic.name='test' \n" + "AND message_topic_config.enable_flag='Y'", true);
     }
 
     @Test

@@ -129,7 +129,8 @@ public class SelectASTTest {
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '#');
         }
-        assertEquals("SELECT  /* testcomment */ \n *,  * FROM  -- testcomment2 \n mytable \n order by   #,  #", b.toString());
+        assertEquals("SELECT  /* testcomment */ \n *,  * FROM  -- testcomment2 \n mytable \n order by   #,  #",
+                b.toString());
     }
 
     @Test
@@ -152,7 +153,8 @@ public class SelectASTTest {
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '#');
         }
-        assertEquals("SELECT  /* testcomment */ \r\n *,  * FROM  -- testcomment2 \r\n mytable \r\n order by   #,  #", b.toString());
+        assertEquals("SELECT  /* testcomment */ \r\n *,  * FROM  -- testcomment2 \r\n mytable \r\n order by   #,  #",
+                b.toString());
     }
 
     @Test

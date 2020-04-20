@@ -15,10 +15,10 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 /**
- * Analytic function. The name of the function is variable but the parameters following the special
- * analytic function path. e.g. row_number() over (order by test). Additional there can be an
- * expression for an analytical aggregate like sum(col) or the "all collumns" wildcard like
- * count(*).
+ * Analytic function. The name of the function is variable but the parameters
+ * following the special analytic function path. e.g. row_number() over (order
+ * by test). Additional there can be an expression for an analytical aggregate
+ * like sum(col) or the "all collumns" wildcard like count(*).
  *
  * @author tw
  */
@@ -199,11 +199,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         }
 
         switch (type) {
-            case WITHIN_GROUP:
-                b.append("WITHIN GROUP");
-                break;
-            default:
-                b.append("OVER");
+        case WITHIN_GROUP:
+            b.append("WITHIN GROUP");
+            break;
+        default:
+            b.append("OVER");
         }
         b.append(" (");
 
@@ -211,7 +211,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         orderBy.toStringOrderByElements(b);
 
         if (windowElement != null) {
-            if (orderBy.getOrderByElements()!=null) {
+            if (orderBy.getOrderByElements() != null) {
                 b.append(' ');
             }
             b.append(windowElement);

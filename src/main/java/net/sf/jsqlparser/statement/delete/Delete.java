@@ -89,9 +89,7 @@ public class Delete implements Statement {
 
         if (tables != null && tables.size() > 0) {
             b.append(" ");
-            b.append(tables.stream()
-                    .map(t -> t.toString())
-                    .collect(joining(", ")));
+            b.append(tables.stream().map(t -> t.toString()).collect(joining(", ")));
         }
 
         b.append(" FROM ");

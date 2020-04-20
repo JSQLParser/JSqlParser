@@ -257,6 +257,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <configFile>${project.basedir}/formatter/sun-standards-config.xml</configFile>
+                </configuration>
             </plugin>
         </plugins>
     </build>

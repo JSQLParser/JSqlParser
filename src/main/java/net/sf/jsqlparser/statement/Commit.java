@@ -14,7 +14,7 @@ public class Commit implements Statement {
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
-    
+
     @Override
     public String toString() {
         return "COMMIT";

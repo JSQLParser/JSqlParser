@@ -19,10 +19,10 @@ import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 
 /**
  * This class is mainly used for handling the cloning of an expression tree.
- * Note this is the shallow copy of the tree. That means I do not modify
- * or copy the expression other than these expressions:
- * AND, OR, NOT, (), MULTI-AND, MULTI-OR.
- * Since the CNF conversion only change the condition part of the tree.
+ * Note this is the shallow copy of the tree. That means I do not modify or copy
+ * the expression other than these expressions: AND, OR, NOT, (), MULTI-AND,
+ * MULTI-OR. Since the CNF conversion only change the condition part of the
+ * tree.
  *
  * @author messfish
  *
@@ -71,8 +71,9 @@ class CloneHelper {
     }
 
     /**
-     * This method is used to copy the expression which happens at step four. I only copy the
-     * conditional expressions since the CNF only changes the conditional part.
+     * This method is used to copy the expression which happens at step four. I only
+     * copy the conditional expressions since the CNF only changes the conditional
+     * part.
      *
      * @param express the expression that will be copied.
      * @return the copied expression.
@@ -87,19 +88,21 @@ class CloneHelper {
             if (express instanceof MultiAndExpression) {
                 return new MultiAndExpression(list);
             }
-            /* since there only two possibilities of the multiple expression,
-             * so after the if condition, it is certain this is a multi-or. */
+            /*
+             * since there only two possibilities of the multiple expression, so after the
+             * if condition, it is certain this is a multi-or.
+             */
             return new MultiOrExpression(list);
         }
         return express;
     }
 
     /**
-     * This helper method is used to change the multiple expression into the binary form,
-     * respectively and return the root of the expression tree.
+     * This helper method is used to change the multiple expression into the binary
+     * form, respectively and return the root of the expression tree.
      *
      * @param isMultiOr variable tells whether the expression is or.
-     * @param exp the expression that needs to be converted.
+     * @param exp       the expression that needs to be converted.
      * @return the root of the expression tree.
      */
     public Expression changeBack(Boolean isMultiOr, Expression exp) {

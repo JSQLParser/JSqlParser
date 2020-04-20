@@ -25,7 +25,7 @@ public class GrantDeParser {
         if (grant.getRole() != null) {
             buffer.append(grant.getRole());
         } else {
-            for (Iterator<String> iter = grant.getPrivileges().iterator(); iter.hasNext(); ) {
+            for (Iterator<String> iter = grant.getPrivileges().iterator(); iter.hasNext();) {
                 String privilege = iter.next();
                 buffer.append(privilege);
                 if (iter.hasNext()) {
@@ -36,7 +36,7 @@ public class GrantDeParser {
             buffer.append(grant.getObjectName());
         }
         buffer.append(" TO ");
-        for (Iterator<String> iter = grant.getUsers().iterator(); iter.hasNext(); ) {
+        for (Iterator<String> iter = grant.getUsers().iterator(); iter.hasNext();) {
             String user = iter.next();
             buffer.append(user);
             if (iter.hasNext()) {

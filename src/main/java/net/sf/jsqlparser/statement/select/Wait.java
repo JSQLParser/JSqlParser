@@ -22,8 +22,8 @@ public class Wait {
     }
 
     /**
-     * Returns a String containing the WAIT clause and its timeout, where TIMEOUT is specified by
-     * {@link #getTimeout()}. The returned string will null     be:<code>
+     * Returns a String containing the WAIT clause and its timeout, where TIMEOUT is
+     * specified by {@link #getTimeout()}. The returned string will null be:<code>
      * &quot; WAIT &lt;TIMEOUT&gt;&quot;
      * </code>
      */

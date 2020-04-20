@@ -39,7 +39,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     public String getName() {
         return nameparts == null ? null : String.join(".", nameparts);
     }
-    
+
     public List<String> getMultipartName() {
         return nameparts;
     }
@@ -47,7 +47,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     public void setName(String string) {
         nameparts = Arrays.asList(string);
     }
-    
+
     public void setName(List<String> string) {
         nameparts = string;
     }
@@ -65,8 +65,9 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     /**
-     * This is at the moment only necessary for AnalyticExpression initialization and not for normal
-     * functions. Therefore there is no deparsing for it for normal functions.
+     * This is at the moment only necessary for AnalyticExpression initialization
+     * and not for normal functions. Therefore there is no deparsing for it for
+     * normal functions.
      *
      * @param ignoreNulls
      */
@@ -88,8 +89,8 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     /**
-     * The list of parameters of the function (if any, else null) If the parameter is "*",
-     * allColumns is set to true
+     * The list of parameters of the function (if any, else null) If the parameter
+     * is "*", allColumns is set to true
      *
      * @return the list of parameters of the function (if any, else null)
      */
@@ -102,7 +103,8 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     /**
-     * the parameters might be named parameters, e.g. substring('foobar' from 2 for 3)
+     * the parameters might be named parameters, e.g. substring('foobar' from 2 for
+     * 3)
      *
      * @return the list of named parameters of the function (if any, else null)
      */

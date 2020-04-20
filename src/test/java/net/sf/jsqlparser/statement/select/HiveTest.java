@@ -25,12 +25,7 @@ public class HiveTest {
         String sql;
         Statement statement;
 
-        sql = "SELECT\n"
-                + "    Something\n"
-                + "FROM\n"
-                + "    Sometable\n"
-                + "LEFT SEMI JOIN\n"
-                + "    Othertable\n";
+        sql = "SELECT\n" + "    Something\n" + "FROM\n" + "    Sometable\n" + "LEFT SEMI JOIN\n" + "    Othertable\n";
 
         statement = CCJSqlParserUtil.parse(sql);
 
@@ -39,8 +34,7 @@ public class HiveTest {
         Select select = (Select) statement;
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         assertEquals(1, plainSelect.getJoins().size());
-        assertEquals("Othertable", ((Table) plainSelect.getJoins().get(0).getRightItem()).
-                getFullyQualifiedName());
+        assertEquals("Othertable", ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
         assertTrue(plainSelect.getJoins().get(0).isLeft());
         assertTrue(plainSelect.getJoins().get(0).isSemi());
         assertStatementCanBeDeparsedAs(select, sql, true);

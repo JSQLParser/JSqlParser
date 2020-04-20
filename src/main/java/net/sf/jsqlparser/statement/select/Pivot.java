@@ -72,11 +72,8 @@ public class Pivot {
 
     @Override
     public String toString() {
-        return "PIVOT ("
-                + PlainSelect.getStringList(functionItems)
-                + " FOR " + PlainSelect.
-                        getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)
-                + " IN " + PlainSelect.getStringList(getInItems(), true, true) + ")"
-                + (alias!=null?alias.toString():"");
+        return "PIVOT (" + PlainSelect.getStringList(functionItems) + " FOR "
+                + PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1) + " IN "
+                + PlainSelect.getStringList(getInItems(), true, true) + ")" + (alias != null ? alias.toString() : "");
     }
 }

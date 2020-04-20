@@ -35,16 +35,16 @@ public class RegExpMatchOperator extends BinaryExpression {
     @Override
     public String getStringExpression() {
         switch (operatorType) {
-            case MATCH_CASESENSITIVE:
-                return "~";
-            case MATCH_CASEINSENSITIVE:
-                return "~*";
-            case NOT_MATCH_CASESENSITIVE:
-                return "!~";
-            case NOT_MATCH_CASEINSENSITIVE:
-                return "!~*";
-            default:
-                break;
+        case MATCH_CASESENSITIVE:
+            return "~";
+        case MATCH_CASEINSENSITIVE:
+            return "~*";
+        case NOT_MATCH_CASESENSITIVE:
+            return "!~";
+        case NOT_MATCH_CASEINSENSITIVE:
+            return "!~*";
+        default:
+            break;
         }
         return null;
     }

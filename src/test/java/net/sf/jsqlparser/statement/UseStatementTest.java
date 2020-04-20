@@ -19,7 +19,6 @@ import org.junit.Test;
  */
 public class UseStatementTest {
 
-
     @Test
     public void testSimpleUse() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("USE mydatabase");

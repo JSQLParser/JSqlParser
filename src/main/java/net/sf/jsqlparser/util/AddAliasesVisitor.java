@@ -15,9 +15,10 @@ import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
- * Add aliases to every column and expression selected by a select - statement. Existing aliases are
- * recognized and preserved. This class standard uses a prefix of A and a counter to generate new
- * aliases (e.g. A1, A5, ...). This behaviour can be altered.
+ * Add aliases to every column and expression selected by a select - statement.
+ * Existing aliases are recognized and preserved. This class standard uses a
+ * prefix of A and a counter to generate new aliases (e.g. A1, A5, ...). This
+ * behaviour can be altered.
  *
  * @author tw
  */
@@ -87,16 +88,19 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
     @Override
     public void visit(WithItem withItem) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); // To change body of generated methods, choose Tools
+        // | Templates.
     }
 
     @Override
     public void visit(AllColumns allColumns) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); // To change body of generated methods, choose Tools
+        // | Templates.
     }
 
     @Override
     public void visit(ValuesStatement aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+        // Tools | Templates.
     }
 }

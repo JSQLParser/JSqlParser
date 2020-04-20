@@ -72,14 +72,13 @@ public class Execute implements Statement {
     @Override
     public String toString() {
         return execType.name() + " " + name
-                + (exprList != null && exprList.getExpressions() != null ? " "
-                + PlainSelect.getStringList(exprList.getExpressions(), true, parenthesis) : "");
+                + (exprList != null && exprList.getExpressions() != null
+                        ? " " + PlainSelect.getStringList(exprList.getExpressions(), true, parenthesis)
+                        : "");
     }
 
     public static enum EXEC_TYPE {
-        EXECUTE,
-        EXEC,
-        CALL
+        EXECUTE, EXEC, CALL
     }
 
 }

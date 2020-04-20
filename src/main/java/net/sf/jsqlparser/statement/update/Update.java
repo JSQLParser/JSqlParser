@@ -163,14 +163,14 @@ public class Update implements Statement {
         StringBuilder b = new StringBuilder("UPDATE ");
         b.append(table);
         if (startJoins != null) {
-                for (Join join : startJoins) {
-                    if (join.isSimple()) {
-                        b.append(", ").append(join);
-                    } else {
-                        b.append(" ").append(join);
-                    }
+            for (Join join : startJoins) {
+                if (join.isSimple()) {
+                    b.append(", ").append(join);
+                } else {
+                    b.append(" ").append(join);
                 }
             }
+        }
         b.append(" SET ");
 
         if (!useSelect) {
@@ -225,8 +225,7 @@ public class Update implements Statement {
         if (isReturningAllColumns()) {
             b.append(" RETURNING *");
         } else if (getReturningExpressionList() != null) {
-            b.append(" RETURNING ").append(PlainSelect.
-                    getStringList(getReturningExpressionList(), true, false));
+            b.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
         }
 
         return b.toString();

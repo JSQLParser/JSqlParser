@@ -27,8 +27,7 @@ public class AlterTest {
 
     @Test
     public void testAlterTableAddColumn() throws JSQLParserException {
-        Statement stmt = CCJSqlParserUtil.
-                parse("ALTER TABLE mytable ADD COLUMN mycolumn varchar (255)");
+        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable ADD COLUMN mycolumn varchar (255)");
         assertTrue(stmt instanceof Alter);
         Alter alter = (Alter) stmt;
         assertEquals("mytable", alter.getTable().getFullyQualifiedName());
@@ -89,29 +88,34 @@ public class AlterTest {
 
     @Test
     public void testAlterTableUniqueKey() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE `schema_migrations` ADD UNIQUE KEY `unique_schema_migrations` (`version`)");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE `schema_migrations` ADD UNIQUE KEY `unique_schema_migrations` (`version`)");
     }
 
     @Test
     public void testAlterTableForgeignKey() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE CASCADE");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE CASCADE");
     }
 
     @Test
     public void testAlterTableAddConstraint() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT FK_RESOURCELINKTYPE_PARENTTYPE_PRIMARYKEY FOREIGN KEY (PARENTTYPE_PRIMARYKEY) REFERENCES RESOURCETYPE(PRIMARYKEY)");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT FK_RESOURCELINKTYPE_PARENTTYPE_PRIMARYKEY FOREIGN KEY (PARENTTYPE_PRIMARYKEY) REFERENCES RESOURCETYPE(PRIMARYKEY)");
     }
 
     @Test
     public void testAlterTableAddConstraintWithConstraintState() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT FK_RESOURCELINKTYPE_PARENTTYPE_PRIMARYKEY FOREIGN KEY (PARENTTYPE_PRIMARYKEY) REFERENCES RESOURCETYPE(PRIMARYKEY) DEFERRABLE DISABLE NOVALIDATE");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT FK_RESOURCELINKTYPE_PARENTTYPE_PRIMARYKEY FOREIGN KEY (PARENTTYPE_PRIMARYKEY) REFERENCES RESOURCETYPE(PRIMARYKEY) DEFERRABLE DISABLE NOVALIDATE");
     }
 
     @Test
     public void testAlterTableAddConstraintWithConstraintState2() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT RESOURCELINKTYPE_PRIMARYKEY PRIMARY KEY (PRIMARYKEY) DEFERRABLE NOVALIDATE");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT RESOURCELINKTYPE_PRIMARYKEY PRIMARY KEY (PRIMARYKEY) DEFERRABLE NOVALIDATE");
     }
-    
+
     @Test
     public void testAlterTableAddUniqueConstraint() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE Persons ADD UNIQUE (ID)");
@@ -124,12 +128,14 @@ public class AlterTest {
 
     @Test
     public void testAlterTableForgeignKey3() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE RESTRICT");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE RESTRICT");
     }
 
     @Test
     public void testAlterTableForgeignKey4() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL");
     }
 
     @Test
@@ -141,8 +147,7 @@ public class AlterTest {
     public void testAlterTableDropColumn2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable DROP COLUMN col1, DROP COLUMN col2");
 
-        Statement stmt = CCJSqlParserUtil.
-                parse("ALTER TABLE mytable DROP COLUMN col1, DROP COLUMN col2");
+        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable DROP COLUMN col1, DROP COLUMN col2");
         Alter alter = (Alter) stmt;
         List<AlterExpression> alterExps = alter.getAlterExpressions();
         AlterExpression col1Exp = alterExps.get(0);
@@ -172,7 +177,8 @@ public class AlterTest {
         assertStatementCanBeDeparsedAs(stmt, sql);
         AlterExpression alterExpression = ((Alter) stmt).getAlterExpressions().get(0);
         assertNull(alterExpression.getConstraintName());
-        // TODO: should this pass? ==>        assertEquals(alterExpression.getPkColumns().get(0), "ID");
+        // TODO: should this pass? ==>
+        // assertEquals(alterExpression.getPkColumns().get(0), "ID");
         assertEquals(alterExpression.getIndex().getColumnsNames().get(0), "`ID`");
     }
 
@@ -208,8 +214,8 @@ public class AlterTest {
     public void testAlterTableAddColumn4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 varchar (255), ADD COLUMN col2 integer");
 
-        Statement stmt = CCJSqlParserUtil.
-                parse("ALTER TABLE mytable ADD COLUMN col1 varchar (255), ADD COLUMN col2 integer");
+        Statement stmt = CCJSqlParserUtil
+                .parse("ALTER TABLE mytable ADD COLUMN col1 varchar (255), ADD COLUMN col2 integer");
         Alter alter = (Alter) stmt;
         List<AlterExpression> alterExps = alter.getAlterExpressions();
         AlterExpression col1Exp = alterExps.get(0);
@@ -261,14 +267,14 @@ public class AlterTest {
         // COLUMN keyword appears in deparsed statement, modify becomes all caps
         assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE mytable MODIFY COLUMN col1 timestamp (6)");
 
-        assertEquals(AlterOperation.MODIFY, ((Alter) stmt).getAlterExpressions().get(0).
-                getOperation());
+        assertEquals(AlterOperation.MODIFY, ((Alter) stmt).getAlterExpressions().get(0).getOperation());
     }
-    
+
     @Test
     public void testAlterTableAlterColumn() throws JSQLParserException {
-      // http://www.postgresqltutorial.com/postgresql-change-column-type/
-      assertSqlCanBeParsedAndDeparsed("ALTER TABLE table_name ALTER COLUMN column_name_1 TYPE TIMESTAMP, ALTER COLUMN column_name_2 TYPE BOOLEAN");
+        // http://www.postgresqltutorial.com/postgresql-change-column-type/
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE table_name ALTER COLUMN column_name_1 TYPE TIMESTAMP, ALTER COLUMN column_name_2 TYPE BOOLEAN");
     }
 
     @Test
@@ -306,8 +312,7 @@ public class AlterTest {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 date with time zone");
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE mytable ADD COLUMN col1 date without time zone");
 
-        Statement stmt = CCJSqlParserUtil.
-                parse("ALTER TABLE mytable ADD COLUMN col1 timestamp with time zone");
+        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable ADD COLUMN col1 timestamp with time zone");
         Alter alter = (Alter) stmt;
         List<AlterExpression> alterExps = alter.getAlterExpressions();
         AlterExpression col1Exp = alterExps.get(0);
@@ -354,8 +359,8 @@ public class AlterTest {
                     + constraintType + " (" + columnName1 + ", " + columnName2 + ")");
 
             assertSqlCanBeParsedAndDeparsed("ALTER TABLE " + tableName + " ADD CONSTRAINT " + constraintName1 + " "
-                    + constraintType + " (" + columnName1 + ", " + columnName2 + "), ADD CONSTRAINT "
-                    + constraintName2 + " " + constraintType + " (" + columnName3 + ", " + columnName4 + ")");
+                    + constraintType + " (" + columnName1 + ", " + columnName2 + "), ADD CONSTRAINT " + constraintName2
+                    + " " + constraintType + " (" + columnName3 + ", " + columnName4 + ")");
         }
     }
 
@@ -366,39 +371,44 @@ public class AlterTest {
 
     @Test
     public void testIssue679() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_session_status ADD INDEX idx_user_id_name (user_id, user_name(10)), ADD INDEX idx_user_name (user_name)");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE tb_session_status ADD INDEX idx_user_id_name (user_id, user_name(10)), ADD INDEX idx_user_name (user_name)");
     }
 
     @Test
     public void testAlterTableIndex586() throws Exception {
-        Statement result = CCJSqlParserUtil.parse("ALTER TABLE biz_add_fee DROP INDEX operation_time, " +
-                "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) " +
-                "USING BTREE, ALGORITHM = INPLACE");
-        assertEquals("ALTER TABLE biz_add_fee DROP INDEX operation_time , " +
-                "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) " +
-                "USING BTREE, ALGORITHM = INPLACE", result.toString());
+        Statement result = CCJSqlParserUtil.parse("ALTER TABLE biz_add_fee DROP INDEX operation_time, "
+                + "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) "
+                + "USING BTREE, ALGORITHM = INPLACE");
+        assertEquals("ALTER TABLE biz_add_fee DROP INDEX operation_time , "
+                + "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) "
+                + "USING BTREE, ALGORITHM = INPLACE", result.toString());
     }
 
     @Test
     public void testIssue259() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE feature_v2 ADD COLUMN third_user_id int (10) unsigned DEFAULT '0' COMMENT '第三方用户id' after kdt_id");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE feature_v2 ADD COLUMN third_user_id int (10) unsigned DEFAULT '0' COMMENT '第三方用户id' after kdt_id");
     }
-    
+
     @Test
     public void testIssue633_2() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)");
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)");
     }
-    
+
     @Test
     public void testAlterOnlyIssue928() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE ONLY categories ADD CONSTRAINT pk_categories PRIMARY KEY (category_id)");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE ONLY categories ADD CONSTRAINT pk_categories PRIMARY KEY (category_id)");
     }
-    
+
     @Test
     public void testAlterConstraintWithoutFKSourceColumnsIssue929() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE orders ADD CONSTRAINT fk_orders_customers FOREIGN KEY (customer_id) REFERENCES customers");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE orders ADD CONSTRAINT fk_orders_customers FOREIGN KEY (customer_id) REFERENCES customers");
     }
-    
+
     public void testAlterTableAlterColumnDropNotNullIssue918() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE \"user_table_t\" ALTER COLUMN name DROP NOT NULL");
     }
@@ -408,7 +418,7 @@ public class AlterTest {
         String sql = "ALTER TABLE \"test_table\" RENAME COLUMN \"test_column\" TO \"test_c\"";
         assertSqlCanBeParsedAndDeparsed(sql);
 
-        Alter alter= (Alter) CCJSqlParserUtil.parse(sql);
+        Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
         AlterExpression expression = alter.getAlterExpressions().get(0);
         assertEquals(expression.getOperation(), AlterOperation.RENAME);
         assertEquals(expression.getColOldName(), "\"test_column\"");

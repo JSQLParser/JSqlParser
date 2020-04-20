@@ -86,7 +86,6 @@ public class AddAliasesVisitorTest {
         final AddAliasesVisitor instance = new AddAliasesVisitor();
         setOpList.getSelectBody().accept(instance);
 
-        assertEquals("SELECT 3 + 4 AS A1 FROM test UNION SELECT 7 + 8 AS A1 FROM test2", setOpList.
-                toString());
+        assertEquals("SELECT 3 + 4 AS A1 FROM test UNION SELECT 7 + 8 AS A1 FROM test2", setOpList.toString());
     }
 }

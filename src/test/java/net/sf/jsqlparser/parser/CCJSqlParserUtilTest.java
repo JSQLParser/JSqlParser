@@ -116,7 +116,8 @@ public class CCJSqlParserUtilTest {
 
     @Test(expected = JSQLParserException.class)
     public void testParseFromStreamWithEncodingFail() throws Exception {
-        CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8.name());
+        CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)),
+                StandardCharsets.UTF_8.name());
 
     }
 
@@ -146,19 +147,9 @@ public class CCJSqlParserUtilTest {
 
     @Test
     public void testParseStatementsIssue691() throws Exception {
-        Statements result = CCJSqlParserUtil.parseStatements(
-                "select * from dual;\n"
-                + "\n"
-                + "select\n"
-                + "*\n"
-                + "from\n"
-                + "dual;\n"
-                + "\n"
-                + "select *\n"
-                + "from dual;");
-        assertEquals("SELECT * FROM dual;\n"
-                + "SELECT * FROM dual;\n"
-                + "SELECT * FROM dual;\n", result.toString());
+        Statements result = CCJSqlParserUtil.parseStatements("select * from dual;\n" + "\n" + "select\n" + "*\n"
+                + "from\n" + "dual;\n" + "\n" + "select *\n" + "from dual;");
+        assertEquals("SELECT * FROM dual;\n" + "SELECT * FROM dual;\n" + "SELECT * FROM dual;\n", result.toString());
     }
 
     @Test
@@ -170,15 +161,8 @@ public class CCJSqlParserUtilTest {
             public void accept(Statement statement) {
                 list.add(statement);
             }
-        }, new ByteArrayInputStream(("select * from dual;\n"
-                + "select\n"
-                + "*\n"
-                + "from\n"
-                + "dual;\n"
-                + "\n"
-                + "-- some comment\n"
-                + "select *\n"
-                + "from dual;").getBytes(StandardCharsets.UTF_8)), "UTF-8");
+        }, new ByteArrayInputStream(("select * from dual;\n" + "select\n" + "*\n" + "from\n" + "dual;\n" + "\n"
+                + "-- some comment\n" + "select *\n" + "from dual;").getBytes(StandardCharsets.UTF_8)), "UTF-8");
 
         assertEquals(list.size(), 3);
     }
@@ -195,9 +179,7 @@ public class CCJSqlParserUtilTest {
 
     @Test
     public void testParseStatementsIssue691_2() throws Exception {
-        Statements result = CCJSqlParserUtil.parseStatements(
-                "select * from dual;\n"
-                + "---test");
+        Statements result = CCJSqlParserUtil.parseStatements("select * from dual;\n" + "---test");
         assertEquals("SELECT * FROM dual;\n", result.toString());
     }
 
@@ -206,9 +188,7 @@ public class CCJSqlParserUtilTest {
         Statements result = CCJSqlParserUtil.parseStatements("CREATE TABLE `table_name` (\n"
                 + "  `id` bigint(20) NOT NULL AUTO_INCREMENT,\n"
                 + "  `another_column_id` bigint(20) NOT NULL COMMENT 'column id as sent by SYSTEM',\n"
-                + "  PRIMARY KEY (`id`),\n"
-                + "  UNIQUE KEY `uk_another_column_id` (`another_column_id`)\n"
-                + ")");
+                + "  PRIMARY KEY (`id`),\n" + "  UNIQUE KEY `uk_another_column_id` (`another_column_id`)\n" + ")");
         assertEquals("CREATE TABLE `table_name` (`id` bigint (20) NOT NULL AUTO_INCREMENT, `another_column_id` "
                 + "bigint (20) NOT NULL COMMENT 'column id as sent by SYSTEM', PRIMARY KEY (`id`), UNIQUE KEY `uk_another_column_id` "
                 + "(`another_column_id`));\n", result.toString());

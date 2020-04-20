@@ -39,9 +39,8 @@ public class DeleteDeParser {
     public void deParse(Delete delete) {
         buffer.append("DELETE");
         if (delete.getTables() != null && delete.getTables().size() > 0) {
-            buffer.append(delete.getTables().stream()
-                    .map(t -> t.getFullyQualifiedName())
-                    .collect(joining(", ", " " , "")));
+            buffer.append(
+                    delete.getTables().stream().map(t -> t.getFullyQualifiedName()).collect(joining(", ", " ", "")));
         }
         buffer.append(" FROM ").append(delete.getTable().toString());
 

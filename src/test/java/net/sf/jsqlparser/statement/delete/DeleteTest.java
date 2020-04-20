@@ -79,8 +79,8 @@ public class DeleteTest {
         String stmt = "DELETE gc FROM guide_category AS gc LEFT JOIN guide AS g ON g.id_guide = gc.id_guide WHERE g.title IS NULL LIMIT 5";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
-    
-     @Test
+
+    @Test
     public void testDeleteMultiTableIssue878() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DELETE table1, table2 FROM table1, table2");
     }

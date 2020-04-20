@@ -19,7 +19,7 @@ public class PartitionByClause {
     public ExpressionList getPartitionExpressionList() {
         return partitionExpressionList;
     }
-    
+
     public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
         setPartitionExpressionList(partitionExpressionList, false);
     }
@@ -32,12 +32,11 @@ public class PartitionByClause {
     void toStringPartitionBy(StringBuilder b) {
         if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
             b.append("PARTITION BY ");
-            b.append(PlainSelect.
-                    getStringList(partitionExpressionList.getExpressions(), true, brackets));
+            b.append(PlainSelect.getStringList(partitionExpressionList.getExpressions(), true, brackets));
             b.append(" ");
         }
     }
-    
+
     public boolean isBrackets() {
         return brackets;
     }

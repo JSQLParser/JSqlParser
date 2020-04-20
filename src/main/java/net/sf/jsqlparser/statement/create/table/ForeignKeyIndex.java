@@ -61,9 +61,7 @@ public class ForeignKeyIndex extends NamedConstraint {
         if (onUpdateReferenceOption != null) {
             referenceOptions += " ON UPDATE " + onUpdateReferenceOption;
         }
-        return super.toString()
-                + " REFERENCES " + table + PlainSelect.
-                        getStringList(getReferencedColumnNames(), true, true)
-                + referenceOptions;
+        return super.toString() + " REFERENCES " + table
+                + PlainSelect.getStringList(getReferencedColumnNames(), true, true) + referenceOptions;
     }
 }

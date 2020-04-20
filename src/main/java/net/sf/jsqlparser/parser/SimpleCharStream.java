@@ -171,18 +171,18 @@ public class SimpleCharStream {
         }
 
         switch (c) {
-            case '\r':
-                prevCharIsCR = true;
-                break;
-            case '\n':
-                prevCharIsLF = true;
-                break;
-            case '\t':
-                column--;
-                column += tabSize - (column % tabSize);
-                break;
-            default:
-                break;
+        case '\r':
+            prevCharIsCR = true;
+            break;
+        case '\n':
+            prevCharIsLF = true;
+            break;
+        case '\t':
+            column--;
+            column += tabSize - (column % tabSize);
+            break;
+        default:
+            break;
         }
 
         bufline[bufpos] = line;
@@ -285,8 +285,7 @@ public class SimpleCharStream {
     /**
      * Constructor.
      */
-    public SimpleCharStream(Provider dstream, int startline,
-            int startcolumn, int buffersize) {
+    public SimpleCharStream(Provider dstream, int startline, int startcolumn, int buffersize) {
         inputStream = dstream;
         isStringProvider = dstream instanceof StringProvider;
         line = startline;
@@ -308,8 +307,7 @@ public class SimpleCharStream {
     /**
      * Constructor.
      */
-    public SimpleCharStream(Provider dstream, int startline,
-            int startcolumn) {
+    public SimpleCharStream(Provider dstream, int startline, int startcolumn) {
         this(dstream, startline, startcolumn, 4096);
     }
 
@@ -323,8 +321,7 @@ public class SimpleCharStream {
     /**
      * Reinitialise.
      */
-    public void ReInit(Provider dstream, int startline,
-            int startcolumn, int buffersize) {
+    public void ReInit(Provider dstream, int startline, int startcolumn, int buffersize) {
         inputStream = dstream;
         isStringProvider = dstream instanceof StringProvider;
         line = startline;
@@ -350,8 +347,7 @@ public class SimpleCharStream {
     /**
      * Reinitialise.
      */
-    public void ReInit(Provider dstream, int startline,
-            int startcolumn) {
+    public void ReInit(Provider dstream, int startline, int startcolumn) {
         ReInit(dstream, startline, startcolumn, 4096);
     }
 
@@ -371,15 +367,13 @@ public class SimpleCharStream {
             if (bufpos >= tokenBegin) {
                 return data.substring(tokenBegin, bufpos + 1);
             } else {
-                return data.substring(tokenBegin, bufsize)
-                        + data.substring(0, bufpos + 1);
+                return data.substring(tokenBegin, bufsize) + data.substring(0, bufpos + 1);
             }
         } else {
             if (bufpos >= tokenBegin) {
                 return new String(buffer, tokenBegin, bufpos - tokenBegin + 1);
             } else {
-                return new String(buffer, tokenBegin, bufsize - tokenBegin)
-                        + new String(buffer, 0, bufpos + 1);
+                return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, bufpos + 1);
             }
         }
     }
@@ -393,7 +387,7 @@ public class SimpleCharStream {
 
         if (isStringProvider) {
             String str = ((StringProvider) inputStream)._string;
-            if ((bufpos + 1) >= len) {            
+            if ((bufpos + 1) >= len) {
                 str.getChars(bufpos - len + 1, bufpos - len + 1 + len, ret, 0);
             } else {
                 str.getChars(bufsize - (len - bufpos - 1), bufsize - (len - bufpos - 1) + len - bufpos - 1, ret, 0);
@@ -403,8 +397,7 @@ public class SimpleCharStream {
             if ((bufpos + 1) >= len) {
                 System.arraycopy(buffer, bufpos - len + 1, ret, 0, len);
             } else {
-                System.arraycopy(buffer, bufsize - (len - bufpos - 1), ret, 0,
-                        len - bufpos - 1);
+                System.arraycopy(buffer, bufsize - (len - bufpos - 1), ret, 0, len - bufpos - 1);
                 System.arraycopy(buffer, 0, ret, len - bufpos - 1, bufpos + 1);
             }
         }
@@ -474,4 +467,7 @@ public class SimpleCharStream {
         trackLineColumn = tlc;
     }
 }
-/* JavaCC - OriginalChecksum=47e65cd0a1ed785f7a51c9e0c60893c9 (do not edit this line) */
+/*
+ * JavaCC - OriginalChecksum=47e65cd0a1ed785f7a51c9e0c60893c9 (do not edit this
+ * line)
+ */

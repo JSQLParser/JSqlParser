@@ -12,7 +12,9 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Alias;
 
 /**
- * Special sub selects of the form prefix ( subselect ) e.g. lateral ( select * from mytable ).
+ * Special sub selects of the form prefix ( subselect ) e.g. lateral ( select *
+ * from mytable ).
+ * 
  * @author tobens
  */
 public abstract class SpecialSubSelect implements FromItem {
@@ -26,7 +28,7 @@ public abstract class SpecialSubSelect implements FromItem {
     public SpecialSubSelect(String prefix) {
         this.prefix = prefix;
     }
-    
+
     public String getPrefix() {
         return prefix;
     }
@@ -71,9 +73,7 @@ public abstract class SpecialSubSelect implements FromItem {
 
     @Override
     public String toString() {
-        return prefix + subSelect.toString()
-                + ((alias != null) ? alias.toString() : "")
-                + ((pivot != null) ? " " + pivot : "")
-                + ((unpivot != null) ? " " + unpivot : "");
+        return prefix + subSelect.toString() + ((alias != null) ? alias.toString() : "")
+                + ((pivot != null) ? " " + pivot : "") + ((unpivot != null) ? " " + unpivot : "");
     }
 }

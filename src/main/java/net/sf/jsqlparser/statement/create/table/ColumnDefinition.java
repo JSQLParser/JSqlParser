@@ -59,9 +59,10 @@ public class ColumnDefinition {
     public String toString() {
         return columnName + " " + toStringDataTypeAndSpec();
     }
-    
+
     public String toStringDataTypeAndSpec() {
-        return colDataType + ((columnSpecs != null && !columnSpecs.isEmpty())? " " + PlainSelect.
-                getStringList(columnSpecs, false, false) : "");
+        return colDataType + ((columnSpecs != null && !columnSpecs.isEmpty())
+                ? " " + PlainSelect.getStringList(columnSpecs, false, false)
+                : "");
     }
 }

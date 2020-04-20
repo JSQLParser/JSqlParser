@@ -53,15 +53,12 @@ public class AdaptersTest {
 
                             @Override
                             public void visit(Column column) {
-                                params.push(new Pair<String, String>(column.getColumnName(), params.
-                                        pop().getRight()));
+                                params.push(new Pair<String, String>(column.getColumnName(), params.pop().getRight()));
                             }
 
                             @Override
                             public void visit(JdbcNamedParameter parameter) {
-                                params.
-                                        push(new Pair<String, String>(params.pop().getLeft(), parameter.
-                                                getName()));
+                                params.push(new Pair<String, String>(params.pop().getLeft(), parameter.getName()));
                             }
                         });
                     }

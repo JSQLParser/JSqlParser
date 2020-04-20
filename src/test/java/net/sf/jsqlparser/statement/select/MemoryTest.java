@@ -24,19 +24,28 @@ public class MemoryTest {
         String longQuery = "select * from k where ID > 4";
 
         /*
-         * String longQuery = "select  *  from  (  SELECT  intermediate.id  as  id  ,  intermediate.date  as          "
-         * + "date  FROM  (  SELECT  DISTINCT   (  id  )   FROM  (  SELECT                           " +
-         * "wct_workflows.workflow_id  as  id  ,  wct_transaction.date  as  date  FROM             " +
-         * "wct_audit_entry  ,  wct_transaction  ,  wct_workflows  WHERE                           " +
-         * "(  wct_audit_entry.privilege  =  'W'  or  wct_audit_entry.privilege  =                 " + "'C'  ))))";
+         * String longQuery =
+         * "select  *  from  (  SELECT  intermediate.id  as  id  ,  intermediate.date  as          "
+         * +
+         * "date  FROM  (  SELECT  DISTINCT   (  id  )   FROM  (  SELECT                           "
+         * +
+         * "wct_workflows.workflow_id  as  id  ,  wct_transaction.date  as  date  FROM             "
+         * +
+         * "wct_audit_entry  ,  wct_transaction  ,  wct_workflows  WHERE                           "
+         * +
+         * "(  wct_audit_entry.privilege  =  'W'  or  wct_audit_entry.privilege  =                 "
+         * + "'C'  ))))";
          */
- /*
+        /*
          * String longQuery = "select  *  from  d WHERE                           " +
-         * "(  wct_audit_entry.privilege  =  'W'  or  wct_audit_entry.privilege  =                 " +
-         * "'C'  )  and  wct_audit_entry.outcome  =  't'  and                                      " +
-         * "wct_audit_entry.transaction_id  =  wct_transaction.transaction_id  and                 " +
-         * "wct_transaction.user_id  = 164 and  wct_audit_entry.object_id  =                       " +
-         * "wct_workflows.active_version_id ";
+         * "(  wct_audit_entry.privilege  =  'W'  or  wct_audit_entry.privilege  =                 "
+         * +
+         * "'C'  )  and  wct_audit_entry.outcome  =  't'  and                                      "
+         * +
+         * "wct_audit_entry.transaction_id  =  wct_transaction.transaction_id  and                 "
+         * +
+         * "wct_transaction.user_id  = 164 and  wct_audit_entry.object_id  =                       "
+         * + "wct_workflows.active_version_id ";
          */
         StringReader stringReader = new StringReader(longQuery);
         Statement statement = parserManager.parse(stringReader);

@@ -13,8 +13,7 @@ public class WindowElement {
 
     public enum Type {
 
-        ROWS,
-        RANGE
+        ROWS, RANGE
     }
 
     private Type type;

@@ -108,8 +108,7 @@ public final class DeclareStatement implements Statement {
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor
-    ) {
+    public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
 

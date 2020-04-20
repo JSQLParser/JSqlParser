@@ -41,7 +41,8 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * Parses an sql statement while allowing via consumer to configure the used parser before.
+     * Parses an sql statement while allowing via consumer to configure the used
+     * parser before.
      * 
      * For instance to activate SQLServer bracket quotation on could use:
      * 
@@ -52,7 +53,7 @@ public final class CCJSqlParserUtil {
      * @param sql
      * @param consumer
      * @return
-     * @throws JSQLParserException 
+     * @throws JSQLParserException
      */
     public static Statement parse(String sql, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(sql));
@@ -118,14 +119,14 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * Parse an conditional expression. This is the expression after a where
-     * clause.
+     * Parse an conditional expression. This is the expression after a where clause.
      *
      * @param condExpr
      * @param allowPartialParse false: needs the whole string to be processed.
      * @return
      */
-    public static Expression parseCondExpression(String condExpr, boolean allowPartialParse) throws JSQLParserException {
+    public static Expression parseCondExpression(String condExpr, boolean allowPartialParse)
+            throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(condExpr));
         try {
             Expression expr = parser.Expression();
@@ -152,7 +153,8 @@ public final class CCJSqlParserUtil {
         }
     }
 
-    public static void streamStatements(StatementListener listener, InputStream is, String encoding) throws JSQLParserException {
+    public static void streamStatements(StatementListener listener, InputStream is, String encoding)
+            throws JSQLParserException {
         try {
             CCJSqlParser parser = new CCJSqlParser(new StreamProvider(is, encoding));
             while (true) {

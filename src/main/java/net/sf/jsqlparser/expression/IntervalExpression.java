@@ -53,8 +53,7 @@ public class IntervalExpression extends ASTNodeAccessImpl implements Expression 
 
     @Override
     public String toString() {
-        return (intervalKeyword ? "INTERVAL " : "")
-                + Objects.toString(expression, parameter)
+        return (intervalKeyword ? "INTERVAL " : "") + Objects.toString(expression, parameter)
                 + (intervalType != null ? " " + intervalType : "");
     }
 

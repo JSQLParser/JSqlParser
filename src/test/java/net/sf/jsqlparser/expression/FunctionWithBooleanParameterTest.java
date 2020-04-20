@@ -14,7 +14,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 /**
- * Test some cases linked to a boolean (condition) argument as function parameter.
+ * Test some cases linked to a boolean (condition) argument as function
+ * parameter.
  *
  * @author Denis Fulachier
  *

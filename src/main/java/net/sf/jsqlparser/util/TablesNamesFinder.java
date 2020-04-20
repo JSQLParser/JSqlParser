@@ -109,9 +109,11 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 /**
  * Find all used tables within an select statement.
  *
- * Override extractTableName method to modify the extracted table names (e.g. without schema).
+ * Override extractTableName method to modify the extracted table names (e.g.
+ * without schema).
  */
-public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor, StatementVisitor {
+public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor,
+        SelectItemVisitor, StatementVisitor {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
     private List<String> tables;
@@ -193,8 +195,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(Table tableName) {
         String tableWholeName = extractTableName(tableName);
-        if (!otherItemNames.contains(tableWholeName.toLowerCase())
-                && !tables.contains(tableWholeName)) {
+        if (!otherItemNames.contains(tableWholeName.toLowerCase()) && !tables.contains(tableWholeName)) {
             tables.add(tableWholeName);
         }
     }
@@ -407,7 +408,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     /*
      * (non-Javadoc)
      *
-     * @see net.sf.jsqlparser.expression.ExpressionVisitor#visit(net.sf.jsqlparser.expression.CaseExpression)
+     * @see net.sf.jsqlparser.expression.ExpressionVisitor#visit(net.sf.jsqlparser.
+     * expression.CaseExpression)
      */
     @Override
     public void visit(CaseExpression caseExpression) {
@@ -427,7 +429,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     /*
      * (non-Javadoc)
      *
-     * @see net.sf.jsqlparser.expression.ExpressionVisitor#visit(net.sf.jsqlparser.expression.WhenClause)
+     * @see net.sf.jsqlparser.expression.ExpressionVisitor#visit(net.sf.jsqlparser.
+     * expression.WhenClause)
      */
     @Override
     public void visit(WhenClause whenClause) {
@@ -511,7 +514,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(LateralSubSelect lateralSubSelect) {
         lateralSubSelect.getSubSelect().getSelectBody().accept(this);
     }
-    
+
     @Override
     public void visit(MultiExpressionList multiExprList) {
         for (ExpressionList exprList : multiExprList.getExprList()) {
@@ -524,10 +527,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     /**
-     * Initializes table names collector. Important is the usage of Column instances to find table
-     * names. This is only allowed for expression parsing, where a better place for tablenames could
-     * not be there. For complete statements only from items are used to avoid some alias as
-     * tablenames.
+     * Initializes table names collector. Important is the usage of Column instances
+     * to find table names. This is only allowed for expression parsing, where a
+     * better place for tablenames could not be there. For complete statements only
+     * from items are used to avoid some alias as tablenames.
      *
      * @param allowColumnProcessing
      */
@@ -691,7 +694,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(CreateIndex createIndex) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
-    
+
     @Override
     public void visit(CreateSchema aThis) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
