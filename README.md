@@ -127,6 +127,10 @@ This is a valid piece of source code:
 * after control statements (if, while, for) a whitespace is expected
 * the opening brace should be in the same line as the control statement
 
+### Formatter
+
+The [formatter-maven-plugin](https://github.com/revelc/formatter-maven-plugin) is configured to fail the build if unformatted. Run `mvn formatter:format` to format the sources, `mvn formatter:validate` will check formating.
+
 ## Maven Repository
 
 JSQLParser is deployed at sonatypes open source maven repository. 
