@@ -258,6 +258,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ROWS: "ROWS">
 |   <K_SELECT:"SELECT">
 |   <K_SEMI : "SEMI">
+|   <K_SEQUENCE: "SEQUENCE">
 |   <K_SEPARATOR:"SEPARATOR">
 |   <K_SET:"SET">
 |   <K_SIBLINGS:"SIBLINGS">
@@ -410,7 +411,10 @@ Statement SingleStatement() :
         |
         stm = Use()
         |
-        stm = Commit() 
+        stm = Commit()
+        |
+        LOOKAHEAD(CreateSequence())
+        stm = CreateSequence()
         )
 		{ return stm; }
     } catch (ParseException e) {
@@ -3660,4 +3664,13 @@ Commit Commit():
   {
     return commit;
   }
+}
+
+CreateSequence CreateSequence():
+{
+  CreateSequence createSequence = new CreateSequence();
+}
+{
+  <K_CREATE>
+  <K_SEQUENCE>
 }
