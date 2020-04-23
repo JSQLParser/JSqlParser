@@ -19,29 +19,25 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-package net.sf.jsqlparser.statement.create.sequence;
+package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.schema.Sequence;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 
 /**
- * A {@code CREATE SEQUENCE} statement
+ * A class to de-parse (that is, transform from JSqlParser hierarchy into a string) a
+ * {@link net.sf.jsqlparser.statement.create.sequence.CreateSequence}
  */
-public class CreateSequence implements Statement {
+public class CreateSequenceDeParser {
 
-    public Sequence sequence;
+    private StringBuilder buffer;
 
-    public void setSequence(Sequence sequence) {
-        this.sequence = sequence;
+    /**
+     * @param buffer the buffer that will be filled with the select
+     */
+    public CreateSequenceDeParser(StringBuilder buffer) {
+        this.buffer = buffer;
     }
 
-    public Sequence getSequence() {
-        return sequence;
-    }
-
-    @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public void deParse(CreateSequence createSequence) {
     }
 }

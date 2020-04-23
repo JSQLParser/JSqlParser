@@ -71,6 +71,7 @@ import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.create.index.*;
+import net.sf.jsqlparser.statement.create.sequence.*;
 import net.sf.jsqlparser.statement.create.table.*;
 import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
@@ -148,6 +149,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_BINARY: "BINARY">  
 |   <K_BIT:"BIT">
 |   <K_BY:"BY">
+|   <K_CACHE: "CACHE">
 |   <K_CALL : "CALL">
 |   <K_CASCADE: "CASCADE">
 |   <K_CASE:"CASE">
@@ -199,6 +201,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_IGNORE : "IGNORE">
 |   <K_ILIKE:"ILIKE">
 |   <K_IN:"IN">
+|   <K_INCREMENT:"INCREMENT">
 |   <K_INDEX: "INDEX">
 |   <K_INNER:"INNER">
 |   <K_INSERT:"INSERT">
@@ -224,6 +227,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_NATURAL:"NATURAL">
 |   <K_NEXT:"NEXT">
 |   <K_NO:"NO">
+|   <K_NOCACHE:"NOCACHE">
 |   <K_NOCYCLE:"NOCYCLE">
 |   <K_NOT:"NOT">
 |   <K_NOVALIDATE : "NOVALIDATE">
@@ -3666,11 +3670,48 @@ Commit Commit():
   }
 }
 
+Sequence Sequence() #Sequence :
+{
+    String serverName = null, databaseName = null, schemaName = null, sequenceName = null;
+}
+{
+    (
+          LOOKAHEAD(7) serverName=RelObjectName() "." [databaseName=RelObjectName()] "." [sequenceName=RelObjectName()] "." sequenceName=RelObjectName()
+        | LOOKAHEAD(5) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." sequenceName=RelObjectName()
+        | LOOKAHEAD(3) schemaName=RelObjectName() "." sequenceName=RelObjectName()
+        | sequenceName=RelObjectName()
+    )
+    {
+        final Server server = new Server(serverName);
+        final Database database = new Database(server, databaseName);
+        Sequence sequence = new Sequence(database, schemaName, sequenceName);
+        return sequence;
+    }
+}
+
 CreateSequence CreateSequence():
 {
   CreateSequence createSequence = new CreateSequence();
+  Sequence sequence;
+  Token token = null;
+  Token mode = null;
+  // TODO preserve order, probably need a type for sequence parameters
 }
 {
   <K_CREATE>
-  <K_SEQUENCE>
+  <K_SEQUENCE> sequence=Sequence() { createSequence.setSequence(sequence); }
+  (
+   ( <K_NOCACHE> { sequence.setCacheMode(Sequence.CacheMode.NOCACHE); }
+     | <K_CACHE> token=<S_LONG>
+     {
+       sequence.setCacheMode(Sequence.CacheMode.CACHE);
+       sequence.setCache(Long.parseLong(token.image));
+     }
+   )
+   |
+   (<K_INCREMENT> <K_BY> token=<S_LONG> { sequence.setIncrementBy(Long.parseLong(token.image)); })
+  )* //zero or many times those productions
+  {
+    return createSequence;
+  }
 }
