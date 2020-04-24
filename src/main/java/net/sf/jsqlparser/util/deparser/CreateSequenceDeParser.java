@@ -39,5 +39,7 @@ public class CreateSequenceDeParser {
     }
 
     public void deParse(CreateSequence createSequence) {
+        buffer.append("CREATE SEQUENCE ");
+        buffer.append(createSequence.getSequence());
     }
 }

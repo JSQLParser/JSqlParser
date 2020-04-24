@@ -23,6 +23,8 @@ package net.sf.jsqlparser.schema;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+import java.util.List;
+
 /**
  * Represents the database type for a {@code SEQUENCE}
  */
@@ -32,11 +34,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     private String schemaName;
     private Database database;
 
-    private Long incrementBy;
-
-    private CacheMode cacheMode;
-    private Long cache;
-
+    private List<Parameter> parameters;
 
     public Sequence() {
     }
@@ -57,34 +55,12 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         this.name = name;
     }
 
-    public void setIncrementBy(Long incrementBy) {
-        this.incrementBy = incrementBy;
+    public void setParameters(List<Parameter> parameters) {
+        this.parameters = parameters;
     }
 
-    public Long getIncrementBy() {
-        return incrementBy;
-    }
-
-    public void setCacheMode(CacheMode cacheMode) {
-        this.cacheMode = cacheMode;
-    }
-
-    /**
-     * @return the Cache attribute, null if one was not specified.
-     */
-    public CacheMode getCacheMode() {
-        return cacheMode;
-    }
-
-    public void setCache(Long cache) {
-        this.cache = cache;
-    }
-
-    /**
-     * @return the value for Cache, returns null if a {@code CACHE|NOCACHE} clause was not specified or the {@link #getCacheMode()} is #NOCACHE
-     */
-    public Long getCache() {
-        return cache;
+    public List<Parameter> getParameters() {
+        return parameters;
     }
 
     @Override
@@ -112,10 +88,76 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         return fqn;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sql = new StringBuilder(getFullyQualifiedName());
+        if(parameters != null) {
+            for (Sequence.Parameter parameter : parameters) {
+                sql.append(" ").append(parameter.formatParameter());
+            }
+        }
+        return sql.toString();
+    }
+
     /**
-     * Caching mode between CACHE and NOCACHE, when the mode is CACHE a value will exist in Cache
+     * The available parameters to a sequence
      */
-    public enum CacheMode {
-        CACHE, NOCACHE
+    public enum ParameterType {
+        INCREMENT_BY,
+        START_WITH,
+        MAXVALUE,
+        NOMAXVALUE,
+        MINVALUE,
+        NOMINVALUE,
+        CYCLE,
+        NOCYCLE,
+        CACHE,
+        NOCACHE,
+        ORDER,
+        NOORDER,
+        KEEP,
+        NOKEEP,
+        SESSION,
+        GLOBAL
+    }
+
+    /**
+     * Represents a parameter when declaring a sequence
+     */
+    public static class Parameter {
+        private final ParameterType option;
+        private Long value;
+
+        public Parameter(ParameterType option) {
+            this.option = option;
+        }
+
+        public Long getValue() {
+            return value;
+        }
+
+        public void setValue(Long value) {
+            this.value = value;
+        }
+
+        public String formatParameter() {
+            switch (option) {
+                case INCREMENT_BY:
+                    return withValue("INCREMENT BY");
+                case START_WITH:
+                    return withValue("START WITH");
+                case MAXVALUE:
+                case MINVALUE:
+                case CACHE:
+                    return withValue(option.name());
+                default:
+                    // fallthrough just return option name
+                    return option.name();
+            }
+        }
+
+        private String withValue(String prefix) {
+            return prefix + " " + value;
+        }
     }
 }

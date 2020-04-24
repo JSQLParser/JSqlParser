@@ -44,4 +44,11 @@ public class CreateSequence implements Statement {
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        String sql;
+        sql = "CREATE SEQUENCE " + sequence;
+        return sql;
+    }
 }

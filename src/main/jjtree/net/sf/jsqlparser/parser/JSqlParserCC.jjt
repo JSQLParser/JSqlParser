@@ -3693,25 +3693,45 @@ CreateSequence CreateSequence():
 {
   CreateSequence createSequence = new CreateSequence();
   Sequence sequence;
+  List<Sequence.Parameter> sequenceParameters = new ArrayList<Sequence.Parameter>();
+  Sequence.Parameter parameter = null;
   Token token = null;
-  Token mode = null;
-  // TODO preserve order, probably need a type for sequence parameters
 }
 {
   <K_CREATE>
   <K_SEQUENCE> sequence=Sequence() { createSequence.setSequence(sequence); }
   (
-   ( <K_NOCACHE> { sequence.setCacheMode(Sequence.CacheMode.NOCACHE); }
-     | <K_CACHE> token=<S_LONG>
-     {
-       sequence.setCacheMode(Sequence.CacheMode.CACHE);
-       sequence.setCache(Long.parseLong(token.image));
-     }
+   (<K_INCREMENT> <K_BY> token=<S_LONG>
+    {
+        parameter = new Sequence.Parameter(Sequence.ParameterType.INCREMENT_BY);
+        parameter.setValue(Long.parseLong(token.image));
+        sequenceParameters.add(parameter);
+    }
    )
    |
-   (<K_INCREMENT> <K_BY> token=<S_LONG> { sequence.setIncrementBy(Long.parseLong(token.image)); })
+   (<K_START> <K_WITH> token=<S_LONG>
+    {
+      parameter = new Sequence.Parameter(Sequence.ParameterType.START_WITH);
+      parameter.setValue(Long.parseLong(token.image));
+      sequenceParameters.add(parameter);
+    }
+   )
+   |
+   (<K_NOCACHE>
+    {
+      parameter = new Sequence.Parameter(Sequence.ParameterType.NOCACHE);
+      sequenceParameters.add(parameter);
+    }
+    |<K_CACHE> token=<S_LONG>
+    {
+      parameter = new Sequence.Parameter(Sequence.ParameterType.CACHE);
+       parameter.setValue(Long.parseLong(token.image));
+       sequenceParameters.add(parameter);
+    }
+   )
   )* //zero or many times those productions
   {
+    sequence.setParameters(sequenceParameters);
     return createSequence;
   }
 }
