@@ -4,25 +4,15 @@
  * %%
  * Copyright (C) 2004 - 2020 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 2.1 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.schema;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,29 +20,20 @@ import java.util.List;
  */
 public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
 
-    private String name;
-    private String schemaName;
-    private Database database;
+    private static final int NAME_IDX = 0;
+    private static final int SCHEMA_IDX = 1;
+    private static final int DATABASE_IDX = 2;
+    private static final int SERVER_IDX = 3;
+    private List<String> partItems = new ArrayList<>();
 
     private List<Parameter> parameters;
 
     public Sequence() {
     }
 
-    public Sequence(String name) {
-        this.name = name;
-    }
-
-    public Sequence(String schemaName, String name) {
-        this.schemaName = schemaName;
-        this.schemaName = schemaName;
-        this.name = name;
-    }
-
-    public Sequence(Database database, String schemaName, String name) {
-        this.database = database;
-        this.schemaName = schemaName;
-        this.name = name;
+    public Sequence(List<String> partItems) {
+        this.partItems = new ArrayList<>(partItems);
+        Collections.reverse(this.partItems);
     }
 
     public void setParameters(List<Parameter> parameters) {
@@ -63,35 +44,71 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         return parameters;
     }
 
+    public Database getDatabase() {
+        return new Database(getIndex(DATABASE_IDX));
+    }
+
+    public void setDatabase(Database database) {
+        setIndex(DATABASE_IDX, database.getDatabaseName());
+        if (database.getServer() != null) {
+            setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
+        }
+    }
+
+    public String getSchemaName() {
+        return getIndex(SCHEMA_IDX);
+    }
+
+    public void setSchemaName(String string) {
+        setIndex(SCHEMA_IDX, string);
+    }
+
+    public String getName() {
+        return getIndex(NAME_IDX);
+    }
+
+    public void setName(String string) {
+        setIndex(NAME_IDX, string);
+    }
+
+    private void setIndex(int idx, String value) {
+        int size = partItems.size();
+        for (int i = 0; i < idx - size + 1; i++) {
+            partItems.add(null);
+        }
+        partItems.set(idx, value);
+    }
+
+    private String getIndex(int idx) {
+        if (idx < partItems.size()) {
+            return partItems.get(idx);
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public String getFullyQualifiedName() {
-        String fqn = "";
+        StringBuilder fqn = new StringBuilder();
 
-        if (database != null) {
-            fqn += database.getFullyQualifiedName();
-        }
-        if (!fqn.isEmpty()) {
-            fqn += ".";
-        }
-
-        if (schemaName != null) {
-            fqn += schemaName;
-        }
-        if (!fqn.isEmpty()) {
-            fqn += ".";
+        for (int i = partItems.size() - 1; i >= 0; i--) {
+            String part = partItems.get(i);
+            if (part == null) {
+                part = "";
+            }
+            fqn.append(part);
+            if (i != 0) {
+                fqn.append(".");
+            }
         }
 
-        if (name != null) {
-            fqn += name;
-        }
-
-        return fqn;
+        return fqn.toString();
     }
 
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder(getFullyQualifiedName());
-        if(parameters != null) {
+        if (parameters != null) {
             for (Sequence.Parameter parameter : parameters) {
                 sql.append(" ").append(parameter.formatParameter());
             }

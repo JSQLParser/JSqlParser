@@ -4657,19 +4657,15 @@ void readGrantTypes(ArrayList<String> privileges):
 
 Sequence Sequence() #Sequence :
 {
+    List<String> data = new ArrayList<String>();
     String serverName = null, databaseName = null, schemaName = null, sequenceName = null;
 }
 {
-    (
-          LOOKAHEAD(7) serverName=RelObjectName() "." [databaseName=RelObjectName()] "." [sequenceName=RelObjectName()] "." sequenceName=RelObjectName()
-        | LOOKAHEAD(5) databaseName=RelObjectName() "." [schemaName=RelObjectName()] "." sequenceName=RelObjectName()
-        | LOOKAHEAD(3) schemaName=RelObjectName() "." sequenceName=RelObjectName()
-        | sequenceName=RelObjectName()
-    )
+    data = RelObjectNameList()
+
     {
-        final Server server = new Server(serverName);
-        final Database database = new Database(server, databaseName);
-        Sequence sequence = new Sequence(database, schemaName, sequenceName);
+        Sequence sequence = new Sequence(data);
+		linkAST(sequence,jjtThis);
         return sequence;
     }
 }
