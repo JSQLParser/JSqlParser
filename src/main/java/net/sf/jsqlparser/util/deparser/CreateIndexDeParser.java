@@ -1,44 +1,23 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.Iterator;
+import static java.util.stream.Collectors.joining;
 
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.Index;
 
-/**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
- * {@link net.sf.jsqlparser.statement.create.index.CreateIndex}
- *
- * @author Raymond Augé
- */
 public class CreateIndexDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
 
-    /**
-     * @param buffer the buffer that will be filled with the create
-     */
     public CreateIndexDeParser(StringBuilder buffer) {
         this.buffer = buffer;
     }
@@ -58,17 +37,25 @@ public class CreateIndexDeParser {
         buffer.append(" ON ");
         buffer.append(createIndex.getTable().getFullyQualifiedName());
 
+        String using = index.getUsing();
+        if (using != null) {
+            buffer.append(" USING ");
+            buffer.append(using);
+        }
+
         if (index.getColumnsNames() != null) {
             buffer.append(" (");
-            for (Iterator iter = index.getColumnsNames().iterator(); iter.hasNext();) {
-                String columnName = (String) iter.next();
-                buffer.append(columnName);
-
-                if (iter.hasNext()) {
-                    buffer.append(", ");
-                }
-            }
+            buffer.append(
+                index.getColumnWithParams().stream()
+                        .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : "")).collect(joining(", "))
+            );
             buffer.append(")");
+        }
+
+        if (createIndex.getTailParameters() != null) {
+            for (String param : createIndex.getTailParameters()) {
+                buffer.append(" ").append(param);
+            }
         }
     }
 

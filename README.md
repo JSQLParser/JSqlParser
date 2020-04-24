@@ -5,18 +5,35 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser/badge.svg)](http://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser)
 [![Javadocs](https://www.javadoc.io/badge/com.github.jsqlparser/jsqlparser.svg)](https://www.javadoc.io/doc/com.github.jsqlparser/jsqlparser)
 
-[![PayPal donate button](http://img.shields.io/paypal/donate.png?color=blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=64CCN9JJANZXA "Help this JSqlParser version using Paypal")  
-
 [![Gitter](https://badges.gitter.im/JSQLParser/JSqlParser.svg)](https://gitter.im/JSQLParser/JSqlParser?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Code Quality: Java](https://img.shields.io/lgtm/grade/java/g/JSQLParser/JSqlParser.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/JSQLParser/JSqlParser/context:java)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/JSQLParser/JSqlParser.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/JSQLParser/JSqlParser/alerts)
 
 Look here for more information and examples: https://github.com/JSQLParser/JSqlParser/wiki.
 
 ## License
 
-JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, Version 2.0**.
+JSqlParser is dual licensed under **LGPL V2.1** or **Apache Software License, Version 2.0**.
 
+## Discussion
+
+Please provide feedback on:
+
+* API changes: extend visitor with return values (https://github.com/JSQLParser/JSqlParser/issues/901)
 
 ## News
+* Released version **3.1** of JSqlParser
+* Released version **3.0** of JSqlParser
+* The array parsing is the default behaviour. Square bracket quotation has to be enabled using 
+  a parser flag (**CCJSqlParser.withSquareBracketQuotation**).
+* due to an API change the version will be 3.0
+* JSqlParser uses now Java 8 at the minimum
+* Released version **2.1** of JSqlParser
+* Released version **2.0** of JSqlParser
+* breaking **API** change: to support chained functions attribute type was changed to **Expression**
+* Released version **1.4** of JSqlParser
+* Released version **1.3** of JSqlParser
+* Changed behaviour of dotted multipart names for user variables, tables and columns to accept e.g. ORM class names. To achieve this some behaviour of name parsing had to be changed. Before this the parser would fail missing databasenames for SqlServer queries (server..schema.table). But this is allowed for the schema (server.database..table). Now the parser accepts missing inner names per se to avoid some very complicated parsing rules.
 * Released version **1.2** of JSqlParser
 * breaking **API** change: merge of *within group* and *over* (window expressions)
 * Released version **1.1** of JSqlParser. 
@@ -24,6 +41,9 @@ JSqlParser is dual licensed under **LGPL V2.1** and **Apache Software License, V
 * Released first major version **1.0** of JSqlParser. 
 
 More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
+
+## Alternatives to JSqlParser?
+[**General SQL Parser**](http://www.sqlparser.com/features/introduce.php?utm_source=github-jsqlparser&utm_medium=text-general) looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
 
 ## JSqlParser
 
@@ -33,30 +53,43 @@ JSqlParser is a SQL statement parser. It translates SQLs in a traversable hierar
 If you need help using JSqlParser feel free to file an issue or contact me.
 
 ## Contributions
-To help JSqlParsers development you are encouraged to provide 
+To help JSqlParser's development you are encouraged to provide 
 * feedback
 * bugreports
 * pull requests for new features
 * improvement requests
-* fund new features
-* a little donation
+* fund new features or sponsor JSqlParser ([**Sponsor**](https://www.paypal.me/wumpz))
 
-**Please write in english, since it's the language most of the dev team knows.**
+**Please write in English, since it's the language most of the dev team knows.**
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 1.3
+## Extensions in the latest SNAPSHOT version 3.2
 
-* named parameter for **OFFSET** (issue #612)
-* corrected ISNULL regression (issue #610)
-* refactored statement test classes to the class corresponding packages
-* allowed nested postgresql casts (e.g. col::bigint::int)
-
+* allow **VALIDATE** as column name
+* first support for **CREATE SCHEMA** and **DROP SCHEMA**
+* allow **ON** as a value in a set statement (`SET myvalue = ON`)
+* support for **ALTER TABLE ONLY mytable ...**
+* allow foreign key definition in alter statements without referenced columns specification
+* allow datatype **binary** for column definitions
+* support for **ALTER TABLE COLUMN DROP NOT NULL**
+* allow **order** as column name
+* support for table function in **IN** expression
+* allow complex expressions within all of a **case when** statement
+* support for parameters in **create index** statement
+* support for integer parameters for **->>** and **->** JSON expressions
+* support for more keywords in following parts of multipart object names (e.g. **mytab.select, mytab.create, ...**)
+* support for **OUTER APPLY**
+* support for **WITH(NOLOCK)**
+* support for **VIEW** as object name
+* functions hold now multipart names
+* support for **DISABLE** as object name
+* API change in `ColumnDefinition.setColumnSpecStrings` to `ColumnDefinition.setColumnSpecs` to better allow the merge between `AlterExpression.ColumnDataType` and `ColumnDefinition`
 
 ## Extensions of JSqlParser releases
 
 * [Release Notes](https://github.com/JSQLParser/JSqlParser/releases)
-* Modifications before GitHubs release tagging are listed in the [Older Releases](https://github.com/JSQLParser/JSqlParser/wiki/Older-Releases) page.
+* Modifications before GitHub's release tagging are listed in the [Older Releases](https://github.com/JSQLParser/JSqlParser/wiki/Older-Releases) page.
 
 
 ## Building from the sources
@@ -67,11 +100,11 @@ As the project is a Maven project, building is rather simple by running:
     
 The project requires the following to build:
 - Maven 
-- JDK 1.7 or later. The jar will target JDK 1.6, but the version of the maven-compiler-plugin that JsqlParser uses requires JDK 1.7+
+- JDK 8 or later. The jar will target JDK 8, but the version of the maven-compiler-plugin that JsqlParser uses requires JDK 8+
 
 This will produce the jsqlparser-VERSION.jar file in the target/ directory.
 
-**To build this project without using Maven, one has to build the parser by JavaCC using the CLI options it provids.**
+**To build this project without using Maven, one has to build the parser by JavaCC using the CLI options it provides.**
 
 ## Debugging through problems
 
@@ -119,7 +152,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>1.2</version>
+	<version>3.1</version>
 </dependency>
 ```
 

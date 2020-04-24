@@ -1,58 +1,47 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2016 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 2.1 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.statement.alter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-
 import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-/**
- *
- * @author toben & wrobstory
- */
 public class AlterExpression {
 
     private AlterOperation operation;
+    private String optionalSpecifier;
     private String columnName;
+    private String columnOldName;
     //private ColDataType dataType;
 
     private List<ColumnDataType> colDataTypeList;
+    private List<ColumnDropNotNull> columnDropNotNullList;
 
     private List<String> pkColumns;
     private List<String> ukColumns;
     private String ukName;
     private Index index = null;
     private String constraintName;
+    private boolean constraintIfExists;
     private boolean onDeleteRestrict;
     private boolean onDeleteSetNull;
     private boolean onDeleteCascade;
     private List<String> fkColumns;
     private String fkSourceTable;
     private List<String> fkSourceColumns;
+    private boolean uk;
+    private boolean useEqual;
 
     private List<ConstraintState> constraints;
     private List<String> parameters;
@@ -63,6 +52,14 @@ public class AlterExpression {
 
     public void setOperation(AlterOperation operation) {
         this.operation = operation;
+    }
+
+    public String getOptionalSpecifier() {
+        return optionalSpecifier;
+    }
+
+    public void setOptionalSpecifier(String optionalSpecifier) {
+        this.optionalSpecifier = optionalSpecifier;
     }
 
     public boolean isOnDeleteCascade() {
@@ -110,7 +107,7 @@ public class AlterExpression {
     }
 
     public void addColDataType(String columnName, ColDataType colDataType) {
-        addColDataType(new ColumnDataType(columnName, colDataType, null));
+        addColDataType(new ColumnDataType(columnName, false, colDataType, null));
     }
 
     public void addColDataType(ColumnDataType columnDataType) {
@@ -118,6 +115,13 @@ public class AlterExpression {
             colDataTypeList = new ArrayList<ColumnDataType>();
         }
         colDataTypeList.add(columnDataType);
+    }
+    
+    public void addColDropNotNull(ColumnDropNotNull columnDropNotNull) {
+        if (columnDropNotNullList == null) {
+            columnDropNotNullList = new ArrayList<ColumnDropNotNull>();
+        }
+        columnDropNotNullList.add(columnDropNotNull);
     }
 
     public List<String> getFkSourceColumns() {
@@ -136,12 +140,28 @@ public class AlterExpression {
         this.columnName = columnName;
     }
 
+    public String getColOldName() {
+        return columnOldName;
+    }
+
+    public void setColOldName(String columnOldName) {
+        this.columnOldName = columnOldName;
+    }
+
     public String getConstraintName() {
         return this.constraintName;
     }
 
     public void setConstraintName(final String constraintName) {
         this.constraintName = constraintName;
+    }
+
+    public boolean isConstraintIfExists() {
+        return constraintIfExists;
+    }
+
+    public void setConstraintIfExists(boolean constraintIfExists) {
+        this.constraintIfExists = constraintIfExists;
     }
 
     public List<String> getPkColumns() {
@@ -184,6 +204,10 @@ public class AlterExpression {
         this.constraints = constraints;
     }
 
+    public List<ColumnDropNotNull> getColumnDropNotNullList() {
+        return columnDropNotNullList;
+    }
+
     public void addParameters(String... params) {
         if (parameters == null) {
             parameters = new ArrayList<String>();
@@ -195,6 +219,22 @@ public class AlterExpression {
         return parameters;
     }
 
+    public boolean getUseEqual() {
+        return useEqual;
+    }
+
+    public void setUseEqual(boolean useEqual) {
+        this.useEqual = useEqual;
+    }
+
+    public boolean getUk() {
+        return uk;
+    }
+
+    public void setUk(boolean uk) {
+        this.uk = uk;
+    }
+
     @Override
     public String toString() {
 
@@ -203,9 +243,18 @@ public class AlterExpression {
         b.append(operation).append(" ");
 
         if (columnName != null) {
-            b.append("COLUMN ").append(columnName);
+            b.append("COLUMN ");
+            if (operation == AlterOperation.RENAME) {
+                b.append(columnOldName).append(" TO ");
+            }
+            b.append(columnName);
         } else if (getColDataTypeList() != null) {
-            if (colDataTypeList.size() > 1) {
+            if (operation == AlterOperation.CHANGE) {
+                if (optionalSpecifier != null) {
+                    b.append(optionalSpecifier).append(" ");
+                }
+                b.append(columnOldName).append(" ");
+            } else if (colDataTypeList.size() > 1) {
                 b.append("(");
             } else {
                 b.append("COLUMN ");
@@ -214,13 +263,40 @@ public class AlterExpression {
             if (colDataTypeList.size() > 1) {
                 b.append(")");
             }
+        } else if ( getColumnDropNotNullList() != null) {
+            if (operation == AlterOperation.CHANGE) {
+                if (optionalSpecifier != null) {
+                    b.append(optionalSpecifier).append(" ");
+                }
+                b.append(columnOldName).append(" ");
+            } else if (columnDropNotNullList.size() > 1) {
+                b.append("(");
+            } else {
+                b.append("COLUMN ");
+            }
+            b.append(PlainSelect.getStringList(columnDropNotNullList));
+            if (columnDropNotNullList.size() > 1) {
+                b.append(")");
+            }
         } else if (constraintName != null) {
-            b.append("CONSTRAINT ").append(constraintName);
+            b.append("CONSTRAINT ");
+            if (constraintIfExists) {
+                b.append("IF EXISTS ");
+            }
+            b.append(constraintName);
         } else if (pkColumns != null) {
             b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
         } else if (ukColumns != null) {
-            b.append("UNIQUE KEY ").append(ukName).append(" (").append(PlainSelect.
-                    getStringList(ukColumns)).append(")");
+            b.append("UNIQUE");
+            if (ukName != null) {
+                if (getUk()) {
+                    b.append(" KEY ");
+                } else {
+                    b.append(" INDEX ");
+                }
+                b.append(ukName);
+            }
+            b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
             b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).
                     append(") REFERENCES ").append(fkSourceTable).append(" (").append(
@@ -238,51 +314,52 @@ public class AlterExpression {
         if (getConstraints() != null && !getConstraints().isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
         }
-        if (parameters!=null && !parameters.isEmpty()) {
+        if (getUseEqual()) {
+            b.append('=');
+        }
+        if (parameters != null && !parameters.isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
         }
 
         return b.toString();
     }
 
-    public static class ColumnDataType {
+    public final static class ColumnDataType extends ColumnDefinition {
+        private final boolean withType;
+
+        public ColumnDataType(String columnName, boolean withType, ColDataType colDataType, List<String> columnSpecs) {
+            super(columnName, colDataType, columnSpecs);
+            this.withType = withType;
+        }
+
+        @Override
+        public String toString() {
+            return getColumnName() + (withType ? " TYPE " : " ") + toStringDataTypeAndSpec();
+        }
+    }
+
+    public final static class ColumnDropNotNull {
 
         private final String columnName;
-        private final ColDataType colDataType;
-        private final List<String> columnSpecs;
+        private final boolean withNot;
 
-        public ColumnDataType(String columnName, ColDataType colDataType, List<String> columnSpecs) {
+        public ColumnDropNotNull(String columnName, boolean withNot) {
             this.columnName = columnName;
-            this.colDataType = colDataType;
-            this.columnSpecs = columnSpecs;
+            this.withNot = withNot;
         }
 
         public String getColumnName() {
             return columnName;
         }
 
-        public ColDataType getColDataType() {
-            return colDataType;
-        }
-
-        public List<String> getColumnSpecs() {
-            if (columnSpecs == null) {
-                return Collections.emptyList();
-            }
-            return Collections.unmodifiableList(columnSpecs);
+        public boolean isWithNot() {
+            return withNot;
         }
 
         @Override
         public String toString() {
-            return columnName + " " + colDataType + parametersToString();
-        }
-
-        private String parametersToString() {
-            if (columnSpecs == null || columnSpecs.isEmpty()) {
-                return "";
-            }
-            return " " + PlainSelect.getStringList(columnSpecs, false, false);
+            return columnName + " DROP" +
+                     (withNot ? " NOT " : " ") + "NULL";
         }
     }
-
 }

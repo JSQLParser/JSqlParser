@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.delete;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -69,5 +78,10 @@ public class DeleteTest {
     public void testDeleteFromTableUsingInnerJoinToAnotherTableWithAlias() throws JSQLParserException {
         String stmt = "DELETE gc FROM guide_category AS gc LEFT JOIN guide AS g ON g.id_guide = gc.id_guide WHERE g.title IS NULL LIMIT 5";
         assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+    
+     @Test
+    public void testDeleteMultiTableIssue878() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DELETE table1, table2 FROM table1, table2");
     }
 }

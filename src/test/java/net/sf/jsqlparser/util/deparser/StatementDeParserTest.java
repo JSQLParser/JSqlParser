@@ -1,19 +1,21 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.util.deparser;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hamcrest.CustomTypeSafeMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.StringDescription;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +25,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.SetStatement;
@@ -151,20 +152,20 @@ public class StatementDeParserTest {
         then(expression2).should().accept(expressionDeParser);
     }
 
-    @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-    public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithItemsList() {
-        Replace replace = new Replace();
-        Table table = new Table();
-        ItemsList itemsList = mock(ItemsList.class);
-
-        replace.setTable(table);
-        replace.setItemsList(itemsList);
-
-        statementDeParser.visit(replace);
-
-        then(itemsList).should().accept(argThat(is(replaceDeParserWithDeParsers(equalTo(expressionDeParser), equalTo(selectDeParser)))));
-    }
+//    @Test
+//    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+//    public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithItemsList() {
+//        Replace replace = new Replace();
+//        Table table = new Table();
+//        ItemsList itemsList = mock(ItemsList.class);
+//
+//        replace.setTable(table);
+//        replace.setItemsList(itemsList);
+//
+//        statementDeParser.visit(replace);
+//
+//        then(itemsList).should().accept(argThat(is(replaceDeParserWithDeParsers(equalTo(expressionDeParser), equalTo(selectDeParser)))));
+//    }
 
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
@@ -299,19 +300,19 @@ public class StatementDeParserTest {
         then(expression).should().accept(expressionDeParser);
     }
 
-    private Matcher<ReplaceDeParser> replaceDeParserWithDeParsers(final Matcher<ExpressionDeParser> expressionDeParserMatcher, final Matcher<SelectDeParser> selectDeParserMatcher) {
-        Description description = new StringDescription();
-        description.appendText("replace de-parser with expression de-parser ");
-        expressionDeParserMatcher.describeTo(description);
-        description.appendText(" and select de-parser ");
-        selectDeParserMatcher.describeTo(description);
-        return new CustomTypeSafeMatcher<ReplaceDeParser>(description.toString()) {
-            @Override
-            public boolean matchesSafely(ReplaceDeParser item) {
-                return expressionDeParserMatcher.matches(item.getExpressionVisitor()) && selectDeParserMatcher.matches(item.getSelectVisitor());
-            }
-        };
-    }
+//    private Matcher<ReplaceDeParser> replaceDeParserWithDeParsers(final Matcher<ExpressionDeParser> expressionDeParserMatcher, final Matcher<SelectDeParser> selectDeParserMatcher) {
+//        Description description = new StringDescription();
+//        description.appendText("replace de-parser with expression de-parser ");
+//        expressionDeParserMatcher.describeTo(description);
+//        description.appendText(" and select de-parser ");
+//        selectDeParserMatcher.describeTo(description);
+//        return new CustomTypeSafeMatcher<ReplaceDeParser>(description.toString()) {
+//            @Override
+//            public boolean matchesSafely(ReplaceDeParser item) {
+//                return expressionDeParserMatcher.matches(item.getExpressionVisitor()) && selectDeParserMatcher.matches(item.getSelectVisitor());
+//            }
+//        };
+//    }
     
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")

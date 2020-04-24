@@ -1,7 +1,15 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.create;
 
 import java.io.StringReader;
-
 import junit.framework.TestCase;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
@@ -23,8 +31,7 @@ public class CreateViewTest extends TestCase {
         CreateView createView = (CreateView) parserManager.parse(new StringReader(statement));
         assertFalse(createView.isOrReplace());
         assertEquals("myview", createView.getView().getName());
-        assertEquals("mytab", ((Table) ((PlainSelect) createView.getSelectBody()).getFromItem()).
-                getName());
+        assertEquals("mytab", ((Table) ((PlainSelect) createView.getSelect().getSelectBody()).getFromItem()).getName());
         assertEquals(statement, createView.toString());
     }
 
@@ -54,7 +61,7 @@ public class CreateViewTest extends TestCase {
         CreateView createView = (CreateView) parserManager.parse(new StringReader(statement));
         assertFalse(createView.isOrReplace());
         assertEquals("myview", createView.getView().getName());
-        assertEquals("mytab", ((Table) ((PlainSelect) createView.getSelectBody()).getFromItem()).
+        assertEquals("mytab", ((Table) ((PlainSelect) createView.getSelect().getSelectBody()).getFromItem()).
                 getName());
         assertEquals(statement2, createView.toString());
     }
@@ -91,5 +98,13 @@ public class CreateViewTest extends TestCase {
     
     public void testCreateTemporaryViewIssue604_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TEMP VIEW myview AS SELECT * FROM mytable");
+    }
+
+    public void testCreateTemporaryViewIssue665() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE VIEW foo(\"BAR\") AS WITH temp AS (SELECT temp_bar FROM foobar) SELECT bar FROM temp");
+    }
+    
+    public void testCreateWithReadOnlyViewIssue838() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE VIEW v14(c1, c2) AS SELECT c1, C2 FROM t1 WITH READ ONLY");
     }
 }

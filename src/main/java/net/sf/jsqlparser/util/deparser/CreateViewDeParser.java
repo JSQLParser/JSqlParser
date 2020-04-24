@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.util.deparser;
@@ -24,20 +12,15 @@ package net.sf.jsqlparser.util.deparser;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.create.view.TemporaryOption;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.WithItem;
 
-/**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
- * {@link net.sf.jsqlparser.statement.create.view.CreateView}
- */
 public class CreateViewDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
     private final SelectVisitor selectVisitor;
 
-    /**
-     * @param buffer the buffer that will be filled with the select
-     */
     public CreateViewDeParser(StringBuilder buffer) {
         SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
@@ -77,7 +60,25 @@ public class CreateViewDeParser {
         }
         buffer.append(" AS ");
 
-        createView.getSelectBody().accept(selectVisitor);
+        Select select = createView.getSelect();
+        if (select.getWithItemsList() != null) {
+            buffer.append("WITH ");
+            boolean first = true;
+            for (WithItem item : select.getWithItemsList()) {
+                if (!first) {
+                    buffer.append(", ");
+                } else {
+                    first = false;
+                }
+
+                item.accept(selectVisitor);
+            }
+            buffer.append(" ");
+        }
+        createView.getSelect().getSelectBody().accept(selectVisitor);
+        if (createView.isWithReadOnly()) {
+            buffer.append(" WITH READ ONLY");
+        }
     }
 
     public StringBuilder getBuffer() {

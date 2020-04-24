@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.expression;
@@ -31,10 +19,8 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
 
     private Expression leftExpression;
     private Expression rightExpression;
-    private boolean not = false;
-    
-    
-    
+//    private boolean not = false;
+
     public BinaryExpression() {
     }
 
@@ -54,23 +40,23 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
         rightExpression = expression;
     }
 
-    public void setNot() {
-        not = true;
-    }
-    
-    public void removeNot() {
-        not = false;
-    }
- 
-    public boolean isNot() {
-        return not;
-    }
-
+//    public void setNot() {
+//        not = true;
+//    }
+//    
+//    public void removeNot() {
+//        not = false;
+//    }
+// 
+//    public boolean isNot() {
+//        return not;
+//    }
     @Override
     public String toString() {
-        return (not ? "NOT " : "") + getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
+        return //(not ? "NOT " : "") + 
+                getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
     }
 
     public abstract String getStringExpression();
-    
+
 }

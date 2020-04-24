@@ -1,30 +1,21 @@
-/*
- * Copyright (C) 2014 JSQLParser.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
  */
 package net.sf.jsqlparser.statement.execute;
 
 import net.sf.jsqlparser.JSQLParserException;
+import static net.sf.jsqlparser.test.TestUtils.*;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static net.sf.jsqlparser.test.TestUtils.*;
 
 /**
  *
@@ -60,14 +51,44 @@ public class ExecuteTest {
     public void testAcceptExecute() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("EXECUTE myproc 'a', 2, 'b'");
     }
-    
+
     @Test
     public void testAcceptExec() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("EXEC myproc 'a', 2, 'b'");
     }
-    
+
     @Test
     public void testAcceptCall() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CALL myproc 'a', 2, 'b'");
+    }
+
+    @Test
+    public void testCallWithMultiname() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CALL BAR.FOO");
+    }
+
+    @Test
+    public void testAcceptCallWithParenthesis() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CALL myproc ('a', 2, 'b')");
+    }
+
+    @Test
+    public void testAcceptExecNamesParameters() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("EXEC procedure @param");
+    }
+
+    @Test
+    public void testAcceptExecNamesParameters2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("EXEC procedure @param = 1");
+    }
+
+    @Test
+    public void testAcceptExecNamesParameters3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("EXEC procedure @param = 'foo'");
+    }
+
+    @Test
+    public void testAcceptExecNamesParameters4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("EXEC procedure @param = 'foo', @param2 = 'foo2'");
     }
 }

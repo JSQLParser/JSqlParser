@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.drop;
 
 import java.io.StringReader;
@@ -53,5 +62,10 @@ public class DropTest {
     @Test
     public void testDropViewIssue545_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP VIEW IF EXISTS myview");
+    }
+    
+    @Test
+    public void testDropSchemaIssue855() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP SCHEMA myschema");
     }
 }

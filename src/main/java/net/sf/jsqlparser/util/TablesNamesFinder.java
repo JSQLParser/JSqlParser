@@ -1,35 +1,24 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
+import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
+import net.sf.jsqlparser.expression.CollateExpression;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -45,7 +34,7 @@ import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
-import net.sf.jsqlparser.expression.ValueListExpression;
+import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
@@ -59,55 +48,37 @@ import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
+import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.WhenClause;
-import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
-import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
-import net.sf.jsqlparser.expression.operators.arithmetic.Division;
-import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
-import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
-import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
+import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
-import net.sf.jsqlparser.expression.operators.relational.Between;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
-import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
-import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.InExpression;
-import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
-import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
-import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
-import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
-import net.sf.jsqlparser.expression.operators.relational.Matches;
-import net.sf.jsqlparser.expression.operators.relational.MinorThan;
-import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
-import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
-import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
+import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.DeclareStatement;
+import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.ShowColumnsStatement;
+import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
-import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
+import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
@@ -133,10 +104,11 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
  * Find all used tables within an select statement.
- * 
+ *
  * Override extractTableName method to modify the extracted table names (e.g. without schema).
  */
 public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor, StatementVisitor {
@@ -144,19 +116,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
     private List<String> tables;
     private boolean allowColumnProcessing = false;
-    
-    /**
-     * There are special names, that are not table names but are parsed as tables. These names are
-     * collected here and are not included in the tables - names anymore.
-     */
+
     private List<String> otherItemNames;
 
-    /**
-     * Main entry for this Tool class. A list of found tables is returned.
-     *
-     * @param delete
-     * @return
-     */
     public List<String> getTableList(Statement statement) {
         init(false);
         statement.accept(this);
@@ -175,9 +137,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     /**
      * Main entry for this Tool class. A list of found tables is returned.
-     *
-     * @param update
-     * @return
      */
     public List<String> getTableList(Expression expr) {
         init(true);
@@ -211,11 +170,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (plainSelect.getWhere() != null) {
             plainSelect.getWhere().accept(this);
         }
-          
-        if(plainSelect.getHaving() != null){
+
+        if (plainSelect.getHaving() != null) {
             plainSelect.getHaving().accept(this);
         }
-        
+
         if (plainSelect.getOracleHierarchical() != null) {
             plainSelect.getOracleHierarchical().accept(this);
         }
@@ -223,13 +182,14 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     /**
      * Override to adapt the tableName generation (e.g. with / without schema).
+     *
      * @param table
-     * @return 
+     * @return
      */
     protected String extractTableName(Table table) {
         return table.getFullyQualifiedName();
     }
-    
+
     @Override
     public void visit(Table tableName) {
         String tableWholeName = extractTableName(tableName);
@@ -279,6 +239,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
+    public void visit(IntegerDivision division) {
+        visitBinaryExpression(division);
+    }
+
+    @Override
     public void visit(DoubleValue doubleValue) {
     }
 
@@ -316,12 +281,20 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
+    public void visit(FullTextSearch fullTextSearch) {
+    }
+
+    @Override
     public void visit(SignedExpression signedExpression) {
         signedExpression.getExpression().accept(this);
     }
 
     @Override
     public void visit(IsNullExpression isNullExpression) {
+    }
+
+    @Override
+    public void visit(IsBooleanExpression isBooleanExpression) {
     }
 
     @Override
@@ -413,6 +386,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
+    public void visit(NamedExpressionList namedExpressionList) {
+        for (Expression expression : namedExpressionList.getExpressions()) {
+            expression.accept(this);
+        }
+    }
+
+    @Override
     public void visit(DateValue dateValue) {
     }
 
@@ -472,7 +452,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(SubJoin subjoin) {
         subjoin.getLeft().accept(this);
-        for(Join join : subjoin.getJoinList()) {
+        for (Join join : subjoin.getJoinList()) {
             join.getRightItem().accept(this);
         }
     }
@@ -544,10 +524,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     /**
-     * Initializes table names collector. Important is the usage of Column instances to find 
-     * table names. This is only allowed for expression parsing, where a better place for 
-     * tablenames could not be there. For complete statements only from items are used to avoid
-     * some alias as tablenames.
+     * Initializes table names collector. Important is the usage of Column instances to find table
+     * names. This is only allowed for expression parsing, where a better place for tablenames could
+     * not be there. For complete statements only from items are used to avoid some alias as
+     * tablenames.
+     *
      * @param allowColumnProcessing
      */
     protected void init(boolean allowColumnProcessing) {
@@ -622,7 +603,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(MySQLGroupConcat groupConcat) {
     }
-    
+
     @Override
     public void visit(ValueListExpression valueList) {
         valueList.getExpressionList().accept(this);
@@ -645,8 +626,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Update update) {
-        for (Table table : update.getTables()) {
-            visit(table);
+        visit(update.getTable());
+        if (update.getStartJoins() != null) {
+            for (Join join : update.getStartJoins()) {
+                join.getRightItem().accept(this);
+            }
         }
         if (update.getExpressions() != null) {
             for (Expression expression : update.getExpressions()) {
@@ -700,11 +684,16 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Truncate truncate) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        visit(truncate.getTable());
     }
 
     @Override
     public void visit(CreateIndex createIndex) {
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+    }
+
+    @Override
+    public void visit(CreateSchema aThis) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
@@ -738,6 +727,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(SetStatement set) {
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+    }
+
+    @Override
+    public void visit(ShowColumnsStatement set) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
@@ -808,6 +802,76 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(ParenthesisFromItem parenthesis) {
         parenthesis.getFromItem().accept(this);
+    }
+
+    @Override
+    public void visit(Block block) {
+        if (block.getStatements() != null) {
+            visit(block.getStatements());
+        }
+    }
+
+    @Override
+    public void visit(Comment comment) {
+        if (comment.getTable() != null) {
+            visit(comment.getTable());
+        }
+        if (comment.getColumn() != null) {
+            Table table = comment.getColumn().getTable();
+            if (table != null) {
+                visit(table);
+            }
+        }
+    }
+
+    @Override
+    public void visit(ValuesStatement values) {
+        for (Expression expr : values.getExpressions()) {
+            expr.accept(this);
+        }
+    }
+
+    @Override
+    public void visit(DescribeStatement describe) {
+        describe.getTable().accept(this);
+    }
+
+    @Override
+    public void visit(ExplainStatement explain) {
+        explain.getStatement().accept(this);
+    }
+
+    @Override
+    public void visit(NextValExpression nextVal) {
+    }
+
+    @Override
+    public void visit(CollateExpression col) {
+        col.getLeftExpression().accept(this);
+    }
+
+    @Override
+    public void visit(ShowStatement aThis) {
+    }
+
+    @Override
+    public void visit(SimilarToExpression expr) {
+        visitBinaryExpression(expr);
+    }
+
+    @Override
+    public void visit(DeclareStatement aThis) {
+    }
+
+    @Override
+    public void visit(Grant grant) {
+
+    }
+
+    @Override
+    public void visit(ArrayExpression array) {
+        array.getObjExpression().accept(this);
+        array.getIndexExpression().accept(this);
     }
 
     @Override

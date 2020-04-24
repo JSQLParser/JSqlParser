@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.statement.create.table;
@@ -26,30 +14,31 @@ import java.util.List;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
- * A column definition in a CREATE TABLE statement.<br>
- * Example: mycol VARCHAR(30) NOT NULL
+ * Globally used definition class for columns.
  */
 public class ColumnDefinition {
 
     private String columnName;
     private ColDataType colDataType;
-    private List<String> columnSpecStrings;
+    private List<String> columnSpecs;
 
-    /**
-     * A list of strings of every word after the datatype of the column.<br>
-     * Example ("NOT", "NULL")
-     */
-    public List<String> getColumnSpecStrings() {
-        return columnSpecStrings;
+    public ColumnDefinition() {
     }
 
-    public void setColumnSpecStrings(List<String> list) {
-        columnSpecStrings = list;
+    public ColumnDefinition(String columnName, ColDataType colDataType, List<String> columnSpecs) {
+        this.columnName = columnName;
+        this.colDataType = colDataType;
+        this.columnSpecs = columnSpecs;
     }
 
-    /**
-     * The {@link ColDataType} of this column definition
-     */
+    public List<String> getColumnSpecs() {
+        return columnSpecs;
+    }
+
+    public void setColumnSpecs(List<String> list) {
+        columnSpecs = list;
+    }
+
     public ColDataType getColDataType() {
         return colDataType;
     }
@@ -68,7 +57,11 @@ public class ColumnDefinition {
 
     @Override
     public String toString() {
-        return columnName + " " + colDataType + (columnSpecStrings != null ? " " + PlainSelect.
-                getStringList(columnSpecStrings, false, false) : "");
+        return columnName + " " + toStringDataTypeAndSpec();
+    }
+    
+    public String toStringDataTypeAndSpec() {
+        return colDataType + ((columnSpecs != null && !columnSpecs.isEmpty())? " " + PlainSelect.
+                getStringList(columnSpecs, false, false) : "");
     }
 }

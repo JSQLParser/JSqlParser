@@ -1,38 +1,22 @@
-/*
- * #%L JSQLParser library %% Copyright (C) 2004 - 2017 JSQLParser %% This program is free software:
- * you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation, either version 2.1 of the License, or (at your
- * option) any later version. This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Lesser Public License for more details. You should have
- * received a copy of the GNU General Lesser Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>. #L%
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
  */
 package net.sf.jsqlparser.statement.select;
 
-/**
- * A timeout applied to SELECT to specify how long to wait for the row on the lock to be released.
- *
- * @author janmonterrubio
- */
 public class Wait {
 
     private long timeout;
 
-    /**
-     * Returns the number of seconds specified for the WAIT command
-     *
-     * @return the number of seconds specified for the WAIT command
-     */
     public long getTimeout() {
         return timeout;
     }
 
-    /**
-     * Sets the number of seconds to WAIT for this {@link Wait}
-     *
-     * @param timeout the number of seconds to WAIT for this {@link Wait}
-     */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
     }

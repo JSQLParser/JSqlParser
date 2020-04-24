@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.update;
 
 import java.io.StringReader;
@@ -22,7 +31,7 @@ public class UpdateTest {
     public void testUpdate() throws JSQLParserException {
         String statement = "UPDATE mytable set col1='as', col2=?, col3=565 Where o >= 3";
         Update update = (Update) parserManager.parse(new StringReader(statement));
-        assertEquals("mytable", update.getTables().get(0).getName());
+        assertEquals("mytable", update.getTable().toString());
         assertEquals(3, update.getColumns().size());
         assertEquals("col1", ((Column) update.getColumns().get(0)).getColumnName());
         assertEquals("col2", ((Column) update.getColumns().get(1)).getColumnName());
@@ -110,24 +119,45 @@ public class UpdateTest {
     public void testUpdateWithFunctions() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = SUBSTRING(col2, 1, 2)");
     }
-    
+
     @Test
     public void testUpdateIssue508LeftShift() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE user SET num = 1 << 1 WHERE id = 1");
     }
-    
+
     @Test
     public void testUpdateIssue338() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE mytable SET status = (status & ~1)");
     }
-    
+
     @Test
     public void testUpdateIssue338_1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE mytable SET status = (status & 1)");
     }
-    
+
     @Test
     public void testUpdateIssue338_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE mytable SET status = (status + 1)");
+    }
+
+    @Test
+    public void testUpdateIssue826() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("update message_topic inner join message_topic_config on\n"
+                + " message_topic.id=message_topic_config.topic_id \n"
+                + "set message_topic_config.enable_flag='N', \n"
+                + "message_topic_config.updated_by='test', \n"
+                + "message_topic_config.update_at='2019-07-16' \n"
+                + "where message_topic.name='test' \n"
+                + "AND message_topic_config.enable_flag='Y'", true);
+    }
+
+    @Test
+    public void testUpdateIssue750() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("update a,(select * from c) b set a.id=b.id where a.id=b.id", true);
+    }
+    
+    @Test
+    public void testUpdateIssue962Validate() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE tbl_user_card SET validate = '1', identityCodeFlag = 1 WHERE id = 9150000293816");
     }
 }

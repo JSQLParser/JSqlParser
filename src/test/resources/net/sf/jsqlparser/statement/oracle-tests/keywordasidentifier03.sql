@@ -1,3 +1,12 @@
+---
+-- #%L
+-- JSQLParser library
+-- %%
+-- Copyright (C) 2004 - 2019 JSQLParser
+-- %%
+-- Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+-- #L%
+---
 select ind.index_owner,ind.index_name,ind.uniqueness
  , ind.status,ind.index_type,ind.temporary, ind.partitioned,ind.funcidx_status
  , ind.join_index,ind.columns,ie.column_expression

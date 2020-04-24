@@ -1,29 +1,16 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2014 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -37,12 +24,8 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
-/**
- * Utility function for select statements.
- *
- * @author toben
- */
 public final class SelectUtils {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
@@ -50,13 +33,6 @@ public final class SelectUtils {
     private SelectUtils() {
     }
 
-    /**
-     * Builds select expr1, expr2 from table.
-     *
-     * @param table
-     * @param expr
-     * @return
-     */
     public static Select buildSelectFromTableAndExpressions(Table table, Expression... expr) {
         SelectItem[] list = new SelectItem[expr.length];
         for (int i = 0; i < expr.length; i++) {
@@ -65,14 +41,6 @@ public final class SelectUtils {
         return buildSelectFromTableAndSelectItems(table, list);
     }
 
-    /**
-     * Builds select expr1, expr2 from table.
-     *
-     * @param table
-     * @param expr
-     * @return
-     * @throws net.sf.jsqlparser.JSQLParserException
-     */
     public static Select buildSelectFromTableAndExpressions(Table table, String... expr) throws JSQLParserException {
         SelectItem[] list = new SelectItem[expr.length];
         for (int i = 0; i < expr.length; i++) {
@@ -121,6 +89,11 @@ public final class SelectUtils {
 
             @Override
             public void visit(WithItem withItem) {
+                throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+            }
+
+            @Override
+            public void visit(ValuesStatement aThis) {
                 throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
             }
         });
@@ -173,6 +146,11 @@ public final class SelectUtils {
 
             @Override
             public void visit(WithItem withItem) {
+                throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+            }
+
+            @Override
+            public void visit(ValuesStatement aThis) {
                 throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
             }
         });

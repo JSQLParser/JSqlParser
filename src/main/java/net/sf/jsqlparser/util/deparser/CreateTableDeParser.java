@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.util.deparser;
@@ -27,21 +15,23 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 
-/**
- * A class to de-parse (that is, tranform from JSqlParser hierarchy into a string) a
- * {@link net.sf.jsqlparser.statement.create.table.CreateTable}
- */
+
 public class CreateTableDeParser {
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
+    private StatementDeParser statementDeParser;
 
-    /**
-     * @param buffer the buffer that will be filled with the select
-     */
     public CreateTableDeParser(StringBuilder buffer) {
         this.buffer = buffer;
     }
+
+    public CreateTableDeParser(StatementDeParser statementDeParser, StringBuilder buffer) {
+        this.buffer = buffer;
+        this.statementDeParser = statementDeParser;
+    }
+
 
     public void deParse(CreateTable createTable) {
         buffer.append("CREATE ");
@@ -64,7 +54,8 @@ public class CreateTableDeParser {
             if (createTable.isSelectParenthesis()) {
                 buffer.append("(");
             }
-            buffer.append(createTable.getSelect().toString());
+            Select sel = createTable.getSelect();
+            sel.accept(this.statementDeParser);
             if (createTable.isSelectParenthesis()) {
                 buffer.append(")");
             }
@@ -77,8 +68,8 @@ public class CreateTableDeParser {
                     buffer.append(columnDefinition.getColumnName());
                     buffer.append(" ");
                     buffer.append(columnDefinition.getColDataType().toString());
-                    if (columnDefinition.getColumnSpecStrings() != null) {
-                        for (String s : columnDefinition.getColumnSpecStrings()) {
+                    if (columnDefinition.getColumnSpecs() != null) {
+                        for (String s : columnDefinition.getColumnSpecs()) {
                             buffer.append(" ");
                             buffer.append(s);
                         }

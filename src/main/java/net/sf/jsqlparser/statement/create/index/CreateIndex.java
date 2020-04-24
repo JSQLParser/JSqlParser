@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.statement.create.index;
@@ -26,25 +14,19 @@ import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.create.table.*;
 
 import java.util.*;
+import static java.util.stream.Collectors.joining;
 
-/**
- * A "CREATE INDEX" statement
- *
- * @author Raymond Augé
- */
 public class CreateIndex implements Statement {
 
     private Table table;
     private Index index;
+    private List<String> tailParameters;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
 
-    /**
-     * The index to be created
-     */
     public Index getIndex() {
         return index;
     }
@@ -53,15 +35,20 @@ public class CreateIndex implements Statement {
         this.index = index;
     }
 
-    /**
-     * The table on which the index is to be created
-     */
     public Table getTable() {
         return table;
     }
 
     public void setTable(Table table) {
         this.table = table;
+    }
+
+    public List<String> getTailParameters() {
+        return tailParameters;
+    }
+
+    public void setTailParameters(List<String> tailParameters) {
+        this.tailParameters = tailParameters;
     }
 
     @Override
@@ -80,20 +67,26 @@ public class CreateIndex implements Statement {
         buffer.append(" ON ");
         buffer.append(table.getFullyQualifiedName());
 
+        if (index.getUsing() != null) {
+            buffer.append(" USING ");
+            buffer.append(index.getUsing());
+        }
+
         if (index.getColumnsNames() != null) {
             buffer.append(" (");
 
-            for (Iterator iter = index.getColumnsNames().iterator(); iter.hasNext();) {
-                String columnName = (String) iter.next();
-
-                buffer.append(columnName);
-
-                if (iter.hasNext()) {
-                    buffer.append(", ");
-                }
-            }
+            buffer.append(
+                    index.getColumnWithParams().stream()
+                            .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : "")).collect(joining(", "))
+            );
 
             buffer.append(")");
+
+            if (tailParameters != null) {
+                for (String param : tailParameters) {
+                    buffer.append(" ").append(param);
+                }
+            }
         }
 
         return buffer.toString();

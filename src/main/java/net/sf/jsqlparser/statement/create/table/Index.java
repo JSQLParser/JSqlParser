@@ -1,68 +1,86 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import static java.util.stream.Collectors.toList;
 
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-/**
- * An index (unique, primary etc.) in a CREATE TABLE statement
- */
 public class Index {
 
     private String type;
-    private List<String> columnsNames;
-    private String name;
+    private String using;
+    private List<ColumnParams> columns;
+    private final List<String> name = new ArrayList<>();
     private List<String> idxSpec;
 
-    /**
-     * A list of strings of all the columns regarding this index
-     */
     public List<String> getColumnsNames() {
-        return columnsNames;
+        return columns.stream()
+                .map(col -> col.columnName)
+                .collect(toList());
+    }
+    
+    public List<ColumnParams> getColumnWithParams() {
+        return columns;
     }
 
     public String getName() {
-        return name;
+        return name.isEmpty()?null:String.join(".", name);
+    }
+    
+    public List<String> getNameParts() {
+        return Collections.unmodifiableList(name);
     }
 
-    /**
-     * The type of this index: "PRIMARY KEY", "UNIQUE", "INDEX"
-     */
     public String getType() {
         return type;
     }
 
-    public void setColumnsNames(List<String> list) {
-        columnsNames = list;
+    /**
+     * In postgresql, the index type (Btree, GIST, etc.) is indicated
+     * with a USING clause.
+     * Please note that:
+     *  Oracle - the type might be BITMAP, indicating a bitmap kind of index
+     *  MySQL - the type might be FULLTEXT or SPATIAL
+    */
+    public void setUsing(String string) {
+        using = string;
     }
 
-    public void setName(String string) {
-        name = string;
+    public void setColumnsNames(List<String> list) {
+        columns = list.stream().map(col -> new ColumnParams(col, null)).collect(toList());
+    }
+    
+    public void setColumnNamesWithParams(List<ColumnParams> list) {
+        this.columns = list;
+    }
+
+    public void setName(String name) {
+        this.name.clear();
+        this.name.add(name);
+    }
+    
+    public void setName(List<String> name) {
+        this.name.clear();
+        this.name.addAll(name);
     }
 
     public void setType(String string) {
         type = string;
+    }
+
+    public String getUsing() {
+        return using;
     }
 
     public List<String> getIndexSpec() {
@@ -76,7 +94,30 @@ public class Index {
     @Override
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
-        return type + (name != null ? " " + name : "") + " " + PlainSelect.
-                getStringList(columnsNames, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
+        return type + (!name.isEmpty() ? " " + getName() : "") + " " + PlainSelect.
+                getStringList(columns, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
+    }
+    
+    public static class ColumnParams {
+        public final String columnName;
+        public final List<String> params;
+
+        public ColumnParams(String columnName, List<String> params) {
+            this.columnName = columnName;
+            this.params = params;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+        public List<String> getParams() {
+            return params;
+        }
+        
+        @Override
+        public String toString() {
+            return columnName + (params!=null?" " + String.join(" ", params):"");
+        }
     }
 }

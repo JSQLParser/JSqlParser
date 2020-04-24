@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.statement.alter;
@@ -24,18 +12,14 @@ package net.sf.jsqlparser.statement.alter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-/**
- *
- * @author toben & wrobstory
- */
 public class Alter implements Statement {
 
     private Table table;
+    private boolean useOnly = false;
 
     private List<AlterExpression> alterExpressions;
 
@@ -45,6 +29,14 @@ public class Alter implements Statement {
 
     public void setTable(Table table) {
         this.table = table;
+    }
+
+    public boolean isUseOnly() {
+        return useOnly;
+    }
+
+    public void setUseOnly(boolean useOnly) {
+        this.useOnly = useOnly;
     }
 
     public void addAlterExpression(AlterExpression alterExpression) {
@@ -71,7 +63,11 @@ public class Alter implements Statement {
     public String toString() {
 
         StringBuilder b = new StringBuilder();
-        b.append("ALTER TABLE ").append(table.getFullyQualifiedName()).append(" ");
+        b.append("ALTER TABLE ");
+        if (useOnly) {
+            b.append("ONLY ");
+        }
+        b.append(table.getFullyQualifiedName()).append(" ");
 
         Iterator<AlterExpression> altIter = alterExpressions.iterator();
 

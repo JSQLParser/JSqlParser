@@ -1,42 +1,38 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
-
+import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.DeclareStatement;
+import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.ShowColumnsStatement;
+import net.sf.jsqlparser.statement.ShowStatement;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
-import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
+import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
@@ -45,13 +41,15 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public class StatementDeParser implements StatementVisitor {
+
     private ExpressionDeParser expressionDeParser;
 
     private SelectDeParser selectDeParser;
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
 
     public StatementDeParser(StringBuilder buffer) {
         this(new ExpressionDeParser(), new SelectDeParser(), buffer);
@@ -71,7 +69,7 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(CreateTable createTable) {
-        CreateTableDeParser createTableDeParser = new CreateTableDeParser(buffer);
+        CreateTableDeParser createTableDeParser = new CreateTableDeParser(this, buffer);
         createTableDeParser.deParse(createTable);
     }
 
@@ -145,6 +143,11 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Truncate truncate) {
+        buffer.append("TRUNCATE TABLE ");
+        buffer.append(truncate.getTable());
+        if (truncate.getCascade()) {
+            buffer.append(" CASCADE");
+        }
     }
 
     @Override
@@ -202,7 +205,7 @@ public class StatementDeParser implements StatementVisitor {
         //TODO implementation of a deparser
         buffer.append(merge.toString());
     }
-    
+
     @Override
     public void visit(Commit commit) {
         buffer.append(commit.toString());
@@ -221,6 +224,68 @@ public class StatementDeParser implements StatementVisitor {
     @Override
     public void visit(UseStatement use) {
         new UseStatementDeParser(buffer).deParse(use);
+    }
+
+    @Override
+    public void visit(ShowColumnsStatement show) {
+        new ShowColumnsStatementDeParser(buffer).deParse(show);
+    }
+
+    @Override
+    public void visit(Block block) {
+        buffer.append("BEGIN\n");
+        if (block.getStatements() != null) {
+            for (Statement stmt : block.getStatements().getStatements()) {
+                stmt.accept(this);
+                buffer.append(";\n");
+            }
+        }
+        buffer.append("END");
+    }
+
+    @Override
+    public void visit(Comment comment) {
+        buffer.append(comment.toString());
+    }
+
+    @Override
+    public void visit(ValuesStatement values) {
+        expressionDeParser.setBuffer(buffer);
+        new ValuesStatementDeParser(expressionDeParser, buffer).deParse(values);
+    }
+
+    @Override
+    public void visit(DescribeStatement describe) {
+        buffer.append("DESCRIBE ");
+        buffer.append(describe.getTable());
+    }
+
+    @Override
+    public void visit(ExplainStatement explain) {
+        buffer.append("EXPLAIN ");
+        explain.getStatement().accept(this);
+    }
+
+    @Override
+    public void visit(ShowStatement show) {
+        new ShowStatementDeParser(buffer).deParse(show);
+    }
+
+    @Override
+    public void visit(DeclareStatement declare) {
+        expressionDeParser.setBuffer(buffer);
+        new DeclareStatementDeParser(expressionDeParser, buffer).deParse(declare);
+    }
+
+    @Override
+    public void visit(Grant grant) {
+        GrantDeParser grantDeParser = new GrantDeParser(buffer);
+        grantDeParser.deParse(grant);
+    }
+
+    @Override
+    public void visit(CreateSchema aThis) {
+        buffer.append(aThis.toString());
     }
 
     @Override

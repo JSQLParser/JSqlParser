@@ -1,36 +1,31 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2013 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Objects;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-/**
- *
- * @author wumpz
- */
 public class IntervalExpression extends ASTNodeAccessImpl implements Expression {
 
     private String parameter = null;
     private String intervalType = null;
+    private final boolean intervalKeyword;
+    private Expression expression = null;
+
+    public IntervalExpression() {
+        this(true);
+    }
+
+    public IntervalExpression(boolean intervalKeyword) {
+        this.intervalKeyword = intervalKeyword;
+    }
 
     public String getParameter() {
         return parameter;
@@ -48,9 +43,19 @@ public class IntervalExpression extends ASTNodeAccessImpl implements Expression 
         this.intervalType = intervalType;
     }
 
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
+
     @Override
     public String toString() {
-        return "INTERVAL " + parameter + (intervalType != null ? " " + intervalType : "");
+        return (intervalKeyword ? "INTERVAL " : "")
+                + Objects.toString(expression, parameter)
+                + (intervalType != null ? " " + intervalType : "");
     }
 
     @Override

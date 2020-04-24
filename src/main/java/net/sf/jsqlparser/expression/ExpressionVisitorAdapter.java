@@ -1,22 +1,10 @@
-/*
+/*-
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2015 JSQLParser
+ * Copyright (C) 2004 - 2019 JSQLParser
  * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 2.1 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
 package net.sf.jsqlparser.expression;
@@ -24,7 +12,6 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
-import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -39,6 +26,7 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVisitor, PivotVisitor, SelectItemVisitor {
@@ -129,6 +117,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(IntegerDivision expr) {
+        visitBinaryExpression(expr);
+    }
+
+    @Override
     public void visit(Multiplication expr) {
         visitBinaryExpression(expr);
     }
@@ -177,11 +170,27 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         } else if (expr.getLeftItemsList() != null) {
             expr.getLeftItemsList().accept(this);
         }
-        expr.getRightItemsList().accept(this);
+        if (expr.getRightExpression() != null) {
+            expr.getRightExpression().accept(this);
+        } else {
+            expr.getRightItemsList().accept(this);
+        }
     }
 
     @Override
     public void visit(IsNullExpression expr) {
+        expr.getLeftExpression().accept(this);
+    }
+
+    @Override
+    public void visit(FullTextSearch expr) {
+        for (Column col : expr.getMatchColumns()) {
+            col.accept(this);
+        }
+    }
+
+    @Override
+    public void visit(IsBooleanExpression expr) {
         expr.getLeftExpression().accept(this);
     }
 
@@ -347,6 +356,13 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(NamedExpressionList namedExpressionList) {
+        for (Expression expr : namedExpressionList.getExpressions()) {
+            expr.accept(this);
+        }
+    }
+
+    @Override
     public void visit(MultiExpressionList multiExprList) {
         for (ExpressionList list : multiExprList.getExprList()) {
             visit(list);
@@ -416,7 +432,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             }
         }
     }
-    
+
     @Override
     public void visit(ValueListExpression valueListExpression) {
         for (Expression expr : valueListExpression.getExpressionList().getExpressions()) {
@@ -459,6 +475,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(UnPivot unpivot) {
+        unpivot.accept(this);
+    }
+
+    @Override
     public void visit(AllColumns allColumns) {
 
     }
@@ -497,7 +518,25 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(DateTimeLiteralExpression literal) {
-
     }
 
+    @Override
+    public void visit(NextValExpression nextVal) {
+    }
+
+    @Override
+    public void visit(CollateExpression col) {
+        col.getLeftExpression().accept(this);
+    }
+
+    @Override
+    public void visit(SimilarToExpression expr) {
+        visitBinaryExpression(expr);
+    }
+
+    @Override
+    public void visit(ArrayExpression array) {
+        array.getObjExpression().accept(this);
+        array.getIndexExpression().accept(this);
+    }
 }

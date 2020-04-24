@@ -1,32 +1,20 @@
-/*
- * Copyright (C) 2013 JSQLParser.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
  */
 package net.sf.jsqlparser.test;
 
-import java.io.StringReader;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -35,8 +23,10 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
 /**
  *
@@ -55,12 +45,16 @@ public class TestUtils {
      * Tries to parse and deparse the given statement.
      *
      * @param statement
-     * @param laxDeparsingCheck removes all linefeeds from the original and removes all double
-     * spaces. The check is caseinsensitive.
+     * @param laxDeparsingCheck removes all linefeeds from the original and
+     * removes all double spaces. The check is caseinsensitive.
      * @throws JSQLParserException
      */
     public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck) throws JSQLParserException {
-        Statement parsed = CCJSqlParserUtil.parse(new StringReader(statement));
+        assertSqlCanBeParsedAndDeparsed(statement, laxDeparsingCheck, null);
+    }
+
+    public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+        Statement parsed = CCJSqlParserUtil.parse(statement, consumer);
         assertStatementCanBeDeparsedAs(parsed, statement, laxDeparsingCheck);
     }
 
