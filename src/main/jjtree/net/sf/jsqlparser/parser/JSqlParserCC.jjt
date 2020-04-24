@@ -163,6 +163,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CREATE:"CREATE">
 |   <K_CROSS:"CROSS">
 |   <K_CURRENT: "CURRENT">
+|   <K_CYCLE:"CYCLE">
 |   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
 |   <K_DEFERRABLE : "DEFERRABLE">
 |   <K_DELAYED : "DELAYED">
@@ -193,6 +194,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_FROM:"FROM">
 |   <K_FULL:"FULL">
 |   <K_FULLTEXT:"FULLTEXT">
+|   <K_GLOBAL:"GLOBAL">
 |   <K_GROUP:"GROUP">
 |   <K_GROUP_CONCAT:"GROUP_CONCAT">
 |   <K_HAVING:"HAVING">
@@ -221,14 +223,20 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_LOW_PRIORITY : "LOW_PRIORITY">
 |   <K_MATCHED: "MATCHED">
 |   <K_MATERIALIZED:"MATERIALIZED">
+|   <K_MAXVALUE: "MAXVALUE">
 |   <K_MERGE: "MERGE">
 |   <K_MINUS:"MINUS">
+|   <K_MINVALUE:"MINVALUE">
 |   <K_MODIFY: "MODIFY">
 |   <K_NATURAL:"NATURAL">
 |   <K_NEXT:"NEXT">
 |   <K_NO:"NO">
 |   <K_NOCACHE:"NOCACHE">
 |   <K_NOCYCLE:"NOCYCLE">
+|   <K_NOKEEP:"NOKEEP">
+|   <K_NOMAXVALUE:"NOMAXVALUE">
+|   <K_NOMINVALUE:"NOMINVALUE">
+|   <K_NOORDER:"NOORDER">
 |   <K_NOT:"NOT">
 |   <K_NOVALIDATE : "NOVALIDATE">
 |   <K_NULL:"NULL">
@@ -264,6 +272,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SEMI : "SEMI">
 |   <K_SEQUENCE: "SEQUENCE">
 |   <K_SEPARATOR:"SEPARATOR">
+|   <K_SESSION:"SESSION">
 |   <K_SET:"SET">
 |   <K_SIBLINGS:"SIBLINGS">
 |   <K_SKIP: "SKIP">
@@ -397,6 +406,9 @@ Statement SingleStatement() :
         LOOKAHEAD(CreateIndex())
         stm = CreateIndex()
         |
+        LOOKAHEAD(CreateSequence())
+        stm = CreateSequence()
+        |
         LOOKAHEAD(CreateTable())
         stm = CreateTable()
         |
@@ -416,9 +428,6 @@ Statement SingleStatement() :
         stm = Use()
         |
         stm = Commit()
-        |
-        LOOKAHEAD(CreateSequence())
-        stm = CreateSequence()
         )
 		{ return stm; }
     } catch (ParseException e) {
@@ -3031,7 +3040,7 @@ CreateTable CreateTable():
     <K_CREATE>
     [ <K_UNLOGGED> { createTable.setUnlogged(true); } ]
 
-    /* [ [ (tk=<K_GLOBAL> | tk=<K_LOCAL>) {createOptions.add(tk.image);} ] 
+    /* [ [ (tk=<K_GLOBAL> | tk=<K_LOCAL>) {createOptions.add(tk.image);} ]
        ( tk=<K_TEMPORARY> | tk=<K_TEMP> ) {createOptions.add(tk.image);}] */
 
     (parameter = CreateParameter() { createOptions.addAll(parameter); })*
@@ -3717,17 +3726,59 @@ CreateSequence CreateSequence():
     }
    )
    |
+   (<K_NOMAXVALUE>
+    {
+      parameter = new Sequence.Parameter(Sequence.ParameterType.NOMAXVALUE);
+      sequenceParameters.add(parameter);
+    }
+    |<K_MAXVALUE> token=<S_LONG>
+    {
+      parameter = new Sequence.Parameter(Sequence.ParameterType.MAXVALUE);
+      parameter.setValue(Long.parseLong(token.image));
+      sequenceParameters.add(parameter);
+    }
+   )
+   |
+   (<K_NOMINVALUE>
+    {
+      parameter = new Sequence.Parameter(Sequence.ParameterType.NOMINVALUE);
+      sequenceParameters.add(parameter);
+    }
+    |<K_MINVALUE> token=<S_LONG>
+    {
+      parameter = new Sequence.Parameter(Sequence.ParameterType.MINVALUE);
+      parameter.setValue(Long.parseLong(token.image));
+      sequenceParameters.add(parameter);
+    }
+   )
+   |
+   (<K_NOCYCLE> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.NOCYCLE)); }
+    |<K_CYCLE> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.CYCLE)); }
+   )
+   |
    (<K_NOCACHE>
     {
       parameter = new Sequence.Parameter(Sequence.ParameterType.NOCACHE);
       sequenceParameters.add(parameter);
     }
-    |<K_CACHE> token=<S_LONG>
+   |<K_CACHE> token=<S_LONG>
     {
       parameter = new Sequence.Parameter(Sequence.ParameterType.CACHE);
-       parameter.setValue(Long.parseLong(token.image));
-       sequenceParameters.add(parameter);
+      parameter.setValue(Long.parseLong(token.image));
+      sequenceParameters.add(parameter);
     }
+   )
+   |
+   (<K_ORDER> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.ORDER)); }
+    |<K_NOORDER> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.NOORDER)); }
+   )
+   |
+   (<K_KEEP> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.KEEP)); }
+    |<K_NOKEEP> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.NOKEEP)); }
+   )
+   |
+   (<K_SESSION> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.SESSION)); }
+    |<K_GLOBAL> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.GLOBAL)); }
    )
   )* //zero or many times those productions
   {

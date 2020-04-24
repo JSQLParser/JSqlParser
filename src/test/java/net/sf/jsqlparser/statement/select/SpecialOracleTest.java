@@ -27,6 +27,8 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,12 +36,12 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tries to parse and deparse all statments in net.sf.jsqlparser.test.oracle-tests.
+ * Tries to parse and deparse all statements in net.sf.jsqlparser.test.oracle-tests.
  *
  * As a matter of fact there are a lot of files that can still not processed. Here a step by step
  * improvement is the way to go.
  *
- * The test ensures, that the successfull parsed file count does not decrease.
+ * The test ensures that the successful parsed file count does not decrease.
  *
  * @author toben
  */
@@ -53,6 +55,7 @@ public class SpecialOracleTest {
         int count = 0;
         int success = 0;
         File[] sqlTestFiles = SQLS_DIR.listFiles();
+        Map<String, Boolean> results = new TreeMap<>();
 
         for (File file : sqlTestFiles) {
             if (file.isFile()) {
@@ -62,21 +65,22 @@ public class SpecialOracleTest {
                 try {
                     assertSqlCanBeParsedAndDeparsed(sql, true);
                     success++;
+                    results.put(file.getName(), Boolean.TRUE);
                     LOG.info("   -> SUCCESS");
                 } catch (JSQLParserException ex) {
                     ex.printStackTrace();
                     //LOG.log(Level.SEVERE, null, ex);
                     LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
-                } catch (Exception ex) {
+                    results.put(file.getName(), Boolean.FALSE);
+                } catch (Exception | ComparisonFailure ex) {
                     LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
-                } catch (ComparisonFailure ex) {
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
+                    results.put(file.getName(), Boolean.FALSE);
                 }
             }
         }
 
-        LOG.
-                log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
+        LOG.log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
+        System.out.println("Results:\n" + formatResults(results));
         assertTrue(success >= 149);
     }
 
@@ -151,5 +155,14 @@ public class SpecialOracleTest {
         System.out.println(statement.toString());
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    private static String formatResults(Map<String, Boolean> results) {
+        StringBuilder resultsString = new StringBuilder();
+        for(Map.Entry<String, Boolean> result : results.entrySet()) {
+            resultsString.append(result);
+            resultsString.append(System.lineSeparator());
+        }
+        return resultsString.toString();
     }
 }
