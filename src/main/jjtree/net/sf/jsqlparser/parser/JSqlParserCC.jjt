@@ -237,6 +237,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MINUS:"MINUS">
 |   <K_MINVALUE:"MINVALUE">
 |   <K_MODIFY: "MODIFY">
+|   <K_MOVEMENT: "MOVEMENT">
 |   <K_NATURAL:"NATURAL">
 |   <K_NEXT:"NEXT">
 |   <K_NEXTVAL:"NEXTVAL">
@@ -3801,6 +3802,7 @@ CreateTable CreateTable():
     Select select = null;
     CheckConstraint checkCs = null;
     ExcludeConstraint excludeC = null;
+    RowMovement rowMovement = null;
 }
 {
     <K_CREATE>
@@ -3949,13 +3951,14 @@ CreateTable CreateTable():
         ")"
         (     parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
         )
-        |
-        (
-        <K_AS> ( LOOKAHEAD("(" Select() ")") "(" select = Select() { createTable.setSelect(select, true); } ")"
-                 | select = Select() { createTable.setSelect(select, false); } )
-        )
     ]
-
+    // see https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2126725
+    // table properties , all these are optional
+    [ rowMovement = RowMovement() { createTable.setRowMovement(rowMovement); }]
+    [
+    <K_AS> ( LOOKAHEAD("(" Select() ")") "(" select = Select() { createTable.setSelect(select, true); } ")"
+             | select = Select() { createTable.setSelect(select, false); } )
+    ]
     {
         createTable.setTable(table);
         if (indexes.size() > 0)
@@ -4140,12 +4143,26 @@ List<String> CreateParameter():
             tk=<K_COLLATE> { param.add(tk.image); }
             |
             tk=<K_ASC> { param.add(tk.image); }
-	    |
+	        |
             tk=<K_DESC> { param.add(tk.image); }
             |
 	    tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
         )
     {return param;}
+}
+
+// row_movement_clause https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2204697
+RowMovement RowMovement():
+{
+  RowMovement rowMovement = new RowMovement();
+}
+{
+  (
+    (<K_ENABLE> <K_ROW> <K_MOVEMENT>) { rowMovement.setMode(RowMovementMode.ENABLE); }
+    |
+    (<K_DISABLE> <K_ROW> <K_MOVEMENT>) { rowMovement.setMode(RowMovementMode.DISABLE); }
+  )
+  { return rowMovement;}
 }
 
 String AList():
