@@ -1169,7 +1169,7 @@ String RelObjectNameWithoutValue() :
 	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
       | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIZE> | tk=<K_SESSION>
-      | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE>
+      | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE> | tk=<K_CYCLE>
 /*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
 
@@ -3808,6 +3808,8 @@ CreateTable CreateTable():
     <K_CREATE>
     [ <K_UNLOGGED> { createTable.setUnlogged(true); } ]
 
+    // table options, not required but 1 or none
+    [ tk=<K_GLOBAL> { createOptions.add(tk.image);} ]
     /* [ [ (tk=<K_GLOBAL> | tk=<K_LOCAL>) {createOptions.add(tk.image);} ]
        ( tk=<K_TEMPORARY> | tk=<K_TEMP> ) {createOptions.add(tk.image);}] */
 
