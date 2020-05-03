@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
@@ -91,4 +92,6 @@ public interface StatementVisitor {
     void visit(Grant grant);
 
     void visit(CreateSequence createSequence);
+
+    void visit(AlterSequence alterSequence);
 }
