@@ -4420,6 +4420,10 @@ AlterExpression AlterExpression():
                     fkIndex.setReferencedColumnNames(columnNames);
                     alterExp.setIndex(fkIndex);
                 }
+                [<K_ON> <K_DELETE>
+                            (<K_CASCADE> { fkIndex.setOnDeleteReferenceOption("CASCADE"); }
+                            | <K_RESTRICT> { fkIndex.setOnDeleteReferenceOption("RESTRICT"); }
+                            | <K_SET> <K_NULL> { fkIndex.setOnDeleteReferenceOption("SET NULL"); } ) ]
                 constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
             )
             |
