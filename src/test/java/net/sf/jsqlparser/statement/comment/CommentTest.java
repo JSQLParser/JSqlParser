@@ -15,6 +15,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -73,4 +74,22 @@ public class CommentTest {
     public void testCommentColumnDeparseIssue696() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("COMMENT ON COLUMN hotels.hotelid IS 'Primary key of the table'");
     }
+
+    @Test
+    public void testCommentTableColumnDiffersIssue984() throws JSQLParserException {
+        Comment comment = (Comment) CCJSqlParserUtil.parse("COMMENT ON COLUMN myTable.myColumn is 'Some comment'");
+        assertThat(comment.getTable()).isNull();
+        assertThat(comment.getColumn().getColumnName()).isEqualTo("myColumn");
+        assertThat(comment.getColumn().getTable().getFullyQualifiedName()).isEqualTo("myTable");
+    }
+        
+    @Test
+    public void testCommentTableColumnDiffersIssue984_2() throws JSQLParserException {
+        Comment comment = (Comment) CCJSqlParserUtil.parse("COMMENT ON COLUMN mySchema.myTable.myColumn is 'Some comment'");
+        assertThat(comment.getTable()).isNull();
+        assertThat(comment.getColumn().getColumnName()).isEqualTo("myColumn");
+        assertThat(comment.getColumn().getTable().getFullyQualifiedName()).isEqualTo("mySchema.myTable");
+        assertThat(comment.getColumn().getTable().getName()).isEqualTo("myTable");
+        assertThat(comment.getColumn().getTable().getSchemaName()).isEqualTo("mySchema");
+    }   
 }
