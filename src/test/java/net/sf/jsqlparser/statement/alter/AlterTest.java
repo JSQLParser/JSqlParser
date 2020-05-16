@@ -429,4 +429,16 @@ public class AlterTest {
                 "ALTER TABLE atconfigpro " +
                 "ADD CONSTRAINT atconfigpro_atconfignow_id_foreign FOREIGN KEY (atconfignow_id) REFERENCES atconfignow(id) ON DELETE CASCADE");
     }
+    
+    @Test
+    public void testAlterTableTableCommentIssue984() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE texto_fichero COMMENT 'This is a sample comment'");
+    }
+    
+    @Test
+    public void testAlterTableColumnCommentIssue984() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE texto_fichero MODIFY id COMMENT 'some comment'");
+    }
 }
