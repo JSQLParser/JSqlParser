@@ -66,6 +66,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 3.2
 
+* added **COMMENT** support for **ALTER TABLE** statement
 * added some **FOREIGN KEY** definition improvments
 * allow **VALIDATE** as column name
 * first support for **CREATE SCHEMA** and **DROP SCHEMA**
