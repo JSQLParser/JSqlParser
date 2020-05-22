@@ -160,4 +160,9 @@ public class UpdateTest {
     public void testUpdateIssue750() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("update a,(select * from c) b set a.id=b.id where a.id=b.id", true);
     }
+    
+    @Test
+    public void testUpdateIssue962Validate() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE tbl_user_card SET validate = '1', identityCodeFlag = 1 WHERE id = 9150000293816");
+    }
 }

@@ -45,6 +45,15 @@ public class AlterExpression {
 
     private List<ConstraintState> constraints;
     private List<String> parameters;
+    private String commentText;
+
+    public String getCommentText() {
+        return commentText;
+    }
+
+    public void setCommentText(String commentText) {
+        this.commentText = commentText;
+    }
 
     public AlterOperation getOperation() {
         return operation;
@@ -242,7 +251,12 @@ public class AlterExpression {
 
         b.append(operation).append(" ");
 
-        if (columnName != null) {
+        if (commentText != null) {
+            if (columnName != null) {
+                b.append(columnName).append(" COMMENT ");
+            }
+            b.append(commentText);
+        } else if (columnName != null) {
             b.append("COLUMN ");
             if (operation == AlterOperation.RENAME) {
                 b.append(columnOldName).append(" TO ");
@@ -324,6 +338,7 @@ public class AlterExpression {
     }
 
     public final static class ColumnDataType extends ColumnDefinition {
+
         private final boolean withType;
 
         public ColumnDataType(String columnName, boolean withType, ColDataType colDataType, List<String> columnSpecs) {

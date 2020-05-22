@@ -28,6 +28,7 @@ public class CreateTable implements Statement {
     private Select select;
     private boolean selectParenthesis;
     private boolean ifNotExists = false;
+    private RowMovement rowMovement;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -119,6 +120,14 @@ public class CreateTable implements Statement {
         this.selectParenthesis = selectParenthesis;
     }
 
+    public RowMovement getRowMovement() {
+        return rowMovement;
+    }
+
+    public void setRowMovement(RowMovement rowMovement) {
+        this.rowMovement = rowMovement;
+    }
+
     @Override
     public String toString() {
         String sql;
@@ -127,9 +136,7 @@ public class CreateTable implements Statement {
         sql = "CREATE " + (unlogged ? "UNLOGGED " : "") + (!"".equals(createOps) ? createOps + " " : "") + "TABLE "
                 + (ifNotExists ? "IF NOT EXISTS " : "") + table;
 
-        if (select != null) {
-            sql += " AS " + (selectParenthesis ? "(" : "") + select.toString() + (selectParenthesis ? ")" : "");
-        } else {
+        if (columnDefinitions != null && !columnDefinitions.isEmpty()) {
             sql += " (";
 
             sql += PlainSelect.getStringList(columnDefinitions, true, false);
@@ -144,6 +151,12 @@ public class CreateTable implements Statement {
             }
         }
 
+        if (rowMovement != null) {
+            sql += " " + rowMovement.getMode().toString() + " ROW MOVEMENT";
+        }
+        if (select != null) {
+            sql += " AS " + (selectParenthesis ? "(" : "") + select.toString() + (selectParenthesis ? ")" : "");
+        }
         return sql;
     }
 }

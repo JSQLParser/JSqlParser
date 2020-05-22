@@ -424,4 +424,31 @@ public class AlterTest {
         assertEquals(expression.getColOldName(), "\"test_column\"");
         assertEquals(expression.getColumnName(), "\"test_c\"");
     }
+    
+    @Test
+    public void testAlterTableForeignKeyIssue981() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE atconfigpro " +
+                "ADD CONSTRAINT atconfigpro_atconfignow_id_foreign FOREIGN KEY (atconfignow_id) REFERENCES atconfignow(id) ON DELETE CASCADE, " +
+                "ADD CONSTRAINT atconfigpro_attariff_id_foreign FOREIGN KEY (attariff_id) REFERENCES attariff(id) ON DELETE CASCADE");
+    }
+    
+    @Test
+    public void testAlterTableForeignKeyIssue981_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE atconfigpro " +
+                "ADD CONSTRAINT atconfigpro_atconfignow_id_foreign FOREIGN KEY (atconfignow_id) REFERENCES atconfignow(id) ON DELETE CASCADE");
+    }
+    
+    @Test
+    public void testAlterTableTableCommentIssue984() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE texto_fichero COMMENT 'This is a sample comment'");
+    }
+    
+    @Test
+    public void testAlterTableColumnCommentIssue984() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE texto_fichero MODIFY id COMMENT 'some comment'");
+    }
 }

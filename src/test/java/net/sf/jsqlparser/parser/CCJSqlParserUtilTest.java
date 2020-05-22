@@ -51,9 +51,6 @@ public class CCJSqlParserUtilTest {
     public void tearDown() {
     }
 
-    /**
-     * Test of parseExpression method, of class CCJSqlParserUtil.
-     */
     @Test
     public void testParseExpression() throws Exception {
         Expression result = CCJSqlParserUtil.parseExpression("a+b");
@@ -192,5 +189,11 @@ public class CCJSqlParserUtilTest {
         assertEquals("CREATE TABLE `table_name` (`id` bigint (20) NOT NULL AUTO_INCREMENT, `another_column_id` "
                 + "bigint (20) NOT NULL COMMENT 'column id as sent by SYSTEM', PRIMARY KEY (`id`), UNIQUE KEY `uk_another_column_id` "
                 + "(`another_column_id`));\n", result.toString());
+    }
+    
+    @Test
+    public void testParseExpressionIssue982() throws Exception {
+        Expression result = CCJSqlParserUtil.parseExpression("tab.col");
+        assertEquals("tab.col", result.toString());
     }
 }
