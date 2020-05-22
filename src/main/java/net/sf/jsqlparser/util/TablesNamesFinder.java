@@ -878,9 +878,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(CreateSequence createSequence) {
+        throw new UnsupportedOperationException("Finding tables from CreateSequence is not supported");
     }
 
     @Override
     public void visit(AlterSequence alterSequence) {
+        throw new UnsupportedOperationException("Finding tables from AlterSequence is not supported");
     }
 }
