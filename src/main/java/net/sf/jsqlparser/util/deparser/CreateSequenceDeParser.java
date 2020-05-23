@@ -15,19 +15,18 @@ import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
  * A class to de-parse (that is, transform from JSqlParser hierarchy into a string) a
  * {@link net.sf.jsqlparser.statement.create.sequence.CreateSequence}
  */
-public class CreateSequenceDeParser {
-
-    private StringBuilder buffer;
+public class CreateSequenceDeParser extends AbstractDeParser<CreateSequence>{
 
     /**
-     * @param buffer the buffer that will be filled with the select
+     * @param buffer the buffer that will be filled with the CreatSequence
      */
     public CreateSequenceDeParser(StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
     }
 
-    public void deParse(CreateSequence createSequence) {
+    @Override
+    public void deParse(CreateSequence statement) {
         buffer.append("CREATE SEQUENCE ");
-        buffer.append(createSequence.getSequence());
+        buffer.append(statement.getSequence());
     }
 }

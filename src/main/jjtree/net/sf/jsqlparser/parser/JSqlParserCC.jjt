@@ -37,6 +37,7 @@ import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.alter.*;
+import net.sf.jsqlparser.statement.alter.sequence.*;
 import net.sf.jsqlparser.statement.comment.*;
 import net.sf.jsqlparser.statement.create.index.*;
 import net.sf.jsqlparser.statement.create.schema.*;
@@ -464,7 +465,11 @@ Statement SingleStatement() :
         LOOKAHEAD(CreateView())
         stm = CreateView()
         |
+        LOOKAHEAD(AlterView())
         stm = AlterView()
+        |
+        LOOKAHEAD(AlterSequence())
+        stm = AlterSequence()
         |
         stm = Drop()
         |
@@ -4699,7 +4704,6 @@ Sequence Sequence() #Sequence :
 }
 {
     data = RelObjectNameList()
-
     {
         Sequence sequence = new Sequence(data);
 		linkAST(sequence,jjtThis);
@@ -4707,18 +4711,14 @@ Sequence Sequence() #Sequence :
     }
 }
 
-CreateSequence CreateSequence():
+List<Sequence.Parameter> SequenceParameters():
 {
-  CreateSequence createSequence = new CreateSequence();
-  Sequence sequence;
   List<Sequence.Parameter> sequenceParameters = new ArrayList<Sequence.Parameter>();
   Sequence.Parameter parameter = null;
   Token token = null;
 }
 {
-  <K_CREATE>
-  <K_SEQUENCE> sequence=Sequence() { createSequence.setSequence(sequence); }
-  (
+(
    (<K_INCREMENT> <K_BY> token=<S_LONG>
     {
         parameter = new Sequence.Parameter(Sequence.ParameterType.INCREMENT_BY);
@@ -4791,7 +4791,36 @@ CreateSequence CreateSequence():
    )
   )* //zero or many times those productions
   {
-    sequence.setParameters(sequenceParameters);
+    return sequenceParameters;
+  }
+}
+
+CreateSequence CreateSequence():
+{
+  CreateSequence createSequence = new CreateSequence();
+  Sequence sequence;
+  List<Sequence.Parameter> sequenceParameters;
+}
+{
+  <K_CREATE>
+  <K_SEQUENCE> sequence=Sequence() { createSequence.setSequence(sequence); }
+  sequenceParameters = SequenceParameters() { sequence.setParameters(sequenceParameters); }
+  {
     return createSequence;
+  }
+}
+
+AlterSequence AlterSequence():
+{
+  AlterSequence alterSequence = new AlterSequence();
+  Sequence sequence;
+  List<Sequence.Parameter> sequenceParameters;
+}
+{
+  <K_ALTER>
+  <K_SEQUENCE> sequence=Sequence() { alterSequence.setSequence(sequence); }
+  sequenceParameters = SequenceParameters() { sequence.setParameters(sequenceParameters); }
+  {
+    return alterSequence;
   }
 }
