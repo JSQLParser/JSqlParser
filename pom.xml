@@ -413,6 +413,15 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>skip.checks</id>
+            <properties>
+                <checkstyle.skip>true</checkstyle.skip>
+                <maven.test.skip>true</maven.test.skip>
+                <maven.javadoc.skip>true</maven.javadoc.skip>
+                <license.skipUpdateLicense>true</license.skipUpdateLicense>
+            </properties>
+        </profile>
     </profiles>
 
     <properties>

@@ -13,6 +13,8 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+import java.util.List;
+
 public class InExpression extends ASTNodeAccessImpl implements Expression, SupportsOldOracleJoinSyntax {
 
     private Expression leftExpression;
@@ -20,6 +22,7 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     private ItemsList rightItemsList;
     private boolean not = false;
     private Expression rightExpression;
+    private MultiExpressionList multiExpressionList;
 
     private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
 
@@ -109,5 +112,13 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         if (priorPosition != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
             throw new IllegalArgumentException("unexpected prior for oracle found");
         }
+    }
+
+    public MultiExpressionList getMultiExpressionList() {
+        return multiExpressionList;
+    }
+
+    public void setMultiExpressionList(MultiExpressionList multiExpressionList) {
+        this.multiExpressionList = multiExpressionList;
     }
 }

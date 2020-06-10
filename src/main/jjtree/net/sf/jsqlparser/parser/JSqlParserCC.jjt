@@ -11,7 +11,7 @@
 options{
     IGNORE_CASE = true ;
     STATIC = false;
-    DEBUG_PARSER = false;
+    DEBUG_PARSER = true;
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
     CACHE_TOKENS = false;
@@ -2543,6 +2543,8 @@ Expression InExpression() #InExpression :
     Expression leftExpression = null;
     Expression rightExpression = null;
     Token token;
+    MultiExpressionList multiExpressionList = null;
+    ExpressionList expressionList = null;
 }
 {
     ( LOOKAHEAD(3) "(" (
@@ -2557,12 +2559,34 @@ Expression InExpression() #InExpression :
         [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
     )
     [<K_NOT> { result.setNot(true); } ] <K_IN>
-        ( rightExpression = Function()
-            | token=<S_CHAR_LITERAL> { rightExpression = new StringValue(token.image); }
-            | "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")")
+    (
+    "(("
+      (
+         expressionList=SimpleExpressionList() {
+             if(multiExpressionList == null) {
+               multiExpressionList = new MultiExpressionList();
+             }
+             multiExpressionList.addExpressionList(expressionList);
+         }
+         // potentially additional expression lists
+         ( ")" "," "(" expressionList=SimpleExpressionList()
+           {
+             if(multiExpressionList == null) {
+                multiExpressionList = new MultiExpressionList();
+             }
+             multiExpressionList.addExpressionList(expressionList);
+           }
+         )*
+      )
+      "))"
+      | rightExpression = Function()
+      | token=<S_CHAR_LITERAL> { rightExpression = new StringValue(token.image); }
+      | "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList()) ")"
+    )
     {
         result.setRightItemsList(rightItemsList);
         result.setRightExpression(rightExpression);
+        result.setMultiExpressionList(multiExpressionList);
         linkAST(result,jjtThis);
         return result;
     }
