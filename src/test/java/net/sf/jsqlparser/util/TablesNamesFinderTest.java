@@ -9,11 +9,6 @@
  */
 package net.sf.jsqlparser.util;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.Iterator;
-import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -34,8 +29,16 @@ import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.test.TestException;
-import static org.junit.Assert.*;
 import org.junit.Test;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.*;
 
 public class TablesNamesFinderTest {
 
@@ -593,5 +596,23 @@ public class TablesNamesFinderTest {
         List<String> tableList = tablesNamesFinder.getTableList(stmt);
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("table1@remote"));
+    }
+
+    @Test
+    public void testCreateSequence_throwsException() throws JSQLParserException {
+        String sql = "CREATE SEQUENCE my_seq";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        assertThatThrownBy(() -> tablesNamesFinder.getTableList(stmt)).isInstanceOf(UnsupportedOperationException.class)
+                .hasMessage("Finding tables from CreateSequence is not supported");
+    }
+
+    @Test
+    public void testAlterSequence_throwsException() throws JSQLParserException {
+        String sql = "ALTER SEQUENCE my_seq";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        assertThatThrownBy(() -> tablesNamesFinder.getTableList(stmt)).isInstanceOf(UnsupportedOperationException.class)
+                .hasMessage("Finding tables from AlterSequence is not supported");
     }
 }

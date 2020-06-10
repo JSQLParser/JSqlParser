@@ -69,9 +69,11 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
+import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -511,7 +513,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(LateralSubSelect lateralSubSelect) {
         lateralSubSelect.getSubSelect().getSelectBody().accept(this);
     }
-    
+
     @Override
     public void visit(MultiExpressionList multiExprList) {
         for (ExpressionList exprList : multiExprList.getExprList()) {
@@ -691,7 +693,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(CreateIndex createIndex) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
-    
+
     @Override
     public void visit(CreateSchema aThis) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
@@ -872,5 +874,15 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(ArrayExpression array) {
         array.getObjExpression().accept(this);
         array.getIndexExpression().accept(this);
+    }
+
+    @Override
+    public void visit(CreateSequence createSequence) {
+        throw new UnsupportedOperationException("Finding tables from CreateSequence is not supported");
+    }
+
+    @Override
+    public void visit(AlterSequence alterSequence) {
+        throw new UnsupportedOperationException("Finding tables from AlterSequence is not supported");
     }
 }

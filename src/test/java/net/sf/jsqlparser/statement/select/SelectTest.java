@@ -1191,6 +1191,16 @@ public class SelectTest {
         PlainSelect plainSelect = (PlainSelect) ((Select) parsed).getSelectBody();
         assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), where);
     }
+    
+    @Test
+    public void testNotExists() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed( "SELECT * FROM tab1 WHERE NOT EXISTS (SELECT * FROM tab2)");
+    }
+    
+    @Test
+    public void testNotExistsIssue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed( "SELECT * FROM t001 t WHERE NOT EXISTS (SELECT * FROM t002 t1 WHERE t.c1 = t1.c1 AND t.c2 = t1.c2 AND ('241' IN (t1.c3 || t1.c4)))");
+    }
 
     @Test
     public void testOrderBy() throws JSQLParserException {

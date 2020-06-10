@@ -10,9 +10,11 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
+import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -48,7 +50,7 @@ public interface StatementVisitor {
     void visit(Truncate truncate);
 
     void visit(CreateIndex createIndex);
-    
+
     void visit(CreateSchema aThis);
 
     void visit(CreateTable createTable);
@@ -88,4 +90,8 @@ public interface StatementVisitor {
     public void visit(DeclareStatement aThis);
 
     void visit(Grant grant);
+
+    void visit(CreateSequence createSequence);
+
+    void visit(AlterSequence alterSequence);
 }
