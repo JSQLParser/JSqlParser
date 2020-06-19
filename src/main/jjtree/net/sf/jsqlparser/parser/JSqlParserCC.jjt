@@ -2560,7 +2560,7 @@ Expression InExpression() #InExpression :
     )
     [<K_NOT> { result.setNot(true); } ] <K_IN>
     (
-      // semantic lookahead for a multi expression list, ie: ((a,b),(c,d))
+      // syntactic lookahead for a multi expression list, ie: ((a,b),(c,d))
       LOOKAHEAD(MultiInExpressions()) multiExpressionList = MultiInExpressions()
       | rightExpression = Function()
       | token=<S_CHAR_LITERAL> { rightExpression = new StringValue(token.image); }

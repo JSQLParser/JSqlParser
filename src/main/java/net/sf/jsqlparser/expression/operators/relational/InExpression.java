@@ -96,9 +96,6 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
 
     @Override
     public String toString() {
-//        return (leftExpression == null ? leftItemsList : getLeftExpressionString()) + " "
-//                + (not ? "NOT " : "") + "IN " + (rightExpression == null ? rightItemsList : rightExpression) + "";
-
         StringBuilder statementBuilder = new StringBuilder();
         if (leftExpression == null) {
             statementBuilder.append(leftItemsList);
