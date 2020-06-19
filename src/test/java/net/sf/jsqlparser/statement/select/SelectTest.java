@@ -4119,4 +4119,9 @@ public class SelectTest {
     public void testKeyWordView() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ma.m_a_id, ma.anounsment, ma.max_view, ma.end_date, ma.view FROM member_anounsment as ma WHERE ( ( (ma.end_date > now() ) AND (ma.max_view >= ma.view) ) AND ( (ma.member_id='xxx') ) )", true);
     }
+
+    @Test
+    public void testColumnNames_issue995() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT leading, placing, both, trailing FROM prd_reprint");
+    }
 }
