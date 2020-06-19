@@ -11,7 +11,7 @@
 options{
     IGNORE_CASE = true ;
     STATIC = false;
-    DEBUG_PARSER = true;
+    DEBUG_PARSER = false;
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
     CACHE_TOKENS = false;
@@ -2560,28 +2560,11 @@ Expression InExpression() #InExpression :
     )
     [<K_NOT> { result.setNot(true); } ] <K_IN>
     (
-    "(("
-      (
-         expressionList=SimpleExpressionList() {
-             if(multiExpressionList == null) {
-               multiExpressionList = new MultiExpressionList();
-             }
-             multiExpressionList.addExpressionList(expressionList);
-         }
-         // potentially additional expression lists
-         ( ")" "," "(" expressionList=SimpleExpressionList()
-           {
-             if(multiExpressionList == null) {
-                multiExpressionList = new MultiExpressionList();
-             }
-             multiExpressionList.addExpressionList(expressionList);
-           }
-         )*
-      )
-      "))"
+      // semantic lookahead for a multi expression list, ie: ((a,b),(c,d))
+      LOOKAHEAD(MultiInExpressions()) multiExpressionList = MultiInExpressions()
       | rightExpression = Function()
       | token=<S_CHAR_LITERAL> { rightExpression = new StringValue(token.image); }
-      | "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList()) ")"
+      | "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() )")"
     )
     {
         result.setRightItemsList(rightItemsList);
@@ -2590,6 +2573,35 @@ Expression InExpression() #InExpression :
         linkAST(result,jjtThis);
         return result;
     }
+}
+
+MultiExpressionList MultiInExpressions():
+{
+   MultiExpressionList multiExpressionList = null;
+   ExpressionList expressionList = null;
+}
+{
+  "(" "("
+   expressionList=SimpleExpressionList() {
+       if(multiExpressionList == null) {
+         multiExpressionList = new MultiExpressionList();
+       }
+       multiExpressionList.addExpressionList(expressionList);
+   }
+   // potentially additional expression lists
+   ( LOOKAHEAD(3)
+     ")" "," "(" expressionList=SimpleExpressionList()
+     {
+       if(multiExpressionList == null) {
+          multiExpressionList = new MultiExpressionList();
+       }
+       multiExpressionList.addExpressionList(expressionList);
+     }
+   )*
+   ")" ")"
+  {
+    return multiExpressionList;
+  }
 }
 
 Expression Between(Expression leftExpression) :

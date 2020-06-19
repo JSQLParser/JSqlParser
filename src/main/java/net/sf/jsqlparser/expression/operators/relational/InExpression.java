@@ -13,8 +13,6 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-import java.util.List;
-
 public class InExpression extends ASTNodeAccessImpl implements Expression, SupportsOldOracleJoinSyntax {
 
     private Expression leftExpression;
@@ -98,8 +96,36 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
 
     @Override
     public String toString() {
-        return (leftExpression == null ? leftItemsList : getLeftExpressionString()) + " " 
-                + (not ? "NOT " : "") + "IN " + (rightExpression == null ? rightItemsList : rightExpression) + "";
+//        return (leftExpression == null ? leftItemsList : getLeftExpressionString()) + " "
+//                + (not ? "NOT " : "") + "IN " + (rightExpression == null ? rightItemsList : rightExpression) + "";
+
+        StringBuilder statementBuilder = new StringBuilder();
+        if (leftExpression == null) {
+            statementBuilder.append(leftItemsList);
+        } else {
+            statementBuilder.append(getLeftExpressionString());
+        }
+
+        statementBuilder.append(" ");
+        if (not) {
+            statementBuilder.append("NOT ");
+        }
+
+        statementBuilder.append("IN ");
+
+        if (multiExpressionList != null) {
+            statementBuilder.append("(");
+            statementBuilder.append(multiExpressionList);
+            statementBuilder.append(")");
+        } else {
+            if (rightExpression == null ) {
+                statementBuilder.append(rightItemsList);
+            } else {
+              statementBuilder.append(rightExpression);
+            }
+        }
+
+        return statementBuilder.toString();
     }
 
     @Override

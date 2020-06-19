@@ -201,11 +201,38 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         }
         buffer.append(" IN ");
 
-        if (inExpression.getRightExpression() != null) {
-            inExpression.getRightExpression().accept(this);
+        if (inExpression.getMultiExpressionList() != null) {
+            parseMultiExpressionList(inExpression);
         } else {
-            inExpression.getRightItemsList().accept(this);
+            if (inExpression.getRightExpression() != null) {
+                inExpression.getRightExpression().accept(this);
+            } else {
+                inExpression.getRightItemsList().accept(this);
+            }
         }
+    }
+
+    /**
+     * Produces a multi-expression in clause: {@code ((a, b), (c, d))}
+     */
+    private void parseMultiExpressionList(InExpression inExpression) {
+        MultiExpressionList multiExprList = inExpression.getMultiExpressionList();
+        buffer.append("(");
+        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
+            buffer.append("(");
+            for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter.hasNext();) {
+                Expression expression = iter.next();
+                expression.accept(this);
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
+            buffer.append(")");
+            if (it.hasNext()) {
+                buffer.append(", ");
+            }
+        }
+        buffer.append(")");
     }
 
     @Override
