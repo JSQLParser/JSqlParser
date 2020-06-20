@@ -11,6 +11,9 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.junit.Test;
 
 public class ExplainTest {
@@ -22,7 +25,7 @@ public class ExplainTest {
 
     @Test
     public void testAnalyze() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("EXPLAIN ANALYZE SELECT * FROM mytable");
+        assertSqlCanBeParsedAndDeparsed("EXPLAIN ANALYZE TRUE SELECT * FROM mytable");
     }
 
     @Test
@@ -43,5 +46,19 @@ public class ExplainTest {
     @Test
     public void testMultiOptions_orderPreserved() throws  JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("EXPLAIN VERBOSE ANALYZE BUFFERS COSTS SELECT * FROM mytable");
+    }
+
+    @Test
+    public void getOption_returnsValues() throws JSQLParserException {
+        ExplainStatement explain = (ExplainStatement) CCJSqlParserUtil.parse("EXPLAIN VERBOSE FORMAT JSON BUFFERS FALSE SELECT * FROM mytable");
+
+        assertThat(explain.getOption(ExplainStatement.OptionType.ANALYZE)).isNull();
+        assertThat(explain.getOption(ExplainStatement.OptionType.VERBOSE)).isNotNull();
+
+        ExplainStatement.Option format = explain.getOption(ExplainStatement.OptionType.FORMAT);
+        assertThat(format).isNotNull().extracting(ExplainStatement.Option::getValue).isEqualTo("JSON");
+
+        ExplainStatement.Option buffers = explain.getOption(ExplainStatement.OptionType.BUFFERS);
+        assertThat(buffers).isNotNull().extracting(ExplainStatement.Option::getValue).isEqualTo("FALSE");
     }
 }

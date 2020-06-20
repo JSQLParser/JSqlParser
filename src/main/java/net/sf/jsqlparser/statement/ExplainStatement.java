@@ -42,6 +42,20 @@ public class ExplainStatement implements Statement {
         this.options = options;
     }
 
+    /**
+     * Returns the first option that matches this optionType
+     * @param optionType the option type to retrieve an Option for
+     * @return an option of that type, or null. In case of duplicate options, the first found option will be returned.
+     */
+    public Option getOption(OptionType optionType)
+    {
+        if (options == null) {
+          return null;
+        }
+
+        return options.stream().filter(o -> o.getType() == optionType).findFirst().orElse(null);
+    }
+
     @Override
     public String toString() {
         StringBuilder statementBuilder = new StringBuilder("EXPLAIN");
@@ -70,11 +84,15 @@ public class ExplainStatement implements Statement {
 
     public static class Option {
 
-        private final OptionType option;
+        private final OptionType type;
         private String value;
 
-        public Option(OptionType option) {
-            this.option = option;
+        public Option(OptionType type) {
+            this.type = type;
+        }
+
+        public OptionType getType() {
+            return type;
         }
 
         public String getValue() {
@@ -86,7 +104,7 @@ public class ExplainStatement implements Statement {
         }
 
         public String formatOption() {
-            return option.name() + (value != null ? (" " + value) : "");
+            return type.name() + (value != null ? (" " + value) : "");
         }
     }
 }
