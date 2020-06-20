@@ -20,6 +20,7 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     private ItemsList rightItemsList;
     private boolean not = false;
     private Expression rightExpression;
+    private MultiExpressionList multiExpressionList;
 
     private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
 
@@ -95,8 +96,33 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
 
     @Override
     public String toString() {
-        return (leftExpression == null ? leftItemsList : getLeftExpressionString()) + " " 
-                + (not ? "NOT " : "") + "IN " + (rightExpression == null ? rightItemsList : rightExpression) + "";
+        StringBuilder statementBuilder = new StringBuilder();
+        if (leftExpression == null) {
+            statementBuilder.append(leftItemsList);
+        } else {
+            statementBuilder.append(getLeftExpressionString());
+        }
+
+        statementBuilder.append(" ");
+        if (not) {
+            statementBuilder.append("NOT ");
+        }
+
+        statementBuilder.append("IN ");
+
+        if (multiExpressionList != null) {
+            statementBuilder.append("(");
+            statementBuilder.append(multiExpressionList);
+            statementBuilder.append(")");
+        } else {
+            if (rightExpression == null ) {
+                statementBuilder.append(rightItemsList);
+            } else {
+              statementBuilder.append(rightExpression);
+            }
+        }
+
+        return statementBuilder.toString();
     }
 
     @Override
@@ -109,5 +135,13 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         if (priorPosition != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
             throw new IllegalArgumentException("unexpected prior for oracle found");
         }
+    }
+
+    public MultiExpressionList getMultiExpressionList() {
+        return multiExpressionList;
+    }
+
+    public void setMultiExpressionList(MultiExpressionList multiExpressionList) {
+        this.multiExpressionList = multiExpressionList;
     }
 }

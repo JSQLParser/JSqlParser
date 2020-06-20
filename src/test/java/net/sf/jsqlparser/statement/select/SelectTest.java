@@ -2319,11 +2319,42 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
-//    @Test
-//    public void testMultiValueIn3() throws JSQLParserException {
-//        String stmt = "SELECT * FROM mytable WHERE (SSN,SSM) IN (('11111111111111', '22222222222222'))";
-//        assertSqlCanBeParsedAndDeparsed(stmt);
-//    }
+    @Test
+    public void testMultiValueIn3() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE (SSN, SSM) IN (('11111111111111', '22222222222222'))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testMultiValueIn_withAnd() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE (SSN, SSM) IN (('11111111111111', '22222222222222')) AND 1 = 1";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testMultiValueIn4() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE (a, b) IN ((1, 2), (3, 4), (5, 6), (7, 8))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testMultiValueInBinds() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE (a, b) IN ((?, ?), (?, ?))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testMultiValueNotInBinds() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE (a, b) NOT IN ((?, ?), (?, ?))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testMultiValueIn_NTuples() throws JSQLParserException {
+        String stmt = "SELECT * FROM mytable WHERE (a, b, c, d, e) IN ((1, 2, 3, 4, 5), (6, 7, 8, 9, 10), (11, 12, 13, 14, 15))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
     @Test
     public void testPivot1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable PIVOT (count(a) FOR b IN ('val1'))";
