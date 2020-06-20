@@ -4124,4 +4124,9 @@ public class SelectTest {
     public void testPreserveAndOperator() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE 1 = 2 && 2 = 3");
     }
+    
+    @Test
+    public void testPreserveAndOperator_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (field_1 && ?)");
+    }
 }
