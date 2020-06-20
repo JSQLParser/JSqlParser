@@ -25,7 +25,7 @@ public class ExplainTest {
 
     @Test
     public void testAnalyze() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("EXPLAIN ANALYZE TRUE SELECT * FROM mytable");
+        assertSqlCanBeParsedAndDeparsed("EXPLAIN ANALYZE SELECT * FROM mytable");
     }
 
     @Test
@@ -36,6 +36,11 @@ public class ExplainTest {
     @Test
     public void testCosts() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("EXPLAIN COSTS SELECT * FROM mytable");
+    }
+
+    @Test
+    public void testFormat() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("EXPLAIN FORMAT XML SELECT * FROM mytable");
     }
 
     @Test
