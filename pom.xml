@@ -91,6 +91,7 @@
                     <target>1.8</target>
                     <showWarnings>true</showWarnings>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
             <plugin>

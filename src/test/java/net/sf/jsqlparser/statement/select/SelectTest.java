@@ -3434,7 +3434,7 @@ public class SelectTest {
     public void testAndOperator() throws JSQLParserException {
         String stmt = "SELECT name from customers where name = 'John' && lastname = 'Doh'";
         Statement parsed = parserManager.parse(new StringReader(stmt));
-        assertStatementCanBeDeparsedAs(parsed, "SELECT name FROM customers WHERE name = 'John' AND lastname = 'Doh'");
+        assertStatementCanBeDeparsedAs(parsed, "SELECT name FROM customers WHERE name = 'John' && lastname = 'Doh'");
     }
 
     @Test
@@ -4118,5 +4118,10 @@ public class SelectTest {
     @Test
     public void testKeyWordView() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ma.m_a_id, ma.anounsment, ma.max_view, ma.end_date, ma.view FROM member_anounsment as ma WHERE ( ( (ma.end_date > now() ) AND (ma.max_view >= ma.view) ) AND ( (ma.member_id='xxx') ) )", true);
+    }
+    
+    @Test
+    public void testPreserveAndOperator() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE 1 = 2 && 2 = 3");
     }
 }

@@ -98,7 +98,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(AndExpression andExpression) {
-        visitBinaryExpression(andExpression, " AND ");
+        visitBinaryExpression(andExpression, andExpression.isUseOperator()?" && ":" AND ");
     }
 
     @Override

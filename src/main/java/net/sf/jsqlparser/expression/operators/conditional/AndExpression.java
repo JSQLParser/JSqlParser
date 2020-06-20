@@ -14,10 +14,19 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class AndExpression extends BinaryExpression {
-
+    private boolean useOperator = false;
+    
     public AndExpression(Expression leftExpression, Expression rightExpression) {
         setLeftExpression(leftExpression);
         setRightExpression(rightExpression);
+    }
+    
+    public void setUseOperator(boolean useOperator) {
+        this.useOperator = useOperator;
+    }
+    
+    public boolean isUseOperator() {
+        return useOperator;
     }
 
     @Override
@@ -27,6 +36,6 @@ public class AndExpression extends BinaryExpression {
 
     @Override
     public String getStringExpression() {
-        return "AND";
+        return useOperator?"&&":"AND";
     }
 }

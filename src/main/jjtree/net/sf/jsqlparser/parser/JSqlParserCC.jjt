@@ -2415,7 +2415,8 @@ Expression AndExpression() :
     { result = left; }
 
     (
-         (<K_AND> | <K_AND_OPERATOR>)
+        { boolean useOperator = false; }
+         (<K_AND> | <K_AND_OPERATOR> {useOperator=true;} )
         (
         LOOKAHEAD(Condition())
             right=Condition()
@@ -2425,6 +2426,7 @@ Expression AndExpression() :
         )
         {
             result = new AndExpression(left, right);
+            ((AndExpression)result).setUseOperator(useOperator);
             left = result;
         }
     )*
