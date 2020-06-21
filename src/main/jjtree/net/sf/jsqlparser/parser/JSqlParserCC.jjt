@@ -313,7 +313,6 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_THEN:"THEN">
 |   <K_TEMP:"TEMP">
 |   <K_TEMPORARY:"TEMPORARY">
-|   <K_TEXT:"TEXT">
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
 |   <K_TO:"TO">
 |   <K_TOP:"TOP">
@@ -652,7 +651,9 @@ ExplainStatement Explain(): {
     {
        ExplainStatement es = new ExplainStatement(select);
        if(options != null && !options.isEmpty()) {
-         es.setOptions(options);
+         for(ExplainStatement.Option o : options) {
+           es.addOption(o);
+         }
        }
        return es;
     }
@@ -681,7 +682,8 @@ String ExplainFormatOption():
   Token tk = null;
 }
 {
-   [( tk=<K_TEXT> | tk=<K_XML> | tk=<K_JSON> | tk=<K_YAML>)] // optional
+   // TODO support Text
+   [( tk=<K_XML> | tk=<K_JSON> | tk=<K_YAML> )] // optional
    {
     return tk != null ? tk.image : null;
    }

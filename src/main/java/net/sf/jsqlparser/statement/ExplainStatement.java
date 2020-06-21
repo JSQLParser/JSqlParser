@@ -11,7 +11,7 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.select.Select;
 
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class ExplainStatement implements Statement {
 
     private Select select;
-    private List<Option> options;
+    private LinkedHashMap<OptionType, Option> options;
 
     public ExplainStatement(Select select) {
         this.select = select;
@@ -34,12 +34,16 @@ public class ExplainStatement implements Statement {
         this.select = select;
     }
 
-    public List<Option> getOptions() {
-        return options;
+    public LinkedHashMap<OptionType, Option> getOptions() {
+        return options == null ? null : new LinkedHashMap<>(options);
     }
 
-    public void setOptions(List<Option> options) {
-        this.options = options;
+    public void addOption(Option option) {
+        if (options == null) {
+            options = new LinkedHashMap<>();
+        }
+
+        options.put(option.getType(), option);
     }
 
     /**
@@ -47,13 +51,11 @@ public class ExplainStatement implements Statement {
      * @param optionType the option type to retrieve an Option for
      * @return an option of that type, or null. In case of duplicate options, the first found option will be returned.
      */
-    public Option getOption(OptionType optionType)
-    {
+    public Option getOption(OptionType optionType) {
         if (options == null) {
           return null;
         }
-
-        return options.stream().filter(o -> o.getType() == optionType).findFirst().orElse(null);
+        return options.get(optionType);
     }
 
     @Override
@@ -61,7 +63,7 @@ public class ExplainStatement implements Statement {
         StringBuilder statementBuilder = new StringBuilder("EXPLAIN");
         if (options != null) {
             statementBuilder.append(" ");
-            statementBuilder.append(options.stream().map(Option::formatOption).collect(Collectors.joining(" ")));
+            statementBuilder.append(options.values().stream().map(Option::formatOption).collect(Collectors.joining(" ")));
         }
 
         statementBuilder.append(" ");

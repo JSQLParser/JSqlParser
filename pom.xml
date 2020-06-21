@@ -415,21 +415,11 @@
             </build>
         </profile>
         <profile>
-            <id>skip.tests</id>
-            <properties>
-                <maven.test.skip>true</maven.test.skip>
-            </properties>
-        </profile>
-        <profile>
-            <id>skip.checks</id>
-            <properties>
-                <checkstyle.skip>true</checkstyle.skip>
-                <maven.javadoc.skip>true</maven.javadoc.skip>
-                <license.skipUpdateLicense>true</license.skipUpdateLicense>
-            </properties>
-        </profile>
-        <profile>
+            <!-- for building the parser with debug flags -->
             <id>skip.all</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
             <properties>
                 <maven.test.skip>true</maven.test.skip>
                 <checkstyle.skip>true</checkstyle.skip>

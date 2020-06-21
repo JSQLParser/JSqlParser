@@ -268,7 +268,7 @@ public class StatementDeParser implements StatementVisitor {
     public void visit(ExplainStatement explain) {
         buffer.append("EXPLAIN ");
         if (explain.getOptions() != null) {
-            buffer.append(explain.getOptions().stream().map(ExplainStatement.Option::formatOption).collect(Collectors.joining(" ")));
+            buffer.append(explain.getOptions().values().stream().map(ExplainStatement.Option::formatOption).collect(Collectors.joining(" ")));
             buffer.append(" ");
         }
         explain.getStatement().accept(this);
