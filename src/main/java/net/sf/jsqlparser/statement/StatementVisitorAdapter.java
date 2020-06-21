@@ -175,4 +175,8 @@ public class StatementVisitorAdapter implements StatementVisitor {
     @Override
     public void visit(AlterSequence alterSequence) {
     }
+
+    @Override
+    public void visit(CreateFunctionalStatement createFunctionalStatement) {
+    }
 }

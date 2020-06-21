@@ -94,4 +94,6 @@ public interface StatementVisitor {
     void visit(CreateSequence createSequence);
 
     void visit(AlterSequence alterSequence);
+
+    void visit(CreateFunctionalStatement createFunctionalStatement);
 }

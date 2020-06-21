@@ -10,18 +10,8 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
-import net.sf.jsqlparser.statement.Block;
-import net.sf.jsqlparser.statement.Commit;
-import net.sf.jsqlparser.statement.DeclareStatement;
-import net.sf.jsqlparser.statement.DescribeStatement;
-import net.sf.jsqlparser.statement.ExplainStatement;
-import net.sf.jsqlparser.statement.SetStatement;
-import net.sf.jsqlparser.statement.ShowColumnsStatement;
-import net.sf.jsqlparser.statement.ShowStatement;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.Statements;
-import net.sf.jsqlparser.statement.UseStatement;
+
+import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -298,5 +288,10 @@ public class StatementDeParser implements StatementVisitor {
     @Override
     public void visit(AlterSequence alterSequence) {
         new AlterSequenceDeParser(buffer).deParse(alterSequence);
+    }
+
+    @Override
+    public void visit(CreateFunctionalStatement createFunctionalStatement) {
+        buffer.append(createFunctionalStatement.toString());
     }
 }
