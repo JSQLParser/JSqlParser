@@ -11,9 +11,16 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.select.Select;
 
+import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
+
+/**
+ * An {@code EXPLAIN} statement
+ */
 public class ExplainStatement implements Statement {
 
     private Select select;
+    private LinkedHashMap<OptionType, Option> options;
 
     public ExplainStatement(Select select) {
         this.select = select;
@@ -27,13 +34,79 @@ public class ExplainStatement implements Statement {
         this.select = select;
     }
 
+    public LinkedHashMap<OptionType, Option> getOptions() {
+        return options == null ? null : new LinkedHashMap<>(options);
+    }
+
+    public void addOption(Option option) {
+        if (options == null) {
+            options = new LinkedHashMap<>();
+        }
+
+        options.put(option.getType(), option);
+    }
+
+    /**
+     * Returns the first option that matches this optionType
+     * @param optionType the option type to retrieve an Option for
+     * @return an option of that type, or null. In case of duplicate options, the first found option will be returned.
+     */
+    public Option getOption(OptionType optionType) {
+        if (options == null) {
+          return null;
+        }
+        return options.get(optionType);
+    }
+
     @Override
     public String toString() {
-        return "EXPLAIN " + select.toString();
+        StringBuilder statementBuilder = new StringBuilder("EXPLAIN");
+        if (options != null) {
+            statementBuilder.append(" ");
+            statementBuilder.append(options.values().stream().map(Option::formatOption).collect(Collectors.joining(" ")));
+        }
+
+        statementBuilder.append(" ");
+        statementBuilder.append(select.toString());
+        return statementBuilder.toString();
     }
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
+    }
+
+    public enum OptionType {
+        ANALYZE,
+        VERBOSE,
+        COSTS,
+        BUFFERS,
+        FORMAT
+    }
+
+    public static class Option {
+
+        private final OptionType type;
+        private String value;
+
+        public Option(OptionType type) {
+            this.type = type;
+        }
+
+        public OptionType getType() {
+            return type;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public String formatOption() {
+            return type.name() + (value != null ? (" " + value) : "");
+        }
     }
 }
