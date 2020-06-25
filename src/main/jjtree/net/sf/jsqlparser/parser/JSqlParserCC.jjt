@@ -124,6 +124,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ALGORITHM: "ALGORITHM">
 |   <K_ALL:"ALL">
 |   <K_ALTER:"ALTER">
+|   <K_ANALYZE:"ANALYZE">
 |   <K_AND:"AND">
 |   <K_AND_OPERATOR:"&&">
 |   <K_ANY:"ANY">
@@ -138,6 +139,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_BOTH:"BOTH">
 |   <K_BY:"BY">
 |   <K_CACHE: "CACHE">
+|   <K_BUFFERS: "BUFFERS">
 |   <K_BYTE: "BYTE">
 |   <K_CALL : "CALL">
 |   <K_CASCADE: "CASCADE">
@@ -155,6 +157,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_COMMENT:"COMMENT">
 |   <K_CONNECT:"CONNECT">
 |   <K_CONSTRAINT:"CONSTRAINT">
+|   <K_COSTS: "COSTS">
 |   <K_CREATE:"CREATE">
 |   <K_CROSS:"CROSS">
 |   <K_CURRENT: "CURRENT">
@@ -194,6 +197,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_FOR:"FOR">
 |   <K_FORCE : "FORCE">
 |   <K_FOREIGN:"FOREIGN">
+|   <K_FORMAT:"FORMAT">
 |   <K_FROM:"FROM">
 |   <K_FULL:"FULL">
 |   <K_FULLTEXT:"FULLTEXT">
@@ -223,6 +227,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_IS:"IS">
 |   <K_ISNULL:"ISNULL">
 |   <K_JOIN:"JOIN">
+|   <K_JSON:"JSON">
 |   <K_KEEP:"KEEP">
 |   <K_KEY:"KEY">
 |   <K_FN:"FN">
@@ -259,6 +264,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_NULLS: "NULLS">
 |   <K_NOWAIT: "NOWAIT">
 |   <K_OF:"OF">
+|   <K_OFF:"OFF">
 |   <K_OFFSET:"OFFSET">
 |   <K_ON:"ON">
 |   <K_ONLY:"ONLY">
@@ -336,6 +342,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_VALUE:"VALUE">
 |   <K_VALUES:"VALUES">
 |   <K_VARYING:"VARYING">
+|   <K_VERBOSE: "VERBOSE">
 |   <K_VIEW:"VIEW">
 |   <K_WAIT : "WAIT">
 |   <K_WHEN:"WHEN">
@@ -345,6 +352,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WITHIN:"WITHIN">
 |   <K_WITHOUT:"WITHOUT">
 |   <K_XML:"XML">
+|   <K_YAML:"YAML">
 |   <K_ZONE:"ZONE">
 }
 
@@ -642,11 +650,107 @@ DescribeStatement Describe(): {
 
 ExplainStatement Explain(): {
     Select select;
+    List<ExplainStatement.Option> options = null;
 } {
-    <K_EXPLAIN> select = Select()
+    <K_EXPLAIN>
+    options=ExplainStatementOptions()
+    select = Select()
     {
-        return new ExplainStatement(select);
+       ExplainStatement es = new ExplainStatement(select);
+       if(options != null && !options.isEmpty()) {
+         for(ExplainStatement.Option o : options) {
+           es.addOption(o);
+         }
+       }
+       return es;
     }
+}
+
+/**
+ * Postgres supports TRUE,ON,1,FALSE,OFF,0 as values
+ */
+String ExplainOptionBoolean():
+{
+  Token tk = null;
+}
+{
+   // intentionally not supporting 0,1 at the moment
+   [( tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_ON> | tk=<K_OFF> )] // optional
+   {
+    return tk != null ? tk.image : null;
+   }
+}
+
+/**
+ * The output format, which can be TEXT, XML, JSON, or YAML
+ */
+String ExplainFormatOption():
+{
+  Token tk = null;
+}
+{
+   // TODO support Text
+   [( tk=<K_XML> | tk=<K_JSON> | tk=<K_YAML> )] // optional
+   {
+    return tk != null ? tk.image : null;
+   }
+}
+
+/**
+ * Options for explain, see https://www.postgresql.org/docs/9.1/sql-explain.html
+ */
+List<ExplainStatement.Option> ExplainStatementOptions():
+{
+  List<ExplainStatement.Option> options = new ArrayList<ExplainStatement.Option>();
+  ExplainStatement.Option option = null;
+  Token token = null;
+  String value = null;
+}
+{
+  (
+    (<K_ANALYZE> value=ExplainOptionBoolean()
+     {
+       option = new ExplainStatement.Option(ExplainStatement.OptionType.ANALYZE);
+       option.setValue(value);
+       options.add(option);
+     }
+    )
+    |
+    (<K_BUFFERS> value=ExplainOptionBoolean()
+      {
+        option = new ExplainStatement.Option(ExplainStatement.OptionType.BUFFERS);
+        option.setValue(value);
+        options.add(option);
+      }
+    )
+    |
+    (<K_COSTS> value=ExplainOptionBoolean()
+      {
+        option = new ExplainStatement.Option(ExplainStatement.OptionType.COSTS);
+        option.setValue(value);
+        options.add(option);
+      }
+    )
+    |
+    (<K_VERBOSE> value=ExplainOptionBoolean()
+      {
+        option = new ExplainStatement.Option(ExplainStatement.OptionType.VERBOSE);
+        option.setValue(value);
+        options.add(option);
+      }
+    )
+    |
+    (<K_FORMAT> value=ExplainFormatOption()
+      {
+        option = new ExplainStatement.Option(ExplainStatement.OptionType.FORMAT);
+        option.setValue(value);
+        options.add(option);
+      }
+    )
+  )* //zero or many times those productions
+  {
+    return options;
+  }
 }
 
 UseStatement Use(): {
@@ -1182,7 +1286,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
       | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIZE> | tk=<K_SESSION>
       | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE> | tk=<K_CYCLE>
-/*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
+    /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
 
     { return tk.image; }

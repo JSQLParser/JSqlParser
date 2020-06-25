@@ -11,7 +11,20 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 
-import net.sf.jsqlparser.statement.*;
+import java.util.stream.Collectors;
+
+import net.sf.jsqlparser.statement.Block;
+import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.DeclareStatement;
+import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.ShowColumnsStatement;
+import net.sf.jsqlparser.statement.ShowStatement;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -255,6 +268,10 @@ public class StatementDeParser implements StatementVisitor {
     @Override
     public void visit(ExplainStatement explain) {
         buffer.append("EXPLAIN ");
+        if (explain.getOptions() != null) {
+            buffer.append(explain.getOptions().values().stream().map(ExplainStatement.Option::formatOption).collect(Collectors.joining(" ")));
+            buffer.append(" ");
+        }
         explain.getStatement().accept(this);
     }
 
