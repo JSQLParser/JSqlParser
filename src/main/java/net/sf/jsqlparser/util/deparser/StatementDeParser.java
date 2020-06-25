@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
+
 import java.util.stream.Collectors;
 
 import net.sf.jsqlparser.statement.Block;
@@ -304,5 +305,10 @@ public class StatementDeParser implements StatementVisitor {
     @Override
     public void visit(AlterSequence alterSequence) {
         new AlterSequenceDeParser(buffer).deParse(alterSequence);
+    }
+
+    @Override
+    public void visit(CreateFunctionalStatement createFunctionalStatement) {
+        buffer.append(createFunctionalStatement.toString());
     }
 }

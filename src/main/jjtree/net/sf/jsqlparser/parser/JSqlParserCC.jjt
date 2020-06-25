@@ -39,7 +39,9 @@ import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.alter.sequence.*;
 import net.sf.jsqlparser.statement.comment.*;
+import net.sf.jsqlparser.statement.create.function.*;
 import net.sf.jsqlparser.statement.create.index.*;
+import net.sf.jsqlparser.statement.create.procedure.*;
 import net.sf.jsqlparser.statement.create.schema.*;
 import net.sf.jsqlparser.statement.create.sequence.*;
 import net.sf.jsqlparser.statement.create.table.*;
@@ -199,6 +201,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_FROM:"FROM">
 |   <K_FULL:"FULL">
 |   <K_FULLTEXT:"FULLTEXT">
+|   <K_FUNCTION:"FUNCTION">
 |   <K_GLOBAL:"GLOBAL">
 |   <K_GRANT:"GRANT">
 |   <K_GROUP:"GROUP">
@@ -280,6 +283,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PRECISION : "PRECISION">
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PRIOR:"PRIOR">
+|   <K_PROCEDURE:"PROCEDURE">
 |   <K_RANGE: "RANGE">
 |   <K_READ: "READ" >
 |   <K_RECURSIVE:"RECURSIVE">
@@ -457,6 +461,9 @@ Statement SingleStatement() :
         stm = AlterTable()
         |
         stm = Merge()
+        |
+        LOOKAHEAD(CreateFunctionStatement())
+        stm = CreateFunctionStatement()
         |
         LOOKAHEAD(CreateIndex())
         stm = CreateIndex()
@@ -1322,7 +1329,7 @@ String RelObjectNameExt():
 {
     ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
         | tk=<K_DOUBLE> | tk=<K_IF> | <K_OPTIMIZE> | tk=<K_LIMIT>
-        | tk=<K_OFFSET> )
+        | tk=<K_OFFSET> | tk=<K_PROCEDURE> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -4965,4 +4972,45 @@ AlterSequence AlterSequence():
   {
     return alterSequence;
   }
+}
+
+CreateFunctionalStatement CreateFunctionStatement():
+{
+  CreateFunctionalStatement type = null;
+  List<String> tokens = new LinkedList<String>();
+  String statementType = null;
+}
+{
+  <K_CREATE>
+  (
+   <K_FUNCTION> { statementType = "FUNCTION"; }
+   |
+   <K_PROCEDURE> { statementType = "PROCEDURE"; }
+  )
+  tokens=captureRest()
+  {
+    if(statementType.equals("FUNCTION")) {
+      type = new CreateFunction(tokens);
+    }
+    if(statementType.equals("PROCEDURE")) {
+      type = new CreateProcedure(tokens);
+    }
+
+    return type;
+  }
+}
+
+JAVACODE
+List<String> captureRest() {
+  List<String> tokens = new LinkedList<String>();
+  Token tok;
+  while(true) {
+    tok = getToken(1);
+    if(tok.kind == EOF) {
+      break;
+    }
+    tokens.add(tok.image);
+    tok = getNextToken();
+  }
+  return tokens;
 }
