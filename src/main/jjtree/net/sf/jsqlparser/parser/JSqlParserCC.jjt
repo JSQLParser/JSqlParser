@@ -2992,13 +2992,11 @@ Expression SimpleExpression():
     Expression retval = null;
 }
 {
-  (
-        retval=ConcatExpression()
-  )
-
-   {
-      return retval;
-   }
+    [ LOOKAHEAD(UserVariable() "=") UserVariable() "=" ]
+    retval=ConcatExpression()
+    {
+        return retval;
+    }
 }
 
 Expression ConcatExpression():
@@ -3560,6 +3558,9 @@ RowConstructor RowConstructor(): {
     }
 }
 
+/**
+TODO: VariableExpression should be a standalone class with more operations available. 
+*/
 EqualsTo VariableExpression(): {
     Expression left;
     Expression right;
