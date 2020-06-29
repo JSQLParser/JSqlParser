@@ -24,6 +24,15 @@ public abstract class CreateFunctionalStatement implements Statement {
         this.functionDeclarationParts = functionDeclarationParts;
     }
 
+    public CreateFunctionalStatement functionDeclarationParts(List<String> functionDeclarationParts) {
+        setFunctionDeclarationParts(functionDeclarationParts);
+        return this;
+    }
+
+    public void setFunctionDeclarationParts(List<String> functionDeclarationParts) {
+        this.functionDeclarationParts = functionDeclarationParts;
+    }
+
     /**
      * @return the declaration parts after {@code CREATE FUNCTION|PROCEDURE}
      */
@@ -39,7 +48,8 @@ public abstract class CreateFunctionalStatement implements Statement {
     }
 
     /**
-     * @return a whitespace appended String with the declaration parts with some minimal formatting.
+     * @return a whitespace appended String with the declaration parts with some
+     *         minimal formatting.
      */
     public String formatDeclaration() {
         StringBuilder declaration = new StringBuilder();
@@ -52,7 +62,7 @@ public abstract class CreateFunctionalStatement implements Statement {
             // if the next token is a ; don't put a space
             if (currIndex + 1 < functionDeclarationParts.size()) {
                 // peek ahead just to format nicely
-                String nextToken = functionDeclarationParts.get(currIndex+1);
+                String nextToken = functionDeclarationParts.get(currIndex + 1);
                 if (!nextToken.equals(";")) {
                     declaration.append(" ");
                 }

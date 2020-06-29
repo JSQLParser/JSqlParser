@@ -12,18 +12,25 @@ package net.sf.jsqlparser.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import net.sf.jsqlparser.expression.*;
+
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.MySQLIndexHint;
+import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.IntoTableVisitor;
+import net.sf.jsqlparser.statement.select.Pivot;
+import net.sf.jsqlparser.statement.select.UnPivot;
 
 /**
  * A table. It can have an alias and the schema name it belongs to.
  */
 public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName {
 
-//    private Database database;
-//    private String schemaName;
-//    private String name;
+    // private Database database;
+    // private String schemaName;
+    // private String name;
     private static final int NAME_IDX = 0;
     private static final int SCHEMA_IDX = 1;
     private static final int DATABASE_IDX = 2;
@@ -64,6 +71,11 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return new Database(getIndex(DATABASE_IDX));
     }
 
+    public Table database(Database database) {
+        setDatabase(database);
+        return this;
+    }
+
     public void setDatabase(Database database) {
         setIndex(DATABASE_IDX, database.getDatabaseName());
         if (database.getServer() != null) {
@@ -75,12 +87,22 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return getIndex(SCHEMA_IDX);
     }
 
+    public Table schemaName(String string) {
+        setSchemaName(string);
+        return this;
+    }
+
     public void setSchemaName(String string) {
         setIndex(SCHEMA_IDX, string);
     }
 
     public String getName() {
         return getIndex(NAME_IDX);
+    }
+
+    public Table name(String string) {
+        setName(string);
+        return this;
     }
 
     public void setName(String string) {
@@ -164,6 +186,11 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return mysqlHints;
     }
 
+    public Table hint(MySQLIndexHint hint) {
+        setHint(hint);
+        return this;
+    }
+
     public void setHint(MySQLIndexHint hint) {
         this.mysqlHints = hint;
     }
@@ -172,16 +199,34 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return sqlServerHints;
     }
 
+    public Table sqlServerHints(SQLServerHints sqlServerHints) {
+        setSqlServerHints(sqlServerHints);
+        return this;
+    }
+
     public void setSqlServerHints(SQLServerHints sqlServerHints) {
         this.sqlServerHints = sqlServerHints;
     }
 
     @Override
+    public Table alias(Alias alias) {
+        return (Table) FromItem.super.alias(alias);
+    }
+
+    @Override
+    public Table pivot(Pivot pivot) {
+        return (Table) FromItem.super.pivot(pivot);
+    }
+
+    @Override
+    public Table unPivot(UnPivot unpivot) {
+        return (Table) FromItem.super.unPivot(unpivot);
+    }
+
+    @Override
     public String toString() {
-        return getFullyQualifiedName()
-                + ((alias != null) ? alias.toString() : "")
-                + ((pivot != null) ? " " + pivot : "")
-                + ((unpivot != null) ? " " + unpivot : "")
+        return getFullyQualifiedName() + ((alias != null) ? alias.toString() : "")
+                + ((pivot != null) ? " " + pivot : "") + ((unpivot != null) ? " " + unpivot : "")
                 + ((mysqlHints != null) ? mysqlHints.toString() : "")
                 + ((sqlServerHints != null) ? sqlServerHints.toString() : "");
     }

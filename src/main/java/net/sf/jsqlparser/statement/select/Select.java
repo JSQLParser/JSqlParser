@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -27,6 +28,11 @@ public class Select implements Statement {
 
     public SelectBody getSelectBody() {
         return selectBody;
+    }
+
+    public Select selectBody(SelectBody body) {
+        setSelectBody(body);
+        return this;
     }
 
     public void setSelectBody(SelectBody body) {
@@ -55,7 +61,21 @@ public class Select implements Statement {
         return withItemsList;
     }
 
+    public Select withItemsList(List<WithItem> withItemsList) {
+        setWithItemsList(withItemsList);
+        return this;
+    }
+
     public void setWithItemsList(List<WithItem> withItemsList) {
         this.withItemsList = withItemsList;
     }
+
+    public static Select create() {
+        return new Select();
+    }
+
+    public <T extends SelectBody> T getSelectBody(Class<T> type) {
+        return Optional.ofNullable(selectBody).map(type::cast).orElseGet(null);
+    }
+
 }

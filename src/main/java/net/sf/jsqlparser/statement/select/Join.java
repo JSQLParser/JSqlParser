@@ -37,6 +37,11 @@ public class Join extends ASTNodeAccessImpl {
         return simple;
     }
 
+    public Join simple(boolean b) {
+        setSimple(b);
+        return this;
+    }
+
     public void setSimple(boolean b) {
         simple = b;
     }
@@ -45,12 +50,22 @@ public class Join extends ASTNodeAccessImpl {
         return inner;
     }
 
+    public Join inner(boolean b) {
+        setInner(b);
+        return this;
+    }
+
     public void setInner(boolean b) {
         inner = b;
     }
 
     public boolean isStraight() {
         return straight;
+    }
+
+    public Join straight(boolean b) {
+        setStraight(b);
+        return this;
     }
 
     public void setStraight(boolean b) {
@@ -66,12 +81,22 @@ public class Join extends ASTNodeAccessImpl {
         return outer;
     }
 
+    public Join outer(boolean b) {
+        setOuter(b);
+        return this;
+    }
+
     public void setOuter(boolean b) {
         outer = b;
     }
 
     public boolean isApply() {
         return apply;
+    }
+
+    public Join apply(boolean apply) {
+        setApply(apply);
+        return this;
     }
 
     public void setApply(boolean apply) {
@@ -87,6 +112,11 @@ public class Join extends ASTNodeAccessImpl {
         return semi;
     }
 
+    public Join semi(boolean b) {
+        setSemi(b);
+        return this;
+    }
+
     public void setSemi(boolean b) {
         semi = b;
     }
@@ -98,6 +128,11 @@ public class Join extends ASTNodeAccessImpl {
      */
     public boolean isLeft() {
         return left;
+    }
+
+    public Join left(boolean b) {
+        setLeft(b);
+        return this;
     }
 
     public void setLeft(boolean b) {
@@ -113,6 +148,11 @@ public class Join extends ASTNodeAccessImpl {
         return right;
     }
 
+    public Join right(boolean b) {
+        setRight(b);
+        return this;
+    }
+
     public void setRight(boolean b) {
         right = b;
     }
@@ -124,6 +164,11 @@ public class Join extends ASTNodeAccessImpl {
      */
     public boolean isNatural() {
         return natural;
+    }
+
+    public Join natural(boolean b) {
+        setNatural(b);
+        return this;
     }
 
     public void setNatural(boolean b) {
@@ -139,12 +184,22 @@ public class Join extends ASTNodeAccessImpl {
         return full;
     }
 
+    public Join full(boolean b) {
+        setFull(b);
+        return this;
+    }
+
     public void setFull(boolean b) {
         full = b;
     }
 
     public boolean isCross() {
         return cross;
+    }
+
+    public Join cross(boolean cross) {
+        setCross(cross);
+        return this;
     }
 
     public void setCross(boolean cross) {
@@ -158,6 +213,11 @@ public class Join extends ASTNodeAccessImpl {
         return rightItem;
     }
 
+    public Join rightItem(FromItem item) {
+        setRightItem(item);
+        return this;
+    }
+
     public void setRightItem(FromItem item) {
         rightItem = item;
     }
@@ -169,6 +229,11 @@ public class Join extends ASTNodeAccessImpl {
         return onExpression;
     }
 
+    public Join onExpression(Expression expression) {
+        setOnExpression(expression);
+        return this;
+    }
+
     public void setOnExpression(Expression expression) {
         onExpression = expression;
     }
@@ -178,6 +243,11 @@ public class Join extends ASTNodeAccessImpl {
      */
     public List<Column> getUsingColumns() {
         return usingColumns;
+    }
+
+    public Join usingColumns(List<Column> list) {
+        setUsingColumns(list);
+        return this;
     }
 
     public void setUsingColumns(List<Column> list) {
@@ -193,6 +263,11 @@ public class Join extends ASTNodeAccessImpl {
      */
     public KSQLJoinWindow getJoinWindow() {
         return joinWindow;
+    }
+
+    public Join joinWindow(KSQLJoinWindow joinWindow) {
+        setJoinWindow(joinWindow);
+        return this;
     }
 
     public void setJoinWindow(KSQLJoinWindow joinWindow) {
@@ -241,5 +316,9 @@ public class Join extends ASTNodeAccessImpl {
                     + PlainSelect.getFormatedList(usingColumns, "USING", true, true);
         }
 
+    }
+
+    public static Join create() {
+        return new Join();
     }
 }

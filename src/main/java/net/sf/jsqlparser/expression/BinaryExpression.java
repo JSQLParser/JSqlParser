@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Optional;
+
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
@@ -19,41 +21,59 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
 
     private Expression leftExpression;
     private Expression rightExpression;
-//    private boolean not = false;
+    // private boolean not = false;
 
     public BinaryExpression() {
     }
+    
+    public <E extends Expression> E getLeftExpression(Class<E> type) {
+      return Optional.ofNullable(leftExpression).map(type::cast).orElseGet(null);
+  }
 
     public Expression getLeftExpression() {
         return leftExpression;
+    }
+
+    public <E extends Expression> E getRightExpression(Class<E> type) {
+        return Optional.ofNullable(rightExpression).map(type::cast).orElseGet(null);
     }
 
     public Expression getRightExpression() {
         return rightExpression;
     }
 
+    public BinaryExpression leftExpression(Expression expression) {
+        setLeftExpression(expression);
+        return this;
+    }
+
     public void setLeftExpression(Expression expression) {
         leftExpression = expression;
+    }
+
+    public BinaryExpression rightExpression(Expression expression) {
+        setRightExpression(expression);
+        return this;
     }
 
     public void setRightExpression(Expression expression) {
         rightExpression = expression;
     }
 
-//    public void setNot() {
-//        not = true;
-//    }
-//    
-//    public void removeNot() {
-//        not = false;
-//    }
-// 
-//    public boolean isNot() {
-//        return not;
-//    }
+    // public void setNot() {
+    // not = true;
+    // }
+    //
+    // public void removeNot() {
+    // not = false;
+    // }
+    //
+    // public boolean isNot() {
+    // return not;
+    // }
     @Override
     public String toString() {
-        return //(not ? "NOT " : "") + 
+        return // (not ? "NOT " : "") +
                 getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
     }
 

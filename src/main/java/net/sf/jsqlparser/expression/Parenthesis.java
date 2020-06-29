@@ -42,4 +42,8 @@ public class Parenthesis extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return "(" + expression + ")";
     }
+
+    public static Parenthesis create(Expression expression) {
+        return new Parenthesis(expression);
+    }
 }

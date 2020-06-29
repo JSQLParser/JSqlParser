@@ -9,12 +9,20 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import net.sf.jsqlparser.expression.Expression;
+
 public abstract class ComparisonOperator extends OldOracleJoinBinaryExpression {
 
     private final String operator;
 
     public ComparisonOperator(String operator) {
         this.operator = operator;
+    }
+
+    public ComparisonOperator(String operator, Expression left, Expression right) {
+        this(operator);
+        setLeftExpression(left);
+        setRightExpression(right);
     }
 
     @Override

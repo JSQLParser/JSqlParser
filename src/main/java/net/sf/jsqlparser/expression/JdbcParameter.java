@@ -52,4 +52,8 @@ public class JdbcParameter extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return useFixedIndex ? "?" + index : "?";
     }
+
+    public static JdbcParameter create() {
+        return new JdbcParameter();
+    }
 }

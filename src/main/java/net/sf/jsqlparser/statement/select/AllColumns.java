@@ -25,4 +25,8 @@ public class AllColumns extends ASTNodeAccessImpl implements SelectItem {
     public String toString() {
         return "*";
     }
+
+    public static AllColumns create() {
+        return new AllColumns();
+    }
 }

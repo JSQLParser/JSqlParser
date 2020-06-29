@@ -27,12 +27,22 @@ public class Alter implements Statement {
         return table;
     }
 
+    public Alter table(Table table) {
+        setTable(table);
+        return this;
+    }
+
     public void setTable(Table table) {
         this.table = table;
     }
 
     public boolean isUseOnly() {
         return useOnly;
+    }
+
+    public Alter useOnly(boolean useOnly) {
+        setUseOnly(useOnly);
+        return this;
     }
 
     public void setUseOnly(boolean useOnly) {

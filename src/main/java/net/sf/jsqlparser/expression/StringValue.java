@@ -11,6 +11,7 @@ package net.sf.jsqlparser.expression;
 
 import java.util.Arrays;
 import java.util.List;
+
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
@@ -32,7 +33,8 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
         if (escapedValue.length() > 2) {
             for (String p : ALLOWED_PREFIXES) {
-                if (escapedValue.length() > p.length() && escapedValue.substring(0, p.length()).equalsIgnoreCase(p) && escapedValue.charAt(p.length()) == '\'') {
+                if (escapedValue.length() > p.length() && escapedValue.substring(0, p.length()).equalsIgnoreCase(p)
+                        && escapedValue.charAt(p.length()) == '\'') {
                     this.prefix = p;
                     value = escapedValue.substring(p.length() + 1, escapedValue.length() - 1);
                     return;
@@ -80,4 +82,9 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return (prefix != null ? prefix : "") + "'" + value + "'";
     }
+
+    public static StringValue create(String string) {
+        return new StringValue(string);
+    }
+
 }

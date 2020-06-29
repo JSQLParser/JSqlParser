@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<fileset-config file-format-version="1.2.0" simple-config="false" sync-formatter="false">
+  <local-check-config name="maven-checkstyle-plugin verify-style" location="file:/C:/Users/MarchartM/Documents/workspace.projects.cobra/.metadata/.plugins/com.basistech.m2e.code.quality.checkstyle/z.JSqlParser_inline_checkstyle.xml" type="remote" description="maven-checkstyle-plugin configuration verify-style">
+    <property name="checkstyle.header.file" value="C:\Users\MarchartM\Documents\workspace.projects.cobra\.metadata\.plugins\org.eclipse.core.resources\.projects\z.JSqlParser\com.basistech.m2e.code.quality.checkstyleConfigurator\checkstyle-header-verify-style.txt"/>
+    <property name="checkstyle.cache.file" value="${project_loc}/target/checkstyle-cachefile"/>
+  </local-check-config>
+  <fileset name="java-sources-verify-style" enabled="true" check-config-name="maven-checkstyle-plugin verify-style" local="true">
+    <file-match-pattern match-pattern="^src/test/java/.*\.java" include-pattern="true"/>
+    <file-match-pattern match-pattern="^src/main/java/.*\.java" include-pattern="true"/>
+    <file-match-pattern match-pattern="^src/main/resources.*\.properties" include-pattern="true"/>
+    <file-match-pattern match-pattern="^src/test/resources/.*\.properties" include-pattern="true"/>
+  </fileset>
+</fileset-config>

@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import java.util.Optional;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -36,13 +38,18 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
         this.oldOracleJoinSyntax = oldOracleJoinSyntax;
         if (oldOracleJoinSyntax < 0 || oldOracleJoinSyntax > 1) {
-            throw new IllegalArgumentException("unexpected join type for oracle found with IN (type=" + oldOracleJoinSyntax + ")");
+            throw new IllegalArgumentException(
+                    "unexpected join type for oracle found with IN (type=" + oldOracleJoinSyntax + ")");
         }
     }
 
     @Override
     public int getOldOracleJoinSyntax() {
         return oldOracleJoinSyntax;
+    }
+
+    public <E extends ItemsList> E getRightItemsList(Class<E> type) {
+        return Optional.ofNullable(rightItemsList).map(type::cast).orElseGet(null);
     }
 
     public ItemsList getRightItemsList() {
@@ -53,8 +60,18 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         return leftExpression;
     }
 
+    public InExpression rightItemsList(ItemsList list) {
+        setRightItemsList(list);
+        return this;
+    }
+
     public final void setRightItemsList(ItemsList list) {
         rightItemsList = list;
+    }
+
+    public InExpression leftExpression(Expression expression) {
+        setLeftExpression(expression);
+        return this;
     }
 
     public final void setLeftExpression(Expression expression) {
@@ -115,10 +132,10 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
             statementBuilder.append(multiExpressionList);
             statementBuilder.append(")");
         } else {
-            if (rightExpression == null ) {
+            if (rightExpression == null) {
                 statementBuilder.append(rightItemsList);
             } else {
-              statementBuilder.append(rightExpression);
+                statementBuilder.append(rightExpression);
             }
         }
 
@@ -144,4 +161,10 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     public void setMultiExpressionList(MultiExpressionList multiExpressionList) {
         this.multiExpressionList = multiExpressionList;
     }
+
+    public static InExpression create() {
+        return new InExpression();
+    }
+
+
 }

@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Function;
+
 public class TableFunction extends FunctionItem implements FromItem {
 
     @Override
@@ -23,6 +26,7 @@ public class TableFunction extends FunctionItem implements FromItem {
 
     @Override
     public void setPivot(Pivot pivot) {
+
     }
 
     @Override
@@ -32,5 +36,17 @@ public class TableFunction extends FunctionItem implements FromItem {
 
     @Override
     public void setUnPivot(UnPivot unpivot) {
+
     }
+
+    @Override
+    public TableFunction alias(Alias alias) {
+        return (TableFunction) FromItem.super.alias(alias);
+    }
+
+    @Override
+    public TableFunction function(Function function) {
+        return (TableFunction) super.function(function);
+    }
+
 }

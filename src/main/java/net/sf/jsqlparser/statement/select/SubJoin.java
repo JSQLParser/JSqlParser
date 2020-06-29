@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import java.util.List;
+
 import net.sf.jsqlparser.expression.Alias;
 
 public class SubJoin implements FromItem {
@@ -27,6 +28,11 @@ public class SubJoin implements FromItem {
 
     public FromItem getLeft() {
         return left;
+    }
+
+    public SubJoin left(FromItem l) {
+        setLeft(l);
+        return this;
     }
 
     public void setLeft(FromItem l) {
@@ -83,8 +89,8 @@ public class SubJoin implements FromItem {
             }
         }
 
-        sb.append(")").append((alias != null) ? (" " + alias.toString()) : "").append((pivot != null) ? " " + pivot : "")
-                .append((unpivot != null) ? " " + unpivot : "");
+        sb.append(")").append((alias != null) ? (" " + alias.toString()) : "")
+                .append((pivot != null) ? " " + pivot : "").append((unpivot != null) ? " " + unpivot : "");
         return sb.toString();
     }
 }

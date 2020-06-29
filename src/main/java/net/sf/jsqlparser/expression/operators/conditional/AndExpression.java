@@ -15,16 +15,20 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class AndExpression extends BinaryExpression {
     private boolean useOperator = false;
-    
+
+    public AndExpression() {
+        // nothing
+    }
+
     public AndExpression(Expression leftExpression, Expression rightExpression) {
         setLeftExpression(leftExpression);
         setRightExpression(rightExpression);
     }
-    
+
     public void setUseOperator(boolean useOperator) {
         this.useOperator = useOperator;
     }
-    
+
     public boolean isUseOperator() {
         return useOperator;
     }
@@ -36,6 +40,11 @@ public class AndExpression extends BinaryExpression {
 
     @Override
     public String getStringExpression() {
-        return useOperator?"&&":"AND";
+        return useOperator ? "&&" : "AND";
     }
+
+    public static AndExpression create(Expression leftExpression, Expression rightExpression) {
+        return new AndExpression(leftExpression, rightExpression);
+    }
+
 }

@@ -9,12 +9,12 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.Alias;
 
 public class ParenthesisFromItem implements FromItem {
 
     private FromItem fromItem;
-    
+
     private Alias alias;
 
     public ParenthesisFromItem() {
@@ -39,7 +39,7 @@ public class ParenthesisFromItem implements FromItem {
 
     @Override
     public String toString() {
-        return "(" + fromItem + ")" + (alias!=null?alias.toString():"");
+        return "(" + fromItem + ")" + (alias != null ? alias.toString() : "");
     }
 
     @Override
@@ -50,6 +50,11 @@ public class ParenthesisFromItem implements FromItem {
     @Override
     public void setAlias(Alias alias) {
         this.alias = alias;
+    }
+
+    @Override
+    public ParenthesisFromItem alias(Alias alias) {
+        return (ParenthesisFromItem) FromItem.super.alias(alias);
     }
 
     @Override
@@ -71,4 +76,5 @@ public class ParenthesisFromItem implements FromItem {
     public void setUnPivot(UnPivot unpivot) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
 }
