@@ -132,4 +132,39 @@ public class CreateView implements Statement {
         }
         return sql.toString();
     }
+
+    public CreateView view(Table view) {
+        this.setView(view);
+        return this;
+    }
+
+    public CreateView select(Select select) {
+        this.setSelect(select);
+        return this;
+    }
+
+    public CreateView orReplace(boolean orReplace) {
+        this.setOrReplace(orReplace);
+        return this;
+    }
+
+    public CreateView columnNames(List<String> columnNames) {
+        this.setColumnNames(columnNames);
+        return this;
+    }
+
+    public CreateView materialized(boolean materialized) {
+        this.setMaterialized(materialized);
+        return this;
+    }
+
+    public CreateView force(ForceOption force) {
+        this.setForce(force);
+        return this;
+    }
+
+    public CreateView withReadOnly(boolean withReadOnly) {
+        this.setWithReadOnly(withReadOnly);
+        return this;
+    }
 }

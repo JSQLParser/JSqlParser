@@ -84,4 +84,24 @@ public class Grant implements Statement {
         }
         return buffer.toString();
     }
+
+    public Grant role(String role) {
+        this.setRole(role);
+        return this;
+    }
+
+    public Grant privileges(List<String> privileges) {
+        this.setPrivileges(privileges);
+        return this;
+    }
+
+    public Grant objectName(String objectName) {
+        this.setObjectName(objectName);
+        return this;
+    }
+
+    public Grant users(List<String> users) {
+        this.setUsers(users);
+        return this;
+    }
 }

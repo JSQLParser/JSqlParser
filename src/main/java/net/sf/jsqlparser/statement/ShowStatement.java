@@ -34,4 +34,9 @@ public class ShowStatement implements Statement {
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
+
+    public ShowStatement name(String name) {
+        this.setName(name);
+        return this;
+    }
 }

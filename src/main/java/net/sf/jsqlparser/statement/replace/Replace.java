@@ -121,4 +121,14 @@ public class Replace implements Statement {
 
         return sql.toString();
     }
+
+    public Replace useValues(boolean useValues) {
+        this.setUseValues(useValues);
+        return this;
+    }
+
+    public Replace useIntoTables(boolean useIntoTables) {
+        this.setUseIntoTables(useIntoTables);
+        return this;
+    }
 }

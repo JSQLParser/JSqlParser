@@ -190,4 +190,24 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
         return ans;
     }
+
+    public Function attribute(Expression attribute) {
+        this.setAttribute(attribute);
+        return this;
+    }
+
+    public Function attributeName(String attributeName) {
+        this.setAttributeName(attributeName);
+        return this;
+    }
+
+    public Function keep(KeepExpression keep) {
+        this.setKeep(keep);
+        return this;
+    }
+
+    public Function ignoreNulls(boolean ignoreNulls) {
+        this.setIgnoreNulls(ignoreNulls);
+        return this;
+    }
 }

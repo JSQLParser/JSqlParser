@@ -52,4 +52,14 @@ public class SignedExpression extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return getSign() + expression.toString();
     }
+
+    public SignedExpression sign(char sign) {
+        this.setSign(sign);
+        return this;
+    }
+
+    public SignedExpression expression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
 }

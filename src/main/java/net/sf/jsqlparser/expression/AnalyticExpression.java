@@ -237,4 +237,59 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     public void setFilterExpression(Expression filterExpression) {
         this.filterExpression = filterExpression;
     }
+
+    public AnalyticExpression name(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public AnalyticExpression expression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
+
+    public AnalyticExpression offset(Expression offset) {
+        this.setOffset(offset);
+        return this;
+    }
+
+    public AnalyticExpression defaultValue(Expression defaultValue) {
+        this.setDefaultValue(defaultValue);
+        return this;
+    }
+
+    public AnalyticExpression allColumns(boolean allColumns) {
+        this.setAllColumns(allColumns);
+        return this;
+    }
+
+    public AnalyticExpression keep(KeepExpression keep) {
+        this.setKeep(keep);
+        return this;
+    }
+
+    public AnalyticExpression type(AnalyticType type) {
+        this.setType(type);
+        return this;
+    }
+
+    public AnalyticExpression distinct(boolean distinct) {
+        this.setDistinct(distinct);
+        return this;
+    }
+
+    public AnalyticExpression ignoreNulls(boolean ignoreNulls) {
+        this.setIgnoreNulls(ignoreNulls);
+        return this;
+    }
+
+    public AnalyticExpression filterExpression(Expression filterExpression) {
+        this.setFilterExpression(filterExpression);
+        return this;
+    }
+
+    public AnalyticExpression windowElement(WindowElement windowElement) {
+        this.setWindowElement(windowElement);
+        return this;
+    }
 }

@@ -120,4 +120,24 @@ public class Delete implements Statement {
         }
         return b.toString();
     }
+
+    public Delete tables(List<Table> tables) {
+        this.setTables(tables);
+        return this;
+    }
+
+    public Delete joins(List<Join> joins) {
+        this.setJoins(joins);
+        return this;
+    }
+
+    public Delete limit(Limit limit) {
+        this.setLimit(limit);
+        return this;
+    }
+
+    public Delete orderByElements(List<OrderByElement> orderByElements) {
+        this.setOrderByElements(orderByElements);
+        return this;
+    }
 }

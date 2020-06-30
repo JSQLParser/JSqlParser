@@ -82,4 +82,24 @@ public class MySQLGroupConcat extends ASTNodeAccessImpl implements Expression {
         b.append(")");
         return b.toString();
     }
+
+    public MySQLGroupConcat expressionList(ExpressionList expressionList) {
+        this.setExpressionList(expressionList);
+        return this;
+    }
+
+    public MySQLGroupConcat distinct(boolean distinct) {
+        this.setDistinct(distinct);
+        return this;
+    }
+
+    public MySQLGroupConcat orderByElements(List<OrderByElement> orderByElements) {
+        this.setOrderByElements(orderByElements);
+        return this;
+    }
+
+    public MySQLGroupConcat separator(String separator) {
+        this.setSeparator(separator);
+        return this;
+    }
 }

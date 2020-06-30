@@ -74,4 +74,19 @@ public class KeepExpression extends ASTNodeAccessImpl implements Expression {
             }
         }
     }
+
+    public KeepExpression name(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public KeepExpression orderByElements(List<OrderByElement> orderByElements) {
+        this.setOrderByElements(orderByElements);
+        return this;
+    }
+
+    public KeepExpression first(boolean first) {
+        this.setFirst(first);
+        return this;
+    }
 }

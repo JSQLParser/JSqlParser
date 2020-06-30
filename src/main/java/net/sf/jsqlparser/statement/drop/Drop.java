@@ -71,4 +71,9 @@ public class Drop implements Statement {
 
         return sql;
     }
+
+    public Drop ifExists(boolean ifExists) {
+        this.setIfExists(ifExists);
+        return this;
+    }
 }

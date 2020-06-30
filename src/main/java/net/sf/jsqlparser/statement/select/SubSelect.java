@@ -131,4 +131,24 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
 
         return retval.toString();
     }
+
+    public SubSelect alias(Alias alias) {
+        this.setAlias(alias);
+        return this;
+    }
+
+    public SubSelect useBrackets(boolean useBrackets) {
+        this.setUseBrackets(useBrackets);
+        return this;
+    }
+
+    public SubSelect withItemsList(List<WithItem> withItemsList) {
+        this.setWithItemsList(withItemsList);
+        return this;
+    }
+
+    public SubSelect pivot(Pivot pivot) {
+        this.setPivot(pivot);
+        return this;
+    }
 }

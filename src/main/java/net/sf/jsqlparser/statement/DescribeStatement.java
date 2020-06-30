@@ -36,4 +36,9 @@ public class DescribeStatement implements Statement {
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
+
+    public DescribeStatement table(Table table) {
+        this.setTable(table);
+        return this;
+    }
 }

@@ -114,6 +114,31 @@ public class SetOperationList implements SelectBody {
         return buffer.toString();
     }
 
+    public SetOperationList brackets(List<Boolean> brackets) {
+        this.setBrackets(brackets);
+        return this;
+    }
+
+    public SetOperationList orderByElements(List<OrderByElement> orderByElements) {
+        this.setOrderByElements(orderByElements);
+        return this;
+    }
+
+    public SetOperationList limit(Limit limit) {
+        this.setLimit(limit);
+        return this;
+    }
+
+    public SetOperationList offset(Offset offset) {
+        this.setOffset(offset);
+        return this;
+    }
+
+    public SetOperationList fetch(Fetch fetch) {
+        this.setFetch(fetch);
+        return this;
+    }
+
     public enum SetOperationType {
 
         INTERSECT,

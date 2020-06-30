@@ -91,4 +91,19 @@ public class CaseExpression extends ASTNodeAccessImpl implements Expression {
                 + PlainSelect.getStringList(whenClauses, false, false) + " "
                 + ((elseExpression != null) ? "ELSE " + elseExpression + " " : "") + "END";
     }
+
+    public CaseExpression switchExpression(Expression switchExpression) {
+        this.setSwitchExpression(switchExpression);
+        return this;
+    }
+
+    public CaseExpression whenClauses(List<WhenClause> whenClauses) {
+        this.setWhenClauses(whenClauses);
+        return this;
+    }
+
+    public CaseExpression elseExpression(Expression elseExpression) {
+        this.setElseExpression(elseExpression);
+        return this;
+    }
 }

@@ -247,5 +247,69 @@ public class Insert implements Statement {
 
         return sql.toString();
     }
-    
+
+    public Insert useValues(boolean useValues) {
+        this.setUseValues(useValues);
+        return this;
+    }
+
+    public Insert select(Select select) {
+        this.setSelect(select);
+        return this;
+    }
+
+    public Insert useSelectBrackets(boolean useSelectBrackets) {
+        this.setUseSelectBrackets(useSelectBrackets);
+        return this;
+    }
+
+    public Insert useDuplicate(boolean useDuplicate) {
+        this.setUseDuplicate(useDuplicate);
+        return this;
+    }
+
+    public Insert duplicateUpdateColumns(List<Column> duplicateUpdateColumns) {
+        this.setDuplicateUpdateColumns(duplicateUpdateColumns);
+        return this;
+    }
+
+    public Insert duplicateUpdateExpressionList(List<Expression> duplicateUpdateExpressionList) {
+        this.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
+        return this;
+    }
+
+    public Insert modifierPriority(InsertModifierPriority modifierPriority) {
+        this.setModifierPriority(modifierPriority);
+        return this;
+    }
+
+    public Insert modifierIgnore(boolean modifierIgnore) {
+        this.setModifierIgnore(modifierIgnore);
+        return this;
+    }
+
+    public Insert returningAllColumns(boolean returningAllColumns) {
+        this.setReturningAllColumns(returningAllColumns);
+        return this;
+    }
+
+    public Insert returningExpressionList(List<SelectExpressionItem> returningExpressionList) {
+        this.setReturningExpressionList(returningExpressionList);
+        return this;
+    }
+
+    public Insert useSet(boolean useSet) {
+        this.setUseSet(useSet);
+        return this;
+    }
+
+    public Insert useSetColumns(List<Column> setColumns) {
+        this.setSetColumns(setColumns);
+        return this;
+    }
+
+    public Insert setExpressionList(List<Expression> setExpressionList) {
+        this.setSetExpressionList(setExpressionList);
+        return this;
+    }
 }

@@ -52,4 +52,9 @@ public class SimilarToExpression extends BinaryExpression {
     public void setEscape(String escape) {
         this.escape = escape;
     }
+
+    public SimilarToExpression escape(String escape) {
+        this.setEscape(escape);
+        return this;
+    }
 }

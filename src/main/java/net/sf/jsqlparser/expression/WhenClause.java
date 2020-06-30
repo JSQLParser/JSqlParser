@@ -29,11 +29,6 @@ public class WhenClause extends ASTNodeAccessImpl implements Expression {
         return thenExpression;
     }
 
-    public WhenClause thenExpression(Expression thenExpression) {
-        setThenExpression(thenExpression);
-        return this;
-    }
-
     public void setThenExpression(Expression thenExpression) {
         this.thenExpression = thenExpression;
     }
@@ -48,14 +43,6 @@ public class WhenClause extends ASTNodeAccessImpl implements Expression {
     /**
      * @param whenExpression The whenExpression to set.
      */
-    public WhenClause whenExpression(Expression whenExpression) {
-        setWhenExpression(whenExpression);
-        return this;
-    }
-
-    /**
-     * @param whenExpression The whenExpression to set.
-     */
     public void setWhenExpression(Expression whenExpression) {
         this.whenExpression = whenExpression;
     }
@@ -63,5 +50,15 @@ public class WhenClause extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         return "WHEN " + whenExpression + " THEN " + thenExpression;
+    }
+
+    public WhenClause whenExpression(Expression whenExpression) {
+        this.setWhenExpression(whenExpression);
+        return this;
+    }
+
+    public WhenClause thenExpression(Expression thenExpression) {
+        this.setThenExpression(thenExpression);
+        return this;
     }
 }

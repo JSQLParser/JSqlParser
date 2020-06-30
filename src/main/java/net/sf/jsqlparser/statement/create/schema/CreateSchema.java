@@ -116,4 +116,19 @@ public class CreateSchema implements Statement {
         }
         return sql;
     }
+
+    public CreateSchema authorization(String authorization) {
+        this.setAuthorization(authorization);
+        return this;
+    }
+
+    public CreateSchema schemaName(String schemaName) {
+        this.setSchemaName(schemaName);
+        return this;
+    }
+
+    public CreateSchema schemaPath(List<String> schemaPath) {
+        this.setSchemaPath(schemaPath);
+        return this;
+    }
 }

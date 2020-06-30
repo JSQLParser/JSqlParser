@@ -12,7 +12,6 @@ package net.sf.jsqlparser.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
@@ -32,16 +31,23 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     // private String schemaName;
     // private String name;
     private static final int NAME_IDX = 0;
+
     private static final int SCHEMA_IDX = 1;
+
     private static final int DATABASE_IDX = 2;
+
     private static final int SERVER_IDX = 3;
 
     private List<String> partItems = new ArrayList<>();
 
     private Alias alias;
+
     private Pivot pivot;
+
     private UnPivot unpivot;
+
     private MySQLIndexHint mysqlHints;
+
     private SQLServerHints sqlServerHints;
 
     public Table() {
@@ -199,23 +205,8 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return sqlServerHints;
     }
 
-    public Table sqlServerHints(SQLServerHints sqlServerHints) {
-        setSqlServerHints(sqlServerHints);
-        return this;
-    }
-
     public void setSqlServerHints(SQLServerHints sqlServerHints) {
         this.sqlServerHints = sqlServerHints;
-    }
-
-    @Override
-    public Table alias(Alias alias) {
-        return (Table) FromItem.super.alias(alias);
-    }
-
-    @Override
-    public Table pivot(Pivot pivot) {
-        return (Table) FromItem.super.pivot(pivot);
     }
 
     @Override
@@ -229,5 +220,20 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
                 + ((pivot != null) ? " " + pivot : "") + ((unpivot != null) ? " " + unpivot : "")
                 + ((mysqlHints != null) ? mysqlHints.toString() : "")
                 + ((sqlServerHints != null) ? sqlServerHints.toString() : "");
+    }
+
+    public Table alias(Alias alias) {
+        this.setAlias(alias);
+        return this;
+    }
+
+    public Table pivot(Pivot pivot) {
+        this.setPivot(pivot);
+        return this;
+    }
+
+    public Table sqlServerHints(SQLServerHints sqlServerHints) {
+        this.setSqlServerHints(sqlServerHints);
+        return this;
     }
 }

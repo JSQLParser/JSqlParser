@@ -55,4 +55,14 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
             return leftExpression + "::" + type.toString();
         }
     }
+
+    public CastExpression type(ColDataType type) {
+        this.setType(type);
+        return this;
+    }
+
+    public CastExpression useCastKeyword(boolean useCastKeyword) {
+        this.setUseCastKeyword(useCastKeyword);
+        return this;
+    }
 }

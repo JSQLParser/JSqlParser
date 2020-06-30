@@ -159,4 +159,34 @@ public class CreateTable implements Statement {
         }
         return sql;
     }
+
+    public CreateTable table(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public CreateTable unlogged(boolean unlogged) {
+        this.setUnlogged(unlogged);
+        return this;
+    }
+
+    public CreateTable createOptionsStrings(List<String> createOptionsStrings) {
+        this.setCreateOptionsStrings(createOptionsStrings);
+        return this;
+    }
+
+    public CreateTable selectParenthesis(boolean selectParenthesis) {
+        this.setSelectParenthesis(selectParenthesis);
+        return this;
+    }
+
+    public CreateTable ifNotExists(boolean ifNotExists) {
+        this.setIfNotExists(ifNotExists);
+        return this;
+    }
+
+    public CreateTable rowMovement(RowMovement rowMovement) {
+        this.setRowMovement(rowMovement);
+        return this;
+    }
 }

@@ -30,4 +30,9 @@ public class Block implements Statement {
     public String toString() {
         return "BEGIN\n" + (statements != null ? statements.toString() : "") + "END";
     }
+
+    public Block statements(Statements statements) {
+        this.setStatements(statements);
+        return this;
+    }
 }

@@ -53,11 +53,6 @@ public class ParenthesisFromItem implements FromItem {
     }
 
     @Override
-    public ParenthesisFromItem alias(Alias alias) {
-        return (ParenthesisFromItem) FromItem.super.alias(alias);
-    }
-
-    @Override
     public Pivot getPivot() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -77,4 +72,14 @@ public class ParenthesisFromItem implements FromItem {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public ParenthesisFromItem fromItem(FromItem fromItem) {
+        this.setFromItem(fromItem);
+        return this;
+    }
+
+    @Override
+    public ParenthesisFromItem alias(Alias alias) {
+        this.setAlias(alias);
+        return this;
+    }
 }

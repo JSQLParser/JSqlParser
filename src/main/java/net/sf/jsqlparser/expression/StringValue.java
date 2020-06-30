@@ -87,4 +87,8 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         return new StringValue(string);
     }
 
+    public StringValue prefix(String prefix) {
+        this.setPrefix(prefix);
+        return this;
+    }
 }

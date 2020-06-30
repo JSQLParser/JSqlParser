@@ -166,5 +166,23 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         return new InExpression();
     }
 
+    public InExpression leftItemsList(ItemsList leftItemsList) {
+        this.setLeftItemsList(leftItemsList);
+        return this;
+    }
 
+    public InExpression rightExpression(Expression rightExpression) {
+        this.setRightExpression(rightExpression);
+        return this;
+    }
+
+    public InExpression multiExpressionList(MultiExpressionList multiExpressionList) {
+        this.setMultiExpressionList(multiExpressionList);
+        return this;
+    }
+
+    public InExpression oldOracleJoinSyntax(int oldOracleJoinSyntax) {
+        this.setOldOracleJoinSyntax(oldOracleJoinSyntax);
+        return this;
+    }
 }

@@ -61,11 +61,6 @@ public class Select implements Statement {
         return withItemsList;
     }
 
-    public Select withItemsList(List<WithItem> withItemsList) {
-        setWithItemsList(withItemsList);
-        return this;
-    }
-
     public void setWithItemsList(List<WithItem> withItemsList) {
         this.withItemsList = withItemsList;
     }
@@ -78,4 +73,8 @@ public class Select implements Statement {
         return Optional.ofNullable(selectBody).map(type::cast).orElseGet(null);
     }
 
+    public Select withItemsList(List<WithItem> withItemsList) {
+        this.setWithItemsList(withItemsList);
+        return this;
+    }
 }
