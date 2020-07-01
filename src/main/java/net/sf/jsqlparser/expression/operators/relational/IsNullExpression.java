@@ -56,4 +56,19 @@ public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
             return leftExpression + " IS " + (not ? "NOT " : "") + "NULL";
         }
     }
+
+    public IsNullExpression useIsNull(boolean useIsNull) {
+        this.setUseIsNull(useIsNull);
+        return this;
+    }
+
+    public IsNullExpression leftExpression(Expression leftExpression) {
+        this.setLeftExpression(leftExpression);
+        return this;
+    }
+
+    public IsNullExpression not(boolean not) {
+        this.setNot(not);
+        return this;
+    }
 }

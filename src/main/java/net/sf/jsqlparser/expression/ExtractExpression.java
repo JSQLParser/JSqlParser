@@ -47,4 +47,14 @@ public class ExtractExpression extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return "EXTRACT(" + name + " FROM " + expression + ')';
     }
+
+    public ExtractExpression name(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public ExtractExpression expression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
 }

@@ -34,4 +34,9 @@ public class UseStatement implements Statement {
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
+
+    public UseStatement name(String name) {
+        this.setName(name);
+        return this;
+    }
 }

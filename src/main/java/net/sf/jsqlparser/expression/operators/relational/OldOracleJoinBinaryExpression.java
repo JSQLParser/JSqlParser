@@ -52,4 +52,14 @@ public abstract class OldOracleJoinBinaryExpression extends BinaryExpression imp
     public void setOraclePriorPosition(int oraclePriorPosition) {
         this.oraclePriorPosition = oraclePriorPosition;
     }
+
+    public OldOracleJoinBinaryExpression oldOracleJoinSyntax(int oldOracleJoinSyntax) {
+        this.setOldOracleJoinSyntax(oldOracleJoinSyntax);
+        return this;
+    }
+
+    public OldOracleJoinBinaryExpression oraclePriorPosition(int oraclePriorPosition) {
+        this.setOraclePriorPosition(oraclePriorPosition);
+        return this;
+    }
 }

@@ -231,4 +231,74 @@ public class Update implements Statement {
 
         return b.toString();
     }
+
+    public Update table(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public Update fromItem(FromItem fromItem) {
+        this.setFromItem(fromItem);
+        return this;
+    }
+
+    public Update joins(List<Join> joins) {
+        this.setJoins(joins);
+        return this;
+    }
+
+    public Update startJoins(List<Join> startJoins) {
+        this.setStartJoins(startJoins);
+        return this;
+    }
+
+    public Update select(Select select) {
+        this.setSelect(select);
+        return this;
+    }
+
+    public Update useColumnsBrackets(boolean useColumnsBrackets) {
+        this.setUseColumnsBrackets(useColumnsBrackets);
+        return this;
+    }
+
+    public Update useSelect(boolean useSelect) {
+        this.setUseSelect(useSelect);
+        return this;
+    }
+
+    public Update orderByElements(List<OrderByElement> orderByElements) {
+        this.setOrderByElements(orderByElements);
+        return this;
+    }
+
+    public Update limit(Limit limit) {
+        this.setLimit(limit);
+        return this;
+    }
+
+    public Update returningAllColumns(boolean returningAllColumns) {
+        this.setReturningAllColumns(returningAllColumns);
+        return this;
+    }
+
+    public Update returningExpressionList(List<SelectExpressionItem> returningExpressionList) {
+        this.setReturningExpressionList(returningExpressionList);
+        return this;
+    }
+
+    public Update where(Expression where) {
+        this.setWhere(where);
+        return this;
+    }
+
+    public Update columns(List<Column> columns) {
+        this.setColumns(columns);
+        return this;
+    }
+
+    public Update expressions(List<Expression> expressions) {
+        this.setExpressions(expressions);
+        return this;
+    }
 }

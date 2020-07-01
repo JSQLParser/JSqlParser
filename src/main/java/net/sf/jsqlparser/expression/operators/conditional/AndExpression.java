@@ -47,4 +47,8 @@ public class AndExpression extends BinaryExpression {
         return new AndExpression(leftExpression, rightExpression);
     }
 
+    public AndExpression useOperator(boolean useOperator) {
+        this.setUseOperator(useOperator);
+        return this;
+    }
 }

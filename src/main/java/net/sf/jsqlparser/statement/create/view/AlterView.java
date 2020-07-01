@@ -76,4 +76,24 @@ public class AlterView implements Statement {
         sql.append(" AS ").append(selectBody);
         return sql.toString();
     }
+
+    public AlterView view(Table view) {
+        this.setView(view);
+        return this;
+    }
+
+    public AlterView selectBody(SelectBody selectBody) {
+        this.setSelectBody(selectBody);
+        return this;
+    }
+
+    public AlterView useReplace(boolean useReplace) {
+        this.setUseReplace(useReplace);
+        return this;
+    }
+
+    public AlterView columnNames(List<String> columnNames) {
+        this.setColumnNames(columnNames);
+        return this;
+    }
 }

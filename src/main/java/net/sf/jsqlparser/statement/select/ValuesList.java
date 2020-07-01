@@ -116,4 +116,24 @@ public class ValuesList implements FromItem {
     public void setColumnNames(List<String> columnNames) {
         this.columnNames = columnNames;
     }
+
+    public ValuesList alias(Alias alias) {
+        this.setAlias(alias);
+        return this;
+    }
+
+    public ValuesList multiExpressionList(MultiExpressionList multiExpressionList) {
+        this.setMultiExpressionList(multiExpressionList);
+        return this;
+    }
+
+    public ValuesList noBrackets(boolean noBrackets) {
+        this.setNoBrackets(noBrackets);
+        return this;
+    }
+
+    public ValuesList columnNames(List<String> columnNames) {
+        this.setColumnNames(columnNames);
+        return this;
+    }
 }

@@ -61,4 +61,19 @@ public class LikeExpression extends BinaryExpression {
     public void setCaseInsensitive(boolean caseInsensitive) {
         this.caseInsensitive = caseInsensitive;
     }
+
+    public LikeExpression escape(String escape) {
+        this.setEscape(escape);
+        return this;
+    }
+
+    public LikeExpression caseInsensitive(boolean caseInsensitive) {
+        this.setCaseInsensitive(caseInsensitive);
+        return this;
+    }
+
+    public LikeExpression not(boolean not) {
+        this.setNot(not);
+        return this;
+    }
 }

@@ -66,4 +66,24 @@ public class WithItem implements SelectBody {
     public void accept(SelectVisitor visitor) {
         visitor.visit(this);
     }
+
+    public WithItem name(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public WithItem withItemList(List<SelectItem> withItemList) {
+        this.setWithItemList(withItemList);
+        return this;
+    }
+
+    public WithItem selectBody(SelectBody selectBody) {
+        this.setSelectBody(selectBody);
+        return this;
+    }
+
+    public WithItem recursive(boolean recursive) {
+        this.setRecursive(recursive);
+        return this;
+    }
 }

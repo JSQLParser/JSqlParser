@@ -50,4 +50,9 @@ public class ValuesStatement implements Statement, SelectBody {
     public void accept(SelectVisitor selectVisitor) {
         selectVisitor.visit(this);
     }
+
+    public ValuesStatement expressions(List<Expression> expressions) {
+        this.setExpressions(expressions);
+        return this;
+    }
 }

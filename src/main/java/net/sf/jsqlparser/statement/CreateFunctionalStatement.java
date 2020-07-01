@@ -24,11 +24,6 @@ public abstract class CreateFunctionalStatement implements Statement {
         this.functionDeclarationParts = functionDeclarationParts;
     }
 
-    public CreateFunctionalStatement functionDeclarationParts(List<String> functionDeclarationParts) {
-        setFunctionDeclarationParts(functionDeclarationParts);
-        return this;
-    }
-
     public void setFunctionDeclarationParts(List<String> functionDeclarationParts) {
         this.functionDeclarationParts = functionDeclarationParts;
     }
@@ -81,5 +76,10 @@ public abstract class CreateFunctionalStatement implements Statement {
     @Override
     public String toString() {
         return "CREATE " + kind + " " + formatDeclaration();
+    }
+
+    public CreateFunctionalStatement functionDeclarationParts(List<String> functionDeclarationParts) {
+        this.setFunctionDeclarationParts(functionDeclarationParts);
+        return this;
     }
 }

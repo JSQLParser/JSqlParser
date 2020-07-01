@@ -108,9 +108,18 @@ public final class DeclareStatement implements Statement {
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor
-    ) {
+    public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
+    }
+
+    public DeclareStatement userVariable(UserVariable userVariable) {
+        this.setUserVariable(userVariable);
+        return this;
+    }
+
+    public DeclareStatement typeName(String typeName) {
+        this.setTypeName(typeName);
+        return this;
     }
 
     public static class TypeDefExpr {

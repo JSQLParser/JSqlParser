@@ -56,4 +56,19 @@ public class IsBooleanExpression extends ASTNodeAccessImpl implements Expression
             return leftExpression + " IS" + (not ? " NOT" : "") + " FALSE";
         }
     }
+
+    public IsBooleanExpression isTrue(boolean isTrue) {
+        this.setIsTrue(isTrue);
+        return this;
+    }
+
+    public IsBooleanExpression leftExpression(Expression leftExpression) {
+        this.setLeftExpression(leftExpression);
+        return this;
+    }
+
+    public IsBooleanExpression not(boolean not) {
+        this.setNot(not);
+        return this;
+    }
 }

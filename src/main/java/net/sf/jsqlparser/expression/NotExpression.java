@@ -54,4 +54,14 @@ public class NotExpression extends ASTNodeAccessImpl implements Expression {
     public void setExclamationMark(boolean exclamationMark) {
         this.exclamationMark = exclamationMark;
     }
+
+    public NotExpression expression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
+
+    public NotExpression exclamationMark(boolean exclamationMark) {
+        this.setExclamationMark(exclamationMark);
+        return this;
+    }
 }

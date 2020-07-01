@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -56,11 +55,6 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     public boolean isUseBrackets() {
         return useBrackets;
-    }
-
-    public PlainSelect useBrackets(boolean useBrackets) {
-        setUseBrackets(useBrackets);
-        return this;
     }
 
     public void setUseBrackets(boolean useBrackets) {
@@ -115,11 +109,6 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return selectItems(list);
     }
 
-    public PlainSelect where(Expression where) {
-        setWhere(where);
-        return this;
-    }
-
     public void setWhere(Expression where) {
         this.where = where;
     }
@@ -161,22 +150,12 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return orderByElements;
     }
 
-    public PlainSelect orderByElements(List<OrderByElement> orderByElements) {
-        setOrderByElements(orderByElements);
-        return this;
-    }
-
     public void setOrderByElements(List<OrderByElement> orderByElements) {
         this.orderByElements = orderByElements;
     }
 
     public Limit getLimit() {
         return limit;
-    }
-
-    public PlainSelect limit(Limit limit) {
-        setLimit(limit);
-        return this;
     }
 
     public void setLimit(Limit limit) {
@@ -187,22 +166,12 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return offset;
     }
 
-    public PlainSelect offset(Offset offset) {
-        setOffset(offset);
-        return this;
-    }
-
     public void setOffset(Offset offset) {
         this.offset = offset;
     }
 
     public Fetch getFetch() {
         return fetch;
-    }
-
-    public PlainSelect fetch(Fetch fetch) {
-        setFetch(fetch);
-        return this;
     }
 
     public void setFetch(Fetch fetch) {
@@ -213,22 +182,12 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return optimizeFor;
     }
 
-    public PlainSelect optimizeFor(OptimizeFor optimizeFor) {
-        setOptimizeFor(optimizeFor);
-        return this;
-    }
-
     public void setOptimizeFor(OptimizeFor optimizeFor) {
         this.optimizeFor = optimizeFor;
     }
 
     public Top getTop() {
         return top;
-    }
-
-    public PlainSelect top(Top top) {
-        setTop(top);
-        return this;
     }
 
     public void setTop(Top top) {
@@ -239,22 +198,12 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return skip;
     }
 
-    public PlainSelect skip(Skip skip) {
-        setSkip(skip);
-        return this;
-    }
-
     public void setSkip(Skip skip) {
         this.skip = skip;
     }
 
     public boolean getMySqlHintStraightJoin() {
         return this.mySqlHintStraightJoin;
-    }
-
-    public PlainSelect mySqlHintStraightJoin(boolean mySqlHintStraightJoin) {
-        setMySqlHintStraightJoin(mySqlHintStraightJoin);
-        return this;
     }
 
     public void setMySqlHintStraightJoin(boolean mySqlHintStraightJoin) {
@@ -602,11 +551,6 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return this.sqlNoCacheFlag;
     }
 
-    public PlainSelect noWait(boolean noWait) {
-        setNoWait(noWait);
-        return this;
-    }
-
     public void setNoWait(boolean noWait) {
         this.noWait = noWait;
     }
@@ -621,5 +565,120 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     public <T extends Expression> T getWhere(Class<T> type) {
         return Optional.ofNullable(where).map(type::cast).orElseGet(null);
+    }
+
+    public PlainSelect distinct(Distinct distinct) {
+        this.setDistinct(distinct);
+        return this;
+    }
+
+    public PlainSelect intoTables(List<Table> intoTables) {
+        this.setIntoTables(intoTables);
+        return this;
+    }
+
+    public PlainSelect where(Expression where) {
+        this.setWhere(where);
+        return this;
+    }
+
+    public PlainSelect orderByElements(List<OrderByElement> orderByElements) {
+        this.setOrderByElements(orderByElements);
+        return this;
+    }
+
+    public PlainSelect limit(Limit limit) {
+        this.setLimit(limit);
+        return this;
+    }
+
+    public PlainSelect offset(Offset offset) {
+        this.setOffset(offset);
+        return this;
+    }
+
+    public PlainSelect fetch(Fetch fetch) {
+        this.setFetch(fetch);
+        return this;
+    }
+
+    public PlainSelect optimizeFor(OptimizeFor optimizeFor) {
+        this.setOptimizeFor(optimizeFor);
+        return this;
+    }
+
+    public PlainSelect skip(Skip skip) {
+        this.setSkip(skip);
+        return this;
+    }
+
+    public PlainSelect mySqlHintStraightJoin(boolean mySqlHintStraightJoin) {
+        this.setMySqlHintStraightJoin(mySqlHintStraightJoin);
+        return this;
+    }
+
+    public PlainSelect first(First first) {
+        this.setFirst(first);
+        return this;
+    }
+
+    public PlainSelect top(Top top) {
+        this.setTop(top);
+        return this;
+    }
+
+    public PlainSelect oracleHierarchical(OracleHierarchicalExpression oracleHierarchical) {
+        this.setOracleHierarchical(oracleHierarchical);
+        return this;
+    }
+
+    public PlainSelect oracleHint(OracleHint oracleHint) {
+        this.setOracleHint(oracleHint);
+        return this;
+    }
+
+    public PlainSelect oracleSiblings(boolean oracleSiblings) {
+        this.setOracleSiblings(oracleSiblings);
+        return this;
+    }
+
+    public PlainSelect forUpdate(boolean forUpdate) {
+        this.setForUpdate(forUpdate);
+        return this;
+    }
+
+    public PlainSelect forUpdateTable(Table forUpdateTable) {
+        this.setForUpdateTable(forUpdateTable);
+        return this;
+    }
+
+    public PlainSelect useBrackets(boolean useBrackets) {
+        this.setUseBrackets(useBrackets);
+        return this;
+    }
+
+    public PlainSelect forXmlPath(String forXmlPath) {
+        this.setForXmlPath(forXmlPath);
+        return this;
+    }
+
+    public PlainSelect ksqlWindow(KSQLWindow ksqlWindow) {
+        this.setKsqlWindow(ksqlWindow);
+        return this;
+    }
+
+    public PlainSelect noWait(boolean noWait) {
+        this.setNoWait(noWait);
+        return this;
+    }
+
+    public PlainSelect having(Expression having) {
+        this.setHaving(having);
+        return this;
+    }
+
+    public PlainSelect wait(Wait wait) {
+        this.setWait(wait);
+        return this;
     }
 }

@@ -71,4 +71,24 @@ public class Drop implements Statement {
 
         return sql;
     }
+
+    public Drop ifExists(boolean ifExists) {
+        this.setIfExists(ifExists);
+        return this;
+    }
+
+    public Drop type(String type) {
+        this.setType(type);
+        return this;
+    }
+
+    public Drop name(Table name) {
+        this.setName(name);
+        return this;
+    }
+
+    public Drop parameters(List<String> parameters) {
+        this.setParameters(parameters);
+        return this;
+    }
 }

@@ -150,5 +150,48 @@ public class Upsert implements Statement {
         return sb.toString();
     }
 
-}
+    public Upsert useValues(boolean useValues) {
+        this.setUseValues(useValues);
+        return this;
+    }
 
+    public Upsert select(Select select) {
+        this.setSelect(select);
+        return this;
+    }
+
+    public Upsert useSelectBrackets(boolean useSelectBrackets) {
+        this.setUseSelectBrackets(useSelectBrackets);
+        return this;
+    }
+
+    public Upsert useDuplicate(boolean useDuplicate) {
+        this.setUseDuplicate(useDuplicate);
+        return this;
+    }
+
+    public Upsert duplicateUpdateColumns(List<Column> duplicateUpdateColumns) {
+        this.setDuplicateUpdateColumns(duplicateUpdateColumns);
+        return this;
+    }
+
+    public Upsert duplicateUpdateExpressionList(List<Expression> duplicateUpdateExpressionList) {
+        this.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
+        return this;
+    }
+
+    public Upsert table(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public Upsert columns(List<Column> columns) {
+        this.setColumns(columns);
+        return this;
+    }
+
+    public Upsert itemsList(ItemsList itemsList) {
+        this.setItemsList(itemsList);
+        return this;
+    }
+}

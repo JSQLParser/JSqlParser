@@ -9,14 +9,13 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import java.util.Iterator;
+import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
-
-import java.util.Iterator;
-import java.util.List;
 
 public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
 
@@ -72,5 +71,20 @@ public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
 
         return "MATCH (" + columnsListCommaSeperated + ") AGAINST (" + this._againstValue +
                 (this._searchModifier != null ? " " + this._searchModifier : "") + ")";
+    }
+
+    public FullTextSearch matchColumns(List<Column> matchColumns) {
+        this.setMatchColumns(matchColumns);
+        return this;
+    }
+
+    public FullTextSearch againstValue(StringValue againstValue) {
+        this.setAgainstValue(againstValue);
+        return this;
+    }
+
+    public FullTextSearch searchModifier(String searchModifier) {
+        this.setSearchModifier(searchModifier);
+        return this;
     }
 }

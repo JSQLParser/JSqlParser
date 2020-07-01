@@ -61,4 +61,19 @@ public class Comment implements Statement {
         sql += "IS " + comment;
         return sql;
     }
+
+    public Comment table(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public Comment column(Column column) {
+        this.setColumn(column);
+        return this;
+    }
+
+    public Comment comment(StringValue comment) {
+        this.setComment(comment);
+        return this;
+    }
 }

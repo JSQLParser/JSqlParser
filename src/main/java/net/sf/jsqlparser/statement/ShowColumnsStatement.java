@@ -34,4 +34,9 @@ public class ShowColumnsStatement implements Statement {
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
+
+    public ShowColumnsStatement tableName(String tableName) {
+        this.setTableName(tableName);
+        return this;
+    }
 }

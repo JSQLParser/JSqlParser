@@ -22,22 +22,12 @@ public class FunctionItem implements Model {
         return alias;
     }
 
-    public FunctionItem alias(Alias alias) {
-        setAlias(alias);
-        return this;
-    }
-
     public void setAlias(Alias alias) {
         this.alias = alias;
     }
 
     public Function getFunction() {
         return function;
-    }
-
-    public FunctionItem function(Function function) {
-        setFunction(function);
-        return this;
     }
 
     public void setFunction(Function function) {
@@ -47,5 +37,15 @@ public class FunctionItem implements Model {
     @Override
     public String toString() {
         return function + ((alias != null) ? alias.toString() : "");
+    }
+
+    public FunctionItem function(Function function) {
+        this.setFunction(function);
+        return this;
+    }
+
+    public FunctionItem alias(Alias alias) {
+        this.setAlias(alias);
+        return this;
     }
 }

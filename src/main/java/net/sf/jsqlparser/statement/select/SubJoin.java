@@ -93,4 +93,19 @@ public class SubJoin implements FromItem {
                 .append((pivot != null) ? " " + pivot : "").append((unpivot != null) ? " " + unpivot : "");
         return sb.toString();
     }
+
+    public SubJoin alias(Alias alias) {
+        this.setAlias(alias);
+        return this;
+    }
+
+    public SubJoin pivot(Pivot pivot) {
+        this.setPivot(pivot);
+        return this;
+    }
+
+    public SubJoin joinList(List<Join> joinList) {
+        this.setJoinList(joinList);
+        return this;
+    }
 }

@@ -44,4 +44,14 @@ public class UserVariable extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return "@" + (doubleAdd ? "@" : "") + name;
     }
+
+    public UserVariable name(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public UserVariable doubleAdd(boolean doubleAdd) {
+        this.setDoubleAdd(doubleAdd);
+        return this;
+    }
 }
