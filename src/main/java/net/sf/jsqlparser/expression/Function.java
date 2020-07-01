@@ -210,4 +210,24 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         this.setIgnoreNulls(ignoreNulls);
         return this;
     }
+
+    public Function parameters(ExpressionList parameters) {
+        this.setParameters(parameters);
+        return this;
+    }
+
+    public Function namedParameters(NamedExpressionList namedParameters) {
+        this.setNamedParameters(namedParameters);
+        return this;
+    }
+
+    public Function allColumns(boolean allColumns) {
+        this.setAllColumns(allColumns);
+        return this;
+    }
+
+    public Function distinct(boolean distinct) {
+        this.setDistinct(distinct);
+        return this;
+    }
 }

@@ -65,4 +65,9 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
         this.setUseCastKeyword(useCastKeyword);
         return this;
     }
+
+    public CastExpression leftExpression(Expression leftExpression) {
+        this.setLeftExpression(leftExpression);
+        return this;
+    }
 }

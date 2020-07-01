@@ -189,4 +189,19 @@ public class CreateTable implements Statement {
         this.setRowMovement(rowMovement);
         return this;
     }
+
+    public CreateTable tableOptionsStrings(List<String> tableOptionsStrings) {
+        this.setTableOptionsStrings(tableOptionsStrings);
+        return this;
+    }
+
+    public CreateTable columnDefinitions(List<ColumnDefinition> columnDefinitions) {
+        this.setColumnDefinitions(columnDefinitions);
+        return this;
+    }
+
+    public CreateTable indexes(List<Index> indexes) {
+        this.setIndexes(indexes);
+        return this;
+    }
 }

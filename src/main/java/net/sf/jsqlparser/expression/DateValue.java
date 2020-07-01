@@ -41,4 +41,9 @@ public class DateValue extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return "{d '" + value.toString() + "'}";
     }
+
+    public DateValue value(Date value) {
+        this.setValue(value);
+        return this;
+    }
 }

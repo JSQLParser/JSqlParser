@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.schema;
 
 import java.util.List;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -123,6 +122,11 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
 
     public Column table(Table table) {
         this.setTable(table);
+        return this;
+    }
+
+    public Column columnName(String columnName) {
+        this.setColumnName(columnName);
         return this;
     }
 }

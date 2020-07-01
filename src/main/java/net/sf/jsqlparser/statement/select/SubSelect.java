@@ -151,4 +151,9 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
         this.setPivot(pivot);
         return this;
     }
+
+    public SubSelect selectBody(SelectBody selectBody) {
+        this.setSelectBody(selectBody);
+        return this;
+    }
 }

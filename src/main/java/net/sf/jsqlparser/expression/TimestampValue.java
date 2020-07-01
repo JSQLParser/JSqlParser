@@ -49,4 +49,9 @@ public class TimestampValue extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return "{ts '" + value + "'}";
     }
+
+    public TimestampValue value(Timestamp value) {
+        this.setValue(value);
+        return this;
+    }
 }

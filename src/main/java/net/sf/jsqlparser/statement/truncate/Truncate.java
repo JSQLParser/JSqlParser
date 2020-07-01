@@ -51,4 +51,9 @@ public class Truncate implements Statement {
         this.setTable(table);
         return this;
     }
+
+    public Truncate cascade(boolean cascade) {
+        this.setCascade(cascade);
+        return this;
+    }
 }

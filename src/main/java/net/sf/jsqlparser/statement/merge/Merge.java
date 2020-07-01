@@ -166,4 +166,14 @@ public class Merge implements Statement {
         this.setInsertFirst(insertFirst);
         return this;
     }
+
+    public Merge table(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public Merge mergeInsert(MergeInsert mergeInsert) {
+        this.setMergeInsert(mergeInsert);
+        return this;
+    }
 }

@@ -71,4 +71,9 @@ public class LikeExpression extends BinaryExpression {
         this.setCaseInsensitive(caseInsensitive);
         return this;
     }
+
+    public LikeExpression not(boolean not) {
+        this.setNot(not);
+        return this;
+    }
 }

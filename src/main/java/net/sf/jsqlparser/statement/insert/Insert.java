@@ -156,27 +156,27 @@ public class Insert implements Statement {
     public void setModifierIgnore(boolean modifierIgnore) {
         this.modifierIgnore = modifierIgnore;
     }
-    
+
     public void setUseSet(boolean useSet) {
         this.useSet = useSet;
     }
-    
+
     public boolean isUseSet() {
         return useSet;
     }
-    
+
     public void setSetColumns(List<Column> setColumns) {
         this.setColumns = setColumns;
     }
-    
+
     public List<Column> getSetColumns() {
         return setColumns;
     }
-    
+
     public void setSetExpressionList(List<Expression> setExpressionList) {
         this.setExpressionList = setExpressionList;
     }
-    
+
     public List<Expression> getSetExpressionList() {
         return setExpressionList;
     }
@@ -310,6 +310,21 @@ public class Insert implements Statement {
 
     public Insert setExpressionList(List<Expression> setExpressionList) {
         this.setSetExpressionList(setExpressionList);
+        return this;
+    }
+
+    public Insert table(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public Insert columns(List<Column> columns) {
+        this.setColumns(columns);
+        return this;
+    }
+
+    public Insert itemsList(ItemsList itemsList) {
+        this.setItemsList(itemsList);
         return this;
     }
 }

@@ -179,5 +179,19 @@ public class Upsert implements Statement {
         this.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
         return this;
     }
-}
 
+    public Upsert table(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public Upsert columns(List<Column> columns) {
+        this.setColumns(columns);
+        return this;
+    }
+
+    public Upsert itemsList(ItemsList itemsList) {
+        this.setItemsList(itemsList);
+        return this;
+    }
+}

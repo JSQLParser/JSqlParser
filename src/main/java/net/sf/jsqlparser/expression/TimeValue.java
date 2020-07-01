@@ -41,4 +41,9 @@ public class TimeValue extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return "{t '" + value + "'}";
     }
+
+    public TimeValue value(Time value) {
+        this.setValue(value);
+        return this;
+    }
 }

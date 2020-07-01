@@ -45,4 +45,9 @@ public class DoubleValue extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return stringValue;
     }
+
+    public DoubleValue value(double value) {
+        this.setValue(value);
+        return this;
+    }
 }

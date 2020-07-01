@@ -57,4 +57,9 @@ public class SimilarToExpression extends BinaryExpression {
         this.setEscape(escape);
         return this;
     }
+
+    public SimilarToExpression not(boolean not) {
+        this.setNot(not);
+        return this;
+    }
 }

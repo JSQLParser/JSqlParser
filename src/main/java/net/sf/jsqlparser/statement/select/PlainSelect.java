@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -670,6 +669,16 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     public PlainSelect noWait(boolean noWait) {
         this.setNoWait(noWait);
+        return this;
+    }
+
+    public PlainSelect having(Expression having) {
+        this.setHaving(having);
+        return this;
+    }
+
+    public PlainSelect wait(Wait wait) {
+        this.setWait(wait);
         return this;
     }
 }

@@ -61,4 +61,9 @@ public class LongValue extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return getStringValue();
     }
+
+    public LongValue stringValue(String stringValue) {
+        this.setStringValue(stringValue);
+        return this;
+    }
 }

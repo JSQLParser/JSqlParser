@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.expression.operators.relational;
 
 import java.util.Optional;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -183,6 +182,11 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
 
     public InExpression oldOracleJoinSyntax(int oldOracleJoinSyntax) {
         this.setOldOracleJoinSyntax(oldOracleJoinSyntax);
+        return this;
+    }
+
+    public InExpression not(boolean not) {
+        this.setNot(not);
         return this;
     }
 }

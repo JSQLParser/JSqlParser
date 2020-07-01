@@ -140,4 +140,14 @@ public class Delete implements Statement {
         this.setOrderByElements(orderByElements);
         return this;
     }
+
+    public Delete table(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public Delete where(Expression where) {
+        this.setWhere(where);
+        return this;
+    }
 }

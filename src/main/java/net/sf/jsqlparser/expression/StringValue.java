@@ -91,4 +91,9 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         this.setPrefix(prefix);
         return this;
     }
+
+    public StringValue value(String value) {
+        this.setValue(value);
+        return this;
+    }
 }

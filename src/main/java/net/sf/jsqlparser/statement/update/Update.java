@@ -286,4 +286,19 @@ public class Update implements Statement {
         this.setReturningExpressionList(returningExpressionList);
         return this;
     }
+
+    public Update where(Expression where) {
+        this.setWhere(where);
+        return this;
+    }
+
+    public Update columns(List<Column> columns) {
+        this.setColumns(columns);
+        return this;
+    }
+
+    public Update expressions(List<Expression> expressions) {
+        this.setExpressions(expressions);
+        return this;
+    }
 }
