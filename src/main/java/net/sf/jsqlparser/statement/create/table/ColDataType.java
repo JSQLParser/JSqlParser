@@ -69,4 +69,24 @@ public class ColDataType {
                 + arraySpec.toString()
                 + (characterSet != null ? " CHARACTER SET " + characterSet : "");
     }
+
+    public ColDataType dataType(String dataType) {
+        this.setDataType(dataType);
+        return this;
+    }
+
+    public ColDataType argumentsStringList(List<String> argumentsStringList) {
+        this.setArgumentsStringList(argumentsStringList);
+        return this;
+    }
+
+    public ColDataType characterSet(String characterSet) {
+        this.setCharacterSet(characterSet);
+        return this;
+    }
+
+    public ColDataType arrayData(List<Integer> arrayData) {
+        this.setArrayData(arrayData);
+        return this;
+    }
 }

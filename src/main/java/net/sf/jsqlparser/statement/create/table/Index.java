@@ -97,7 +97,22 @@ public class Index {
         return type + (!name.isEmpty() ? " " + getName() : "") + " " + PlainSelect.
                 getStringList(columns, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
     }
-    
+
+    public Index type(String type) {
+        this.setType(type);
+        return this;
+    }
+
+    public Index using(String using) {
+        this.setUsing(using);
+        return this;
+    }
+
+    public Index name(List<String> name) {
+        this.setName(name);
+        return this;
+    }
+
     public static class ColumnParams {
         public final String columnName;
         public final List<String> params;

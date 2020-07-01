@@ -64,4 +64,19 @@ public class ColumnDefinition {
         return colDataType + ((columnSpecs != null && !columnSpecs.isEmpty())? " " + PlainSelect.
                 getStringList(columnSpecs, false, false) : "");
     }
+
+    public ColumnDefinition columnName(String columnName) {
+        this.setColumnName(columnName);
+        return this;
+    }
+
+    public ColumnDefinition colDataType(ColDataType colDataType) {
+        this.setColDataType(colDataType);
+        return this;
+    }
+
+    public ColumnDefinition columnSpecs(List<String> columnSpecs) {
+        this.setColumnSpecs(columnSpecs);
+        return this;
+    }
 }

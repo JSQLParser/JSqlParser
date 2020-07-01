@@ -41,4 +41,14 @@ public class MergeInsert {
                 + (columns.isEmpty() ? "" : PlainSelect.getStringList(columns, true, true))
                 + " VALUES " + PlainSelect.getStringList(values, true, true);
     }
+
+    public MergeInsert columns(List<Column> columns) {
+        this.setColumns(columns);
+        return this;
+    }
+
+    public MergeInsert values(List<Expression> values) {
+        this.setValues(values);
+        return this;
+    }
 }

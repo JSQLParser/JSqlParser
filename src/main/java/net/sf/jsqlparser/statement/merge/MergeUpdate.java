@@ -70,4 +70,24 @@ public class MergeUpdate {
         }
         return b.toString();
     }
+
+    public MergeUpdate columns(List<Column> columns) {
+        this.setColumns(columns);
+        return this;
+    }
+
+    public MergeUpdate values(List<Expression> values) {
+        this.setValues(values);
+        return this;
+    }
+
+    public MergeUpdate whereCondition(Expression whereCondition) {
+        this.setWhereCondition(whereCondition);
+        return this;
+    }
+
+    public MergeUpdate deleteWhereCondition(Expression deleteWhereCondition) {
+        this.setDeleteWhereCondition(deleteWhereCondition);
+        return this;
+    }
 }

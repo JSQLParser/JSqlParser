@@ -338,6 +338,101 @@ public class AlterExpression {
         return b.toString();
     }
 
+    public AlterExpression operation(AlterOperation operation) {
+        this.setOperation(operation);
+        return this;
+    }
+
+    public AlterExpression optionalSpecifier(String optionalSpecifier) {
+        this.setOptionalSpecifier(optionalSpecifier);
+        return this;
+    }
+
+    public AlterExpression columnName(String columnName) {
+        this.setColumnName(columnName);
+        return this;
+    }
+
+    public AlterExpression pkColumns(List<String> pkColumns) {
+        this.setPkColumns(pkColumns);
+        return this;
+    }
+
+    public AlterExpression ukColumns(List<String> ukColumns) {
+        this.setUkColumns(ukColumns);
+        return this;
+    }
+
+    public AlterExpression ukName(String ukName) {
+        this.setUkName(ukName);
+        return this;
+    }
+
+    public AlterExpression index(Index index) {
+        this.setIndex(index);
+        return this;
+    }
+
+    public AlterExpression constraintName(String constraintName) {
+        this.setConstraintName(constraintName);
+        return this;
+    }
+
+    public AlterExpression constraintIfExists(boolean constraintIfExists) {
+        this.setConstraintIfExists(constraintIfExists);
+        return this;
+    }
+
+    public AlterExpression onDeleteRestrict(boolean onDeleteRestrict) {
+        this.setOnDeleteRestrict(onDeleteRestrict);
+        return this;
+    }
+
+    public AlterExpression onDeleteSetNull(boolean onDeleteSetNull) {
+        this.setOnDeleteSetNull(onDeleteSetNull);
+        return this;
+    }
+
+    public AlterExpression onDeleteCascade(boolean onDeleteCascade) {
+        this.setOnDeleteCascade(onDeleteCascade);
+        return this;
+    }
+
+    public AlterExpression fkColumns(List<String> fkColumns) {
+        this.setFkColumns(fkColumns);
+        return this;
+    }
+
+    public AlterExpression fkSourceTable(String fkSourceTable) {
+        this.setFkSourceTable(fkSourceTable);
+        return this;
+    }
+
+    public AlterExpression fkSourceColumns(List<String> fkSourceColumns) {
+        this.setFkSourceColumns(fkSourceColumns);
+        return this;
+    }
+
+    public AlterExpression uk(boolean uk) {
+        this.setUk(uk);
+        return this;
+    }
+
+    public AlterExpression useEqual(boolean useEqual) {
+        this.setUseEqual(useEqual);
+        return this;
+    }
+
+    public AlterExpression constraints(List<ConstraintState> constraints) {
+        this.setConstraints(constraints);
+        return this;
+    }
+
+    public AlterExpression commentText(String commentText) {
+        this.setCommentText(commentText);
+        return this;
+    }
+
     public final static class ColumnDataType extends ColumnDefinition {
 
         private final boolean withType;

@@ -29,4 +29,9 @@ public class EnableConstraint implements ConstraintState {
     public String toString() {
         return disable ? "DISABLE" : "ENABLE";
     }
+
+    public EnableConstraint disable(boolean disable) {
+        this.setDisable(disable);
+        return this;
+    }
 }

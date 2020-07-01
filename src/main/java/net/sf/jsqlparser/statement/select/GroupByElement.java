@@ -79,4 +79,14 @@ public class GroupByElement {
 
         return b.toString();
     }
+
+    public GroupByElement groupByExpressions(List<Expression> groupByExpressions) {
+        this.setGroupByExpressions(groupByExpressions);
+        return this;
+    }
+
+    public GroupByElement groupingSets(List groupingSets) {
+        this.setGroupingSets(groupingSets);
+        return this;
+    }
 }

@@ -49,4 +49,14 @@ public class Distinct {
 
         return sql;
     }
+
+    public Distinct onSelectItems(List<SelectItem> onSelectItems) {
+        this.setOnSelectItems(onSelectItems);
+        return this;
+    }
+
+    public Distinct useUnique(boolean useUnique) {
+        this.setUseUnique(useUnique);
+        return this;
+    }
 }

@@ -35,4 +35,9 @@ public class Statements {
         }
         return b.toString();
     }
+
+    public Statements statements(List<Statement> statements) {
+        this.setStatements(statements);
+        return this;
+    }
 }

@@ -9,11 +9,10 @@
  */
 package net.sf.jsqlparser.schema;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Represents the database type for a {@code SEQUENCE}
@@ -21,9 +20,13 @@ import java.util.List;
 public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
 
     private static final int NAME_IDX = 0;
+
     private static final int SCHEMA_IDX = 1;
+
     private static final int DATABASE_IDX = 2;
+
     private static final int SERVER_IDX = 3;
+
     private List<String> partItems = new ArrayList<>();
 
     private List<Parameter> parameters;
@@ -90,7 +93,6 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     @Override
     public String getFullyQualifiedName() {
         StringBuilder fqn = new StringBuilder();
-
         for (int i = partItems.size() - 1; i >= 0; i--) {
             String part = partItems.get(i);
             if (part == null) {
@@ -101,7 +103,6 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
                 fqn.append(".");
             }
         }
-
         return fqn.toString();
     }
 
@@ -116,10 +117,16 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         return sql.toString();
     }
 
+    public Sequence parameters(List<Parameter> parameters) {
+        this.setParameters(parameters);
+        return this;
+    }
+
     /**
      * The available parameters to a sequence
      */
     public enum ParameterType {
+
         INCREMENT_BY,
         START_WITH,
         MAXVALUE,
@@ -142,7 +149,9 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
      * Represents a parameter when declaring a sequence
      */
     public static class Parameter {
+
         private final ParameterType option;
+
         private Long value;
 
         public Parameter(ParameterType option) {
@@ -158,7 +167,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         }
 
         public String formatParameter() {
-            switch (option) {
+            switch(option) {
                 case INCREMENT_BY:
                     return withValue("INCREMENT BY");
                 case START_WITH:
@@ -175,6 +184,11 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
 
         private String withValue(String prefix) {
             return prefix + " " + value;
+        }
+
+        public Parameter value(Long value) {
+            this.setValue(value);
+            return this;
         }
     }
 }

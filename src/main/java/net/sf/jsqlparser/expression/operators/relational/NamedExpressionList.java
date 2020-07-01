@@ -73,4 +73,14 @@ public class NamedExpressionList implements ItemsList {
 
         return ret.toString();
     }
+
+    public NamedExpressionList expressions(List<Expression> expressions) {
+        this.setExpressions(expressions);
+        return this;
+    }
+
+    public NamedExpressionList names(List<String> names) {
+        this.setNames(names);
+        return this;
+    }
 }

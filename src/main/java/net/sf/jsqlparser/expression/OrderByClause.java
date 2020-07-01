@@ -35,4 +35,9 @@ public class OrderByClause {
             }
         }
     }
+
+    public OrderByClause orderByElements(List<OrderByElement> orderByElements) {
+        this.setOrderByElements(orderByElements);
+        return this;
+    }
 }

@@ -73,6 +73,21 @@ public class Alias {
         return alias;
     }
 
+    public Alias name(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public Alias useAs(boolean useAs) {
+        this.setUseAs(useAs);
+        return this;
+    }
+
+    public Alias aliasColumns(List<AliasColumn> aliasColumns) {
+        this.setAliasColumns(aliasColumns);
+        return this;
+    }
+
     public static class AliasColumn {
 
         public final String name;

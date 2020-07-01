@@ -79,4 +79,29 @@ public class Pivot {
                 + " IN " + PlainSelect.getStringList(getInItems(), true, true) + ")"
                 + (alias!=null?alias.toString():"");
     }
+
+    public Pivot functionItems(List<FunctionItem> functionItems) {
+        this.setFunctionItems(functionItems);
+        return this;
+    }
+
+    public Pivot forColumns(List<Column> forColumns) {
+        this.setForColumns(forColumns);
+        return this;
+    }
+
+    public Pivot singleInItems(List<SelectExpressionItem> singleInItems) {
+        this.setSingleInItems(singleInItems);
+        return this;
+    }
+
+    public Pivot multiInItems(List<ExpressionListItem> multiInItems) {
+        this.setMultiInItems(multiInItems);
+        return this;
+    }
+
+    public Pivot alias(Alias alias) {
+        this.setAlias(alias);
+        return this;
+    }
 }

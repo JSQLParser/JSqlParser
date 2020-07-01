@@ -32,4 +32,9 @@ public class OptimizeFor {
     public String toString() {
         return " OPTIMIZE FOR " + rowCount + " ROWS";
     }
+
+    public OptimizeFor rowCount(long rowCount) {
+        this.setRowCount(rowCount);
+        return this;
+    }
 }

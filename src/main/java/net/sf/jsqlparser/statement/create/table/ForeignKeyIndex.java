@@ -66,4 +66,24 @@ public class ForeignKeyIndex extends NamedConstraint {
                         getStringList(getReferencedColumnNames(), true, true)
                 + referenceOptions;
     }
+
+    public ForeignKeyIndex table(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public ForeignKeyIndex referencedColumnNames(List<String> referencedColumnNames) {
+        this.setReferencedColumnNames(referencedColumnNames);
+        return this;
+    }
+
+    public ForeignKeyIndex onDeleteReferenceOption(String onDeleteReferenceOption) {
+        this.setOnDeleteReferenceOption(onDeleteReferenceOption);
+        return this;
+    }
+
+    public ForeignKeyIndex onUpdateReferenceOption(String onUpdateReferenceOption) {
+        this.setOnUpdateReferenceOption(onUpdateReferenceOption);
+        return this;
+    }
 }
