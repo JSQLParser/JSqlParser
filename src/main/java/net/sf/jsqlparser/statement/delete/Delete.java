@@ -9,6 +9,12 @@
  */
 package net.sf.jsqlparser.statement.delete;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -17,9 +23,6 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-
-import java.util.List;
-import static java.util.stream.Collectors.joining;
 
 public class Delete implements Statement {
 
@@ -149,5 +152,41 @@ public class Delete implements Statement {
     public Delete where(Expression where) {
         this.setWhere(where);
         return this;
+    }
+
+    public Delete addTables(Table... tables) {
+        List<Table> collection = Optional.ofNullable(getTables()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, tables);
+        return this.tables(collection);
+    }
+
+    public Delete addTables(Collection<? extends Table> tables) {
+        List<Table> collection = Optional.ofNullable(getTables()).orElseGet(ArrayList::new);
+        collection.addAll(tables);
+        return this.tables(collection);
+    }
+
+    public Delete addJoins(Join... joins) {
+        List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, joins);
+        return this.joins(collection);
+    }
+
+    public Delete addJoins(Collection<? extends Join> joins) {
+        List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
+        collection.addAll(joins);
+        return this.joins(collection);
+    }
+
+    public Delete addOrderByElements(OrderByElement... orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, orderByElements);
+        return this.orderByElements(collection);
+    }
+
+    public Delete addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        collection.addAll(orderByElements);
+        return this.orderByElements(collection);
     }
 }

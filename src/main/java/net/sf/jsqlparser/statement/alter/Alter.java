@@ -10,8 +10,11 @@
 package net.sf.jsqlparser.statement.alter;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -97,5 +100,17 @@ public class Alter implements Statement {
     public Alter alterExpressions(List<AlterExpression> alterExpressions) {
         this.setAlterExpressions(alterExpressions);
         return this;
+    }
+
+    public Alter addAlterExpressions(AlterExpression... alterExpressions) {
+        List<AlterExpression> collection = Optional.ofNullable(getAlterExpressions()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, alterExpressions);
+        return this.alterExpressions(collection);
+    }
+
+    public Alter addAlterExpressions(Collection<? extends AlterExpression> alterExpressions) {
+        List<AlterExpression> collection = Optional.ofNullable(getAlterExpressions()).orElseGet(ArrayList::new);
+        collection.addAll(alterExpressions);
+        return this.alterExpressions(collection);
     }
 }

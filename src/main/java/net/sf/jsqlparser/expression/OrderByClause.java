@@ -9,9 +9,12 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.statement.select.OrderByElement;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 
 public class OrderByClause {
     private List<OrderByElement> orderByElements;
@@ -39,5 +42,17 @@ public class OrderByClause {
     public OrderByClause orderByElements(List<OrderByElement> orderByElements) {
         this.setOrderByElements(orderByElements);
         return this;
+    }
+
+    public OrderByClause addOrderByElements(OrderByElement... orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, orderByElements);
+        return this.orderByElements(collection);
+    }
+
+    public OrderByClause addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        collection.addAll(orderByElements);
+        return this.orderByElements(collection);
     }
 }

@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
@@ -78,5 +81,17 @@ public class ColumnDefinition {
     public ColumnDefinition columnSpecs(List<String> columnSpecs) {
         this.setColumnSpecs(columnSpecs);
         return this;
+    }
+
+    public ColumnDefinition addColumnSpecs(String... columnSpecs) {
+        List<String> collection = Optional.ofNullable(getColumnSpecs()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columnSpecs);
+        return this.columnSpecs(collection);
+    }
+
+    public ColumnDefinition addColumnSpecs(Collection<String> columnSpecs) {
+        List<String> collection = Optional.ofNullable(getColumnSpecs()).orElseGet(ArrayList::new);
+        collection.addAll(columnSpecs);
+        return this.columnSpecs(collection);
     }
 }

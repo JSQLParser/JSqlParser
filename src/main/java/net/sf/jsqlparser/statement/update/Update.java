@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.statement.update;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -18,10 +21,10 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
 public class Update implements Statement {
@@ -300,5 +303,77 @@ public class Update implements Statement {
     public Update expressions(List<Expression> expressions) {
         this.setExpressions(expressions);
         return this;
+    }
+
+    public Update addColumns(Column... columns) {
+        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columns);
+        return this.columns(collection);
+    }
+
+    public Update addColumns(Collection<? extends Column> columns) {
+        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        collection.addAll(columns);
+        return this.columns(collection);
+    }
+
+    public Update addExpressions(Expression... expressions) {
+        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, expressions);
+        return this.expressions(collection);
+    }
+
+    public Update addExpressions(Collection<? extends Expression> expressions) {
+        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
+        collection.addAll(expressions);
+        return this.expressions(collection);
+    }
+
+    public Update addJoins(Join... joins) {
+        List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, joins);
+        return this.joins(collection);
+    }
+
+    public Update addJoins(Collection<? extends Join> joins) {
+        List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
+        collection.addAll(joins);
+        return this.joins(collection);
+    }
+
+    public Update addStartJoins(Join... startJoins) {
+        List<Join> collection = Optional.ofNullable(getStartJoins()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, startJoins);
+        return this.startJoins(collection);
+    }
+
+    public Update addStartJoins(Collection<? extends Join> startJoins) {
+        List<Join> collection = Optional.ofNullable(getStartJoins()).orElseGet(ArrayList::new);
+        collection.addAll(startJoins);
+        return this.startJoins(collection);
+    }
+
+    public Update addOrderByElements(OrderByElement... orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, orderByElements);
+        return this.orderByElements(collection);
+    }
+
+    public Update addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        collection.addAll(orderByElements);
+        return this.orderByElements(collection);
+    }
+
+    public Update addReturningExpressionList(SelectExpressionItem... returningExpressionList) {
+        List<SelectExpressionItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, returningExpressionList);
+        return this.returningExpressionList(collection);
+    }
+
+    public Update addReturningExpressionList(Collection<? extends SelectExpressionItem> returningExpressionList) {
+        List<SelectExpressionItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+        collection.addAll(returningExpressionList);
+        return this.returningExpressionList(collection);
     }
 }

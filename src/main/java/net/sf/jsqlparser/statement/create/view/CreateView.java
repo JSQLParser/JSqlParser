@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.create.view;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -166,5 +170,17 @@ public class CreateView implements Statement {
     public CreateView withReadOnly(boolean withReadOnly) {
         this.setWithReadOnly(withReadOnly);
         return this;
+    }
+
+    public CreateView addColumnNames(String... columnNames) {
+        List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columnNames);
+        return this.columnNames(collection);
+    }
+
+    public CreateView addColumnNames(Collection<String> columnNames) {
+        List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
+        collection.addAll(columnNames);
+        return this.columnNames(collection);
     }
 }

@@ -10,8 +10,10 @@
 package net.sf.jsqlparser.schema;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
@@ -120,6 +122,18 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     public Sequence parameters(List<Parameter> parameters) {
         this.setParameters(parameters);
         return this;
+    }
+
+    public Sequence addParameters(Parameter... parameters) {
+        List<Parameter> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, parameters);
+        return this.parameters(collection);
+    }
+
+    public Sequence addParameters(Collection<? extends Parameter> parameters) {
+        List<Parameter> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
+        collection.addAll(parameters);
+        return this.parameters(collection);
     }
 
     /**

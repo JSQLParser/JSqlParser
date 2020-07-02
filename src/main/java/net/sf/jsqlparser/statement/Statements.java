@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class Statements {
 
@@ -39,5 +43,17 @@ public class Statements {
     public Statements statements(List<Statement> statements) {
         this.setStatements(statements);
         return this;
+    }
+
+    public Statements addStatements(Statement... statements) {
+        List<Statement> collection = Optional.ofNullable(getStatements()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, statements);
+        return this.statements(collection);
+    }
+
+    public Statements addStatements(Collection<? extends Statement> statements) {
+        List<Statement> collection = Optional.ofNullable(getStatements()).orElseGet(ArrayList::new);
+        collection.addAll(statements);
+        return this.statements(collection);
     }
 }

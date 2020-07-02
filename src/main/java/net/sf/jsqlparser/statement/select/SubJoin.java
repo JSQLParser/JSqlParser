@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
 
 public class SubJoin implements FromItem {
@@ -107,5 +110,17 @@ public class SubJoin implements FromItem {
     public SubJoin joinList(List<Join> joinList) {
         this.setJoinList(joinList);
         return this;
+    }
+
+    public SubJoin addJoinList(Join... joinList) {
+        List<Join> collection = Optional.ofNullable(getJoinList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, joinList);
+        return this.joinList(collection);
+    }
+
+    public SubJoin addJoinList(Collection<? extends Join> joinList) {
+        List<Join> collection = Optional.ofNullable(getJoinList()).orElseGet(ArrayList::new);
+        collection.addAll(joinList);
+        return this.joinList(collection);
     }
 }

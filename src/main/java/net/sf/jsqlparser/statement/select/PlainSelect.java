@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -680,5 +681,41 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     public PlainSelect wait(Wait wait) {
         this.setWait(wait);
         return this;
+    }
+
+    public PlainSelect addSelectItems(Collection<? extends SelectItem> selectItems) {
+        List<SelectItem> collection = Optional.ofNullable(getSelectItems()).orElseGet(ArrayList::new);
+        collection.addAll(selectItems);
+        return this.selectItems(collection);
+    }
+
+    public PlainSelect addIntoTables(Table... intoTables) {
+        List<Table> collection = Optional.ofNullable(getIntoTables()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, intoTables);
+        return this.intoTables(collection);
+    }
+
+    public PlainSelect addIntoTables(Collection<? extends Table> intoTables) {
+        List<Table> collection = Optional.ofNullable(getIntoTables()).orElseGet(ArrayList::new);
+        collection.addAll(intoTables);
+        return this.intoTables(collection);
+    }
+
+    public PlainSelect addJoins(Collection<? extends Join> joins) {
+        List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
+        collection.addAll(joins);
+        return this.joins(collection);
+    }
+
+    public PlainSelect addOrderByElements(OrderByElement... orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, orderByElements);
+        return this.orderByElements(collection);
+    }
+
+    public PlainSelect addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        collection.addAll(orderByElements);
+        return this.orderByElements(collection);
     }
 }

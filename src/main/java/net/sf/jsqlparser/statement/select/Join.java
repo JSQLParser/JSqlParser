@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
@@ -317,8 +320,20 @@ public class Join extends ASTNodeAccessImpl {
         }
 
     }
-
+    
     public static Join create() {
         return new Join();
+    }
+
+    public Join addUsingColumns(Column... usingColumns) {
+        List<Column> collection = Optional.ofNullable(getUsingColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, usingColumns);
+        return this.usingColumns(collection);
+    }
+
+    public Join addUsingColumns(Collection<? extends Column> usingColumns) {
+        List<Column> collection = Optional.ofNullable(getUsingColumns()).orElseGet(ArrayList::new);
+        collection.addAll(usingColumns);
+        return this.usingColumns(collection);
     }
 }

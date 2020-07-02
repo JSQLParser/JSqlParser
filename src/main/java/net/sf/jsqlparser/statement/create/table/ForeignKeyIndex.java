@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -85,5 +89,17 @@ public class ForeignKeyIndex extends NamedConstraint {
     public ForeignKeyIndex onUpdateReferenceOption(String onUpdateReferenceOption) {
         this.setOnUpdateReferenceOption(onUpdateReferenceOption);
         return this;
+    }
+
+    public ForeignKeyIndex addReferencedColumnNames(String... referencedColumnNames) {
+        List<String> collection = Optional.ofNullable(getReferencedColumnNames()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, referencedColumnNames);
+        return this.referencedColumnNames(collection);
+    }
+
+    public ForeignKeyIndex addReferencedColumnNames(Collection<String> referencedColumnNames) {
+        List<String> collection = Optional.ofNullable(getReferencedColumnNames()).orElseGet(ArrayList::new);
+        collection.addAll(referencedColumnNames);
+        return this.referencedColumnNames(collection);
     }
 }
