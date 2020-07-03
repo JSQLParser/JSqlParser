@@ -233,4 +233,8 @@ public class Upsert implements Statement {
         collection.addAll(duplicateUpdateExpressionList);
         return this.duplicateUpdateExpressionList(collection);
     }
+
+    public <E extends ItemsList> E getItemsList(Class<? extends E> type) {
+        return type.cast(getItemsList());
+    }
 }

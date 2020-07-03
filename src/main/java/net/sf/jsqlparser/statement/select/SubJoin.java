@@ -123,4 +123,8 @@ public class SubJoin implements FromItem {
         collection.addAll(joinList);
         return this.joinList(collection);
     }
+
+    public <E extends FromItem> E getLeft(Class<? extends E> type) {
+        return type.cast(getLeft());
+    }
 }

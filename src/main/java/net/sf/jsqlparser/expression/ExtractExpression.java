@@ -57,4 +57,8 @@ public class ExtractExpression extends ASTNodeAccessImpl implements Expression {
         this.setExpression(expression);
         return this;
     }
+
+    public <E extends Expression> E getExpression(Class<? extends E> type) {
+        return type.cast(getExpression());
+    }
 }

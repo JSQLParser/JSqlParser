@@ -92,4 +92,9 @@ public class OrderByElement {
         this.setNullOrdering(nullOrdering);
         return this;
     }
+
+    public <E extends Expression> E getExpression(Class<? extends E> type) {
+        return type.cast(getExpression());
+    }
+
 }

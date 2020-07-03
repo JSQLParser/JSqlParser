@@ -61,4 +61,12 @@ public class WhenClause extends ASTNodeAccessImpl implements Expression {
         this.setThenExpression(thenExpression);
         return this;
     }
+
+    public <E extends Expression> E getThenExpression(Class<? extends E> type) {
+        return type.cast(getThenExpression());
+    }
+
+    public <E extends Expression> E getWhenExpression(Class<? extends E> type) {
+        return type.cast(getWhenExpression());
+    }
 }

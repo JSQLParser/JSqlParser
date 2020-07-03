@@ -544,4 +544,8 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         this.setSelectVisitor(selectVisitor);
         return this;
     }
+
+    public <E extends SelectVisitor> E getSelectVisitor(Class<? extends E> type) {
+        return type.cast(getSelectVisitor());
+    }
 }

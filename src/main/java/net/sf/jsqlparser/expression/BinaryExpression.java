@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.expression;
 
-import java.util.Optional;
-
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
@@ -25,17 +23,9 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
 
     public BinaryExpression() {
     }
-    
-    public <E extends Expression> E getLeftExpression(Class<E> type) {
-      return Optional.ofNullable(leftExpression).map(type::cast).orElseGet(null);
-  }
 
     public Expression getLeftExpression() {
         return leftExpression;
-    }
-
-    public <E extends Expression> E getRightExpression(Class<E> type) {
-        return Optional.ofNullable(rightExpression).map(type::cast).orElseGet(null);
     }
 
     public Expression getRightExpression() {
@@ -79,4 +69,11 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
 
     public abstract String getStringExpression();
 
+    public <E extends Expression> E getLeftExpression(Class<? extends E> type) {
+        return type.cast(getLeftExpression());
+    }
+
+    public <E extends Expression> E getRightExpression(Class<? extends E> type) {
+        return type.cast(getRightExpression());
+    }
 }

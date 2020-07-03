@@ -118,4 +118,12 @@ public class MergeUpdate {
         collection.addAll(values);
         return this.values(collection);
     }
+
+    public <E extends Expression> E getWhereCondition(Class<? extends E> type) {
+        return type.cast(getWhereCondition());
+    }
+
+    public <E extends Expression> E getDeleteWhereCondition(Class<? extends E> type) {
+        return type.cast(getDeleteWhereCondition());
+    }
 }

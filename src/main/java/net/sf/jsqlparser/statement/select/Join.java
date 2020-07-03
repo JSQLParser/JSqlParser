@@ -336,4 +336,12 @@ public class Join extends ASTNodeAccessImpl {
         collection.addAll(usingColumns);
         return this.usingColumns(collection);
     }
+
+    public <E extends FromItem> E getRightItem(Class<? extends E> type) {
+        return type.cast(getRightItem());
+    }
+
+    public <E extends Expression> E getOnExpression(Class<? extends E> type) {
+        return type.cast(getOnExpression());
+    }
 }

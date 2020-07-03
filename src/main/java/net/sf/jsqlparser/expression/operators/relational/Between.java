@@ -85,4 +85,16 @@ public class Between extends ASTNodeAccessImpl implements Expression {
         this.setBetweenExpressionEnd(betweenExpressionEnd);
         return this;
     }
+
+    public <E extends Expression> E getBetweenExpressionEnd(Class<? extends E> type) {
+        return type.cast(getBetweenExpressionEnd());
+    }
+
+    public <E extends Expression> E getBetweenExpressionStart(Class<? extends E> type) {
+        return type.cast(getBetweenExpressionStart());
+    }
+
+    public <E extends Expression> E getLeftExpression(Class<? extends E> type) {
+        return type.cast(getLeftExpression());
+    }
 }

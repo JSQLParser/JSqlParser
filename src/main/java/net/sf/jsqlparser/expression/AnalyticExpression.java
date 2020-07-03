@@ -292,4 +292,20 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.setWindowElement(windowElement);
         return this;
     }
+
+    public <E extends Expression> E getExpression(Class<? extends E> type) {
+        return type.cast(getExpression());
+    }
+
+    public <E extends Expression> E getOffset(Class<? extends E> type) {
+        return type.cast(getOffset());
+    }
+
+    public <E extends Expression> E getDefaultValue(Class<? extends E> type) {
+        return type.cast(getDefaultValue());
+    }
+
+    public <E extends Expression> E getFilterExpression(Class<? extends E> type) {
+        return type.cast(getFilterExpression());
+    }
 }

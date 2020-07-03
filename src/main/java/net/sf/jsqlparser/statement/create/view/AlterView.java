@@ -112,4 +112,8 @@ public class AlterView implements Statement {
         collection.addAll(columnNames);
         return this.columnNames(collection);
     }
+
+    public <E extends SelectBody> E getSelectBody(Class<? extends E> type) {
+        return type.cast(getSelectBody());
+    }
 }

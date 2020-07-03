@@ -56,4 +56,8 @@ public class CollateExpression extends ASTNodeAccessImpl implements Expression {
         this.setCollate(collate);
         return this;
     }
+
+    public <E extends Expression> E getLeftExpression(Class<? extends E> type) {
+        return type.cast(getLeftExpression());
+    }
 }

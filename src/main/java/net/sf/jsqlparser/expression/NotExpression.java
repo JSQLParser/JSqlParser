@@ -64,4 +64,8 @@ public class NotExpression extends ASTNodeAccessImpl implements Expression {
         this.setExclamationMark(exclamationMark);
         return this;
     }
+
+    public <E extends Expression> E getExpression(Class<? extends E> type) {
+        return type.cast(getExpression());
+    }
 }

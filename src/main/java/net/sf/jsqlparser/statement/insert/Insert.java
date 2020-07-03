@@ -404,4 +404,8 @@ public class Insert implements Statement {
         collection.addAll(setExpressionList);
         return this.setExpressionList(collection);
     }
+
+    public <E extends ItemsList> E getItemsList(Class<? extends E> type) {
+        return type.cast(getItemsList());
+    }
 }

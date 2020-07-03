@@ -71,4 +71,8 @@ public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
         this.setNot(not);
         return this;
     }
+
+    public <E extends Expression> E getLeftExpression(Class<? extends E> type) {
+        return type.cast(getLeftExpression());
+    }
 }

@@ -376,4 +376,12 @@ public class Update implements Statement {
         collection.addAll(returningExpressionList);
         return this.returningExpressionList(collection);
     }
+
+    public <E extends Expression> E getWhere(Class<? extends E> type) {
+        return type.cast(getWhere());
+    }
+
+    public <E extends FromItem> E getFromItem(Class<? extends E> type) {
+        return type.cast(getFromItem());
+    }
 }
