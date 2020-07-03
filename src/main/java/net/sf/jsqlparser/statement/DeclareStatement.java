@@ -10,7 +10,9 @@
 package net.sf.jsqlparser.statement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
@@ -19,10 +21,10 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 public final class DeclareStatement implements Statement {
 
     private UserVariable userVariable = null;
-    private DeclareType type = DeclareType.TYPE;
+    private DeclareType declareType = DeclareType.TYPE;
     private String typeName;
     private List<TypeDefExpr> typeDefExprList = new ArrayList<>();
-    private List<ColumnDefinition> colDefs = new ArrayList<>();
+    private List<ColumnDefinition> columnDefinitions = new ArrayList<>();
 
     public DeclareStatement() {
     }
@@ -35,16 +37,28 @@ public final class DeclareStatement implements Statement {
         return userVariable;
     }
 
+    /**
+     * @return the {@link DeclareType}
+     * @deprecated use {@link #getDeclareType()}
+     */
+    @Deprecated
     public DeclareType getType() {
-        return type;
+        return getDeclareType();
+    }
+
+    /**
+     * @return the {@link DeclareType}
+     */
+    public DeclareType getDeclareType() {
+        return declareType;
     }
 
     public String getTypeName() {
         return typeName;
     }
 
-    public void setDeclareType(DeclareType type) {
-        this.type = type;
+    public void setDeclareType(DeclareType declareType) {
+        this.declareType = declareType;
     }
 
     public void addType(ColDataType colDataType, Expression defaultExpr) {
@@ -56,11 +70,15 @@ public final class DeclareStatement implements Statement {
     }
 
     public void addColumnDefinition(ColumnDefinition colDef) {
-        colDefs.add(colDef);
+        columnDefinitions.add(colDef);
+    }
+
+    public void setColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
+        this.columnDefinitions = columnDefinitions;
     }
 
     public List<ColumnDefinition> getColumnDefinitions() {
-        return colDefs;
+        return columnDefinitions;
     }
 
     public List<TypeDefExpr> getTypeDefinitions() {
@@ -74,18 +92,18 @@ public final class DeclareStatement implements Statement {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("DECLARE ");
-        if (type == DeclareType.AS) {
+        if (declareType == DeclareType.AS) {
             b.append(userVariable.toString());
             b.append(" AS ").append(typeName);
         } else {
-            if (type == DeclareType.TABLE) {
+            if (declareType == DeclareType.TABLE) {
                 b.append(userVariable.toString());
                 b.append(" TABLE (");
-                for (int i = 0; i < colDefs.size(); i++) {
+                for (int i = 0; i < columnDefinitions.size(); i++) {
                     if (i > 0) {
                         b.append(", ");
                     }
-                    b.append(colDefs.get(i).toString());
+                    b.append(columnDefinitions.get(i).toString());
                 }
                 b.append(")");
             } else {
@@ -120,6 +138,28 @@ public final class DeclareStatement implements Statement {
     public DeclareStatement typeName(String typeName) {
         this.setTypeName(typeName);
         return this;
+    }
+
+    public DeclareStatement declareType(DeclareType declareType) {
+        this.setDeclareType(declareType);
+        return this;
+    }
+
+    public DeclareStatement columnDefinitions(List<ColumnDefinition> columnDefinitions) {
+        this.setColumnDefinitions(columnDefinitions);
+        return this;
+    }
+
+    public DeclareStatement addColumnDefinitions(ColumnDefinition... statements) {
+        List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, statements);
+        return this.columnDefinitions(collection);
+    }
+
+    public DeclareStatement addColumnDefinitions(List<? extends ColumnDefinition> columnDefinitions) {
+        List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
+        collection.addAll(columnDefinitions);
+        return this.columnDefinitions(collection);
     }
 
     public static class TypeDefExpr {
