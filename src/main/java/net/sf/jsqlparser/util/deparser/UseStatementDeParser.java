@@ -11,22 +11,13 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.statement.UseStatement;
 
-public class UseStatementDeParser {
-
-    protected StringBuilder buffer;
+public class UseStatementDeParser extends AbstractDeParser<UseStatement> {
 
     public UseStatementDeParser(StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
+    @Override
     public void deParse(UseStatement set) {
         buffer.append("USE ").append(set.getName());
     }

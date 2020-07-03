@@ -13,25 +13,25 @@ import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 
-public class AlterViewDeParser {
+public class AlterViewDeParser extends AbstractDeParser<AlterView> {
 
-    protected StringBuilder buffer;
     private SelectVisitor selectVisitor;
 
     public AlterViewDeParser(StringBuilder buffer) {
+        super(buffer);
         SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
         ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         selectVisitor = selectDeParser;
-        this.buffer = buffer;
     }
 
     public AlterViewDeParser(StringBuilder buffer, SelectVisitor selectVisitor) {
-        this.buffer = buffer;
+        super(buffer);
         this.selectVisitor = selectVisitor;
     }
 
+    @Override
     public void deParse(AlterView alterView) {
         if (alterView.isUseReplace()) {
             buffer.append("REPLACE ");
@@ -47,11 +47,4 @@ public class AlterViewDeParser {
         alterView.getSelectBody().accept(selectVisitor);
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
 }

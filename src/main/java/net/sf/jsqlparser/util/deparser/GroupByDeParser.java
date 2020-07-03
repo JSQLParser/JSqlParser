@@ -10,24 +10,27 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.GroupByElement;
 
-public class GroupByDeParser {
+public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
 
-    protected StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
 
     GroupByDeParser() {
+        super(new StringBuilder());
     }
 
     public GroupByDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+        super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.buffer = buffer;
     }
 
+    @Override
     public void deParse(GroupByElement groupBy) {
         buffer.append("GROUP BY ");
         for (Iterator<Expression> iter = groupBy.getGroupByExpressions().iterator(); iter.hasNext();) {
@@ -36,7 +39,7 @@ public class GroupByDeParser {
                 buffer.append(", ");
             }
         }
-        if (groupBy.getGroupingSets().size() > 0) {
+        if (!groupBy.getGroupingSets().isEmpty()) {
             buffer.append("GROUPING SETS (");
             boolean first = true;
             for (Object o : groupBy.getGroupingSets()) {
@@ -60,7 +63,4 @@ public class GroupByDeParser {
         this.expressionVisitor = expressionVisitor;
     }
 
-    void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
 }

@@ -16,37 +16,30 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.update.Update;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.OrderByVisitor;
 import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.OrderByVisitor;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
+import net.sf.jsqlparser.statement.update.Update;
 
-public class UpdateDeParser implements OrderByVisitor {
+public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByVisitor {
 
-    protected StringBuilder buffer = new StringBuilder();
     private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
     private SelectVisitor selectVisitor = new SelectVisitorAdapter();
 
     public UpdateDeParser() {
+        super(new StringBuilder());
     }
 
     public UpdateDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.selectVisitor = selectVisitor;
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
+    @Override
     public void deParse(Update update) {
         buffer.append("UPDATE ").append(update.getTable());
         if (update.getStartJoins() != null) {
@@ -122,8 +115,8 @@ public class UpdateDeParser implements OrderByVisitor {
             buffer.append(" RETURNING *");
         } else if (update.getReturningExpressionList() != null) {
             buffer.append(" RETURNING ");
-            for (Iterator<SelectExpressionItem> iter = update.getReturningExpressionList().
-                    iterator(); iter.hasNext();) {
+            for (Iterator<SelectExpressionItem> iter = update.getReturningExpressionList().iterator(); iter
+                    .hasNext();) {
                 buffer.append(iter.next().toString());
                 if (iter.hasNext()) {
                     buffer.append(", ");
@@ -150,8 +143,8 @@ public class UpdateDeParser implements OrderByVisitor {
         }
         if (orderBy.getNullOrdering() != null) {
             buffer.append(' ');
-            buffer.
-                    append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
+            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST"
+                    : "NULLS LAST");
         }
     }
 }

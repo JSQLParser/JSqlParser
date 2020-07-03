@@ -11,22 +11,13 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 
-public class ShowColumnsStatementDeParser {
-
-    protected StringBuilder buffer;
+public class ShowColumnsStatementDeParser extends AbstractDeParser<ShowColumnsStatement> {
 
     public ShowColumnsStatementDeParser(StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
+    @Override
     public void deParse(ShowColumnsStatement show) {
         buffer.append("SHOW COLUMNS FROM ").append(show.getTableName());
     }

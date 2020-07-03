@@ -9,25 +9,26 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-
 import java.util.Iterator;
 import java.util.List;
 
-public class OrderByDeParser {
+import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 
-    protected StringBuilder buffer;
+public class OrderByDeParser extends AbstractDeParser<List<OrderByElement>> {
+
     private ExpressionVisitor expressionVisitor;
 
     OrderByDeParser() {
+        super(new StringBuilder());
     }
 
     public OrderByDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+        super(buffer);
         this.expressionVisitor = expressionVisitor;
-        this.buffer = buffer;
     }
 
+    @Override
     public void deParse(List<OrderByElement> orderByElementList) {
         deParse(false, orderByElementList);
     }
@@ -57,8 +58,8 @@ public class OrderByDeParser {
         }
         if (orderBy.getNullOrdering() != null) {
             buffer.append(' ');
-            buffer.
-                    append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
+            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST"
+                    : "NULLS LAST");
         }
     }
 
@@ -66,7 +67,4 @@ public class OrderByDeParser {
         this.expressionVisitor = expressionVisitor;
     }
 
-    void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
 }
