@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.create.view;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -95,5 +99,17 @@ public class AlterView implements Statement {
     public AlterView columnNames(List<String> columnNames) {
         this.setColumnNames(columnNames);
         return this;
+    }
+
+    public AlterView addColumnNames(String... columnNames) {
+        List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columnNames);
+        return this.columnNames(collection);
+    }
+
+    public AlterView addColumnNames(Collection<String> columnNames) {
+        List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
+        collection.addAll(columnNames);
+        return this.columnNames(collection);
     }
 }

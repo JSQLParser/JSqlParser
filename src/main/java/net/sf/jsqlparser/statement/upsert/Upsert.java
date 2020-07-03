@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.statement.upsert;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
@@ -193,5 +196,41 @@ public class Upsert implements Statement {
     public Upsert itemsList(ItemsList itemsList) {
         this.setItemsList(itemsList);
         return this;
+    }
+
+    public Upsert addColumns(Column... columns) {
+        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columns);
+        return this.columns(collection);
+    }
+
+    public Upsert addColumns(Collection<? extends Column> columns) {
+        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        collection.addAll(columns);
+        return this.columns(collection);
+    }
+
+    public Upsert addDuplicateUpdateColumns(Column... duplicateUpdateColumns) {
+        List<Column> collection = Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, duplicateUpdateColumns);
+        return this.duplicateUpdateColumns(collection);
+    }
+
+    public Upsert addDuplicateUpdateColumns(Collection<? extends Column> duplicateUpdateColumns) {
+        List<Column> collection = Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
+        collection.addAll(duplicateUpdateColumns);
+        return this.duplicateUpdateColumns(collection);
+    }
+
+    public Upsert addDuplicateUpdateExpressionList(Expression... duplicateUpdateExpressionList) {
+        List<Expression> collection = Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, duplicateUpdateExpressionList);
+        return this.duplicateUpdateExpressionList(collection);
+    }
+
+    public Upsert addDuplicateUpdateExpressionList(Collection<? extends Expression> duplicateUpdateExpressionList) {
+        List<Expression> collection = Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
+        collection.addAll(duplicateUpdateExpressionList);
+        return this.duplicateUpdateExpressionList(collection);
     }
 }

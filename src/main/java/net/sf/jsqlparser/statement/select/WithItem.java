@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class WithItem implements SelectBody {
 
@@ -85,5 +89,17 @@ public class WithItem implements SelectBody {
     public WithItem recursive(boolean recursive) {
         this.setRecursive(recursive);
         return this;
+    }
+
+    public WithItem addWithItemList(SelectItem... withItemList) {
+        List<SelectItem> collection = Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, withItemList);
+        return this.withItemList(collection);
+    }
+
+    public WithItem addWithItemList(Collection<? extends SelectItem> withItemList) {
+        List<SelectItem> collection = Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
+        collection.addAll(withItemList);
+        return this.withItemList(collection);
     }
 }

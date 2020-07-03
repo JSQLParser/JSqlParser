@@ -77,4 +77,19 @@ public class OrderByElement {
         }
         return b.toString();
     }
+
+    public OrderByElement expression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
+
+    public OrderByElement asc(boolean asc) {
+        this.setAsc(asc);
+        return this;
+    }
+
+    public OrderByElement nullOrdering(NullOrdering nullOrdering) {
+        this.setNullOrdering(nullOrdering);
+        return this;
+    }
 }

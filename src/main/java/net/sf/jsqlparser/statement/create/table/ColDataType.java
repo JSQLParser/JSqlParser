@@ -10,8 +10,10 @@
 package net.sf.jsqlparser.statement.create.table;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class ColDataType {
@@ -68,5 +70,49 @@ public class ColDataType {
                                 getStringList(argumentsStringList, true, true) : "")
                 + arraySpec.toString()
                 + (characterSet != null ? " CHARACTER SET " + characterSet : "");
+    }
+
+    public ColDataType dataType(String dataType) {
+        this.setDataType(dataType);
+        return this;
+    }
+
+    public ColDataType argumentsStringList(List<String> argumentsStringList) {
+        this.setArgumentsStringList(argumentsStringList);
+        return this;
+    }
+
+    public ColDataType characterSet(String characterSet) {
+        this.setCharacterSet(characterSet);
+        return this;
+    }
+
+    public ColDataType arrayData(List<Integer> arrayData) {
+        this.setArrayData(arrayData);
+        return this;
+    }
+
+    public ColDataType addArgumentsStringList(String... argumentsStringList) {
+        List<String> collection = Optional.ofNullable(getArgumentsStringList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, argumentsStringList);
+        return this.argumentsStringList(collection);
+    }
+
+    public ColDataType addArgumentsStringList(Collection<String> argumentsStringList) {
+        List<String> collection = Optional.ofNullable(getArgumentsStringList()).orElseGet(ArrayList::new);
+        collection.addAll(argumentsStringList);
+        return this.argumentsStringList(collection);
+    }
+
+    public ColDataType addArrayData(Integer... arrayData) {
+        List<Integer> collection = Optional.ofNullable(getArrayData()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, arrayData);
+        return this.arrayData(collection);
+    }
+
+    public ColDataType addArrayData(Collection<Integer> arrayData) {
+        List<Integer> collection = Optional.ofNullable(getArrayData()).orElseGet(ArrayList::new);
+        collection.addAll(arrayData);
+        return this.arrayData(collection);
     }
 }

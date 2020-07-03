@@ -51,4 +51,13 @@ public class PivotXml extends Pivot {
                 + " IN (" + in + "))";
     }
 
+    public PivotXml inSelect(SelectBody inSelect) {
+        this.setInSelect(inSelect);
+        return this;
+    }
+
+    public PivotXml inAny(boolean inAny) {
+        this.setInAny(inAny);
+        return this;
+    }
 }

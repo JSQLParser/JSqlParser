@@ -539,4 +539,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         array.getObjExpression().accept(this);
         array.getIndexExpression().accept(this);
     }
+
+    public ExpressionVisitorAdapter selectVisitor(SelectVisitor selectVisitor) {
+        this.setSelectVisitor(selectVisitor);
+        return this;
+    }
 }

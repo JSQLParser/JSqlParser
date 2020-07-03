@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class SetOperationList implements SelectBody {
 
@@ -137,6 +141,30 @@ public class SetOperationList implements SelectBody {
     public SetOperationList fetch(Fetch fetch) {
         this.setFetch(fetch);
         return this;
+    }
+
+    public SetOperationList addBrackets(Boolean... brackets) {
+        List<Boolean> collection = Optional.ofNullable(getBrackets()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, brackets);
+        return this.brackets(collection);
+    }
+
+    public SetOperationList addBrackets(Collection<Boolean> brackets) {
+        List<Boolean> collection = Optional.ofNullable(getBrackets()).orElseGet(ArrayList::new);
+        collection.addAll(brackets);
+        return this.brackets(collection);
+    }
+
+    public SetOperationList addOrderByElements(OrderByElement... orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, orderByElements);
+        return this.orderByElements(collection);
+    }
+
+    public SetOperationList addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        collection.addAll(orderByElements);
+        return this.orderByElements(collection);
     }
 
     public enum SetOperationType {

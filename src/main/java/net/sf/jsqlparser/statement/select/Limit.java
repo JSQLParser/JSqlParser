@@ -71,4 +71,24 @@ public class Limit extends ASTNodeAccessImpl {
 
         return retVal;
     }
+
+    public Limit rowCount(Expression rowCount) {
+        this.setRowCount(rowCount);
+        return this;
+    }
+
+    public Limit offset(Expression offset) {
+        this.setOffset(offset);
+        return this;
+    }
+
+    public Limit limitAll(boolean limitAll) {
+        this.setLimitAll(limitAll);
+        return this;
+    }
+
+    public Limit limitNull(boolean limitNull) {
+        this.setLimitNull(limitNull);
+        return this;
+    }
 }

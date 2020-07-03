@@ -61,4 +61,9 @@ public class Top {
 
         return result;
     }
+
+    public Top expression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
 }

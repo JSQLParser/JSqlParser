@@ -31,4 +31,9 @@ public class Wait {
     public String toString() {
         return " WAIT " + timeout;
     }
+
+    public Wait timeout(long timeout) {
+        this.setTimeout(timeout);
+        return this;
+    }
 }

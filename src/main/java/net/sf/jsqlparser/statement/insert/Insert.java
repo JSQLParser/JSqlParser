@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.statement.insert;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
@@ -326,5 +329,79 @@ public class Insert implements Statement {
     public Insert itemsList(ItemsList itemsList) {
         this.setItemsList(itemsList);
         return this;
+    }
+
+    public Insert addColumns(Column... columns) {
+        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columns);
+        return this.columns(collection);
+    }
+
+    public Insert addColumns(Collection<? extends Column> columns) {
+        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        collection.addAll(columns);
+        return this.columns(collection);
+    }
+
+    public Insert addDuplicateUpdateColumns(Column... duplicateUpdateColumns) {
+        List<Column> collection = Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, duplicateUpdateColumns);
+        return this.duplicateUpdateColumns(collection);
+    }
+
+    public Insert addDuplicateUpdateColumns(Collection<? extends Column> duplicateUpdateColumns) {
+        List<Column> collection = Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
+        collection.addAll(duplicateUpdateColumns);
+        return this.duplicateUpdateColumns(collection);
+    }
+
+    public Insert addDuplicateUpdateExpressionList(Expression... duplicateUpdateExpressionList) {
+        List<Expression> collection = Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, duplicateUpdateExpressionList);
+        return this.duplicateUpdateExpressionList(collection);
+    }
+
+    public Insert addDuplicateUpdateExpressionList(Collection<? extends Expression> duplicateUpdateExpressionList) {
+        List<Expression> collection = Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
+        collection.addAll(duplicateUpdateExpressionList);
+        return this.duplicateUpdateExpressionList(collection);
+    }
+
+    public Insert addReturningExpressionList(SelectExpressionItem... returningExpressionList) {
+        List<SelectExpressionItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, returningExpressionList);
+        return this.returningExpressionList(collection);
+    }
+
+    public Insert addReturningExpressionList(Collection<? extends SelectExpressionItem> returningExpressionList) {
+        List<SelectExpressionItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+        collection.addAll(returningExpressionList);
+        return this.returningExpressionList(collection);
+    }
+
+    public Insert addSetColumns(Column... setColumns) {
+        List<Column> collection = Optional.ofNullable(getSetColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, setColumns);
+        this.setSetColumns(collection);
+        return this;
+    }
+
+    public Insert addSetColumns(Collection<? extends Column> setColumns) {
+        List<Column> collection = Optional.ofNullable(getSetColumns()).orElseGet(ArrayList::new);
+        collection.addAll(setColumns);
+        this.setSetColumns(collection);
+        return this;
+    }
+
+    public Insert addSetExpressionList(Expression... setExpressionList) {
+        List<Expression> collection = Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, setExpressionList);
+        return this.setExpressionList(collection);
+    }
+
+    public Insert addSetExpressionList(Collection<? extends Expression> setExpressionList) {
+        List<Expression> collection = Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
+        collection.addAll(setExpressionList);
+        return this.setExpressionList(collection);
     }
 }

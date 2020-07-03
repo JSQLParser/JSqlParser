@@ -15,6 +15,7 @@ import net.sf.jsqlparser.schema.Table;
 public class CheckConstraint extends NamedConstraint {
 
     private Table table;
+
     private Expression expression;
 
     public Table getTable() {
@@ -36,5 +37,15 @@ public class CheckConstraint extends NamedConstraint {
     @Override
     public String toString() {
         return "CONSTRAINT " + getName() + " CHECK (" + expression + ")";
+    }
+
+    public CheckConstraint table(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public CheckConstraint expression(Expression expression) {
+        this.setExpression(expression);
+        return this;
     }
 }

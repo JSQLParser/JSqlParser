@@ -130,4 +130,25 @@ public class KSQLWindow extends ASTNodeAccessImpl {
             return "TUMBLING (" + "SIZE " + sizeDuration + " " + sizeTimeUnit + ")";
         }
     }
+
+    public KSQLWindow sizeDuration(long sizeDuration) {
+        this.setSizeDuration(sizeDuration);
+        return this;
+    }
+
+    public KSQLWindow sizeTimeUnit(TimeUnit sizeTimeUnit) {
+        this.setSizeTimeUnit(sizeTimeUnit);
+        return this;
+    }
+
+    public KSQLWindow advanceDuration(long advanceDuration) {
+        this.setAdvanceDuration(advanceDuration);
+        return this;
+    }
+
+    public KSQLWindow advanceTimeUnit(TimeUnit advanceTimeUnit) {
+        this.setAdvanceTimeUnit(advanceTimeUnit);
+        return this;
+    }
+
 }

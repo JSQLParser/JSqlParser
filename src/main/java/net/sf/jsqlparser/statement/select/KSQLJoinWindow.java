@@ -110,4 +110,34 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
         }
         return "(" + duration + " " + timeUnit + ")";
     }
+
+    public KSQLJoinWindow duration(long duration) {
+        this.setDuration(duration);
+        return this;
+    }
+
+    public KSQLJoinWindow timeUnit(TimeUnit timeUnit) {
+        this.setTimeUnit(timeUnit);
+        return this;
+    }
+
+    public KSQLJoinWindow beforeDuration(long beforeDuration) {
+        this.setBeforeDuration(beforeDuration);
+        return this;
+    }
+
+    public KSQLJoinWindow beforeTimeUnit(TimeUnit beforeTimeUnit) {
+        this.setBeforeTimeUnit(beforeTimeUnit);
+        return this;
+    }
+
+    public KSQLJoinWindow afterDuration(long afterDuration) {
+        this.setAfterDuration(afterDuration);
+        return this;
+    }
+
+    public KSQLJoinWindow afterTimeUnit(TimeUnit afterTimeUnit) {
+        this.setAfterTimeUnit(afterTimeUnit);
+        return this;
+    }
 }

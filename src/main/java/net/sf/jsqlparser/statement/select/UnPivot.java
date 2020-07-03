@@ -71,4 +71,9 @@ public class UnPivot {
                 + " FOR " + PlainSelect.getStringList(unpivotForClause, true, unpivotForClause != null && unpivotForClause.size() > 1)
                 + " IN " + PlainSelect.getStringList(unpivotInClause, true, true) + ")";
     }
+
+    public UnPivot includeNulls(boolean includeNulls) {
+        this.setIncludeNulls(includeNulls);
+        return this;
+    }
 }

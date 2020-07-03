@@ -37,4 +37,14 @@ public class ExpressionListItem {
     public String toString() {
         return expressionList + ((alias != null) ? alias.toString() : "");
     }
+
+    public ExpressionListItem expressionList(ExpressionList expressionList) {
+        this.setExpressionList(expressionList);
+        return this;
+    }
+
+    public ExpressionListItem alias(Alias alias) {
+        this.setAlias(alias);
+        return this;
+    }
 }

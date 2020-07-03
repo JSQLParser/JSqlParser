@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.merge;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 
@@ -69,5 +73,49 @@ public class MergeUpdate {
             b.append(" DELETE WHERE ").append(deleteWhereCondition.toString());
         }
         return b.toString();
+    }
+
+    public MergeUpdate columns(List<Column> columns) {
+        this.setColumns(columns);
+        return this;
+    }
+
+    public MergeUpdate values(List<Expression> values) {
+        this.setValues(values);
+        return this;
+    }
+
+    public MergeUpdate whereCondition(Expression whereCondition) {
+        this.setWhereCondition(whereCondition);
+        return this;
+    }
+
+    public MergeUpdate deleteWhereCondition(Expression deleteWhereCondition) {
+        this.setDeleteWhereCondition(deleteWhereCondition);
+        return this;
+    }
+
+    public MergeUpdate addColumns(Column... columns) {
+        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columns);
+        return this.columns(collection);
+    }
+
+    public MergeUpdate addColumns(Collection<? extends Column> columns) {
+        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        collection.addAll(columns);
+        return this.columns(collection);
+    }
+
+    public MergeUpdate addValues(Expression... values) {
+        List<Expression> collection = Optional.ofNullable(getValues()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, values);
+        return this.values(collection);
+    }
+
+    public MergeUpdate addValues(Collection<? extends Expression> values) {
+        List<Expression> collection = Optional.ofNullable(getValues()).orElseGet(ArrayList::new);
+        collection.addAll(values);
+        return this.values(collection);
     }
 }

@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.values;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -54,5 +58,17 @@ public class ValuesStatement implements Statement, SelectBody {
     public ValuesStatement expressions(List<Expression> expressions) {
         this.setExpressions(expressions);
         return this;
+    }
+
+    public ValuesStatement addExpressions(Expression... expressions) {
+        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, expressions);
+        return this.expressions(collection);
+    }
+
+    public ValuesStatement addExpressions(Collection<? extends Expression> expressions) {
+        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
+        collection.addAll(expressions);
+        return this.expressions(collection);
     }
 }

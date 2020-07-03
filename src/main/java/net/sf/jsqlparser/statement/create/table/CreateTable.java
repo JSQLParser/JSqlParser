@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -203,5 +206,41 @@ public class CreateTable implements Statement {
     public CreateTable indexes(List<Index> indexes) {
         this.setIndexes(indexes);
         return this;
+    }
+
+    public CreateTable addCreateOptionsStrings(String... createOptionsStrings) {
+        List<String> collection = Optional.ofNullable(getCreateOptionsStrings()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, createOptionsStrings);
+        return this.createOptionsStrings(collection);
+    }
+
+    public CreateTable addCreateOptionsStrings(Collection<String> createOptionsStrings) {
+        List<String> collection = Optional.ofNullable(getCreateOptionsStrings()).orElseGet(ArrayList::new);
+        collection.addAll(createOptionsStrings);
+        return this.createOptionsStrings(collection);
+    }
+
+    public CreateTable addColumnDefinitions(ColumnDefinition... columnDefinitions) {
+        List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columnDefinitions);
+        return this.columnDefinitions(collection);
+    }
+
+    public CreateTable addColumnDefinitions(Collection<? extends ColumnDefinition> columnDefinitions) {
+        List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
+        collection.addAll(columnDefinitions);
+        return this.columnDefinitions(collection);
+    }
+
+    public CreateTable addIndexes(Index... indexes) {
+        List<Index> collection = Optional.ofNullable(getIndexes()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, indexes);
+        return this.indexes(collection);
+    }
+
+    public CreateTable addIndexes(Collection<? extends Index> indexes) {
+        List<Index> collection = Optional.ofNullable(getIndexes()).orElseGet(ArrayList::new);
+        collection.addAll(indexes);
+        return this.indexes(collection);
     }
 }

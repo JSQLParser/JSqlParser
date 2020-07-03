@@ -11,7 +11,10 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
@@ -336,6 +339,161 @@ public class AlterExpression {
         }
 
         return b.toString();
+    }
+
+    public AlterExpression operation(AlterOperation operation) {
+        this.setOperation(operation);
+        return this;
+    }
+
+    public AlterExpression optionalSpecifier(String optionalSpecifier) {
+        this.setOptionalSpecifier(optionalSpecifier);
+        return this;
+    }
+
+    public AlterExpression columnName(String columnName) {
+        this.setColumnName(columnName);
+        return this;
+    }
+
+    public AlterExpression pkColumns(List<String> pkColumns) {
+        this.setPkColumns(pkColumns);
+        return this;
+    }
+
+    public AlterExpression ukColumns(List<String> ukColumns) {
+        this.setUkColumns(ukColumns);
+        return this;
+    }
+
+    public AlterExpression ukName(String ukName) {
+        this.setUkName(ukName);
+        return this;
+    }
+
+    public AlterExpression index(Index index) {
+        this.setIndex(index);
+        return this;
+    }
+
+    public AlterExpression constraintName(String constraintName) {
+        this.setConstraintName(constraintName);
+        return this;
+    }
+
+    public AlterExpression constraintIfExists(boolean constraintIfExists) {
+        this.setConstraintIfExists(constraintIfExists);
+        return this;
+    }
+
+    public AlterExpression onDeleteRestrict(boolean onDeleteRestrict) {
+        this.setOnDeleteRestrict(onDeleteRestrict);
+        return this;
+    }
+
+    public AlterExpression onDeleteSetNull(boolean onDeleteSetNull) {
+        this.setOnDeleteSetNull(onDeleteSetNull);
+        return this;
+    }
+
+    public AlterExpression onDeleteCascade(boolean onDeleteCascade) {
+        this.setOnDeleteCascade(onDeleteCascade);
+        return this;
+    }
+
+    public AlterExpression fkColumns(List<String> fkColumns) {
+        this.setFkColumns(fkColumns);
+        return this;
+    }
+
+    public AlterExpression fkSourceTable(String fkSourceTable) {
+        this.setFkSourceTable(fkSourceTable);
+        return this;
+    }
+
+    public AlterExpression fkSourceColumns(List<String> fkSourceColumns) {
+        this.setFkSourceColumns(fkSourceColumns);
+        return this;
+    }
+
+    public AlterExpression uk(boolean uk) {
+        this.setUk(uk);
+        return this;
+    }
+
+    public AlterExpression useEqual(boolean useEqual) {
+        this.setUseEqual(useEqual);
+        return this;
+    }
+
+    public AlterExpression constraints(List<ConstraintState> constraints) {
+        this.setConstraints(constraints);
+        return this;
+    }
+
+    public AlterExpression commentText(String commentText) {
+        this.setCommentText(commentText);
+        return this;
+    }
+
+    public AlterExpression addPkColumns(String... pkColumns) {
+        List<String> collection = Optional.ofNullable(getPkColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, pkColumns);
+        return this.pkColumns(collection);
+    }
+
+    public AlterExpression addPkColumns(Collection<String> pkColumns) {
+        List<String> collection = Optional.ofNullable(getPkColumns()).orElseGet(ArrayList::new);
+        collection.addAll(pkColumns);
+        return this.pkColumns(collection);
+    }
+
+    public AlterExpression addUkColumns(String... ukColumns) {
+        List<String> collection = Optional.ofNullable(getUkColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, ukColumns);
+        return this.ukColumns(collection);
+    }
+
+    public AlterExpression addUkColumns(Collection<String> ukColumns) {
+        List<String> collection = Optional.ofNullable(getUkColumns()).orElseGet(ArrayList::new);
+        collection.addAll(ukColumns);
+        return this.ukColumns(collection);
+    }
+
+    public AlterExpression addFkColumns(String... fkColumns) {
+        List<String> collection = Optional.ofNullable(getFkColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, fkColumns);
+        return this.fkColumns(collection);
+    }
+
+    public AlterExpression addFkColumns(Collection<String> fkColumns) {
+        List<String> collection = Optional.ofNullable(getFkColumns()).orElseGet(ArrayList::new);
+        collection.addAll(fkColumns);
+        return this.fkColumns(collection);
+    }
+
+    public AlterExpression addFkSourceColumns(String... fkSourceColumns) {
+        List<String> collection = Optional.ofNullable(getFkSourceColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, fkSourceColumns);
+        return this.fkSourceColumns(collection);
+    }
+
+    public AlterExpression addFkSourceColumns(Collection<String> fkSourceColumns) {
+        List<String> collection = Optional.ofNullable(getFkSourceColumns()).orElseGet(ArrayList::new);
+        collection.addAll(fkSourceColumns);
+        return this.fkSourceColumns(collection);
+    }
+
+    public AlterExpression addConstraints(ConstraintState... constraints) {
+        List<ConstraintState> collection = Optional.ofNullable(getConstraints()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, constraints);
+        return this.constraints(collection);
+    }
+
+    public AlterExpression addConstraints(Collection<? extends ConstraintState> constraints) {
+        List<ConstraintState> collection = Optional.ofNullable(getConstraints()).orElseGet(ArrayList::new);
+        collection.addAll(constraints);
+        return this.constraints(collection);
     }
 
     public final static class ColumnDataType extends ColumnDefinition {

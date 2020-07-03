@@ -32,4 +32,8 @@ public class ExcludeConstraint extends Index {
         return exclusionStatement.toString();
     }
 
+    public ExcludeConstraint expression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
 }

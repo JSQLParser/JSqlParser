@@ -11,10 +11,10 @@ package net.sf.jsqlparser.expression.operators.relational;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -41,8 +41,7 @@ public class ExpressionList implements ItemsList {
     }
 
     public ExpressionList addExpressions(Expression... elements) {
-        List<Expression> list = Optional.ofNullable(getExpressions())
-                .orElseGet(ArrayList::new);
+        List<Expression> list = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
         Collections.addAll(list, elements);
         return expressions(list);
     }
@@ -70,4 +69,9 @@ public class ExpressionList implements ItemsList {
         return new ExpressionList();
     }
 
+    public ExpressionList addExpressions(Collection<? extends Expression> expressions) {
+        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
+        collection.addAll(expressions);
+        return this.expressions(collection);
+    }
 }

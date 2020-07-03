@@ -69,4 +69,24 @@ public class First {
 
         return result;
     }
+    
+    public First keyword(Keyword keyword) {
+        this.setKeyword(keyword);
+        return this;
+    }
+
+    public First rowCount(Long rowCount) {
+        this.setRowCount(rowCount);
+        return this;
+    }
+
+    public First jdbcParameter(JdbcParameter jdbcParameter) {
+        this.setJdbcParameter(jdbcParameter);
+        return this;
+    }
+
+    public First variable(String variable) {
+        this.setVariable(variable);
+        return this;
+    }
 }

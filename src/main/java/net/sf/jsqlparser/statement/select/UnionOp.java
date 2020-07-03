@@ -46,4 +46,14 @@ public class UnionOp extends SetOperation {
         }
         return super.toString() + allDistinct;
     }
+
+    public UnionOp distinct(boolean distinct) {
+        this.setDistinct(distinct);
+        return this;
+    }
+
+    public UnionOp all(boolean all) {
+        this.setAll(all);
+        return this;
+    }
 }

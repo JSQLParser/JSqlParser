@@ -17,7 +17,9 @@ public final class Server implements MultiPartName {
             compile("\\[([^\\]]+?)(?:\\\\([^\\]]+))?\\]");
 
     private String serverName;
+
     private String instanceName;
+
     private String simpleName;
 
     public Server(String serverAndInstanceName) {
@@ -70,5 +72,15 @@ public final class Server implements MultiPartName {
     @Override
     public String toString() {
         return getFullyQualifiedName();
+    }
+
+    public Server serverName(String serverName) {
+        this.setServerName(serverName);
+        return this;
+    }
+
+    public Server instanceName(String instanceName) {
+        this.setInstanceName(instanceName);
+        return this;
     }
 }

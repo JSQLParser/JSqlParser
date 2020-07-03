@@ -29,4 +29,9 @@ public class ValidateConstraint implements ConstraintState {
     public String toString() {
         return not ? "NOVALIDATE" : "VALIDATE";
     }
+
+    public ValidateConstraint not(boolean not) {
+        this.setNot(not);
+        return this;
+    }
 }
