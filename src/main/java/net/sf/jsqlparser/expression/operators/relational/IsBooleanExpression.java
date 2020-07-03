@@ -72,7 +72,7 @@ public class IsBooleanExpression extends ASTNodeAccessImpl implements Expression
         return this;
     }
 
-    public <E extends Expression> E getLeftExpression(Class<? extends E> type) {
+    public <E extends Expression> E getLeftExpression(Class<E> type) {
         return type.cast(getLeftExpression());
     }
 }

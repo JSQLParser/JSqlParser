@@ -83,7 +83,7 @@ public class ParenthesisFromItem implements FromItem {
         return this;
     }
 
-    public <E extends FromItem> E getFromItem(Class<? extends E> type) {
+    public <E extends FromItem> E getFromItem(Class<E> type) {
         return type.cast(getFromItem());
     }
 }

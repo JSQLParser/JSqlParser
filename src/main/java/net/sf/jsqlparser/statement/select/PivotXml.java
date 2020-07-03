@@ -61,7 +61,7 @@ public class PivotXml extends Pivot {
         return this;
     }
 
-    public <E extends SelectBody> E getInSelect(Class<? extends E> type) {
+    public <E extends SelectBody> E getInSelect(Class<E> type) {
         return type.cast(getInSelect());
     }
 }

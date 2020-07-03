@@ -100,11 +100,11 @@ public class OracleHierarchicalExpression extends ASTNodeAccessImpl implements E
         return this;
     }
 
-    public <E extends Expression> E getStartExpression(Class<? extends E> type) {
+    public <E extends Expression> E getStartExpression(Class<E> type) {
         return type.cast(getStartExpression());
     }
 
-    public <E extends Expression> E getConnectExpression(Class<? extends E> type) {
+    public <E extends Expression> E getConnectExpression(Class<E> type) {
         return type.cast(getConnectExpression());
     }
 }

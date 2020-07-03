@@ -185,19 +185,19 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         return this;
     }
 
-    public <E extends ItemsList> E getRightItemsList(Class<? extends E> type) {
+    public <E extends ItemsList> E getRightItemsList(Class<E> type) {
         return type.cast(getRightItemsList());
     }
 
-    public <E extends Expression> E getLeftExpression(Class<? extends E> type) {
+    public <E extends Expression> E getLeftExpression(Class<E> type) {
         return type.cast(getLeftExpression());
     }
 
-    public <E extends ItemsList> E getLeftItemsList(Class<? extends E> type) {
+    public <E extends ItemsList> E getLeftItemsList(Class<E> type) {
         return type.cast(getLeftItemsList());
     }
 
-    public <E extends Expression> E getRightExpression(Class<? extends E> type) {
+    public <E extends Expression> E getRightExpression(Class<E> type) {
         return type.cast(getRightExpression());
     }
 }

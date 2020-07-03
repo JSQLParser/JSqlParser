@@ -190,7 +190,7 @@ public class Delete implements Statement {
         return this.orderByElements(collection);
     }
 
-    public <E extends Expression> E getWhere(Class<? extends E> type) {
+    public <E extends Expression> E getWhere(Class<E> type) {
         return type.cast(getWhere());
     }
 }

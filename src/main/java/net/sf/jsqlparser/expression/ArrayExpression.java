@@ -57,11 +57,11 @@ public class ArrayExpression extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
-    public <E extends Expression> E getObjExpression(Class<? extends E> type) {
+    public <E extends Expression> E getObjExpression(Class<E> type) {
         return type.cast(getObjExpression());
     }
 
-    public <E extends Expression> E getIndexExpression(Class<? extends E> type) {
+    public <E extends Expression> E getIndexExpression(Class<E> type) {
         return type.cast(getIndexExpression());
     }
 }

@@ -62,7 +62,7 @@ public class Offset {
         return this;
     }
 
-    public <E extends Expression> E getOffsetJdbcParameter(Class<? extends E> type) {
+    public <E extends Expression> E getOffsetJdbcParameter(Class<E> type) {
         return type.cast(getOffsetJdbcParameter());
     }
 }

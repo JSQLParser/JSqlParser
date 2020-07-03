@@ -715,15 +715,15 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return this.orderByElements(collection);
     }
 
-    public <E extends FromItem> E getFromItem(Class<? extends E> type) {
+    public <E extends FromItem> E getFromItem(Class<E> type) {
         return type.cast(getFromItem());
     }
 
-    public <E extends Expression> E getWhere(Class<? extends E> type) {
+    public <E extends Expression> E getWhere(Class<E> type) {
         return type.cast(getWhere());
     }
 
-    public <E extends Expression> E getHaving(Class<? extends E> type) {
+    public <E extends Expression> E getHaving(Class<E> type) {
         return type.cast(getHaving());
     }
 }

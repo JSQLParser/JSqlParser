@@ -122,11 +122,11 @@ public class CaseExpression extends ASTNodeAccessImpl implements Expression {
         return this.whenClauses(collection);
     }
 
-    public <E extends Expression> E getSwitchExpression(Class<? extends E> type) {
+    public <E extends Expression> E getSwitchExpression(Class<E> type) {
         return type.cast(getSwitchExpression());
     }
 
-    public <E extends Expression> E getElseExpression(Class<? extends E> type) {
+    public <E extends Expression> E getElseExpression(Class<E> type) {
         return type.cast(getElseExpression());
     }
 }

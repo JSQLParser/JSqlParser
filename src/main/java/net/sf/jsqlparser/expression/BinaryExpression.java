@@ -69,11 +69,11 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
 
     public abstract String getStringExpression();
 
-    public <E extends Expression> E getLeftExpression(Class<? extends E> type) {
+    public <E extends Expression> E getLeftExpression(Class<E> type) {
         return type.cast(getLeftExpression());
     }
 
-    public <E extends Expression> E getRightExpression(Class<? extends E> type) {
+    public <E extends Expression> E getRightExpression(Class<E> type) {
         return type.cast(getRightExpression());
     }
 }

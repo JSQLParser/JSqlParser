@@ -77,7 +77,7 @@ public class Select implements Statement {
         return this;
     }
 
-    public <E extends SelectBody> E getSelectBody(Class<? extends E> type) {
+    public <E extends SelectBody> E getSelectBody(Class<E> type) {
         return type.cast(getSelectBody());
     }
 

@@ -337,11 +337,11 @@ public class Join extends ASTNodeAccessImpl {
         return this.usingColumns(collection);
     }
 
-    public <E extends FromItem> E getRightItem(Class<? extends E> type) {
+    public <E extends FromItem> E getRightItem(Class<E> type) {
         return type.cast(getRightItem());
     }
 
-    public <E extends Expression> E getOnExpression(Class<? extends E> type) {
+    public <E extends Expression> E getOnExpression(Class<E> type) {
         return type.cast(getOnExpression());
     }
 }

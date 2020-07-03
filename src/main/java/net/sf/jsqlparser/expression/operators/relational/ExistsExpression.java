@@ -58,7 +58,7 @@ public class ExistsExpression extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
-    public <E extends Expression> E getRightExpression(Class<? extends E> type) {
+    public <E extends Expression> E getRightExpression(Class<E> type) {
         return type.cast(getRightExpression());
     }
 }

@@ -177,7 +177,7 @@ public class Merge implements Statement {
         return this;
     }
 
-    public <E extends Expression> E getOnCondition(Class<? extends E> type) {
+    public <E extends Expression> E getOnCondition(Class<E> type) {
         return type.cast(getOnCondition());
     }
 }

@@ -37,7 +37,7 @@ public class ExcludeConstraint extends Index {
         return this;
     }
 
-    public <E extends Expression> E getExpression(Class<? extends E> type) {
+    public <E extends Expression> E getExpression(Class<E> type) {
         return type.cast(getExpression());
     }
 }
