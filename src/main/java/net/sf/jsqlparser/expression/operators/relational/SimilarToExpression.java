@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class SimilarToExpression extends BinaryExpression {
@@ -61,5 +62,15 @@ public class SimilarToExpression extends BinaryExpression {
     public SimilarToExpression not(boolean not) {
         this.setNot(not);
         return this;
+    }
+
+    @Override()
+    public SimilarToExpression leftExpression(Expression arg0) {
+        return (SimilarToExpression) super.leftExpression(arg0);
+    }
+
+    @Override()
+    public SimilarToExpression rightExpression(Expression arg0) {
+        return (SimilarToExpression) super.rightExpression(arg0);
     }
 }

@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class JsonOperator extends BinaryExpression {
@@ -28,5 +29,15 @@ public class JsonOperator extends BinaryExpression {
     @Override
     public String getStringExpression() {
         return op;
+    }
+
+    @Override()
+    public JsonOperator leftExpression(Expression arg0) {
+        return (JsonOperator) super.leftExpression(arg0);
+    }
+
+    @Override()
+    public JsonOperator rightExpression(Expression arg0) {
+        return (JsonOperator) super.rightExpression(arg0);
     }
 }

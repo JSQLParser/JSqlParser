@@ -9,9 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.schema.Column;
-
+import java.util.Collection;
 import java.util.List;
+
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.schema.Column;
 
 public class PivotXml extends Pivot {
 
@@ -64,4 +66,70 @@ public class PivotXml extends Pivot {
     public <E extends SelectBody> E getInSelect(Class<E> type) {
         return type.cast(getInSelect());
     }
+
+    @Override()
+    public PivotXml alias(Alias alias) {
+        return (PivotXml) super.alias(alias);
+    }
+
+    @Override()
+    public PivotXml functionItems(List<FunctionItem> functionItems) {
+        return (PivotXml) super.functionItems(functionItems);
+    }
+
+    @Override()
+    public PivotXml forColumns(List<Column> forColumns) {
+        return (PivotXml) super.forColumns(forColumns);
+    }
+
+    @Override()
+    public PivotXml singleInItems(List<SelectExpressionItem> singleInItems) {
+        return (PivotXml) super.singleInItems(singleInItems);
+    }
+
+    @Override()
+    public PivotXml multiInItems(List<ExpressionListItem> multiInItems) {
+        return (PivotXml) super.multiInItems(multiInItems);
+    }
+
+    @Override()
+    public PivotXml addFunctionItems(Collection<? extends FunctionItem> functionItems) {
+        return (PivotXml) super.addFunctionItems(functionItems);
+    }
+
+    @Override()
+    public PivotXml addFunctionItems(FunctionItem... functionItems) {
+        return (PivotXml) super.addFunctionItems(functionItems);
+    }
+
+    @Override()
+    public PivotXml addForColumns(Collection<? extends Column> forColumns) {
+        return (PivotXml) super.addForColumns(forColumns);
+    }
+
+    @Override()
+    public PivotXml addForColumns(Column... forColumns) {
+        return (PivotXml) super.addForColumns(forColumns);
+    }
+
+    @Override()
+    public PivotXml addSingleInItems(Collection<? extends SelectExpressionItem> singleInItems) {
+        return (PivotXml) super.addSingleInItems(singleInItems);
+    }
+
+    @Override()
+    public PivotXml addSingleInItems(SelectExpressionItem... singleInItems) {
+        return (PivotXml) super.addSingleInItems(singleInItems);
+    }
+
+    @Override()
+    public PivotXml addMultiInItems(ExpressionListItem... multiInItems) {
+        return (PivotXml) super.addMultiInItems(multiInItems);
+    }
+
+    @Override()
+    public PivotXml addMultiInItems(Collection<? extends ExpressionListItem> multiInItems) {
+        return (PivotXml) super.addMultiInItems(multiInItems);
+    }
+
 }

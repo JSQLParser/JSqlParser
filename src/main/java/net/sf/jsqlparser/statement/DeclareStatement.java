@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -156,7 +157,8 @@ public final class DeclareStatement implements Statement {
         return this.columnDefinitions(collection);
     }
 
-    public DeclareStatement addColumnDefinitions(List<? extends ColumnDefinition> columnDefinitions) {
+
+    public DeclareStatement addColumnDefinitions(Collection<? extends ColumnDefinition> columnDefinitions) {
         List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
         collection.addAll(columnDefinitions);
         return this.columnDefinitions(collection);

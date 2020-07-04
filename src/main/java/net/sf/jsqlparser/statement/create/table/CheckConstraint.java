@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.List;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 
@@ -52,4 +54,20 @@ public class CheckConstraint extends NamedConstraint {
     public <E extends Expression> E getExpression(Class<E> type) {
         return type.cast(getExpression());
     }
+
+    @Override()
+    public CheckConstraint type(String type) {
+        return (CheckConstraint) super.type(type);
+    }
+
+    @Override()
+    public CheckConstraint using(String using) {
+        return (CheckConstraint) super.using(using);
+    }
+
+    @Override()
+    public CheckConstraint name(List<String> name) {
+        return (CheckConstraint) super.name(name);
+    }
+
 }

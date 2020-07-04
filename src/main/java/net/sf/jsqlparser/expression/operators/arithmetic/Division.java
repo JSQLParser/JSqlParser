@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression.operators.arithmetic;
 
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class Division extends BinaryExpression {
@@ -22,5 +23,15 @@ public class Division extends BinaryExpression {
     @Override
     public String getStringExpression() {
         return "/";
+    }
+
+    @Override()
+    public Division leftExpression(Expression arg0) {
+        return (Division) super.leftExpression(arg0);
+    }
+
+    @Override()
+    public Division rightExpression(Expression arg0) {
+        return (Division) super.rightExpression(arg0);
     }
 }
