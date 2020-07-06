@@ -509,6 +509,27 @@ public class AlterExpression {
         public String toString() {
             return getColumnName() + (withType ? " TYPE " : " ") + toStringDataTypeAndSpec();
         }
+
+        @Override()
+        public ColumnDataType colDataType(ColDataType colDataType) {
+            return (ColumnDataType) super.colDataType(colDataType);
+        }
+
+        @Override()
+        public ColumnDataType columnName(String columnName) {
+            return (ColumnDataType) super.columnName(columnName);
+        }
+
+        @Override()
+        public ColumnDataType addColumnSpecs(String... columnSpecs) {
+            return (ColumnDataType) super.addColumnSpecs(columnSpecs);
+        }
+
+        @Override()
+        public ColumnDataType addColumnSpecs(Collection<String> columnSpecs) {
+            return (ColumnDataType) super.addColumnSpecs(columnSpecs);
+        }
+
     }
 
     public final static class ColumnDropNotNull {

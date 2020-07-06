@@ -91,4 +91,12 @@ public class Limit extends ASTNodeAccessImpl {
         this.setLimitNull(limitNull);
         return this;
     }
+
+    public <E extends Expression> E getOffset(Class<E> type) {
+        return type.cast(getOffset());
+    }
+
+    public <E extends Expression> E getRowCount(Class<E> type) {
+        return type.cast(getRowCount());
+    }
 }

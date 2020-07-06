@@ -43,4 +43,13 @@ public class NotEqualsTo extends ComparisonOperator {
         expressionVisitor.visit(this);
     }
 
+    @Override()
+    public NotEqualsTo oldOracleJoinSyntax(int arg0) {
+        return (NotEqualsTo) super.oldOracleJoinSyntax(arg0);
+    }
+
+    @Override()
+    public NotEqualsTo oraclePriorPosition(int arg0) {
+        return (NotEqualsTo) super.oraclePriorPosition(arg0);
+    }
 }

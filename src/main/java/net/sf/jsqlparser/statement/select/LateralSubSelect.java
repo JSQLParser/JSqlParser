@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
+
 /**
  * lateral sub select
  * @author tobens
@@ -22,5 +24,20 @@ public class LateralSubSelect extends SpecialSubSelect {
     @Override
     public void accept(FromItemVisitor fromItemVisitor) {
         fromItemVisitor.visit(this);
+    }
+
+    @Override()
+    public LateralSubSelect pivot(Pivot pivot) {
+        return (LateralSubSelect) super.pivot(pivot);
+    }
+
+    @Override()
+    public LateralSubSelect alias(Alias alias) {
+        return (LateralSubSelect) super.alias(alias);
+    }
+
+    @Override()
+    public LateralSubSelect subSelect(SubSelect subSelect) {
+        return (LateralSubSelect) super.subSelect(subSelect);
     }
 }

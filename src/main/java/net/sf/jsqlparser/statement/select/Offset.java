@@ -61,4 +61,8 @@ public class Offset {
         this.setOffsetParam(offsetParam);
         return this;
     }
+
+    public <E extends Expression> E getOffsetJdbcParameter(Class<E> type) {
+        return type.cast(getOffsetJdbcParameter());
+    }
 }

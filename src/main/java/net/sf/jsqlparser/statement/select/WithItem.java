@@ -102,4 +102,8 @@ public class WithItem implements SelectBody {
         collection.addAll(withItemList);
         return this.withItemList(collection);
     }
+
+    public <E extends SelectBody> E getSelectBody(Class<E> type) {
+        return type.cast(getSelectBody());
+    }
 }

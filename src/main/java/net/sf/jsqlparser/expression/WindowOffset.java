@@ -77,4 +77,8 @@ public class WindowOffset {
         return this;
     }
 
+    public <E extends Expression> E getExpression(Class<E> type) {
+        return type.cast(getExpression());
+    }
+
 }

@@ -189,4 +189,8 @@ public class Delete implements Statement {
         collection.addAll(orderByElements);
         return this.orderByElements(collection);
     }
+
+    public <E extends Expression> E getWhere(Class<E> type) {
+        return type.cast(getWhere());
+    }
 }

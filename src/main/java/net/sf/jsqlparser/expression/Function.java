@@ -230,4 +230,8 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         this.setDistinct(distinct);
         return this;
     }
+
+    public <E extends Expression> E getAttribute(Class<E> type) {
+        return type.cast(getAttribute());
+    }
 }

@@ -172,4 +172,8 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
         collection.addAll(withItemsList);
         return this.withItemsList(collection);
     }
+
+    public <E extends SelectBody> E getSelectBody(Class<E> type) {
+        return type.cast(getSelectBody());
+    }
 }

@@ -178,4 +178,8 @@ public class Replace implements Statement {
         collection.addAll(expressions);
         return this.expressions(collection);
     }
+
+    public <E extends ItemsList> E getItemsList(Class<E> type) {
+        return type.cast(getItemsList());
+    }
 }

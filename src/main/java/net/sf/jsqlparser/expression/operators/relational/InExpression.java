@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
-import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -45,10 +44,6 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     @Override
     public int getOldOracleJoinSyntax() {
         return oldOracleJoinSyntax;
-    }
-
-    public <E extends ItemsList> E getRightItemsList(Class<E> type) {
-        return Optional.ofNullable(rightItemsList).map(type::cast).orElseGet(null);
     }
 
     public ItemsList getRightItemsList() {
@@ -188,5 +183,21 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     public InExpression not(boolean not) {
         this.setNot(not);
         return this;
+    }
+
+    public <E extends ItemsList> E getRightItemsList(Class<E> type) {
+        return type.cast(getRightItemsList());
+    }
+
+    public <E extends Expression> E getLeftExpression(Class<E> type) {
+        return type.cast(getLeftExpression());
+    }
+
+    public <E extends ItemsList> E getLeftItemsList(Class<E> type) {
+        return type.cast(getLeftItemsList());
+    }
+
+    public <E extends Expression> E getRightExpression(Class<E> type) {
+        return type.cast(getRightExpression());
     }
 }

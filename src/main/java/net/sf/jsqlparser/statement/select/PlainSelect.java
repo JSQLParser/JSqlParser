@@ -564,10 +564,6 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return new PlainSelect();
     }
 
-    public <T extends Expression> T getWhere(Class<T> type) {
-        return Optional.ofNullable(where).map(type::cast).orElseGet(null);
-    }
-
     public PlainSelect distinct(Distinct distinct) {
         this.setDistinct(distinct);
         return this;
@@ -717,5 +713,17 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         collection.addAll(orderByElements);
         return this.orderByElements(collection);
+    }
+
+    public <E extends FromItem> E getFromItem(Class<E> type) {
+        return type.cast(getFromItem());
+    }
+
+    public <E extends Expression> E getWhere(Class<E> type) {
+        return type.cast(getWhere());
+    }
+
+    public <E extends Expression> E getHaving(Class<E> type) {
+        return type.cast(getHaving());
     }
 }

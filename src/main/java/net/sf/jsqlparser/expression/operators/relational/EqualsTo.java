@@ -43,4 +43,13 @@ public class EqualsTo extends ComparisonOperator {
         return new EqualsTo().leftExpression(left).rightExpression(right);
     }
 
+    @Override()
+    public EqualsTo oldOracleJoinSyntax(int arg0) {
+        return (EqualsTo) super.oldOracleJoinSyntax(arg0);
+    }
+
+    @Override()
+    public EqualsTo oraclePriorPosition(int arg0) {
+        return (EqualsTo) super.oraclePriorPosition(arg0);
+    }
 }

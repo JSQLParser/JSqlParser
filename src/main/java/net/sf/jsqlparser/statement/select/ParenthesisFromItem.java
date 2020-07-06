@@ -82,4 +82,8 @@ public class ParenthesisFromItem implements FromItem {
         this.setAlias(alias);
         return this;
     }
+
+    public <E extends FromItem> E getFromItem(Class<E> type) {
+        return type.cast(getFromItem());
+    }
 }

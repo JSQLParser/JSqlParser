@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression.operators.arithmetic;
 
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class Concat extends BinaryExpression {
@@ -22,5 +23,15 @@ public class Concat extends BinaryExpression {
     @Override
     public String getStringExpression() {
         return "||";
+    }
+
+    @Override()
+    public Concat leftExpression(Expression arg0) {
+        return (Concat) super.leftExpression(arg0);
+    }
+
+    @Override()
+    public Concat rightExpression(Expression arg0) {
+        return (Concat) super.rightExpression(arg0);
     }
 }

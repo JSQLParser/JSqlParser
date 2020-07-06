@@ -70,4 +70,8 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
         this.setLeftExpression(leftExpression);
         return this;
     }
+
+    public <E extends Expression> E getLeftExpression(Class<E> type) {
+        return type.cast(getLeftExpression());
+    }
 }

@@ -118,6 +118,10 @@ public final class SetStatement implements Statement {
         statementVisitor.visit(this);
     }
 
+    public <E extends Expression> E getExpression(Class<E> type) {
+        return type.cast(getExpression());
+    }
+
     static class NameExpr {
 
         private String name;

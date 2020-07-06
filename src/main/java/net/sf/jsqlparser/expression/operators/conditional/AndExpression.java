@@ -51,4 +51,14 @@ public class AndExpression extends BinaryExpression {
         this.setUseOperator(useOperator);
         return this;
     }
+
+    @Override()
+    public AndExpression leftExpression(Expression arg0) {
+        return (AndExpression) super.leftExpression(arg0);
+    }
+
+    @Override()
+    public AndExpression rightExpression(Expression arg0) {
+        return (AndExpression) super.rightExpression(arg0);
+    }
 }

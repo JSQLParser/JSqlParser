@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 
 public class ExcludeConstraint extends Index {
@@ -35,5 +36,24 @@ public class ExcludeConstraint extends Index {
     public ExcludeConstraint expression(Expression expression) {
         this.setExpression(expression);
         return this;
+    }
+
+    public <E extends Expression> E getExpression(Class<E> type) {
+        return type.cast(getExpression());
+    }
+
+    @Override()
+    public ExcludeConstraint name(List<String> name) {
+        return (ExcludeConstraint) super.name(name);
+    }
+
+    @Override()
+    public ExcludeConstraint type(String type) {
+        return (ExcludeConstraint) super.type(type);
+    }
+
+    @Override()
+    public ExcludeConstraint using(String using) {
+        return (ExcludeConstraint) super.using(using);
     }
 }
