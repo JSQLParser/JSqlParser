@@ -9,16 +9,15 @@
  */
 package net.sf.jsqlparser.schema;
 
-import org.junit.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Test;
 
 public class SequenceTest {
 
     @Test
     public void testSetName() {
-        Sequence sequence = new Sequence();
-        sequence.setName("foo");
+        Sequence sequence = new Sequence().withName("foo");
 
         assertThat(sequence.getName()).isEqualTo("foo");
         assertThat(sequence.getFullyQualifiedName()).isEqualTo("foo");
@@ -26,9 +25,7 @@ public class SequenceTest {
 
     @Test
     public void testSetSchemaName() {
-        Sequence sequence = new Sequence();
-        sequence.setName("foo");
-        sequence.setSchemaName("bar");
+        Sequence sequence = new Sequence().withName("foo").withSchemaName("bar");
 
         assertThat(sequence.getSchemaName()).isEqualTo("bar");
         assertThat(sequence.getFullyQualifiedName()).isEqualTo("bar.foo");
@@ -36,10 +33,7 @@ public class SequenceTest {
 
     @Test
     public void testSetDatabase() {
-        Sequence sequence = new Sequence();
-        sequence.setName("foo");
-        sequence.setSchemaName("bar");
-        sequence.setDatabase(new Database("default"));
+        Sequence sequence = new Sequence().withName("foo").withSchemaName("bar").withDatabase(new Database("default"));
 
         assertThat(sequence.getDatabase().getDatabaseName()).isEqualTo("default");
         assertThat(sequence.getFullyQualifiedName()).isEqualTo("default.bar.foo");

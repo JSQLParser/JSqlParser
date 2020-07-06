@@ -9,8 +9,15 @@
  */
 package net.sf.jsqlparser.expression;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
@@ -21,11 +28,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -171,8 +173,7 @@ public class ExpressionVisitorAdapterTest {
                 parse("SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE t2.col2 = t1.col1)");
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         Expression where = plainSelect.getWhere();
-        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
-        adapter.setSelectVisitor(new SelectVisitorAdapter());
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter().withSelectVisitor(new SelectVisitorAdapter());
         try {
             where.accept(adapter);
         } catch (NullPointerException npe) {
