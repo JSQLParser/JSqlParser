@@ -9,13 +9,16 @@
  */
 package net.sf.jsqlparser.statement.truncate;
 
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
+import static org.junit.Assert.assertEquals;
+
 import java.io.StringReader;
 
-import static net.sf.jsqlparser.test.TestUtils.*;
-import net.sf.jsqlparser.*;
-
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import static org.junit.Assert.assertEquals;
+import net.sf.jsqlparser.schema.Table;
 import org.junit.Test;
 
 public class TruncateTest {
@@ -43,12 +46,16 @@ public class TruncateTest {
 
     @Test
     public void testTruncateDeparse() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("TRUNCATE TABLE foo");
+        String statement = "TRUNCATE TABLE foo";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(new Truncate().withTable(new Table("foo")), statement);
     }
 
     @Test
     public void testTruncateCascadeDeparse() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("TRUNCATE TABLE foo CASCADE");
+        String statement = "TRUNCATE TABLE foo CASCADE";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(new Truncate().withTable(new Table("foo")).withCascade(true), statement);
     }
 
 }
