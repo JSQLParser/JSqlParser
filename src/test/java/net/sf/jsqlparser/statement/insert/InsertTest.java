@@ -164,7 +164,7 @@ public class InsertTest {
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new Insert().withTable(new Table("mytable"))
                 .withColumns(Arrays.asList(new Column("col1"), new Column("col2")))
-                .withItemsList(new MultiExpressionList().addExpressionList(
+                .withItemsList(new MultiExpressionList().addExpressionLists(
                         new ExpressionList(new Column("a"), new Column("b")),
                         new ExpressionList(new Column("d"), new Column("e")))),
                 statement);
