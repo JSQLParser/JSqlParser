@@ -20,6 +20,10 @@ public class NextValExpression extends ASTNodeAccessImpl implements Expression {
         this.nameList = nameList;
     }
 
+    public List<String> getNameList() {
+        return nameList;
+    }
+
     public String getName() {
         StringBuilder b = new StringBuilder();
         for (String name : nameList) {
