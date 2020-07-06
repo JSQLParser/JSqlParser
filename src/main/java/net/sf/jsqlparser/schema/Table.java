@@ -77,7 +77,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return new Database(getIndex(DATABASE_IDX));
     }
 
-    public Table database(Database database) {
+    public Table withDatabase(Database database) {
         setDatabase(database);
         return this;
     }
@@ -93,26 +93,26 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return getIndex(SCHEMA_IDX);
     }
 
-    public Table schemaName(String string) {
-        setSchemaName(string);
+    public Table withSchemaName(String schemaName) {
+        setSchemaName(schemaName);
         return this;
     }
 
-    public void setSchemaName(String string) {
-        setIndex(SCHEMA_IDX, string);
+    public void setSchemaName(String schemaName) {
+        setIndex(SCHEMA_IDX, schemaName);
     }
 
     public String getName() {
         return getIndex(NAME_IDX);
     }
 
-    public Table name(String string) {
-        setName(string);
+    public Table withName(String name) {
+        this.setName(name);
         return this;
     }
 
-    public void setName(String string) {
-        setIndex(NAME_IDX, string);
+    public void setName(String name) {
+        setIndex(NAME_IDX, name);
     }
 
     @Override
@@ -192,7 +192,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return mysqlHints;
     }
 
-    public Table hint(MySQLIndexHint hint) {
+    public Table withHint(MySQLIndexHint hint) {
         setHint(hint);
         return this;
     }
