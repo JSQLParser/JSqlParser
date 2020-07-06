@@ -24,6 +24,10 @@ public abstract class CreateFunctionalStatement implements Statement {
 
     private List<String> functionDeclarationParts;
 
+    protected CreateFunctionalStatement(String kind) {
+        this.kind = kind;
+    }
+
     protected CreateFunctionalStatement(String kind, List<String> functionDeclarationParts) {
         this.kind = kind;
         this.functionDeclarationParts = functionDeclarationParts;
