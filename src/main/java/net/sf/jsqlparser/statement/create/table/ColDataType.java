@@ -72,22 +72,22 @@ public class ColDataType {
                 + (characterSet != null ? " CHARACTER SET " + characterSet : "");
     }
 
-    public ColDataType dataType(String dataType) {
+    public ColDataType withDataType(String dataType) {
         this.setDataType(dataType);
         return this;
     }
 
-    public ColDataType argumentsStringList(List<String> argumentsStringList) {
+    public ColDataType withArgumentsStringList(List<String> argumentsStringList) {
         this.setArgumentsStringList(argumentsStringList);
         return this;
     }
 
-    public ColDataType characterSet(String characterSet) {
+    public ColDataType withCharacterSet(String characterSet) {
         this.setCharacterSet(characterSet);
         return this;
     }
 
-    public ColDataType arrayData(List<Integer> arrayData) {
+    public ColDataType withArrayData(List<Integer> arrayData) {
         this.setArrayData(arrayData);
         return this;
     }
@@ -95,24 +95,24 @@ public class ColDataType {
     public ColDataType addArgumentsStringList(String... argumentsStringList) {
         List<String> collection = Optional.ofNullable(getArgumentsStringList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, argumentsStringList);
-        return this.argumentsStringList(collection);
+        return this.withArgumentsStringList(collection);
     }
 
     public ColDataType addArgumentsStringList(Collection<String> argumentsStringList) {
         List<String> collection = Optional.ofNullable(getArgumentsStringList()).orElseGet(ArrayList::new);
         collection.addAll(argumentsStringList);
-        return this.argumentsStringList(collection);
+        return this.withArgumentsStringList(collection);
     }
 
     public ColDataType addArrayData(Integer... arrayData) {
         List<Integer> collection = Optional.ofNullable(getArrayData()).orElseGet(ArrayList::new);
         Collections.addAll(collection, arrayData);
-        return this.arrayData(collection);
+        return this.withArrayData(collection);
     }
 
     public ColDataType addArrayData(Collection<Integer> arrayData) {
         List<Integer> collection = Optional.ofNullable(getArrayData()).orElseGet(ArrayList::new);
         collection.addAll(arrayData);
-        return this.arrayData(collection);
+        return this.withArrayData(collection);
     }
 }

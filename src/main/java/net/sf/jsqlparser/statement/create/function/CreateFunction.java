@@ -24,8 +24,8 @@ public class CreateFunction extends CreateFunctionalStatement {
     }
 
     @Override()
-    public CreateFunction functionDeclarationParts(List<String> functionDeclarationParts) {
-        return (CreateFunction) super.functionDeclarationParts(functionDeclarationParts);
+    public CreateFunction withFunctionDeclarationParts(List<String> functionDeclarationParts) {
+        return (CreateFunction) super.withFunctionDeclarationParts(functionDeclarationParts);
     }
 
     @Override()

@@ -72,13 +72,13 @@ public class ParenthesisFromItem implements FromItem {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ParenthesisFromItem fromItem(FromItem fromItem) {
+    public ParenthesisFromItem withFromItem(FromItem fromItem) {
         this.setFromItem(fromItem);
         return this;
     }
 
     @Override
-    public ParenthesisFromItem alias(Alias alias) {
+    public ParenthesisFromItem withAlias(Alias alias) {
         this.setAlias(alias);
         return this;
     }

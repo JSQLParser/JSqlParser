@@ -32,7 +32,7 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
         return rightExpression;
     }
 
-    public BinaryExpression leftExpression(Expression expression) {
+    public BinaryExpression withLeftExpression(Expression expression) {
         setLeftExpression(expression);
         return this;
     }
@@ -41,7 +41,7 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
         leftExpression = expression;
     }
 
-    public BinaryExpression rightExpression(Expression expression) {
+    public BinaryExpression withRightExpression(Expression expression) {
         setRightExpression(expression);
         return this;
     }

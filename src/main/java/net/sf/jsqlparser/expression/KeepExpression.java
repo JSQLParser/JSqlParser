@@ -78,17 +78,17 @@ public class KeepExpression extends ASTNodeAccessImpl implements Expression {
         }
     }
 
-    public KeepExpression name(String name) {
+    public KeepExpression withName(String name) {
         this.setName(name);
         return this;
     }
 
-    public KeepExpression orderByElements(List<OrderByElement> orderByElements) {
+    public KeepExpression withOrderByElements(List<OrderByElement> orderByElements) {
         this.setOrderByElements(orderByElements);
         return this;
     }
 
-    public KeepExpression first(boolean first) {
+    public KeepExpression withFirst(boolean first) {
         this.setFirst(first);
         return this;
     }
@@ -96,12 +96,12 @@ public class KeepExpression extends ASTNodeAccessImpl implements Expression {
     public KeepExpression addOrderByElements(OrderByElement... orderByElements) {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         Collections.addAll(collection, orderByElements);
-        return this.orderByElements(collection);
+        return this.withOrderByElements(collection);
     }
 
     public KeepExpression addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         collection.addAll(orderByElements);
-        return this.orderByElements(collection);
+        return this.withOrderByElements(collection);
     }
 }

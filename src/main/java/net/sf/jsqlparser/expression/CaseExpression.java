@@ -95,17 +95,17 @@ public class CaseExpression extends ASTNodeAccessImpl implements Expression {
                 + ((elseExpression != null) ? "ELSE " + elseExpression + " " : "") + "END";
     }
 
-    public CaseExpression switchExpression(Expression switchExpression) {
+    public CaseExpression withSwitchExpression(Expression switchExpression) {
         this.setSwitchExpression(switchExpression);
         return this;
     }
 
-    public CaseExpression whenClauses(List<WhenClause> whenClauses) {
+    public CaseExpression withWhenClauses(List<WhenClause> whenClauses) {
         this.setWhenClauses(whenClauses);
         return this;
     }
 
-    public CaseExpression elseExpression(Expression elseExpression) {
+    public CaseExpression withElseExpression(Expression elseExpression) {
         this.setElseExpression(elseExpression);
         return this;
     }
@@ -113,13 +113,13 @@ public class CaseExpression extends ASTNodeAccessImpl implements Expression {
     public CaseExpression addWhenClauses(WhenClause... whenClauses) {
         List<WhenClause> collection = Optional.ofNullable(getWhenClauses()).orElseGet(ArrayList::new);
         Collections.addAll(collection, whenClauses);
-        return this.whenClauses(collection);
+        return this.withWhenClauses(collection);
     }
 
     public CaseExpression addWhenClauses(Collection<? extends WhenClause> whenClauses) {
         List<WhenClause> collection = Optional.ofNullable(getWhenClauses()).orElseGet(ArrayList::new);
         collection.addAll(whenClauses);
-        return this.whenClauses(collection);
+        return this.withWhenClauses(collection);
     }
 
     public <E extends Expression> E getSwitchExpression(Class<E> type) {

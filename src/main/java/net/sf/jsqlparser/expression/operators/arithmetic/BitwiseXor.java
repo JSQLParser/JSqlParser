@@ -26,12 +26,12 @@ public class BitwiseXor extends BinaryExpression {
     }
 
     @Override()
-    public BitwiseXor leftExpression(Expression arg0) {
-        return (BitwiseXor) super.leftExpression(arg0);
+    public BitwiseXor withLeftExpression(Expression arg0) {
+        return (BitwiseXor) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public BitwiseXor rightExpression(Expression arg0) {
-        return (BitwiseXor) super.rightExpression(arg0);
+    public BitwiseXor withRightExpression(Expression arg0) {
+        return (BitwiseXor) super.withRightExpression(arg0);
     }
 }

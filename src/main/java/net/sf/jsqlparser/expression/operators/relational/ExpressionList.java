@@ -43,11 +43,11 @@ public class ExpressionList implements ItemsList {
     public ExpressionList addExpressions(Expression... elements) {
         List<Expression> list = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
         Collections.addAll(list, elements);
-        return expressions(list);
+        return withExpressions(list);
     }
 
-    public ExpressionList expressions(List<Expression> list) {
-        setExpressions(list);
+    public ExpressionList withExpressions(List<Expression> list) {
+        this.setExpressions(list);
         return this;
     }
 
@@ -72,6 +72,6 @@ public class ExpressionList implements ItemsList {
     public ExpressionList addExpressions(Collection<? extends Expression> expressions) {
         List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
         collection.addAll(expressions);
-        return this.expressions(collection);
+        return this.withExpressions(collection);
     }
 }

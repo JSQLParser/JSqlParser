@@ -40,13 +40,13 @@ public class TableFunction extends FunctionItem implements FromItem {
     }
 
     @Override
-    public TableFunction alias(Alias alias) {
-        return (TableFunction) FromItem.super.alias(alias);
+    public TableFunction withAlias(Alias alias) {
+        return (TableFunction) FromItem.super.withAlias(alias);
     }
 
     @Override
-    public TableFunction function(Function function) {
-        return (TableFunction) super.function(function);
+    public TableFunction withFunction(Function function) {
+        return (TableFunction) super.withFunction(function);
     }
 
 }

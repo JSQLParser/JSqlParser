@@ -9,11 +9,10 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import static java.util.stream.Collectors.toList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import static java.util.stream.Collectors.toList;
-
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class Index {
@@ -98,17 +97,17 @@ public class Index {
                 getStringList(columns, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
     }
 
-    public Index type(String type) {
+    public Index withType(String type) {
         this.setType(type);
         return this;
     }
 
-    public Index using(String using) {
+    public Index withUsing(String using) {
         this.setUsing(using);
         return this;
     }
 
-    public Index name(List<String> name) {
+    public Index withName(List<String> name) {
         this.setName(name);
         return this;
     }

@@ -80,22 +80,22 @@ public class OracleHierarchicalExpression extends ASTNodeAccessImpl implements E
         return b.toString();
     }
 
-    public OracleHierarchicalExpression startExpression(Expression startExpression) {
+    public OracleHierarchicalExpression withStartExpression(Expression startExpression) {
         this.setStartExpression(startExpression);
         return this;
     }
 
-    public OracleHierarchicalExpression connectExpression(Expression connectExpression) {
+    public OracleHierarchicalExpression withConnectExpression(Expression connectExpression) {
         this.setConnectExpression(connectExpression);
         return this;
     }
 
-    public OracleHierarchicalExpression noCycle(boolean noCycle) {
+    public OracleHierarchicalExpression withNoCycle(boolean noCycle) {
         this.setNoCycle(noCycle);
         return this;
     }
 
-    public OracleHierarchicalExpression connectFirst(boolean connectFirst) {
+    public OracleHierarchicalExpression withConnectFirst(boolean connectFirst) {
         this.setConnectFirst(connectFirst);
         return this;
     }

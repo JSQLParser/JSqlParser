@@ -40,8 +40,8 @@ public class Join extends ASTNodeAccessImpl {
         return simple;
     }
 
-    public Join simple(boolean b) {
-        setSimple(b);
+    public Join withSimple(boolean b) {
+        this.setSimple(b);
         return this;
     }
 
@@ -53,8 +53,8 @@ public class Join extends ASTNodeAccessImpl {
         return inner;
     }
 
-    public Join inner(boolean b) {
-        setInner(b);
+    public Join withInner(boolean b) {
+        this.setInner(b);
         return this;
     }
 
@@ -66,8 +66,8 @@ public class Join extends ASTNodeAccessImpl {
         return straight;
     }
 
-    public Join straight(boolean b) {
-        setStraight(b);
+    public Join withStraight(boolean b) {
+        this.setStraight(b);
         return this;
     }
 
@@ -84,8 +84,8 @@ public class Join extends ASTNodeAccessImpl {
         return outer;
     }
 
-    public Join outer(boolean b) {
-        setOuter(b);
+    public Join withOuter(boolean b) {
+        this.setOuter(b);
         return this;
     }
 
@@ -97,8 +97,8 @@ public class Join extends ASTNodeAccessImpl {
         return apply;
     }
 
-    public Join apply(boolean apply) {
-        setApply(apply);
+    public Join withApply(boolean apply) {
+        this.setApply(apply);
         return this;
     }
 
@@ -115,8 +115,8 @@ public class Join extends ASTNodeAccessImpl {
         return semi;
     }
 
-    public Join semi(boolean b) {
-        setSemi(b);
+    public Join withSemi(boolean b) {
+        this.setSemi(b);
         return this;
     }
 
@@ -133,8 +133,8 @@ public class Join extends ASTNodeAccessImpl {
         return left;
     }
 
-    public Join left(boolean b) {
-        setLeft(b);
+    public Join withLeft(boolean b) {
+        this.setLeft(b);
         return this;
     }
 
@@ -151,8 +151,8 @@ public class Join extends ASTNodeAccessImpl {
         return right;
     }
 
-    public Join right(boolean b) {
-        setRight(b);
+    public Join withRight(boolean b) {
+        this.setRight(b);
         return this;
     }
 
@@ -169,8 +169,8 @@ public class Join extends ASTNodeAccessImpl {
         return natural;
     }
 
-    public Join natural(boolean b) {
-        setNatural(b);
+    public Join withNatural(boolean b) {
+        this.setNatural(b);
         return this;
     }
 
@@ -187,8 +187,8 @@ public class Join extends ASTNodeAccessImpl {
         return full;
     }
 
-    public Join full(boolean b) {
-        setFull(b);
+    public Join withFull(boolean b) {
+        this.setFull(b);
         return this;
     }
 
@@ -200,8 +200,8 @@ public class Join extends ASTNodeAccessImpl {
         return cross;
     }
 
-    public Join cross(boolean cross) {
-        setCross(cross);
+    public Join withCross(boolean cross) {
+        this.setCross(cross);
         return this;
     }
 
@@ -216,8 +216,8 @@ public class Join extends ASTNodeAccessImpl {
         return rightItem;
     }
 
-    public Join rightItem(FromItem item) {
-        setRightItem(item);
+    public Join withRightItem(FromItem item) {
+        this.setRightItem(item);
         return this;
     }
 
@@ -232,8 +232,8 @@ public class Join extends ASTNodeAccessImpl {
         return onExpression;
     }
 
-    public Join onExpression(Expression expression) {
-        setOnExpression(expression);
+    public Join withOnExpression(Expression expression) {
+        this.setOnExpression(expression);
         return this;
     }
 
@@ -248,8 +248,8 @@ public class Join extends ASTNodeAccessImpl {
         return usingColumns;
     }
 
-    public Join usingColumns(List<Column> list) {
-        setUsingColumns(list);
+    public Join withUsingColumns(List<Column> list) {
+        this.setUsingColumns(list);
         return this;
     }
 
@@ -268,8 +268,8 @@ public class Join extends ASTNodeAccessImpl {
         return joinWindow;
     }
 
-    public Join joinWindow(KSQLJoinWindow joinWindow) {
-        setJoinWindow(joinWindow);
+    public Join withJoinWindow(KSQLJoinWindow joinWindow) {
+        this.setJoinWindow(joinWindow);
         return this;
     }
 
@@ -320,7 +320,7 @@ public class Join extends ASTNodeAccessImpl {
         }
 
     }
-    
+
     public static Join create() {
         return new Join();
     }
@@ -328,13 +328,13 @@ public class Join extends ASTNodeAccessImpl {
     public Join addUsingColumns(Column... usingColumns) {
         List<Column> collection = Optional.ofNullable(getUsingColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, usingColumns);
-        return this.usingColumns(collection);
+        return this.withUsingColumns(collection);
     }
 
     public Join addUsingColumns(Collection<? extends Column> usingColumns) {
         List<Column> collection = Optional.ofNullable(getUsingColumns()).orElseGet(ArrayList::new);
         collection.addAll(usingColumns);
-        return this.usingColumns(collection);
+        return this.withUsingColumns(collection);
     }
 
     public <E extends FromItem> E getRightItem(Class<E> type) {

@@ -54,8 +54,8 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         return leftExpression;
     }
 
-    public InExpression rightItemsList(ItemsList list) {
-        setRightItemsList(list);
+    public InExpression withRightItemsList(ItemsList list) {
+        this.setRightItemsList(list);
         return this;
     }
 
@@ -63,8 +63,8 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         rightItemsList = list;
     }
 
-    public InExpression leftExpression(Expression expression) {
-        setLeftExpression(expression);
+    public InExpression withLeftExpression(Expression expression) {
+        this.setLeftExpression(expression);
         return this;
     }
 
@@ -160,27 +160,34 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         return new InExpression();
     }
 
-    public InExpression leftItemsList(ItemsList leftItemsList) {
+    public InExpression withLeftItemsList(ItemsList leftItemsList) {
         this.setLeftItemsList(leftItemsList);
         return this;
     }
 
-    public InExpression rightExpression(Expression rightExpression) {
+    public InExpression withRightExpression(Expression rightExpression) {
         this.setRightExpression(rightExpression);
         return this;
     }
 
-    public InExpression multiExpressionList(MultiExpressionList multiExpressionList) {
+    public InExpression withMultiExpressionList(MultiExpressionList multiExpressionList) {
         this.setMultiExpressionList(multiExpressionList);
         return this;
     }
 
-    public InExpression oldOracleJoinSyntax(int oldOracleJoinSyntax) {
+    @Override
+    public InExpression withOldOracleJoinSyntax(int oldOracleJoinSyntax) {
         this.setOldOracleJoinSyntax(oldOracleJoinSyntax);
         return this;
     }
 
-    public InExpression not(boolean not) {
+    @Override
+    public InExpression withOraclePriorPosition(int priorPosition) {
+        this.setOraclePriorPosition(priorPosition);
+        return this;
+    }
+
+    public InExpression withNot(boolean not) {
         this.setNot(not);
         return this;
     }

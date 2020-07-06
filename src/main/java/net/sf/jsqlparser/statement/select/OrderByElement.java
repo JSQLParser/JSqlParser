@@ -78,17 +78,17 @@ public class OrderByElement {
         return b.toString();
     }
 
-    public OrderByElement expression(Expression expression) {
+    public OrderByElement withExpression(Expression expression) {
         this.setExpression(expression);
         return this;
     }
 
-    public OrderByElement asc(boolean asc) {
+    public OrderByElement withAsc(boolean asc) {
         this.setAsc(asc);
         return this;
     }
 
-    public OrderByElement nullOrdering(NullOrdering nullOrdering) {
+    public OrderByElement withNullOrdering(NullOrdering nullOrdering) {
         this.setNullOrdering(nullOrdering);
         return this;
     }

@@ -50,12 +50,12 @@ public class RegExpMySQLOperator extends BinaryExpression {
     }
 
     @Override()
-    public RegExpMySQLOperator leftExpression(Expression arg0) {
-        return (RegExpMySQLOperator) super.leftExpression(arg0);
+    public RegExpMySQLOperator withLeftExpression(Expression arg0) {
+        return (RegExpMySQLOperator) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public RegExpMySQLOperator rightExpression(Expression arg0) {
-        return (RegExpMySQLOperator) super.rightExpression(arg0);
+    public RegExpMySQLOperator withRightExpression(Expression arg0) {
+        return (RegExpMySQLOperator) super.withRightExpression(arg0);
     }
 }

@@ -46,7 +46,7 @@ public class DoubleValue extends ASTNodeAccessImpl implements Expression {
         return stringValue;
     }
 
-    public DoubleValue value(double value) {
+    public DoubleValue withValue(double value) {
         this.setValue(value);
         return this;
     }

@@ -47,12 +47,12 @@ public class CollateExpression extends ASTNodeAccessImpl implements Expression {
         return leftExpression.toString() + " COLLATE " + collate;
     }
 
-    public CollateExpression leftExpression(Expression leftExpression) {
+    public CollateExpression withLeftExpression(Expression leftExpression) {
         this.setLeftExpression(leftExpression);
         return this;
     }
 
-    public CollateExpression collate(String collate) {
+    public CollateExpression withCollate(String collate) {
         this.setCollate(collate);
         return this;
     }

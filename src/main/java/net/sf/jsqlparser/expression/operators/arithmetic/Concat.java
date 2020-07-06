@@ -26,12 +26,12 @@ public class Concat extends BinaryExpression {
     }
 
     @Override()
-    public Concat leftExpression(Expression arg0) {
-        return (Concat) super.leftExpression(arg0);
+    public Concat withLeftExpression(Expression arg0) {
+        return (Concat) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public Concat rightExpression(Expression arg0) {
-        return (Concat) super.rightExpression(arg0);
+    public Concat withRightExpression(Expression arg0) {
+        return (Concat) super.withRightExpression(arg0);
     }
 }

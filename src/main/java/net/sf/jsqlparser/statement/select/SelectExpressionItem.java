@@ -51,12 +51,12 @@ public class SelectExpressionItem extends ASTNodeAccessImpl implements SelectIte
         return expression + ((alias != null) ? alias.toString() : "");
     }
 
-    public SelectExpressionItem expression(Expression expression) {
+    public SelectExpressionItem withExpression(Expression expression) {
         this.setExpression(expression);
         return this;
     }
 
-    public SelectExpressionItem alias(Alias alias) {
+    public SelectExpressionItem withAlias(Alias alias) {
         this.setAlias(alias);
         return this;
     }

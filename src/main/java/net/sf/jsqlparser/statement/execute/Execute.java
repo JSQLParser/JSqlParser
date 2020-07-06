@@ -76,22 +76,22 @@ public class Execute implements Statement {
                 + PlainSelect.getStringList(exprList.getExpressions(), true, parenthesis) : "");
     }
 
-    public Execute execType(EXEC_TYPE execType) {
+    public Execute withExecType(EXEC_TYPE execType) {
         this.setExecType(execType);
         return this;
     }
 
-    public Execute name(String name) {
+    public Execute withName(String name) {
         this.setName(name);
         return this;
     }
 
-    public Execute exprList(ExpressionList exprList) {
+    public Execute withExprList(ExpressionList exprList) {
         this.setExprList(exprList);
         return this;
     }
 
-    public Execute parenthesis(boolean parenthesis) {
+    public Execute withParenthesis(boolean parenthesis) {
         this.setParenthesis(parenthesis);
         return this;
     }

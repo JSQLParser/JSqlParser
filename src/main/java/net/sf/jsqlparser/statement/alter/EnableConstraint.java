@@ -30,7 +30,7 @@ public class EnableConstraint implements ConstraintState {
         return disable ? "DISABLE" : "ENABLE";
     }
 
-    public EnableConstraint disable(boolean disable) {
+    public EnableConstraint withDisable(boolean disable) {
         this.setDisable(disable);
         return this;
     }

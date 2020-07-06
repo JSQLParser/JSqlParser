@@ -210,11 +210,6 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     @Override
-    public Table unPivot(UnPivot unpivot) {
-        return (Table) FromItem.super.unPivot(unpivot);
-    }
-
-    @Override
     public String toString() {
         return getFullyQualifiedName() + ((alias != null) ? alias.toString() : "")
                 + ((pivot != null) ? " " + pivot : "") + ((unpivot != null) ? " " + unpivot : "")
@@ -222,17 +217,22 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
                 + ((sqlServerHints != null) ? sqlServerHints.toString() : "");
     }
 
-    public Table alias(Alias alias) {
-        this.setAlias(alias);
-        return this;
+    @Override
+    public Table withUnPivot(UnPivot unpivot) {
+        return (Table) FromItem.super.withUnPivot(unpivot);
     }
 
-    public Table pivot(Pivot pivot) {
-        this.setPivot(pivot);
-        return this;
+    @Override
+    public Table withAlias(Alias alias) {
+        return (Table) FromItem.super.withAlias(alias);
     }
 
-    public Table sqlServerHints(SQLServerHints sqlServerHints) {
+    @Override
+    public Table withPivot(Pivot pivot) {
+        return (Table) FromItem.super.withPivot(pivot);
+    }
+
+    public Table withSqlServerHints(SQLServerHints sqlServerHints) {
         this.setSqlServerHints(sqlServerHints);
         return this;
     }

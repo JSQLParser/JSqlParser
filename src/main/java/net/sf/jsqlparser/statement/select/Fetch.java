@@ -57,17 +57,17 @@ public class Fetch {
                     Long.toString(rowCount)) + " " + fetchParam + " ONLY";
     }
 
-    public Fetch rowCount(long rowCount) {
+    public Fetch withRowCount(long rowCount) {
         this.setRowCount(rowCount);
         return this;
     }
 
-    public Fetch fetchJdbcParameter(JdbcParameter fetchJdbcParameter) {
+    public Fetch withFetchJdbcParameter(JdbcParameter fetchJdbcParameter) {
         this.setFetchJdbcParameter(fetchJdbcParameter);
         return this;
     }
 
-    public Fetch fetchParam(String fetchParam) {
+    public Fetch withFetchParam(String fetchParam) {
         this.setFetchParam(fetchParam);
         return this;
     }

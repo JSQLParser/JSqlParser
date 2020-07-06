@@ -75,12 +75,12 @@ public class OracleHint extends ASTNodeAccessImpl implements Expression {
         }
     }
 
-    public OracleHint value(String value) {
+    public OracleHint withValue(String value) {
         this.setValue(value);
         return this;
     }
 
-    public OracleHint singleLine(boolean singleLine) {
+    public OracleHint withSingleLine(boolean singleLine) {
         this.setSingleLine(singleLine);
         return this;
     }

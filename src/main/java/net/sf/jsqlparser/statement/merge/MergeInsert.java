@@ -46,12 +46,12 @@ public class MergeInsert {
                 + " VALUES " + PlainSelect.getStringList(values, true, true);
     }
 
-    public MergeInsert columns(List<Column> columns) {
+    public MergeInsert withColumns(List<Column> columns) {
         this.setColumns(columns);
         return this;
     }
 
-    public MergeInsert values(List<Expression> values) {
+    public MergeInsert withValues(List<Expression> values) {
         this.setValues(values);
         return this;
     }
@@ -59,24 +59,24 @@ public class MergeInsert {
     public MergeInsert addColumns(Column... columns) {
         List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columns);
-        return this.columns(collection);
+        return this.withColumns(collection);
     }
 
     public MergeInsert addColumns(Collection<? extends Column> columns) {
         List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
         collection.addAll(columns);
-        return this.columns(collection);
+        return this.withColumns(collection);
     }
 
     public MergeInsert addValues(Expression... values) {
         List<Expression> collection = Optional.ofNullable(getValues()).orElseGet(ArrayList::new);
         Collections.addAll(collection, values);
-        return this.values(collection);
+        return this.withValues(collection);
     }
 
     public MergeInsert addValues(Collection<? extends Expression> values) {
         List<Expression> collection = Optional.ofNullable(getValues()).orElseGet(ArrayList::new);
         collection.addAll(values);
-        return this.values(collection);
+        return this.withValues(collection);
     }
 }

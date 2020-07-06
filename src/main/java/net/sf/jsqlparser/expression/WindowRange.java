@@ -40,12 +40,12 @@ public class WindowRange {
         return buffer.toString();
     }
 
-    public WindowRange start(WindowOffset start) {
+    public WindowRange withStart(WindowOffset start) {
         this.setStart(start);
         return this;
     }
 
-    public WindowRange end(WindowOffset end) {
+    public WindowRange withEnd(WindowOffset end) {
         this.setEnd(end);
         return this;
     }

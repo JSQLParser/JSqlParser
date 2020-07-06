@@ -39,7 +39,7 @@ public class OrderByClause {
         }
     }
 
-    public OrderByClause orderByElements(List<OrderByElement> orderByElements) {
+    public OrderByClause withOrderByElements(List<OrderByElement> orderByElements) {
         this.setOrderByElements(orderByElements);
         return this;
     }
@@ -47,12 +47,12 @@ public class OrderByClause {
     public OrderByClause addOrderByElements(OrderByElement... orderByElements) {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         Collections.addAll(collection, orderByElements);
-        return this.orderByElements(collection);
+        return this.withOrderByElements(collection);
     }
 
     public OrderByClause addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         collection.addAll(orderByElements);
-        return this.orderByElements(collection);
+        return this.withOrderByElements(collection);
     }
 }

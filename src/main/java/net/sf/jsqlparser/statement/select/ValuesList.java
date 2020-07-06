@@ -120,22 +120,22 @@ public class ValuesList implements FromItem {
         this.columnNames = columnNames;
     }
 
-    public ValuesList alias(Alias alias) {
+    public ValuesList withAlias(Alias alias) {
         this.setAlias(alias);
         return this;
     }
 
-    public ValuesList multiExpressionList(MultiExpressionList multiExpressionList) {
+    public ValuesList withMultiExpressionList(MultiExpressionList multiExpressionList) {
         this.setMultiExpressionList(multiExpressionList);
         return this;
     }
 
-    public ValuesList noBrackets(boolean noBrackets) {
+    public ValuesList withNoBrackets(boolean noBrackets) {
         this.setNoBrackets(noBrackets);
         return this;
     }
 
-    public ValuesList columnNames(List<String> columnNames) {
+    public ValuesList withColumnNames(List<String> columnNames) {
         this.setColumnNames(columnNames);
         return this;
     }
@@ -143,12 +143,12 @@ public class ValuesList implements FromItem {
     public ValuesList addColumnNames(String... columnNames) {
         List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columnNames);
-        return this.columnNames(collection);
+        return this.withColumnNames(collection);
     }
 
     public ValuesList addColumnNames(Collection<String> columnNames) {
         List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
         collection.addAll(columnNames);
-        return this.columnNames(collection);
+        return this.withColumnNames(collection);
     }
 }

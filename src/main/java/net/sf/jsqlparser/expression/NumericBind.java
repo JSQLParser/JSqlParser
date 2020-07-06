@@ -33,7 +33,7 @@ public class NumericBind extends ASTNodeAccessImpl implements Expression {
         return ":" + bindId;
     }
 
-    public NumericBind bindId(int bindId) {
+    public NumericBind withBindId(int bindId) {
         this.setBindId(bindId);
         return this;
     }

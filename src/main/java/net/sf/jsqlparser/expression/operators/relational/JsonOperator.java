@@ -32,12 +32,12 @@ public class JsonOperator extends BinaryExpression {
     }
 
     @Override()
-    public JsonOperator leftExpression(Expression arg0) {
-        return (JsonOperator) super.leftExpression(arg0);
+    public JsonOperator withLeftExpression(Expression arg0) {
+        return (JsonOperator) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public JsonOperator rightExpression(Expression arg0) {
-        return (JsonOperator) super.rightExpression(arg0);
+    public JsonOperator withRightExpression(Expression arg0) {
+        return (JsonOperator) super.withRightExpression(arg0);
     }
 }

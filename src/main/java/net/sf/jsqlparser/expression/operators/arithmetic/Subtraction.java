@@ -26,12 +26,12 @@ public class Subtraction extends BinaryExpression {
     }
 
     @Override()
-    public Subtraction leftExpression(Expression arg0) {
-        return (Subtraction) super.leftExpression(arg0);
+    public Subtraction withLeftExpression(Expression arg0) {
+        return (Subtraction) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public Subtraction rightExpression(Expression arg0) {
-        return (Subtraction) super.rightExpression(arg0);
+    public Subtraction withRightExpression(Expression arg0) {
+        return (Subtraction) super.withRightExpression(arg0);
     }
 }

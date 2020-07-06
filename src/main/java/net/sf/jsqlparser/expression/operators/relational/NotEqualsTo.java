@@ -29,13 +29,13 @@ public class NotEqualsTo extends ComparisonOperator {
     }
 
     @Override
-    public NotEqualsTo leftExpression(Expression expression) {
-        return (NotEqualsTo) super.leftExpression(expression);
+    public NotEqualsTo withLeftExpression(Expression expression) {
+        return (NotEqualsTo) super.withLeftExpression(expression);
     }
 
     @Override
-    public NotEqualsTo rightExpression(Expression expression) {
-        return (NotEqualsTo) super.rightExpression(expression);
+    public NotEqualsTo withRightExpression(Expression expression) {
+        return (NotEqualsTo) super.withRightExpression(expression);
     }
 
     @Override
@@ -44,12 +44,12 @@ public class NotEqualsTo extends ComparisonOperator {
     }
 
     @Override()
-    public NotEqualsTo oldOracleJoinSyntax(int arg0) {
-        return (NotEqualsTo) super.oldOracleJoinSyntax(arg0);
+    public NotEqualsTo withOldOracleJoinSyntax(int arg0) {
+        return (NotEqualsTo) super.withOldOracleJoinSyntax(arg0);
     }
 
     @Override()
-    public NotEqualsTo oraclePriorPosition(int arg0) {
-        return (NotEqualsTo) super.oraclePriorPosition(arg0);
+    public NotEqualsTo withOraclePriorPosition(int arg0) {
+        return (NotEqualsTo) super.withOraclePriorPosition(arg0);
     }
 }

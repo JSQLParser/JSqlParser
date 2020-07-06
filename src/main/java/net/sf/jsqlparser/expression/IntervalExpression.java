@@ -63,17 +63,17 @@ public class IntervalExpression extends ASTNodeAccessImpl implements Expression 
         expressionVisitor.visit(this);
     }
 
-    public IntervalExpression parameter(String parameter) {
+    public IntervalExpression withParameter(String parameter) {
         this.setParameter(parameter);
         return this;
     }
 
-    public IntervalExpression intervalType(String intervalType) {
+    public IntervalExpression withIntervalType(String intervalType) {
         this.setIntervalType(intervalType);
         return this;
     }
 
-    public IntervalExpression expression(Expression expression) {
+    public IntervalExpression withExpression(Expression expression) {
         this.setExpression(expression);
         return this;
     }

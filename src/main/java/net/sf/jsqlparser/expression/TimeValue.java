@@ -42,7 +42,7 @@ public class TimeValue extends ASTNodeAccessImpl implements Expression {
         return "{t '" + value + "'}";
     }
 
-    public TimeValue value(Time value) {
+    public TimeValue withValue(Time value) {
         this.setValue(value);
         return this;
     }

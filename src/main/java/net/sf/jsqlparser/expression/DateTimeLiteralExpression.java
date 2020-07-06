@@ -42,12 +42,12 @@ public class DateTimeLiteralExpression extends ASTNodeAccessImpl implements Expr
         return type.name() + " " + value;
     }
 
-    public DateTimeLiteralExpression value(String value) {
+    public DateTimeLiteralExpression withValue(String value) {
         this.setValue(value);
         return this;
     }
 
-    public DateTimeLiteralExpression type(DateTime type) {
+    public DateTimeLiteralExpression withType(DateTime type) {
         this.setType(type);
         return this;
     }

@@ -40,7 +40,7 @@ public class AlterSequence implements Statement {
         return sql;
     }
 
-    public AlterSequence sequence(Sequence sequence) {
+    public AlterSequence withSequence(Sequence sequence) {
         this.setSequence(sequence);
         return this;
     }

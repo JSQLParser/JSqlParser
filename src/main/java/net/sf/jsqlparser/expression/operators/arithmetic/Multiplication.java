@@ -26,12 +26,12 @@ public class Multiplication extends BinaryExpression {
     }
 
     @Override()
-    public Multiplication leftExpression(Expression arg0) {
-        return (Multiplication) super.leftExpression(arg0);
+    public Multiplication withLeftExpression(Expression arg0) {
+        return (Multiplication) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public Multiplication rightExpression(Expression arg0) {
-        return (Multiplication) super.rightExpression(arg0);
+    public Multiplication withRightExpression(Expression arg0) {
+        return (Multiplication) super.withRightExpression(arg0);
     }
 }

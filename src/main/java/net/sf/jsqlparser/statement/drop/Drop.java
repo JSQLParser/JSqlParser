@@ -75,22 +75,22 @@ public class Drop implements Statement {
         return sql;
     }
 
-    public Drop ifExists(boolean ifExists) {
+    public Drop withIfExists(boolean ifExists) {
         this.setIfExists(ifExists);
         return this;
     }
 
-    public Drop type(String type) {
+    public Drop withType(String type) {
         this.setType(type);
         return this;
     }
 
-    public Drop name(Table name) {
+    public Drop withName(Table name) {
         this.setName(name);
         return this;
     }
 
-    public Drop parameters(List<String> parameters) {
+    public Drop withParameters(List<String> parameters) {
         this.setParameters(parameters);
         return this;
     }
@@ -98,12 +98,12 @@ public class Drop implements Statement {
     public Drop addParameters(String... parameters) {
         List<String> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
         Collections.addAll(collection, parameters);
-        return this.parameters(collection);
+        return this.withParameters(collection);
     }
 
     public Drop addParameters(Collection<String> parameters) {
         List<String> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
         collection.addAll(parameters);
-        return this.parameters(collection);
+        return this.withParameters(collection);
     }
 }

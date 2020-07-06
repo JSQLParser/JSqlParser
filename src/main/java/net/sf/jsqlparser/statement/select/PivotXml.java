@@ -53,12 +53,12 @@ public class PivotXml extends Pivot {
                 + " IN (" + in + "))";
     }
 
-    public PivotXml inSelect(SelectBody inSelect) {
+    public PivotXml withInSelect(SelectBody inSelect) {
         this.setInSelect(inSelect);
         return this;
     }
 
-    public PivotXml inAny(boolean inAny) {
+    public PivotXml withInAny(boolean inAny) {
         this.setInAny(inAny);
         return this;
     }
@@ -68,28 +68,28 @@ public class PivotXml extends Pivot {
     }
 
     @Override()
-    public PivotXml alias(Alias alias) {
-        return (PivotXml) super.alias(alias);
+    public PivotXml withAlias(Alias alias) {
+        return (PivotXml) super.withAlias(alias);
     }
 
     @Override()
-    public PivotXml functionItems(List<FunctionItem> functionItems) {
-        return (PivotXml) super.functionItems(functionItems);
+    public PivotXml withFunctionItems(List<FunctionItem> functionItems) {
+        return (PivotXml) super.withFunctionItems(functionItems);
     }
 
     @Override()
-    public PivotXml forColumns(List<Column> forColumns) {
-        return (PivotXml) super.forColumns(forColumns);
+    public PivotXml withForColumns(List<Column> forColumns) {
+        return (PivotXml) super.withForColumns(forColumns);
     }
 
     @Override()
-    public PivotXml singleInItems(List<SelectExpressionItem> singleInItems) {
-        return (PivotXml) super.singleInItems(singleInItems);
+    public PivotXml withSingleInItems(List<SelectExpressionItem> singleInItems) {
+        return (PivotXml) super.withSingleInItems(singleInItems);
     }
 
     @Override()
-    public PivotXml multiInItems(List<ExpressionListItem> multiInItems) {
-        return (PivotXml) super.multiInItems(multiInItems);
+    public PivotXml withMultiInItems(List<ExpressionListItem> multiInItems) {
+        return (PivotXml) super.withMultiInItems(multiInItems);
     }
 
     @Override()

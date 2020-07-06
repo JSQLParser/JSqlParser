@@ -72,7 +72,7 @@ public class UnPivot {
                 + " IN " + PlainSelect.getStringList(unpivotInClause, true, true) + ")";
     }
 
-    public UnPivot includeNulls(boolean includeNulls) {
+    public UnPivot withIncludeNulls(boolean includeNulls) {
         this.setIncludeNulls(includeNulls);
         return this;
     }

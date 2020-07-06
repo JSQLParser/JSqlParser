@@ -47,23 +47,23 @@ public class JSQLParserFluentModelTests {
         stmt.accept(new StatementDeParser(buffer));
         assertEquals(sql, buffer.toString());
 
-        Table t1 = new Table("tab1").alias(new Alias("t1", false));
-        Table t2 = new Table("tab2").alias(new Alias("t2", false));
+        Table t1 = new Table("tab1").withAlias(new Alias("t1", false));
+        Table t2 = new Table("tab2").withAlias(new Alias("t2", false));
 
-        Select select = Select.create().selectBody( //
+        Select select = Select.create().withSelectBody( //
                 PlainSelect.create() //
-                .selectItems(AllColumns.create()) //
-                .fromItem(t1) //
-                .addJoins(Join.create().rightItem(t2)
-                        .onExpression(EqualsTo.create(Column.create(t1, "ref"), Column.create(t2, "id"))))
-                .where(AndExpression.create( //
+                .addSelectItems(AllColumns.create()) //
+                .withFromItem(t1) //
+                .addJoins(Join.create().withRightItem(t2)
+                        .withOnExpression(EqualsTo.create(Column.create(t1, "ref"), Column.create(t2, "id"))))
+                .withWhere(AndExpression.create( //
                                 Parenthesis.create(OrExpression.create( //
                                 EqualsTo.create(Column.create(t1, "col1"), JdbcParameter.create()),
                                 EqualsTo.create(Column.create(t1, "col2"), JdbcParameter.create()) //
                                 )), //
                         InExpression.create() //
-                        .leftExpression(Column.create(t1, "col3"))
-                        .rightItemsList(
+                        .withLeftExpression(Column.create(t1, "col3"))
+                        .withRightItemsList(
                                 ExpressionList.create().addExpressions(StringValue.create("A"))))));
 
         ExpressionList list = select.getSelectBody(PlainSelect.class).getWhere(AndExpression.class)

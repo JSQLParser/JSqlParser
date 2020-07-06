@@ -251,82 +251,87 @@ public class Insert implements Statement {
         return sql.toString();
     }
 
-    public Insert useValues(boolean useValues) {
+    public Insert withUseValues(boolean useValues) {
         this.setUseValues(useValues);
         return this;
     }
 
-    public Insert select(Select select) {
+    public Insert withSelect(Select select) {
         this.setSelect(select);
         return this;
     }
 
-    public Insert useSelectBrackets(boolean useSelectBrackets) {
+    public Insert withUseSelectBrackets(boolean useSelectBrackets) {
         this.setUseSelectBrackets(useSelectBrackets);
         return this;
     }
 
-    public Insert useDuplicate(boolean useDuplicate) {
+    public Insert withUseDuplicate(boolean useDuplicate) {
         this.setUseDuplicate(useDuplicate);
         return this;
     }
 
-    public Insert duplicateUpdateColumns(List<Column> duplicateUpdateColumns) {
+    public Insert withDuplicateUpdateColumns(List<Column> duplicateUpdateColumns) {
         this.setDuplicateUpdateColumns(duplicateUpdateColumns);
         return this;
     }
 
-    public Insert duplicateUpdateExpressionList(List<Expression> duplicateUpdateExpressionList) {
+    public Insert withDuplicateUpdateExpressionList(List<Expression> duplicateUpdateExpressionList) {
         this.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
         return this;
     }
 
-    public Insert modifierPriority(InsertModifierPriority modifierPriority) {
+    public Insert withModifierPriority(InsertModifierPriority modifierPriority) {
         this.setModifierPriority(modifierPriority);
         return this;
     }
 
-    public Insert modifierIgnore(boolean modifierIgnore) {
+    public Insert withModifierIgnore(boolean modifierIgnore) {
         this.setModifierIgnore(modifierIgnore);
         return this;
     }
 
-    public Insert returningAllColumns(boolean returningAllColumns) {
+    public Insert withReturningAllColumns(boolean returningAllColumns) {
         this.setReturningAllColumns(returningAllColumns);
         return this;
     }
 
-    public Insert returningExpressionList(List<SelectExpressionItem> returningExpressionList) {
+    public Insert withReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
         this.setReturningExpressionList(returningExpressionList);
         return this;
     }
 
-    public Insert useSet(boolean useSet) {
+    public Insert withUseSet(boolean useSet) {
         this.setUseSet(useSet);
         return this;
     }
 
-    public Insert useSetColumns(List<Column> setColumns) {
+    public Insert withUseSetColumns(List<Column> setColumns) {
         this.setSetColumns(setColumns);
         return this;
     }
 
-    public Insert setExpressionList(List<Expression> setExpressionList) {
+    public Insert withSetExpressionList(List<Expression> setExpressionList) {
         this.setSetExpressionList(setExpressionList);
         return this;
     }
 
-    public Insert table(Table table) {
+    public Insert withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public Insert columns(List<Column> columns) {
+    public Insert withColumns(List<Column> columns) {
         this.setColumns(columns);
         return this;
     }
 
-    public Insert itemsList(ItemsList itemsList) {
+    public Insert withSetColumns(List<Column> columns) {
+        this.setSetColumns(columns);
+        return this;
+    }
+
+    public Insert withItemsList(ItemsList itemsList) {
         this.setItemsList(itemsList);
         return this;
     }
@@ -334,75 +339,73 @@ public class Insert implements Statement {
     public Insert addColumns(Column... columns) {
         List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columns);
-        return this.columns(collection);
+        return this.withColumns(collection);
     }
 
     public Insert addColumns(Collection<? extends Column> columns) {
         List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
         collection.addAll(columns);
-        return this.columns(collection);
+        return this.withColumns(collection);
     }
 
     public Insert addDuplicateUpdateColumns(Column... duplicateUpdateColumns) {
         List<Column> collection = Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, duplicateUpdateColumns);
-        return this.duplicateUpdateColumns(collection);
+        return this.withDuplicateUpdateColumns(collection);
     }
 
     public Insert addDuplicateUpdateColumns(Collection<? extends Column> duplicateUpdateColumns) {
         List<Column> collection = Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
         collection.addAll(duplicateUpdateColumns);
-        return this.duplicateUpdateColumns(collection);
+        return this.withDuplicateUpdateColumns(collection);
     }
 
     public Insert addDuplicateUpdateExpressionList(Expression... duplicateUpdateExpressionList) {
         List<Expression> collection = Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, duplicateUpdateExpressionList);
-        return this.duplicateUpdateExpressionList(collection);
+        return this.withDuplicateUpdateExpressionList(collection);
     }
 
     public Insert addDuplicateUpdateExpressionList(Collection<? extends Expression> duplicateUpdateExpressionList) {
         List<Expression> collection = Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(duplicateUpdateExpressionList);
-        return this.duplicateUpdateExpressionList(collection);
+        return this.withDuplicateUpdateExpressionList(collection);
     }
 
     public Insert addReturningExpressionList(SelectExpressionItem... returningExpressionList) {
         List<SelectExpressionItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, returningExpressionList);
-        return this.returningExpressionList(collection);
+        return this.withReturningExpressionList(collection);
     }
 
     public Insert addReturningExpressionList(Collection<? extends SelectExpressionItem> returningExpressionList) {
         List<SelectExpressionItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(returningExpressionList);
-        return this.returningExpressionList(collection);
+        return this.withReturningExpressionList(collection);
     }
 
     public Insert addSetColumns(Column... setColumns) {
         List<Column> collection = Optional.ofNullable(getSetColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, setColumns);
-        this.setSetColumns(collection);
-        return this;
+        return this.withSetColumns(collection);
     }
 
     public Insert addSetColumns(Collection<? extends Column> setColumns) {
         List<Column> collection = Optional.ofNullable(getSetColumns()).orElseGet(ArrayList::new);
         collection.addAll(setColumns);
-        this.setSetColumns(collection);
-        return this;
+        return this.withSetColumns(collection);
     }
 
     public Insert addSetExpressionList(Expression... setExpressionList) {
         List<Expression> collection = Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, setExpressionList);
-        return this.setExpressionList(collection);
+        return this.withSetExpressionList(collection);
     }
 
     public Insert addSetExpressionList(Collection<? extends Expression> setExpressionList) {
         List<Expression> collection = Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(setExpressionList);
-        return this.setExpressionList(collection);
+        return this.withSetExpressionList(collection);
     }
 
     public <E extends ItemsList> E getItemsList(Class<E> type) {

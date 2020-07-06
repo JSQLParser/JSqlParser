@@ -23,17 +23,17 @@ public class NamedConstraint extends Index {
     }
 
     @Override()
-    public NamedConstraint name(List<String> name) {
-        return (NamedConstraint) super.name(name);
+    public NamedConstraint withName(List<String> name) {
+        return (NamedConstraint) super.withName(name);
     }
 
     @Override()
-    public NamedConstraint type(String type) {
-        return (NamedConstraint) super.type(type);
+    public NamedConstraint withType(String type) {
+        return (NamedConstraint) super.withType(type);
     }
 
     @Override()
-    public NamedConstraint using(String using) {
-        return (NamedConstraint) super.using(using);
+    public NamedConstraint withUsing(String using) {
+        return (NamedConstraint) super.withUsing(using);
     }
 }

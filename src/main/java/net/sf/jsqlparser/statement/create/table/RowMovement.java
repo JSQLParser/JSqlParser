@@ -24,7 +24,7 @@ public class RowMovement {
         this.mode = mode;
     }
 
-    public RowMovement mode(RowMovementMode mode) {
+    public RowMovement withMode(RowMovementMode mode) {
         this.setMode(mode);
         return this;
     }

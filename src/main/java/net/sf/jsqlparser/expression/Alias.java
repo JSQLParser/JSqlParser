@@ -77,17 +77,17 @@ public class Alias {
         return alias;
     }
 
-    public Alias name(String name) {
+    public Alias withName(String name) {
         this.setName(name);
         return this;
     }
 
-    public Alias useAs(boolean useAs) {
+    public Alias withUseAs(boolean useAs) {
         this.setUseAs(useAs);
         return this;
     }
 
-    public Alias aliasColumns(List<AliasColumn> aliasColumns) {
+    public Alias withAliasColumns(List<AliasColumn> aliasColumns) {
         this.setAliasColumns(aliasColumns);
         return this;
     }
@@ -95,13 +95,13 @@ public class Alias {
     public Alias addAliasColumns(AliasColumn... aliasColumns) {
         List<AliasColumn> collection = Optional.ofNullable(getAliasColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, aliasColumns);
-        return this.aliasColumns(collection);
+        return this.withAliasColumns(collection);
     }
 
     public Alias addAliasColumns(Collection<? extends AliasColumn> aliasColumns) {
         List<AliasColumn> collection = Optional.ofNullable(getAliasColumns()).orElseGet(ArrayList::new);
         collection.addAll(aliasColumns);
-        return this.aliasColumns(collection);
+        return this.withAliasColumns(collection);
     }
 
     public static class AliasColumn {

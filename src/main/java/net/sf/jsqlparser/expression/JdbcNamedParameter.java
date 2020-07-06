@@ -40,7 +40,7 @@ public class JdbcNamedParameter extends ASTNodeAccessImpl implements Expression 
         return ":" + name;
     }
 
-    public JdbcNamedParameter name(String name) {
+    public JdbcNamedParameter withName(String name) {
         this.setName(name);
         return this;
     }

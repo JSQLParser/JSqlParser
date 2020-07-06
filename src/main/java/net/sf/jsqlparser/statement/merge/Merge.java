@@ -137,42 +137,42 @@ public class Merge implements Statement {
         return b.toString();
     }
 
-    public Merge usingTable(Table usingTable) {
+    public Merge withUsingTable(Table usingTable) {
         this.setUsingTable(usingTable);
         return this;
     }
 
-    public Merge usingSelect(SubSelect usingSelect) {
+    public Merge withUsingSelect(SubSelect usingSelect) {
         this.setUsingSelect(usingSelect);
         return this;
     }
 
-    public Merge usingAlias(Alias usingAlias) {
+    public Merge withUsingAlias(Alias usingAlias) {
         this.setUsingAlias(usingAlias);
         return this;
     }
 
-    public Merge onCondition(Expression onCondition) {
+    public Merge withOnCondition(Expression onCondition) {
         this.setOnCondition(onCondition);
         return this;
     }
 
-    public Merge mergeUpdate(MergeUpdate mergeUpdate) {
+    public Merge withMergeUpdate(MergeUpdate mergeUpdate) {
         this.setMergeUpdate(mergeUpdate);
         return this;
     }
 
-    public Merge insertFirst(boolean insertFirst) {
+    public Merge withInsertFirst(boolean insertFirst) {
         this.setInsertFirst(insertFirst);
         return this;
     }
 
-    public Merge table(Table table) {
+    public Merge withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public Merge mergeInsert(MergeInsert mergeInsert) {
+    public Merge withMergeInsert(MergeInsert mergeInsert) {
         this.setMergeInsert(mergeInsert);
         return this;
     }

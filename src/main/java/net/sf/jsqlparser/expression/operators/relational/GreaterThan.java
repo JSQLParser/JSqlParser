@@ -24,22 +24,22 @@ public class GreaterThan extends ComparisonOperator {
     }
 
     @Override()
-    public GreaterThan leftExpression(Expression arg0) {
-        return (GreaterThan) super.leftExpression(arg0);
+    public GreaterThan withLeftExpression(Expression arg0) {
+        return (GreaterThan) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public GreaterThan rightExpression(Expression arg0) {
-        return (GreaterThan) super.rightExpression(arg0);
+    public GreaterThan withRightExpression(Expression arg0) {
+        return (GreaterThan) super.withRightExpression(arg0);
     }
 
     @Override()
-    public GreaterThan oldOracleJoinSyntax(int arg0) {
-        return (GreaterThan) super.oldOracleJoinSyntax(arg0);
+    public GreaterThan withOldOracleJoinSyntax(int arg0) {
+        return (GreaterThan) super.withOldOracleJoinSyntax(arg0);
     }
 
     @Override()
-    public GreaterThan oraclePriorPosition(int arg0) {
-        return (GreaterThan) super.oraclePriorPosition(arg0);
+    public GreaterThan withOraclePriorPosition(int arg0) {
+        return (GreaterThan) super.withOraclePriorPosition(arg0);
     }
 }

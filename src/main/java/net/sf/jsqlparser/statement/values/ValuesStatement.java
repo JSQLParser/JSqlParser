@@ -55,7 +55,7 @@ public class ValuesStatement implements Statement, SelectBody {
         selectVisitor.visit(this);
     }
 
-    public ValuesStatement expressions(List<Expression> expressions) {
+    public ValuesStatement withExpressions(List<Expression> expressions) {
         this.setExpressions(expressions);
         return this;
     }
@@ -63,12 +63,12 @@ public class ValuesStatement implements Statement, SelectBody {
     public ValuesStatement addExpressions(Expression... expressions) {
         List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, expressions);
-        return this.expressions(collection);
+        return this.withExpressions(collection);
     }
 
     public ValuesStatement addExpressions(Collection<? extends Expression> expressions) {
         List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
         collection.addAll(expressions);
-        return this.expressions(collection);
+        return this.withExpressions(collection);
     }
 }

@@ -80,7 +80,7 @@ public abstract class CreateFunctionalStatement implements Statement {
         return "CREATE " + kind + " " + formatDeclaration();
     }
 
-    public CreateFunctionalStatement functionDeclarationParts(List<String> functionDeclarationParts) {
+    public CreateFunctionalStatement withFunctionDeclarationParts(List<String> functionDeclarationParts) {
         this.setFunctionDeclarationParts(functionDeclarationParts);
         return this;
     }
@@ -88,12 +88,12 @@ public abstract class CreateFunctionalStatement implements Statement {
     public CreateFunctionalStatement addFunctionDeclarationParts(String... functionDeclarationParts) {
         List<String> collection = Optional.ofNullable(getFunctionDeclarationParts()).orElseGet(ArrayList::new);
         Collections.addAll(collection, functionDeclarationParts);
-        return this.functionDeclarationParts(collection);
+        return this.withFunctionDeclarationParts(collection);
     }
 
     public CreateFunctionalStatement addFunctionDeclarationParts(Collection<String> functionDeclarationParts) {
         List<String> collection = Optional.ofNullable(getFunctionDeclarationParts()).orElseGet(ArrayList::new);
         collection.addAll(functionDeclarationParts);
-        return this.functionDeclarationParts(collection);
+        return this.withFunctionDeclarationParts(collection);
     }
 }

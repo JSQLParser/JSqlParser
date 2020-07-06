@@ -31,7 +31,7 @@ public class Block implements Statement {
         return "BEGIN\n" + (statements != null ? statements.toString() : "") + "END";
     }
 
-    public Block statements(Statements statements) {
+    public Block withStatements(Statements statements) {
         this.setStatements(statements);
         return this;
     }

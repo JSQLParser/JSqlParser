@@ -83,12 +83,12 @@ public class GroupByElement {
         return b.toString();
     }
 
-    public GroupByElement groupByExpressions(List<Expression> groupByExpressions) {
+    public GroupByElement withGroupByExpressions(List<Expression> groupByExpressions) {
         this.setGroupByExpressions(groupByExpressions);
         return this;
     }
 
-    public GroupByElement groupingSets(List groupingSets) {
+    public GroupByElement withGroupingSets(List groupingSets) {
         this.setGroupingSets(groupingSets);
         return this;
     }
@@ -96,24 +96,24 @@ public class GroupByElement {
     public GroupByElement addGroupByExpressions(Expression... groupByExpressions) {
         List<Expression> collection = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, groupByExpressions);
-        return this.groupByExpressions(collection);
+        return this.withGroupByExpressions(collection);
     }
 
     public GroupByElement addGroupByExpressions(Collection<? extends Expression> groupByExpressions) {
         List<Expression> collection = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
         collection.addAll(groupByExpressions);
-        return this.groupByExpressions(collection);
+        return this.withGroupByExpressions(collection);
     }
 
     public GroupByElement addGroupingSets(Object... groupingSets) {
         List collection = Optional.ofNullable(getGroupingSets()).orElseGet(ArrayList::new);
         Collections.addAll(collection, groupingSets);
-        return this.groupingSets(collection);
+        return this.withGroupingSets(collection);
     }
 
     public GroupByElement addGroupingSets(Collection<? extends Object> groupingSets) {
         List collection = Optional.ofNullable(getGroupingSets()).orElseGet(ArrayList::new);
         collection.addAll(groupingSets);
-        return this.groupingSets(collection);
+        return this.withGroupingSets(collection);
     }
 }

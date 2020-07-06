@@ -124,32 +124,32 @@ public class Delete implements Statement {
         return b.toString();
     }
 
-    public Delete tables(List<Table> tables) {
+    public Delete withTables(List<Table> tables) {
         this.setTables(tables);
         return this;
     }
 
-    public Delete joins(List<Join> joins) {
+    public Delete withJoins(List<Join> joins) {
         this.setJoins(joins);
         return this;
     }
 
-    public Delete limit(Limit limit) {
+    public Delete withLimit(Limit limit) {
         this.setLimit(limit);
         return this;
     }
 
-    public Delete orderByElements(List<OrderByElement> orderByElements) {
+    public Delete withOrderByElements(List<OrderByElement> orderByElements) {
         this.setOrderByElements(orderByElements);
         return this;
     }
 
-    public Delete table(Table table) {
+    public Delete withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public Delete where(Expression where) {
+    public Delete withWhere(Expression where) {
         this.setWhere(where);
         return this;
     }
@@ -157,37 +157,37 @@ public class Delete implements Statement {
     public Delete addTables(Table... tables) {
         List<Table> collection = Optional.ofNullable(getTables()).orElseGet(ArrayList::new);
         Collections.addAll(collection, tables);
-        return this.tables(collection);
+        return this.withTables(collection);
     }
 
     public Delete addTables(Collection<? extends Table> tables) {
         List<Table> collection = Optional.ofNullable(getTables()).orElseGet(ArrayList::new);
         collection.addAll(tables);
-        return this.tables(collection);
+        return this.withTables(collection);
     }
 
     public Delete addJoins(Join... joins) {
         List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
         Collections.addAll(collection, joins);
-        return this.joins(collection);
+        return this.withJoins(collection);
     }
 
     public Delete addJoins(Collection<? extends Join> joins) {
         List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
         collection.addAll(joins);
-        return this.joins(collection);
+        return this.withJoins(collection);
     }
 
     public Delete addOrderByElements(OrderByElement... orderByElements) {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         Collections.addAll(collection, orderByElements);
-        return this.orderByElements(collection);
+        return this.withOrderByElements(collection);
     }
 
     public Delete addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         collection.addAll(orderByElements);
-        return this.orderByElements(collection);
+        return this.withOrderByElements(collection);
     }
 
     public <E extends Expression> E getWhere(Class<E> type) {

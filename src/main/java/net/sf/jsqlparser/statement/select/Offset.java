@@ -52,12 +52,12 @@ public class Offset {
         return " OFFSET " + (offsetJdbcParameter!=null ? offsetJdbcParameter.toString() : offset) + (offsetParam != null ? " " + offsetParam : "");
     }
 
-    public Offset offset(long offset) {
+    public Offset withOffset(long offset) {
         this.setOffset(offset);
         return this;
     }
 
-    public Offset offsetParam(String offsetParam) {
+    public Offset withOffsetParam(String offsetParam) {
         this.setOffsetParam(offsetParam);
         return this;
     }

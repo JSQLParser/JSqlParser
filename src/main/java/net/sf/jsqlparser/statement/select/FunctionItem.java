@@ -39,12 +39,12 @@ public class FunctionItem implements Model {
         return function + ((alias != null) ? alias.toString() : "");
     }
 
-    public FunctionItem function(Function function) {
+    public FunctionItem withFunction(Function function) {
         this.setFunction(function);
         return this;
     }
 
-    public FunctionItem alias(Alias alias) {
+    public FunctionItem withAlias(Alias alias) {
         this.setAlias(alias);
         return this;
     }

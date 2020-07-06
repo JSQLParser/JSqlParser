@@ -33,7 +33,7 @@ public class OptimizeFor {
         return " OPTIMIZE FOR " + rowCount + " ROWS";
     }
 
-    public OptimizeFor rowCount(long rowCount) {
+    public OptimizeFor withRowCount(long rowCount) {
         this.setRowCount(rowCount);
         return this;
     }

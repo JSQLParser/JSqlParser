@@ -50,7 +50,7 @@ public class TimestampValue extends ASTNodeAccessImpl implements Expression {
         return "{ts '" + value + "'}";
     }
 
-    public TimestampValue value(Timestamp value) {
+    public TimestampValue withValue(Timestamp value) {
         this.setValue(value);
         return this;
     }

@@ -51,12 +51,12 @@ public class RegExpMatchOperator extends BinaryExpression {
     }
 
     @Override()
-    public RegExpMatchOperator leftExpression(Expression arg0) {
-        return (RegExpMatchOperator) super.leftExpression(arg0);
+    public RegExpMatchOperator withLeftExpression(Expression arg0) {
+        return (RegExpMatchOperator) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public RegExpMatchOperator rightExpression(Expression arg0) {
-        return (RegExpMatchOperator) super.rightExpression(arg0);
+    public RegExpMatchOperator withRightExpression(Expression arg0) {
+        return (RegExpMatchOperator) super.withRightExpression(arg0);
     }
 }

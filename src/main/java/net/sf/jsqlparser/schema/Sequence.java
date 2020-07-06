@@ -119,7 +119,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         return sql.toString();
     }
 
-    public Sequence parameters(List<Parameter> parameters) {
+    public Sequence withParameters(List<Parameter> parameters) {
         this.setParameters(parameters);
         return this;
     }
@@ -127,13 +127,13 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     public Sequence addParameters(Parameter... parameters) {
         List<Parameter> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
         Collections.addAll(collection, parameters);
-        return this.parameters(collection);
+        return this.withParameters(collection);
     }
 
     public Sequence addParameters(Collection<? extends Parameter> parameters) {
         List<Parameter> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
         collection.addAll(parameters);
-        return this.parameters(collection);
+        return this.withParameters(collection);
     }
 
     /**
@@ -183,24 +183,24 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         public String formatParameter() {
             switch(option) {
                 case INCREMENT_BY:
-                    return withValue("INCREMENT BY");
+                    return prefix("INCREMENT BY");
                 case START_WITH:
-                    return withValue("START WITH");
+                    return prefix("START WITH");
                 case MAXVALUE:
                 case MINVALUE:
                 case CACHE:
-                    return withValue(option.name());
+                    return prefix(option.name());
                 default:
                     // fallthrough just return option name
                     return option.name();
             }
         }
 
-        private String withValue(String prefix) {
+        private String prefix(String prefix) {
             return prefix + " " + value;
         }
 
-        public Parameter value(Long value) {
+        public Parameter withValue(Long value) {
             this.setValue(value);
             return this;
         }

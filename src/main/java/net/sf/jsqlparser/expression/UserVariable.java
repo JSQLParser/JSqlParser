@@ -45,12 +45,12 @@ public class UserVariable extends ASTNodeAccessImpl implements Expression {
         return "@" + (doubleAdd ? "@" : "") + name;
     }
 
-    public UserVariable name(String name) {
+    public UserVariable withName(String name) {
         this.setName(name);
         return this;
     }
 
-    public UserVariable doubleAdd(boolean doubleAdd) {
+    public UserVariable withDoubleAdd(boolean doubleAdd) {
         this.setDoubleAdd(doubleAdd);
         return this;
     }

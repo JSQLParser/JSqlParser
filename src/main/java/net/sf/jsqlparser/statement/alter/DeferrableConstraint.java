@@ -35,7 +35,7 @@ public class DeferrableConstraint implements ConstraintState {
         return b.toString();
     }
 
-    public DeferrableConstraint not(boolean not) {
+    public DeferrableConstraint withNot(boolean not) {
         this.setNot(not);
         return this;
     }

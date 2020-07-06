@@ -52,12 +52,12 @@ public class WhenClause extends ASTNodeAccessImpl implements Expression {
         return "WHEN " + whenExpression + " THEN " + thenExpression;
     }
 
-    public WhenClause whenExpression(Expression whenExpression) {
+    public WhenClause withWhenExpression(Expression whenExpression) {
         this.setWhenExpression(whenExpression);
         return this;
     }
 
-    public WhenClause thenExpression(Expression thenExpression) {
+    public WhenClause withThenExpression(Expression thenExpression) {
         this.setThenExpression(thenExpression);
         return this;
     }

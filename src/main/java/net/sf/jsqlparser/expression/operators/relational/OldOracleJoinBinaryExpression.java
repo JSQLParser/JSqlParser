@@ -53,23 +53,23 @@ public abstract class OldOracleJoinBinaryExpression extends BinaryExpression imp
         this.oraclePriorPosition = oraclePriorPosition;
     }
 
-    public OldOracleJoinBinaryExpression oldOracleJoinSyntax(int oldOracleJoinSyntax) {
+    public OldOracleJoinBinaryExpression withOldOracleJoinSyntax(int oldOracleJoinSyntax) {
         this.setOldOracleJoinSyntax(oldOracleJoinSyntax);
         return this;
     }
 
-    public OldOracleJoinBinaryExpression oraclePriorPosition(int oraclePriorPosition) {
+    public OldOracleJoinBinaryExpression withOraclePriorPosition(int oraclePriorPosition) {
         this.setOraclePriorPosition(oraclePriorPosition);
         return this;
     }
 
     @Override()
-    public OldOracleJoinBinaryExpression leftExpression(Expression arg0) {
-        return (OldOracleJoinBinaryExpression) super.leftExpression(arg0);
+    public OldOracleJoinBinaryExpression withLeftExpression(Expression arg0) {
+        return (OldOracleJoinBinaryExpression) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public OldOracleJoinBinaryExpression rightExpression(Expression arg0) {
-        return (OldOracleJoinBinaryExpression) super.rightExpression(arg0);
+    public OldOracleJoinBinaryExpression withRightExpression(Expression arg0) {
+        return (OldOracleJoinBinaryExpression) super.withRightExpression(arg0);
     }
 }

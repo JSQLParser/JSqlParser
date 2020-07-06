@@ -68,17 +68,17 @@ public class ColumnDefinition {
                 getStringList(columnSpecs, false, false) : "");
     }
 
-    public ColumnDefinition columnName(String columnName) {
+    public ColumnDefinition withColumnName(String columnName) {
         this.setColumnName(columnName);
         return this;
     }
 
-    public ColumnDefinition colDataType(ColDataType colDataType) {
+    public ColumnDefinition withColDataType(ColDataType colDataType) {
         this.setColDataType(colDataType);
         return this;
     }
 
-    public ColumnDefinition columnSpecs(List<String> columnSpecs) {
+    public ColumnDefinition withColumnSpecs(List<String> columnSpecs) {
         this.setColumnSpecs(columnSpecs);
         return this;
     }
@@ -86,12 +86,12 @@ public class ColumnDefinition {
     public ColumnDefinition addColumnSpecs(String... columnSpecs) {
         List<String> collection = Optional.ofNullable(getColumnSpecs()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columnSpecs);
-        return this.columnSpecs(collection);
+        return this.withColumnSpecs(collection);
     }
 
     public ColumnDefinition addColumnSpecs(Collection<String> columnSpecs) {
         List<String> collection = Optional.ofNullable(getColumnSpecs()).orElseGet(ArrayList::new);
         collection.addAll(columnSpecs);
-        return this.columnSpecs(collection);
+        return this.withColumnSpecs(collection);
     }
 }

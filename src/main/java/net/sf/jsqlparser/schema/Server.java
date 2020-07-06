@@ -74,12 +74,12 @@ public final class Server implements MultiPartName {
         return getFullyQualifiedName();
     }
 
-    public Server serverName(String serverName) {
+    public Server withServerName(String serverName) {
         this.setServerName(serverName);
         return this;
     }
 
-    public Server instanceName(String instanceName) {
+    public Server withInstanceName(String instanceName) {
         this.setInstanceName(instanceName);
         return this;
     }

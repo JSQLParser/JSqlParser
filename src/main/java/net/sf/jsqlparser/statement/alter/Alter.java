@@ -87,17 +87,17 @@ public class Alter implements Statement {
         return b.toString();
     }
 
-    public Alter table(Table table) {
+    public Alter withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public Alter useOnly(boolean useOnly) {
+    public Alter withUseOnly(boolean useOnly) {
         this.setUseOnly(useOnly);
         return this;
     }
 
-    public Alter alterExpressions(List<AlterExpression> alterExpressions) {
+    public Alter withAlterExpressions(List<AlterExpression> alterExpressions) {
         this.setAlterExpressions(alterExpressions);
         return this;
     }
@@ -105,12 +105,12 @@ public class Alter implements Statement {
     public Alter addAlterExpressions(AlterExpression... alterExpressions) {
         List<AlterExpression> collection = Optional.ofNullable(getAlterExpressions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, alterExpressions);
-        return this.alterExpressions(collection);
+        return this.withAlterExpressions(collection);
     }
 
     public Alter addAlterExpressions(Collection<? extends AlterExpression> alterExpressions) {
         List<AlterExpression> collection = Optional.ofNullable(getAlterExpressions()).orElseGet(ArrayList::new);
         collection.addAll(alterExpressions);
-        return this.alterExpressions(collection);
+        return this.withAlterExpressions(collection);
     }
 }

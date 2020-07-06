@@ -97,17 +97,19 @@ public class SubJoin implements FromItem {
         return sb.toString();
     }
 
-    public SubJoin alias(Alias alias) {
+    @Override
+    public SubJoin withAlias(Alias alias) {
         this.setAlias(alias);
         return this;
     }
 
-    public SubJoin pivot(Pivot pivot) {
+    @Override
+    public SubJoin withPivot(Pivot pivot) {
         this.setPivot(pivot);
         return this;
     }
 
-    public SubJoin joinList(List<Join> joinList) {
+    public SubJoin withJoinList(List<Join> joinList) {
         this.setJoinList(joinList);
         return this;
     }
@@ -115,13 +117,13 @@ public class SubJoin implements FromItem {
     public SubJoin addJoinList(Join... joinList) {
         List<Join> collection = Optional.ofNullable(getJoinList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, joinList);
-        return this.joinList(collection);
+        return this.withJoinList(collection);
     }
 
     public SubJoin addJoinList(Collection<? extends Join> joinList) {
         List<Join> collection = Optional.ofNullable(getJoinList()).orElseGet(ArrayList::new);
         collection.addAll(joinList);
-        return this.joinList(collection);
+        return this.withJoinList(collection);
     }
 
     public <E extends FromItem> E getLeft(Class<E> type) {

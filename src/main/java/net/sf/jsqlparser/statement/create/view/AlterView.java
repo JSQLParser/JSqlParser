@@ -81,22 +81,22 @@ public class AlterView implements Statement {
         return sql.toString();
     }
 
-    public AlterView view(Table view) {
+    public AlterView withView(Table view) {
         this.setView(view);
         return this;
     }
 
-    public AlterView selectBody(SelectBody selectBody) {
+    public AlterView withSelectBody(SelectBody selectBody) {
         this.setSelectBody(selectBody);
         return this;
     }
 
-    public AlterView useReplace(boolean useReplace) {
+    public AlterView withUseReplace(boolean useReplace) {
         this.setUseReplace(useReplace);
         return this;
     }
 
-    public AlterView columnNames(List<String> columnNames) {
+    public AlterView withVolumnNames(List<String> columnNames) {
         this.setColumnNames(columnNames);
         return this;
     }
@@ -104,13 +104,13 @@ public class AlterView implements Statement {
     public AlterView addColumnNames(String... columnNames) {
         List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columnNames);
-        return this.columnNames(collection);
+        return this.withVolumnNames(collection);
     }
 
     public AlterView addColumnNames(Collection<String> columnNames) {
         List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
         collection.addAll(columnNames);
-        return this.columnNames(collection);
+        return this.withVolumnNames(collection);
     }
 
     public <E extends SelectBody> E getSelectBody(Class<E> type) {

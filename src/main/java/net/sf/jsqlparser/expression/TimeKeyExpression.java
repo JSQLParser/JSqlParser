@@ -37,7 +37,7 @@ public class TimeKeyExpression extends ASTNodeAccessImpl implements Expression {
         return getStringValue();
     }
 
-    public TimeKeyExpression stringValue(String stringValue) {
+    public TimeKeyExpression withStringValue(String stringValue) {
         this.setStringValue(stringValue);
         return this;
     }

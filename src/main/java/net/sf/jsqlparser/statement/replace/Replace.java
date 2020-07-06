@@ -125,32 +125,32 @@ public class Replace implements Statement {
         return sql.toString();
     }
 
-    public Replace useValues(boolean useValues) {
+    public Replace withUseValues(boolean useValues) {
         this.setUseValues(useValues);
         return this;
     }
 
-    public Replace useIntoTables(boolean useIntoTables) {
+    public Replace withUseIntoTables(boolean useIntoTables) {
         this.setUseIntoTables(useIntoTables);
         return this;
     }
 
-    public Replace table(Table table) {
+    public Replace withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public Replace columns(List<Column> columns) {
+    public Replace withColumns(List<Column> columns) {
         this.setColumns(columns);
         return this;
     }
 
-    public Replace itemsList(ItemsList itemsList) {
+    public Replace withItemsList(ItemsList itemsList) {
         this.setItemsList(itemsList);
         return this;
     }
 
-    public Replace expressions(List<Expression> expressions) {
+    public Replace withExpressions(List<Expression> expressions) {
         this.setExpressions(expressions);
         return this;
     }
@@ -158,25 +158,25 @@ public class Replace implements Statement {
     public Replace addColumns(Column... columns) {
         List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columns);
-        return this.columns(collection);
+        return this.withColumns(collection);
     }
 
     public Replace addColumns(Collection<? extends Column> columns) {
         List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
         collection.addAll(columns);
-        return this.columns(collection);
+        return this.withColumns(collection);
     }
 
     public Replace addExpressions(Expression... expressions) {
         List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, expressions);
-        return this.expressions(collection);
+        return this.withExpressions(collection);
     }
 
     public Replace addExpressions(Collection<? extends Expression> expressions) {
         List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
         collection.addAll(expressions);
-        return this.expressions(collection);
+        return this.withExpressions(collection);
     }
 
     public <E extends ItemsList> E getItemsList(Class<E> type) {

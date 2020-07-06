@@ -37,7 +37,7 @@ public class DescribeStatement implements Statement {
         statementVisitor.visit(this);
     }
 
-    public DescribeStatement table(Table table) {
+    public DescribeStatement withTable(Table table) {
         this.setTable(table);
         return this;
     }

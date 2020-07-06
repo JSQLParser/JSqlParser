@@ -120,17 +120,17 @@ public class CreateSchema implements Statement {
         return sql;
     }
 
-    public CreateSchema authorization(String authorization) {
+    public CreateSchema withAuthorization(String authorization) {
         this.setAuthorization(authorization);
         return this;
     }
 
-    public CreateSchema schemaName(String schemaName) {
+    public CreateSchema withSchemaName(String schemaName) {
         this.setSchemaName(schemaName);
         return this;
     }
 
-    public CreateSchema schemaPath(List<String> schemaPath) {
+    public CreateSchema withSchemaPath(List<String> schemaPath) {
         this.setSchemaPath(schemaPath);
         return this;
     }
@@ -138,12 +138,12 @@ public class CreateSchema implements Statement {
     public CreateSchema addSchemaPath(String... schemaPath) {
         List<String> collection = Optional.ofNullable(getSchemaPath()).orElseGet(ArrayList::new);
         Collections.addAll(collection, schemaPath);
-        return this.schemaPath(collection);
+        return this.withSchemaPath(collection);
     }
 
     public CreateSchema addSchemaPath(Collection<String> schemaPath) {
         List<String> collection = Optional.ofNullable(getSchemaPath()).orElseGet(ArrayList::new);
         collection.addAll(schemaPath);
-        return this.schemaPath(collection);
+        return this.withSchemaPath(collection);
     }
 }

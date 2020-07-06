@@ -26,12 +26,12 @@ public class IntegerDivision extends BinaryExpression {
     }
 
     @Override()
-    public IntegerDivision leftExpression(Expression arg0) {
-        return (IntegerDivision) super.leftExpression(arg0);
+    public IntegerDivision withLeftExpression(Expression arg0) {
+        return (IntegerDivision) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public IntegerDivision rightExpression(Expression arg0) {
-        return (IntegerDivision) super.rightExpression(arg0);
+    public IntegerDivision withRightExpression(Expression arg0) {
+        return (IntegerDivision) super.withRightExpression(arg0);
     }
 }

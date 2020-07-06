@@ -62,17 +62,17 @@ public class Comment implements Statement {
         return sql;
     }
 
-    public Comment table(Table table) {
+    public Comment withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public Comment column(Column column) {
+    public Comment withColumn(Column column) {
         this.setColumn(column);
         return this;
     }
 
-    public Comment comment(StringValue comment) {
+    public Comment withComment(StringValue comment) {
         this.setComment(comment);
         return this;
     }

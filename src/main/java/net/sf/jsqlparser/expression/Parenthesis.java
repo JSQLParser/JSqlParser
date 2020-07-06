@@ -47,7 +47,7 @@ public class Parenthesis extends ASTNodeAccessImpl implements Expression {
         return new Parenthesis(expression);
     }
 
-    public Parenthesis expression(Expression expression) {
+    public Parenthesis withExpression(Expression expression) {
         this.setExpression(expression);
         return this;
     }

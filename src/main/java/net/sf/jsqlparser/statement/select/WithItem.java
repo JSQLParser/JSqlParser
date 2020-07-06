@@ -71,22 +71,22 @@ public class WithItem implements SelectBody {
         visitor.visit(this);
     }
 
-    public WithItem name(String name) {
+    public WithItem withName(String name) {
         this.setName(name);
         return this;
     }
 
-    public WithItem withItemList(List<SelectItem> withItemList) {
+    public WithItem withWithItemList(List<SelectItem> withItemList) {
         this.setWithItemList(withItemList);
         return this;
     }
 
-    public WithItem selectBody(SelectBody selectBody) {
+    public WithItem withSelectBody(SelectBody selectBody) {
         this.setSelectBody(selectBody);
         return this;
     }
 
-    public WithItem recursive(boolean recursive) {
+    public WithItem withRecursive(boolean recursive) {
         this.setRecursive(recursive);
         return this;
     }
@@ -94,13 +94,13 @@ public class WithItem implements SelectBody {
     public WithItem addWithItemList(SelectItem... withItemList) {
         List<SelectItem> collection = Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, withItemList);
-        return this.withItemList(collection);
+        return this.withWithItemList(collection);
     }
 
     public WithItem addWithItemList(Collection<? extends SelectItem> withItemList) {
         List<SelectItem> collection = Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
         collection.addAll(withItemList);
-        return this.withItemList(collection);
+        return this.withWithItemList(collection);
     }
 
     public <E extends SelectBody> E getSelectBody(Class<E> type) {

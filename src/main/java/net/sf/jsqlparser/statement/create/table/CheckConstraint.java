@@ -41,12 +41,12 @@ public class CheckConstraint extends NamedConstraint {
         return "CONSTRAINT " + getName() + " CHECK (" + expression + ")";
     }
 
-    public CheckConstraint table(Table table) {
+    public CheckConstraint withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public CheckConstraint expression(Expression expression) {
+    public CheckConstraint withExpression(Expression expression) {
         this.setExpression(expression);
         return this;
     }
@@ -56,18 +56,18 @@ public class CheckConstraint extends NamedConstraint {
     }
 
     @Override()
-    public CheckConstraint type(String type) {
-        return (CheckConstraint) super.type(type);
+    public CheckConstraint withType(String type) {
+        return (CheckConstraint) super.withType(type);
     }
 
     @Override()
-    public CheckConstraint using(String using) {
-        return (CheckConstraint) super.using(using);
+    public CheckConstraint withUsing(String using) {
+        return (CheckConstraint) super.withUsing(using);
     }
 
     @Override()
-    public CheckConstraint name(List<String> name) {
-        return (CheckConstraint) super.name(name);
+    public CheckConstraint withName(List<String> name) {
+        return (CheckConstraint) super.withName(name);
     }
 
 }

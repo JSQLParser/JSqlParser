@@ -109,7 +109,7 @@ public class ExplainStatement implements Statement {
             return type.name() + (value != null ? (" " + value) : "");
         }
 
-        public Option value(String value) {
+        public Option withValue(String value) {
             this.setValue(value);
             return this;
         }

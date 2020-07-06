@@ -41,7 +41,7 @@ public class AllTableColumns extends ASTNodeAccessImpl implements SelectItem {
         return table + ".*";
     }
 
-    public AllTableColumns table(Table table) {
+    public AllTableColumns withTable(Table table) {
         this.setTable(table);
         return this;
     }

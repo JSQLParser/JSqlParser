@@ -47,12 +47,12 @@ public class UnionOp extends SetOperation {
         return super.toString() + allDistinct;
     }
 
-    public UnionOp distinct(boolean distinct) {
+    public UnionOp withDistinct(boolean distinct) {
         this.setDistinct(distinct);
         return this;
     }
 
-    public UnionOp all(boolean all) {
+    public UnionOp withAll(boolean all) {
         this.setAll(all);
         return this;
     }

@@ -40,7 +40,7 @@ public class Statements {
         return b.toString();
     }
 
-    public Statements statements(List<Statement> statements) {
+    public Statements withStatements(List<Statement> statements) {
         this.setStatements(statements);
         return this;
     }
@@ -48,12 +48,12 @@ public class Statements {
     public Statements addStatements(Statement... statements) {
         List<Statement> collection = Optional.ofNullable(getStatements()).orElseGet(ArrayList::new);
         Collections.addAll(collection, statements);
-        return this.statements(collection);
+        return this.withStatements(collection);
     }
 
     public Statements addStatements(Collection<? extends Statement> statements) {
         List<Statement> collection = Optional.ofNullable(getStatements()).orElseGet(ArrayList::new);
         collection.addAll(statements);
-        return this.statements(collection);
+        return this.withStatements(collection);
     }
 }

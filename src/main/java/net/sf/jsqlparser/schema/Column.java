@@ -117,15 +117,15 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     }
 
     public static Column create(Table table, String columnName) {
-        return new Column(columnName).table(table);
+        return new Column(columnName).withTable(table);
     }
 
-    public Column table(Table table) {
+    public Column withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public Column columnName(String columnName) {
+    public Column withColumnName(String columnName) {
         this.setColumnName(columnName);
         return this;
     }

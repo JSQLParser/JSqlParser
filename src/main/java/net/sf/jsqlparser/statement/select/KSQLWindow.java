@@ -131,22 +131,22 @@ public class KSQLWindow extends ASTNodeAccessImpl {
         }
     }
 
-    public KSQLWindow sizeDuration(long sizeDuration) {
+    public KSQLWindow withSizeDuration(long sizeDuration) {
         this.setSizeDuration(sizeDuration);
         return this;
     }
 
-    public KSQLWindow sizeTimeUnit(TimeUnit sizeTimeUnit) {
+    public KSQLWindow withSizeTimeUnit(TimeUnit sizeTimeUnit) {
         this.setSizeTimeUnit(sizeTimeUnit);
         return this;
     }
 
-    public KSQLWindow advanceDuration(long advanceDuration) {
+    public KSQLWindow withAdvanceDuration(long advanceDuration) {
         this.setAdvanceDuration(advanceDuration);
         return this;
     }
 
-    public KSQLWindow advanceTimeUnit(TimeUnit advanceTimeUnit) {
+    public KSQLWindow withAdvanceTimeUnit(TimeUnit advanceTimeUnit) {
         this.setAdvanceTimeUnit(advanceTimeUnit);
         return this;
     }

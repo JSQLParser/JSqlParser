@@ -78,12 +78,12 @@ public class NamedExpressionList implements ItemsList {
         return ret.toString();
     }
 
-    public NamedExpressionList expressions(List<Expression> expressions) {
+    public NamedExpressionList withExpressions(List<Expression> expressions) {
         this.setExpressions(expressions);
         return this;
     }
 
-    public NamedExpressionList names(List<String> names) {
+    public NamedExpressionList withNames(List<String> names) {
         this.setNames(names);
         return this;
     }
@@ -91,24 +91,24 @@ public class NamedExpressionList implements ItemsList {
     public NamedExpressionList addExpressions(Expression... expressions) {
         List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, expressions);
-        return this.expressions(collection);
+        return this.withExpressions(collection);
     }
 
     public NamedExpressionList addExpressions(Collection<? extends Expression> expressions) {
         List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
         collection.addAll(expressions);
-        return this.expressions(collection);
+        return this.withExpressions(collection);
     }
 
     public NamedExpressionList addNames(String... names) {
         List<String> collection = Optional.ofNullable(getNames()).orElseGet(ArrayList::new);
         Collections.addAll(collection, names);
-        return this.names(collection);
+        return this.withNames(collection);
     }
 
     public NamedExpressionList addNames(Collection<String> names) {
         List<String> collection = Optional.ofNullable(getNames()).orElseGet(ArrayList::new);
         collection.addAll(names);
-        return this.names(collection);
+        return this.withNames(collection);
     }
 }

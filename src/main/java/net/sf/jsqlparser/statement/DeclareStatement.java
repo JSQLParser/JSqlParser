@@ -131,22 +131,22 @@ public final class DeclareStatement implements Statement {
         statementVisitor.visit(this);
     }
 
-    public DeclareStatement userVariable(UserVariable userVariable) {
+    public DeclareStatement withUserVariable(UserVariable userVariable) {
         this.setUserVariable(userVariable);
         return this;
     }
 
-    public DeclareStatement typeName(String typeName) {
+    public DeclareStatement withTypeName(String typeName) {
         this.setTypeName(typeName);
         return this;
     }
 
-    public DeclareStatement declareType(DeclareType declareType) {
+    public DeclareStatement withDeclareType(DeclareType declareType) {
         this.setDeclareType(declareType);
         return this;
     }
 
-    public DeclareStatement columnDefinitions(List<ColumnDefinition> columnDefinitions) {
+    public DeclareStatement withColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
         this.setColumnDefinitions(columnDefinitions);
         return this;
     }
@@ -154,14 +154,14 @@ public final class DeclareStatement implements Statement {
     public DeclareStatement addColumnDefinitions(ColumnDefinition... statements) {
         List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, statements);
-        return this.columnDefinitions(collection);
+        return this.withColumnDefinitions(collection);
     }
 
 
     public DeclareStatement addColumnDefinitions(Collection<? extends ColumnDefinition> columnDefinitions) {
         List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
         collection.addAll(columnDefinitions);
-        return this.columnDefinitions(collection);
+        return this.withColumnDefinitions(collection);
     }
 
     public static class TypeDefExpr {

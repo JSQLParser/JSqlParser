@@ -238,57 +238,57 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.filterExpression = filterExpression;
     }
 
-    public AnalyticExpression name(String name) {
+    public AnalyticExpression withName(String name) {
         this.setName(name);
         return this;
     }
 
-    public AnalyticExpression expression(Expression expression) {
+    public AnalyticExpression withExpression(Expression expression) {
         this.setExpression(expression);
         return this;
     }
 
-    public AnalyticExpression offset(Expression offset) {
+    public AnalyticExpression withOffset(Expression offset) {
         this.setOffset(offset);
         return this;
     }
 
-    public AnalyticExpression defaultValue(Expression defaultValue) {
+    public AnalyticExpression withDefaultValue(Expression defaultValue) {
         this.setDefaultValue(defaultValue);
         return this;
     }
 
-    public AnalyticExpression allColumns(boolean allColumns) {
+    public AnalyticExpression withAllColumns(boolean allColumns) {
         this.setAllColumns(allColumns);
         return this;
     }
 
-    public AnalyticExpression keep(KeepExpression keep) {
+    public AnalyticExpression withKeep(KeepExpression keep) {
         this.setKeep(keep);
         return this;
     }
 
-    public AnalyticExpression type(AnalyticType type) {
+    public AnalyticExpression withType(AnalyticType type) {
         this.setType(type);
         return this;
     }
 
-    public AnalyticExpression distinct(boolean distinct) {
+    public AnalyticExpression withDistinct(boolean distinct) {
         this.setDistinct(distinct);
         return this;
     }
 
-    public AnalyticExpression ignoreNulls(boolean ignoreNulls) {
+    public AnalyticExpression withIgnoreNulls(boolean ignoreNulls) {
         this.setIgnoreNulls(ignoreNulls);
         return this;
     }
 
-    public AnalyticExpression filterExpression(Expression filterExpression) {
+    public AnalyticExpression withFilterExpression(Expression filterExpression) {
         this.setFilterExpression(filterExpression);
         return this;
     }
 
-    public AnalyticExpression windowElement(WindowElement windowElement) {
+    public AnalyticExpression withWindowElement(WindowElement windowElement) {
         this.setWindowElement(windowElement);
         return this;
     }

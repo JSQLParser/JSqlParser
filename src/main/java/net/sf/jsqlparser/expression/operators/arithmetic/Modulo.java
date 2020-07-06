@@ -32,12 +32,12 @@ public class Modulo extends BinaryExpression {
     }
 
     @Override()
-    public Modulo leftExpression(Expression arg0) {
-        return (Modulo) super.leftExpression(arg0);
+    public Modulo withLeftExpression(Expression arg0) {
+        return (Modulo) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public Modulo rightExpression(Expression arg0) {
-        return (Modulo) super.rightExpression(arg0);
+    public Modulo withRightExpression(Expression arg0) {
+        return (Modulo) super.withRightExpression(arg0);
     }
 }

@@ -137,37 +137,37 @@ public class CreateView implements Statement {
         return sql.toString();
     }
 
-    public CreateView view(Table view) {
+    public CreateView withView(Table view) {
         this.setView(view);
         return this;
     }
 
-    public CreateView select(Select select) {
+    public CreateView withSelect(Select select) {
         this.setSelect(select);
         return this;
     }
 
-    public CreateView orReplace(boolean orReplace) {
+    public CreateView withOrReplace(boolean orReplace) {
         this.setOrReplace(orReplace);
         return this;
     }
 
-    public CreateView columnNames(List<String> columnNames) {
+    public CreateView withColumnNames(List<String> columnNames) {
         this.setColumnNames(columnNames);
         return this;
     }
 
-    public CreateView materialized(boolean materialized) {
+    public CreateView withMaterialized(boolean materialized) {
         this.setMaterialized(materialized);
         return this;
     }
 
-    public CreateView force(ForceOption force) {
+    public CreateView withForce(ForceOption force) {
         this.setForce(force);
         return this;
     }
 
-    public CreateView withReadOnly(boolean withReadOnly) {
+    public CreateView withWithReadOnly(boolean withReadOnly) {
         this.setWithReadOnly(withReadOnly);
         return this;
     }
@@ -175,12 +175,12 @@ public class CreateView implements Statement {
     public CreateView addColumnNames(String... columnNames) {
         List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columnNames);
-        return this.columnNames(collection);
+        return this.withColumnNames(collection);
     }
 
     public CreateView addColumnNames(Collection<String> columnNames) {
         List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
         collection.addAll(columnNames);
-        return this.columnNames(collection);
+        return this.withColumnNames(collection);
     }
 }

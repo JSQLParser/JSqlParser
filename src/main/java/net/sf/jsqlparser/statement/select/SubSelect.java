@@ -136,12 +136,13 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
         return retval.toString();
     }
 
-    public SubSelect alias(Alias alias) {
+    @Override
+    public SubSelect withAlias(Alias alias) {
         this.setAlias(alias);
         return this;
     }
 
-    public SubSelect useBrackets(boolean useBrackets) {
+    public SubSelect withUseBrackets(boolean useBrackets) {
         this.setUseBrackets(useBrackets);
         return this;
     }
@@ -151,12 +152,13 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
         return this;
     }
 
-    public SubSelect pivot(Pivot pivot) {
+    @Override
+    public SubSelect withPivot(Pivot pivot) {
         this.setPivot(pivot);
         return this;
     }
 
-    public SubSelect selectBody(SelectBody selectBody) {
+    public SubSelect withSelectBody(SelectBody selectBody) {
         this.setSelectBody(selectBody);
         return this;
     }

@@ -46,12 +46,12 @@ public class RowConstructor extends ASTNodeAccessImpl implements Expression {
         return (name != null ? name : "") + exprList.toString();
     }
 
-    public RowConstructor exprList(ExpressionList exprList) {
+    public RowConstructor withExprList(ExpressionList exprList) {
         this.setExprList(exprList);
         return this;
     }
 
-    public RowConstructor name(String name) {
+    public RowConstructor withName(String name) {
         this.setName(name);
         return this;
     }

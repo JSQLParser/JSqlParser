@@ -92,17 +92,17 @@ public class CreateIndex implements Statement {
         return buffer.toString();
     }
 
-    public CreateIndex table(Table table) {
+    public CreateIndex withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public CreateIndex index(Index index) {
+    public CreateIndex withIndex(Index index) {
         this.setIndex(index);
         return this;
     }
 
-    public CreateIndex tailParameters(List<String> tailParameters) {
+    public CreateIndex withTailParameters(List<String> tailParameters) {
         this.setTailParameters(tailParameters);
         return this;
     }

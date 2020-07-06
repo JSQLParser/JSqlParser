@@ -153,47 +153,47 @@ public class Upsert implements Statement {
         return sb.toString();
     }
 
-    public Upsert useValues(boolean useValues) {
+    public Upsert withUseValues(boolean useValues) {
         this.setUseValues(useValues);
         return this;
     }
 
-    public Upsert select(Select select) {
+    public Upsert withSelect(Select select) {
         this.setSelect(select);
         return this;
     }
 
-    public Upsert useSelectBrackets(boolean useSelectBrackets) {
+    public Upsert withUseSelectBrackets(boolean useSelectBrackets) {
         this.setUseSelectBrackets(useSelectBrackets);
         return this;
     }
 
-    public Upsert useDuplicate(boolean useDuplicate) {
+    public Upsert withUseDuplicate(boolean useDuplicate) {
         this.setUseDuplicate(useDuplicate);
         return this;
     }
 
-    public Upsert duplicateUpdateColumns(List<Column> duplicateUpdateColumns) {
+    public Upsert withDuplicateUpdateColumns(List<Column> duplicateUpdateColumns) {
         this.setDuplicateUpdateColumns(duplicateUpdateColumns);
         return this;
     }
 
-    public Upsert duplicateUpdateExpressionList(List<Expression> duplicateUpdateExpressionList) {
+    public Upsert withDuplicateUpdateExpressionList(List<Expression> duplicateUpdateExpressionList) {
         this.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
         return this;
     }
 
-    public Upsert table(Table table) {
+    public Upsert withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public Upsert columns(List<Column> columns) {
+    public Upsert withColumns(List<Column> columns) {
         this.setColumns(columns);
         return this;
     }
 
-    public Upsert itemsList(ItemsList itemsList) {
+    public Upsert withItemsList(ItemsList itemsList) {
         this.setItemsList(itemsList);
         return this;
     }
@@ -201,37 +201,37 @@ public class Upsert implements Statement {
     public Upsert addColumns(Column... columns) {
         List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columns);
-        return this.columns(collection);
+        return this.withColumns(collection);
     }
 
     public Upsert addColumns(Collection<? extends Column> columns) {
         List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
         collection.addAll(columns);
-        return this.columns(collection);
+        return this.withColumns(collection);
     }
 
     public Upsert addDuplicateUpdateColumns(Column... duplicateUpdateColumns) {
         List<Column> collection = Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, duplicateUpdateColumns);
-        return this.duplicateUpdateColumns(collection);
+        return this.withDuplicateUpdateColumns(collection);
     }
 
     public Upsert addDuplicateUpdateColumns(Collection<? extends Column> duplicateUpdateColumns) {
         List<Column> collection = Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
         collection.addAll(duplicateUpdateColumns);
-        return this.duplicateUpdateColumns(collection);
+        return this.withDuplicateUpdateColumns(collection);
     }
 
     public Upsert addDuplicateUpdateExpressionList(Expression... duplicateUpdateExpressionList) {
         List<Expression> collection = Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, duplicateUpdateExpressionList);
-        return this.duplicateUpdateExpressionList(collection);
+        return this.withDuplicateUpdateExpressionList(collection);
     }
 
     public Upsert addDuplicateUpdateExpressionList(Collection<? extends Expression> duplicateUpdateExpressionList) {
         List<Expression> collection = Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(duplicateUpdateExpressionList);
-        return this.duplicateUpdateExpressionList(collection);
+        return this.withDuplicateUpdateExpressionList(collection);
     }
 
     public <E extends ItemsList> E getItemsList(Class<E> type) {

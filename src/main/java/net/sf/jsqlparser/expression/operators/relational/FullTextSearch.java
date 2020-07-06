@@ -77,17 +77,17 @@ public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
                 (this._searchModifier != null ? " " + this._searchModifier : "") + ")";
     }
 
-    public FullTextSearch matchColumns(List<Column> matchColumns) {
+    public FullTextSearch withMatchColumns(List<Column> matchColumns) {
         this.setMatchColumns(matchColumns);
         return this;
     }
 
-    public FullTextSearch againstValue(StringValue againstValue) {
+    public FullTextSearch withAgainstValue(StringValue againstValue) {
         this.setAgainstValue(againstValue);
         return this;
     }
 
-    public FullTextSearch searchModifier(String searchModifier) {
+    public FullTextSearch withSearchModifier(String searchModifier) {
         this.setSearchModifier(searchModifier);
         return this;
     }
@@ -95,12 +95,12 @@ public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
     public FullTextSearch addMatchColumns(Column... matchColumns) {
         List<Column> collection = Optional.ofNullable(getMatchColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, matchColumns);
-        return this.matchColumns(collection);
+        return this.withMatchColumns(collection);
     }
 
     public FullTextSearch addMatchColumns(Collection<? extends Column> matchColumns) {
         List<Column> collection = Optional.ofNullable(getMatchColumns()).orElseGet(ArrayList::new);
         collection.addAll(matchColumns);
-        return this.matchColumns(collection);
+        return this.withMatchColumns(collection);
     }
 }

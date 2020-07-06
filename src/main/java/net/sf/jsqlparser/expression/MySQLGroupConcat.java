@@ -87,22 +87,22 @@ public class MySQLGroupConcat extends ASTNodeAccessImpl implements Expression {
         return b.toString();
     }
 
-    public MySQLGroupConcat expressionList(ExpressionList expressionList) {
+    public MySQLGroupConcat withExpressionList(ExpressionList expressionList) {
         this.setExpressionList(expressionList);
         return this;
     }
 
-    public MySQLGroupConcat distinct(boolean distinct) {
+    public MySQLGroupConcat withDistinct(boolean distinct) {
         this.setDistinct(distinct);
         return this;
     }
 
-    public MySQLGroupConcat orderByElements(List<OrderByElement> orderByElements) {
+    public MySQLGroupConcat withOrderByElements(List<OrderByElement> orderByElements) {
         this.setOrderByElements(orderByElements);
         return this;
     }
 
-    public MySQLGroupConcat separator(String separator) {
+    public MySQLGroupConcat withSeparator(String separator) {
         this.setSeparator(separator);
         return this;
     }
@@ -110,12 +110,12 @@ public class MySQLGroupConcat extends ASTNodeAccessImpl implements Expression {
     public MySQLGroupConcat addOrderByElements(OrderByElement... orderByElements) {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         Collections.addAll(collection, orderByElements);
-        return this.orderByElements(collection);
+        return this.withOrderByElements(collection);
     }
 
     public MySQLGroupConcat addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         collection.addAll(orderByElements);
-        return this.orderByElements(collection);
+        return this.withOrderByElements(collection);
     }
 }

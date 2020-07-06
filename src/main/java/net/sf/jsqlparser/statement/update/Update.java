@@ -235,72 +235,72 @@ public class Update implements Statement {
         return b.toString();
     }
 
-    public Update table(Table table) {
+    public Update withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public Update fromItem(FromItem fromItem) {
+    public Update withFromItem(FromItem fromItem) {
         this.setFromItem(fromItem);
         return this;
     }
 
-    public Update joins(List<Join> joins) {
+    public Update withJoins(List<Join> joins) {
         this.setJoins(joins);
         return this;
     }
 
-    public Update startJoins(List<Join> startJoins) {
+    public Update withStartJoins(List<Join> startJoins) {
         this.setStartJoins(startJoins);
         return this;
     }
 
-    public Update select(Select select) {
+    public Update withSelect(Select select) {
         this.setSelect(select);
         return this;
     }
 
-    public Update useColumnsBrackets(boolean useColumnsBrackets) {
+    public Update withUseColumnsBrackets(boolean useColumnsBrackets) {
         this.setUseColumnsBrackets(useColumnsBrackets);
         return this;
     }
 
-    public Update useSelect(boolean useSelect) {
+    public Update withUseSelect(boolean useSelect) {
         this.setUseSelect(useSelect);
         return this;
     }
 
-    public Update orderByElements(List<OrderByElement> orderByElements) {
+    public Update withOrderByElements(List<OrderByElement> orderByElements) {
         this.setOrderByElements(orderByElements);
         return this;
     }
 
-    public Update limit(Limit limit) {
+    public Update withLimit(Limit limit) {
         this.setLimit(limit);
         return this;
     }
 
-    public Update returningAllColumns(boolean returningAllColumns) {
+    public Update withReturningAllColumns(boolean returningAllColumns) {
         this.setReturningAllColumns(returningAllColumns);
         return this;
     }
 
-    public Update returningExpressionList(List<SelectExpressionItem> returningExpressionList) {
+    public Update withReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
         this.setReturningExpressionList(returningExpressionList);
         return this;
     }
 
-    public Update where(Expression where) {
+    public Update withWhere(Expression where) {
         this.setWhere(where);
         return this;
     }
 
-    public Update columns(List<Column> columns) {
+    public Update withColumns(List<Column> columns) {
         this.setColumns(columns);
         return this;
     }
 
-    public Update expressions(List<Expression> expressions) {
+    public Update withExpressions(List<Expression> expressions) {
         this.setExpressions(expressions);
         return this;
     }
@@ -308,73 +308,73 @@ public class Update implements Statement {
     public Update addColumns(Column... columns) {
         List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columns);
-        return this.columns(collection);
+        return this.withColumns(collection);
     }
 
     public Update addColumns(Collection<? extends Column> columns) {
         List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
         collection.addAll(columns);
-        return this.columns(collection);
+        return this.withColumns(collection);
     }
 
     public Update addExpressions(Expression... expressions) {
         List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, expressions);
-        return this.expressions(collection);
+        return this.withExpressions(collection);
     }
 
     public Update addExpressions(Collection<? extends Expression> expressions) {
         List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
         collection.addAll(expressions);
-        return this.expressions(collection);
+        return this.withExpressions(collection);
     }
 
     public Update addJoins(Join... joins) {
         List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
         Collections.addAll(collection, joins);
-        return this.joins(collection);
+        return this.withJoins(collection);
     }
 
     public Update addJoins(Collection<? extends Join> joins) {
         List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
         collection.addAll(joins);
-        return this.joins(collection);
+        return this.withJoins(collection);
     }
 
     public Update addStartJoins(Join... startJoins) {
         List<Join> collection = Optional.ofNullable(getStartJoins()).orElseGet(ArrayList::new);
         Collections.addAll(collection, startJoins);
-        return this.startJoins(collection);
+        return this.withStartJoins(collection);
     }
 
     public Update addStartJoins(Collection<? extends Join> startJoins) {
         List<Join> collection = Optional.ofNullable(getStartJoins()).orElseGet(ArrayList::new);
         collection.addAll(startJoins);
-        return this.startJoins(collection);
+        return this.withStartJoins(collection);
     }
 
     public Update addOrderByElements(OrderByElement... orderByElements) {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         Collections.addAll(collection, orderByElements);
-        return this.orderByElements(collection);
+        return this.withOrderByElements(collection);
     }
 
     public Update addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         collection.addAll(orderByElements);
-        return this.orderByElements(collection);
+        return this.withOrderByElements(collection);
     }
 
     public Update addReturningExpressionList(SelectExpressionItem... returningExpressionList) {
         List<SelectExpressionItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, returningExpressionList);
-        return this.returningExpressionList(collection);
+        return this.withReturningExpressionList(collection);
     }
 
     public Update addReturningExpressionList(Collection<? extends SelectExpressionItem> returningExpressionList) {
         List<SelectExpressionItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(returningExpressionList);
-        return this.returningExpressionList(collection);
+        return this.withReturningExpressionList(collection);
     }
 
     public <E extends Expression> E getWhere(Class<E> type) {

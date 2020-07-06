@@ -56,17 +56,17 @@ public class Skip {
         return result;
     }
 
-    public Skip rowCount(Long rowCount) {
+    public Skip withRowCount(Long rowCount) {
         this.setRowCount(rowCount);
         return this;
     }
 
-    public Skip jdbcParameter(JdbcParameter jdbcParameter) {
+    public Skip withJdbcParameter(JdbcParameter jdbcParameter) {
         this.setJdbcParameter(jdbcParameter);
         return this;
     }
 
-    public Skip variable(String variable) {
+    public Skip withVariable(String variable) {
         this.setVariable(variable);
         return this;
     }

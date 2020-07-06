@@ -35,7 +35,7 @@ public class UseStatement implements Statement {
         statementVisitor.visit(this);
     }
 
-    public UseStatement name(String name) {
+    public UseStatement withName(String name) {
         this.setName(name);
         return this;
     }

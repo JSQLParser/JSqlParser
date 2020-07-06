@@ -18,7 +18,7 @@ public interface FromItem extends Model {
 
     Alias getAlias();
 
-    default FromItem alias(Alias alias) {
+    default FromItem withAlias(Alias alias) {
         setAlias(alias);
         return this;
     }
@@ -27,7 +27,7 @@ public interface FromItem extends Model {
 
     Pivot getPivot();
 
-    default FromItem pivot(Pivot pivot) {
+    default FromItem withPivot(Pivot pivot) {
         setPivot(pivot);
         return this;
     }
@@ -36,7 +36,7 @@ public interface FromItem extends Model {
 
     UnPivot getUnPivot();
 
-    default FromItem unPivot(UnPivot unpivot) {
+    default FromItem withUnPivot(UnPivot unpivot) {
         setUnPivot(unpivot);
         return this;
     }

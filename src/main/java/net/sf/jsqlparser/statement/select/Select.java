@@ -33,7 +33,7 @@ public class Select implements Statement {
         return selectBody;
     }
 
-    public Select selectBody(SelectBody body) {
+    public Select withSelectBody(SelectBody body) {
         setSelectBody(body);
         return this;
     }
@@ -72,7 +72,7 @@ public class Select implements Statement {
         return new Select();
     }
 
-    public Select withItemsList(List<WithItem> withItemsList) {
+    public Select withWithItemsList(List<WithItem> withItemsList) {
         this.setWithItemsList(withItemsList);
         return this;
     }
@@ -84,12 +84,12 @@ public class Select implements Statement {
     public Select addWithItemsList(WithItem... withItemsList) {
         List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, withItemsList);
-        return this.withItemsList(collection);
+        return this.withWithItemsList(collection);
     }
 
     public Select addWithItemsList(Collection<? extends WithItem> withItemsList) {
         List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         collection.addAll(withItemsList);
-        return this.withItemsList(collection);
+        return this.withWithItemsList(collection);
     }
 }

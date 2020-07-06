@@ -75,22 +75,22 @@ public class MergeUpdate {
         return b.toString();
     }
 
-    public MergeUpdate columns(List<Column> columns) {
+    public MergeUpdate withColumns(List<Column> columns) {
         this.setColumns(columns);
         return this;
     }
 
-    public MergeUpdate values(List<Expression> values) {
+    public MergeUpdate withValues(List<Expression> values) {
         this.setValues(values);
         return this;
     }
 
-    public MergeUpdate whereCondition(Expression whereCondition) {
+    public MergeUpdate withWhereCondition(Expression whereCondition) {
         this.setWhereCondition(whereCondition);
         return this;
     }
 
-    public MergeUpdate deleteWhereCondition(Expression deleteWhereCondition) {
+    public MergeUpdate withDeleteWhereCondition(Expression deleteWhereCondition) {
         this.setDeleteWhereCondition(deleteWhereCondition);
         return this;
     }
@@ -98,25 +98,25 @@ public class MergeUpdate {
     public MergeUpdate addColumns(Column... columns) {
         List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columns);
-        return this.columns(collection);
+        return this.withColumns(collection);
     }
 
     public MergeUpdate addColumns(Collection<? extends Column> columns) {
         List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
         collection.addAll(columns);
-        return this.columns(collection);
+        return this.withColumns(collection);
     }
 
     public MergeUpdate addValues(Expression... values) {
         List<Expression> collection = Optional.ofNullable(getValues()).orElseGet(ArrayList::new);
         Collections.addAll(collection, values);
-        return this.values(collection);
+        return this.withValues(collection);
     }
 
     public MergeUpdate addValues(Collection<? extends Expression> values) {
         List<Expression> collection = Optional.ofNullable(getValues()).orElseGet(ArrayList::new);
         collection.addAll(values);
-        return this.values(collection);
+        return this.withValues(collection);
     }
 
     public <E extends Expression> E getWhereCondition(Class<E> type) {

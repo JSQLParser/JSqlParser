@@ -40,7 +40,7 @@ public class CreateSequence implements Statement {
         return sql;
     }
 
-    public CreateSequence sequence(Sequence sequence) {
+    public CreateSequence withSequence(Sequence sequence) {
         this.setSequence(sequence);
         return this;
     }

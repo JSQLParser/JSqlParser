@@ -42,7 +42,7 @@ public class PartitionByClause {
         return brackets;
     }
 
-    public PartitionByClause partitionExpressionList(ExpressionList partitionExpressionList) {
+    public PartitionByClause withPartitionExpressionList(ExpressionList partitionExpressionList) {
         this.setPartitionExpressionList(partitionExpressionList);
         return this;
     }

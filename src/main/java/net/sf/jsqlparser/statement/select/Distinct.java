@@ -54,12 +54,12 @@ public class Distinct {
         return sql;
     }
 
-    public Distinct onSelectItems(List<SelectItem> onSelectItems) {
+    public Distinct withOnSelectItems(List<SelectItem> onSelectItems) {
         this.setOnSelectItems(onSelectItems);
         return this;
     }
 
-    public Distinct useUnique(boolean useUnique) {
+    public Distinct withUseUnique(boolean useUnique) {
         this.setUseUnique(useUnique);
         return this;
     }
@@ -67,12 +67,12 @@ public class Distinct {
     public Distinct addOnSelectItems(SelectItem... onSelectItems) {
         List<SelectItem> collection = Optional.ofNullable(getOnSelectItems()).orElseGet(ArrayList::new);
         Collections.addAll(collection, onSelectItems);
-        return this.onSelectItems(collection);
+        return this.withOnSelectItems(collection);
     }
 
     public Distinct addOnSelectItems(Collection<? extends SelectItem> onSelectItems) {
         List<SelectItem> collection = Optional.ofNullable(getOnSelectItems()).orElseGet(ArrayList::new);
         collection.addAll(onSelectItems);
-        return this.onSelectItems(collection);
+        return this.withOnSelectItems(collection);
     }
 }

@@ -38,12 +38,12 @@ public class ExpressionListItem {
         return expressionList + ((alias != null) ? alias.toString() : "");
     }
 
-    public ExpressionListItem expressionList(ExpressionList expressionList) {
+    public ExpressionListItem withExpressionList(ExpressionList expressionList) {
         this.setExpressionList(expressionList);
         return this;
     }
 
-    public ExpressionListItem alias(Alias alias) {
+    public ExpressionListItem withAlias(Alias alias) {
         this.setAlias(alias);
         return this;
     }

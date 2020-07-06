@@ -163,47 +163,47 @@ public class CreateTable implements Statement {
         return sql;
     }
 
-    public CreateTable table(Table table) {
+    public CreateTable withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public CreateTable unlogged(boolean unlogged) {
+    public CreateTable withUnlogged(boolean unlogged) {
         this.setUnlogged(unlogged);
         return this;
     }
 
-    public CreateTable createOptionsStrings(List<String> createOptionsStrings) {
+    public CreateTable withCreateOptionsStrings(List<String> createOptionsStrings) {
         this.setCreateOptionsStrings(createOptionsStrings);
         return this;
     }
 
-    public CreateTable selectParenthesis(boolean selectParenthesis) {
+    public CreateTable withSelectParenthesis(boolean selectParenthesis) {
         this.setSelectParenthesis(selectParenthesis);
         return this;
     }
 
-    public CreateTable ifNotExists(boolean ifNotExists) {
+    public CreateTable withIfNotExists(boolean ifNotExists) {
         this.setIfNotExists(ifNotExists);
         return this;
     }
 
-    public CreateTable rowMovement(RowMovement rowMovement) {
+    public CreateTable withRowMovement(RowMovement rowMovement) {
         this.setRowMovement(rowMovement);
         return this;
     }
 
-    public CreateTable tableOptionsStrings(List<String> tableOptionsStrings) {
+    public CreateTable withTableOptionsStrings(List<String> tableOptionsStrings) {
         this.setTableOptionsStrings(tableOptionsStrings);
         return this;
     }
 
-    public CreateTable columnDefinitions(List<ColumnDefinition> columnDefinitions) {
+    public CreateTable withColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
         this.setColumnDefinitions(columnDefinitions);
         return this;
     }
 
-    public CreateTable indexes(List<Index> indexes) {
+    public CreateTable withIndexes(List<Index> indexes) {
         this.setIndexes(indexes);
         return this;
     }
@@ -211,36 +211,36 @@ public class CreateTable implements Statement {
     public CreateTable addCreateOptionsStrings(String... createOptionsStrings) {
         List<String> collection = Optional.ofNullable(getCreateOptionsStrings()).orElseGet(ArrayList::new);
         Collections.addAll(collection, createOptionsStrings);
-        return this.createOptionsStrings(collection);
+        return this.withCreateOptionsStrings(collection);
     }
 
     public CreateTable addCreateOptionsStrings(Collection<String> createOptionsStrings) {
         List<String> collection = Optional.ofNullable(getCreateOptionsStrings()).orElseGet(ArrayList::new);
         collection.addAll(createOptionsStrings);
-        return this.createOptionsStrings(collection);
+        return this.withCreateOptionsStrings(collection);
     }
 
     public CreateTable addColumnDefinitions(ColumnDefinition... columnDefinitions) {
         List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columnDefinitions);
-        return this.columnDefinitions(collection);
+        return this.withColumnDefinitions(collection);
     }
 
     public CreateTable addColumnDefinitions(Collection<? extends ColumnDefinition> columnDefinitions) {
         List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
         collection.addAll(columnDefinitions);
-        return this.columnDefinitions(collection);
+        return this.withColumnDefinitions(collection);
     }
 
     public CreateTable addIndexes(Index... indexes) {
         List<Index> collection = Optional.ofNullable(getIndexes()).orElseGet(ArrayList::new);
         Collections.addAll(collection, indexes);
-        return this.indexes(collection);
+        return this.withIndexes(collection);
     }
 
     public CreateTable addIndexes(Collection<? extends Index> indexes) {
         List<Index> collection = Optional.ofNullable(getIndexes()).orElseGet(ArrayList::new);
         collection.addAll(indexes);
-        return this.indexes(collection);
+        return this.withIndexes(collection);
     }
 }

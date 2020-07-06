@@ -36,6 +36,15 @@ public class MultiExpressionList implements ItemsList {
         return exprList;
     }
 
+    public void setExprList(List<ExpressionList> exprList) {
+        this.exprList = exprList;
+    }
+
+    public MultiExpressionList withExprList(List<ExpressionList> exprList) {
+        setExprList(exprList);
+        return this;
+    }
+
     public void addExpressionList(ExpressionList el) {
         if (!exprList.isEmpty()
                 && exprList.get(0).getExpressions().size() != el.getExpressions().size()) {
@@ -48,7 +57,7 @@ public class MultiExpressionList implements ItemsList {
         addExpressionList(new ExpressionList(list));
     }
 
-    public void addExpressionList(Expression expr) {
+    public void addExpressionList(Expression... expr) {
         addExpressionList(new ExpressionList(Arrays.asList(expr)));
     }
 

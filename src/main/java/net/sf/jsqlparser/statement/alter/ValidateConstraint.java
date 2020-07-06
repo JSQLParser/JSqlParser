@@ -30,7 +30,7 @@ public class ValidateConstraint implements ConstraintState {
         return not ? "NOVALIDATE" : "VALIDATE";
     }
 
-    public ValidateConstraint not(boolean not) {
+    public ValidateConstraint withNot(boolean not) {
         this.setNot(not);
         return this;
     }

@@ -118,27 +118,27 @@ public class SetOperationList implements SelectBody {
         return buffer.toString();
     }
 
-    public SetOperationList brackets(List<Boolean> brackets) {
+    public SetOperationList withBrackets(List<Boolean> brackets) {
         this.setBrackets(brackets);
         return this;
     }
 
-    public SetOperationList orderByElements(List<OrderByElement> orderByElements) {
+    public SetOperationList withOrderByElements(List<OrderByElement> orderByElements) {
         this.setOrderByElements(orderByElements);
         return this;
     }
 
-    public SetOperationList limit(Limit limit) {
+    public SetOperationList withLimit(Limit limit) {
         this.setLimit(limit);
         return this;
     }
 
-    public SetOperationList offset(Offset offset) {
+    public SetOperationList withOffset(Offset offset) {
         this.setOffset(offset);
         return this;
     }
 
-    public SetOperationList fetch(Fetch fetch) {
+    public SetOperationList withFetch(Fetch fetch) {
         this.setFetch(fetch);
         return this;
     }
@@ -146,25 +146,25 @@ public class SetOperationList implements SelectBody {
     public SetOperationList addBrackets(Boolean... brackets) {
         List<Boolean> collection = Optional.ofNullable(getBrackets()).orElseGet(ArrayList::new);
         Collections.addAll(collection, brackets);
-        return this.brackets(collection);
+        return this.withBrackets(collection);
     }
 
     public SetOperationList addBrackets(Collection<Boolean> brackets) {
         List<Boolean> collection = Optional.ofNullable(getBrackets()).orElseGet(ArrayList::new);
         collection.addAll(brackets);
-        return this.brackets(collection);
+        return this.withBrackets(collection);
     }
 
     public SetOperationList addOrderByElements(OrderByElement... orderByElements) {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         Collections.addAll(collection, orderByElements);
-        return this.orderByElements(collection);
+        return this.withOrderByElements(collection);
     }
 
     public SetOperationList addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
         List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         collection.addAll(orderByElements);
-        return this.orderByElements(collection);
+        return this.withOrderByElements(collection);
     }
 
     public enum SetOperationType {

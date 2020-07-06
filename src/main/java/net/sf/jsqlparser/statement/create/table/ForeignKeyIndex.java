@@ -71,22 +71,22 @@ public class ForeignKeyIndex extends NamedConstraint {
                 + referenceOptions;
     }
 
-    public ForeignKeyIndex table(Table table) {
+    public ForeignKeyIndex withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public ForeignKeyIndex referencedColumnNames(List<String> referencedColumnNames) {
+    public ForeignKeyIndex withReferencedColumnNames(List<String> referencedColumnNames) {
         this.setReferencedColumnNames(referencedColumnNames);
         return this;
     }
 
-    public ForeignKeyIndex onDeleteReferenceOption(String onDeleteReferenceOption) {
+    public ForeignKeyIndex withOnDeleteReferenceOption(String onDeleteReferenceOption) {
         this.setOnDeleteReferenceOption(onDeleteReferenceOption);
         return this;
     }
 
-    public ForeignKeyIndex onUpdateReferenceOption(String onUpdateReferenceOption) {
+    public ForeignKeyIndex withOnUpdateReferenceOption(String onUpdateReferenceOption) {
         this.setOnUpdateReferenceOption(onUpdateReferenceOption);
         return this;
     }
@@ -94,28 +94,28 @@ public class ForeignKeyIndex extends NamedConstraint {
     public ForeignKeyIndex addReferencedColumnNames(String... referencedColumnNames) {
         List<String> collection = Optional.ofNullable(getReferencedColumnNames()).orElseGet(ArrayList::new);
         Collections.addAll(collection, referencedColumnNames);
-        return this.referencedColumnNames(collection);
+        return this.withReferencedColumnNames(collection);
     }
 
     public ForeignKeyIndex addReferencedColumnNames(Collection<String> referencedColumnNames) {
         List<String> collection = Optional.ofNullable(getReferencedColumnNames()).orElseGet(ArrayList::new);
         collection.addAll(referencedColumnNames);
-        return this.referencedColumnNames(collection);
+        return this.withReferencedColumnNames(collection);
     }
 
     @Override()
-    public ForeignKeyIndex type(String type) {
-        return (ForeignKeyIndex) super.type(type);
+    public ForeignKeyIndex withType(String type) {
+        return (ForeignKeyIndex) super.withType(type);
     }
 
     @Override()
-    public ForeignKeyIndex using(String using) {
-        return (ForeignKeyIndex) super.using(using);
+    public ForeignKeyIndex withUsing(String using) {
+        return (ForeignKeyIndex) super.withUsing(using);
     }
 
     @Override()
-    public ForeignKeyIndex name(List<String> name) {
-        return (ForeignKeyIndex) super.name(name);
+    public ForeignKeyIndex withName(List<String> name) {
+        return (ForeignKeyIndex) super.withName(name);
     }
 
 }

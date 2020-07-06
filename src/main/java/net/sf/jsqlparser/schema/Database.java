@@ -62,12 +62,12 @@ public final class Database implements MultiPartName {
         return getFullyQualifiedName();
     }
 
-    public Database server(Server server) {
+    public Database withServer(Server server) {
         this.setServer(server);
         return this;
     }
 
-    public Database databaseName(String databaseName) {
+    public Database withDatabaseName(String databaseName) {
         this.setDatabaseName(databaseName);
         return this;
     }

@@ -47,18 +47,18 @@ public class AndExpression extends BinaryExpression {
         return new AndExpression(leftExpression, rightExpression);
     }
 
-    public AndExpression useOperator(boolean useOperator) {
+    public AndExpression withUseOperator(boolean useOperator) {
         this.setUseOperator(useOperator);
         return this;
     }
 
     @Override()
-    public AndExpression leftExpression(Expression arg0) {
-        return (AndExpression) super.leftExpression(arg0);
+    public AndExpression withLeftExpression(Expression arg0) {
+        return (AndExpression) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public AndExpression rightExpression(Expression arg0) {
-        return (AndExpression) super.rightExpression(arg0);
+    public AndExpression withRightExpression(Expression arg0) {
+        return (AndExpression) super.withRightExpression(arg0);
     }
 }

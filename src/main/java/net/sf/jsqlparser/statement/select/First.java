@@ -70,22 +70,22 @@ public class First {
         return result;
     }
     
-    public First keyword(Keyword keyword) {
+    public First withKeyword(Keyword keyword) {
         this.setKeyword(keyword);
         return this;
     }
 
-    public First rowCount(Long rowCount) {
+    public First withRowCount(Long rowCount) {
         this.setRowCount(rowCount);
         return this;
     }
 
-    public First jdbcParameter(JdbcParameter jdbcParameter) {
+    public First withJdbcParameter(JdbcParameter jdbcParameter) {
         this.setJdbcParameter(jdbcParameter);
         return this;
     }
 
-    public First variable(String variable) {
+    public First withVariable(String variable) {
         this.setVariable(variable);
         return this;
     }

@@ -33,7 +33,7 @@ public class ExcludeConstraint extends Index {
         return exclusionStatement.toString();
     }
 
-    public ExcludeConstraint expression(Expression expression) {
+    public ExcludeConstraint withExpression(Expression expression) {
         this.setExpression(expression);
         return this;
     }
@@ -43,17 +43,17 @@ public class ExcludeConstraint extends Index {
     }
 
     @Override()
-    public ExcludeConstraint name(List<String> name) {
-        return (ExcludeConstraint) super.name(name);
+    public ExcludeConstraint withName(List<String> name) {
+        return (ExcludeConstraint) super.withName(name);
     }
 
     @Override()
-    public ExcludeConstraint type(String type) {
-        return (ExcludeConstraint) super.type(type);
+    public ExcludeConstraint withType(String type) {
+        return (ExcludeConstraint) super.withType(type);
     }
 
     @Override()
-    public ExcludeConstraint using(String using) {
-        return (ExcludeConstraint) super.using(using);
+    public ExcludeConstraint withUsing(String using) {
+        return (ExcludeConstraint) super.withUsing(using);
     }
 }

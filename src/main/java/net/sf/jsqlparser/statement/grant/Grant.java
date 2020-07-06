@@ -88,22 +88,22 @@ public class Grant implements Statement {
         return buffer.toString();
     }
 
-    public Grant role(String role) {
+    public Grant withRole(String role) {
         this.setRole(role);
         return this;
     }
 
-    public Grant privileges(List<String> privileges) {
+    public Grant withPrivileges(List<String> privileges) {
         this.setPrivileges(privileges);
         return this;
     }
 
-    public Grant objectName(String objectName) {
+    public Grant withObjectName(String objectName) {
         this.setObjectName(objectName);
         return this;
     }
 
-    public Grant users(List<String> users) {
+    public Grant withUsers(List<String> users) {
         this.setUsers(users);
         return this;
     }
@@ -111,24 +111,24 @@ public class Grant implements Statement {
     public Grant addPrivileges(String... privileges) {
         List<String> collection = Optional.ofNullable(getPrivileges()).orElseGet(ArrayList::new);
         Collections.addAll(collection, privileges);
-        return this.privileges(collection);
+        return this.withPrivileges(collection);
     }
 
     public Grant addPrivileges(Collection<String> privileges) {
         List<String> collection = Optional.ofNullable(getPrivileges()).orElseGet(ArrayList::new);
         collection.addAll(privileges);
-        return this.privileges(collection);
+        return this.withPrivileges(collection);
     }
 
     public Grant addUsers(String... users) {
         List<String> collection = Optional.ofNullable(getUsers()).orElseGet(ArrayList::new);
         Collections.addAll(collection, users);
-        return this.users(collection);
+        return this.withUsers(collection);
     }
 
     public Grant addUsers(Collection<String> users) {
         List<String> collection = Optional.ofNullable(getUsers()).orElseGet(ArrayList::new);
         collection.addAll(users);
-        return this.users(collection);
+        return this.withUsers(collection);
     }
 }

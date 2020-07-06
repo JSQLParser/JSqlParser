@@ -30,26 +30,26 @@ public class EqualsTo extends ComparisonOperator {
     }
 
     @Override
-    public EqualsTo leftExpression(Expression expression) {
-        return (EqualsTo) super.leftExpression(expression);
+    public EqualsTo withLeftExpression(Expression expression) {
+        return (EqualsTo) super.withLeftExpression(expression);
     }
 
     @Override
-    public EqualsTo rightExpression(Expression expression) {
-        return (EqualsTo) super.rightExpression(expression);
+    public EqualsTo withRightExpression(Expression expression) {
+        return (EqualsTo) super.withRightExpression(expression);
     }
 
     public static EqualsTo create(Expression left, Expression right) {
-        return new EqualsTo().leftExpression(left).rightExpression(right);
+        return new EqualsTo().withLeftExpression(left).withRightExpression(right);
     }
 
     @Override()
-    public EqualsTo oldOracleJoinSyntax(int arg0) {
-        return (EqualsTo) super.oldOracleJoinSyntax(arg0);
+    public EqualsTo withOldOracleJoinSyntax(int arg0) {
+        return (EqualsTo) super.withOldOracleJoinSyntax(arg0);
     }
 
     @Override()
-    public EqualsTo oraclePriorPosition(int arg0) {
-        return (EqualsTo) super.oraclePriorPosition(arg0);
+    public EqualsTo withOraclePriorPosition(int arg0) {
+        return (EqualsTo) super.withOraclePriorPosition(arg0);
     }
 }

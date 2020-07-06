@@ -54,23 +54,23 @@ public class SimilarToExpression extends BinaryExpression {
         this.escape = escape;
     }
 
-    public SimilarToExpression escape(String escape) {
+    public SimilarToExpression withEscape(String escape) {
         this.setEscape(escape);
         return this;
     }
 
-    public SimilarToExpression not(boolean not) {
+    public SimilarToExpression withNot(boolean not) {
         this.setNot(not);
         return this;
     }
 
     @Override()
-    public SimilarToExpression leftExpression(Expression arg0) {
-        return (SimilarToExpression) super.leftExpression(arg0);
+    public SimilarToExpression withLeftExpression(Expression arg0) {
+        return (SimilarToExpression) super.withLeftExpression(arg0);
     }
 
     @Override()
-    public SimilarToExpression rightExpression(Expression arg0) {
-        return (SimilarToExpression) super.rightExpression(arg0);
+    public SimilarToExpression withRightExpression(Expression arg0) {
+        return (SimilarToExpression) super.withRightExpression(arg0);
     }
 }

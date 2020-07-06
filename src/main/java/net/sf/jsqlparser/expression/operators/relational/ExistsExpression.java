@@ -48,12 +48,12 @@ public class ExistsExpression extends ASTNodeAccessImpl implements Expression {
         return getStringExpression() + " " + rightExpression.toString();
     }
 
-    public ExistsExpression rightExpression(Expression rightExpression) {
+    public ExistsExpression withRightExpression(Expression rightExpression) {
         this.setRightExpression(rightExpression);
         return this;
     }
 
-    public ExistsExpression not(boolean not) {
+    public ExistsExpression withNot(boolean not) {
         this.setNot(not);
         return this;
     }

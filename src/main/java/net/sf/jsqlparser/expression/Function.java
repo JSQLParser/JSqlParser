@@ -191,42 +191,42 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         return ans;
     }
 
-    public Function attribute(Expression attribute) {
+    public Function withAttribute(Expression attribute) {
         this.setAttribute(attribute);
         return this;
     }
 
-    public Function attributeName(String attributeName) {
+    public Function withAttributeName(String attributeName) {
         this.setAttributeName(attributeName);
         return this;
     }
 
-    public Function keep(KeepExpression keep) {
+    public Function withKeep(KeepExpression keep) {
         this.setKeep(keep);
         return this;
     }
 
-    public Function ignoreNulls(boolean ignoreNulls) {
+    public Function withIgnoreNulls(boolean ignoreNulls) {
         this.setIgnoreNulls(ignoreNulls);
         return this;
     }
 
-    public Function parameters(ExpressionList parameters) {
+    public Function withParameters(ExpressionList parameters) {
         this.setParameters(parameters);
         return this;
     }
 
-    public Function namedParameters(NamedExpressionList namedParameters) {
+    public Function withNamedParameters(NamedExpressionList namedParameters) {
         this.setNamedParameters(namedParameters);
         return this;
     }
 
-    public Function allColumns(boolean allColumns) {
+    public Function withAllColumns(boolean allColumns) {
         this.setAllColumns(allColumns);
         return this;
     }
 
-    public Function distinct(boolean distinct) {
+    public Function withDistinct(boolean distinct) {
         this.setDistinct(distinct);
         return this;
     }

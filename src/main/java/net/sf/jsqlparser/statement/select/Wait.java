@@ -32,7 +32,7 @@ public class Wait {
         return " WAIT " + timeout;
     }
 
-    public Wait timeout(long timeout) {
+    public Wait withTimeout(long timeout) {
         this.setTimeout(timeout);
         return this;
     }

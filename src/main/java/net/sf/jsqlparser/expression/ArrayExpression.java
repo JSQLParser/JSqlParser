@@ -47,12 +47,12 @@ public class ArrayExpression extends ASTNodeAccessImpl implements Expression {
         return objExpression.toString() + "[" + indexExpression.toString() + "]";
     }
 
-    public ArrayExpression objExpression(Expression objExpression) {
+    public ArrayExpression withObjExpression(Expression objExpression) {
         this.setObjExpression(objExpression);
         return this;
     }
 
-    public ArrayExpression indexExpression(Expression indexExpression) {
+    public ArrayExpression withIndexExpression(Expression indexExpression) {
         this.setIndexExpression(indexExpression);
         return this;
     }
