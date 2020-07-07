@@ -46,13 +46,13 @@ public class ExpressionList implements ItemsList {
         return withExpressions(list);
     }
 
-    public ExpressionList withExpressions(List<Expression> list) {
-        this.setExpressions(list);
+    public ExpressionList withExpressions(List<Expression> expressions) {
+        this.setExpressions(expressions);
         return this;
     }
 
-    public void setExpressions(List<Expression> list) {
-        expressions = list;
+    public void setExpressions(List<Expression> expressions) {
+        this.expressions = expressions;
     }
 
     @Override
