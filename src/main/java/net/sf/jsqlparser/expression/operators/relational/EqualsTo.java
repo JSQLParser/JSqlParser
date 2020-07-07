@@ -39,10 +39,6 @@ public class EqualsTo extends ComparisonOperator {
         return (EqualsTo) super.withRightExpression(expression);
     }
 
-    public static EqualsTo create(Expression left, Expression right) {
-        return new EqualsTo().withLeftExpression(left).withRightExpression(right);
-    }
-
     @Override()
     public EqualsTo withOldOracleJoinSyntax(int arg0) {
         return (EqualsTo) super.withOldOracleJoinSyntax(arg0);

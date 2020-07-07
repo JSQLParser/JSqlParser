@@ -43,10 +43,6 @@ public class AndExpression extends BinaryExpression {
         return useOperator ? "&&" : "AND";
     }
 
-    public static AndExpression create(Expression leftExpression, Expression rightExpression) {
-        return new AndExpression(leftExpression, rightExpression);
-    }
-
     public AndExpression withUseOperator(boolean useOperator) {
         this.setUseOperator(useOperator);
         return this;

@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.statement.select;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -550,10 +549,6 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     public boolean isNoWait() {
         return this.noWait;
-    }
-
-    public static PlainSelect create() {
-        return new PlainSelect();
     }
 
     public PlainSelect withDistinct(Distinct distinct) {

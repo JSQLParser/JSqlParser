@@ -44,7 +44,4 @@ public class OrExpression extends BinaryExpression {
         return "OR";
     }
 
-    public static OrExpression create(Expression left, Expression right) {
-        return new OrExpression().withLeftExpression(left).withRightExpression(right);
-    }
 }

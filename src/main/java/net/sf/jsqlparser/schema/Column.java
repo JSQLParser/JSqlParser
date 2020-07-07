@@ -116,10 +116,6 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
         return getName(true);
     }
 
-    public static Column create(Table table, String columnName) {
-        return new Column(columnName).withTable(table);
-    }
-
     public Column withTable(Table table) {
         this.setTable(table);
         return this;

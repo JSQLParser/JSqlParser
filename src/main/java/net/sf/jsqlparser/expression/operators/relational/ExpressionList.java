@@ -65,10 +65,6 @@ public class ExpressionList implements ItemsList {
         return PlainSelect.getStringList(expressions, true, true);
     }
 
-    public static ExpressionList create() {
-        return new ExpressionList();
-    }
-
     public ExpressionList addExpressions(Collection<? extends Expression> expressions) {
         List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
         collection.addAll(expressions);

@@ -10,11 +10,8 @@
 package net.sf.jsqlparser.statement.builder;
 
 import java.util.List;
-
 import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
@@ -50,21 +47,21 @@ public class JSQLParserFluentModelTests {
         Table t1 = new Table("tab1").withAlias(new Alias("t1", false));
         Table t2 = new Table("tab2").withAlias(new Alias("t2", false));
 
-        Select select = Select.create().withSelectBody( //
-                PlainSelect.create() //
-                .addSelectItems(AllColumns.create()) //
+        Select select = new Select().withSelectBody( //
+                new PlainSelect() //
+                .addSelectItems(new AllColumns()) //
                 .withFromItem(t1) //
-                .addJoins(Join.create().withRightItem(t2)
-                        .withOnExpression(EqualsTo.create(Column.create(t1, "ref"), Column.create(t2, "id"))))
-                .withWhere(AndExpression.create( //
-                                Parenthesis.create(OrExpression.create( //
-                                EqualsTo.create(Column.create(t1, "col1"), JdbcParameter.create()),
-                                EqualsTo.create(Column.create(t1, "col2"), JdbcParameter.create()) //
+                .addJoins(new Join().withRightItem(t2)
+                        .withOnExpression(new EqualsTo(new Column(t1, "ref"), new Column(t2, "id"))))
+                        .withWhere(new AndExpression( //
+                        new Parenthesis(new OrExpression( //
+                                new EqualsTo(new Column(t1, "col1"), new JdbcParameter()),
+                                new EqualsTo(new Column(t1, "col2"), new JdbcParameter()) //
                                 )), //
-                        InExpression.create() //
-                        .withLeftExpression(Column.create(t1, "col3"))
+                        new InExpression() //
+                        .withLeftExpression(new Column(t1, "col3"))
                         .withRightItemsList(
-                                ExpressionList.create().addExpressions(StringValue.create("A"))))));
+                                new ExpressionList().addExpressions(new StringValue("A"))))));
 
         ExpressionList list = select.getSelectBody(PlainSelect.class).getWhere(AndExpression.class)
                 .getRightExpression(InExpression.class).getRightItemsList(ExpressionList.class);

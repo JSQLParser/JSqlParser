@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -66,10 +65,6 @@ public class Select implements Statement {
 
     public void setWithItemsList(List<WithItem> withItemsList) {
         this.withItemsList = withItemsList;
-    }
-
-    public static Select create() {
-        return new Select();
     }
 
     public Select withWithItemsList(List<WithItem> withItemsList) {

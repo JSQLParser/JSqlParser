@@ -11,7 +11,6 @@ package net.sf.jsqlparser.expression;
 
 import java.util.Arrays;
 import java.util.List;
-
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
@@ -81,10 +80,6 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         return (prefix != null ? prefix : "") + "'" + value + "'";
-    }
-
-    public static StringValue create(String string) {
-        return new StringValue(string);
     }
 
     public StringValue withPrefix(String prefix) {

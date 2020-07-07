@@ -156,10 +156,6 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         this.multiExpressionList = multiExpressionList;
     }
 
-    public static InExpression create() {
-        return new InExpression();
-    }
-
     public InExpression withLeftItemsList(ItemsList leftItemsList) {
         this.setLeftItemsList(leftItemsList);
         return this;

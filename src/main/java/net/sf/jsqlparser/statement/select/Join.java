@@ -321,10 +321,6 @@ public class Join extends ASTNodeAccessImpl {
 
     }
 
-    public static Join create() {
-        return new Join();
-    }
-
     public Join addUsingColumns(Column... usingColumns) {
         List<Column> collection = Optional.ofNullable(getUsingColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, usingColumns);
