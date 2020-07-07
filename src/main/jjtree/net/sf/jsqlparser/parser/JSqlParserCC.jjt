@@ -526,8 +526,8 @@ Statement SingleStatement() :
 
 Block Block() #Block : {
     Statements stmts = new Statements();
-  List<Statement> list = new ArrayList<Statement>();
-  Statement stm;
+    List<Statement> list = new ArrayList<Statement>();
+    Statement stm;
     Block block = new Block();
 }
 {
@@ -540,9 +540,9 @@ Block Block() #Block : {
         if (errorRecovery) {
             parseErrors.add(e);
             error_skipto(ST_SEMICOLON);
-        }
-        else
+        } else {
             throw e;
+        }           
     }
     {
         stmts.setStatements(list);
@@ -554,10 +554,11 @@ Block Block() #Block : {
     }
 }
 
-Statements Statements() #Statements :
-{ Statements stmts = new Statements();
-  List<Statement> list = new ArrayList<Statement>();
-  Statement stm; }
+Statements Statements() #Statements : {
+    Statements stmts = new Statements();
+    List<Statement> list = new ArrayList<Statement>();
+    Statement stm;
+}
 {
     (<ST_SEMICOLON>)*
     try {
@@ -568,13 +569,12 @@ Statements Statements() #Statements :
         if (errorRecovery) {
             parseErrors.add(e);
             error_skipto(ST_SEMICOLON);
-        }
-        else
+        } else {
             throw e;
+        }
     }
     {
-        stmts.setStatements(list);
-        return stmts;
+        return stmts.withStatements(list);
     }
 }
 
@@ -599,20 +599,26 @@ DeclareStatement Declare(): {
     <K_DECLARE> userVariable = UserVariable()
     (
             ( <K_TABLE> "(" colDef = ColumnDefinition()
-                {   stmt.setUserVariable(userVariable);
-                    stmt.setDeclareType(DeclareType.TABLE);
-                    stmt.addColumnDefinition(colDef); }
+      {
+        stmt.withUserVariable(userVariable)
+        .withDeclareType(DeclareType.TABLE)
+        .addColumnDefinition(colDef);
+      }
                         ("," colDef = ColumnDefinition() { stmt.addColumnDefinition(colDef); })*  ")"
             )
         |
             <K_AS> typeName = RelObjectName()
-                { stmt.setUserVariable(userVariable);
-                  stmt.setDeclareType(DeclareType.AS);
-                  stmt.setTypeName(typeName); }
+                {
+                    stmt.withUserVariable(userVariable)
+                      .withDeclareType(DeclareType.AS)
+                      .withTypeName(typeName); 
+                }
         |
             (colDataType = ColDataType() ["=" defaultExpr = Expression()]
-                { stmt.setDeclareType(DeclareType.TYPE);
-                  stmt.addType(userVariable, colDataType, defaultExpr); }
+                {
+                  stmt.withDeclareType(DeclareType.TYPE)
+                  .addType(userVariable, colDataType, defaultExpr);
+                }
                 ("," userVariable = UserVariable() colDataType = ColDataType() { defaultExpr = null; }
                 ["=" defaultExpr = Expression()] { stmt.addType(userVariable, colDataType, defaultExpr); } )*
             )
@@ -632,7 +638,7 @@ SetStatement Set(): {
 }
 {
     <K_SET> name = RelObjectNameExt() ["=" { useEqual=true; } ] value=SimpleExpression()
-    { set = new SetStatement(name,value).useEqual(useEqual); }
+    { set = new SetStatement(name,value).withUseEqual(useEqual); }
     ( { useEqual=false; } "," name = RelObjectNameExt() ["=" { useEqual=true; } ] value=SimpleExpression()
         { set.add(name, value, useEqual); } )*
 
@@ -852,16 +858,15 @@ Update Update():
        ]
 
    {
-        update.setColumns(columns);
-        update.setExpressions(expList);
-        update.setTable(table);
-        update.setStartJoins(startJoins);
-        update.setFromItem(fromItem);
-        update.setJoins(joins);
-        update.setSelect(select);
-        update.setUseColumnsBrackets(useColumnsBrackets);
-        update.setReturningExpressionList(returning);
-        return update;
+        return update.withColumns(columns)
+        	  .withExpressions(expList)
+              .withTable(table)
+              .withStartJoins(startJoins)
+              .withFromItem(fromItem)
+              .withJoins(joins)
+              .withSelect(select)
+              .withUseColumnsBrackets(useColumnsBrackets)
+              .withReturningExpressionList(returning);
    }
 }
 
@@ -916,10 +921,10 @@ Replace Replace():
         )
     )
    {
-           if (columns.size() > 0)
-               replace.setColumns(columns);
-           replace.setTable(table);
-        return replace;
+        if (!columns.isEmpty()) {
+           replace.withColumns(columns);
+        } 
+        return replace.withTable(table);
    }
 }
 
@@ -1040,22 +1045,22 @@ Insert Insert():
     ]
 
     {
-        insert.setItemsList(itemsList);
-        insert.setUseSelectBrackets(useSelectBrackets);
-        insert.setSelect(select);
-        insert.setTable(table);
-        if (columns.size() > 0)
+        if (!columns.isEmpty()) { 
             insert.setColumns(columns);
-        insert.setUseDuplicate(useDuplicate);
-        insert.setDuplicateUpdateColumns(duplicateUpdateColumns);
-        insert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
-        insert.setReturningExpressionList(returning);
-        insert.setModifierPriority(modifierPriority);
-        insert.setModifierIgnore(modifierIgnore);
-        insert.setUseSet(useSet);
-        insert.setSetColumns(setColumns);
-        insert.setSetExpressionList(setExpressionList);
-        return insert;
+        }
+        return insert.withItemsList(itemsList)
+              .withUseSelectBrackets(useSelectBrackets)
+              .withSelect(select)
+              .withTable(table)
+              .withUseDuplicate(useDuplicate)
+              .withDuplicateUpdateColumns(duplicateUpdateColumns)
+              .withDuplicateUpdateExpressionList(duplicateUpdateExpressionList)
+              .withReturningExpressionList(returning)
+              .withModifierPriority(modifierPriority)
+              .withModifierIgnore(modifierIgnore)
+              .withUseSet(useSet)
+              .withUseSetColumns(setColumns)
+              .withSetExpressionList(setExpressionList);
     }
 }
 
@@ -1123,17 +1128,16 @@ Upsert Upsert():
         duplicateUpdateExpressionList.add(exp); } )*]
 
     {
-        upsert.setItemsList(itemsList);
-        upsert.setUseSelectBrackets(useSelectBrackets);
-        upsert.setSelect(select);
-        upsert.setTable(table);
-        if (columns.size() > 0) {
+		if (columns.size() > 0) {
             upsert.setColumns(columns);
         }
-        upsert.setUseDuplicate(useDuplicate);
-        upsert.setDuplicateUpdateColumns(duplicateUpdateColumns);
-        upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
-        return upsert;
+        return upsert.withItemsList(itemsList)
+              .withUseSelectBrackets(useSelectBrackets)
+              .withSelect(select)
+              .withTable(table)
+              .withUseDuplicate(useDuplicate)
+              .withDuplicateUpdateColumns(duplicateUpdateColumns)
+              .withDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
     }
 }
 
@@ -1157,11 +1161,10 @@ Delete Delete():
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]
     {
-          delete.setTables(tables);
-        if (joins != null && joins.size() > 0)
+        if (joins != null && joins.size() > 0) {
             delete.setJoins(joins);
-        delete.setTable(table);
-        return delete;
+        }
+        return delete.withTables(tables).withTable(table);
     }
 }
 
@@ -1185,7 +1188,7 @@ Statement Merge() : {
     [
         ( LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); }
           [ insert = MergeInsertClause() { merge.setMergeInsert(insert); } ]
-        | insert = MergeInsertClause() { merge.setMergeInsert(insert); merge.setInsertFirst(true); }
+        | insert = MergeInsertClause() { merge.withMergeInsert(insert).withInsertFirst(true); }
           [ update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
         )
     ]
@@ -1213,7 +1216,7 @@ MergeUpdate MergeUpdateClause() : {
             { columns.add(col); expList.add(exp); }
         ("," col = Column() "=" exp = SimpleExpression() { columns.add(col); expList.add(exp); } )*
 
-        { mu.setColumns(columns); mu.setValues(expList); }
+        { mu.withColumns(columns).withValues(expList); }
 
         [ <K_WHERE> condition = Expression() { mu.setWhereCondition(condition); }]
         [ <K_DELETE> <K_WHERE> condition = Expression() { mu.setDeleteWhereCondition(condition); } ]
@@ -1233,9 +1236,7 @@ MergeInsert MergeInsertClause() : {
         <K_INSERT> ["(" col=Column() { columns.add(col); } ("," col=Column() { columns.add(col); } )* ")"]  <K_VALUES>
            "(" exp=SimpleExpression() { expList.add(exp); } ("," exp=SimpleExpression() { expList.add(exp); } )* ")"
     {
-        mi.setColumns(columns);
-        mi.setValues(expList);
-        return mi;
+        return mi.withColumns(columns).withValues(expList);
     }
 }
 
@@ -1385,9 +1386,7 @@ Select Select():
 {
     [ with=WithList() {  } ] selectBody = SelectBody()
     {
-        select.setWithItemsList(with);
-        select.setSelectBody(selectBody);
-        return select;
+        return select.withWithItemsList(with).withSelectBody(selectBody);
     }
 }
 
@@ -3758,7 +3757,9 @@ TableFunction TableFunction():
     TableFunction functionItem;
 }
 {
-    function=Function() { functionItem = new TableFunction(); functionItem.setFunction(function); }
+    function=Function() {
+      functionItem = new TableFunction().withFunction(function);
+    }
              [LOOKAHEAD(2) alias=Alias() { functionItem.setAlias(alias); }]
     { return functionItem; }
 }
