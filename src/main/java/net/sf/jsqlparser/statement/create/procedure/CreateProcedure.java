@@ -11,13 +11,16 @@ package net.sf.jsqlparser.statement.create.procedure;
 
 import java.util.Collection;
 import java.util.List;
-
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 
 /**
  * A {@code CREATE PROCEDURE} statement
  */
 public class CreateProcedure extends CreateFunctionalStatement {
+
+    public CreateProcedure() {
+        super("PROCEDURE");
+    }
 
     public CreateProcedure(List<String> functionDeclarationParts) {
         super("PROCEDURE", functionDeclarationParts);

@@ -19,11 +19,16 @@ public class NamedConstraint extends Index {
         String idxSpecText = PlainSelect.getStringList(getIndexSpec(), false, false);
         return (getName() != null ? "CONSTRAINT " + getName() + " " : "")
                 + getType() + " " + PlainSelect.getStringList(getColumnsNames(), true, true) + (!"".
-                equals(idxSpecText) ? " " + idxSpecText : "");
+                        equals(idxSpecText) ? " " + idxSpecText : "");
     }
 
     @Override()
     public NamedConstraint withName(List<String> name) {
+        return (NamedConstraint) super.withName(name);
+    }
+
+    @Override()
+    public NamedConstraint withName(String name) {
         return (NamedConstraint) super.withName(name);
     }
 

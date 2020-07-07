@@ -9,21 +9,42 @@
  */
 package net.sf.jsqlparser.statement.create;
 
-import net.sf.jsqlparser.JSQLParserException;
-import static net.sf.jsqlparser.test.TestUtils.*;
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import java.util.Collections;
 import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.create.view.AlterView;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
 public class AlterViewTest {
 
     @Test
     public void testAlterView() throws JSQLParserException {
-        String stmt = "ALTER VIEW myview AS SELECT * FROM mytab";
-        assertSqlCanBeParsedAndDeparsed(stmt);
+        String statement = "ALTER VIEW myview AS SELECT * FROM mytab";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(
+                new AlterView().withView(new Table("myview")).withSelectBody(new PlainSelect()
+                        .addSelectItems(Collections.singleton(new AllColumns())).withFromItem(new Table("mytab"))),
+                statement);
     }
 
     @Test
     public void testReplaceView() throws JSQLParserException {
-        String stmt = "REPLACE VIEW myview AS SELECT * FROM mytab";
-        assertSqlCanBeParsedAndDeparsed(stmt);
+        String statement = "REPLACE VIEW myview(a, b) AS SELECT a, b FROM mytab";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        AlterView alterView = new AlterView().withUseReplace(true).addColumnNames("a").addColumnNames(Collections.singleton("b"))
+                .withView(new Table("myview"))
+                .withSelectBody(new PlainSelect()
+                        .addSelectItems(new SelectExpressionItem(new Column("a")),
+                                new SelectExpressionItem(new Column("b")))
+                        .withFromItem(new Table("mytab")));
+        assertTrue(alterView.getSelectBody(PlainSelect.class) instanceof PlainSelect);
+        assertDeparse(alterView, statement);
     }
 }

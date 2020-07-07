@@ -12,14 +12,12 @@ package net.sf.jsqlparser.statement.create;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Arrays;
-
+import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.procedure.CreateProcedure;
-import org.junit.Test;
 
 /**
  * Tests the behavior of {@link net.sf.jsqlparser.statement.CreateFunctionalStatement funtion statements}
@@ -52,7 +50,10 @@ public class CreateFunctionalStatementTest {
 
     @Test
     public void createProcedureMinimal() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE PROCEDURE foo AS BEGIN END;");
+        String statement = "CREATE PROCEDURE foo AS BEGIN END;";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(new CreateProcedure().addFunctionDeclarationParts("foo", "AS", "BEGIN", "END;"),
+                statement);
     }
 
     @Test

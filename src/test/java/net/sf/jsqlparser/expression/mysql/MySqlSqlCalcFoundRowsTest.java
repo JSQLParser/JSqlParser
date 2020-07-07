@@ -9,18 +9,21 @@
  */
 package net.sf.jsqlparser.expression.mysql;
 
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import java.util.Arrays;
+import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
+import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
-import org.junit.Test;
-
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author sam
@@ -40,6 +43,11 @@ public class MySqlSqlCalcFoundRowsTest {
 
         assertSqlCanBeParsedAndDeparsed(sqlCalcFoundRowsContainingSql);
         assertSqlCanBeParsedAndDeparsed(generalSql);
+        assertDeparse(
+                new Select().withSelectBody(
+                        new PlainSelect().addSelectItems(Arrays.asList(new AllColumns()))
+                                .withMySqlSqlCalcFoundRows(true).withFromItem(new Table("TABLE"))),
+                sqlCalcFoundRowsContainingSql);
     }
 
     private void accept(Statement statement, final MySqlSqlCalcFoundRowRef ref) {
@@ -53,7 +61,7 @@ public class MySqlSqlCalcFoundRowsTest {
                     }
                 });
             }
-            
+
         });
     }
 }

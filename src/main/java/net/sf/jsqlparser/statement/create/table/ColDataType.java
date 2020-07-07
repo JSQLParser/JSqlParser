@@ -23,6 +23,14 @@ public class ColDataType {
     private String characterSet;
     private List<Integer> arrayData = new ArrayList<Integer>();
 
+    public ColDataType() {
+        // empty constructor
+    }
+
+    public ColDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
     public List<String> getArgumentsStringList() {
         return argumentsStringList;
     }
@@ -67,7 +75,7 @@ public class ColDataType {
         }
         return dataType
                 + (argumentsStringList != null ? " " + PlainSelect.
-                                getStringList(argumentsStringList, true, true) : "")
+                        getStringList(argumentsStringList, true, true) : "")
                 + arraySpec.toString()
                 + (characterSet != null ? " CHARACTER SET " + characterSet : "");
     }

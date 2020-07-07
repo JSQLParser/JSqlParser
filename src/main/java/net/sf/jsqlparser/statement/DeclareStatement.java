@@ -63,11 +63,36 @@ public final class DeclareStatement implements Statement {
     }
 
     public void addType(ColDataType colDataType, Expression defaultExpr) {
-        typeDefExprList.add(new TypeDefExpr(colDataType, defaultExpr));
+        addTypeDefExprList(new TypeDefExpr(colDataType, defaultExpr));
     }
 
     public void addType(UserVariable userVariable, ColDataType colDataType, Expression defaultExpr) {
-        typeDefExprList.add(new TypeDefExpr(userVariable, colDataType, defaultExpr));
+        addTypeDefExprList(new TypeDefExpr(userVariable, colDataType, defaultExpr));
+    }
+
+    public DeclareStatement addTypeDefExprList(TypeDefExpr... typeDefExpressions) {
+        List<TypeDefExpr> collection = Optional.ofNullable(getTypeDefExprList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, typeDefExpressions);
+        return this.withTypeDefExprList(collection);
+    }
+
+    public DeclareStatement addTypeDefExprList(Collection<? extends TypeDefExpr> typeDefExpressions) {
+        List<TypeDefExpr> collection = Optional.ofNullable(getTypeDefExprList()).orElseGet(ArrayList::new);
+        collection.addAll(typeDefExpressions);
+        return this.withTypeDefExprList(collection);
+    }
+
+    public DeclareStatement withTypeDefExprList(List<TypeDefExpr> typeDefExpressions) {
+        setTypeDefExprList(typeDefExpressions);
+        return this;
+    }
+
+    public void setTypeDefExprList(List<TypeDefExpr> expr) {
+        this.typeDefExprList = expr;
+    }
+
+    public List<TypeDefExpr> getTypeDefExprList() {
+        return this.typeDefExprList ;
     }
 
     public void addColumnDefinition(ColumnDefinition colDef) {

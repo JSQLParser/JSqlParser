@@ -96,7 +96,7 @@ public class AlterView implements Statement {
         return this;
     }
 
-    public AlterView withVolumnNames(List<String> columnNames) {
+    public AlterView withColumnNames(List<String> columnNames) {
         this.setColumnNames(columnNames);
         return this;
     }
@@ -104,13 +104,13 @@ public class AlterView implements Statement {
     public AlterView addColumnNames(String... columnNames) {
         List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columnNames);
-        return this.withVolumnNames(collection);
+        return this.withColumnNames(collection);
     }
 
     public AlterView addColumnNames(Collection<String> columnNames) {
         List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
         collection.addAll(columnNames);
-        return this.withVolumnNames(collection);
+        return this.withColumnNames(collection);
     }
 
     public <E extends SelectBody> E getSelectBody(Class<E> type) {

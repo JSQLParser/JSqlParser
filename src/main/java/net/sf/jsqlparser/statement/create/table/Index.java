@@ -28,7 +28,7 @@ public class Index {
                 .map(col -> col.columnName)
                 .collect(toList());
     }
-    
+
     public List<ColumnParams> getColumnWithParams() {
         return columns;
     }
@@ -36,7 +36,7 @@ public class Index {
     public String getName() {
         return name.isEmpty()?null:String.join(".", name);
     }
-    
+
     public List<String> getNameParts() {
         return Collections.unmodifiableList(name);
     }
@@ -51,7 +51,7 @@ public class Index {
      * Please note that:
      *  Oracle - the type might be BITMAP, indicating a bitmap kind of index
      *  MySQL - the type might be FULLTEXT or SPATIAL
-    */
+     */
     public void setUsing(String string) {
         using = string;
     }
@@ -59,7 +59,7 @@ public class Index {
     public void setColumnsNames(List<String> list) {
         columns = list.stream().map(col -> new ColumnParams(col, null)).collect(toList());
     }
-    
+
     public void setColumnNamesWithParams(List<ColumnParams> list) {
         this.columns = list;
     }
@@ -68,7 +68,7 @@ public class Index {
         this.name.clear();
         this.name.add(name);
     }
-    
+
     public void setName(List<String> name) {
         this.name.clear();
         this.name.addAll(name);
@@ -112,6 +112,11 @@ public class Index {
         return this;
     }
 
+    public Index withName(String name) {
+        this.setName(name);
+        return this;
+    }
+
     public static class ColumnParams {
         public final String columnName;
         public final List<String> params;
@@ -128,7 +133,7 @@ public class Index {
         public List<String> getParams() {
             return params;
         }
-        
+
         @Override
         public String toString() {
             return columnName + (params!=null?" " + String.join(" ", params):"");

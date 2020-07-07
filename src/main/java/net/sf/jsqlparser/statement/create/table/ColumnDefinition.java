@@ -28,9 +28,13 @@ public class ColumnDefinition {
     public ColumnDefinition() {
     }
 
-    public ColumnDefinition(String columnName, ColDataType colDataType, List<String> columnSpecs) {
+    public ColumnDefinition(String columnName, ColDataType colDataType) {
         this.columnName = columnName;
         this.colDataType = colDataType;
+    }
+
+    public ColumnDefinition(String columnName, ColDataType colDataType, List<String> columnSpecs) {
+        this(columnName, colDataType);
         this.columnSpecs = columnSpecs;
     }
 
@@ -62,7 +66,7 @@ public class ColumnDefinition {
     public String toString() {
         return columnName + " " + toStringDataTypeAndSpec();
     }
-    
+
     public String toStringDataTypeAndSpec() {
         return colDataType + ((columnSpecs != null && !columnSpecs.isEmpty())? " " + PlainSelect.
                 getStringList(columnSpecs, false, false) : "");

@@ -23,6 +23,10 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
     public static final List<String> ALLOWED_PREFIXES = Arrays.asList("N", "U", "E", "R", "B", "RB", "_utf8");
 
+    public StringValue() {
+        // empty constructor
+    }
+
     public StringValue(String escapedValue) {
         // removing "'" at the start and at the end
         if (escapedValue.startsWith("'") && escapedValue.endsWith("'")) {

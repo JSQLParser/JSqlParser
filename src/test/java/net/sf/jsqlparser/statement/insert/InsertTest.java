@@ -11,17 +11,16 @@ package net.sf.jsqlparser.statement.insert;
 
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-
+import java.io.StringReader;
+import java.util.Arrays;
+import org.junit.Ignore;
+import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.io.StringReader;
-import java.util.Arrays;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -33,8 +32,6 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import org.junit.Ignore;
-import org.junit.Test;
 
 public class InsertTest {
 
@@ -165,7 +162,7 @@ public class InsertTest {
         assertDeparse(new Insert().withTable(new Table("mytable"))
                 .withColumns(Arrays.asList(new Column("col1"), new Column("col2")))
                 .withItemsList(new MultiExpressionList().addExpressionLists(
-                        new ExpressionList(new Column("a"), new Column("b")),
+                        new ExpressionList().addExpressions(Arrays.asList(new Column("a"), new Column("b"))),
                         new ExpressionList(new Column("d"), new Column("e")))),
                 statement);
     }

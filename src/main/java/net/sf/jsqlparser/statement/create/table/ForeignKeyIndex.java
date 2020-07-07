@@ -67,7 +67,7 @@ public class ForeignKeyIndex extends NamedConstraint {
         }
         return super.toString()
                 + " REFERENCES " + table + PlainSelect.
-                        getStringList(getReferencedColumnNames(), true, true)
+                getStringList(getReferencedColumnNames(), true, true)
                 + referenceOptions;
     }
 
@@ -115,6 +115,11 @@ public class ForeignKeyIndex extends NamedConstraint {
 
     @Override()
     public ForeignKeyIndex withName(List<String> name) {
+        return (ForeignKeyIndex) super.withName(name);
+    }
+
+    @Override()
+    public ForeignKeyIndex withName(String name) {
         return (ForeignKeyIndex) super.withName(name);
     }
 

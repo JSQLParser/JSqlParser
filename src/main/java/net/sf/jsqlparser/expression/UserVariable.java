@@ -19,6 +19,14 @@ public class UserVariable extends ASTNodeAccessImpl implements Expression {
     private String name;
     private boolean doubleAdd = false;
 
+    public UserVariable() {
+        // empty constructor
+    }
+
+    public UserVariable(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }
