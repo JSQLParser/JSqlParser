@@ -28,7 +28,9 @@ public class CreateFunctionalStatementTest {
     public void createFunctionMinimal() throws JSQLParserException {
         String statement = "CREATE FUNCTION foo RETURN 5; END;";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new CreateFunction().withFunctionDeclarationParts(Arrays.asList("foo", "RETURN 5;", "END;")),
+        assertDeparse(
+                new CreateFunction().addFunctionDeclarationParts("foo")
+                        .addFunctionDeclarationParts(Arrays.asList("RETURN 5;", "END;")),
                 statement);
     }
 
@@ -52,7 +54,9 @@ public class CreateFunctionalStatementTest {
     public void createProcedureMinimal() throws JSQLParserException {
         String statement = "CREATE PROCEDURE foo AS BEGIN END;";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new CreateProcedure().addFunctionDeclarationParts("foo", "AS", "BEGIN", "END;"),
+        assertDeparse(
+                new CreateProcedure().addFunctionDeclarationParts("foo", "AS")
+                .addFunctionDeclarationParts(Arrays.asList("BEGIN", "END;")),
                 statement);
     }
 
