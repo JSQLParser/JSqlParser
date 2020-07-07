@@ -60,6 +60,11 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         }
     }
 
+    public Sequence withDatabase(Database database) {
+        setDatabase(database);
+        return this;
+    }
+
     public String getSchemaName() {
         return getIndex(SCHEMA_IDX);
     }
@@ -68,12 +73,22 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         setIndex(SCHEMA_IDX, string);
     }
 
+    public Sequence withSchemaName(String string) {
+        setSchemaName(string);
+        return this;
+    }
+
     public String getName() {
         return getIndex(NAME_IDX);
     }
 
     public void setName(String string) {
         setIndex(NAME_IDX, string);
+    }
+
+    public Sequence withName(String string) {
+        setName(string);
+        return this;
     }
 
     private void setIndex(int idx, String value) {

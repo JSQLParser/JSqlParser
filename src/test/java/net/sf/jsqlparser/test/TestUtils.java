@@ -9,8 +9,12 @@
  */
 package net.sf.jsqlparser.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -24,8 +28,6 @@ import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 /**
@@ -66,6 +68,14 @@ public class TestUtils {
         assertEquals(buildSqlString(statement, laxDeparsingCheck),
                 buildSqlString(parsed.toString(), laxDeparsingCheck));
 
+        assertDeparse(parsed, statement, laxDeparsingCheck);
+    }
+
+    public static void assertDeparse(Statement parsed, String statement) {
+        assertDeparse(parsed, statement, false);
+    }
+
+    public static void assertDeparse(Statement parsed, String statement, boolean laxDeparsingCheck) {
         StatementDeParser deParser = new StatementDeParser(new StringBuilder());
         parsed.accept(deParser);
         assertEquals(buildSqlString(statement, laxDeparsingCheck),

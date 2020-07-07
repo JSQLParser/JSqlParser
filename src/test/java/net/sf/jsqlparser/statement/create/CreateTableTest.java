@@ -9,9 +9,28 @@
  */
 package net.sf.jsqlparser.statement.create;
 
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
@@ -19,20 +38,6 @@ import net.sf.jsqlparser.statement.create.table.RowMovementMode;
 import net.sf.jsqlparser.test.TestException;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
-
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class CreateTableTest {
 
@@ -69,12 +74,12 @@ public class CreateTableTest {
         CreateTable createTable = (CreateTable) parserManager.parse(new StringReader(statement));
         assertEquals(2, createTable.getColumnDefinitions().size());
         assertFalse(createTable.isUnlogged());
-        assertEquals("mycol", ((ColumnDefinition) createTable.getColumnDefinitions().get(0)).
+        assertEquals("mycol", createTable.getColumnDefinitions().get(0).
                 getColumnName());
-        assertEquals("mycol2", ((ColumnDefinition) createTable.getColumnDefinitions().get(1)).
+        assertEquals("mycol2", createTable.getColumnDefinitions().get(1).
                 getColumnName());
-        assertEquals("PRIMARY KEY", ((Index) createTable.getIndexes().get(0)).getType());
-        assertEquals("mycol", ((Index) createTable.getIndexes().get(0)).getColumnsNames().get(1));
+        assertEquals("PRIMARY KEY", createTable.getIndexes().get(0).getType());
+        assertEquals("mycol", createTable.getIndexes().get(0).getColumnsNames().get(1));
         assertEquals(statement, "" + createTable);
     }
 
@@ -85,12 +90,12 @@ public class CreateTableTest {
         CreateTable createTable = (CreateTable) parserManager.parse(new StringReader(statement));
         assertEquals(2, createTable.getColumnDefinitions().size());
         assertTrue(createTable.isUnlogged());
-        assertEquals("mycol", ((ColumnDefinition) createTable.getColumnDefinitions().get(0)).
+        assertEquals("mycol", createTable.getColumnDefinitions().get(0).
                 getColumnName());
-        assertEquals("mycol2", ((ColumnDefinition) createTable.getColumnDefinitions().get(1)).
+        assertEquals("mycol2", createTable.getColumnDefinitions().get(1).
                 getColumnName());
-        assertEquals("PRIMARY KEY", ((Index) createTable.getIndexes().get(0)).getType());
-        assertEquals("mycol", ((Index) createTable.getIndexes().get(0)).getColumnsNames().get(1));
+        assertEquals("PRIMARY KEY", createTable.getIndexes().get(0).getType());
+        assertEquals("mycol", createTable.getIndexes().get(0).getColumnsNames().get(1));
         assertEquals(statement, "" + createTable);
     }
 
@@ -413,25 +418,21 @@ public class CreateTableTest {
                     } else {
                         StringTokenizer tokenizer = new StringTokenizer(cols, " ");
 
-                        List colsListList = new ArrayList();
+                        List<String> colsListList = new ArrayList<>();
                         while (tokenizer.hasMoreTokens()) {
                             colsListList.add(tokenizer.nextToken());
                         }
 
-                        colsList = (String[]) colsListList.toArray(new String[colsListList.size()]);
+                        colsList = colsListList.toArray(new String[colsListList.size()]);
 
                     }
-                    List colsFound = new ArrayList();
+                    List<String> colsFound = new ArrayList<>();
                     if (createTable.getColumnDefinitions() != null) {
-                        for (Iterator iter = createTable.getColumnDefinitions().iterator(); iter.
-                                hasNext();) {
-                            ColumnDefinition columnDefinition = (ColumnDefinition) iter.next();
+                        for (ColumnDefinition columnDefinition : createTable.getColumnDefinitions()) {
                             String colName = columnDefinition.getColumnName();
                             boolean unique = false;
                             if (createTable.getIndexes() != null) {
-                                for (Iterator iterator = createTable.getIndexes().iterator(); iterator.
-                                        hasNext();) {
-                                    Index index = (Index) iterator.next();
+                                for (Index index : createTable.getIndexes()) {
                                     if (index.getType().equals("PRIMARY KEY") && index.
                                             getColumnsNames().size() == 1
                                             && index.getColumnsNames().get(0).equals(colName)) {
@@ -443,10 +444,9 @@ public class CreateTableTest {
 
                             if (!unique) {
                                 if (columnDefinition.getColumnSpecs() != null) {
-                                    for (Iterator iterator = columnDefinition.getColumnSpecs().
-                                            iterator(); iterator
-                                                    .hasNext();) {
-                                        String par = (String) iterator.next();
+                                    for (Iterator<String> iterator = columnDefinition.getColumnSpecs()
+                                            .iterator(); iterator.hasNext();) {
+                                        String par = iterator.next();
                                         if (par.equals("UNIQUE")) {
                                             unique = true;
                                         } else if (par.equals("PRIMARY") && iterator.hasNext()
@@ -489,7 +489,7 @@ public class CreateTableTest {
             if (line != null) {
                 if ((line.length() != 0)
                         && ((line.length() < 2) || (line.length() >= 2)
-                        && !(line.charAt(0) == '/' && line.charAt(1) == '/'))) {
+                                && !(line.charAt(0) == '/' && line.charAt(1) == '/'))) {
                     break;
                 }
             } else {
@@ -546,7 +546,15 @@ public class CreateTableTest {
 
     @Test
     public void testCreateTableIssue113() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE TABLE foo (reason character varying (255) DEFAULT 'Test' :: character varying NOT NULL)");
+        String statement = "CREATE TABLE foo (reason character varying (255) DEFAULT 'Test' :: character varying NOT NULL)";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(new CreateTable().withTable(new Table().withName("foo")).withColumnDefinitions(Arrays.asList(
+                new ColumnDefinition().withColumnName("reason").withColDataType(
+                        new ColDataType().withDataType("character varying")
+                        .addArgumentsStringList(Arrays.asList("255")))
+                .addColumnSpecs("DEFAULT 'Test' :: character varying", "NOT NULL"))),
+                statement);
+
     }
 
     @Test
@@ -586,7 +594,12 @@ public class CreateTableTest {
 
     @Test
     public void testCreateTableIssue921() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE TABLE binary_test (c1 binary (10))");
+        String statement = "CREATE TABLE binary_test (c1 binary (10))";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(new CreateTable().withTable(new Table().withName("binary_test")).addColumnDefinitions(
+                new ColumnDefinition("c1", new ColDataType().withDataType("binary").addArgumentsStringList("10"),
+                        null)),
+                statement);
     }
 
     @Test

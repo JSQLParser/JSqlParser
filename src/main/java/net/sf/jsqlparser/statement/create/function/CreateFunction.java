@@ -19,6 +19,10 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
  */
 public class CreateFunction extends CreateFunctionalStatement {
 
+    public CreateFunction() {
+        super("FUNCTION");
+    }
+
     public CreateFunction(List<String> functionDeclarationParts) {
         super("FUNCTION", functionDeclarationParts);
     }
