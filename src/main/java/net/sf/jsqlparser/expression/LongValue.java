@@ -9,9 +9,8 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.math.BigInteger;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Every number without a point or an exponential format is a LongValue.
@@ -19,6 +18,10 @@ import java.math.BigInteger;
 public class LongValue extends ASTNodeAccessImpl implements Expression {
 
     private String stringValue;
+
+    public LongValue() {
+        // empty constructor
+    }
 
     public LongValue(final String value) {
         String val = value;
@@ -47,6 +50,11 @@ public class LongValue extends ASTNodeAccessImpl implements Expression {
 
     public void setValue(long d) {
         stringValue = String.valueOf(d);
+    }
+
+    public LongValue withValue(long d) {
+        setValue(d);
+        return this;
     }
 
     public String getStringValue() {

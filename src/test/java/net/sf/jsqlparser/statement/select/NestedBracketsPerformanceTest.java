@@ -9,18 +9,20 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import org.junit.Ignore;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import net.sf.jsqlparser.JSQLParserException;
 
 /**
  *
  * @author tw
  */
 public class NestedBracketsPerformanceTest {
+
+    private static final int ITERATIONS_20 = 20;
 
     @Test
     public void testIssue766() throws JSQLParserException {
@@ -42,7 +44,7 @@ public class NestedBracketsPerformanceTest {
     public void testIssue496() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select isNull(charLen(TEST_ID,0)+ isNull(charLen(TEST_DVC,0)+ isNull(charLen(TEST_NO,0)+ isNull(charLen(ATEST_ID,0)+ isNull(charLen(TESTNO,0)+ isNull(charLen(TEST_CTNT,0)+ isNull(charLen(TEST_MESG_CTNT,0)+ isNull(charLen(TEST_DTM,0)+ isNull(charLen(TEST_DTT,0)+ isNull(charLen(TEST_ADTT,0)+ isNull(charLen(TEST_TCD,0)+ isNull(charLen(TEST_PD,0)+ isNull(charLen(TEST_VAL,0)+ isNull(charLen(TEST_YN,0)+ isNull(charLen(TEST_DTACM,0)+ isNull(charLen(TEST_MST,0) from test_info_m");
     }
-    
+
     @Test
     public void testIssue856() throws JSQLParserException {
         String sql = "SELECT " + buildRecursiveBracketExpression("if(month(today()) = 3, sum(\"Table5\".\"Month 002\"), $1)", "0", 5) + " FROM mytbl";
@@ -58,7 +60,7 @@ public class NestedBracketsPerformanceTest {
     public void testIncreaseOfParseTime() throws JSQLParserException {
         long oldDurationTime = 1000;
         int countProblematic = 0;
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < ITERATIONS_20; i++) {
             String sql = "SELECT " + buildRecursiveBracketExpression("concat($1,'B')", "'A'", i) + " FROM mytbl";
             long startTime = System.currentTimeMillis();
             assertSqlCanBeParsedAndDeparsed(sql, true);

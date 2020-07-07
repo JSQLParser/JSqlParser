@@ -31,7 +31,9 @@ import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 
 public class InsertTest {
 
@@ -55,6 +57,12 @@ public class InsertTest {
                 get(2)).getValue());
         assertEquals(statement, "" + insert);
 
+        assertDeparse(new Insert().withTable(new Table("mytable"))
+                .addColumns(Arrays.asList(new Column("col1"), new Column("col2"), new Column("col3")))
+                .withItemsList(new ExpressionList(new JdbcParameter(), new StringValue("sadfsd"),
+                        new LongValue().withValue(234))),
+                statement);
+
         statement = "INSERT INTO myschema.mytable VALUES (?, ?, 2.3)";
         insert = (Insert) parserManager.parse(new StringReader(statement));
         assertEquals("myschema.mytable", insert.getTable().getFullyQualifiedName());
@@ -63,6 +71,8 @@ public class InsertTest {
         assertEquals(2.3, ((DoubleValue) insert.getItemsList(ExpressionList.class).getExpressions()
                 .get(2)).getValue(), 0.0);
         assertEquals(statement, "" + insert);
+
+
 
     }
 
@@ -77,6 +87,8 @@ public class InsertTest {
                 ((StringValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(0)).
                 getValue());
         assertEquals("INSERT INTO mytable (col1) VALUES ('val1')", insert.toString());
+
+
     }
 
     @Test
@@ -96,6 +108,12 @@ public class InsertTest {
         // toString uses brakets
         String statementToString = "INSERT INTO mytable (col1, col2, col3) SELECT * FROM mytable2";
         assertEquals(statementToString, "" + insert);
+
+        assertDeparse(new Insert().withUseValues(false).withUseSelectBrackets(false).withTable(new Table("mytable"))
+                .addColumns(new Column("col1"), new Column("col2"), new Column("col3"))
+                .withSelect(new Select().withSelectBody(
+                        new PlainSelect().addSelectItems(new AllColumns()).withFromItem(new Table("mytable2")))),
+                statement);
     }
 
     @Test

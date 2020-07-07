@@ -42,16 +42,16 @@ public class JSQLParserFluentModelTests {
         Table t1 = new Table("tab1").withAlias(new Alias("t1").withUseAs(true));
         Table t2 = new Table("tab2").withAlias(new Alias("t2", false));
 
-        AndExpression where = new AndExpression(
+        AndExpression where = new AndExpression().withLeftExpression(
                 new Parenthesis(new OrExpression().withLeftExpression(
                         new EqualsTo()
                         .withLeftExpression(new Column(t1, "col1")).withRightExpression(new JdbcParameter()))
                         .withRightExpression(new EqualsTo(new Column(t1, "col2"),
                                 new JdbcParameter()))
-                        ),
-                new InExpression()
-                .withLeftExpression(new Column(t1, "col3"))
-                .withRightItemsList(new ExpressionList().addExpressions(new StringValue("A"))));
+                )).withRightExpression(
+                                new InExpression()
+                                .withLeftExpression(new Column(t1, "col3"))
+                                .withRightItemsList(new ExpressionList().addExpressions(new StringValue("A"))));
         Select select = new Select().withSelectBody(new PlainSelect().addSelectItems(new AllColumns()).withFromItem(t1)
                 .addJoins(new Join().withRightItem(t2)
                         .withOnExpression(new EqualsTo(new Column(t1, "ref"), new Column(t2, "id"))))
