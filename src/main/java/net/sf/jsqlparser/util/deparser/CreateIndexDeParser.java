@@ -46,7 +46,7 @@ public class CreateIndexDeParser {
         if (index.getColumnsNames() != null) {
             buffer.append(" (");
             buffer.append(
-                index.getColumnWithParams().stream()
+                index.getColumns().stream()
                         .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : "")).collect(joining(", "))
             );
             buffer.append(")");

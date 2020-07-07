@@ -121,6 +121,11 @@ public class Index {
         this.idxSpec = idxSpec;
     }
 
+    public Index withIndexSpec(List<String> idxSpec) {
+        setIndexSpec(idxSpec);
+        return this;
+    }
+
     @Override
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
