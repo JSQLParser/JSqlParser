@@ -37,8 +37,13 @@ public class TestUtils {
     private static final Pattern SQL_COMMENT_PATTERN = Pattern.
             compile("(--.*$)|(/\\*.*?\\*/)", Pattern.MULTILINE);
 
-    public static void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed(statement, false);
+    /**
+     * @param statement
+     * @return the parsed {@link Statement}
+     * @throws JSQLParserException
+     */
+    public static Statement assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
+        return assertSqlCanBeParsedAndDeparsed(statement, false);
     }
 
     /**
@@ -46,16 +51,30 @@ public class TestUtils {
      *
      * @param statement
      * @param laxDeparsingCheck removes all linefeeds from the original and
-     * removes all double spaces. The check is caseinsensitive.
+     *                          removes all double spaces. The check is
+     *                          caseinsensitive.
+     * @return the parsed {@link Statement}
      * @throws JSQLParserException
      */
-    public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck) throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed(statement, laxDeparsingCheck, null);
+    public static Statement assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck)
+            throws JSQLParserException {
+        return assertSqlCanBeParsedAndDeparsed(statement, laxDeparsingCheck, null);
     }
 
-    public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+    /**
+     * @param statement
+     * @param laxDeparsingCheck removes all linefeeds from the original and
+     *                          removes all double spaces. The check is
+     *                          caseinsensitive.
+     * @param consumer
+     * @return the parsed {@link Statement}
+     * @throws JSQLParserException
+     */
+    public static Statement assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck,
+            Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         Statement parsed = CCJSqlParserUtil.parse(statement, consumer);
         assertStatementCanBeDeparsedAs(parsed, statement, laxDeparsingCheck);
+        return parsed;
     }
 
     public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
@@ -69,10 +88,27 @@ public class TestUtils {
         assertDeparse(parsed, statement, laxDeparsingCheck);
     }
 
+    /**
+     * Asserts that the {@link Statement} can be deparsed and deparsing results in
+     * given #statement
+     * 
+     * @param stmt
+     * @param statement
+     */
     public static void assertDeparse(Statement stmt, String statement) {
         assertDeparse(stmt, statement, false);
     }
 
+    /**
+     * Asserts that the {@link Statement} can be deparsed and deparsing results in
+     * given #statement
+     * 
+     * @param stmt
+     * @param statement
+     * @param laxDeparsingCheck removes all linefeeds from the original and
+     *                          removes all double spaces. The check is
+     *                          caseinsensitive.
+     */
     public static void assertDeparse(Statement stmt, String statement, boolean laxDeparsingCheck) {
         StatementDeParser deParser = new StatementDeParser(new StringBuilder());
         stmt.accept(deParser);
