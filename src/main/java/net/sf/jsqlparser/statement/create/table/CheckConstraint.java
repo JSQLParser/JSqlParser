@@ -74,4 +74,14 @@ public class CheckConstraint extends NamedConstraint {
         return (CheckConstraint) super.withName(name);
     }
 
+    @Override
+    public CheckConstraint withColumnsNames(List<String> list) {
+        return (CheckConstraint) super.withColumnsNames(list);
+    }
+
+    @Override
+    public CheckConstraint withColumns(List<ColumnParams> columns) {
+        return (CheckConstraint) super.withColumns(columns);
+    }
+
 }

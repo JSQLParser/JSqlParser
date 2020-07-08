@@ -56,4 +56,14 @@ public class ExcludeConstraint extends Index {
     public ExcludeConstraint withUsing(String using) {
         return (ExcludeConstraint) super.withUsing(using);
     }
+
+    @Override
+    public ExcludeConstraint withColumnsNames(List<String> list) {
+        return (ExcludeConstraint) super.withColumnsNames(list);
+    }
+
+    @Override
+    public ExcludeConstraint withColumns(List<ColumnParams> columns) {
+        return (ExcludeConstraint) super.withColumns(columns);
+    }
 }

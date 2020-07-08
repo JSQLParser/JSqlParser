@@ -4059,9 +4059,7 @@ CreateTable CreateTable():
                     [<K_CONSTRAINT>  sk3 = RelObjectName()]
                     {Expression exp = null;}
                     <K_CHECK>  ("(" exp = Expression() ")")* {
-                       checkCs = new CheckConstraint();
-                       checkCs.setName(sk3);
-                       checkCs.setExpression(exp);
+                       checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
                        indexes.add(checkCs);
                        }
                 )
@@ -4520,10 +4518,7 @@ AlterExpression AlterExpression():
               sk3 = RelObjectName()
               columnNames = ColumnsNamesList()
               {
-                index = new Index();
-                index.setType(tk.image);
-                index.setName(sk3);
-                index.setColumnsNames(columnNames);
+                index = new Index().withType(tk.image).withName(sk3).withColumnsNames(columnNames);
                 alterExp.setIndex(index);
               }
               constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
@@ -4561,16 +4556,15 @@ AlterExpression AlterExpression():
                 ( ( tk=<K_FOREIGN> tk2=<K_KEY>
                     columnNames=ColumnsNamesList()
                     {
-                        fkIndex = new ForeignKeyIndex();
-                        fkIndex.setName(sk3);
-                        fkIndex.setType(tk.image + " " + tk2.image);
-                        fkIndex.setColumnsNames(columnNames);
+                        fkIndex = new ForeignKeyIndex()
+                        .withName(sk3)
+                        .withType(tk.image + " " + tk2.image)
+                        .withColumnsNames(columnNames);
                                             columnNames = null;
                     }
                     <K_REFERENCES> fkTable=Table() [ columnNames=ColumnsNamesList() ]
                     {
-                        fkIndex.setTable(fkTable);
-                        fkIndex.setReferencedColumnNames(columnNames);
+                        fkIndex.withTable(fkTable).withReferencedColumnNames(columnNames);
                         alterExp.setIndex(fkIndex);
                     }
                     [<K_ON> <K_DELETE>
@@ -4583,10 +4577,10 @@ AlterExpression AlterExpression():
                 ( tk=<K_PRIMARY> tk2=<K_KEY>
                     columnNames=ColumnsNamesList()
                     {
-                        index = new NamedConstraint();
-                        index.setName(sk3);
-                        index.setType(tk.image + " " + tk2.image);
-                        index.setColumnsNames(columnNames);
+                        index = new NamedConstraint()
+                        .withName(sk3)
+                        .withType(tk.image + " " + tk2.image)
+                        .withColumnsNames(columnNames);
                         alterExp.setIndex(index);
                     }
                     constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
@@ -4595,9 +4589,7 @@ AlterExpression AlterExpression():
                 |
                 (
                     <K_CHECK>  {Expression exp = null;} ("(" exp = Expression() ")")* {
-                    CheckConstraint checkCs = new CheckConstraint();
-                    checkCs.setName(sk3);
-                    checkCs.setExpression(exp);
+                    CheckConstraint checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
                     alterExp.setIndex(checkCs);
                 }
                 )
@@ -4606,10 +4598,10 @@ AlterExpression AlterExpression():
                     tk=<K_UNIQUE> (tk2=<K_KEY> { alterExp.setUk(true); } | tk2=<K_INDEX>)?
                       columnNames=ColumnsNamesList()
                       {
-                          index = new NamedConstraint();
-                          index.setName(sk3);
-                          index.setType(tk.image + (tk2!=null?" " + tk2.image:""));
-                          index.setColumnsNames(columnNames);
+                          index = new NamedConstraint()
+                            .withName(sk3)
+                          	.withType(tk.image + (tk2!=null?" " + tk2.image:""))
+                          	.withColumnsNames(columnNames);
                           alterExp.setIndex(index);
                       }
                       constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
@@ -4620,10 +4612,10 @@ AlterExpression AlterExpression():
                     tk=<K_KEY>
                       columnNames=ColumnsNamesList()
                       {
-                          index = new NamedConstraint();
-                          index.setName(sk3);
-                          index.setType(tk.image);
-                          index.setColumnsNames(columnNames);
+                          index = new NamedConstraint()
+                          	.withName(sk3)
+                          	.withType(tk.image)
+							.withColumnsNames(columnNames);
                           alterExp.setIndex(index);
                       }
                       constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
@@ -4633,8 +4625,7 @@ AlterExpression AlterExpression():
             |
             ( sk3=RelObjectName() <K_COMMENT> 
                 tk=<S_CHAR_LITERAL> { 
-                    alterExp.setColumnName(sk3);
-                    alterExp.setCommentText(tk.image); 
+                    alterExp.withColumnName(sk3).withCommentText(tk.image); 
                 }
             )
           )
@@ -4650,8 +4641,7 @@ AlterExpression AlterExpression():
         (
           (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>)
           alterExpressionColumnDataType = AlterExpressionColumnDataType() {
-              alterExp.setColOldName(tk.image);
-              alterExp.addColDataType(alterExpressionColumnDataType);
+              alterExp.withColumnOldName(tk.image).addColDataType(alterExpressionColumnDataType);
           }
         )
       )
@@ -4673,9 +4663,7 @@ AlterExpression AlterExpression():
                (  tk=<K_INDEX>
                   (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>)
                        {
-                           index = new Index();
-                           index.setType(tk.image);
-                           index.setName(tk2.image);
+                           index = new Index().withType(tk.image).withName(tk2.image);
                            alterExp.setIndex(index);
                        }
                )

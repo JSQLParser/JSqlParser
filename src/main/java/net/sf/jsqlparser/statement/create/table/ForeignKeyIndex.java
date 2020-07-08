@@ -123,4 +123,14 @@ public class ForeignKeyIndex extends NamedConstraint {
         return (ForeignKeyIndex) super.withName(name);
     }
 
+    @Override
+    public ForeignKeyIndex withColumnsNames(List<String> list) {
+        return (ForeignKeyIndex) super.withColumnsNames(list);
+    }
+
+    @Override
+    public ForeignKeyIndex withColumns(List<ColumnParams> columns) {
+        return (ForeignKeyIndex) super.withColumns(columns);
+    }
+
 }

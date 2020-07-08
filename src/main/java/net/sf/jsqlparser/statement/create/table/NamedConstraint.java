@@ -41,4 +41,14 @@ public class NamedConstraint extends Index {
     public NamedConstraint withUsing(String using) {
         return (NamedConstraint) super.withUsing(using);
     }
+
+    @Override
+    public NamedConstraint withColumnsNames(List<String> list) {
+        return (NamedConstraint) super.withColumnsNames(list);
+    }
+
+    @Override
+    public NamedConstraint withColumns(List<ColumnParams> columns) {
+        return (NamedConstraint) super.withColumns(columns);
+    }
 }

@@ -152,11 +152,21 @@ public class AlterExpression {
         this.columnName = columnName;
     }
 
+    @Deprecated
     public String getColOldName() {
+        return getColumnOldName();
+    }
+
+    @Deprecated
+    public void setColOldName(String columnOldName) {
+        setColumnOldName(columnOldName);
+    }
+
+    public String getColumnOldName() {
         return columnOldName;
     }
 
-    public void setColOldName(String columnOldName) {
+    public void setColumnOldName(String columnOldName) {
         this.columnOldName = columnOldName;
     }
 
@@ -316,7 +326,7 @@ public class AlterExpression {
             b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
             b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).
-                    append(") REFERENCES ").append(fkSourceTable).append(" (").append(
+            append(") REFERENCES ").append(fkSourceTable).append(" (").append(
                     PlainSelect.getStringList(fkSourceColumns)).append(")");
             if (isOnDeleteCascade()) {
                 b.append(" ON DELETE CASCADE");
@@ -434,6 +444,11 @@ public class AlterExpression {
     public AlterExpression withCommentText(String commentText) {
         this.setCommentText(commentText);
         return this;
+    }
+    
+    public AlterExpression withColumnOldName(String columnOldName) {
+      setColumnOldName(columnOldName);
+      return this;
     }
 
     public AlterExpression addPkColumns(String... pkColumns) {

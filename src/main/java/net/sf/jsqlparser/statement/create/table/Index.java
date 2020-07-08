@@ -10,13 +10,11 @@
 package net.sf.jsqlparser.statement.create.table;
 
 import static java.util.stream.Collectors.toList;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class Index {
@@ -92,7 +90,12 @@ public class Index {
     }
 
     public void setColumnsNames(List<String> list) {
-        columns = list.stream().map(col -> new ColumnParams(col, null)).collect(toList());
+        columns = list.stream().map(ColumnParams::new).collect(toList());
+    }
+
+    public Index withColumnsNames(List<String> list) {
+        setColumnsNames(list);
+        return this;
     }
 
     public void setName(String name) {
