@@ -11,12 +11,6 @@ package net.sf.jsqlparser.statement.create;
 
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -25,19 +19,26 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-
+import org.assertj.core.api.Assertions;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.RowMovementMode;
 import net.sf.jsqlparser.test.TestException;
-import org.assertj.core.api.Assertions;
-import org.junit.Test;
 
 public class CreateTableTest {
 
@@ -307,12 +308,21 @@ public class CreateTableTest {
 
     @Test
     public void testExcludeWhereConstraint() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE TABLE foo (col1 integer, EXCLUDE WHERE (col1 > 100))");
+        String statement = "CREATE TABLE foo (col1 integer, EXCLUDE WHERE (col1 > 100))";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(new CreateTable().withTable(new Table("foo"))
+                .addIndexes(new ExcludeConstraint().withExpression(new GreaterThan()
+                        .withLeftExpression(new Column("col1")).withRightExpression(new LongValue(100))))
+                .addColumnDefinitions(new ColumnDefinition("col1", new ColDataType("integer"))), statement);
     }
 
     @Test
     public void testTimestampWithoutTimezone() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE TABLE abc.tabc (transaction_date TIMESTAMP WITHOUT TIME ZONE)");
+        String statement = "CREATE TABLE abc.tabc (transaction_date TIMESTAMP WITHOUT TIME ZONE)";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(new CreateTable().withTable(new Table(Arrays.asList("abc", "tabc"))).addColumnDefinitions(
+                        new ColumnDefinition("transaction_date", new ColDataType("TIMESTAMP WITHOUT TIME ZONE"))),
+                statement);
     }
 
     @Test

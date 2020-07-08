@@ -68,12 +68,12 @@ public class CreateTable implements Statement {
     /**
      * A list of options (as simple strings) of this table definition, as ("TYPE", "=", "MYISAM")
      */
-    public List<?> getTableOptionsStrings() {
+    public List<String> getTableOptionsStrings() {
         return tableOptionsStrings;
     }
 
-    public void setTableOptionsStrings(List<String> list) {
-        tableOptionsStrings = list;
+    public void setTableOptionsStrings(List<String> tableOptionsStrings) {
+        this.tableOptionsStrings = tableOptionsStrings;
     }
 
     public List<String> getCreateOptionsStrings() {
