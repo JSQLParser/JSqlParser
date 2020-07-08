@@ -38,6 +38,14 @@ public class SetOperationList implements SelectBody {
         return selects;
     }
 
+    public void setSelects(List<SelectBody> selects) {
+        this.selects = selects;
+    }
+
+    public void setOperations(List<SetOperation> operations) {
+        this.operations = operations;
+    }
+
     public List<SetOperation> getOperations() {
         return operations;
     }
@@ -118,6 +126,16 @@ public class SetOperationList implements SelectBody {
         return buffer.toString();
     }
 
+    public SetOperationList withOperations(List<SetOperation> operationList) {
+        setOperations(operationList);
+        return this;
+    }
+
+    public SetOperationList withSelects(List<SelectBody> selects) {
+        setSelects(selects);
+        return this;
+    }
+
     public SetOperationList withBrackets(List<Boolean> brackets) {
         this.setBrackets(brackets);
         return this;
@@ -141,6 +159,30 @@ public class SetOperationList implements SelectBody {
     public SetOperationList withFetch(Fetch fetch) {
         this.setFetch(fetch);
         return this;
+    }
+
+    public SetOperationList addSelects(SelectBody... selects) {
+        List<SelectBody> collection = Optional.ofNullable(getSelects()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, selects);
+        return this.withSelects(collection);
+    }
+
+    public SetOperationList addSelects(Collection<? extends SelectBody> selects) {
+        List<SelectBody> collection = Optional.ofNullable(getSelects()).orElseGet(ArrayList::new);
+        collection.addAll(selects);
+        return this.withSelects(collection);
+    }
+
+    public SetOperationList addOperations(SetOperation... operationList) {
+        List<SetOperation> collection = Optional.ofNullable(getOperations()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, operationList);
+        return this.withOperations(collection);
+    }
+
+    public SetOperationList addOperations(Collection<? extends SetOperation> operationList) {
+        List<SetOperation> collection = Optional.ofNullable(getOperations()).orElseGet(ArrayList::new);
+        collection.addAll(operationList);
+        return this.withOperations(collection);
     }
 
     public SetOperationList addBrackets(Boolean... brackets) {
