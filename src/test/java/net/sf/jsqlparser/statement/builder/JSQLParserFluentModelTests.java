@@ -48,16 +48,20 @@ public class JSQLParserFluentModelTests {
         AndExpression where = new AndExpression().withLeftExpression(
                 new Parenthesis(new OrExpression().withLeftExpression(
                         new EqualsTo()
-                        .withLeftExpression(new Column(t1, "col1")).withRightExpression(new JdbcParameter()))
-                        .withRightExpression(new EqualsTo(new Column(t1, "col2"),
-                                new JdbcParameter()))
+                        .withLeftExpression(new Column(asList("t1", "col1")))
+                        .withRightExpression(new JdbcParameter().withIndex(1)))
+                        .withRightExpression(new EqualsTo(
+                                new Column(asList("t1", "col2")),
+                                new JdbcParameter().withIndex(
+                                        2)))
                         )).withRightExpression(
                                 new InExpression()
-                                .withLeftExpression(new Column(t1, "col3"))
+                                .withLeftExpression(new Column(asList("t1", "col3")))
                                 .withRightItemsList(new ExpressionList().addExpressions(new StringValue("A"))));
         Select select = new Select().withSelectBody(new PlainSelect().addSelectItems(new AllColumns()).withFromItem(t1)
                 .addJoins(new Join().withRightItem(t2)
-                        .withOnExpression(new EqualsTo(new Column(t1, "ref"), new Column(t2, "id"))))
+                        .withOnExpression(
+                                new EqualsTo(new Column(asList("t1", "ref")), new Column(asList("t2", "id")))))
                 .withWhere(where));
 
         ExpressionList list = select.getSelectBody(PlainSelect.class).getWhere(AndExpression.class)

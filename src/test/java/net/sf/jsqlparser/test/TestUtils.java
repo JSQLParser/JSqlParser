@@ -9,27 +9,25 @@
  */
 package net.sf.jsqlparser.test;
 
-import java.lang.reflect.Field;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.junit.Assert;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.Node;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
@@ -37,6 +35,11 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
@@ -134,18 +137,9 @@ public class TestUtils {
      *         {@link ObjectTreeToStringStyle#INSTANCE}
      */
     public static String toReflectionString(Statement stmt, boolean includingASTNode) {
-        ReflectionToStringBuilder strb = new ReflectionToStringBuilder(stmt, ObjectTreeToStringStyle.INSTANCE) {
-            @Override
-            protected boolean accept(final Field field) {
-                boolean accepted = super.accept(field);
-                if (accepted && !includingASTNode) {
-                    // ignore parsing node
-                    return ASTNodeAccessImpl.class.isAssignableFrom(field.getDeclaringClass());
-                }
-                return accepted;
-            }
-        };
-        return strb.toString();
+        ReflectionToStringBuilder strb = new ReflectionToStringBuilder(stmt,
+                includingASTNode ? ObjectTreeToStringStyle.INSTANCE_INCLUDING_AST : ObjectTreeToStringStyle.INSTANCE);
+        return strb.build();
     }
 
     /**
@@ -172,7 +166,10 @@ public class TestUtils {
 
         private static final long serialVersionUID = 1L;
 
-        public static final ObjectTreeToStringStyle INSTANCE = new ObjectTreeToStringStyle();
+        public static final ObjectTreeToStringStyle INSTANCE = new ObjectTreeToStringStyle(false);
+        public static final ObjectTreeToStringStyle INSTANCE_INCLUDING_AST = new ObjectTreeToStringStyle(true);
+
+        private boolean includingASTNode;
 
         /**
          * <p>
@@ -183,11 +180,59 @@ public class TestUtils {
          * Use the static constant rather than instantiating.
          * </p>
          */
-        private ObjectTreeToStringStyle() {
+        private ObjectTreeToStringStyle(boolean includingASTNode) {
             super();
+            this.includingASTNode = includingASTNode;
             this.setUseClassName(true);
             this.setUseIdentityHashCode(false);
             ToStringBuilder.setDefaultStyle(this);
+        }
+
+        @Override
+        public void append(final StringBuffer buffer, final String fieldName, final Object value,
+                final Boolean fullDetail) {
+            if (includingASTNode || !"node".equals(fieldName)) {
+                super.append(buffer, fieldName, value, fullDetail);
+            }
+        }
+
+        /**
+         * empty {@link Collection}'s should be printed as <code>null</code>, otherwise
+         * the outcome cannot be compared
+         */
+        @Override
+        protected void appendDetail(final StringBuffer buffer, final String fieldName, final Collection<?> coll) {
+            if (coll.isEmpty()) {
+                appendNullText(buffer, fieldName);
+            } else {
+                super.appendDetail(buffer, fieldName,  coll);
+            }
+        }
+
+        /**
+         * empty {@link Map}'s should be printed as <code>null</code>, otherwise the
+         * outcome cannot be compared
+         */
+        @Override
+        protected void appendDetail(final StringBuffer buffer, final String fieldName, final Map<?, ?> coll) {
+            if (coll.isEmpty()) {
+                appendNullText(buffer, fieldName);
+            } else {
+                super.appendDetail(buffer, fieldName, coll);
+            }
+        }
+
+        @Override
+        protected boolean accept(Class<?> clazz) {
+            if (includingASTNode) {
+                return super.accept(clazz);
+            } else {
+                return isNotANode(clazz) && super.accept(clazz);
+            }
+        }
+
+        public boolean isNotANode(Class<?> clazz) {
+            return !Node.class.isAssignableFrom(clazz);
         }
 
     }
