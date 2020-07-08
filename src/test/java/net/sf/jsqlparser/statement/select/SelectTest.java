@@ -291,9 +291,9 @@ public class SelectTest {
         assertTrue(sub.getLeftExpression() instanceof LongValue);
         assertTrue(sub.getRightExpression() instanceof SignedExpression);
 
-        SignedExpression sexpr = (SignedExpression) sub.getRightExpression();
+        SignedExpression sexpr = sub.getRightExpression(SignedExpression.class);
         assertEquals('-', sexpr.getSign());
-        assertEquals("1", sexpr.getExpression().toString());
+        assertEquals("1", sexpr.getExpression(LongValue.class).toString());
     }
 
     @Test
@@ -665,14 +665,12 @@ public class SelectTest {
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(3, ((LongValue) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).
-                getValue());
+        assertEquals(3, select.getSelectBody(PlainSelect.class).getTop().getExpression(LongValue.class).getValue());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "select top 5 foo from bar";
         select = (Select) parserManager.parse(new StringReader(statement));
-        assertEquals(5, ((LongValue) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).
-                getValue());
+        assertEquals(5, select.getSelectBody(PlainSelect.class).getTop().getExpression(LongValue.class).getValue());
     }
 
     @Test

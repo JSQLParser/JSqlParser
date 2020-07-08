@@ -99,8 +99,8 @@ public class SelectUtilsTest {
                 buildSelectFromTableAndExpressions(new Table("mytable"), "a+b", "test");
         assertEquals("SELECT a + b, test FROM mytable", select.toString());
 
-        assertTrue(((SelectExpressionItem) ((PlainSelect) select.getSelectBody()).getSelectItems().
-                get(0)).getExpression() instanceof Addition);
+        assertTrue(((SelectExpressionItem) select.getSelectBody(PlainSelect.class)
+                .getSelectItems().get(0)).getExpression() instanceof Addition);
     }
 
     @Test
