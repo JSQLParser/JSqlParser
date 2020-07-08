@@ -10,25 +10,29 @@
 package net.sf.jsqlparser.statement.create;
 
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertEqualsObjectTree;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Sequence;
 import net.sf.jsqlparser.schema.Sequence.Parameter;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import org.junit.Test;
 
 public class AlterSequenceTest {
 
+
     @Test
     public void testCreateSequence_withIncrement() throws JSQLParserException{
         String statement = "ALTER SEQUENCE my_seq CACHE 100";
-        assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new AlterSequence().withSequence(
+        Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
+        AlterSequence created = new AlterSequence().withSequence(
                 new Sequence().withName("my_seq")
-                .addParameters(new Parameter(ParameterType.CACHE).withValue(100L))),
-                statement);
+                .addParameters(new Parameter(ParameterType.CACHE).withValue(100L)));
+        assertDeparse(created, statement);
+        assertEqualsObjectTree(parsed, created);
     }
 
 

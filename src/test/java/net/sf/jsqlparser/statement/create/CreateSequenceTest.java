@@ -9,10 +9,8 @@
  */
 package net.sf.jsqlparser.statement.create;
 
-import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.*;
 
-import java.util.Arrays;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Database;
@@ -125,7 +123,7 @@ public class CreateSequenceTest {
         String statement = "CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new CreateSequence().withSequence(new Sequence().withName("my_sec")
-                .addParameters(Arrays.asList(
+                .addParameters(asList(
                         new Parameter(ParameterType.START_WITH).withValue(2L),
                         new Parameter(ParameterType.INCREMENT_BY).withValue(5L),
                         new Parameter(ParameterType.CACHE).withValue(200L),

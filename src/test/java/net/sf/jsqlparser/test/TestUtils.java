@@ -150,7 +150,7 @@ public class TestUtils {
 
     /**
      * Replacement of {@link Arrays#asList(Object...)} which returns
-     * java.util.Arrays not java.util.ArrayList, the internal model uses
+     * java.util.Arrays$ArrayList not java.util.ArrayList, the internal model uses
      * java.util.ArrayList by default, which supports modification
      * 
      * @param <T>

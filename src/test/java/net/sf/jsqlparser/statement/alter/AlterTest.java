@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.alter;
 
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertEqualsObjectTree;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 
@@ -206,15 +207,15 @@ public class AlterTest {
     @Test
     public void testAlterTableCheckConstraint() throws JSQLParserException {
         String statement = "ALTER TABLE `Author` ADD CONSTRAINT name_not_empty CHECK (`NAME` <> '')";
-        assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(
-                new Alter().withTable(new Table("`Author`"))
+        Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
+        Alter created = new Alter().withTable(new Table("`Author`"))
                 .addAlterExpressions(Collections.singleton(
-                                new AlterExpression().withOperation(AlterOperation.ADD).withIndex(new CheckConstraint()
-                                        .withName("name_not_empty")
+                        new AlterExpression().withOperation(AlterOperation.ADD).withIndex(new CheckConstraint()
+                                .withName("name_not_empty")
                                 .withExpression(new NotEqualsTo().withLeftExpression(new Column("`NAME`"))
-                                        .withRightExpression(new StringValue()))))),
-                statement);
+                                        .withRightExpression(new StringValue())))));
+        assertDeparse(created, statement);
+        assertEqualsObjectTree(parsed, created);
     }
 
     @Test
@@ -410,22 +411,27 @@ public class AlterTest {
     @Test
     public void testIssue633_2() throws JSQLParserException {
         String statement = "CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)";
-        assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new CreateIndex().withTable(new Table("american_football_action_plays")).withIndex(
-                new Index().withName("idx_american_football_action_plays_1")
-                .addColumns(new ColumnParams("play_type", null)).withUsing("btree")
-                ), statement);
+        Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
+        CreateIndex created = new CreateIndex()
+                .withTable(new Table("american_football_action_plays"))
+                .withIndex(
+                        new Index().withName("idx_american_football_action_plays_1")
+                        .addColumns(new ColumnParams("play_type", null)).withUsing("btree")
+                        );
+        assertDeparse(created, statement);
+        assertEqualsObjectTree(parsed, created);
     }
 
     @Test
     public void testAlterOnlyIssue928() throws JSQLParserException {
         String statement = "ALTER TABLE ONLY categories ADD CONSTRAINT pk_categories PRIMARY KEY (category_id)";
-        assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new Alter().withUseOnly(true).withTable(new Table("categories")).addAlterExpressions(
+        Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
+        Alter created = new Alter().withUseOnly(true).withTable(new Table("categories")).addAlterExpressions(
                 new AlterExpression().withOperation(AlterOperation.ADD).withIndex(new NamedConstraint()
                         .withName(Arrays.asList("pk_categories")).withType("PRIMARY KEY")
-                        .addColumns(new ColumnParams("category_id")))),
-                statement);
+                        .addColumns(new ColumnParams("category_id"))));
+        assertDeparse(created, statement);
+        assertEqualsObjectTree(parsed, created);
     }
 
     @Test
@@ -467,21 +473,23 @@ public class AlterTest {
     @Test
     public void testAlterTableTableCommentIssue984() throws JSQLParserException {
         String statement = "ALTER TABLE texto_fichero COMMENT 'This is a sample comment'";
-        assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new Alter().withTable(new Table("texto_fichero"))
+        Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
+        Alter created = new Alter().withTable(new Table("texto_fichero"))
                 .addAlterExpressions(new AlterExpression().withOperation(AlterOperation.COMMENT)
-                        .withCommentText("'This is a sample comment'")),
-                statement);
+                        .withCommentText("'This is a sample comment'"));
+        assertDeparse(created, statement);
+        assertEqualsObjectTree(parsed, created);
     }
 
     @Test
     public void testAlterTableColumnCommentIssue984() throws JSQLParserException {
         String statement = "ALTER TABLE texto_fichero MODIFY id COMMENT 'some comment'";
-        assertSqlCanBeParsedAndDeparsed(
+        Statement parsed = assertSqlCanBeParsedAndDeparsed(
                 statement);
-        assertDeparse(new Alter().withTable(new Table("texto_fichero"))
+        Alter created = new Alter().withTable(new Table("texto_fichero"))
                 .addAlterExpressions(new AlterExpression().withOperation(AlterOperation.MODIFY).withColumnName("id")
-                        .withCommentText("'some comment'")),
-                statement);
+                        .withCommentText("'some comment'"));
+        assertDeparse(created, statement);
+        assertEqualsObjectTree(parsed, created);
     }
 }

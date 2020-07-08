@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.builder;
 
+import static net.sf.jsqlparser.test.TestUtils.*;
+
 import java.util.List;
 import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
@@ -24,6 +26,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -37,7 +40,7 @@ public class JSQLParserFluentModelTests {
         String statement = "SELECT * FROM tab1 AS t1 " //
                 + "JOIN tab2 t2 ON t1.ref = t2.id WHERE (t1.col1 = ? OR t1.col2 = ?) AND t1.col3 IN ('A')";
 
-        TestUtils.assertSqlCanBeParsedAndDeparsed(statement);
+        Statement parsed = TestUtils.assertSqlCanBeParsedAndDeparsed(statement);
 
         Table t1 = new Table("tab1").withAlias(new Alias("t1").withUseAs(true));
         Table t2 = new Table("tab2").withAlias(new Alias("t2", false));
@@ -48,7 +51,7 @@ public class JSQLParserFluentModelTests {
                         .withLeftExpression(new Column(t1, "col1")).withRightExpression(new JdbcParameter()))
                         .withRightExpression(new EqualsTo(new Column(t1, "col2"),
                                 new JdbcParameter()))
-                )).withRightExpression(
+                        )).withRightExpression(
                                 new InExpression()
                                 .withLeftExpression(new Column(t1, "col3"))
                                 .withRightItemsList(new ExpressionList().addExpressions(new StringValue("A"))));
@@ -62,8 +65,8 @@ public class JSQLParserFluentModelTests {
         List<Expression> elist = list.getExpressions();
         list.setExpressions(elist);
 
-        TestUtils.assertDeparse(select, statement);
-
+        assertDeparse(select, statement);
+        assertEqualsObjectTree(parsed, select);
     }
 
 }
