@@ -10,9 +10,13 @@
 package net.sf.jsqlparser.statement.create.table;
 
 import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class Index {
@@ -29,12 +33,43 @@ public class Index {
                 .collect(toList());
     }
 
+    @Deprecated
     public List<ColumnParams> getColumnWithParams() {
+        return getColumns();
+    }
+
+    @Deprecated
+    public void setColumnNamesWithParams(List<ColumnParams> list) {
+        setColumns(list);
+    }
+
+    public List<ColumnParams> getColumns() {
         return columns;
     }
 
+    public void setColumns(List<ColumnParams> columns) {
+        this.columns = columns;
+    }
+
+    public Index withColumns(List<ColumnParams> columns) {
+        setColumns(columns);
+        return this;
+    }
+
+    public Index addColumns(ColumnParams... functionDeclarationParts) {
+        List<ColumnParams> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, functionDeclarationParts);
+        return this.withColumns(collection);
+    }
+
+    public Index addColumns(Collection<? extends ColumnParams> functionDeclarationParts) {
+        List<ColumnParams> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        collection.addAll(functionDeclarationParts);
+        return this.withColumns(collection);
+    }
+
     public String getName() {
-        return name.isEmpty()?null:String.join(".", name);
+        return name.isEmpty() ? null : String.join(".", name);
     }
 
     public List<String> getNameParts() {
@@ -58,10 +93,6 @@ public class Index {
 
     public void setColumnsNames(List<String> list) {
         columns = list.stream().map(col -> new ColumnParams(col, null)).collect(toList());
-    }
-
-    public void setColumnNamesWithParams(List<ColumnParams> list) {
-        this.columns = list;
     }
 
     public void setName(String name) {
@@ -88,6 +119,11 @@ public class Index {
 
     public void setIndexSpec(List<String> idxSpec) {
         this.idxSpec = idxSpec;
+    }
+
+    public Index withIndexSpec(List<String> idxSpec) {
+        setIndexSpec(idxSpec);
+        return this;
     }
 
     @Override
@@ -121,6 +157,11 @@ public class Index {
         public final String columnName;
         public final List<String> params;
 
+        public ColumnParams(String columnName) {
+            this.columnName = columnName;
+            this.params = null;
+        }
+
         public ColumnParams(String columnName, List<String> params) {
             this.columnName = columnName;
             this.params = params;
@@ -136,7 +177,7 @@ public class Index {
 
         @Override
         public String toString() {
-            return columnName + (params!=null?" " + String.join(" ", params):"");
+            return columnName + (params != null ? " " + String.join(" ", params) : "");
         }
     }
 }

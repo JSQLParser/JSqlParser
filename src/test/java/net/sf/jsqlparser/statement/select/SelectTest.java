@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -48,6 +49,7 @@ import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
@@ -3182,7 +3184,7 @@ public class SelectTest {
     public void testProblemSqlIssue330_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST('90 days' AS interval)");
     }
-    //    won't fix due to lookahead impact on parser    
+    //    won't fix due to lookahead impact on parser
     //    @Test public void testKeywordOrderAsColumnnameIssue333() throws JSQLParserException {
     //        assertSqlCanBeParsedAndDeparsed("SELECT choice.response_choice_id AS uuid, choice.digit AS digit, choice.text_response AS textResponse, choice.voice_prompt AS voicePrompt, choice.action AS action, choice.contribution AS contribution, choice.order_num AS order, choice.description AS description, choice.is_join_conference AS joinConference, choice.voice_prompt_language_code AS voicePromptLanguageCode, choice.text_response_language_code AS textResponseLanguageCode, choice.description_language_code AS descriptionLanguageCode, choice.rec_phrase AS recordingPhrase FROM response_choices choice WHERE choice.presentation_id = ? ORDER BY choice.order_num", true);
     //    }
@@ -3278,7 +3280,7 @@ public class SelectTest {
     //    @Test public void testSubSelectFailsIssue394() throws JSQLParserException {
     //        assertSqlCanBeParsedAndDeparsed("select aa.* , t.* from accenter.all aa, (select a.* from pacioli.emc_plan a) t");
     //    }
-    //    
+    //
     //    @Test public void testSubSelectFailsIssue394_2() throws JSQLParserException {
     //        assertSqlCanBeParsedAndDeparsed("select * from all");
     //    }
@@ -4202,7 +4204,16 @@ public class SelectTest {
 
     @Test
     public void testPreserveAndOperator() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE 1 = 2 && 2 = 3");
+        String statement = "SELECT * FROM mytable WHERE 1 = 2 && 2 = 3";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(
+                new Select().withSelectBody(new PlainSelect()
+                        .addSelectItems(Collections.singleton(new AllColumns()))
+                        .withFromItem(new Table("mytable")).withWhere(
+                                new AndExpression().withUseOperator(true)
+                                .withLeftExpression(new EqualsTo(new LongValue(1), new LongValue(2)))
+                                .withRightExpression(new EqualsTo(new LongValue(2), new LongValue(3))))),
+                statement);
     }
 
     @Test

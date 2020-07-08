@@ -12,14 +12,16 @@ package net.sf.jsqlparser.statement.alter;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
@@ -28,7 +30,12 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
+import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CheckConstraint;
+import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.NamedConstraint;
+import net.sf.jsqlparser.statement.create.table.Index.ColumnParams;
+import org.junit.Test;
 
 public class AlterTest {
 
@@ -402,12 +409,23 @@ public class AlterTest {
 
     @Test
     public void testIssue633_2() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)");
+        String statement = "CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(new CreateIndex().withTable(new Table("american_football_action_plays")).withIndex(
+                new Index().withName("idx_american_football_action_plays_1")
+                .addColumns(new ColumnParams("play_type", null)).withUsing("btree")
+                ), statement);
     }
 
     @Test
     public void testAlterOnlyIssue928() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE ONLY categories ADD CONSTRAINT pk_categories PRIMARY KEY (category_id)");
+        String statement = "ALTER TABLE ONLY categories ADD CONSTRAINT pk_categories PRIMARY KEY (category_id)";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(new Alter().withUseOnly(true).withTable(new Table("categories")).addAlterExpressions(
+                new AlterExpression().withOperation(AlterOperation.ADD).withIndex(new NamedConstraint()
+                        .withName(Arrays.asList("pk_categories")).withType("PRIMARY KEY")
+                        .addColumns(new ColumnParams("category_id")))),
+                statement);
     }
 
     @Test

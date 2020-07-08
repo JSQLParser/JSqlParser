@@ -3845,7 +3845,7 @@ CreateIndex CreateIndex():
     [ tailParameter = CreateParameter() {} ]
 
     {
-        index.setColumnNamesWithParams(colNames);
+        index.setColumns(colNames);
         createIndex.setIndex(index);
         createIndex.setTable(table);
         createIndex.setTailParameters(tailParameter);
@@ -3989,10 +3989,7 @@ CreateTable CreateTable():
                         /* colNames=ColumnsNamesList() */
                         colNames = ColumnNamesWithParamsList()
                         {
-                            index = new Index();
-                            index.setType(tk.image);
-                            index.setName(sk3);
-                            index.setColumnNamesWithParams(colNames);
+                            index = new Index().withType(tk.image).withName(sk3).withColumns(colNames);
                             indexes.add(index);
                         }
                 )
@@ -4010,8 +4007,7 @@ CreateTable CreateTable():
                         colNames = ColumnNamesWithParamsList()
                         ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                         {
-                            index.setColumnNamesWithParams(colNames);
-                            index.setIndexSpec(idxSpec);
+                            index.withColumns(colNames).withIndexSpec(idxSpec);
                             indexes.add(index);
                         }
                 )
@@ -4023,11 +4019,11 @@ CreateTable CreateTable():
                         colNames = ColumnNamesWithParamsList()
                         ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                         {
-                            index = new Index();
-                            index.setType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + tk2.image);
-                            index.setName(sk3);
-                            index.setColumnNamesWithParams(colNames);
-                            index.setIndexSpec(idxSpec);
+                            index = new Index()
+                            .withType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + tk2.image)
+                            .withName(sk3)
+                            .withColumns(colNames)
+                            .withIndexSpec(idxSpec);
                             indexes.add(index);
                         }
                 )
@@ -4041,8 +4037,7 @@ CreateTable CreateTable():
                         /* colNames=ColumnsNamesList() */
                         colNames = ColumnNamesWithParamsList()
                         {
-                            fkIndex.setType(tk.image + " " + tk2.image);
-                            fkIndex.setColumnNamesWithParams(colNames);
+                            fkIndex.withType(tk.image + " " + tk2.image).withColumns(colNames);
                         }
                         <K_REFERENCES> fkTable=Table() colNames2=ColumnsNamesList()
                         {

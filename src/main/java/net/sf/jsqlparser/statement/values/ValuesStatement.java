@@ -24,7 +24,11 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 public class ValuesStatement implements Statement, SelectBody {
     
     private List<Expression> expressions;
-    
+
+    public ValuesStatement() {
+        // empty constructor
+    }
+
     public ValuesStatement(List<Expression> expressions) {
         this.expressions = expressions;
     }
@@ -38,8 +42,8 @@ public class ValuesStatement implements Statement, SelectBody {
         return expressions;
     }
     
-    public void setExpressions(List<Expression> list) {
-        expressions = list;
+    public void setExpressions(List<Expression> expressions) {
+        this.expressions = expressions;
     }
     
     @Override

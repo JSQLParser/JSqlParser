@@ -76,7 +76,7 @@ public class CreateIndex implements Statement {
             buffer.append(" (");
 
             buffer.append(
-                    index.getColumnWithParams().stream()
+                    index.getColumns().stream()
                             .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : "")).collect(joining(", "))
             );
 

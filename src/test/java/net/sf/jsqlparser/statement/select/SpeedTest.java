@@ -26,7 +26,7 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
 
 public class SpeedTest {
 
-    private final static int NUM_REPS = 500;
+    private final static int NUM_REPS_500 = 500;
     private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     @Test
