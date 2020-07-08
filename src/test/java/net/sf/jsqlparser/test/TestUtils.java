@@ -9,8 +9,17 @@
  */
 package net.sf.jsqlparser.test;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -18,6 +27,7 @@ import static org.junit.Assert.assertNotNull;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
@@ -97,6 +107,89 @@ public class TestUtils {
      */
     public static void assertDeparse(Statement stmt, String statement) {
         assertDeparse(stmt, statement, false);
+    }
+
+    /**
+     * Compares the object-tree of a given parsed model and a created one.
+     * 
+     * @param parsed
+     * @param created
+     */
+    public static void assertEqualsObjectTree(Statement parsed, Statement created) {
+        assertEquals(toReflectionString(parsed), toReflectionString(created));
+    }
+
+    /**
+     * @param stmt
+     * @return a {@link String} build by {@link ToStringBuilder} and
+     *         {@link ObjectTreeToStringStyle#INSTANCE}
+     */
+    public static String toReflectionString(Statement stmt) {
+        return toReflectionString(stmt, false);
+    }
+
+    /**
+     * @param stmt
+     * @return a {@link String} build by {@link ToStringBuilder} and
+     *         {@link ObjectTreeToStringStyle#INSTANCE}
+     */
+    public static String toReflectionString(Statement stmt, boolean includingASTNode) {
+        ReflectionToStringBuilder strb = new ReflectionToStringBuilder(stmt, ObjectTreeToStringStyle.INSTANCE) {
+            @Override
+            protected boolean accept(final Field field) {
+                boolean accepted = super.accept(field);
+                if (accepted && !includingASTNode) {
+                    // ignore parsing node
+                    return ASTNodeAccessImpl.class.isAssignableFrom(field.getDeclaringClass());
+                }
+                return accepted;
+            }
+        };
+        return strb.toString();
+    }
+
+    /**
+     * Replacement of {@link Arrays#asList(Object...)} which returns
+     * java.util.Arrays not java.util.ArrayList, the internal model uses
+     * java.util.ArrayList by default, which supports modification
+     * 
+     * @param <T>
+     * @param obj
+     * @return a {@link ArrayList} of given items
+     */
+    @SafeVarargs
+    public static <T> List<T> asList(T... obj) {
+        return Stream.of(obj).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * <p>
+     * {@code ToStringStyle} that outputs on multiple lines without identity
+     * hashcode.
+     * </p>
+     */
+    private static final class ObjectTreeToStringStyle extends MultilineRecursiveToStringStyle {
+
+        private static final long serialVersionUID = 1L;
+
+        public static final ObjectTreeToStringStyle INSTANCE = new ObjectTreeToStringStyle();
+
+        /**
+         * <p>
+         * Constructor.
+         * </p>
+         *
+         * <p>
+         * Use the static constant rather than instantiating.
+         * </p>
+         */
+        private ObjectTreeToStringStyle() {
+            super();
+            this.setUseClassName(true);
+            this.setUseIdentityHashCode(false);
+            ToStringBuilder.setDefaultStyle(this);
+        }
+
     }
 
     /**

@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression.mysql;
 
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertEqualsObjectTree;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import java.util.Arrays;
 import org.junit.Test;
@@ -41,13 +42,12 @@ public class MySqlSqlCalcFoundRowsTest {
         accept(CCJSqlParserUtil.parse(generalSql), ref);
         assertFalse(ref.sqlCalcFoundRows);
 
-        assertSqlCanBeParsedAndDeparsed(sqlCalcFoundRowsContainingSql);
+        Statement parsed = assertSqlCanBeParsedAndDeparsed(sqlCalcFoundRowsContainingSql);
         assertSqlCanBeParsedAndDeparsed(generalSql);
-        assertDeparse(
-                new Select().withSelectBody(
-                        new PlainSelect().addSelectItems(Arrays.asList(new AllColumns()))
-                                .withMySqlSqlCalcFoundRows(true).withFromItem(new Table("TABLE"))),
-                sqlCalcFoundRowsContainingSql);
+        Select created = new Select().withSelectBody(new PlainSelect().addSelectItems(Arrays.asList(new AllColumns()))
+                .withMySqlSqlCalcFoundRows(true).withFromItem(new Table("TABLE")));
+        assertDeparse(created, sqlCalcFoundRowsContainingSql);
+        assertEqualsObjectTree(parsed, created);
     }
 
     private void accept(Statement statement, final MySqlSqlCalcFoundRowRef ref) {
