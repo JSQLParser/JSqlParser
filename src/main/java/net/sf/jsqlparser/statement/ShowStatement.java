@@ -13,6 +13,10 @@ public class ShowStatement implements Statement {
 
     private String name;
 
+    public ShowStatement() {
+        // empty constructor
+    }
+
     public ShowStatement(String name) {
         this.name = name;
     }

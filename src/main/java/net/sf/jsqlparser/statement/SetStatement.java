@@ -17,6 +17,10 @@ public final class SetStatement implements Statement {
 
     private final List<NameExpr> values = new ArrayList<>();
 
+    public SetStatement() {
+        // empty constructor
+    }
+
     public SetStatement(String name, Expression expression) {
         add(name, expression, true);
     }
@@ -50,7 +54,7 @@ public final class SetStatement implements Statement {
         values.get(idx).useEqual = useEqual;
         return this;
     }
-    
+
     public SetStatement withUseEqual(boolean useEqual) {
       this.setUseEqual(useEqual);
       return this;

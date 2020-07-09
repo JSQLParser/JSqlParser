@@ -22,6 +22,10 @@ public class ExplainStatement implements Statement {
     private Select select;
     private LinkedHashMap<OptionType, Option> options;
 
+    public ExplainStatement() {
+        // empty constructor
+    }
+
     public ExplainStatement(Select select) {
         this.select = select;
     }
@@ -53,7 +57,7 @@ public class ExplainStatement implements Statement {
      */
     public Option getOption(OptionType optionType) {
         if (options == null) {
-          return null;
+            return null;
         }
         return options.get(optionType);
     }

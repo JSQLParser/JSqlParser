@@ -15,6 +15,10 @@ public class TimeKeyExpression extends ASTNodeAccessImpl implements Expression {
 
     private String stringValue;
 
+    public TimeKeyExpression() {
+        // empty constructor
+    }
+
     public TimeKeyExpression(final String value) {
         this.stringValue = value;
     }

@@ -19,6 +19,10 @@ public class DoubleValue extends ASTNodeAccessImpl implements Expression {
     private double value;
     private String stringValue;
 
+    public DoubleValue() {
+        // empty constructor
+    }
+
     public DoubleValue(final String value) {
         String val = value;
         if (val.charAt(0) == '+') {

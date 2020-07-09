@@ -13,6 +13,10 @@ public class EnableConstraint implements ConstraintState {
 
     private boolean disable;
 
+    public EnableConstraint() {
+        // empty constructor
+    }
+
     public EnableConstraint(boolean disable) {
         this.disable = disable;
     }

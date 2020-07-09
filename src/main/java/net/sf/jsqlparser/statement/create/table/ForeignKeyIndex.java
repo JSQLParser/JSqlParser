@@ -133,4 +133,19 @@ public class ForeignKeyIndex extends NamedConstraint {
         return (ForeignKeyIndex) super.withColumns(columns);
     }
 
+    @Override
+    public ForeignKeyIndex addColumns(ColumnParams... functionDeclarationParts) {
+        return (ForeignKeyIndex) super.addColumns(functionDeclarationParts);
+    }
+
+    @Override
+    public ForeignKeyIndex addColumns(Collection<? extends ColumnParams> functionDeclarationParts) {
+        return (ForeignKeyIndex) super.addColumns(functionDeclarationParts);
+    }
+
+    @Override
+    public ForeignKeyIndex withIndexSpec(List<String> idxSpec) {
+        return (ForeignKeyIndex) super.withIndexSpec(idxSpec);
+    }
+
 }

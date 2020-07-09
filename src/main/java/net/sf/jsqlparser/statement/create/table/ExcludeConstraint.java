@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.Collection;
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 
@@ -66,4 +67,25 @@ public class ExcludeConstraint extends Index {
     public ExcludeConstraint withColumns(List<ColumnParams> columns) {
         return (ExcludeConstraint) super.withColumns(columns);
     }
+
+    @Override
+    public ExcludeConstraint addColumns(ColumnParams... functionDeclarationParts) {
+        return (ExcludeConstraint) super.addColumns(functionDeclarationParts);
+    }
+
+    @Override
+    public ExcludeConstraint addColumns(Collection<? extends ColumnParams> functionDeclarationParts) {
+        return (ExcludeConstraint) super.addColumns(functionDeclarationParts);
+    }
+
+    @Override
+    public ExcludeConstraint withIndexSpec(List<String> idxSpec) {
+        return (ExcludeConstraint) super.withIndexSpec(idxSpec);
+    }
+
+    @Override
+    public ExcludeConstraint withName(String name) {
+        return (ExcludeConstraint) super.withName(name);
+    }
+
 }

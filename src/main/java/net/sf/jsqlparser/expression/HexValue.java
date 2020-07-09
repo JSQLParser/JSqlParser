@@ -15,6 +15,10 @@ public class HexValue extends ASTNodeAccessImpl implements Expression {
 
     private String value;
 
+    public HexValue() {
+        // empty constructor
+    }
+
     public HexValue(final String value) {
         String val = value;
         this.value = val;

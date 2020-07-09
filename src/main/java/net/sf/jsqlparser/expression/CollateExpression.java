@@ -16,6 +16,10 @@ public class CollateExpression extends ASTNodeAccessImpl implements Expression {
     private Expression leftExpression;
     private String collate;
 
+    public CollateExpression() {
+        // empty constructor
+    }
+
     public CollateExpression(Expression leftExpression, String collate) {
         this.leftExpression = leftExpression;
         this.collate = collate;

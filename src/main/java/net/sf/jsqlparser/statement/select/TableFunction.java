@@ -49,4 +49,14 @@ public class TableFunction extends FunctionItem implements FromItem {
         return (TableFunction) super.withFunction(function);
     }
 
+    @Override
+    public TableFunction withPivot(Pivot pivot) {
+        return (TableFunction) FromItem.super.withPivot(pivot);
+    }
+
+    @Override
+    public TableFunction withUnPivot(UnPivot unpivot) {
+        return (TableFunction) FromItem.super.withUnPivot(unpivot);
+    }
+
 }

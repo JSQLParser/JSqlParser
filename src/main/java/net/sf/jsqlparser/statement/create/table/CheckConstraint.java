@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.Collection;
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
@@ -82,6 +83,21 @@ public class CheckConstraint extends NamedConstraint {
     @Override
     public CheckConstraint withColumns(List<ColumnParams> columns) {
         return (CheckConstraint) super.withColumns(columns);
+    }
+
+    @Override
+    public CheckConstraint addColumns(ColumnParams... functionDeclarationParts) {
+        return (CheckConstraint) super.addColumns(functionDeclarationParts);
+    }
+
+    @Override
+    public CheckConstraint addColumns(Collection<? extends ColumnParams> functionDeclarationParts) {
+        return (CheckConstraint) super.addColumns(functionDeclarationParts);
+    }
+
+    @Override
+    public CheckConstraint withIndexSpec(List<String> idxSpec) {
+        return (CheckConstraint) super.withIndexSpec(idxSpec);
     }
 
 }

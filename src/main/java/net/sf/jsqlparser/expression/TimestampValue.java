@@ -20,6 +20,11 @@ public class TimestampValue extends ASTNodeAccessImpl implements Expression {
 
     private Timestamp value;
     private char quotation = '\'';
+
+    public TimestampValue() {
+        // empty constructor
+    }
+
     public TimestampValue(String value) {
         if (value == null) {
             throw new java.lang.IllegalArgumentException("null string");

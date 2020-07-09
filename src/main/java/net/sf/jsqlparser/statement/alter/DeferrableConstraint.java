@@ -13,6 +13,10 @@ public class DeferrableConstraint implements ConstraintState {
 
     private boolean not;
 
+    public DeferrableConstraint() {
+        // empty constructor
+    }
+
     public DeferrableConstraint(boolean not) {
         this.not = not;
     }
