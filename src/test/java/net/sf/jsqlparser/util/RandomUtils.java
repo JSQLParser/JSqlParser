@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2020 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.util;
 
 import java.lang.reflect.Array;
@@ -25,17 +34,17 @@ import org.apache.commons.lang3.RandomStringUtils;
  */
 public class RandomUtils {
 
-    private static final Logger log = Logger.getLogger(RandomUtils.class.getName());
-    private static final Random random = new Random();
+    private static final Logger LOG = Logger.getLogger(RandomUtils.class.getName());
+    private static final Random RANDOM = new Random();
 
-    private static final ThreadLocal<Map<Class<?>, Object>> objects = new ThreadLocal<>();
+    private static final ThreadLocal<Map<Class<?>, Object>> OBJECTS = new ThreadLocal<>();
 
     /**
      * register models (for use within method {@link #getRandomValueForType(Class)}
      */
     public static void pushObjects(List<Object> obj) {
         Map<Class<?>, Object> m = new HashMap<>();
-        objects.set(m);
+        OBJECTS.set(m);
         obj.stream().forEach(o -> {
             m.put(o.getClass(), o);
             for (Class<?> iface : o.getClass().getInterfaces()) {
@@ -56,25 +65,25 @@ public class RandomUtils {
     public static <T> T getRandomValueForType(Class<T> type) {
         Object value = null;
         if (Integer.class.equals(type) || int.class.equals(type)) {
-            value = RandomUtils.random.nextInt();
+            value = RandomUtils.RANDOM.nextInt();
         } else if (Long.class.equals(type) || long.class.equals(type)) {
-            value = RandomUtils.random.nextLong();
+            value = RandomUtils.RANDOM.nextLong();
         } else if (Boolean.class.equals(type) || boolean.class.equals(type)) {
-            value = RandomUtils.random.nextBoolean();
+            value = RandomUtils.RANDOM.nextBoolean();
         } else if (Float.class.equals(type) || float.class.equals(type)) {
-            value = RandomUtils.random.nextFloat();
+            value = RandomUtils.RANDOM.nextFloat();
         } else if (Double.class.equals(type) || double.class.equals(type)) {
-            value = RandomUtils.random.nextDouble();
+            value = RandomUtils.RANDOM.nextDouble();
         } else if (Byte.class.equals(type) || byte.class.equals(type)) {
             byte[] b = new byte[1];
-            RandomUtils.random.nextBytes(b);
+            RandomUtils.RANDOM.nextBytes(b);
             value = b[0];
         } else if (Short.class.equals(type) || short.class.equals(type)) {
-            value = (short) RandomUtils.random.nextInt(15);
+            value = (short) RandomUtils.RANDOM.nextInt(15);
         } else if (char.class.equals(type)) {
             value = RandomStringUtils.random(1).toCharArray()[0];
         } else {
-            int size = RandomUtils.random.nextInt(10);
+            int size = RandomUtils.RANDOM.nextInt(10);
             if (String.class.equals(type)) {
                 value = RandomStringUtils.random(size);
             } else if (Collection.class.equals(type) || List.class.equals(type)) {
@@ -96,14 +105,14 @@ public class RandomUtils {
                 value = LocalDateTime.now();
             } else {
                 // try to get an object from test-objects
-                value = objects.get().get(type);
+                value = OBJECTS.get().get(type);
                 if (value == null) {
                     try {
                         value = type.getConstructor().newInstance();
                     } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                         // cannot get default instance with empty constructor
-                        log.log(Level.WARNING, "cannot get default instance with reflection for type " + type);
+                        LOG.log(Level.WARNING, "cannot get default instance with reflection for type " + type);
                     }
                 }
 
