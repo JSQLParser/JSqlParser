@@ -166,16 +166,6 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     }
 
     @Override
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    @Override
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
-    @Override
     public void visit(Alter alter) {
         AlterDeParser alterDeParser = new AlterDeParser(buffer);
         alterDeParser.deParse(alter);

@@ -19,8 +19,7 @@ public class AlterViewDeParser extends AbstractDeParser<AlterView> {
 
     public AlterViewDeParser(StringBuilder buffer) {
         super(buffer);
-        SelectDeParser selectDeParser = new SelectDeParser();
-        selectDeParser.setBuffer(buffer);
+        SelectDeParser selectDeParser = new SelectDeParser(buffer);
         ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         selectVisitor = selectDeParser;

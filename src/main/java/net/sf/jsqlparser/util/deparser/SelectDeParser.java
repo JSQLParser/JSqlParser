@@ -53,10 +53,14 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 public class SelectDeParser extends AbstractDeParser<PlainSelect>
         implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
-    private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
+    private ExpressionVisitor expressionVisitor;
 
     public SelectDeParser() {
-        super(new StringBuilder());
+        this(new StringBuilder());
+    }
+
+    public SelectDeParser(StringBuilder buffer) {
+        this(new ExpressionVisitorAdapter(), buffer);
     }
 
     public SelectDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
@@ -349,16 +353,6 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
         buffer.append(" ").append(fetch.getFetchParam()).append(" ONLY");
 
-    }
-
-    @Override
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    @Override
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
     }
 
     public ExpressionVisitor getExpressionVisitor() {

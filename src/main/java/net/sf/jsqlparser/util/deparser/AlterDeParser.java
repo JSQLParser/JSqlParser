@@ -22,11 +22,4 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
         buffer.append(alter.toString());
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
 }
