@@ -9,16 +9,16 @@
  */
 package net.sf.jsqlparser.statement.builder;
 
+import static net.sf.jsqlparser.test.TestUtils.asList;
 import java.util.List;
+import org.junit.Test;
 import net.sf.jsqlparser.expression.AnyType;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperatorType;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.ExplainStatement.OptionType;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.select.SubSelect;
-import static net.sf.jsqlparser.test.TestUtils.*;
 import net.sf.jsqlparser.util.ReflectionTestUtils;
-import org.junit.Test;
 
 /**
  * Testing of setters, getters, with-/add-methods by calling them with random
@@ -148,8 +148,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.delete.Delete(),
             new net.sf.jsqlparser.statement.drop.Drop(),
             new net.sf.jsqlparser.statement.execute.Execute(), new net.sf.jsqlparser.statement.grant.Grant(),
-            new net.sf.jsqlparser.statement.grant.GrantTest(), new net.sf.jsqlparser.statement.insert.Insert(),
-            new net.sf.jsqlparser.statement.insert.InsertTest(), new net.sf.jsqlparser.statement.merge.Merge(),
+            new net.sf.jsqlparser.statement.insert.Insert(), new net.sf.jsqlparser.statement.merge.Merge(),
             new net.sf.jsqlparser.statement.merge.MergeUpdate(), new net.sf.jsqlparser.statement.replace.Replace(),
             new net.sf.jsqlparser.statement.select.AllColumns(),
             new net.sf.jsqlparser.statement.select.AllTableColumns(),
@@ -182,8 +181,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.select.ValuesList(), new net.sf.jsqlparser.statement.select.Wait(),
             new net.sf.jsqlparser.statement.select.WithItem(),
             new net.sf.jsqlparser.statement.truncate.Truncate(),
-            new net.sf.jsqlparser.statement.update.Update(), new net.sf.jsqlparser.statement.update.UpdateTest(),
-            new net.sf.jsqlparser.statement.upsert.Upsert(), new net.sf.jsqlparser.statement.upsert.UpsertTest(),
+            new net.sf.jsqlparser.statement.update.Update(), new net.sf.jsqlparser.statement.upsert.Upsert(),
             new net.sf.jsqlparser.statement.values.ValuesStatement());
 
     @Test
