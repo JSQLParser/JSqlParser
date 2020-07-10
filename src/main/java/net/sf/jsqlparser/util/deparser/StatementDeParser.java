@@ -44,6 +44,7 @@ import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -235,6 +236,11 @@ public class StatementDeParser implements StatementVisitor {
     @Override
     public void visit(ShowColumnsStatement show) {
         new ShowColumnsStatementDeParser(buffer).deParse(show);
+    }
+
+    @Override
+    public void visit(ShowTablesStatement showTables) {
+        new ShowTablesStatementDeparser(buffer).deParse(showTables);
     }
 
     @Override
