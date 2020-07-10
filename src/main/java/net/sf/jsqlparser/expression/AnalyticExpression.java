@@ -211,7 +211,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         orderBy.toStringOrderByElements(b);
 
         if (windowElement != null) {
-            if (orderBy.getOrderByElements()!=null) {
+            if (orderBy.getOrderByElements() != null) {
                 b.append(' ');
             }
             b.append(windowElement);

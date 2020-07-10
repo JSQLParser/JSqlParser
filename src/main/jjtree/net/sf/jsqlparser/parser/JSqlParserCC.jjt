@@ -39,7 +39,9 @@ import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.alter.sequence.*;
 import net.sf.jsqlparser.statement.comment.*;
+import net.sf.jsqlparser.statement.create.function.*;
 import net.sf.jsqlparser.statement.create.index.*;
+import net.sf.jsqlparser.statement.create.procedure.*;
 import net.sf.jsqlparser.statement.create.schema.*;
 import net.sf.jsqlparser.statement.create.sequence.*;
 import net.sf.jsqlparser.statement.create.table.*;
@@ -122,6 +124,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ALGORITHM: "ALGORITHM">
 |   <K_ALL:"ALL">
 |   <K_ALTER:"ALTER">
+|   <K_ANALYZE:"ANALYZE">
 |   <K_AND:"AND">
 |   <K_AND_OPERATOR:"&&">
 |   <K_ANY:"ANY">
@@ -136,6 +139,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_BOTH:"BOTH">
 |   <K_BY:"BY">
 |   <K_CACHE: "CACHE">
+|   <K_BUFFERS: "BUFFERS">
 |   <K_BYTE: "BYTE">
 |   <K_CALL : "CALL">
 |   <K_CASCADE: "CASCADE">
@@ -153,6 +157,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_COMMENT:"COMMENT">
 |   <K_CONNECT:"CONNECT">
 |   <K_CONSTRAINT:"CONSTRAINT">
+|   <K_COSTS: "COSTS">
 |   <K_CREATE:"CREATE">
 |   <K_CROSS:"CROSS">
 |   <K_CURRENT: "CURRENT">
@@ -192,9 +197,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_FOR:"FOR">
 |   <K_FORCE : "FORCE">
 |   <K_FOREIGN:"FOREIGN">
+|   <K_FORMAT:"FORMAT">
 |   <K_FROM:"FROM">
 |   <K_FULL:"FULL">
 |   <K_FULLTEXT:"FULLTEXT">
+|   <K_FUNCTION:"FUNCTION">
 |   <K_GLOBAL:"GLOBAL">
 |   <K_GRANT:"GRANT">
 |   <K_GROUP:"GROUP">
@@ -220,6 +227,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_IS:"IS">
 |   <K_ISNULL:"ISNULL">
 |   <K_JOIN:"JOIN">
+|   <K_JSON:"JSON">
 |   <K_KEEP:"KEEP">
 |   <K_KEY:"KEY">
 |   <K_FN:"FN">
@@ -256,6 +264,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_NULLS: "NULLS">
 |   <K_NOWAIT: "NOWAIT">
 |   <K_OF:"OF">
+|   <K_OFF:"OFF">
 |   <K_OFFSET:"OFFSET">
 |   <K_ON:"ON">
 |   <K_ONLY:"ONLY">
@@ -274,6 +283,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PRECISION : "PRECISION">
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PRIOR:"PRIOR">
+|   <K_PROCEDURE:"PROCEDURE">
 |   <K_RANGE: "RANGE">
 |   <K_READ: "READ" >
 |   <K_RECURSIVE:"RECURSIVE">
@@ -332,6 +342,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_VALUE:"VALUE">
 |   <K_VALUES:"VALUES">
 |   <K_VARYING:"VARYING">
+|   <K_VERBOSE: "VERBOSE">
 |   <K_VIEW:"VIEW">
 |   <K_WAIT : "WAIT">
 |   <K_WHEN:"WHEN">
@@ -341,6 +352,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WITHIN:"WITHIN">
 |   <K_WITHOUT:"WITHOUT">
 |   <K_XML:"XML">
+|   <K_YAML:"YAML">
 |   <K_ZONE:"ZONE">
 }
 
@@ -449,6 +461,9 @@ Statement SingleStatement() :
         stm = AlterTable()
         |
         stm = Merge()
+        |
+        LOOKAHEAD(CreateFunctionStatement())
+        stm = CreateFunctionStatement()
         |
         LOOKAHEAD(CreateIndex())
         stm = CreateIndex()
@@ -635,11 +650,107 @@ DescribeStatement Describe(): {
 
 ExplainStatement Explain(): {
     Select select;
+    List<ExplainStatement.Option> options = null;
 } {
-    <K_EXPLAIN> select = Select()
+    <K_EXPLAIN>
+    options=ExplainStatementOptions()
+    select = Select()
     {
-        return new ExplainStatement(select);
+       ExplainStatement es = new ExplainStatement(select);
+       if(options != null && !options.isEmpty()) {
+         for(ExplainStatement.Option o : options) {
+           es.addOption(o);
+         }
+       }
+       return es;
     }
+}
+
+/**
+ * Postgres supports TRUE,ON,1,FALSE,OFF,0 as values
+ */
+String ExplainOptionBoolean():
+{
+  Token tk = null;
+}
+{
+   // intentionally not supporting 0,1 at the moment
+   [( tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_ON> | tk=<K_OFF> )] // optional
+   {
+    return tk != null ? tk.image : null;
+   }
+}
+
+/**
+ * The output format, which can be TEXT, XML, JSON, or YAML
+ */
+String ExplainFormatOption():
+{
+  Token tk = null;
+}
+{
+   // TODO support Text
+   [( tk=<K_XML> | tk=<K_JSON> | tk=<K_YAML> )] // optional
+   {
+    return tk != null ? tk.image : null;
+   }
+}
+
+/**
+ * Options for explain, see https://www.postgresql.org/docs/9.1/sql-explain.html
+ */
+List<ExplainStatement.Option> ExplainStatementOptions():
+{
+  List<ExplainStatement.Option> options = new ArrayList<ExplainStatement.Option>();
+  ExplainStatement.Option option = null;
+  Token token = null;
+  String value = null;
+}
+{
+  (
+    (<K_ANALYZE> value=ExplainOptionBoolean()
+     {
+       option = new ExplainStatement.Option(ExplainStatement.OptionType.ANALYZE);
+       option.setValue(value);
+       options.add(option);
+     }
+    )
+    |
+    (<K_BUFFERS> value=ExplainOptionBoolean()
+      {
+        option = new ExplainStatement.Option(ExplainStatement.OptionType.BUFFERS);
+        option.setValue(value);
+        options.add(option);
+      }
+    )
+    |
+    (<K_COSTS> value=ExplainOptionBoolean()
+      {
+        option = new ExplainStatement.Option(ExplainStatement.OptionType.COSTS);
+        option.setValue(value);
+        options.add(option);
+      }
+    )
+    |
+    (<K_VERBOSE> value=ExplainOptionBoolean()
+      {
+        option = new ExplainStatement.Option(ExplainStatement.OptionType.VERBOSE);
+        option.setValue(value);
+        options.add(option);
+      }
+    )
+    |
+    (<K_FORMAT> value=ExplainFormatOption()
+      {
+        option = new ExplainStatement.Option(ExplainStatement.OptionType.FORMAT);
+        option.setValue(value);
+        options.add(option);
+      }
+    )
+  )* //zero or many times those productions
+  {
+    return options;
+  }
 }
 
 UseStatement Use(): {
@@ -1175,7 +1286,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
       | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIZE> | tk=<K_SESSION>
       | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE> | tk=<K_CYCLE>
-/*      | tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
+    /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       )
 
     { return tk.image; }
@@ -1218,7 +1329,7 @@ String RelObjectNameExt():
 {
     ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
         | tk=<K_DOUBLE> | tk=<K_IF> | <K_OPTIMIZE> | tk=<K_LIMIT>
-        | tk=<K_OFFSET> )
+        | tk=<K_OFFSET> | tk=<K_PROCEDURE> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -2415,7 +2526,8 @@ Expression AndExpression() :
     { result = left; }
 
     (
-         (<K_AND> | <K_AND_OPERATOR>)
+        { boolean useOperator = false; }
+         (<K_AND> | <K_AND_OPERATOR> {useOperator=true;} )
         (
         LOOKAHEAD(Condition())
             right=Condition()
@@ -2425,6 +2537,7 @@ Expression AndExpression() :
         )
         {
             result = new AndExpression(left, right);
+            ((AndExpression)result).setUseOperator(useOperator);
             left = result;
         }
     )*
@@ -2543,6 +2656,8 @@ Expression InExpression() #InExpression :
     Expression leftExpression = null;
     Expression rightExpression = null;
     Token token;
+    MultiExpressionList multiExpressionList = null;
+    ExpressionList expressionList = null;
 }
 {
     ( LOOKAHEAD(3) "(" (
@@ -2557,15 +2672,49 @@ Expression InExpression() #InExpression :
         [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
     )
     [<K_NOT> { result.setNot(true); } ] <K_IN>
-        ( rightExpression = Function()
-            | token=<S_CHAR_LITERAL> { rightExpression = new StringValue(token.image); }
-            | "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() ) ")")
+    (
+      // syntactic lookahead for a multi expression list, ie: ((a,b),(c,d))
+      LOOKAHEAD(3) multiExpressionList = MultiInExpressions()
+      | rightExpression = Function()
+      | token=<S_CHAR_LITERAL> { rightExpression = new StringValue(token.image); }
+      | "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() )")"
+    )
     {
         result.setRightItemsList(rightItemsList);
         result.setRightExpression(rightExpression);
+        result.setMultiExpressionList(multiExpressionList);
         linkAST(result,jjtThis);
         return result;
     }
+}
+
+MultiExpressionList MultiInExpressions():
+{
+   MultiExpressionList multiExpressionList = null;
+   ExpressionList expressionList = null;
+}
+{
+  "(" "("
+   expressionList=SimpleExpressionList() {
+       if(multiExpressionList == null) {
+         multiExpressionList = new MultiExpressionList();
+       }
+       multiExpressionList.addExpressionList(expressionList);
+   }
+   // potentially additional expression lists
+   ( LOOKAHEAD(3)
+     ")" "," "(" expressionList=SimpleExpressionList()
+     {
+       if(multiExpressionList == null) {
+          multiExpressionList = new MultiExpressionList();
+       }
+       multiExpressionList.addExpressionList(expressionList);
+     }
+   )*
+   ")" ")"
+  {
+    return multiExpressionList;
+  }
 }
 
 Expression Between(Expression leftExpression) :
@@ -4823,4 +4972,45 @@ AlterSequence AlterSequence():
   {
     return alterSequence;
   }
+}
+
+CreateFunctionalStatement CreateFunctionStatement():
+{
+  CreateFunctionalStatement type = null;
+  List<String> tokens = new LinkedList<String>();
+  String statementType = null;
+}
+{
+  <K_CREATE>
+  (
+   <K_FUNCTION> { statementType = "FUNCTION"; }
+   |
+   <K_PROCEDURE> { statementType = "PROCEDURE"; }
+  )
+  tokens=captureRest()
+  {
+    if(statementType.equals("FUNCTION")) {
+      type = new CreateFunction(tokens);
+    }
+    if(statementType.equals("PROCEDURE")) {
+      type = new CreateProcedure(tokens);
+    }
+
+    return type;
+  }
+}
+
+JAVACODE
+List<String> captureRest() {
+  List<String> tokens = new LinkedList<String>();
+  Token tok;
+  while(true) {
+    tok = getToken(1);
+    if(tok.kind == EOF) {
+      break;
+    }
+    tokens.add(tok.image);
+    tok = getNextToken();
+  }
+  return tokens;
 }

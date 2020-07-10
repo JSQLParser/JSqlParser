@@ -10,8 +10,12 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
+
+import java.util.stream.Collectors;
+
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
@@ -265,6 +269,10 @@ public class StatementDeParser implements StatementVisitor {
     @Override
     public void visit(ExplainStatement explain) {
         buffer.append("EXPLAIN ");
+        if (explain.getOptions() != null) {
+            buffer.append(explain.getOptions().values().stream().map(ExplainStatement.Option::formatOption).collect(Collectors.joining(" ")));
+            buffer.append(" ");
+        }
         explain.getStatement().accept(this);
     }
 
@@ -298,5 +306,10 @@ public class StatementDeParser implements StatementVisitor {
     @Override
     public void visit(AlterSequence alterSequence) {
         new AlterSequenceDeParser(buffer).deParse(alterSequence);
+    }
+
+    @Override
+    public void visit(CreateFunctionalStatement createFunctionalStatement) {
+        buffer.append(createFunctionalStatement.toString());
     }
 }
