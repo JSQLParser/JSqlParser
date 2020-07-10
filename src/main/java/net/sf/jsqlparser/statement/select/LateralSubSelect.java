@@ -40,4 +40,10 @@ public class LateralSubSelect extends SpecialSubSelect {
     public LateralSubSelect withSubSelect(SubSelect subSelect) {
         return (LateralSubSelect) super.withSubSelect(subSelect);
     }
+
+    @Override
+    public LateralSubSelect withUnPivot(UnPivot unpivot) {
+        return (LateralSubSelect) super.withUnPivot(unpivot);
+    }
+
 }

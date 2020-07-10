@@ -20,6 +20,10 @@ public class TimeValue extends ASTNodeAccessImpl implements Expression {
 
     private Time value;
 
+    public TimeValue() {
+        // empty constructor
+    }
+
     public TimeValue(String value) {
         this.value = Time.valueOf(value.substring(1, value.length() - 1));
     }

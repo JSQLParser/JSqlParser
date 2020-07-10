@@ -16,6 +16,10 @@ public class ArrayExpression extends ASTNodeAccessImpl implements Expression {
     private Expression objExpression;
     private Expression indexExpression;
 
+    public ArrayExpression() {
+        // empty constructor
+    }
+
     public ArrayExpression(Expression objExpression, Expression indexExpression) {
         this.objExpression = objExpression;
         this.indexExpression = indexExpression;

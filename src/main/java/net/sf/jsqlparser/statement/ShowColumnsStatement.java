@@ -13,6 +13,10 @@ public class ShowColumnsStatement implements Statement {
 
     private String tableName;
 
+    public ShowColumnsStatement() {
+        // empty constructor
+    }
+
     public ShowColumnsStatement(String tableName) {
         this.tableName = tableName;
     }

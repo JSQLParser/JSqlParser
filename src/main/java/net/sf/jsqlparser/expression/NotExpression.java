@@ -20,6 +20,10 @@ public class NotExpression extends ASTNodeAccessImpl implements Expression {
 
     private boolean exclamationMark = false;
 
+    public NotExpression() {
+        // empty constructor
+    }
+
     public NotExpression(Expression expression) {
         this(expression, false);
     }

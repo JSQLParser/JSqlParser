@@ -152,15 +152,19 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
         return this;
     }
 
-    @Override
-    public SubSelect withPivot(Pivot pivot) {
-        this.setPivot(pivot);
-        return this;
-    }
-
     public SubSelect withSelectBody(SelectBody selectBody) {
         this.setSelectBody(selectBody);
         return this;
+    }
+
+    @Override
+    public SubSelect withPivot(Pivot pivot) {
+        return (SubSelect) FromItem.super.withPivot(pivot);
+    }
+
+    @Override
+    public SubSelect withUnPivot(UnPivot unpivot) {
+        return (SubSelect) FromItem.super.withUnPivot(unpivot);
     }
 
     public SubSelect addWithItemsList(WithItem... withItemsList) {

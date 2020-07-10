@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.Collection;
 import java.util.List;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -51,4 +52,20 @@ public class NamedConstraint extends Index {
     public NamedConstraint withColumns(List<ColumnParams> columns) {
         return (NamedConstraint) super.withColumns(columns);
     }
+
+    @Override
+    public NamedConstraint addColumns(ColumnParams... functionDeclarationParts) {
+        return (NamedConstraint) super.addColumns(functionDeclarationParts);
+    }
+
+    @Override
+    public NamedConstraint addColumns(Collection<? extends ColumnParams> functionDeclarationParts) {
+        return (NamedConstraint) super.addColumns(functionDeclarationParts);
+    }
+
+    @Override
+    public NamedConstraint withIndexSpec(List<String> idxSpec) {
+        return (NamedConstraint) super.withIndexSpec(idxSpec);
+    }
+
 }

@@ -99,14 +99,17 @@ public class SubJoin implements FromItem {
 
     @Override
     public SubJoin withAlias(Alias alias) {
-        this.setAlias(alias);
-        return this;
+        return (SubJoin) FromItem.super.withAlias(alias);
     }
 
     @Override
     public SubJoin withPivot(Pivot pivot) {
-        this.setPivot(pivot);
-        return this;
+        return (SubJoin) FromItem.super.withPivot(pivot);
+    }
+
+    @Override
+    public SubJoin withUnPivot(UnPivot unpivot) {
+        return (SubJoin) FromItem.super.withUnPivot(unpivot);
     }
 
     public SubJoin withJoinList(List<Join> joinList) {

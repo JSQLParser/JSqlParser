@@ -15,6 +15,10 @@ public class DescribeStatement implements Statement {
 
     private Table table;
 
+    public DescribeStatement() {
+        // empty constructor
+    }
+
     public DescribeStatement(Table table) {
         this.table = table;
     }

@@ -13,6 +13,10 @@ public class ValidateConstraint implements ConstraintState {
 
     private boolean not;
 
+    public ValidateConstraint() {
+        // empty constructor
+    }
+
     public ValidateConstraint(boolean not) {
         this.not = not;
     }

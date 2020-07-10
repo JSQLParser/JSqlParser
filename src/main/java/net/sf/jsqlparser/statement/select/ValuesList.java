@@ -120,9 +120,19 @@ public class ValuesList implements FromItem {
         this.columnNames = columnNames;
     }
 
+    @Override
     public ValuesList withAlias(Alias alias) {
-        this.setAlias(alias);
-        return this;
+        return (ValuesList) FromItem.super.withAlias(alias);
+    }
+
+    @Override
+    public ValuesList withPivot(Pivot pivot) {
+        return (ValuesList) FromItem.super.withPivot(pivot);
+    }
+
+    @Override
+    public ValuesList withUnPivot(UnPivot unpivot) {
+        return (ValuesList) FromItem.super.withUnPivot(unpivot);
     }
 
     public ValuesList withMultiExpressionList(MultiExpressionList multiExpressionList) {

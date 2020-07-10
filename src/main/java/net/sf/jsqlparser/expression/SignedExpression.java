@@ -19,6 +19,10 @@ public class SignedExpression extends ASTNodeAccessImpl implements Expression {
     private char sign;
     private Expression expression;
 
+    public SignedExpression() {
+        // empty constructor
+    }
+
     public SignedExpression(char sign, Expression expression) {
         setSign(sign);
         setExpression(expression);

@@ -13,6 +13,10 @@ public class UseStatement implements Statement {
 
     private String name;
 
+    public UseStatement() {
+        // empty constructor
+    }
+
     public UseStatement(String name) {
         this.name = name;
     }

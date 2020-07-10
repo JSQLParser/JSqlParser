@@ -124,14 +124,14 @@ public class AlterExpression {
 
     public void addColDataType(ColumnDataType columnDataType) {
         if (colDataTypeList == null) {
-            colDataTypeList = new ArrayList<ColumnDataType>();
+            colDataTypeList = new ArrayList<>();
         }
         colDataTypeList.add(columnDataType);
     }
 
     public void addColDropNotNull(ColumnDropNotNull columnDropNotNull) {
         if (columnDropNotNullList == null) {
-            columnDropNotNullList = new ArrayList<ColumnDropNotNull>();
+            columnDropNotNullList = new ArrayList<>();
         }
         columnDropNotNullList.add(columnDropNotNull);
     }
@@ -232,7 +232,7 @@ public class AlterExpression {
 
     public void addParameters(String... params) {
         if (parameters == null) {
-            parameters = new ArrayList<String>();
+            parameters = new ArrayList<>();
         }
         parameters.addAll(Arrays.asList(params));
     }
@@ -511,9 +511,14 @@ public class AlterExpression {
         return this.withConstraints(collection);
     }
 
-    public final static class ColumnDataType extends ColumnDefinition {
+    public static final class ColumnDataType extends ColumnDefinition {
 
         private final boolean withType;
+
+        public ColumnDataType(boolean withType) {
+            super();
+            this.withType = withType;
+        }
 
         public ColumnDataType(String columnName, boolean withType, ColDataType colDataType, List<String> columnSpecs) {
             super(columnName, colDataType, columnSpecs);
@@ -545,12 +550,21 @@ public class AlterExpression {
             return (ColumnDataType) super.addColumnSpecs(columnSpecs);
         }
 
+        @Override
+        public ColumnDataType withColumnSpecs(List<String> columnSpecs) {
+            return (ColumnDataType) super.withColumnSpecs(columnSpecs);
+        }
+
     }
 
     public final static class ColumnDropNotNull {
 
         private final String columnName;
         private final boolean withNot;
+
+        public ColumnDropNotNull(String columnName) {
+            this(columnName, false);
+        }
 
         public ColumnDropNotNull(String columnName, boolean withNot) {
             this.columnName = columnName;
