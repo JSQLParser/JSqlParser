@@ -172,8 +172,10 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         }
         if (expr.getRightExpression() != null) {
             expr.getRightExpression().accept(this);
-        } else {
+        } else if (expr.getRightItemsList() != null) {
             expr.getRightItemsList().accept(this);
+        } else {
+            expr.getMultiExpressionList().accept(this);
         }
     }
 
