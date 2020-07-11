@@ -11,22 +11,13 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.statement.ShowStatement;
 
-public class ShowStatementDeParser {
-
-    protected StringBuilder buffer;
+public class ShowStatementDeParser extends AbstractDeParser<ShowStatement> {
 
     public ShowStatementDeParser(StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
+    @Override
     public void deParse(ShowStatement show) {
         buffer.append("SHOW ").append(show.getName());
     }

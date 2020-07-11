@@ -17,29 +17,26 @@ import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
+public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
 
-public class CreateTableDeParser {
-
-    protected StringBuilder buffer;
     private StatementDeParser statementDeParser;
 
     public CreateTableDeParser(StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
     }
 
     public CreateTableDeParser(StatementDeParser statementDeParser, StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
         this.statementDeParser = statementDeParser;
     }
 
-
+    @Override
     public void deParse(CreateTable createTable) {
         buffer.append("CREATE ");
         if (createTable.isUnlogged()) {
             buffer.append("UNLOGGED ");
         }
-        String params = PlainSelect.
-                getStringList(createTable.getCreateOptionsStrings(), false, false);
+        String params = PlainSelect.getStringList(createTable.getCreateOptionsStrings(), false, false);
         if (!"".equals(params)) {
             buffer.append(params).append(' ');
         }
@@ -50,35 +47,33 @@ public class CreateTableDeParser {
         }
         buffer.append(createTable.getTable().getFullyQualifiedName());
 
-            if (createTable.getColumnDefinitions() != null) {
-                buffer.append(" (");
-                for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.
-                        hasNext();) {
-                    ColumnDefinition columnDefinition = iter.next();
-                    buffer.append(columnDefinition.getColumnName());
-                    buffer.append(" ");
-                    buffer.append(columnDefinition.getColDataType().toString());
-                    if (columnDefinition.getColumnSpecs() != null) {
-                        for (String s : columnDefinition.getColumnSpecs()) {
-                            buffer.append(" ");
-                            buffer.append(s);
-                        }
-                    }
-
-                    if (iter.hasNext()) {
-                        buffer.append(", ");
+        if (createTable.getColumnDefinitions() != null) {
+            buffer.append(" (");
+            for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
+                ColumnDefinition columnDefinition = iter.next();
+                buffer.append(columnDefinition.getColumnName());
+                buffer.append(" ");
+                buffer.append(columnDefinition.getColDataType().toString());
+                if (columnDefinition.getColumnSpecs() != null) {
+                    for (String s : columnDefinition.getColumnSpecs()) {
+                        buffer.append(" ");
+                        buffer.append(s);
                     }
                 }
 
-                if (createTable.getIndexes() != null) {
-                    for (Iterator<Index> iter = createTable.getIndexes().iterator(); iter.hasNext();) {
-                        buffer.append(", ");
-                        Index index = iter.next();
-                        buffer.append(index.toString());
-                    }
+                if (iter.hasNext()) {
+                    buffer.append(", ");
                 }
+            }
 
-                buffer.append(")");
+            if (createTable.getIndexes() != null) {
+                for (Index index : createTable.getIndexes()) {
+                    buffer.append(", ");
+                    buffer.append(index.toString());
+                }
+            }
+
+            buffer.append(")");
         }
 
         params = PlainSelect.getStringList(createTable.getTableOptionsStrings(), false, false);
@@ -102,11 +97,4 @@ public class CreateTableDeParser {
         }
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
 }
