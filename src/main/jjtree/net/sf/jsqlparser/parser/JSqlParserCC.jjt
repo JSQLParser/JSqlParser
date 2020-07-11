@@ -52,6 +52,7 @@ import net.sf.jsqlparser.statement.insert.*;
 import net.sf.jsqlparser.statement.replace.*;
 import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.show.*;
 import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
 import net.sf.jsqlparser.statement.upsert.*;
@@ -188,6 +189,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXECUTE: "EXECUTE">
 |   <K_EXISTS:"EXISTS">
 |   <K_EXPLAIN:"EXPLAIN">
+|   <K_EXTENDED:"EXTENDED">
 |   <K_EXTRACT:"EXTRACT">
 |   <K_FETCH:"FETCH">
 |   <K_FILTER: "FILTER">
@@ -313,6 +315,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SOME:"SOME">
 |   <K_START:"START">
 |   <K_TABLE:"TABLE">
+|   <K_TABLES:"TABLES">
 |   <K_TABLESPACE : "TABLESPACE">
 |   <K_THEN:"THEN">
 |   <K_TEMP:"TEMP">
@@ -494,7 +497,11 @@ Statement SingleStatement() :
         |
         stm = Set()
         |
-        LOOKAHEAD(2) stm = ShowColumns()
+        LOOKAHEAD(ShowColumns())
+        stm = ShowColumns()
+        |
+        LOOKAHEAD(ShowTables())
+        stm = ShowTables()
         |
         stm = Show()
         |
@@ -771,6 +778,39 @@ ShowColumnsStatement ShowColumns(): {
     {
         return new ShowColumnsStatement(tableName);
     }
+}
+
+// https://dev.mysql.com/doc/refman/8.0/en/show-tables.html
+ShowTablesStatement ShowTables(): {
+    ShowTablesStatement showTablesStatement;
+    EnumSet<ShowTablesStatement.Modifiers> modifiers =  EnumSet.noneOf(ShowTablesStatement.Modifiers.class);
+    ShowTablesStatement.SelectionMode selectionMode = null;
+    String dbName = null;
+    Expression likeExpression = null;
+    Expression whereCondition = null;
+}
+{
+  <K_SHOW>
+  [ <K_EXTENDED> { modifiers.add(ShowTablesStatement.Modifiers.EXTENDED); } ]
+  [ <K_FULL> { modifiers.add(ShowTablesStatement.Modifiers.FULL); } ]
+  <K_TABLES>
+  [
+    (
+      <K_FROM> {selectionMode = ShowTablesStatement.SelectionMode.FROM; }
+    | <K_IN> { selectionMode = ShowTablesStatement.SelectionMode.IN; }
+    )
+    dbName = RelObjectNameExt()
+  ]
+  [ (<K_LIKE> likeExpression = SimpleExpression() | <K_WHERE> whereCondition = Expression()) ]
+  {
+    showTablesStatement = new ShowTablesStatement();
+    showTablesStatement.setModifiers(modifiers);
+    showTablesStatement.setSelectionMode(selectionMode);
+    showTablesStatement.setDbName(dbName);
+    showTablesStatement.setLikeExpression(likeExpression);
+    showTablesStatement.setWhereCondition(whereCondition);
+    return showTablesStatement;
+  }
 }
 
 ShowStatement Show(): {
@@ -1299,7 +1339,7 @@ String RelObjectName() :
 {    Token tk = null; String result = null; }
 {
     (result = RelObjectNameWithoutValue()
-		| tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON> | tk=<K_ORDER> | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> | tk=<K_CREATE> )
+		| tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON> | tk=<K_ORDER> | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES> )
 
     {
 		if (tk!=null) result=tk.image;
