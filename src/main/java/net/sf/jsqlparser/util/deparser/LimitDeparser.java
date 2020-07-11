@@ -11,14 +11,13 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.statement.select.Limit;
 
-public class LimitDeparser {
-
-    protected final StringBuilder buffer;
+public class LimitDeparser extends AbstractDeParser<Limit> {
 
     public LimitDeparser(StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
     }
 
+    @Override
     public void deParse(Limit limit) {
         buffer.append(" LIMIT ");
         if (limit.isLimitNull()) {

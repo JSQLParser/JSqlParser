@@ -10,28 +10,21 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.List;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.execute.Execute;
 
-public class ExecuteDeParser {
+public class ExecuteDeParser extends AbstractDeParser<Execute> {
 
-    protected StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
 
     public ExecuteDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
+    @Override
     public void deParse(Execute execute) {
         buffer.append(execute.getExecType().name()).append(" ").append(execute.getName());
         if (execute.isParenthesis()) {

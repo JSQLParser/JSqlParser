@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
-
 import java.util.stream.Collectors;
 
 import net.sf.jsqlparser.statement.Block;
@@ -49,22 +48,21 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
-public class StatementDeParser implements StatementVisitor {
+public class StatementDeParser extends AbstractDeParser<Statement> implements StatementVisitor {
 
     private ExpressionDeParser expressionDeParser;
 
     private SelectDeParser selectDeParser;
 
-    protected StringBuilder buffer;
-
     public StatementDeParser(StringBuilder buffer) {
         this(new ExpressionDeParser(), new SelectDeParser(), buffer);
     }
 
-    public StatementDeParser(ExpressionDeParser expressionDeParser, SelectDeParser selectDeParser, StringBuilder buffer) {
+    public StatementDeParser(ExpressionDeParser expressionDeParser, SelectDeParser selectDeParser,
+            StringBuilder buffer) {
+        super(buffer);
         this.expressionDeParser = expressionDeParser;
         this.selectDeParser = selectDeParser;
-        this.buffer = buffer;
     }
 
     @Override
@@ -167,14 +165,6 @@ public class StatementDeParser implements StatementVisitor {
 
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
     @Override
     public void visit(Alter alter) {
         AlterDeParser alterDeParser = new AlterDeParser(buffer);
@@ -208,7 +198,7 @@ public class StatementDeParser implements StatementVisitor {
 
     @Override
     public void visit(Merge merge) {
-        //TODO implementation of a deparser
+        // TODO implementation of a deparser
         buffer.append(merge.toString());
     }
 
@@ -270,7 +260,8 @@ public class StatementDeParser implements StatementVisitor {
     public void visit(ExplainStatement explain) {
         buffer.append("EXPLAIN ");
         if (explain.getOptions() != null) {
-            buffer.append(explain.getOptions().values().stream().map(ExplainStatement.Option::formatOption).collect(Collectors.joining(" ")));
+            buffer.append(explain.getOptions().values().stream().map(ExplainStatement.Option::formatOption)
+                    .collect(Collectors.joining(" ")));
             buffer.append(" ");
         }
         explain.getStatement().accept(this);
@@ -311,5 +302,10 @@ public class StatementDeParser implements StatementVisitor {
     @Override
     public void visit(CreateFunctionalStatement createFunctionalStatement) {
         buffer.append(createFunctionalStatement.toString());
+    }
+
+    @Override
+    void deParse(Statement statement) {
+        statement.accept(this);
     }
 }
