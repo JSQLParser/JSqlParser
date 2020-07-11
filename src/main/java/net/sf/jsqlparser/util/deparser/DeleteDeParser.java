@@ -10,38 +10,32 @@
 package net.sf.jsqlparser.util.deparser;
 
 import static java.util.stream.Collectors.joining;
+
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.select.Join;
 
-public class DeleteDeParser {
+public class DeleteDeParser extends AbstractDeParser<Delete> {
 
-    protected StringBuilder buffer = new StringBuilder();
     private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
 
     public DeleteDeParser() {
+        super(new StringBuilder());
     }
 
     public DeleteDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
+    @Override
     public void deParse(Delete delete) {
         buffer.append("DELETE");
-        if (delete.getTables() != null && delete.getTables().size() > 0) {
-            buffer.append(delete.getTables().stream()
-                    .map(t -> t.getFullyQualifiedName())
-                    .collect(joining(", ", " " , "")));
+        if (delete.getTables() != null && !delete.getTables().isEmpty()) {
+            buffer.append(
+                    delete.getTables().stream().map(Table::getFullyQualifiedName).collect(joining(", ", " ", "")));
         }
         buffer.append(" FROM ").append(delete.getTable().toString());
 

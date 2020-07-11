@@ -16,37 +16,39 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
 
-public class CreateViewDeParser {
+public class CreateViewDeParser extends AbstractDeParser<CreateView> {
 
-    protected StringBuilder buffer;
     private final SelectVisitor selectVisitor;
 
     public CreateViewDeParser(StringBuilder buffer) {
+        super(buffer);
         SelectDeParser selectDeParser = new SelectDeParser();
         selectDeParser.setBuffer(buffer);
         ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         selectVisitor = selectDeParser;
-        this.buffer = buffer;
     }
 
     public CreateViewDeParser(StringBuilder buffer, SelectVisitor selectVisitor) {
-        this.buffer = buffer;
+        super(buffer);
         this.selectVisitor = selectVisitor;
     }
 
+    @Override
     public void deParse(CreateView createView) {
         buffer.append("CREATE ");
         if (createView.isOrReplace()) {
             buffer.append("OR REPLACE ");
         }
         switch (createView.getForce()) {
-            case FORCE:
-                buffer.append("FORCE ");
-                break;
-            case NO_FORCE:
-                buffer.append("NO FORCE ");
-                break;
+        case FORCE:
+            buffer.append("FORCE ");
+            break;
+        case NO_FORCE:
+            buffer.append("NO FORCE ");
+            break;
+        case NONE:
+            break;
         }
         if (createView.getTemporary() != TemporaryOption.NONE) {
             buffer.append(createView.getTemporary().name()).append(" ");
@@ -81,11 +83,4 @@ public class CreateViewDeParser {
         }
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
 }

@@ -12,24 +12,16 @@ package net.sf.jsqlparser.util.deparser;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.SetStatement;
 
-public class SetStatementDeParser {
+public class SetStatementDeParser extends AbstractDeParser<SetStatement> {
 
-    protected StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
 
     public SetStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
+    @Override
     public void deParse(SetStatement set) {
         buffer.append("SET ");
 

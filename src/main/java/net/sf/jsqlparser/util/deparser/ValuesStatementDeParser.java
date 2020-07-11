@@ -13,24 +13,16 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
-public class ValuesStatementDeParser {
+public class ValuesStatementDeParser extends AbstractDeParser<ValuesStatement> {
 
-    protected StringBuilder buffer;
     private final ExpressionVisitor expressionVisitor;
 
     public ValuesStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
+    @Override
     public void deParse(ValuesStatement values) {
         boolean first = true;
         buffer.append("VALUES (");
