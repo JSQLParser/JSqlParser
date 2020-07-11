@@ -1,8 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.github.jsqlparser</groupId>
+    <groupId>org.synbee.commons.contrib</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>3.3-SNAPSHOT</version>
+    <version>3.2-0.0.6-SNAPSHOT</version>
+    <description>
+    	based on com.github.jsqlparser:jsqlparser:3.2
+    	
+    	JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes.
+        The generated hierarchy can be navigated using the Visitor Pattern.
+    </description>
     <name>JSQLParser library</name> 
     <inceptionYear>2004</inceptionYear>
     <organization>
@@ -65,15 +71,19 @@
     </developers>
 
     <distributionManagement>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-        <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
+		<repository>
+			<id>synbee</id>
+			<layout>default</layout>
+			<uniqueVersion>false</uniqueVersion>
+			<url>${synbee-repo}</url>
+		</repository>
+		<snapshotRepository>
+			<id>synbee-snapshot</id>
+			<layout>default</layout>
+			<uniqueVersion>true</uniqueVersion>
+			<url>${synbee-snapshot-repo}</url>
+		</snapshotRepository>
+	</distributionManagement>
 
     <scm>
         <connection>scm:git:https://github.com/JSQLParser/JSqlParser.git</connection>
@@ -439,6 +449,5 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <description>JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes.
-        The generated hierarchy can be navigated using the Visitor Pattern.</description>
+    
 </project>
