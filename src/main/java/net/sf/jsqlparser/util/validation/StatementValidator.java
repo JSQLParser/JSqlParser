@@ -41,6 +41,7 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -314,5 +315,11 @@ public class StatementValidator implements StatementVisitor, Validation {
         Validation.mergeTo(this.expressionValidator.getValidationErrors(), errors);
         Validation.mergeTo(this.selectValidator.getValidationErrors(), errors);
         return errors;
+    }
+
+    @Override
+    public void visit(ShowTablesStatement showTables) {
+        // TODO Auto-generated method stub
+
     }
 }
