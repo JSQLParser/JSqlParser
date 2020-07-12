@@ -9,15 +9,16 @@ package net.sf.jsqlparser.util.validation;
  */
 public enum DatabaseType {
 
-    oracle, mysql, sqlserver;
+    oracle, mysql, sqlserver, mariadb, postgresql, h2, hsqldb;
 
     /**
      * @param jdbcIdentifier - the database-identifier-part of jdbc-url
      * @return the {@link DatabaseType}
      * @throws IllegalArgumentException - if the specified jdbcIdentifier cannot be mapped to a {@link DatabaseType}
+     * @throws NullPointerException if {@code jdbcIdentifier} is null
      */
     public static DatabaseType get(String jdbcIdentifier) {
-        return DatabaseType.valueOf(jdbcIdentifier);
+        return DatabaseType.valueOf(jdbcIdentifier.toLowerCase());
     }
 
 }

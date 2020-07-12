@@ -1,6 +1,7 @@
 package net.sf.jsqlparser.util.validation;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -38,10 +39,14 @@ public interface Validation {
     public Map<DatabaseType, Set<String>> getValidationErrors();
 
     default Map<DatabaseType, Set<String>> getValidationErrors(DatabaseType... databaseTypes) {
+        return getValidationErrors(Arrays.asList(databaseTypes));
+    }
+
+    default Map<DatabaseType, Set<String>> getValidationErrors(Collection<DatabaseType> databaseTypes) {
         Map<DatabaseType, Set<String>> map = new EnumMap<>(DatabaseType.class);
 
         EnumSet<DatabaseType> notRequested = EnumSet.allOf(DatabaseType.class);
-        notRequested.removeAll(Arrays.asList(databaseTypes));
+        notRequested.removeAll(databaseTypes);
 
         map.putAll(getValidationErrors());
 
