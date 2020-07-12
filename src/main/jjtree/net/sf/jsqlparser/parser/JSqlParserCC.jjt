@@ -3359,7 +3359,7 @@ IntervalExpression IntervalExpression() : {
 {
 
 { interval = new IntervalExpression(); }
-    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | expr = Column())
+    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | expr = Column() | expr = JdbcNamedParameter() )
     {
         if (expr != null) {
             if (signed) expr = new SignedExpression('-', expr);

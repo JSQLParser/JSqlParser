@@ -4165,4 +4165,24 @@ public class SelectTest {
     public void testPreserveAndOperator_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (field_1 && ?)");
     }
+    
+    @Test
+    public void testCheckDateFunctionIssue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT DATEDIFF(NOW(), MIN(s.startTime))");
+    }
+    
+    @Test
+    public void testCheckDateFunctionIssue_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT DATE_SUB(NOW(), INTERVAL :days DAY)");
+    }
+    
+    @Test
+    public void testCheckDateFunctionIssue_3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT DATE_SUB(NOW(), INTERVAL 1 DAY)");
+    }
+    
+    @Test
+    public void testCheckColonVariable() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (col1, col2) IN ((:qp0, :qp1), (:qp2, :qp3))");
+    }
 }
