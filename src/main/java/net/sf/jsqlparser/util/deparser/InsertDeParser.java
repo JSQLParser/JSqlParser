@@ -14,9 +14,9 @@ import java.util.Iterator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
@@ -24,29 +24,22 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
-public class InsertDeParser implements ItemsListVisitor {
+public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsListVisitor {
 
-    protected StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
 
     public InsertDeParser() {
+        super(new StringBuilder());
     }
 
     public InsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.selectVisitor = selectVisitor;
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
+    @Override
     public void deParse(Insert insert) {
         buffer.append("INSERT ");
         if (insert.getModifierPriority() != null) {
@@ -127,8 +120,8 @@ public class InsertDeParser implements ItemsListVisitor {
             buffer.append(" RETURNING *");
         } else if (insert.getReturningExpressionList() != null) {
             buffer.append(" RETURNING ");
-            for (Iterator<SelectExpressionItem> iter = insert.getReturningExpressionList().
-                    iterator(); iter.hasNext();) {
+            for (Iterator<SelectExpressionItem> iter = insert.getReturningExpressionList().iterator(); iter
+                    .hasNext();) {
                 buffer.append(iter.next().toString());
                 if (iter.hasNext()) {
                     buffer.append(", ");
@@ -150,10 +143,9 @@ public class InsertDeParser implements ItemsListVisitor {
         buffer.append(")");
     }
 
-// not used in a top-level insert statement
     @Override
     public void visit(NamedExpressionList NamedExpressionList) {
-
+        // not used in a top-level insert statement
     }
 
     @Override
