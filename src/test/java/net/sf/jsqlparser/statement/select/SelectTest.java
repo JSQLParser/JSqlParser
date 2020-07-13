@@ -4185,4 +4185,9 @@ public class SelectTest {
     public void testCheckColonVariable() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (col1, col2) IN ((:qp0, :qp1), (:qp2, :qp3))");
     }
+    
+    @Test
+    public void testVariableAssignment() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT @SELECTVariable = 2");
+    }
 }

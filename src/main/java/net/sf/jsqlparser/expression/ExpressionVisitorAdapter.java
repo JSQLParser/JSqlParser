@@ -541,4 +541,10 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         array.getObjExpression().accept(this);
         array.getIndexExpression().accept(this);
     }
+
+    @Override
+    public void visit(VariableAssignment var) {
+        var.getVariable().accept(this);
+        var.getExpression().accept(this);
+    }
 }

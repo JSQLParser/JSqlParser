@@ -3030,12 +3030,24 @@ Expression AnyComparisonExpression() :
 Expression SimpleExpression():
 {
     Expression retval = null;
+    UserVariable user = null;
+    Token operation = null;
 }
 {
-    [ LOOKAHEAD(UserVariable() "=") UserVariable() "=" ]
+    [ LOOKAHEAD(UserVariable() ("=" | ":=") ) 
+        user = UserVariable() 
+       ( operation = "=" | operation = ":=" )
+    ]
     retval=ConcatExpression()
     {
-        return retval;
+        if (user != null) {
+            VariableAssignment assignment = new VariableAssignment();
+            assignment.setVariable(user);
+            assignment.setOperation(operation.image);
+            assignment.setExpression(retval);
+            return assignment;
+        } else 
+            return retval;
     }
 }
 

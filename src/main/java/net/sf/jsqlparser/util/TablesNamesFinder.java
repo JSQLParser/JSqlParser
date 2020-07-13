@@ -49,6 +49,7 @@ import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
+import net.sf.jsqlparser.expression.VariableAssignment;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -890,5 +891,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(ShowTablesStatement showTables) {
         throw new UnsupportedOperationException("Finding tables from ShowTablesStatement is not supported");
+    }
+    
+    @Override
+    public void visit(VariableAssignment var) {
+        var.getVariable().accept(this);
+        var.getExpression().accept(this);
     }
 }
