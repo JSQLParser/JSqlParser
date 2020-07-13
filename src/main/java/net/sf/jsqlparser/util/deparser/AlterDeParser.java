@@ -11,23 +11,15 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.statement.alter.Alter;
 
-public class AlterDeParser {
-
-    protected StringBuilder buffer;
+public class AlterDeParser extends AbstractDeParser<Alter> {
 
     public AlterDeParser(StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
     }
 
+    @Override
     public void deParse(Alter alter) {
         buffer.append(alter.toString());
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
 }

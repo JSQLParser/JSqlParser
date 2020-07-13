@@ -14,35 +14,27 @@ import java.util.Iterator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
-public class UpsertDeParser implements ItemsListVisitor {
+public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsListVisitor {
 
-    protected StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
-    
+
     public UpsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.selectVisitor = selectVisitor;
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
+    @Override
     public void deParse(Upsert upsert) {
         buffer.append("UPSERT INTO ");
 
@@ -64,7 +56,7 @@ public class UpsertDeParser implements ItemsListVisitor {
         }
 
     }
-    
+
     private void appendColumns(Upsert upsert) {
         buffer.append(" (");
         for (Iterator<Column> iter = upsert.getColumns().iterator(); iter.hasNext();) {
@@ -76,7 +68,7 @@ public class UpsertDeParser implements ItemsListVisitor {
         }
         buffer.append(")");
     }
-    
+
     private void appendSelect(Upsert upsert) {
         buffer.append(" ");
         if (upsert.isUseSelectBrackets()) {
@@ -94,7 +86,7 @@ public class UpsertDeParser implements ItemsListVisitor {
             buffer.append(")");
         }
     }
-    
+
     private void appendDuplicate(Upsert upsert) {
         buffer.append(" ON DUPLICATE KEY UPDATE ");
         for (int i = 0; i < upsert.getDuplicateUpdateColumns().size(); i++) {
