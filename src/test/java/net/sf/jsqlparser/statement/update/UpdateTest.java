@@ -160,4 +160,9 @@ public class UpdateTest {
     public void testUpdateIssue962Validate() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE tbl_user_card SET validate = '1', identityCodeFlag = 1 WHERE id = 9150000293816");
     }
+    
+    @Test
+    public void testUpdateVariableAssignment() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("UPDATE transaction_id SET latest_id_wallet = (@cur_id_wallet := latest_id_wallet) + 1");
+    }
 }

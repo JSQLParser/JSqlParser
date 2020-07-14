@@ -37,9 +37,12 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 
 public class TablesNamesFinderTest {
 
@@ -621,5 +624,13 @@ public class TablesNamesFinderTest {
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
         assertThatThrownBy(() -> tablesNamesFinder.getTableList(stmt)).isInstanceOf(UnsupportedOperationException.class)
         .hasMessage("Finding tables from AlterSequence is not supported");
+    }
+    
+    @Test
+    public void testNPEIssue1009() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse(" SELECT * FROM (SELECT * FROM biz_fund_info WHERE tenant_code = ? AND ((ta_code, manager_code) IN ((?, ?)) OR department_type IN (?)))");
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();    
+        
+        assertThat(tablesNamesFinder.getTableList(stmt)).containsExactly("biz_fund_info");
     }
 }

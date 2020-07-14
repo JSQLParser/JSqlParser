@@ -9,11 +9,18 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
-import static net.sf.jsqlparser.test.TestUtils.assertExpressionCanBeDeparsedAs;
-import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.*;
+import net.sf.jsqlparser.*;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.operators.arithmetic.*;
+import net.sf.jsqlparser.expression.operators.relational.*;
+import net.sf.jsqlparser.parser.*;
+import net.sf.jsqlparser.schema.*;
+import net.sf.jsqlparser.statement.*;
+import static net.sf.jsqlparser.test.TestUtils.*;
+import org.apache.commons.io.IOUtils;
 import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.io.StringReader;
@@ -2255,7 +2262,8 @@ public class SelectTest {
     @Test
     public void testLateralComplex1() throws IOException, JSQLParserException {
         String stmt = IOUtils.toString(SelectTest.class.
-                getResourceAsStream("complex-lateral-select-request.txt"));
+                getResourceAsStream("complex-lateral-select-request.txt"), 
+                Charset.forName("UTF-8"));
         Select select = (Select) parserManager.parse(new StringReader(stmt));
         assertEquals("SELECT O.ORDERID, O.CUSTNAME, OL.LINETOTAL, OC.ORDCHGTOTAL, OT.TAXTOTAL FROM ORDERS O, LATERAL(SELECT SUM(NETAMT) AS LINETOTAL FROM ORDERLINES LINES WHERE LINES.ORDERID = O.ORDERID) AS OL, LATERAL(SELECT SUM(CHGAMT) AS ORDCHGTOTAL FROM ORDERCHARGES CHARGES WHERE LINES.ORDERID = O.ORDERID) AS OC, LATERAL(SELECT SUM(TAXAMT) AS TAXTOTAL FROM ORDERTAXES TAXES WHERE TAXES.ORDERID = O.ORDERID) AS OT", select.
                 toString());
@@ -3110,7 +3118,8 @@ public class SelectTest {
     @Test
     public void testSpeedTestIssue235_2() throws IOException, JSQLParserException {
         String stmt = IOUtils.toString(SelectTest.class.
-                getResourceAsStream("large-sql-issue-235.txt"));
+                getResourceAsStream("large-sql-issue-235.txt"),
+                Charset.forName("UTF-8"));
         assertSqlCanBeParsedAndDeparsed(stmt, true);
     }
 
@@ -3168,7 +3177,8 @@ public class SelectTest {
     @Test
     public void testProblemSqlIssue265() throws IOException, JSQLParserException {
         String sqls = IOUtils.toString(SelectTest.class.
-                getResourceAsStream("large-sql-with-issue-265.txt"));
+                getResourceAsStream("large-sql-with-issue-265.txt"),
+                Charset.forName("UTF-8"));
         Statements stmts = CCJSqlParserUtil.parseStatements(sqls);
         assertEquals(2, stmts.getStatements().size());
     }
@@ -3405,7 +3415,8 @@ public class SelectTest {
 
     @Test
     public void testIssue566LargeView() throws IOException, JSQLParserException {
-        String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-issue-566.txt"));
+        String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-issue-566.txt"), 
+                Charset.forName("UTF-8"));
         assertSqlCanBeParsedAndDeparsed(stmt, true);
     }
 
@@ -4217,5 +4228,30 @@ public class SelectTest {
     @Test
     public void testPreserveAndOperator_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (field_1 && ?)");
+    }
+    
+    @Test
+    public void testCheckDateFunctionIssue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT DATEDIFF(NOW(), MIN(s.startTime))");
+    }
+    
+    @Test
+    public void testCheckDateFunctionIssue_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT DATE_SUB(NOW(), INTERVAL :days DAY)");
+    }
+    
+    @Test
+    public void testCheckDateFunctionIssue_3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT DATE_SUB(NOW(), INTERVAL 1 DAY)");
+    }
+    
+    @Test
+    public void testCheckColonVariable() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (col1, col2) IN ((:qp0, :qp1), (:qp2, :qp3))");
+    }
+    
+    @Test
+    public void testVariableAssignment() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT @SELECTVariable = 2");
     }
 }
