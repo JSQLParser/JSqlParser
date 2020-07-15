@@ -11,9 +11,13 @@ package net.sf.jsqlparser.util;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +26,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.apache.commons.lang3.RandomStringUtils;
 
 /**
@@ -51,6 +54,14 @@ public class RandomUtils {
                 // register object with its implemented interfaces
                 // if we need an object for interface requested, an instance is available
                 m.put(iface, o);
+            }
+            Class<?> cls = o.getClass();
+            while ((cls = cls.getSuperclass()) != null) {
+                if (!Object.class.equals(cls)) {
+                    // register object with its parent classes
+                    // if we need an object for parent class requested, an instance is available
+                    m.put(cls, o);
+                }
             }
         });
 
@@ -82,6 +93,12 @@ public class RandomUtils {
             value = (short) RandomUtils.RANDOM.nextInt(15);
         } else if (char.class.equals(type)) {
             value = RandomStringUtils.random(1).toCharArray()[0];
+        } else if (Time.class.equals(type)) {
+            value = new Time(Math.abs(RandomUtils.RANDOM.nextLong()));
+        } else if (Timestamp.class.equals(type)) {
+            value = new Timestamp(Math.abs(RandomUtils.RANDOM.nextLong()));
+        } else if (Date.class.equals(type)) {
+            value = new Date(Math.abs(RandomUtils.RANDOM.nextLong()));
         } else {
             int size = RandomUtils.RANDOM.nextInt(10);
             if (String.class.equals(type)) {
@@ -107,15 +124,20 @@ public class RandomUtils {
                 // try to get an object from test-objects
                 value = OBJECTS.get().get(type);
                 if (value == null) {
-                    try {
-                        value = type.getConstructor().newInstance();
-                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                            | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                        // cannot get default instance with empty constructor
-                        LOG.log(Level.WARNING, "cannot get default instance with reflection for type " + type);
+                    if (type.isEnum()) {
+                        @SuppressWarnings("unchecked")
+                        EnumSet<?> enums = EnumSet.allOf(type.asSubclass(Enum.class));
+                        value = new ArrayList<>(enums).get(RandomUtils.RANDOM.nextInt(enums.size()));
+                    } else {
+                        try {
+                            value = type.getConstructor().newInstance();
+                        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                            // cannot get default instance with empty constructor
+                            LOG.log(Level.WARNING, "cannot get default instance with reflection for type " + type);
+                        }
                     }
                 }
-
             }
         }
         return type.cast(value);

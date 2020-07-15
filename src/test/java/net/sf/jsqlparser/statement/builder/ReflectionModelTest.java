@@ -9,7 +9,7 @@
  */
 package net.sf.jsqlparser.statement.builder;
 
-import static net.sf.jsqlparser.test.TestUtils.asList;
+import static net.sf.jsqlparser.test.TestUtils.*;
 import java.util.List;
 import org.junit.Test;
 import net.sf.jsqlparser.expression.AnyType;
@@ -178,11 +178,12 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.select.WithItem(),
             new net.sf.jsqlparser.statement.truncate.Truncate(),
             new net.sf.jsqlparser.statement.update.Update(), new net.sf.jsqlparser.statement.upsert.Upsert(),
-            new net.sf.jsqlparser.statement.values.ValuesStatement());
+            new net.sf.jsqlparser.statement.values.ValuesStatement(),
+            new net.sf.jsqlparser.statement.DeclareStatement.TypeDefExpr(new ColDataType("varchar"), null));
 
     @Test
     public void testModels() {
-        ReflectionTestUtils.testGetterSetterChaining(MODEL_OBJECTS);
+        ReflectionTestUtils.testGetterSetterChaining(MODEL_OBJECTS, m -> !"setASTNode".equals(m.getName()));
     }
 
 }
