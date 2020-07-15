@@ -9,6 +9,10 @@
  */
 package net.sf.jsqlparser;
 
+/**
+ * <p>A marker interface for jsqlparser-model-classes.</p>
+ * <p>The datastructure where the sql syntax is represented by a tree consists of {@link Model}'s</p>   
+ */
 public interface Model {
 
 }
