@@ -26,17 +26,17 @@ public class LateralSubSelect extends SpecialSubSelect {
         fromItemVisitor.visit(this);
     }
 
-    @Override()
+    @Override
     public LateralSubSelect withPivot(Pivot pivot) {
         return (LateralSubSelect) super.withPivot(pivot);
     }
 
-    @Override()
+    @Override
     public LateralSubSelect withAlias(Alias alias) {
         return (LateralSubSelect) super.withAlias(alias);
     }
 
-    @Override()
+    @Override
     public LateralSubSelect withSubSelect(SubSelect subSelect) {
         return (LateralSubSelect) super.withSubSelect(subSelect);
     }

@@ -49,12 +49,12 @@ public class RegExpMySQLOperator extends BinaryExpression {
                 + (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
     }
 
-    @Override()
+    @Override
     public RegExpMySQLOperator withLeftExpression(Expression arg0) {
         return (RegExpMySQLOperator) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public RegExpMySQLOperator withRightExpression(Expression arg0) {
         return (RegExpMySQLOperator) super.withRightExpression(arg0);
     }

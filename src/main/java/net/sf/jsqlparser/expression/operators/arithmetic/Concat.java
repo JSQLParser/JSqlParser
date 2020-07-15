@@ -25,12 +25,12 @@ public class Concat extends BinaryExpression {
         return "||";
     }
 
-    @Override()
+    @Override
     public Concat withLeftExpression(Expression arg0) {
         return (Concat) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public Concat withRightExpression(Expression arg0) {
         return (Concat) super.withRightExpression(arg0);
     }

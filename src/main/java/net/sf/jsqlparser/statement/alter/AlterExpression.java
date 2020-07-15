@@ -530,22 +530,22 @@ public class AlterExpression {
             return getColumnName() + (withType ? " TYPE " : " ") + toStringDataTypeAndSpec();
         }
 
-        @Override()
+        @Override
         public ColumnDataType withColDataType(ColDataType colDataType) {
             return (ColumnDataType) super.withColDataType(colDataType);
         }
 
-        @Override()
+        @Override
         public ColumnDataType withColumnName(String columnName) {
             return (ColumnDataType) super.withColumnName(columnName);
         }
 
-        @Override()
+        @Override
         public ColumnDataType addColumnSpecs(String... columnSpecs) {
             return (ColumnDataType) super.addColumnSpecs(columnSpecs);
         }
 
-        @Override()
+        @Override
         public ColumnDataType addColumnSpecs(Collection<String> columnSpecs) {
             return (ColumnDataType) super.addColumnSpecs(columnSpecs);
         }

@@ -27,17 +27,17 @@ public class CreateFunction extends CreateFunctionalStatement {
         super("FUNCTION", functionDeclarationParts);
     }
 
-    @Override()
+    @Override
     public CreateFunction withFunctionDeclarationParts(List<String> functionDeclarationParts) {
         return (CreateFunction) super.withFunctionDeclarationParts(functionDeclarationParts);
     }
 
-    @Override()
+    @Override
     public CreateFunction addFunctionDeclarationParts(String... functionDeclarationParts) {
         return (CreateFunction) super.addFunctionDeclarationParts(functionDeclarationParts);
     }
 
-    @Override()
+    @Override
     public CreateFunction addFunctionDeclarationParts(Collection<String> functionDeclarationParts) {
         return (CreateFunction) super.addFunctionDeclarationParts(functionDeclarationParts);
     }

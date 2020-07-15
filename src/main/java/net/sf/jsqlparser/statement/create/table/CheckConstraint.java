@@ -55,22 +55,22 @@ public class CheckConstraint extends NamedConstraint {
         return type.cast(getExpression());
     }
 
-    @Override()
+    @Override
     public CheckConstraint withType(String type) {
         return (CheckConstraint) super.withType(type);
     }
 
-    @Override()
+    @Override
     public CheckConstraint withUsing(String using) {
         return (CheckConstraint) super.withUsing(using);
     }
 
-    @Override()
+    @Override
     public CheckConstraint withName(List<String> name) {
         return (CheckConstraint) super.withName(name);
     }
 
-    @Override()
+    @Override
     public CheckConstraint withName(String name) {
         return (CheckConstraint) super.withName(name);
     }

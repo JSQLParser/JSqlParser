@@ -23,22 +23,22 @@ public class MinorThan extends ComparisonOperator {
         expressionVisitor.visit(this);
     }
 
-    @Override()
+    @Override
     public MinorThan withLeftExpression(Expression arg0) {
         return (MinorThan) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public MinorThan withRightExpression(Expression arg0) {
         return (MinorThan) super.withRightExpression(arg0);
     }
 
-    @Override()
+    @Override
     public MinorThan withOldOracleJoinSyntax(int arg0) {
         return (MinorThan) super.withOldOracleJoinSyntax(arg0);
     }
 
-    @Override()
+    @Override
     public MinorThan withOraclePriorPosition(int arg0) {
         return (MinorThan) super.withOraclePriorPosition(arg0);
     }

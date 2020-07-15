@@ -48,12 +48,12 @@ public class AndExpression extends BinaryExpression {
         return this;
     }
 
-    @Override()
+    @Override
     public AndExpression withLeftExpression(Expression arg0) {
         return (AndExpression) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public AndExpression withRightExpression(Expression arg0) {
         return (AndExpression) super.withRightExpression(arg0);
     }

@@ -25,12 +25,12 @@ public class BitwiseRightShift extends BinaryExpression {
         return ">>";
     }
 
-    @Override()
+    @Override
     public BitwiseRightShift withLeftExpression(Expression arg0) {
         return (BitwiseRightShift) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public BitwiseRightShift withRightExpression(Expression arg0) {
         return (BitwiseRightShift) super.withRightExpression(arg0);
     }

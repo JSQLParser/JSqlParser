@@ -63,12 +63,12 @@ public abstract class OldOracleJoinBinaryExpression extends BinaryExpression imp
         return this;
     }
 
-    @Override()
+    @Override
     public OldOracleJoinBinaryExpression withLeftExpression(Expression arg0) {
         return (OldOracleJoinBinaryExpression) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public OldOracleJoinBinaryExpression withRightExpression(Expression arg0) {
         return (OldOracleJoinBinaryExpression) super.withRightExpression(arg0);
     }

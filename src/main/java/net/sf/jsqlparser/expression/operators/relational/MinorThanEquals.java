@@ -27,22 +27,22 @@ public class MinorThanEquals extends ComparisonOperator {
         expressionVisitor.visit(this);
     }
 
-    @Override()
+    @Override
     public MinorThanEquals withLeftExpression(Expression arg0) {
         return (MinorThanEquals) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public MinorThanEquals withRightExpression(Expression arg0) {
         return (MinorThanEquals) super.withRightExpression(arg0);
     }
 
-    @Override()
+    @Override
     public MinorThanEquals withOldOracleJoinSyntax(int arg0) {
         return (MinorThanEquals) super.withOldOracleJoinSyntax(arg0);
     }
 
-    @Override()
+    @Override
     public MinorThanEquals withOraclePriorPosition(int arg0) {
         return (MinorThanEquals) super.withOraclePriorPosition(arg0);
     }

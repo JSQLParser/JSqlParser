@@ -27,22 +27,22 @@ public class GreaterThanEquals extends ComparisonOperator {
         expressionVisitor.visit(this);
     }
 
-    @Override()
+    @Override
     public GreaterThanEquals withLeftExpression(Expression arg0) {
         return (GreaterThanEquals) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public GreaterThanEquals withRightExpression(Expression arg0) {
         return (GreaterThanEquals) super.withRightExpression(arg0);
     }
 
-    @Override()
+    @Override
     public GreaterThanEquals withOldOracleJoinSyntax(int arg0) {
         return (GreaterThanEquals) super.withOldOracleJoinSyntax(arg0);
     }
 
-    @Override()
+    @Override
     public GreaterThanEquals withOraclePriorPosition(int arg0) {
         return (GreaterThanEquals) super.withOraclePriorPosition(arg0);
     }

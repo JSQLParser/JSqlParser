@@ -31,12 +31,12 @@ public class Modulo extends BinaryExpression {
         return "%";
     }
 
-    @Override()
+    @Override
     public Modulo withLeftExpression(Expression arg0) {
         return (Modulo) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public Modulo withRightExpression(Expression arg0) {
         return (Modulo) super.withRightExpression(arg0);
     }
