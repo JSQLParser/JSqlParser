@@ -49,13 +49,13 @@ public class ExecuteDeParserTest {
         expressions.add(new JdbcParameter());
 
         execute.withName(name)
-        .withExecType(EXEC_TYPE.EXEC).withParenthesis(true)
+        .withExecType(EXEC_TYPE.EXECUTE).withParenthesis(true)
         .withExprList(new ExpressionList().withExpressions(expressions));
 
         executeDeParser.deParse(execute);
 
         String actual = buffer.toString();
-        assertEquals("EXEC " + name + " (?, ?)", actual);
+        assertEquals("EXECUTE " + name + " (?, ?)", actual);
     }
 
     @Test
