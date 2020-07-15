@@ -60,7 +60,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         setDatabase(database);
         return this;
     }
-
+    
     public String getSchemaName() {
         return getIndex(SCHEMA_IDX);
     }
@@ -192,17 +192,17 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
 
         public String formatParameter() {
             switch (option) {
-            case INCREMENT_BY:
-                return prefix("INCREMENT BY");
-            case START_WITH:
-                return prefix("START WITH");
-            case MAXVALUE:
-            case MINVALUE:
-            case CACHE:
-                return prefix(option.name());
-            default:
-                // fallthrough just return option name
-                return option.name();
+                case INCREMENT_BY:
+                    return prefix("INCREMENT BY");
+                case START_WITH:
+                    return prefix("START WITH");
+                case MAXVALUE:
+                case MINVALUE:
+                case CACHE:
+                    return prefix(option.name());
+                default:
+                    // fallthrough just return option name
+                    return option.name();
             }
         }
 
