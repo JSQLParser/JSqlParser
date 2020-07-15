@@ -4190,4 +4190,14 @@ public class SelectTest {
     public void testVariableAssignment() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @SELECTVariable = 2");
     }
+    
+    @Test
+    public void testVariableAssignment2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT @var = 1");
+    }
+    
+    @Test
+    public void testVariableAssignment3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT @varname := @varname + 1 AS counter");
+    }
 }
