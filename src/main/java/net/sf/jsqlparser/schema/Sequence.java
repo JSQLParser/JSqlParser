@@ -22,13 +22,9 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
 
     private static final int NAME_IDX = 0;
-
     private static final int SCHEMA_IDX = 1;
-
     private static final int DATABASE_IDX = 2;
-
     private static final int SERVER_IDX = 3;
-
     private List<String> partItems = new ArrayList<>();
 
     private List<Parameter> parameters;
@@ -110,6 +106,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     @Override
     public String getFullyQualifiedName() {
         StringBuilder fqn = new StringBuilder();
+
         for (int i = partItems.size() - 1; i >= 0; i--) {
             String part = partItems.get(i);
             if (part == null) {
@@ -120,6 +117,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
                 fqn.append(".");
             }
         }
+
         return fqn.toString();
     }
 
@@ -155,7 +153,6 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
      * The available parameters to a sequence
      */
     public enum ParameterType {
-
         INCREMENT_BY,
         START_WITH,
         MAXVALUE,
@@ -178,9 +175,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
      * Represents a parameter when declaring a sequence
      */
     public static class Parameter {
-
         private final ParameterType option;
-
         private Long value;
 
         public Parameter(ParameterType option) {
@@ -196,18 +191,18 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         }
 
         public String formatParameter() {
-            switch(option) {
-                case INCREMENT_BY:
-                    return prefix("INCREMENT BY");
-                case START_WITH:
-                    return prefix("START WITH");
-                case MAXVALUE:
-                case MINVALUE:
-                case CACHE:
-                    return prefix(option.name());
-                default:
-                    // fallthrough just return option name
-                    return option.name();
+            switch (option) {
+            case INCREMENT_BY:
+                return prefix("INCREMENT BY");
+            case START_WITH:
+                return prefix("START WITH");
+            case MAXVALUE:
+            case MINVALUE:
+            case CACHE:
+                return prefix(option.name());
+            default:
+                // fallthrough just return option name
+                return option.name();
             }
         }
 
