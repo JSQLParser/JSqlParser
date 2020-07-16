@@ -9,12 +9,9 @@
  */
 package net.sf.jsqlparser.util.validation;
 
-import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
@@ -34,31 +31,11 @@ import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
-public class ExpressionValidator implements ExpressionVisitor, ItemsListVisitor, Validation {
+public class ExpressionValidator extends AbstractValidator<Expression> implements ExpressionVisitor, ItemsListVisitor {
 
-    protected Map<DatabaseType, Set<String>> errors = new EnumMap<>(DatabaseType.class);
-    private SelectVisitor selectVisitor;
-    private boolean useBracketsInExprList = true;
-    private OrderByValidator orderByDeParser = new OrderByValidator();
-
-    public ExpressionValidator() {
-        this(null, new EnumMap<>(DatabaseType.class));
-    }
-
-    public ExpressionValidator(SelectVisitor selectVisitor, Map<DatabaseType, Set<String>> errors) {
-        this(selectVisitor, errors, new OrderByValidator());
-    }
-
-    ExpressionValidator(SelectVisitor selectVisitor, Map<DatabaseType, Set<String>> errors,
-            OrderByValidator orderByDeValidator) {
-        this.selectVisitor = selectVisitor;
-        this.errors = errors;
-        this.orderByDeParser = orderByDeValidator;
-    }
 
     @Override
     public void visit(Addition addition) {
@@ -284,18 +261,16 @@ public class ExpressionValidator implements ExpressionVisitor, ItemsListVisitor,
     public void visit(SubSelect subSelect) {
         if (subSelect.isUseBrackets()) {
         }
-        if (selectVisitor != null) {
-            if (subSelect.getWithItemsList() != null) {
-                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.
-                        hasNext();) {
-                    iter.next().accept(selectVisitor);
-                    if (iter.hasNext()) {
-                    }
+        if (subSelect.getWithItemsList() != null) {
+            for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.
+                    hasNext();) {
+                iter.next().accept(getValidator(SelectValidator.class));
+                if (iter.hasNext()) {
                 }
             }
-
-            subSelect.getSelectBody().accept(selectVisitor);
         }
+
+        subSelect.getSelectBody().accept(getValidator(SelectValidator.class));
         if (subSelect.isUseBrackets()) {
         }
     }
@@ -324,21 +299,11 @@ public class ExpressionValidator implements ExpressionVisitor, ItemsListVisitor,
         if (function.isAllColumns() && function.getParameters() == null) {
         } else if (function.getParameters() == null && function.getNamedParameters() == null) {
         } else {
-            boolean oldUseBracketsInExprList = useBracketsInExprList;
-            useBracketsInExprList = true;
-            if (function.isDistinct()) {
-                useBracketsInExprList = false;
-            } else if (function.isAllColumns()) {
-                useBracketsInExprList = false;
-            }
             if (function.getNamedParameters() != null) {
                 visit(function.getNamedParameters());
             }
             if (function.getParameters() != null) {
                 visit(function.getParameters());
-            }
-            useBracketsInExprList = oldUseBracketsInExprList;
-            if (function.isDistinct() || function.isAllColumns()) {
             }
         }
 
@@ -353,22 +318,16 @@ public class ExpressionValidator implements ExpressionVisitor, ItemsListVisitor,
 
     @Override
     public void visit(ExpressionList expressionList) {
-        if (useBracketsInExprList) {
-        }
         for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
             Expression expression = iter.next();
             expression.accept(this);
             if (iter.hasNext()) {
             }
         }
-        if (useBracketsInExprList) {
-        }
     }
 
     @Override
     public void visit(NamedExpressionList namedExpressionList) {
-        if (useBracketsInExprList) {
-        }
         List<String> names = namedExpressionList.getNames();
         List<Expression> expressions = namedExpressionList.getExpressions();
         for (int i = 0; i < names.size(); i++) {
@@ -379,16 +338,6 @@ public class ExpressionValidator implements ExpressionVisitor, ItemsListVisitor,
             }
             expressions.get(i).accept(this);
         }
-        if (useBracketsInExprList) {
-        }
-    }
-
-    public SelectVisitor getSelectVisitor() {
-        return selectVisitor;
-    }
-
-    public void setSelectVisitor(SelectVisitor visitor) {
-        selectVisitor = visitor;
     }
 
     @Override
@@ -478,7 +427,6 @@ public class ExpressionValidator implements ExpressionVisitor, ItemsListVisitor,
 
     @Override
     public void visit(AnalyticExpression aexpr) {
-        String name = aexpr.getName();
         Expression expression = aexpr.getExpression();
         Expression offset = aexpr.getOffset();
         Expression defaultValue = aexpr.getDefaultValue();
@@ -655,7 +603,15 @@ public class ExpressionValidator implements ExpressionVisitor, ItemsListVisitor,
     }
 
     @Override
-    public Map<DatabaseType, Set<String>> getValidationErrors() {
-        return errors;
+    public void validate(Expression statement) {
+        // TODO Auto-generated method stub
+
     }
+
+    @Override
+    public void visit(VariableAssignment aThis) {
+        // TODO Auto-generated method stub
+
+    }
+
 }

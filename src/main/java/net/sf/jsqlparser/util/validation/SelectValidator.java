@@ -9,26 +9,12 @@
  */
 package net.sf.jsqlparser.util.validation;
 
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Set;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
-public class SelectValidator implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor, Validation {
-
-    protected Map<DatabaseType, Set<String>> errors;
-    private ExpressionValidator expressionVisitor;
-
-    public SelectValidator() {
-        this(new ExpressionValidator(), new EnumMap<>(DatabaseType.class));
-    }
-
-    public SelectValidator(ExpressionValidator expressionVisitor, Map<DatabaseType, Set<String>> errors) {
-        this.errors = errors;
-        this.expressionVisitor = expressionVisitor;
-    }
+public class SelectValidator extends AbstractValidator<SelectItem>
+        implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     @Override
     public void visit(PlainSelect plainSelect) {
@@ -125,7 +111,7 @@ public class SelectValidator implements SelectVisitor, SelectItemVisitor, FromIt
         //        }
 
         if (plainSelect.getWhere() != null) {
-            plainSelect.getWhere().accept(expressionVisitor);
+            plainSelect.getWhere().accept(getValidator(ExpressionValidator.class));
         }
 
         //        if (plainSelect.getOracleHierarchical() != null) {
@@ -489,15 +475,10 @@ public class SelectValidator implements SelectVisitor, SelectItemVisitor, FromIt
         //        new ValuesStatementDeParser(expressionVisitor, errors).deParse(values);
     }
 
-    private void deparseOptimizeFor(OptimizeFor optimizeFor) {
-        //        errors.append(" OPTIMIZE FOR ");
-        //        errors.append(optimizeFor.getRowCount());
-        //        errors.append(" ROWS");
+    @Override
+    public void validate(SelectItem statement) {
+        // TODO Auto-generated method stub
+
     }
 
-    @Override
-    public Map<DatabaseType, Set<String>> getValidationErrors() {
-        Validation.mergeTo(expressionVisitor.getValidationErrors(), errors);
-        return errors;
-    }
 }

@@ -9,9 +9,6 @@
  */
 package net.sf.jsqlparser.util.validation;
 
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Set;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
@@ -21,6 +18,7 @@ import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
@@ -41,31 +39,14 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
-public class StatementValidator implements StatementVisitor, Validation {
+public class StatementValidator extends AbstractValidator<Statement> implements StatementVisitor {
 
-    protected Map<DatabaseType, Set<String>> errors;
-    private ExpressionValidator expressionValidator;
-    private SelectValidator selectValidator;
-
-    public StatementValidator() {
-        this(new EnumMap<>(DatabaseType.class));
-    }
-
-    public StatementValidator(Map<DatabaseType, Set<String>> errors) {
-        this(new ExpressionValidator(), new SelectValidator(), errors);
-    }
-
-    public StatementValidator(ExpressionValidator expressionDeParser, SelectValidator selectValidator,
-            Map<DatabaseType, Set<String>> errors) {
-        this.expressionValidator = expressionDeParser;
-        this.selectValidator = selectValidator;
-        this.errors = errors;
-    }
 
     @Override
     public void visit(CreateIndex createIndex) {
@@ -146,7 +127,7 @@ public class StatementValidator implements StatementVisitor, Validation {
         //                errors.append(" ");
         //            }
         //        }
-        select.getSelectBody().accept(selectValidator);
+        select.getSelectBody().accept(getValidator(SelectValidator.class));
     }
 
     @Override
@@ -310,9 +291,15 @@ public class StatementValidator implements StatementVisitor, Validation {
     }
 
     @Override
-    public Map<DatabaseType, Set<String>> getValidationErrors() {
-        Validation.mergeTo(this.expressionValidator.getValidationErrors(), errors);
-        Validation.mergeTo(this.selectValidator.getValidationErrors(), errors);
-        return errors;
+    public void visit(ShowTablesStatement showTables) {
+        // TODO Auto-generated method stub
+
     }
+
+    @Override
+    public void validate(Statement statement) {
+        // TODO Auto-generated method stub
+
+    }
+
 }
