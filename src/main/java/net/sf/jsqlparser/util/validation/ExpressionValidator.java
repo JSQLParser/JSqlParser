@@ -34,7 +34,7 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
-public class ExpressionValidator extends AbstractValidator<Expression> implements ExpressionVisitor, ItemsListVisitor {
+public class ExpressionValidator extends AbstractValidator<Expression> implements ExpressionVisitor {
 
 
     @Override
@@ -119,7 +119,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     @Override
     public void visit(InExpression inExpression) {
         if (inExpression.getLeftExpression() == null) {
-            inExpression.getLeftItemsList().accept(this);
+            inExpression.getLeftItemsList().accept(getValidator(ItemListValidator.class));
         } else {
             inExpression.getLeftExpression().accept(this);
             if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
@@ -134,7 +134,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
             if (inExpression.getRightExpression() != null) {
                 inExpression.getRightExpression().accept(this);
             } else {
-                inExpression.getRightItemsList().accept(this);
+                inExpression.getRightItemsList().accept(getValidator(ItemListValidator.class));
             }
         }
     }
@@ -300,10 +300,10 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         } else if (function.getParameters() == null && function.getNamedParameters() == null) {
         } else {
             if (function.getNamedParameters() != null) {
-                visit(function.getNamedParameters());
+                getValidator(ItemListValidator.class).validate(function.getNamedParameters());
             }
             if (function.getParameters() != null) {
-                visit(function.getParameters());
+                getValidator(ItemListValidator.class).validate(function.getNamedParameters());
             }
         }
 
@@ -313,30 +313,6 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         if (function.getKeep() != null) {
         }
         if (function.isEscaped()) {
-        }
-    }
-
-    @Override
-    public void visit(ExpressionList expressionList) {
-        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
-            Expression expression = iter.next();
-            expression.accept(this);
-            if (iter.hasNext()) {
-            }
-        }
-    }
-
-    @Override
-    public void visit(NamedExpressionList namedExpressionList) {
-        List<String> names = namedExpressionList.getNames();
-        List<Expression> expressions = namedExpressionList.getExpressions();
-        for (int i = 0; i < names.size(); i++) {
-            if (i > 0) {
-            }
-            String name = names.get(i);
-            if (!name.equals("")) {
-            }
-            expressions.get(i).accept(this);
         }
     }
 
@@ -378,12 +354,12 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(AllComparisonExpression allComparisonExpression) {
-        allComparisonExpression.getSubSelect().accept((ExpressionVisitor) this);
+        allComparisonExpression.getSubSelect().accept(this);
     }
 
     @Override
     public void visit(AnyComparisonExpression anyComparisonExpression) {
-        anyComparisonExpression.getSubSelect().accept((ExpressionVisitor) this);
+        anyComparisonExpression.getSubSelect().accept(this);
     }
 
     @Override
@@ -499,15 +475,6 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     }
 
     @Override
-    public void visit(MultiExpressionList multiExprList) {
-        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
-            it.next().accept(this);
-            if (it.hasNext()) {
-            }
-        }
-    }
-
-    @Override
     public void visit(IntervalExpression iexpr) {
     }
 
@@ -603,9 +570,8 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     }
 
     @Override
-    public void validate(Expression statement) {
-        // TODO Auto-generated method stub
-
+    public void validate(Expression expression) {
+        expression.accept(this);
     }
 
 }
