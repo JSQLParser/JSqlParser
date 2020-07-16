@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -214,7 +215,7 @@ public class SpecialOracleTest {
             if (file.isFile()) {
                 count++;
                 LOG.log(Level.INFO, "testing {0}", file.getName());
-                String sql = FileUtils.readFileToString(file);
+                String sql = FileUtils.readFileToString(file, Charset.forName("UTF-8"));
                 boolean parsed = false;
                 try {
                     assertSqlCanBeParsedAndDeparsed(sql, true);
@@ -251,7 +252,7 @@ public class SpecialOracleTest {
         List<String> regressionFiles = new LinkedList<>();
         for (File file : sqlTestFiles) {
             LOG.log(Level.INFO, "testing {0}", file.getName());
-            String sql = FileUtils.readFileToString(file);
+            String sql = FileUtils.readFileToString(file, Charset.forName("UTF-8"));
             try {
                 CCJSqlParserUtil.parse(sql);
 

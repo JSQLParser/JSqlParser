@@ -49,6 +49,7 @@ import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
+import net.sf.jsqlparser.expression.VariableAssignment;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -268,7 +269,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         } else if (inExpression.getLeftItemsList() != null) {
             inExpression.getLeftItemsList().accept(this);
         }
-        inExpression.getRightItemsList().accept(this);
+        if (inExpression.getRightExpression() != null) {
+            inExpression.getRightExpression().accept(this);
+        } else if (inExpression.getRightItemsList() != null) {
+            inExpression.getRightItemsList().accept(this);
+        } else {
+            inExpression.getMultiExpressionList().accept(this);
+        }
     }
 
     @Override
@@ -523,8 +530,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      * @param allowColumnProcessing
      */
     protected void init(boolean allowColumnProcessing) {
-        otherItemNames = new ArrayList<String>();
-        tables = new ArrayList<String>();
+        otherItemNames = new ArrayList<>();
+        tables = new ArrayList<>();
         this.allowColumnProcessing = allowColumnProcessing;
     }
 
@@ -878,5 +885,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(CreateFunctionalStatement createFunctionalStatement) {
         throw new UnsupportedOperationException("Finding tables from CreateFunctionalStatement is not supported");
+    }
+
+    @Override
+    public void visit(VariableAssignment var) {
+        var.getVariable().accept(this);
+        var.getExpression().accept(this);
     }
 }
