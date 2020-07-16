@@ -301,4 +301,10 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
         // TODO Auto-generated method stub
 
     }
+
+    @Override
+    public void visit(ShowTablesStatement showTables) {
+        // TODO Auto-generated method stub
+
+    }
 }
