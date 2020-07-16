@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class Matches extends OldOracleJoinBinaryExpression {
@@ -21,5 +22,25 @@ public class Matches extends OldOracleJoinBinaryExpression {
     @Override
     public String getStringExpression() {
         return "@@";
+    }
+
+    @Override()
+    public Matches withLeftExpression(Expression arg0) {
+        return (Matches) super.withLeftExpression(arg0);
+    }
+
+    @Override()
+    public Matches withRightExpression(Expression arg0) {
+        return (Matches) super.withRightExpression(arg0);
+    }
+
+    @Override()
+    public Matches withOldOracleJoinSyntax(int oldOracleJoinSyntax) {
+        return (Matches) super.withOldOracleJoinSyntax(oldOracleJoinSyntax);
+    }
+
+    @Override()
+    public Matches withOraclePriorPosition(int oraclePriorPosition) {
+        return (Matches) super.withOraclePriorPosition(oraclePriorPosition);
     }
 }

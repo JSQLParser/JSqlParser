@@ -41,4 +41,9 @@ public class PartitionByClause {
     public boolean isBrackets() {
         return brackets;
     }
+
+    public PartitionByClause withPartitionExpressionList(ExpressionList partitionExpressionList) {
+        this.setPartitionExpressionList(partitionExpressionList);
+        return this;
+    }
 }

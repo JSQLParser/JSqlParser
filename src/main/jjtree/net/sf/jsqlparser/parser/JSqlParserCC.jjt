@@ -52,7 +52,6 @@ import net.sf.jsqlparser.statement.insert.*;
 import net.sf.jsqlparser.statement.replace.*;
 import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.select.*;
-import net.sf.jsqlparser.statement.show.*;
 import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
 import net.sf.jsqlparser.statement.upsert.*;
@@ -189,7 +188,6 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXECUTE: "EXECUTE">
 |   <K_EXISTS:"EXISTS">
 |   <K_EXPLAIN:"EXPLAIN">
-|   <K_EXTENDED:"EXTENDED">
 |   <K_EXTRACT:"EXTRACT">
 |   <K_FETCH:"FETCH">
 |   <K_FILTER: "FILTER">
@@ -315,7 +313,6 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SOME:"SOME">
 |   <K_START:"START">
 |   <K_TABLE:"TABLE">
-|   <K_TABLES:"TABLES">
 |   <K_TABLESPACE : "TABLESPACE">
 |   <K_THEN:"THEN">
 |   <K_TEMP:"TEMP">
@@ -497,11 +494,7 @@ Statement SingleStatement() :
         |
         stm = Set()
         |
-        LOOKAHEAD(ShowColumns())
-        stm = ShowColumns()
-        |
-        LOOKAHEAD(ShowTables())
-        stm = ShowTables()
+        LOOKAHEAD(2) stm = ShowColumns()
         |
         stm = Show()
         |
@@ -533,8 +526,8 @@ Statement SingleStatement() :
 
 Block Block() #Block : {
     Statements stmts = new Statements();
-  List<Statement> list = new ArrayList<Statement>();
-  Statement stm;
+    List<Statement> list = new ArrayList<Statement>();
+    Statement stm;
     Block block = new Block();
 }
 {
@@ -547,9 +540,9 @@ Block Block() #Block : {
         if (errorRecovery) {
             parseErrors.add(e);
             error_skipto(ST_SEMICOLON);
-        }
-        else
+        } else {
             throw e;
+        }           
     }
     {
         stmts.setStatements(list);
@@ -561,10 +554,11 @@ Block Block() #Block : {
     }
 }
 
-Statements Statements() #Statements :
-{ Statements stmts = new Statements();
-  List<Statement> list = new ArrayList<Statement>();
-  Statement stm; }
+Statements Statements() #Statements : {
+    Statements stmts = new Statements();
+    List<Statement> list = new ArrayList<Statement>();
+    Statement stm;
+}
 {
     (<ST_SEMICOLON>)*
     try {
@@ -575,13 +569,12 @@ Statements Statements() #Statements :
         if (errorRecovery) {
             parseErrors.add(e);
             error_skipto(ST_SEMICOLON);
-        }
-        else
+        } else {
             throw e;
+        }
     }
     {
-        stmts.setStatements(list);
-        return stmts;
+        return stmts.withStatements(list);
     }
 }
 
@@ -606,20 +599,26 @@ DeclareStatement Declare(): {
     <K_DECLARE> userVariable = UserVariable()
     (
             ( <K_TABLE> "(" colDef = ColumnDefinition()
-                {   stmt.setUserVariable(userVariable);
-                    stmt.setDeclareType(DeclareType.TABLE);
-                    stmt.addColumnDefinition(colDef); }
+      {
+        stmt.withUserVariable(userVariable)
+        .withDeclareType(DeclareType.TABLE)
+        .addColumnDefinition(colDef);
+      }
                         ("," colDef = ColumnDefinition() { stmt.addColumnDefinition(colDef); })*  ")"
             )
         |
             <K_AS> typeName = RelObjectName()
-                { stmt.setUserVariable(userVariable);
-                  stmt.setDeclareType(DeclareType.AS);
-                  stmt.setTypeName(typeName); }
+                {
+                    stmt.withUserVariable(userVariable)
+                      .withDeclareType(DeclareType.AS)
+                      .withTypeName(typeName); 
+                }
         |
             (colDataType = ColDataType() ["=" defaultExpr = Expression()]
-                { stmt.setDeclareType(DeclareType.TYPE);
-                  stmt.addType(userVariable, colDataType, defaultExpr); }
+                {
+                  stmt.withDeclareType(DeclareType.TYPE)
+                  .addType(userVariable, colDataType, defaultExpr);
+                }
                 ("," userVariable = UserVariable() colDataType = ColDataType() { defaultExpr = null; }
                 ["=" defaultExpr = Expression()] { stmt.addType(userVariable, colDataType, defaultExpr); } )*
             )
@@ -639,7 +638,7 @@ SetStatement Set(): {
 }
 {
     <K_SET> name = RelObjectNameExt() ["=" { useEqual=true; } ] value=SimpleExpression()
-    { set = new SetStatement(name,value).setUseEqual(useEqual); }
+    { set = new SetStatement(name,value).withUseEqual(useEqual); }
     ( { useEqual=false; } "," name = RelObjectNameExt() ["=" { useEqual=true; } ] value=SimpleExpression()
         { set.add(name, value, useEqual); } )*
 
@@ -780,39 +779,6 @@ ShowColumnsStatement ShowColumns(): {
     }
 }
 
-// https://dev.mysql.com/doc/refman/8.0/en/show-tables.html
-ShowTablesStatement ShowTables(): {
-    ShowTablesStatement showTablesStatement;
-    EnumSet<ShowTablesStatement.Modifiers> modifiers =  EnumSet.noneOf(ShowTablesStatement.Modifiers.class);
-    ShowTablesStatement.SelectionMode selectionMode = null;
-    String dbName = null;
-    Expression likeExpression = null;
-    Expression whereCondition = null;
-}
-{
-  <K_SHOW>
-  [ <K_EXTENDED> { modifiers.add(ShowTablesStatement.Modifiers.EXTENDED); } ]
-  [ <K_FULL> { modifiers.add(ShowTablesStatement.Modifiers.FULL); } ]
-  <K_TABLES>
-  [
-    (
-      <K_FROM> {selectionMode = ShowTablesStatement.SelectionMode.FROM; }
-    | <K_IN> { selectionMode = ShowTablesStatement.SelectionMode.IN; }
-    )
-    dbName = RelObjectNameExt()
-  ]
-  [ (<K_LIKE> likeExpression = SimpleExpression() | <K_WHERE> whereCondition = Expression()) ]
-  {
-    showTablesStatement = new ShowTablesStatement();
-    showTablesStatement.setModifiers(modifiers);
-    showTablesStatement.setSelectionMode(selectionMode);
-    showTablesStatement.setDbName(dbName);
-    showTablesStatement.setLikeExpression(likeExpression);
-    showTablesStatement.setWhereCondition(whereCondition);
-    return showTablesStatement;
-  }
-}
-
 ShowStatement Show(): {
     String name;
 }
@@ -892,16 +858,15 @@ Update Update():
        ]
 
    {
-        update.setColumns(columns);
-        update.setExpressions(expList);
-        update.setTable(table);
-        update.setStartJoins(startJoins);
-        update.setFromItem(fromItem);
-        update.setJoins(joins);
-        update.setSelect(select);
-        update.setUseColumnsBrackets(useColumnsBrackets);
-        update.setReturningExpressionList(returning);
-        return update;
+        return update.withColumns(columns)
+        	  .withExpressions(expList)
+              .withTable(table)
+              .withStartJoins(startJoins)
+              .withFromItem(fromItem)
+              .withJoins(joins)
+              .withSelect(select)
+              .withUseColumnsBrackets(useColumnsBrackets)
+              .withReturningExpressionList(returning);
    }
 }
 
@@ -956,10 +921,10 @@ Replace Replace():
         )
     )
    {
-           if (columns.size() > 0)
-               replace.setColumns(columns);
-           replace.setTable(table);
-        return replace;
+        if (!columns.isEmpty()) {
+           replace.withColumns(columns);
+        } 
+        return replace.withTable(table);
    }
 }
 
@@ -1080,22 +1045,22 @@ Insert Insert():
     ]
 
     {
-        insert.setItemsList(itemsList);
-        insert.setUseSelectBrackets(useSelectBrackets);
-        insert.setSelect(select);
-        insert.setTable(table);
-        if (columns.size() > 0)
+        if (!columns.isEmpty()) { 
             insert.setColumns(columns);
-        insert.setUseDuplicate(useDuplicate);
-        insert.setDuplicateUpdateColumns(duplicateUpdateColumns);
-        insert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
-        insert.setReturningExpressionList(returning);
-        insert.setModifierPriority(modifierPriority);
-        insert.setModifierIgnore(modifierIgnore);
-        insert.setUseSet(useSet);
-        insert.setSetColumns(setColumns);
-        insert.setSetExpressionList(setExpressionList);
-        return insert;
+        }
+        return insert.withItemsList(itemsList)
+              .withUseSelectBrackets(useSelectBrackets)
+              .withSelect(select)
+              .withTable(table)
+              .withUseDuplicate(useDuplicate)
+              .withDuplicateUpdateColumns(duplicateUpdateColumns)
+              .withDuplicateUpdateExpressionList(duplicateUpdateExpressionList)
+              .withReturningExpressionList(returning)
+              .withModifierPriority(modifierPriority)
+              .withModifierIgnore(modifierIgnore)
+              .withUseSet(useSet)
+              .withUseSetColumns(setColumns)
+              .withSetExpressionList(setExpressionList);
     }
 }
 
@@ -1163,17 +1128,16 @@ Upsert Upsert():
         duplicateUpdateExpressionList.add(exp); } )*]
 
     {
-        upsert.setItemsList(itemsList);
-        upsert.setUseSelectBrackets(useSelectBrackets);
-        upsert.setSelect(select);
-        upsert.setTable(table);
-        if (columns.size() > 0) {
+		if (columns.size() > 0) {
             upsert.setColumns(columns);
         }
-        upsert.setUseDuplicate(useDuplicate);
-        upsert.setDuplicateUpdateColumns(duplicateUpdateColumns);
-        upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
-        return upsert;
+        return upsert.withItemsList(itemsList)
+              .withUseSelectBrackets(useSelectBrackets)
+              .withSelect(select)
+              .withTable(table)
+              .withUseDuplicate(useDuplicate)
+              .withDuplicateUpdateColumns(duplicateUpdateColumns)
+              .withDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
     }
 }
 
@@ -1197,11 +1161,10 @@ Delete Delete():
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]
     {
-          delete.setTables(tables);
-        if (joins != null && joins.size() > 0)
+        if (joins != null && joins.size() > 0) {
             delete.setJoins(joins);
-        delete.setTable(table);
-        return delete;
+        }
+        return delete.withTables(tables).withTable(table);
     }
 }
 
@@ -1225,7 +1188,7 @@ Statement Merge() : {
     [
         ( LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); }
           [ insert = MergeInsertClause() { merge.setMergeInsert(insert); } ]
-        | insert = MergeInsertClause() { merge.setMergeInsert(insert); merge.setInsertFirst(true); }
+        | insert = MergeInsertClause() { merge.withMergeInsert(insert).withInsertFirst(true); }
           [ update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
         )
     ]
@@ -1253,7 +1216,7 @@ MergeUpdate MergeUpdateClause() : {
             { columns.add(col); expList.add(exp); }
         ("," col = Column() "=" exp = SimpleExpression() { columns.add(col); expList.add(exp); } )*
 
-        { mu.setColumns(columns); mu.setValues(expList); }
+        { mu.withColumns(columns).withValues(expList); }
 
         [ <K_WHERE> condition = Expression() { mu.setWhereCondition(condition); }]
         [ <K_DELETE> <K_WHERE> condition = Expression() { mu.setDeleteWhereCondition(condition); } ]
@@ -1273,9 +1236,7 @@ MergeInsert MergeInsertClause() : {
         <K_INSERT> ["(" col=Column() { columns.add(col); } ("," col=Column() { columns.add(col); } )* ")"]  <K_VALUES>
            "(" exp=SimpleExpression() { expList.add(exp); } ("," exp=SimpleExpression() { expList.add(exp); } )* ")"
     {
-        mi.setColumns(columns);
-        mi.setValues(expList);
-        return mi;
+        return mi.withColumns(columns).withValues(expList);
     }
 }
 
@@ -1339,7 +1300,7 @@ String RelObjectName() :
 {    Token tk = null; String result = null; }
 {
     (result = RelObjectNameWithoutValue()
-		| tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON> | tk=<K_ORDER> | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES> )
+		| tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON> | tk=<K_ORDER> | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> | tk=<K_CREATE> )
 
     {
 		if (tk!=null) result=tk.image;
@@ -1425,9 +1386,7 @@ Select Select():
 {
     [ with=WithList() {  } ] selectBody = SelectBody()
     {
-        select.setWithItemsList(with);
-        select.setSelectBody(selectBody);
-        return select;
+        return select.withWithItemsList(with).withSelectBody(selectBody);
     }
 }
 
@@ -1742,11 +1701,11 @@ String Identifier():
     { return tk.image; }
 }
 
-FunctionItem FunctionItem():
+ FunctionItem FunctionItem():
 {
     Alias alias = null;
     Function function;
-    FunctionItem functionItem;
+     FunctionItem functionItem;
 }
 {
     function=Function() { functionItem = new FunctionItem(); functionItem.setFunction(function); }
@@ -1771,7 +1730,7 @@ List<Column> PivotForColumns():
 
 List<FunctionItem> PivotFunctionItems():
 {
-    List<FunctionItem> functionItems = new ArrayList<FunctionItem>();
+    List< FunctionItem> functionItems = new ArrayList< FunctionItem>();
     FunctionItem item;
 }
 {
@@ -2056,7 +2015,7 @@ List<Join> JoinsList():
     { return joinsList; }
 }
 
-List SubJoinsList():
+List<Join> SubJoinsList():
 {
     List<Join> joinsList = new ArrayList<Join>();
     Join join = null;
@@ -2102,7 +2061,7 @@ Join JoinerExpression() #JoinerExpression:
     LOOKAHEAD(2) ([ <K_WITHIN> "(" joinWindow = JoinWindow() ")" {join.setJoinWindow(joinWindow);}]
                     ( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); })
         |
-        ( <K_USING> "(" tableColumn=Column() { columns = new ArrayList(); columns.add(tableColumn); }
+        ( <K_USING> "(" tableColumn=Column() { columns = new ArrayList<Column>(); columns.add(tableColumn); }
                 ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"
           { join.setUsingColumns(columns); }   ))
       ]
@@ -2651,7 +2610,7 @@ Expression RegularCondition() #RegularCondition:
     [ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
 
     {
-        BinaryExpression regCond = (BinaryExpression) result;
+         BinaryExpression regCond = (BinaryExpression) result;
         regCond.setLeftExpression(leftExpression);
         regCond.setRightExpression(rightExpression);
 
@@ -3096,7 +3055,7 @@ Expression BitwiseAndOr():
         rightExpression=AdditiveExpression()
 
         {
-            BinaryExpression binExp = (BinaryExpression) result;
+             BinaryExpression binExp = (BinaryExpression) result;
             binExp.setLeftExpression(leftExpression);
             binExp.setRightExpression(rightExpression);
             leftExpression = result;
@@ -3120,7 +3079,7 @@ Expression AdditiveExpression():
 
         rightExpression=MultiplicativeExpression()
         {
-            BinaryExpression binExp = (BinaryExpression) result;
+             BinaryExpression binExp = (BinaryExpression) result;
             binExp.setLeftExpression(leftExpression);
             binExp.setRightExpression(rightExpression);
             leftExpression = result;
@@ -3151,7 +3110,7 @@ Expression MultiplicativeExpression():
         rightExpression=BitwiseXor()
 
         {
-            BinaryExpression binExp = (BinaryExpression) result;
+             BinaryExpression binExp = (BinaryExpression) result;
             binExp.setLeftExpression(leftExpression);
             binExp.setRightExpression(rightExpression);
             leftExpression = result;
@@ -3811,7 +3770,9 @@ TableFunction TableFunction():
     TableFunction functionItem;
 }
 {
-    function=Function() { functionItem = new TableFunction(); functionItem.setFunction(function); }
+    function=Function() {
+      functionItem = new TableFunction().withFunction(function);
+    }
              [LOOKAHEAD(2) alias=Alias() { functionItem.setAlias(alias); }]
     { return functionItem; }
 }
@@ -3897,7 +3858,7 @@ CreateIndex CreateIndex():
     [ tailParameter = CreateParameter() {} ]
 
     {
-        index.setColumnNamesWithParams(colNames);
+        index.setColumns(colNames);
         createIndex.setIndex(index);
         createIndex.setTable(table);
         createIndex.setTailParameters(tailParameter);
@@ -3986,8 +3947,8 @@ CreateTable CreateTable():
 {
     CreateTable createTable = new CreateTable();
     Table table = null;
-    List columnDefinitions = new ArrayList();
-    List columnSpecs = null;
+    List<ColumnDefinition> columnDefinitions = new ArrayList<ColumnDefinition>();
+    List<String> columnSpecs = null;
     List<String> tableOptions = new ArrayList<String>();
     List<String> createOptions = new ArrayList<String>();
     String columnName;
@@ -3998,7 +3959,7 @@ CreateTable CreateTable():
     ColDataType colDataType = null;
     String stringList = null;
     ColumnDefinition coldef = null;
-    List indexes = new ArrayList();
+    List<Index> indexes = new ArrayList<Index>();
     List<Index.ColumnParams> colNames = null;
     List<String> colNames2 = null;
     Index index = null;
@@ -4041,10 +4002,7 @@ CreateTable CreateTable():
                         /* colNames=ColumnsNamesList() */
                         colNames = ColumnNamesWithParamsList()
                         {
-                            index = new Index();
-                            index.setType(tk.image);
-                            index.setName(sk3);
-                            index.setColumnNamesWithParams(colNames);
+                            index = new Index().withType(tk.image).withName(sk3).withColumns(colNames);
                             indexes.add(index);
                         }
                 )
@@ -4062,8 +4020,7 @@ CreateTable CreateTable():
                         colNames = ColumnNamesWithParamsList()
                         ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                         {
-                            index.setColumnNamesWithParams(colNames);
-                            index.setIndexSpec(idxSpec);
+                            index.withColumns(colNames).withIndexSpec(idxSpec);
                             indexes.add(index);
                         }
                 )
@@ -4075,11 +4032,11 @@ CreateTable CreateTable():
                         colNames = ColumnNamesWithParamsList()
                         ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                         {
-                            index = new Index();
-                            index.setType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + tk2.image);
-                            index.setName(sk3);
-                            index.setColumnNamesWithParams(colNames);
-                            index.setIndexSpec(idxSpec);
+                            index = new Index()
+                            .withType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + tk2.image)
+                            .withName(sk3)
+                            .withColumns(colNames)
+                            .withIndexSpec(idxSpec);
                             indexes.add(index);
                         }
                 )
@@ -4093,8 +4050,7 @@ CreateTable CreateTable():
                         /* colNames=ColumnsNamesList() */
                         colNames = ColumnNamesWithParamsList()
                         {
-                            fkIndex.setType(tk.image + " " + tk2.image);
-                            fkIndex.setColumnNamesWithParams(colNames);
+                            fkIndex.withType(tk.image + " " + tk2.image).withColumns(colNames);
                         }
                         <K_REFERENCES> fkTable=Table() colNames2=ColumnsNamesList()
                         {
@@ -4116,9 +4072,7 @@ CreateTable CreateTable():
                     [<K_CONSTRAINT>  sk3 = RelObjectName()]
                     {Expression exp = null;}
                     <K_CHECK>  ("(" exp = Expression() ")")* {
-                       checkCs = new CheckConstraint();
-                       checkCs.setName(sk3);
-                       checkCs.setExpression(exp);
+                       checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
                        indexes.add(checkCs);
                        }
                 )
@@ -4139,7 +4093,7 @@ CreateTable CreateTable():
 
                     colDataType = ColDataType()
                     {
-                        columnSpecs = new ArrayList();
+                        columnSpecs = new ArrayList<String>();
                     }
 
                     (     parameter=CreateParameter() { columnSpecs.addAll(parameter); }     )*
@@ -4187,7 +4141,7 @@ ColDataType ColDataType():
     ColDataType colDataType = new ColDataType();
     Token tk = null;
     Token tk2 = null;
-    ArrayList argumentsStringList = new ArrayList();
+    List<String> argumentsStringList = new ArrayList<String>();
     List<Integer> array = new ArrayList<Integer>();
 }
 {
@@ -4481,7 +4435,7 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
 {
     columnName = RelObjectName()
     (<K_TYPE> { withType = true; } )?
-    dataType = ColDataType() { columnSpecs = new ArrayList(); }
+    dataType = ColDataType() { columnSpecs = new ArrayList<String>(); }
     ( parameter = CreateParameter() { columnSpecs.addAll(parameter); } )*
     {
         return new AlterExpression.ColumnDataType(columnName, withType, dataType, columnSpecs);
@@ -4577,10 +4531,7 @@ AlterExpression AlterExpression():
               sk3 = RelObjectName()
               columnNames = ColumnsNamesList()
               {
-                index = new Index();
-                index.setType(tk.image);
-                index.setName(sk3);
-                index.setColumnsNames(columnNames);
+                index = new Index().withType(tk.image).withName(sk3).withColumnsNames(columnNames);
                 alterExp.setIndex(index);
               }
               constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
@@ -4618,16 +4569,15 @@ AlterExpression AlterExpression():
                 ( ( tk=<K_FOREIGN> tk2=<K_KEY>
                     columnNames=ColumnsNamesList()
                     {
-                        fkIndex = new ForeignKeyIndex();
-                        fkIndex.setName(sk3);
-                        fkIndex.setType(tk.image + " " + tk2.image);
-                        fkIndex.setColumnsNames(columnNames);
+                        fkIndex = new ForeignKeyIndex()
+                        .withName(sk3)
+                        .withType(tk.image + " " + tk2.image)
+                        .withColumnsNames(columnNames);
                                             columnNames = null;
                     }
                     <K_REFERENCES> fkTable=Table() [ columnNames=ColumnsNamesList() ]
                     {
-                        fkIndex.setTable(fkTable);
-                        fkIndex.setReferencedColumnNames(columnNames);
+                        fkIndex.withTable(fkTable).withReferencedColumnNames(columnNames);
                         alterExp.setIndex(fkIndex);
                     }
                     [<K_ON> <K_DELETE>
@@ -4640,10 +4590,10 @@ AlterExpression AlterExpression():
                 ( tk=<K_PRIMARY> tk2=<K_KEY>
                     columnNames=ColumnsNamesList()
                     {
-                        index = new NamedConstraint();
-                        index.setName(sk3);
-                        index.setType(tk.image + " " + tk2.image);
-                        index.setColumnsNames(columnNames);
+                        index = new NamedConstraint()
+                        .withName(sk3)
+                        .withType(tk.image + " " + tk2.image)
+                        .withColumnsNames(columnNames);
                         alterExp.setIndex(index);
                     }
                     constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
@@ -4652,9 +4602,7 @@ AlterExpression AlterExpression():
                 |
                 (
                     <K_CHECK>  {Expression exp = null;} ("(" exp = Expression() ")")* {
-                    CheckConstraint checkCs = new CheckConstraint();
-                    checkCs.setName(sk3);
-                    checkCs.setExpression(exp);
+                    CheckConstraint checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
                     alterExp.setIndex(checkCs);
                 }
                 )
@@ -4663,10 +4611,10 @@ AlterExpression AlterExpression():
                     tk=<K_UNIQUE> (tk2=<K_KEY> { alterExp.setUk(true); } | tk2=<K_INDEX>)?
                       columnNames=ColumnsNamesList()
                       {
-                          index = new NamedConstraint();
-                          index.setName(sk3);
-                          index.setType(tk.image + (tk2!=null?" " + tk2.image:""));
-                          index.setColumnsNames(columnNames);
+                          index = new NamedConstraint()
+                            .withName(sk3)
+                          	.withType(tk.image + (tk2!=null?" " + tk2.image:""))
+                          	.withColumnsNames(columnNames);
                           alterExp.setIndex(index);
                       }
                       constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
@@ -4677,10 +4625,10 @@ AlterExpression AlterExpression():
                     tk=<K_KEY>
                       columnNames=ColumnsNamesList()
                       {
-                          index = new NamedConstraint();
-                          index.setName(sk3);
-                          index.setType(tk.image);
-                          index.setColumnsNames(columnNames);
+                          index = new NamedConstraint()
+                          	.withName(sk3)
+                          	.withType(tk.image)
+							.withColumnsNames(columnNames);
                           alterExp.setIndex(index);
                       }
                       constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
@@ -4690,8 +4638,7 @@ AlterExpression AlterExpression():
             |
             ( sk3=RelObjectName() <K_COMMENT> 
                 tk=<S_CHAR_LITERAL> { 
-                    alterExp.setColumnName(sk3);
-                    alterExp.setCommentText(tk.image); 
+                    alterExp.withColumnName(sk3).withCommentText(tk.image); 
                 }
             )
           )
@@ -4707,8 +4654,7 @@ AlterExpression AlterExpression():
         (
           (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>)
           alterExpressionColumnDataType = AlterExpressionColumnDataType() {
-              alterExp.setColOldName(tk.image);
-              alterExp.addColDataType(alterExpressionColumnDataType);
+              alterExp.withColumnOldName(tk.image).addColDataType(alterExpressionColumnDataType);
           }
         )
       )
@@ -4730,9 +4676,7 @@ AlterExpression AlterExpression():
                (  tk=<K_INDEX>
                   (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>)
                        {
-                           index = new Index();
-                           index.setType(tk.image);
-                           index.setName(tk2.image);
+                           index = new Index().withType(tk.image).withName(tk2.image);
                            alterExp.setIndex(index);
                        }
                )

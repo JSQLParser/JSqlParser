@@ -39,4 +39,9 @@ public class AlterSequence implements Statement {
         sql = "ALTER SEQUENCE " + sequence;
         return sql;
     }
+
+    public AlterSequence withSequence(Sequence sequence) {
+        this.setSequence(sequence);
+        return this;
+    }
 }

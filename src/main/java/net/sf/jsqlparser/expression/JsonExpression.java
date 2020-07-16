@@ -64,4 +64,9 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
         }
         return b.toString();
     }
+
+    public JsonExpression withColumn(Column column) {
+        this.setColumn(column);
+        return this;
+    }
 }

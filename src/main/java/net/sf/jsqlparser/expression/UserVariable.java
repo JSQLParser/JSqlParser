@@ -19,6 +19,14 @@ public class UserVariable extends ASTNodeAccessImpl implements Expression {
     private String name;
     private boolean doubleAdd = false;
 
+    public UserVariable() {
+        // empty constructor
+    }
+
+    public UserVariable(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }
@@ -43,5 +51,15 @@ public class UserVariable extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         return "@" + (doubleAdd ? "@" : "") + name;
+    }
+
+    public UserVariable withName(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public UserVariable withDoubleAdd(boolean doubleAdd) {
+        this.setDoubleAdd(doubleAdd);
+        return this;
     }
 }

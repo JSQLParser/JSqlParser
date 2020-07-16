@@ -19,7 +19,7 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
 
     private Expression leftExpression;
     private Expression rightExpression;
-//    private boolean not = false;
+    // private boolean not = false;
 
     public BinaryExpression() {
     }
@@ -32,31 +32,48 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
         return rightExpression;
     }
 
+    public BinaryExpression withLeftExpression(Expression expression) {
+        setLeftExpression(expression);
+        return this;
+    }
+
     public void setLeftExpression(Expression expression) {
         leftExpression = expression;
+    }
+
+    public BinaryExpression withRightExpression(Expression expression) {
+        setRightExpression(expression);
+        return this;
     }
 
     public void setRightExpression(Expression expression) {
         rightExpression = expression;
     }
 
-//    public void setNot() {
-//        not = true;
-//    }
-//    
-//    public void removeNot() {
-//        not = false;
-//    }
-// 
-//    public boolean isNot() {
-//        return not;
-//    }
+    // public void setNot() {
+    // not = true;
+    // }
+    //
+    // public void removeNot() {
+    // not = false;
+    // }
+    //
+    // public boolean isNot() {
+    // return not;
+    // }
     @Override
     public String toString() {
-        return //(not ? "NOT " : "") + 
+        return // (not ? "NOT " : "") +
                 getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
     }
 
     public abstract String getStringExpression();
 
+    public <E extends Expression> E getLeftExpression(Class<E> type) {
+        return type.cast(getLeftExpression());
+    }
+
+    public <E extends Expression> E getRightExpression(Class<E> type) {
+        return type.cast(getRightExpression());
+    }
 }

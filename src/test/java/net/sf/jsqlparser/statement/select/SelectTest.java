@@ -9,30 +9,57 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import java.io.*;
 import java.nio.charset.Charset;
-import java.util.*;
-import net.sf.jsqlparser.*;
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.expression.operators.arithmetic.*;
-import net.sf.jsqlparser.expression.operators.relational.*;
-import net.sf.jsqlparser.parser.*;
-import net.sf.jsqlparser.schema.*;
-import net.sf.jsqlparser.statement.*;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import org.apache.commons.io.IOUtils;
 import static org.assertj.core.api.Assertions.assertThat;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.DoubleValue;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.IntervalExpression;
+import net.sf.jsqlparser.expression.JdbcNamedParameter;
+import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.NotExpression;
+import net.sf.jsqlparser.expression.SignedExpression;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.TimeValue;
+import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
+import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
+import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Database;
+import net.sf.jsqlparser.schema.Server;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.StatementVisitorAdapter;
+import net.sf.jsqlparser.statement.Statements;
 
 public class SelectTest {
 
@@ -43,7 +70,7 @@ public class SelectTest {
 
     @Before
     public void setup() {
-//        System.out.println(name.getMethodName());
+        //        System.out.println(name.getMethodName());
     }
 
     // From statement multipart
@@ -52,6 +79,13 @@ public class SelectTest {
         final String statement = "SELECT columnName FROM [server-name\\server-instance].databaseName.schemaName.tableName";
         assertSqlCanBeParsedAndDeparsed(statement, false,
                 parser -> parser.withSquareBracketQuotation(true));
+        assertDeparse(new Select().withSelectBody(new PlainSelect()
+                .addSelectItems(new SelectExpressionItem(new Column().withColumnName("columnName")))
+                .withFromItem(new Table()
+                        .withDatabase(new Database("databaseName").withServer(
+                                new Server("[server-name\\server-instance]")))
+                        .withSchemaName("schemaName").withName("tableName"))),
+                statement);
     }
 
     @Test
@@ -60,6 +94,13 @@ public class SelectTest {
 
         assertSqlCanBeParsedAndDeparsed(statement, false,
                 parser -> parser.withSquareBracketQuotation(true));
+        assertDeparse(new Select().withSelectBody(new PlainSelect()
+                .addSelectItems(new SelectExpressionItem(new Column().withColumnName("columnName")))
+                .withFromItem(new Table()
+                        .withDatabase(
+                                new Database("databaseName").withServer(new Server("[server-name\\server-instance]")))
+                        .withName("tableName"))),
+                statement);
     }
 
     @Test
@@ -214,6 +255,12 @@ public class SelectTest {
 
         assertStatementCanBeDeparsedAs(select, statement);
         assertTrue(((PlainSelect) select.getSelectBody()).getSelectItems().get(0) instanceof AllTableColumns);
+
+        Table t = new Table("tableName");
+        assertDeparse(
+                new Select().withSelectBody(
+                        new PlainSelect().addSelectItems(new AllTableColumns().withTable(t)).withFromItem(t)),
+                statement);
     }
 
     @Test
@@ -241,9 +288,9 @@ public class SelectTest {
         assertTrue(sub.getLeftExpression() instanceof LongValue);
         assertTrue(sub.getRightExpression() instanceof SignedExpression);
 
-        SignedExpression sexpr = (SignedExpression) sub.getRightExpression();
+        SignedExpression sexpr = sub.getRightExpression(SignedExpression.class);
         assertEquals('-', sexpr.getSign());
-        assertEquals("1", sexpr.getExpression().toString());
+        assertEquals("1", sexpr.getExpression(LongValue.class).toString());
     }
 
     @Test
@@ -615,14 +662,12 @@ public class SelectTest {
 
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(3, ((LongValue) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).
-                getValue());
+        assertEquals(3, select.getSelectBody(PlainSelect.class).getTop().getExpression(LongValue.class).getValue());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "select top 5 foo from bar";
         select = (Select) parserManager.parse(new StringReader(statement));
-        assertEquals(5, ((LongValue) ((PlainSelect) select.getSelectBody()).getTop().getExpression()).
-                getValue());
+        assertEquals(5, select.getSelectBody(PlainSelect.class).getTop().getExpression(LongValue.class).getValue());
     }
 
     @Test
@@ -783,7 +828,7 @@ public class SelectTest {
         assertNotNull(skip.getJdbcParameter());
         assertNotNull(skip.getJdbcParameter().getIndex());
         assertTrue(skip.getJdbcParameter().isUseFixedIndex());
-        assertEquals((int) 1, (int) skip.getJdbcParameter().getIndex());
+        assertEquals(1, (int) skip.getJdbcParameter().getIndex());
         assertNull(skip.getVariable());
         final First first = selectBody.getFirst();
         assertNull(first.getJdbcParameter());
@@ -895,7 +940,7 @@ public class SelectTest {
         assertEquals("myid",
                 ((Column) ((SelectExpressionItem) plainSelect.getDistinct().getOnSelectItems().
                         get(0)).getExpression())
-                        .getColumnName());
+                .getColumnName());
         assertEquals("mycol",
                 ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).
                         getExpression()).getColumnName());
@@ -910,7 +955,7 @@ public class SelectTest {
         assertEquals("myid",
                 ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).
                         getExpression())
-                        .getColumnName());
+                .getColumnName());
         assertEquals("mycol",
                 ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).
                         getExpression()).getColumnName());
@@ -955,7 +1000,7 @@ public class SelectTest {
         assertEquals("tab1.id",
                 ((Column) ((EqualsTo) plainSelect.getJoins().get(0).getOnExpression()).
                         getLeftExpression())
-                        .getFullyQualifiedName());
+                .getFullyQualifiedName());
         assertTrue(plainSelect.getJoins().get(0).isOuter());
         assertStatementCanBeDeparsedAs(select, statement);
 
@@ -1192,12 +1237,12 @@ public class SelectTest {
         PlainSelect plainSelect = (PlainSelect) ((Select) parsed).getSelectBody();
         assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), where);
     }
-    
+
     @Test
     public void testNotExists() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed( "SELECT * FROM tab1 WHERE NOT EXISTS (SELECT * FROM tab2)");
     }
-    
+
     @Test
     public void testNotExistsIssue() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed( "SELECT * FROM t001 t WHERE NOT EXISTS (SELECT * FROM t002 t1 WHERE t.c1 = t1.c1 AND t.c2 = t1.c2 AND ('241' IN (t1.c3 || t1.c4)))");
@@ -1213,7 +1258,7 @@ public class SelectTest {
         assertEquals(2, plainSelect.getOrderByElements().size());
         assertEquals("tab1.a",
                 ((Column) plainSelect.getOrderByElements().get(0).getExpression())
-                        .getFullyQualifiedName());
+                .getFullyQualifiedName());
         assertEquals("b",
                 ((Column) plainSelect.getOrderByElements().get(1).getExpression()).getColumnName());
         assertTrue(plainSelect.getOrderByElements().get(1).isAsc());
@@ -1251,7 +1296,7 @@ public class SelectTest {
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         assertEquals("2004-04-30 04:05:34.56",
                 ((TimestampValue) ((GreaterThan) plainSelect.getWhere()).getRightExpression()).
-                        getValue().toString());
+                getValue().toString());
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -1332,7 +1377,7 @@ public class SelectTest {
     public void testIssue862CaseWhenConcat() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT c1, CASE c1 || c2 WHEN '091' THEN '2' ELSE '1' END AS c11 FROM T2");
     }
-    
+
     @Test
     public void testExpressionsInCaseBeforeWhen() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a FROM tbl1 LEFT JOIN tbl2 ON CASE tbl1.col1 WHEN tbl1.col1 = 1 THEN tbl1.col2 = tbl2.col2 ELSE tbl1.col3 = tbl2.col3 END");
@@ -1387,7 +1432,7 @@ public class SelectTest {
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).
                 getRightExpression()).getValue());
-        assertEquals(true, (boolean) ((LikeExpression) plainSelect.getWhere()).isNot());
+        assertEquals(true, ((LikeExpression) plainSelect.getWhere()).isNot());
     }
 
     @Test
@@ -1399,7 +1444,7 @@ public class SelectTest {
         NotExpression notExpr = (NotExpression) plainSelect.getWhere();
         assertEquals("test", ((StringValue) ((LikeExpression) notExpr.getExpression()).
                 getRightExpression()).getValue());
-        assertEquals(false, (boolean) ((LikeExpression) notExpr.getExpression()).isNot());
+        assertEquals(false, ((LikeExpression) notExpr.getExpression()).isNot());
     }
 
     @Test
@@ -1911,12 +1956,12 @@ public class SelectTest {
     public void testAnalyticFunctionFilterIssue866() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) FILTER (WHERE name = 'Raj') OVER (PARTITION BY name ) FROM table");
     }
-    
+
     @Test
     public void testAnalyticPartitionBooleanExpressionIssue864() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) OVER (PARTITION BY (event = 'admit' OR event = 'family visit') ORDER BY day ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) family_visits FROM patients");
     }
-    
+
     @Test
     public void testAnalyticPartitionBooleanExpressionIssue864_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) OVER (PARTITION BY (event = 'admit' OR event = 'family visit') ) family_visits FROM patients");
@@ -2135,11 +2180,11 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
-//    @Test
-//    public void testExtractFromIssue673() throws JSQLParserException {
-//        String stmt = "select EXTRACT(DAY FROM (SYSDATE - to_date('20180101', 'YYYYMMDD' ) ) DAY TO SECOND) from dual";
-//        assertSqlCanBeParsedAndDeparsed(stmt);
-//    }
+    //    @Test
+    //    public void testExtractFromIssue673() throws JSQLParserException {
+    //        String stmt = "select EXTRACT(DAY FROM (SYSDATE - to_date('20180101', 'YYYYMMDD' ) ) DAY TO SECOND) from dual";
+    //        assertSqlCanBeParsedAndDeparsed(stmt);
+    //    }
     @Test
     public void testProblemFunction() throws JSQLParserException {
         String stmt = "SELECT test() FROM testtable";
@@ -2628,16 +2673,16 @@ public class SelectTest {
 
         //The following staments can be parsed but not deparsed
         for (String statement : new String[]{
-            "SELECT doc->'site_name' FROM websites WHERE doc @> '{\"tags\":[{\"term\":\"paris\"}, {\"term\":\"food\"}]}'",
-            "SELECT * FROM sales where sale ->'items' @> '[{\"count\":0}]'",
-            "SELECT * FROM sales where sale ->'items' ? 'name'",
-            "SELECT * FROM sales where sale ->'items' -# 'name'"
+                "SELECT doc->'site_name' FROM websites WHERE doc @> '{\"tags\":[{\"term\":\"paris\"}, {\"term\":\"food\"}]}'",
+                "SELECT * FROM sales where sale ->'items' @> '[{\"count\":0}]'",
+                "SELECT * FROM sales where sale ->'items' ? 'name'",
+                "SELECT * FROM sales where sale ->'items' -# 'name'"
         }) {
             Select select = (Select) parserManager.parse(new StringReader(statement));
             assertStatementCanBeDeparsedAs(select, statement, true);
         }
     }
-    
+
     @Test
     public void testJsonExpressionWithIntegerParameterIssue909() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select uc.\"id\", u.nickname, u.avatar, b.title, uc.images, uc.created_at as createdAt from library.ugc_comment uc INNER JOIN library.book b on (uc.books_id ->> 0)::INTEGER = b.\"id\" INNER JOIN library.users u ON uc.user_id = u.user_id where uc.id = 1", true);
@@ -2848,7 +2893,7 @@ public class SelectTest {
                 + " b.application_id\n"
                 + "FROM  jl_br_journals j,\n"
                 + "      po_vendors p", true, "ORDERED INDEX (b, jl_br_balances_n1) USE_NL (j b) \n"
-                + "           USE_NL (glcc glf) USE_MERGE (gp gsb)");
+                        + "           USE_NL (glcc glf) USE_MERGE (gp gsb)");
         assertOracleHintExists("SELECT /*+ROWID(emp)*/ /*+ THIS IS NOT HINT! ***/ * \n"
                 + "FROM emp \n"
                 + "WHERE rowid > 'AAAAtkAABAAAFNTAAA' AND empno = 155", false, "ROWID(emp)");
@@ -3031,15 +3076,15 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST(contact_id AS SIGNED) FROM contact WHERE contact_id = 20");
     }
 
-//    @Test
-//    public void testWhereIssue240_notBoolean() {
-//        try {
-//            CCJSqlParserUtil.parse("SELECT count(*) FROM mytable WHERE 5");
-//            fail("should not be parsed");
-//        } catch (JSQLParserException ex) {
-//            //expected to fail
-//        }
-//    }
+    //    @Test
+    //    public void testWhereIssue240_notBoolean() {
+    //        try {
+    //            CCJSqlParserUtil.parse("SELECT count(*) FROM mytable WHERE 5");
+    //            fail("should not be parsed");
+    //        } catch (JSQLParserException ex) {
+    //            //expected to fail
+    //        }
+    //    }
     @Test
     public void testWhereIssue240_true() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE true");
@@ -3137,10 +3182,10 @@ public class SelectTest {
     public void testProblemSqlIssue330_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST('90 days' AS interval)");
     }
-//    won't fix due to lookahead impact on parser    
-//    @Test public void testKeywordOrderAsColumnnameIssue333() throws JSQLParserException {
-//        assertSqlCanBeParsedAndDeparsed("SELECT choice.response_choice_id AS uuid, choice.digit AS digit, choice.text_response AS textResponse, choice.voice_prompt AS voicePrompt, choice.action AS action, choice.contribution AS contribution, choice.order_num AS order, choice.description AS description, choice.is_join_conference AS joinConference, choice.voice_prompt_language_code AS voicePromptLanguageCode, choice.text_response_language_code AS textResponseLanguageCode, choice.description_language_code AS descriptionLanguageCode, choice.rec_phrase AS recordingPhrase FROM response_choices choice WHERE choice.presentation_id = ? ORDER BY choice.order_num", true);
-//    }
+    //    won't fix due to lookahead impact on parser
+    //    @Test public void testKeywordOrderAsColumnnameIssue333() throws JSQLParserException {
+    //        assertSqlCanBeParsedAndDeparsed("SELECT choice.response_choice_id AS uuid, choice.digit AS digit, choice.text_response AS textResponse, choice.voice_prompt AS voicePrompt, choice.action AS action, choice.contribution AS contribution, choice.order_num AS order, choice.description AS description, choice.is_join_conference AS joinConference, choice.voice_prompt_language_code AS voicePromptLanguageCode, choice.text_response_language_code AS textResponseLanguageCode, choice.description_language_code AS descriptionLanguageCode, choice.rec_phrase AS recordingPhrase FROM response_choices choice WHERE choice.presentation_id = ? ORDER BY choice.order_num", true);
+    //    }
 
     @Test
     public void testProblemKeywordCommitIssue341() throws JSQLParserException {
@@ -3172,14 +3217,14 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("select * from (pg_catalog.pg_class c inner join pg_catalog.pg_namespace n on n.oid = c.relnamespace and c.relname = 'business' and n.nspname = 'public') inner join pg_catalog.pg_attribute a on (not a.attisdropped) and a.attnum > 0 and a.attrelid = c.oid", true);
     }
 
-//    @Test public void testProblemIssue377() throws Exception {
-//        try {
-//            assertSqlCanBeParsedAndDeparsed("select 'yelp'::name as pktable_cat, n2.nspname as pktable_schem, c2.relname as pktable_name, a2.attname as pkcolumn_name, 'yelp'::name as fktable_cat, n1.nspname as fktable_schem, c1.relname as fktable_name, a1.attname as fkcolumn_name, i::int2 as key_seq, case ref.confupdtype when 'c' then 0::int2 when 'n' then 2::int2 when 'd' then 4::int2 when 'r' then 1::int2 else 3::int2 end as update_rule, case ref.confdeltype when 'c' then 0::int2 when 'n' then 2::int2 when 'd' then 4::int2 when 'r' then 1::int2 else 3::int2 end as delete_rule, ref.conname as fk_name, cn.conname as pk_name, case when ref.condeferrable then case when ref.condeferred then 5::int2 else 6::int2 end else 7::int2 end as deferrablity from ((((((( (select cn.oid, conrelid, conkey, confrelid, confkey, generate_series(array_lower(conkey, 1), array_upper(conkey, 1)) as i, confupdtype, confdeltype, conname, condeferrable, condeferred from pg_catalog.pg_constraint cn, pg_catalog.pg_class c, pg_catalog.pg_namespace n where contype = 'f' and conrelid = c.oid and relname = 'business' and n.oid = c.relnamespace and n.nspname = 'public' ) ref inner join pg_catalog.pg_class c1 on c1.oid = ref.conrelid) inner join pg_catalog.pg_namespace n1 on n1.oid = c1.relnamespace) inner join pg_catalog.pg_attribute a1 on a1.attrelid = c1.oid and a1.attnum = conkey[i]) inner join pg_catalog.pg_class c2 on c2.oid = ref.confrelid) inner join pg_catalog.pg_namespace n2 on n2.oid = c2.relnamespace) inner join pg_catalog.pg_attribute a2 on a2.attrelid = c2.oid and a2.attnum = confkey[i]) left outer join pg_catalog.pg_constraint cn on cn.conrelid = ref.confrelid and cn.contype = 'p') order by ref.oid, ref.i", true);
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//            throw ex;
-//        }
-//    }
+    //    @Test public void testProblemIssue377() throws Exception {
+    //        try {
+    //            assertSqlCanBeParsedAndDeparsed("select 'yelp'::name as pktable_cat, n2.nspname as pktable_schem, c2.relname as pktable_name, a2.attname as pkcolumn_name, 'yelp'::name as fktable_cat, n1.nspname as fktable_schem, c1.relname as fktable_name, a1.attname as fkcolumn_name, i::int2 as key_seq, case ref.confupdtype when 'c' then 0::int2 when 'n' then 2::int2 when 'd' then 4::int2 when 'r' then 1::int2 else 3::int2 end as update_rule, case ref.confdeltype when 'c' then 0::int2 when 'n' then 2::int2 when 'd' then 4::int2 when 'r' then 1::int2 else 3::int2 end as delete_rule, ref.conname as fk_name, cn.conname as pk_name, case when ref.condeferrable then case when ref.condeferred then 5::int2 else 6::int2 end else 7::int2 end as deferrablity from ((((((( (select cn.oid, conrelid, conkey, confrelid, confkey, generate_series(array_lower(conkey, 1), array_upper(conkey, 1)) as i, confupdtype, confdeltype, conname, condeferrable, condeferred from pg_catalog.pg_constraint cn, pg_catalog.pg_class c, pg_catalog.pg_namespace n where contype = 'f' and conrelid = c.oid and relname = 'business' and n.oid = c.relnamespace and n.nspname = 'public' ) ref inner join pg_catalog.pg_class c1 on c1.oid = ref.conrelid) inner join pg_catalog.pg_namespace n1 on n1.oid = c1.relnamespace) inner join pg_catalog.pg_attribute a1 on a1.attrelid = c1.oid and a1.attnum = conkey[i]) inner join pg_catalog.pg_class c2 on c2.oid = ref.confrelid) inner join pg_catalog.pg_namespace n2 on n2.oid = c2.relnamespace) inner join pg_catalog.pg_attribute a2 on a2.attrelid = c2.oid and a2.attnum = confkey[i]) left outer join pg_catalog.pg_constraint cn on cn.conrelid = ref.confrelid and cn.contype = 'p') order by ref.oid, ref.i", true);
+    //        } catch (Exception ex) {
+    //            ex.printStackTrace();
+    //            throw ex;
+    //        }
+    //    }
     @Test
     public void testProblemInNotInProblemIssue379() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT rank FROM DBObjects WHERE rank NOT IN (0, 1)");
@@ -3230,13 +3275,13 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable FOR UPDATE NOWAIT");
     }
 
-//    @Test public void testSubSelectFailsIssue394() throws JSQLParserException {
-//        assertSqlCanBeParsedAndDeparsed("select aa.* , t.* from accenter.all aa, (select a.* from pacioli.emc_plan a) t");
-//    }
-//    
-//    @Test public void testSubSelectFailsIssue394_2() throws JSQLParserException {
-//        assertSqlCanBeParsedAndDeparsed("select * from all");
-//    }
+    //    @Test public void testSubSelectFailsIssue394() throws JSQLParserException {
+    //        assertSqlCanBeParsedAndDeparsed("select aa.* , t.* from accenter.all aa, (select a.* from pacioli.emc_plan a) t");
+    //    }
+    //
+    //    @Test public void testSubSelectFailsIssue394_2() throws JSQLParserException {
+    //        assertSqlCanBeParsedAndDeparsed("select * from all");
+    //    }
     @Test
     public void testMysqlIndexHints() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 USE INDEX (index1)");
@@ -3257,17 +3302,17 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 IGNORE INDEX (index1,index2)");
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 FORCE INDEX (index1,index2)");
     }
-    
+
     @Test
     public void testSqlServerHints() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM TB_Sys_Pedido WITH (NOLOCK) WHERE ID_Pedido = :ID_Pedido");
     }
-    
+
     @Test
     public void testSqlServerHintsWithIndexIssue915() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM tableName1 WITH (INDEX (idx1), NOLOCK)");
     }
-    
+
     @Test
     public void testSqlServerHintsWithIndexIssue915_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM tableName1 AS t1 WITH (INDEX (idx1)) JOIN tableName2 AS t2 WITH (INDEX (idx2)) ON t1.id = t2.id");
@@ -3433,9 +3478,9 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM a JOIN (b JOIN c ON b.id = c.id) ON a.id = c.id");
     }
 
-//    @Test public void testJoinerExpressionIssue596_2() throws JSQLParserException {
-//        assertSqlCanBeParsedAndDeparsed("SELECT * FROM a JOIN b JOIN c ON b.id = c.id ON a.id = c.id");
-//    }
+    //    @Test public void testJoinerExpressionIssue596_2() throws JSQLParserException {
+    //        assertSqlCanBeParsedAndDeparsed("SELECT * FROM a JOIN b JOIN c ON b.id = c.id ON a.id = c.id");
+    //    }
     @Test
     public void testProblemSqlIssue603() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN MAX(CAST(a.jobNum AS INTEGER)) IS NULL THEN '1000' ELSE MAX(CAST(a.jobNum AS INTEGER)) + 1 END FROM user_employee a");
@@ -3518,14 +3563,14 @@ public class SelectTest {
     public void testMultiPartNamesIssue608() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @@sessions.tx_read_only");
     }
-    
+
     @Test
     public void testMultiPartNamesForFunctionsIssue944() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT pg_catalog.now()");
     }
 
-//    Teradata allows SEL to be used in place of SELECT
-//    Deparse to the non-contracted form
+    //    Teradata allows SEL to be used in place of SELECT
+    //    Deparse to the non-contracted form
     @Test
     public void testSelContraction() throws JSQLParserException {
         final String statementSrc = "SEL name, age FROM person";
@@ -3634,10 +3679,10 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT '|' + person_name FROM person JOIN person_group ON person.person_id = person_group.person_id WHERE person_group.group_id = 1 FOR XML PATH('')");
     }
 
-//    @Test
-//    public void testForXmlPath2() throws JSQLParserException {
-//        assertSqlCanBeParsedAndDeparsed("SELECT ( STUFF( (SELECT '|' + person_name FROM person JOIN person_group ON person.person_id = person_group.person_id WHERE person_group.group_id = 1 FOR XML PATH(''), TYPE).value('.', 'varchar(max)'),1,1,'')) AS person_name");
-//    }
+    //    @Test
+    //    public void testForXmlPath2() throws JSQLParserException {
+    //        assertSqlCanBeParsedAndDeparsed("SELECT ( STUFF( (SELECT '|' + person_name FROM person JOIN person_group ON person.person_id = person_group.person_id WHERE person_group.group_id = 1 FOR XML PATH(''), TYPE).value('.', 'varchar(max)'),1,1,'')) AS person_name");
+    //    }
     @Test
     public void testChainedunctions() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT func('').func2('') AS foo FROM some_tables");
@@ -3648,10 +3693,10 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT u.name COLLATE Latin1_General_CI_AS AS User FROM users u");
     }
 
-//    @Test
-//    public void testIntervalExpression() throws JSQLParserException {
-//        assertSqlCanBeParsedAndDeparsed("SELECT count(emails.id) FROM emails WHERE (emails.date_entered + 30 DAYS) > CURRENT_DATE");
-//    }
+    //    @Test
+    //    public void testIntervalExpression() throws JSQLParserException {
+    //        assertSqlCanBeParsedAndDeparsed("SELECT count(emails.id) FROM emails WHERE (emails.date_entered + 30 DAYS) > CURRENT_DATE");
+    //    }
     @Test
     public void testNotVariant() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ! (1 + 1)");
@@ -3812,7 +3857,7 @@ public class SelectTest {
                         @Override
                         public void visit(PlainSelect plainSelect) {
                             SelectExpressionItem typedExpression
-                                    = (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+                            = (SelectExpressionItem) plainSelect.getSelectItems().get(0);
                             assertNotNull(typedExpression);
                             assertNull(typedExpression.getAlias());
                             StringValue value = (StringValue) typedExpression.getExpression();
@@ -4053,7 +4098,7 @@ public class SelectTest {
                 + "            else calc1.student_full_name end as summary\n"
                 + ") calc2", true);
     }
-    
+
     @Test
     public void testOuterApplyIssue930() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable D OUTER APPLY (SELECT * FROM mytable2 E WHERE E.ColID = D.ColID) A");
@@ -4065,13 +4110,13 @@ public class SelectTest {
         SetOperationList unionQueries = (SetOperationList) unionQuery.getSelectBody();
 
         assertThat(unionQueries.getSelects())
-                .extracting(select -> (PlainSelect) select).allSatisfy(ps -> assertNull(ps.getOrderByElements()));
+        .extracting(select -> (PlainSelect) select).allSatisfy(ps -> assertNull(ps.getOrderByElements()));
 
         assertThat(unionQueries.getOrderByElements())
-                .isNotNull()
-                .hasSize(1)
-                .extracting(item -> item.toString())
-                .contains("col");
+        .isNotNull()
+        .hasSize(1)
+        .extracting(item -> item.toString())
+        .contains("col");
     }
 
     @Test
@@ -4087,80 +4132,89 @@ public class SelectTest {
                 + "ELSE 1 = 1\n"
                 + "END\n", true);
     }
-    
+
     @Test
     public void testOrderKeywordIssue932() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT order FROM tmp3");
         assertSqlCanBeParsedAndDeparsed("SELECT tmp3.order FROM tmp3");
     }
-    
+
     @Test
     public void testOrderKeywordIssue932_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT group FROM tmp3");
         assertSqlCanBeParsedAndDeparsed("SELECT tmp3.group FROM tmp3");
     }
-    
+
     @Test
     public void testTableFunctionInExprIssue923() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE func(a) IN func(b)");
     }
-    
-//    @Test
-//    public void testTableFunctionInExprIssue923_2() throws JSQLParserException, IOException {
-//        String stmt = IOUtils.toString(
-//                SelectTest.class.getResourceAsStream("large-sql-issue-923.txt"), "UTF-8")
-//                .replace("@Prompt", "MyFunc");
-//        assertSqlCanBeParsedAndDeparsed(stmt, true);
-//    }
-    
+
+    //    @Test
+    //    public void testTableFunctionInExprIssue923_2() throws JSQLParserException, IOException {
+    //        String stmt = IOUtils.toString(
+    //                SelectTest.class.getResourceAsStream("large-sql-issue-923.txt"), "UTF-8")
+    //                .replace("@Prompt", "MyFunc");
+    //        assertSqlCanBeParsedAndDeparsed(stmt, true);
+    //    }
+
     @Test
     public void testTableFunctionInExprIssue923_3() throws JSQLParserException, IOException {
         String stmt = IOUtils.toString(
                 SelectTest.class.getResourceAsStream("large-sql-issue-923-2.txt"), "UTF-8");
         assertSqlCanBeParsedAndDeparsed(stmt, true);
     }
-    
+
     @Test
     public void testTableFunctionInExprIssue923_4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '1' THEN COALESCE(CLAIM_STATUS2,CLAIM_STATUS1) ELSE NULL END) AS DUPE_1_KINAL_CLAIM_STATUS", true);
     }
-    
+
     @Test
     public void testTableFunctionInExprIssue923_5() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '1' THEN COALESCE(CLAIM_STATUS2,CLAIM_STATUS1) ELSE NULL END", true);
     }
-    
+
     @Test
     public void testTableFunctionInExprIssue923_6() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE func(a) IN '1'");
     }
-    
+
     @Test
     public void testKeyWordCreateIssue941() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT b.create FROM table b WHERE b.id = 1");
     }
-    
-    
+
+
     @Test
     public void testKeyWordCreateIssue941_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select f.select from `from` f", true);
     }
-    
+
     @Test
     public void testCurrentIssue940() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT date(current) AS test_date FROM systables WHERE tabid = 1");
     }
-    
+
     @Test
     public void testKeyWordView() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ma.m_a_id, ma.anounsment, ma.max_view, ma.end_date, ma.view FROM member_anounsment as ma WHERE ( ( (ma.end_date > now() ) AND (ma.max_view >= ma.view) ) AND ( (ma.member_id='xxx') ) )", true);
     }
-    
+
     @Test
     public void testPreserveAndOperator() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE 1 = 2 && 2 = 3");
+        String statement = "SELECT * FROM mytable WHERE 1 = 2 && 2 = 3";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(
+                new Select().withSelectBody(new PlainSelect()
+                        .addSelectItems(Collections.singleton(new AllColumns()))
+                        .withFromItem(new Table("mytable")).withWhere(
+                                new AndExpression().withUseOperator(true)
+                                .withLeftExpression(new EqualsTo(new LongValue(1), new LongValue(2)))
+                                .withRightExpression(new EqualsTo(new LongValue(2), new LongValue(3))))),
+                statement);
     }
-    
+
     @Test
     public void testPreserveAndOperator_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (field_1 && ?)");

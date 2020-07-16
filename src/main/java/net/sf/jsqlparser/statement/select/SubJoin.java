@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
 
 public class SubJoin implements FromItem {
@@ -27,6 +31,11 @@ public class SubJoin implements FromItem {
 
     public FromItem getLeft() {
         return left;
+    }
+
+    public SubJoin left(FromItem l) {
+        setLeft(l);
+        return this;
     }
 
     public void setLeft(FromItem l) {
@@ -83,8 +92,44 @@ public class SubJoin implements FromItem {
             }
         }
 
-        sb.append(")").append((alias != null) ? (" " + alias.toString()) : "").append((pivot != null) ? " " + pivot : "")
-                .append((unpivot != null) ? " " + unpivot : "");
+        sb.append(")").append((alias != null) ? (" " + alias.toString()) : "")
+                .append((pivot != null) ? " " + pivot : "").append((unpivot != null) ? " " + unpivot : "");
         return sb.toString();
+    }
+
+    @Override
+    public SubJoin withAlias(Alias alias) {
+        return (SubJoin) FromItem.super.withAlias(alias);
+    }
+
+    @Override
+    public SubJoin withPivot(Pivot pivot) {
+        return (SubJoin) FromItem.super.withPivot(pivot);
+    }
+
+    @Override
+    public SubJoin withUnPivot(UnPivot unpivot) {
+        return (SubJoin) FromItem.super.withUnPivot(unpivot);
+    }
+
+    public SubJoin withJoinList(List<Join> joinList) {
+        this.setJoinList(joinList);
+        return this;
+    }
+
+    public SubJoin addJoinList(Join... joinList) {
+        List<Join> collection = Optional.ofNullable(getJoinList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, joinList);
+        return this.withJoinList(collection);
+    }
+
+    public SubJoin addJoinList(Collection<? extends Join> joinList) {
+        List<Join> collection = Optional.ofNullable(getJoinList()).orElseGet(ArrayList::new);
+        collection.addAll(joinList);
+        return this.withJoinList(collection);
+    }
+
+    public <E extends FromItem> E getLeft(Class<E> type) {
+        return type.cast(getLeft());
     }
 }

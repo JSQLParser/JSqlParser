@@ -13,6 +13,10 @@ public class ShowStatement implements Statement {
 
     private String name;
 
+    public ShowStatement() {
+        // empty constructor
+    }
+
     public ShowStatement(String name) {
         this.name = name;
     }
@@ -33,5 +37,10 @@ public class ShowStatement implements Statement {
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
+    }
+
+    public ShowStatement withName(String name) {
+        this.setName(name);
+        return this;
     }
 }

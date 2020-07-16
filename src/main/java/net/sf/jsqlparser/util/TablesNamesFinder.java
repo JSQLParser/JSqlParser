@@ -93,7 +93,6 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
-import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -531,8 +530,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      * @param allowColumnProcessing
      */
     protected void init(boolean allowColumnProcessing) {
-        otherItemNames = new ArrayList<String>();
-        tables = new ArrayList<String>();
+        otherItemNames = new ArrayList<>();
+        tables = new ArrayList<>();
         this.allowColumnProcessing = allowColumnProcessing;
     }
 
@@ -888,11 +887,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         throw new UnsupportedOperationException("Finding tables from CreateFunctionalStatement is not supported");
     }
 
-    @Override
-    public void visit(ShowTablesStatement showTables) {
-        throw new UnsupportedOperationException("Finding tables from ShowTablesStatement is not supported");
-    }
-    
     @Override
     public void visit(VariableAssignment var) {
         var.getVariable().accept(this);

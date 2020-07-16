@@ -11,7 +11,10 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
@@ -121,14 +124,14 @@ public class AlterExpression {
 
     public void addColDataType(ColumnDataType columnDataType) {
         if (colDataTypeList == null) {
-            colDataTypeList = new ArrayList<ColumnDataType>();
+            colDataTypeList = new ArrayList<>();
         }
         colDataTypeList.add(columnDataType);
     }
 
     public void addColDropNotNull(ColumnDropNotNull columnDropNotNull) {
         if (columnDropNotNullList == null) {
-            columnDropNotNullList = new ArrayList<ColumnDropNotNull>();
+            columnDropNotNullList = new ArrayList<>();
         }
         columnDropNotNullList.add(columnDropNotNull);
     }
@@ -149,11 +152,21 @@ public class AlterExpression {
         this.columnName = columnName;
     }
 
+    @Deprecated
     public String getColOldName() {
+        return getColumnOldName();
+    }
+
+    @Deprecated
+    public void setColOldName(String columnOldName) {
+        setColumnOldName(columnOldName);
+    }
+
+    public String getColumnOldName() {
         return columnOldName;
     }
 
-    public void setColOldName(String columnOldName) {
+    public void setColumnOldName(String columnOldName) {
         this.columnOldName = columnOldName;
     }
 
@@ -219,7 +232,7 @@ public class AlterExpression {
 
     public void addParameters(String... params) {
         if (parameters == null) {
-            parameters = new ArrayList<String>();
+            parameters = new ArrayList<>();
         }
         parameters.addAll(Arrays.asList(params));
     }
@@ -313,7 +326,7 @@ public class AlterExpression {
             b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
             b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).
-                    append(") REFERENCES ").append(fkSourceTable).append(" (").append(
+            append(") REFERENCES ").append(fkSourceTable).append(" (").append(
                     PlainSelect.getStringList(fkSourceColumns)).append(")");
             if (isOnDeleteCascade()) {
                 b.append(" ON DELETE CASCADE");
@@ -338,9 +351,174 @@ public class AlterExpression {
         return b.toString();
     }
 
-    public final static class ColumnDataType extends ColumnDefinition {
+    public AlterExpression withOperation(AlterOperation operation) {
+        this.setOperation(operation);
+        return this;
+    }
+
+    public AlterExpression withOptionalSpecifier(String optionalSpecifier) {
+        this.setOptionalSpecifier(optionalSpecifier);
+        return this;
+    }
+
+    public AlterExpression withColumnName(String columnName) {
+        this.setColumnName(columnName);
+        return this;
+    }
+
+    public AlterExpression withPkColumns(List<String> pkColumns) {
+        this.setPkColumns(pkColumns);
+        return this;
+    }
+
+    public AlterExpression withUkColumns(List<String> ukColumns) {
+        this.setUkColumns(ukColumns);
+        return this;
+    }
+
+    public AlterExpression withUkName(String ukName) {
+        this.setUkName(ukName);
+        return this;
+    }
+
+    public AlterExpression withIndex(Index index) {
+        this.setIndex(index);
+        return this;
+    }
+
+    public AlterExpression withConstraintName(String constraintName) {
+        this.setConstraintName(constraintName);
+        return this;
+    }
+
+    public AlterExpression constraintIfExists(boolean constraintIfExists) {
+        this.setConstraintIfExists(constraintIfExists);
+        return this;
+    }
+
+    public AlterExpression withOnDeleteRestrict(boolean onDeleteRestrict) {
+        this.setOnDeleteRestrict(onDeleteRestrict);
+        return this;
+    }
+
+    public AlterExpression withOnDeleteSetNull(boolean onDeleteSetNull) {
+        this.setOnDeleteSetNull(onDeleteSetNull);
+        return this;
+    }
+
+    public AlterExpression withOnDeleteCascade(boolean onDeleteCascade) {
+        this.setOnDeleteCascade(onDeleteCascade);
+        return this;
+    }
+
+    public AlterExpression withFkColumns(List<String> fkColumns) {
+        this.setFkColumns(fkColumns);
+        return this;
+    }
+
+    public AlterExpression withFkSourceTable(String fkSourceTable) {
+        this.setFkSourceTable(fkSourceTable);
+        return this;
+    }
+
+    public AlterExpression withFkSourceColumns(List<String> fkSourceColumns) {
+        this.setFkSourceColumns(fkSourceColumns);
+        return this;
+    }
+
+    public AlterExpression withUk(boolean uk) {
+        this.setUk(uk);
+        return this;
+    }
+
+    public AlterExpression withUseEqual(boolean useEqual) {
+        this.setUseEqual(useEqual);
+        return this;
+    }
+
+    public AlterExpression withConstraints(List<ConstraintState> constraints) {
+        this.setConstraints(constraints);
+        return this;
+    }
+
+    public AlterExpression withCommentText(String commentText) {
+        this.setCommentText(commentText);
+        return this;
+    }
+    
+    public AlterExpression withColumnOldName(String columnOldName) {
+      setColumnOldName(columnOldName);
+      return this;
+    }
+
+    public AlterExpression addPkColumns(String... pkColumns) {
+        List<String> collection = Optional.ofNullable(getPkColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, pkColumns);
+        return this.withPkColumns(collection);
+    }
+
+    public AlterExpression addPkColumns(Collection<String> pkColumns) {
+        List<String> collection = Optional.ofNullable(getPkColumns()).orElseGet(ArrayList::new);
+        collection.addAll(pkColumns);
+        return this.withPkColumns(collection);
+    }
+
+    public AlterExpression addUkColumns(String... ukColumns) {
+        List<String> collection = Optional.ofNullable(getUkColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, ukColumns);
+        return this.withUkColumns(collection);
+    }
+
+    public AlterExpression addUkColumns(Collection<String> ukColumns) {
+        List<String> collection = Optional.ofNullable(getUkColumns()).orElseGet(ArrayList::new);
+        collection.addAll(ukColumns);
+        return this.withUkColumns(collection);
+    }
+
+    public AlterExpression addFkColumns(String... fkColumns) {
+        List<String> collection = Optional.ofNullable(getFkColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, fkColumns);
+        return this.withFkColumns(collection);
+    }
+
+    public AlterExpression addFkColumns(Collection<String> fkColumns) {
+        List<String> collection = Optional.ofNullable(getFkColumns()).orElseGet(ArrayList::new);
+        collection.addAll(fkColumns);
+        return this.withFkColumns(collection);
+    }
+
+    public AlterExpression addFkSourceColumns(String... fkSourceColumns) {
+        List<String> collection = Optional.ofNullable(getFkSourceColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, fkSourceColumns);
+        return this.withFkSourceColumns(collection);
+    }
+
+    public AlterExpression addFkSourceColumns(Collection<String> fkSourceColumns) {
+        List<String> collection = Optional.ofNullable(getFkSourceColumns()).orElseGet(ArrayList::new);
+        collection.addAll(fkSourceColumns);
+        return this.withFkSourceColumns(collection);
+    }
+
+    public AlterExpression addConstraints(ConstraintState... constraints) {
+        List<ConstraintState> collection = Optional.ofNullable(getConstraints()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, constraints);
+        return this.withConstraints(collection);
+    }
+
+    public AlterExpression addConstraints(Collection<? extends ConstraintState> constraints) {
+        List<ConstraintState> collection = Optional.ofNullable(getConstraints()).orElseGet(ArrayList::new);
+        collection.addAll(constraints);
+        return this.withConstraints(collection);
+    }
+
+    public static final class ColumnDataType extends ColumnDefinition {
 
         private final boolean withType;
+
+        public ColumnDataType(boolean withType) {
+            super();
+            this.withType = withType;
+        }
 
         public ColumnDataType(String columnName, boolean withType, ColDataType colDataType, List<String> columnSpecs) {
             super(columnName, colDataType, columnSpecs);
@@ -351,12 +529,42 @@ public class AlterExpression {
         public String toString() {
             return getColumnName() + (withType ? " TYPE " : " ") + toStringDataTypeAndSpec();
         }
+
+        @Override()
+        public ColumnDataType withColDataType(ColDataType colDataType) {
+            return (ColumnDataType) super.withColDataType(colDataType);
+        }
+
+        @Override()
+        public ColumnDataType withColumnName(String columnName) {
+            return (ColumnDataType) super.withColumnName(columnName);
+        }
+
+        @Override()
+        public ColumnDataType addColumnSpecs(String... columnSpecs) {
+            return (ColumnDataType) super.addColumnSpecs(columnSpecs);
+        }
+
+        @Override()
+        public ColumnDataType addColumnSpecs(Collection<String> columnSpecs) {
+            return (ColumnDataType) super.addColumnSpecs(columnSpecs);
+        }
+
+        @Override
+        public ColumnDataType withColumnSpecs(List<String> columnSpecs) {
+            return (ColumnDataType) super.withColumnSpecs(columnSpecs);
+        }
+
     }
 
     public final static class ColumnDropNotNull {
 
         private final String columnName;
         private final boolean withNot;
+
+        public ColumnDropNotNull(String columnName) {
+            this(columnName, false);
+        }
 
         public ColumnDropNotNull(String columnName, boolean withNot) {
             this.columnName = columnName;

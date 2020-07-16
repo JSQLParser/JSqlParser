@@ -26,7 +26,6 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -69,8 +68,6 @@ public interface StatementVisitor {
     void visit(SetStatement set);
 
     void visit(ShowColumnsStatement set);
-
-    void visit(ShowTablesStatement showTables);
 
     void visit(Merge merge);
 

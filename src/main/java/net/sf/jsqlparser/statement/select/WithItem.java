@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class WithItem implements SelectBody {
 
@@ -65,5 +69,41 @@ public class WithItem implements SelectBody {
     @Override
     public void accept(SelectVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public WithItem withName(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public WithItem withWithItemList(List<SelectItem> withItemList) {
+        this.setWithItemList(withItemList);
+        return this;
+    }
+
+    public WithItem withSelectBody(SelectBody selectBody) {
+        this.setSelectBody(selectBody);
+        return this;
+    }
+
+    public WithItem withRecursive(boolean recursive) {
+        this.setRecursive(recursive);
+        return this;
+    }
+
+    public WithItem addWithItemList(SelectItem... withItemList) {
+        List<SelectItem> collection = Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, withItemList);
+        return this.withWithItemList(collection);
+    }
+
+    public WithItem addWithItemList(Collection<? extends SelectItem> withItemList) {
+        List<SelectItem> collection = Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
+        collection.addAll(withItemList);
+        return this.withWithItemList(collection);
+    }
+
+    public <E extends SelectBody> E getSelectBody(Class<E> type) {
+        return type.cast(getSelectBody());
     }
 }

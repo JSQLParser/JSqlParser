@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.create.view;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -75,5 +79,41 @@ public class AlterView implements Statement {
         }
         sql.append(" AS ").append(selectBody);
         return sql.toString();
+    }
+
+    public AlterView withView(Table view) {
+        this.setView(view);
+        return this;
+    }
+
+    public AlterView withSelectBody(SelectBody selectBody) {
+        this.setSelectBody(selectBody);
+        return this;
+    }
+
+    public AlterView withUseReplace(boolean useReplace) {
+        this.setUseReplace(useReplace);
+        return this;
+    }
+
+    public AlterView withColumnNames(List<String> columnNames) {
+        this.setColumnNames(columnNames);
+        return this;
+    }
+
+    public AlterView addColumnNames(String... columnNames) {
+        List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columnNames);
+        return this.withColumnNames(collection);
+    }
+
+    public AlterView addColumnNames(Collection<String> columnNames) {
+        List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
+        collection.addAll(columnNames);
+        return this.withColumnNames(collection);
+    }
+
+    public <E extends SelectBody> E getSelectBody(Class<E> type) {
+        return type.cast(getSelectBody());
     }
 }

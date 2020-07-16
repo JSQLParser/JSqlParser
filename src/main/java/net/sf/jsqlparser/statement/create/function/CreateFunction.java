@@ -9,16 +9,37 @@
  */
 package net.sf.jsqlparser.statement.create.function;
 
-import net.sf.jsqlparser.statement.CreateFunctionalStatement;
-
+import java.util.Collection;
 import java.util.List;
+
+import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 
 /**
  * A {@code CREATE PROCEDURE} statement
  */
 public class CreateFunction extends CreateFunctionalStatement {
 
-    public CreateFunction(List<String> functionDeclarationParts) {
-      super("FUNCTION", functionDeclarationParts);
+    public CreateFunction() {
+        super("FUNCTION");
     }
+
+    public CreateFunction(List<String> functionDeclarationParts) {
+        super("FUNCTION", functionDeclarationParts);
+    }
+
+    @Override()
+    public CreateFunction withFunctionDeclarationParts(List<String> functionDeclarationParts) {
+        return (CreateFunction) super.withFunctionDeclarationParts(functionDeclarationParts);
+    }
+
+    @Override()
+    public CreateFunction addFunctionDeclarationParts(String... functionDeclarationParts) {
+        return (CreateFunction) super.addFunctionDeclarationParts(functionDeclarationParts);
+    }
+
+    @Override()
+    public CreateFunction addFunctionDeclarationParts(Collection<String> functionDeclarationParts) {
+        return (CreateFunction) super.addFunctionDeclarationParts(functionDeclarationParts);
+    }
+
 }

@@ -190,4 +190,48 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
         return ans;
     }
+
+    public Function withAttribute(Expression attribute) {
+        this.setAttribute(attribute);
+        return this;
+    }
+
+    public Function withAttributeName(String attributeName) {
+        this.setAttributeName(attributeName);
+        return this;
+    }
+
+    public Function withKeep(KeepExpression keep) {
+        this.setKeep(keep);
+        return this;
+    }
+
+    public Function withIgnoreNulls(boolean ignoreNulls) {
+        this.setIgnoreNulls(ignoreNulls);
+        return this;
+    }
+
+    public Function withParameters(ExpressionList parameters) {
+        this.setParameters(parameters);
+        return this;
+    }
+
+    public Function withNamedParameters(NamedExpressionList namedParameters) {
+        this.setNamedParameters(namedParameters);
+        return this;
+    }
+
+    public Function withAllColumns(boolean allColumns) {
+        this.setAllColumns(allColumns);
+        return this;
+    }
+
+    public Function withDistinct(boolean distinct) {
+        this.setDistinct(distinct);
+        return this;
+    }
+
+    public <E extends Expression> E getAttribute(Class<E> type) {
+        return type.cast(getAttribute());
+    }
 }

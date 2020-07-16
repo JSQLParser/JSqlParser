@@ -9,11 +9,12 @@
  */
 package net.sf.jsqlparser.schema;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Represents the database type for a {@code SEQUENCE}
@@ -21,9 +22,13 @@ import java.util.List;
 public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
 
     private static final int NAME_IDX = 0;
+
     private static final int SCHEMA_IDX = 1;
+
     private static final int DATABASE_IDX = 2;
+
     private static final int SERVER_IDX = 3;
+
     private List<String> partItems = new ArrayList<>();
 
     private List<Parameter> parameters;
@@ -55,6 +60,11 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         }
     }
 
+    public Sequence withDatabase(Database database) {
+        setDatabase(database);
+        return this;
+    }
+
     public String getSchemaName() {
         return getIndex(SCHEMA_IDX);
     }
@@ -63,12 +73,22 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         setIndex(SCHEMA_IDX, string);
     }
 
+    public Sequence withSchemaName(String string) {
+        setSchemaName(string);
+        return this;
+    }
+
     public String getName() {
         return getIndex(NAME_IDX);
     }
 
     public void setName(String string) {
         setIndex(NAME_IDX, string);
+    }
+
+    public Sequence withName(String string) {
+        setName(string);
+        return this;
     }
 
     private void setIndex(int idx, String value) {
@@ -90,7 +110,6 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     @Override
     public String getFullyQualifiedName() {
         StringBuilder fqn = new StringBuilder();
-
         for (int i = partItems.size() - 1; i >= 0; i--) {
             String part = partItems.get(i);
             if (part == null) {
@@ -101,7 +120,6 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
                 fqn.append(".");
             }
         }
-
         return fqn.toString();
     }
 
@@ -116,10 +134,28 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         return sql.toString();
     }
 
+    public Sequence withParameters(List<Parameter> parameters) {
+        this.setParameters(parameters);
+        return this;
+    }
+
+    public Sequence addParameters(Parameter... parameters) {
+        List<Parameter> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, parameters);
+        return this.withParameters(collection);
+    }
+
+    public Sequence addParameters(Collection<? extends Parameter> parameters) {
+        List<Parameter> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
+        collection.addAll(parameters);
+        return this.withParameters(collection);
+    }
+
     /**
      * The available parameters to a sequence
      */
     public enum ParameterType {
+
         INCREMENT_BY,
         START_WITH,
         MAXVALUE,
@@ -142,7 +178,9 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
      * Represents a parameter when declaring a sequence
      */
     public static class Parameter {
+
         private final ParameterType option;
+
         private Long value;
 
         public Parameter(ParameterType option) {
@@ -158,23 +196,28 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         }
 
         public String formatParameter() {
-            switch (option) {
+            switch(option) {
                 case INCREMENT_BY:
-                    return withValue("INCREMENT BY");
+                    return prefix("INCREMENT BY");
                 case START_WITH:
-                    return withValue("START WITH");
+                    return prefix("START WITH");
                 case MAXVALUE:
                 case MINVALUE:
                 case CACHE:
-                    return withValue(option.name());
+                    return prefix(option.name());
                 default:
                     // fallthrough just return option name
                     return option.name();
             }
         }
 
-        private String withValue(String prefix) {
+        private String prefix(String prefix) {
             return prefix + " " + value;
+        }
+
+        public Parameter withValue(Long value) {
+            this.setValue(value);
+            return this;
         }
     }
 }

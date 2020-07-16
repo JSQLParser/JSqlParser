@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
@@ -37,6 +40,11 @@ public class Join extends ASTNodeAccessImpl {
         return simple;
     }
 
+    public Join withSimple(boolean b) {
+        this.setSimple(b);
+        return this;
+    }
+
     public void setSimple(boolean b) {
         simple = b;
     }
@@ -45,12 +53,22 @@ public class Join extends ASTNodeAccessImpl {
         return inner;
     }
 
+    public Join withInner(boolean b) {
+        this.setInner(b);
+        return this;
+    }
+
     public void setInner(boolean b) {
         inner = b;
     }
 
     public boolean isStraight() {
         return straight;
+    }
+
+    public Join withStraight(boolean b) {
+        this.setStraight(b);
+        return this;
     }
 
     public void setStraight(boolean b) {
@@ -66,12 +84,22 @@ public class Join extends ASTNodeAccessImpl {
         return outer;
     }
 
+    public Join withOuter(boolean b) {
+        this.setOuter(b);
+        return this;
+    }
+
     public void setOuter(boolean b) {
         outer = b;
     }
 
     public boolean isApply() {
         return apply;
+    }
+
+    public Join withApply(boolean apply) {
+        this.setApply(apply);
+        return this;
     }
 
     public void setApply(boolean apply) {
@@ -87,6 +115,11 @@ public class Join extends ASTNodeAccessImpl {
         return semi;
     }
 
+    public Join withSemi(boolean b) {
+        this.setSemi(b);
+        return this;
+    }
+
     public void setSemi(boolean b) {
         semi = b;
     }
@@ -98,6 +131,11 @@ public class Join extends ASTNodeAccessImpl {
      */
     public boolean isLeft() {
         return left;
+    }
+
+    public Join withLeft(boolean b) {
+        this.setLeft(b);
+        return this;
     }
 
     public void setLeft(boolean b) {
@@ -113,6 +151,11 @@ public class Join extends ASTNodeAccessImpl {
         return right;
     }
 
+    public Join withRight(boolean b) {
+        this.setRight(b);
+        return this;
+    }
+
     public void setRight(boolean b) {
         right = b;
     }
@@ -124,6 +167,11 @@ public class Join extends ASTNodeAccessImpl {
      */
     public boolean isNatural() {
         return natural;
+    }
+
+    public Join withNatural(boolean b) {
+        this.setNatural(b);
+        return this;
     }
 
     public void setNatural(boolean b) {
@@ -139,12 +187,22 @@ public class Join extends ASTNodeAccessImpl {
         return full;
     }
 
+    public Join withFull(boolean b) {
+        this.setFull(b);
+        return this;
+    }
+
     public void setFull(boolean b) {
         full = b;
     }
 
     public boolean isCross() {
         return cross;
+    }
+
+    public Join withCross(boolean cross) {
+        this.setCross(cross);
+        return this;
     }
 
     public void setCross(boolean cross) {
@@ -158,6 +216,11 @@ public class Join extends ASTNodeAccessImpl {
         return rightItem;
     }
 
+    public Join withRightItem(FromItem item) {
+        this.setRightItem(item);
+        return this;
+    }
+
     public void setRightItem(FromItem item) {
         rightItem = item;
     }
@@ -169,6 +232,11 @@ public class Join extends ASTNodeAccessImpl {
         return onExpression;
     }
 
+    public Join withOnExpression(Expression expression) {
+        this.setOnExpression(expression);
+        return this;
+    }
+
     public void setOnExpression(Expression expression) {
         onExpression = expression;
     }
@@ -178,6 +246,11 @@ public class Join extends ASTNodeAccessImpl {
      */
     public List<Column> getUsingColumns() {
         return usingColumns;
+    }
+
+    public Join withUsingColumns(List<Column> list) {
+        this.setUsingColumns(list);
+        return this;
     }
 
     public void setUsingColumns(List<Column> list) {
@@ -193,6 +266,11 @@ public class Join extends ASTNodeAccessImpl {
      */
     public KSQLJoinWindow getJoinWindow() {
         return joinWindow;
+    }
+
+    public Join withJoinWindow(KSQLJoinWindow joinWindow) {
+        this.setJoinWindow(joinWindow);
+        return this;
     }
 
     public void setJoinWindow(KSQLJoinWindow joinWindow) {
@@ -241,5 +319,25 @@ public class Join extends ASTNodeAccessImpl {
                     + PlainSelect.getFormatedList(usingColumns, "USING", true, true);
         }
 
+    }
+
+    public Join addUsingColumns(Column... usingColumns) {
+        List<Column> collection = Optional.ofNullable(getUsingColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, usingColumns);
+        return this.withUsingColumns(collection);
+    }
+
+    public Join addUsingColumns(Collection<? extends Column> usingColumns) {
+        List<Column> collection = Optional.ofNullable(getUsingColumns()).orElseGet(ArrayList::new);
+        collection.addAll(usingColumns);
+        return this.withUsingColumns(collection);
+    }
+
+    public <E extends FromItem> E getRightItem(Class<E> type) {
+        return type.cast(getRightItem());
+    }
+
+    public <E extends Expression> E getOnExpression(Class<E> type) {
+        return type.cast(getOnExpression());
     }
 }

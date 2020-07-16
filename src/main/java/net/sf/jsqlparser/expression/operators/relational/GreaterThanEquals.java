@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class GreaterThanEquals extends ComparisonOperator {
@@ -24,5 +25,25 @@ public class GreaterThanEquals extends ComparisonOperator {
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
+    }
+
+    @Override()
+    public GreaterThanEquals withLeftExpression(Expression arg0) {
+        return (GreaterThanEquals) super.withLeftExpression(arg0);
+    }
+
+    @Override()
+    public GreaterThanEquals withRightExpression(Expression arg0) {
+        return (GreaterThanEquals) super.withRightExpression(arg0);
+    }
+
+    @Override()
+    public GreaterThanEquals withOldOracleJoinSyntax(int arg0) {
+        return (GreaterThanEquals) super.withOldOracleJoinSyntax(arg0);
+    }
+
+    @Override()
+    public GreaterThanEquals withOraclePriorPosition(int arg0) {
+        return (GreaterThanEquals) super.withOraclePriorPosition(arg0);
     }
 }

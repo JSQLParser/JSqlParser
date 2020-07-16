@@ -574,4 +574,10 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         expression.accept(this);
     }
 
+    @Override
+    public void visit(VariableAssignment aThis) {
+        // TODO Auto-generated method stub
+
+    }
+
 }

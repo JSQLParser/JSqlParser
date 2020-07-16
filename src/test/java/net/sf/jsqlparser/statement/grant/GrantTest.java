@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import java.io.StringReader;
 
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 
 public class GrantTest {
@@ -36,6 +36,10 @@ public class GrantTest {
 
         assertEquals(statement, grant.toString());
         assertEquals(null, grant.getRole());
+
+        Grant created = new Grant().addPrivileges("SELECT").withObjectName("t1").addUsers("u");
+        assertDeparse(created, statement);
+        assertEqualsObjectTree(grant, created);
     }
 
     @Test
@@ -53,6 +57,11 @@ public class GrantTest {
 
         assertEquals(statement, grant.toString());
         assertEquals(null, grant.getRole());
+
+        Grant created = new Grant().addPrivileges(asList("SELECT", "INSERT")).withObjectName("t1")
+                .addUsers(asList("u", "u2"));
+        assertDeparse(created, statement);
+        assertEqualsObjectTree(grant, created);
     }
 
     @Test
@@ -69,6 +78,11 @@ public class GrantTest {
 
         assertEquals("role1", grant.getRole());
         assertEquals(statement, grant.toString());
+
+        Grant created = new Grant().withRole("role1")
+                .addUsers(asList("u", "u2"));
+        assertDeparse(created, statement);
+        assertEqualsObjectTree(grant, created);
     }
 
     @Test

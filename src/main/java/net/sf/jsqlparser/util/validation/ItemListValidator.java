@@ -25,17 +25,17 @@ public class ItemListValidator extends AbstractValidator<ItemsList> implements I
 
     @Override
     public void visit(ExpressionList expressionList) {
-        validate(expressionList.getExpressions());
+        validateOptionalExpressions(expressionList.getExpressions());
     }
 
     @Override
     public void visit(NamedExpressionList namedExpressionList) {
-        validate(namedExpressionList.getExpressions());
+        validateOptionalExpressions(namedExpressionList.getExpressions());
     }
 
     @Override
     public void visit(MultiExpressionList multiExprList) {
-        multiExprList.getExprList().forEach(l -> l.accept(this));
+        multiExprList.getExpressionLists().forEach(l -> l.accept(this));
     }
 
     @Override

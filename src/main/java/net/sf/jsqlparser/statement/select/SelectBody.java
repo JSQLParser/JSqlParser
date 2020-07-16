@@ -9,7 +9,9 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-public interface SelectBody {
+import net.sf.jsqlparser.Model;
+
+public interface SelectBody extends Model {
 
     void accept(SelectVisitor selectVisitor);
 }

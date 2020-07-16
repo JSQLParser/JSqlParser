@@ -57,4 +57,20 @@ public class WindowElement {
 
         return buffer.toString();
     }
+
+    public WindowElement withType(Type type) {
+        this.setType(type);
+        return this;
+    }
+
+    public WindowElement withOffset(WindowOffset offset) {
+        this.setOffset(offset);
+        return this;
+    }
+
+    public WindowElement withRange(WindowRange range) {
+        this.setRange(range);
+        return this;
+    }
+
 }

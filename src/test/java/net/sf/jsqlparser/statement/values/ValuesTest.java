@@ -10,14 +10,29 @@
 package net.sf.jsqlparser.statement.values;
 
 import net.sf.jsqlparser.JSQLParserException;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+
+import static net.sf.jsqlparser.test.TestUtils.*;
+
 import org.junit.Test;
 
 public class ValuesTest {
 
     @Test
     public void testDuplicateKey() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("VALUES (1, 2, 'test')");
+        String statement = "VALUES (1, 2, 'test')";
+        Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
+        Select created = new Select().withSelectBody(new SetOperationList()
+                .addBrackets(Boolean.FALSE).addSelects(new ValuesStatement().addExpressions(new LongValue(1))
+                        .addExpressions(asList(new LongValue(2), new StringValue("test")))));
+
+        assertDeparse(created, statement);
+        assertEqualsObjectTree(parsed, created);
+        System.out.println(toReflectionString(created));
     }
 
     @Test

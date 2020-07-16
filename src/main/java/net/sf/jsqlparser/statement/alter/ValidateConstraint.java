@@ -13,6 +13,10 @@ public class ValidateConstraint implements ConstraintState {
 
     private boolean not;
 
+    public ValidateConstraint() {
+        // empty constructor
+    }
+
     public ValidateConstraint(boolean not) {
         this.not = not;
     }
@@ -28,5 +32,10 @@ public class ValidateConstraint implements ConstraintState {
     @Override
     public String toString() {
         return not ? "NOVALIDATE" : "VALIDATE";
+    }
+
+    public ValidateConstraint withNot(boolean not) {
+        this.setNot(not);
+        return this;
     }
 }

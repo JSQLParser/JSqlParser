@@ -9,8 +9,12 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
 public class Alias {
@@ -71,6 +75,33 @@ public class Alias {
         }
 
         return alias;
+    }
+
+    public Alias withName(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public Alias withUseAs(boolean useAs) {
+        this.setUseAs(useAs);
+        return this;
+    }
+
+    public Alias withAliasColumns(List<AliasColumn> aliasColumns) {
+        this.setAliasColumns(aliasColumns);
+        return this;
+    }
+
+    public Alias addAliasColumns(AliasColumn... aliasColumns) {
+        List<AliasColumn> collection = Optional.ofNullable(getAliasColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, aliasColumns);
+        return this.withAliasColumns(collection);
+    }
+
+    public Alias addAliasColumns(Collection<? extends AliasColumn> aliasColumns) {
+        List<AliasColumn> collection = Optional.ofNullable(getAliasColumns()).orElseGet(ArrayList::new);
+        collection.addAll(aliasColumns);
+        return this.withAliasColumns(collection);
     }
 
     public static class AliasColumn {

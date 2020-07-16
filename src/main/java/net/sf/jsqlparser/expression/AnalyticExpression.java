@@ -237,4 +237,75 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     public void setFilterExpression(Expression filterExpression) {
         this.filterExpression = filterExpression;
     }
+
+    public AnalyticExpression withName(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public AnalyticExpression withExpression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
+
+    public AnalyticExpression withOffset(Expression offset) {
+        this.setOffset(offset);
+        return this;
+    }
+
+    public AnalyticExpression withDefaultValue(Expression defaultValue) {
+        this.setDefaultValue(defaultValue);
+        return this;
+    }
+
+    public AnalyticExpression withAllColumns(boolean allColumns) {
+        this.setAllColumns(allColumns);
+        return this;
+    }
+
+    public AnalyticExpression withKeep(KeepExpression keep) {
+        this.setKeep(keep);
+        return this;
+    }
+
+    public AnalyticExpression withType(AnalyticType type) {
+        this.setType(type);
+        return this;
+    }
+
+    public AnalyticExpression withDistinct(boolean distinct) {
+        this.setDistinct(distinct);
+        return this;
+    }
+
+    public AnalyticExpression withIgnoreNulls(boolean ignoreNulls) {
+        this.setIgnoreNulls(ignoreNulls);
+        return this;
+    }
+
+    public AnalyticExpression withFilterExpression(Expression filterExpression) {
+        this.setFilterExpression(filterExpression);
+        return this;
+    }
+
+    public AnalyticExpression withWindowElement(WindowElement windowElement) {
+        this.setWindowElement(windowElement);
+        return this;
+    }
+
+    public <E extends Expression> E getExpression(Class<E> type) {
+        return type.cast(getExpression());
+    }
+
+    public <E extends Expression> E getOffset(Class<E> type) {
+        return type.cast(getOffset());
+    }
+
+    public <E extends Expression> E getDefaultValue(Class<E> type) {
+        return type.cast(getDefaultValue());
+    }
+
+    public <E extends Expression> E getFilterExpression(Class<E> type) {
+        return type.cast(getFilterExpression());
+    }
 }

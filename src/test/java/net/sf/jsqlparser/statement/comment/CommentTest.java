@@ -9,14 +9,19 @@
  */
 package net.sf.jsqlparser.statement.comment;
 
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import static org.junit.Assert.assertEquals;
+
 import java.io.StringReader;
+
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 public class CommentTest {
@@ -46,6 +51,11 @@ public class CommentTest {
     public void testCommentTableDeparse() throws JSQLParserException {
         String statement = "COMMENT ON TABLE table1 IS 'comment1'";
         assertSqlCanBeParsedAndDeparsed(statement);
+
+        Comment c = new Comment().withTable(new Table("table1")).withComment(new StringValue("comment1"));
+        assertEquals("table1", c.getTable().getName());
+        assertEquals("comment1", c.getComment().getValue());
+        assertDeparse(c, statement, false);
     }
 
     @Test
@@ -57,6 +67,10 @@ public class CommentTest {
         assertEquals("column1", column.getColumnName());
         assertEquals("comment1", comment.getComment().getValue());
         assertEquals(statement, "" + comment);
+
+        Comment c = new Comment().withColumn(new Column(new Table("table1"), "column1"))
+                .withComment(new StringValue("comment1"));
+        assertDeparse(c, statement, false);
     }
 
     @Test

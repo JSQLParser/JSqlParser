@@ -9,9 +9,12 @@
  */
 package net.sf.jsqlparser.statement.drop;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
-
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -70,5 +73,37 @@ public class Drop implements Statement {
         }
 
         return sql;
+    }
+
+    public Drop withIfExists(boolean ifExists) {
+        this.setIfExists(ifExists);
+        return this;
+    }
+
+    public Drop withType(String type) {
+        this.setType(type);
+        return this;
+    }
+
+    public Drop withName(Table name) {
+        this.setName(name);
+        return this;
+    }
+
+    public Drop withParameters(List<String> parameters) {
+        this.setParameters(parameters);
+        return this;
+    }
+
+    public Drop addParameters(String... parameters) {
+        List<String> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, parameters);
+        return this.withParameters(collection);
+    }
+
+    public Drop addParameters(Collection<String> parameters) {
+        List<String> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
+        collection.addAll(parameters);
+        return this.withParameters(collection);
     }
 }

@@ -19,6 +19,10 @@ public class SignedExpression extends ASTNodeAccessImpl implements Expression {
     private char sign;
     private Expression expression;
 
+    public SignedExpression() {
+        // empty constructor
+    }
+
     public SignedExpression(char sign, Expression expression) {
         setSign(sign);
         setExpression(expression);
@@ -51,5 +55,19 @@ public class SignedExpression extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         return getSign() + expression.toString();
+    }
+
+    public SignedExpression withSign(char sign) {
+        this.setSign(sign);
+        return this;
+    }
+
+    public SignedExpression withExpression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
+
+    public <E extends Expression> E getExpression(Class<E> type) {
+        return type.cast(getExpression());
     }
 }

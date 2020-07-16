@@ -36,7 +36,8 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
         this.oldOracleJoinSyntax = oldOracleJoinSyntax;
         if (oldOracleJoinSyntax < 0 || oldOracleJoinSyntax > 1) {
-            throw new IllegalArgumentException("unexpected join type for oracle found with IN (type=" + oldOracleJoinSyntax + ")");
+            throw new IllegalArgumentException(
+                    "unexpected join type for oracle found with IN (type=" + oldOracleJoinSyntax + ")");
         }
     }
 
@@ -53,8 +54,18 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         return leftExpression;
     }
 
+    public InExpression withRightItemsList(ItemsList list) {
+        this.setRightItemsList(list);
+        return this;
+    }
+
     public final void setRightItemsList(ItemsList list) {
         rightItemsList = list;
+    }
+
+    public InExpression withLeftExpression(Expression expression) {
+        this.setLeftExpression(expression);
+        return this;
     }
 
     public final void setLeftExpression(Expression expression) {
@@ -115,10 +126,10 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
             statementBuilder.append(multiExpressionList);
             statementBuilder.append(")");
         } else {
-            if (rightExpression == null ) {
+            if (rightExpression == null) {
                 statementBuilder.append(rightItemsList);
             } else {
-              statementBuilder.append(rightExpression);
+                statementBuilder.append(rightExpression);
             }
         }
 
@@ -143,5 +154,53 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
 
     public void setMultiExpressionList(MultiExpressionList multiExpressionList) {
         this.multiExpressionList = multiExpressionList;
+    }
+
+    public InExpression withLeftItemsList(ItemsList leftItemsList) {
+        this.setLeftItemsList(leftItemsList);
+        return this;
+    }
+
+    public InExpression withRightExpression(Expression rightExpression) {
+        this.setRightExpression(rightExpression);
+        return this;
+    }
+
+    public InExpression withMultiExpressionList(MultiExpressionList multiExpressionList) {
+        this.setMultiExpressionList(multiExpressionList);
+        return this;
+    }
+
+    @Override
+    public InExpression withOldOracleJoinSyntax(int oldOracleJoinSyntax) {
+        this.setOldOracleJoinSyntax(oldOracleJoinSyntax);
+        return this;
+    }
+
+    @Override
+    public InExpression withOraclePriorPosition(int priorPosition) {
+        this.setOraclePriorPosition(priorPosition);
+        return this;
+    }
+
+    public InExpression withNot(boolean not) {
+        this.setNot(not);
+        return this;
+    }
+
+    public <E extends ItemsList> E getRightItemsList(Class<E> type) {
+        return type.cast(getRightItemsList());
+    }
+
+    public <E extends Expression> E getLeftExpression(Class<E> type) {
+        return type.cast(getLeftExpression());
+    }
+
+    public <E extends ItemsList> E getLeftItemsList(Class<E> type) {
+        return type.cast(getLeftItemsList());
+    }
+
+    public <E extends Expression> E getRightExpression(Class<E> type) {
+        return type.cast(getRightExpression());
     }
 }

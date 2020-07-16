@@ -11,8 +11,11 @@ package net.sf.jsqlparser.expression.operators.relational;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import net.sf.jsqlparser.expression.Expression;
 
 /**
@@ -21,10 +24,10 @@ import net.sf.jsqlparser.expression.Expression;
  */
 public class MultiExpressionList implements ItemsList {
 
-    private List<ExpressionList> exprList;
+    private List<ExpressionList> expressionLists;
 
     public MultiExpressionList() {
-        this.exprList = new ArrayList<ExpressionList>();
+        this.expressionLists = new ArrayList<>();
     }
 
     @Override
@@ -32,35 +35,52 @@ public class MultiExpressionList implements ItemsList {
         itemsListVisitor.visit(this);
     }
 
+    @Deprecated
     public List<ExpressionList> getExprList() {
-        return exprList;
+        return getExpressionLists();
+    }
+
+    public List<ExpressionList> getExpressionLists() {
+        return expressionLists;
+    }
+
+    public void setExpressionLists(List<ExpressionList> expressionLists) {
+        this.expressionLists = expressionLists;
+    }
+
+    public MultiExpressionList withExpressionLists(List<ExpressionList> expressionLists) {
+        this.setExpressionLists(expressionLists);
+        return this;
     }
 
     public void addExpressionList(ExpressionList el) {
-        if (!exprList.isEmpty()
-                && exprList.get(0).getExpressions().size() != el.getExpressions().size()) {
+        if (!expressionLists.isEmpty()
+                && expressionLists.get(0).getExpressions().size() != el.getExpressions().size()) {
             throw new IllegalArgumentException("different count of parameters");
         }
-        exprList.add(el);
+        expressionLists.add(el);
     }
 
     public void addExpressionList(List<Expression> list) {
         addExpressionList(new ExpressionList(list));
     }
 
-    public void addExpressionList(Expression expr) {
+    public void addExpressionList(Expression... expr) {
         addExpressionList(new ExpressionList(Arrays.asList(expr)));
+    }
+
+    public MultiExpressionList addExpressionLists(ExpressionList... expr) {
+        Stream.of(expr).forEach(this::addExpressionList);
+        return this;
+    }
+
+    public MultiExpressionList addExpressionLists(Collection<? extends ExpressionList> expr) {
+        expr.stream().forEach(this::addExpressionList);
+        return this;
     }
 
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder();
-        for (Iterator<ExpressionList> it = exprList.iterator(); it.hasNext();) {
-            b.append(it.next().toString());
-            if (it.hasNext()) {
-                b.append(", ");
-            }
-        }
-        return b.toString();
+        return expressionLists.stream().map(ExpressionList::toString).collect(Collectors.joining(", "));
     }
 }

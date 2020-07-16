@@ -23,6 +23,10 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
     public static final List<String> ALLOWED_PREFIXES = Arrays.asList("N", "U", "E", "R", "B", "RB", "_utf8");
 
+    public StringValue() {
+        // empty constructor
+    }
+
     public StringValue(String escapedValue) {
         // removing "'" at the start and at the end
         if (escapedValue.startsWith("'") && escapedValue.endsWith("'")) {
@@ -32,7 +36,8 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
         if (escapedValue.length() > 2) {
             for (String p : ALLOWED_PREFIXES) {
-                if (escapedValue.length() > p.length() && escapedValue.substring(0, p.length()).equalsIgnoreCase(p) && escapedValue.charAt(p.length()) == '\'') {
+                if (escapedValue.length() > p.length() && escapedValue.substring(0, p.length()).equalsIgnoreCase(p)
+                        && escapedValue.charAt(p.length()) == '\'') {
                     this.prefix = p;
                     value = escapedValue.substring(p.length() + 1, escapedValue.length() - 1);
                     return;
@@ -79,5 +84,15 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         return (prefix != null ? prefix : "") + "'" + value + "'";
+    }
+
+    public StringValue withPrefix(String prefix) {
+        this.setPrefix(prefix);
+        return this;
+    }
+
+    public StringValue withValue(String value) {
+        this.setValue(value);
+        return this;
     }
 }

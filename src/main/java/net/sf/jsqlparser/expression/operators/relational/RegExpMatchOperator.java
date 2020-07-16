@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class RegExpMatchOperator extends BinaryExpression {
@@ -47,5 +48,15 @@ public class RegExpMatchOperator extends BinaryExpression {
                 break;
         }
         return null;
+    }
+
+    @Override()
+    public RegExpMatchOperator withLeftExpression(Expression arg0) {
+        return (RegExpMatchOperator) super.withLeftExpression(arg0);
+    }
+
+    @Override()
+    public RegExpMatchOperator withRightExpression(Expression arg0) {
+        return (RegExpMatchOperator) super.withRightExpression(arg0);
     }
 }

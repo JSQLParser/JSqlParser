@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class NotEqualsTo extends ComparisonOperator {
@@ -21,8 +22,34 @@ public class NotEqualsTo extends ComparisonOperator {
         super(operator);
     }
 
+    public NotEqualsTo(Expression left, Expression right) {
+        this();
+        setLeftExpression(left);
+        setRightExpression(right);
+    }
+
+    @Override
+    public NotEqualsTo withLeftExpression(Expression expression) {
+        return (NotEqualsTo) super.withLeftExpression(expression);
+    }
+
+    @Override
+    public NotEqualsTo withRightExpression(Expression expression) {
+        return (NotEqualsTo) super.withRightExpression(expression);
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
+    }
+
+    @Override()
+    public NotEqualsTo withOldOracleJoinSyntax(int arg0) {
+        return (NotEqualsTo) super.withOldOracleJoinSyntax(arg0);
+    }
+
+    @Override()
+    public NotEqualsTo withOraclePriorPosition(int arg0) {
+        return (NotEqualsTo) super.withOraclePriorPosition(arg0);
     }
 }

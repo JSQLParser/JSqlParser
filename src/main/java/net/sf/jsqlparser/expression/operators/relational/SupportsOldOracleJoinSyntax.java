@@ -22,7 +22,11 @@ public interface SupportsOldOracleJoinSyntax {
 
     void setOldOracleJoinSyntax(int oldOracleJoinSyntax);
 
+    SupportsOldOracleJoinSyntax withOldOracleJoinSyntax(int oldOracleJoinSyntax);
+
     int getOraclePriorPosition();
 
     void setOraclePriorPosition(int priorPosition);
+
+    SupportsOldOracleJoinSyntax withOraclePriorPosition(int priorPosition);
 }

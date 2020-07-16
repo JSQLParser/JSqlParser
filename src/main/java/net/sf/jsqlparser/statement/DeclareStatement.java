@@ -10,7 +10,10 @@
 package net.sf.jsqlparser.statement;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
@@ -19,10 +22,10 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 public final class DeclareStatement implements Statement {
 
     private UserVariable userVariable = null;
-    private DeclareType type = DeclareType.TYPE;
+    private DeclareType declareType = DeclareType.TYPE;
     private String typeName;
     private List<TypeDefExpr> typeDefExprList = new ArrayList<>();
-    private List<ColumnDefinition> colDefs = new ArrayList<>();
+    private List<ColumnDefinition> columnDefinitions = new ArrayList<>();
 
     public DeclareStatement() {
     }
@@ -35,32 +38,73 @@ public final class DeclareStatement implements Statement {
         return userVariable;
     }
 
+    /**
+     * @return the {@link DeclareType}
+     * @deprecated use {@link #getDeclareType()}
+     */
+    @Deprecated
     public DeclareType getType() {
-        return type;
+        return getDeclareType();
+    }
+
+    /**
+     * @return the {@link DeclareType}
+     */
+    public DeclareType getDeclareType() {
+        return declareType;
     }
 
     public String getTypeName() {
         return typeName;
     }
 
-    public void setDeclareType(DeclareType type) {
-        this.type = type;
+    public void setDeclareType(DeclareType declareType) {
+        this.declareType = declareType;
     }
 
     public void addType(ColDataType colDataType, Expression defaultExpr) {
-        typeDefExprList.add(new TypeDefExpr(colDataType, defaultExpr));
+        addTypeDefExprList(new TypeDefExpr(colDataType, defaultExpr));
     }
 
     public void addType(UserVariable userVariable, ColDataType colDataType, Expression defaultExpr) {
-        typeDefExprList.add(new TypeDefExpr(userVariable, colDataType, defaultExpr));
+        addTypeDefExprList(new TypeDefExpr(userVariable, colDataType, defaultExpr));
+    }
+
+    public DeclareStatement addTypeDefExprList(TypeDefExpr... typeDefExpressions) {
+        List<TypeDefExpr> collection = Optional.ofNullable(getTypeDefExprList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, typeDefExpressions);
+        return this.withTypeDefExprList(collection);
+    }
+
+    public DeclareStatement addTypeDefExprList(Collection<? extends TypeDefExpr> typeDefExpressions) {
+        List<TypeDefExpr> collection = Optional.ofNullable(getTypeDefExprList()).orElseGet(ArrayList::new);
+        collection.addAll(typeDefExpressions);
+        return this.withTypeDefExprList(collection);
+    }
+
+    public DeclareStatement withTypeDefExprList(List<TypeDefExpr> typeDefExpressions) {
+        setTypeDefExprList(typeDefExpressions);
+        return this;
+    }
+
+    public void setTypeDefExprList(List<TypeDefExpr> expr) {
+        this.typeDefExprList = expr;
+    }
+
+    public List<TypeDefExpr> getTypeDefExprList() {
+        return this.typeDefExprList ;
     }
 
     public void addColumnDefinition(ColumnDefinition colDef) {
-        colDefs.add(colDef);
+        columnDefinitions.add(colDef);
+    }
+
+    public void setColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
+        this.columnDefinitions = columnDefinitions;
     }
 
     public List<ColumnDefinition> getColumnDefinitions() {
-        return colDefs;
+        return columnDefinitions;
     }
 
     public List<TypeDefExpr> getTypeDefinitions() {
@@ -74,18 +118,18 @@ public final class DeclareStatement implements Statement {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("DECLARE ");
-        if (type == DeclareType.AS) {
+        if (declareType == DeclareType.AS) {
             b.append(userVariable.toString());
             b.append(" AS ").append(typeName);
         } else {
-            if (type == DeclareType.TABLE) {
+            if (declareType == DeclareType.TABLE) {
                 b.append(userVariable.toString());
                 b.append(" TABLE (");
-                for (int i = 0; i < colDefs.size(); i++) {
+                for (int i = 0; i < columnDefinitions.size(); i++) {
                     if (i > 0) {
                         b.append(", ");
                     }
-                    b.append(colDefs.get(i).toString());
+                    b.append(columnDefinitions.get(i).toString());
                 }
                 b.append(")");
             } else {
@@ -108,9 +152,41 @@ public final class DeclareStatement implements Statement {
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor
-    ) {
+    public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
+    }
+
+    public DeclareStatement withUserVariable(UserVariable userVariable) {
+        this.setUserVariable(userVariable);
+        return this;
+    }
+
+    public DeclareStatement withTypeName(String typeName) {
+        this.setTypeName(typeName);
+        return this;
+    }
+
+    public DeclareStatement withDeclareType(DeclareType declareType) {
+        this.setDeclareType(declareType);
+        return this;
+    }
+
+    public DeclareStatement withColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
+        this.setColumnDefinitions(columnDefinitions);
+        return this;
+    }
+
+    public DeclareStatement addColumnDefinitions(ColumnDefinition... statements) {
+        List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, statements);
+        return this.withColumnDefinitions(collection);
+    }
+
+
+    public DeclareStatement addColumnDefinitions(Collection<? extends ColumnDefinition> columnDefinitions) {
+        List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
+        collection.addAll(columnDefinitions);
+        return this.withColumnDefinitions(collection);
     }
 
     public static class TypeDefExpr {

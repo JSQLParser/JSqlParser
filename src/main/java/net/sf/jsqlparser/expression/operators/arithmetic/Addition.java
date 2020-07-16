@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression.operators.arithmetic;
 
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class Addition extends BinaryExpression {
@@ -22,5 +23,15 @@ public class Addition extends BinaryExpression {
     @Override
     public String getStringExpression() {
         return "+";
+    }
+
+    @Override()
+    public Addition withLeftExpression(Expression arg0) {
+        return (Addition) super.withLeftExpression(arg0);
+    }
+
+    @Override()
+    public Addition withRightExpression(Expression arg0) {
+        return (Addition) super.withRightExpression(arg0);
     }
 }

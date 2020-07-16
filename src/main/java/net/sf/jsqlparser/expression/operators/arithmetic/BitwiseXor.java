@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression.operators.arithmetic;
 
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class BitwiseXor extends BinaryExpression {
@@ -22,5 +23,15 @@ public class BitwiseXor extends BinaryExpression {
     @Override
     public String getStringExpression() {
         return "^";
+    }
+
+    @Override()
+    public BitwiseXor withLeftExpression(Expression arg0) {
+        return (BitwiseXor) super.withLeftExpression(arg0);
+    }
+
+    @Override()
+    public BitwiseXor withRightExpression(Expression arg0) {
+        return (BitwiseXor) super.withRightExpression(arg0);
     }
 }
