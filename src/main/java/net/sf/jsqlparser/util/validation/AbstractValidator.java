@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.schema.Column;
 
 /**
  * A abstract base for a Validation
@@ -52,9 +53,18 @@ public abstract class AbstractValidator<S> implements Validation {
         return map;
     }
 
-    protected void validate(List<Expression> expressions) {
-        ExpressionValidator v = getValidator(ExpressionValidator.class);
-        expressions.forEach(v::validate);
+    protected void validateOptionalExpressions(List<Expression> expressions) {
+        if (expressions != null && !expressions.isEmpty()) {
+            ExpressionValidator v = getValidator(ExpressionValidator.class);
+            expressions.forEach(v::validate);
+        }
+    }
+
+    protected void validateOptionalColumns(List<Column> columns) {
+        if (columns != null && !columns.isEmpty()) {
+            ExpressionValidator e = getValidator(ExpressionValidator.class);
+            columns.forEach(c -> c.accept(e));
+        }
     }
 
     public abstract void validate(S statement);
