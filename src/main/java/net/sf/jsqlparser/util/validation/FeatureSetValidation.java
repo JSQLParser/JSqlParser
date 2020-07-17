@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.parser.feature.FeatureSet;
 
 public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
@@ -31,7 +32,9 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
     default void validate(ValidationContext ctx, Consumer<String> errorMessageConsumer) {
         Feature feature = ctx.get(Keys.feature, Feature.class);
         if (!getFeatures().contains(feature)) {
-            errorMessageConsumer.accept(getErrorMessage(feature));
+            errorMessageConsumer.accept(getNotSupportedMessage(feature));
+        } else if (FeatureConfiguration.getInstance().isDisabled(feature)) {
+            errorMessageConsumer.accept(getDisabledMessage(feature));
         }
     }
 
@@ -44,8 +47,15 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
     /**
      * @return <code>featureName + " not supported."</code>
      */
-    default String getErrorMessage(Feature feature) {
+    default String getNotSupportedMessage(Feature feature) {
         return feature.name() + " not supported.";
+    }
+
+    /**
+     * @return <code>featureName + " not supported."</code>
+     */
+    default String getDisabledMessage(Feature feature) {
+        return feature.name() + " is disabled.";
     }
 
 
