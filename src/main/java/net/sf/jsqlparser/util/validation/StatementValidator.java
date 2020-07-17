@@ -291,8 +291,7 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void validate(Statement statement) {
-        // TODO Auto-generated method stub
-
+        statement.accept(this);
     }
 
 }

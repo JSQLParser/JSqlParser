@@ -46,13 +46,13 @@ public class ValidationTest {
         Map<ValidationCapability, Set<String>> unsupportedErrors = validator.getValidationErrors(DatabaseType.sqlserver);
         assertNotNull(unsupportedErrors);
         assertEquals(1, unsupportedErrors.size());
-        assertEquals(new HashSet<>(Arrays.asList("oldOracleJoinSyntax=1 not supported.")),
+        assertEquals(new HashSet<>(Arrays.asList("joinOldOracleSyntax not supported.")),
                 unsupportedErrors.get(DatabaseType.sqlserver));
 
         unsupportedErrors = validator.getValidationErrors(DatabaseType.postgresql);
         assertNotNull(unsupportedErrors);
         assertEquals(1, unsupportedErrors.size());
-        assertEquals(new HashSet<>(Arrays.asList("oldOracleJoinSyntax=1 not supported.")),
+        assertEquals(new HashSet<>(Arrays.asList("joinOldOracleSyntax not supported.")),
                 unsupportedErrors.get(DatabaseType.postgresql));
     }
 
@@ -67,7 +67,7 @@ public class ValidationTest {
         assertEquals(1, errors.size());
         assertEquals(stmt, errors.get(0).getStatement());
         assertEquals(DatabaseType.sqlserver, errors.get(0).getCapability());
-        assertEquals(new HashSet<>(Arrays.asList("oldOracleJoinSyntax=1 not supported.")), errors.get(0).getErrors());
+        assertEquals(new HashSet<>(Arrays.asList("joinOldOracleSyntax not supported.")), errors.get(0).getErrors());
         assertNull(errors.get(0).getException());
 
     }

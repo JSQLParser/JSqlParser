@@ -11,7 +11,49 @@ package net.sf.jsqlparser.util.validation;
 
 import java.util.Iterator;
 import java.util.List;
-import net.sf.jsqlparser.expression.*;
+import java.util.function.Consumer;
+
+import net.sf.jsqlparser.expression.AllComparisonExpression;
+import net.sf.jsqlparser.expression.AnalyticExpression;
+import net.sf.jsqlparser.expression.AnyComparisonExpression;
+import net.sf.jsqlparser.expression.ArrayExpression;
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.CaseExpression;
+import net.sf.jsqlparser.expression.CastExpression;
+import net.sf.jsqlparser.expression.CollateExpression;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
+import net.sf.jsqlparser.expression.DateValue;
+import net.sf.jsqlparser.expression.DoubleValue;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.ExtractExpression;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.HexValue;
+import net.sf.jsqlparser.expression.IntervalExpression;
+import net.sf.jsqlparser.expression.JdbcNamedParameter;
+import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.JsonExpression;
+import net.sf.jsqlparser.expression.KeepExpression;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.MySQLGroupConcat;
+import net.sf.jsqlparser.expression.NextValExpression;
+import net.sf.jsqlparser.expression.NotExpression;
+import net.sf.jsqlparser.expression.NullValue;
+import net.sf.jsqlparser.expression.NumericBind;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.Parenthesis;
+import net.sf.jsqlparser.expression.RowConstructor;
+import net.sf.jsqlparser.expression.SignedExpression;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.TimeKeyExpression;
+import net.sf.jsqlparser.expression.TimeValue;
+import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.UserVariable;
+import net.sf.jsqlparser.expression.ValueListExpression;
+import net.sf.jsqlparser.expression.VariableAssignment;
+import net.sf.jsqlparser.expression.WhenClause;
+import net.sf.jsqlparser.expression.WindowElement;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -26,7 +68,28 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
-import net.sf.jsqlparser.expression.operators.relational.*;
+import net.sf.jsqlparser.expression.operators.relational.Between;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
+import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
+import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
+import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
+import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.expression.operators.relational.Matches;
+import net.sf.jsqlparser.expression.operators.relational.MinorThan;
+import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
+import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
+import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
+import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
+import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -94,21 +157,18 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
         for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
             expression.getLeftExpression().accept(this);
             if (c instanceof FeatureSetValidation
                     && expression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
-                if (((FeatureSetValidation) c).isNotValid(Feature.joinOldOracleSyntax)) {
-                    putError(c, c.getErrorMessage(
-                            String.format("oldOracleJoinSyntax=%d", expression.getOldOracleJoinSyntax())));
-                }
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.joinOldOracleSyntax),
+                        messageConsumer);
             }
             expression.getRightExpression().accept(this);
             if (c instanceof FeatureSetValidation
                     && expression.getOraclePriorPosition() != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
-                if (((FeatureSetValidation) c).isNotValid(Feature.oraclePriorPosition)) {
-                    putError(c, c.getErrorMessage(
-                            String.format("oraclePriorPosition=%d", expression.getOldOracleJoinSyntax())));
-                }
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.oraclePriorPosition),
+                        messageConsumer);
             }
         }
     }
@@ -289,12 +349,14 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
             if (c instanceof DatabaseMetaDataValidation && tableColumn.getTable() != null) {
                 tableColumn.getTable().accept(getValidator(SelectValidator.class));
 
-                if (((DatabaseMetaDataValidation) c).isNotValid(NamedObject.column, tableColumn.getFullyQualifiedName())) {
-                    putError(c, c.getErrorMessage(tableColumn.getFullyQualifiedName()));
-                }
+                c.validate(context()
+                        .put(DatabaseMetaDataValidation.Keys.namedobject, NamedObject.column)
+                        .put(DatabaseMetaDataValidation.Keys.fqn, tableColumn.getFullyQualifiedName()),
+                        getMessageConsumer(c));
             }
         }
     }
+
 
     @Override
     public void visit(Function function) {

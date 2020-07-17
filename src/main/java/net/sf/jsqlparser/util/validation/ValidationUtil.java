@@ -29,7 +29,8 @@ public class ValidationUtil {
      * @param statements
      * @return a list of {@link ValidationError}'s
      */
-    public static List<ValidationError> validate(Collection<ValidationCapability> capabilities, String... statements) {
+    public static List<ValidationError> validate(Collection<? extends ValidationCapability> capabilities,
+            String... statements) {
         return validate(capabilities, Arrays.asList(statements));
     }
 
@@ -38,7 +39,7 @@ public class ValidationUtil {
      * @param statements
      * @return a list of {@link ValidationError}'s
      */
-    public static List<ValidationError> validate(Collection<ValidationCapability> capabilities,
+    public static List<ValidationError> validate(Collection<? extends ValidationCapability> capabilities,
             List<String> statements) {
         List<ValidationError> errors = new ArrayList<>();
         for (String statement : statements) {
@@ -47,8 +48,8 @@ public class ValidationUtil {
                 stmt = CCJSqlParserUtil.parse(statement);
                 if (!capabilities.isEmpty()) {
                     StatementValidator validator = new StatementValidator();
-                    validator.setCapabilities(capabilities);
-                    stmt.accept(validator);
+                    validator.setCapabilities(new ArrayList<>(capabilities));
+                    validator.validate(stmt);
 
                     for (Entry<ValidationCapability, Set<String>> e : validator
                             .getValidationErrors().entrySet()) {

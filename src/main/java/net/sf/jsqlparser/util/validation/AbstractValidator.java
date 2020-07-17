@@ -16,6 +16,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 
@@ -25,6 +27,8 @@ import net.sf.jsqlparser.schema.Column;
  * @param <S> the type of statement this DeParser supports
  */
 public abstract class AbstractValidator<S> implements Validator<S> {
+
+    private static final ThreadLocal<ValidationContext> CONTEXT = ThreadLocal.withInitial(ValidationContext::new);
 
     private Map<ValidationCapability, Set<String>> errors = new HashMap<>();
 
@@ -45,6 +49,18 @@ public abstract class AbstractValidator<S> implements Validator<S> {
                 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             throw new IllegalStateException("Type " + type + " cannot be constructed by empty constructor!");
         }
+    }
+
+    protected Consumer<String> getMessageConsumer(ValidationCapability c) {
+        return s -> putError(c, s);
+    }
+
+    protected static ValidationContext context() {
+        return context(true);
+    }
+
+    protected static ValidationContext context(boolean reInit) {
+        return CONTEXT.get().reinit(reInit);
     }
 
     protected void putError(ValidationCapability c, String error) {

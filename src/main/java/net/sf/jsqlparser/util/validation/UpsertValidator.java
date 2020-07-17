@@ -19,9 +19,7 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
 
         for (ValidationCapability c : getCapabilities()) {
             if (c instanceof FeatureSetValidation) {
-                if (((FeatureSetValidation) c).isNotValid(Feature.upsert)) {
-                    putError(c, "upsert not supported");
-                }
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.upsert), getMessageConsumer(c));
             }
 
             upsert.getTable().accept(getValidator(SelectValidator.class));
@@ -42,7 +40,6 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
         }
 
     }
-
 
     private void validateSelect(Upsert upsert) {
         SelectValidator v = getValidator(SelectValidator.class);

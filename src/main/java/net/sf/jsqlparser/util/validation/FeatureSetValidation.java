@@ -1,17 +1,38 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2020 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.util.validation;
 
 import java.util.Set;
+import java.util.function.Consumer;
+
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureSet;
 
 public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
 
+    public enum Keys implements ContextKey {
+        /**
+         * @see Feature
+         */
+        feature
+    }
+
     /**
      * @param feature
-     * @return <code>true</code>, if the given feature is not supported
      */
-    default boolean isNotValid(Feature feature) {
-        return !getFeatures().contains(feature);
+    @Override
+    default void validate(ValidationContext ctx, Consumer<String> errorMessageConsumer) {
+        Feature feature = ctx.get(Keys.feature, Feature.class);
+        if (!getFeatures().contains(feature)) {
+            errorMessageConsumer.accept(getErrorMessage(feature));
+        }
     }
 
     /**
@@ -23,16 +44,9 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
     /**
      * @return <code>featureName + " not supported."</code>
      */
-    @Override
-    default String getErrorMessage(String featureName) {
-        return featureName + " not supported.";
+    default String getErrorMessage(Feature feature) {
+        return feature.name() + " not supported.";
     }
 
-    /**
-     * @return <code>getErrorMessage(feature.name())"</code>
-     */
-    default String getErrorMessage(Feature feature) {
-        return getErrorMessage(feature.name());
-    }
 
 }
