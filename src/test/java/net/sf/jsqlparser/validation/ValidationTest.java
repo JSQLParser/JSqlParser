@@ -84,7 +84,7 @@ public class ValidationTest {
         assertNotNull(errors);
         assertEquals(1, errors.size());
         assertNotNull(errors.get(0).getException());
-        assertThat(errors.get(0).getErrors().stream().findFirst().orElseThrow(),
+        assertThat(errors.get(0).getErrors().stream().findFirst().get(),
                 StringStartsWith.startsWith("Cannot parse statement"));
 
     }
