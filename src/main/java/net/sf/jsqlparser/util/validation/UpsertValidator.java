@@ -9,32 +9,40 @@
  */
 package net.sf.jsqlparser.util.validation;
 
-import java.util.EnumSet;
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
 public class UpsertValidator extends AbstractValidator<Upsert> {
 
     @Override
     public void validate(Upsert upsert) {
-        Validation.mapAllExcept(errors, EnumSet.of(DatabaseType.postgresql, DatabaseType.mysql),
-                "upsert not supported");
 
-        upsert.getTable().accept(getValidator(SelectValidator.class));
-        validateOptionalColumns(upsert.getColumns());
+        for (ValidationCapability c : getCapabilities()) {
+            if (c instanceof FeatureSetValidation) {
+                if (((FeatureSetValidation) c).isNotValid(Feature.upsert)) {
+                    putError(c, "upsert not supported");
+                }
+            }
 
-        if (upsert.getItemsList() != null) {
-            upsert.getItemsList().accept(getValidator(ItemListValidator.class));
-        }
+            upsert.getTable().accept(getValidator(SelectValidator.class));
+            validateOptionalColumns(upsert.getColumns());
 
-        if (upsert.getSelect() != null) {
-            validateSelect(upsert);
-        }
+            if (upsert.getItemsList() != null) {
+                upsert.getItemsList().accept(getValidator(ItemListValidator.class));
+            }
 
-        if (upsert.isUseDuplicate()) {
-            validateDuplicate(upsert);
+            if (upsert.getSelect() != null) {
+                validateSelect(upsert);
+            }
+
+            if (upsert.isUseDuplicate()) {
+                validateDuplicate(upsert);
+            }
+
         }
 
     }
+
 
     private void validateSelect(Upsert upsert) {
         SelectValidator v = getValidator(SelectValidator.class);

@@ -11,10 +11,10 @@ package net.sf.jsqlparser.util.validation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
-
+import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
@@ -25,32 +25,34 @@ public class ValidationUtil {
     }
 
     /**
-     * @param databaseTypes
+     * @param capabilities
      * @param statements
      * @return a list of {@link ValidationError}'s
      */
-    public static List<ValidationError> validate(List<DatabaseType> databaseTypes, String... statements) {
-        return validate(databaseTypes, Arrays.asList(statements));
+    public static List<ValidationError> validate(Collection<ValidationCapability> capabilities, String... statements) {
+        return validate(capabilities, Arrays.asList(statements));
     }
 
     /**
-     * @param databaseTypes
+     * @param capabilities
      * @param statements
      * @return a list of {@link ValidationError}'s
      */
-    public static List<ValidationError> validate(List<DatabaseType> databaseTypes, List<String> statements) {
+    public static List<ValidationError> validate(Collection<ValidationCapability> capabilities,
+            List<String> statements) {
         List<ValidationError> errors = new ArrayList<>();
         for (String statement : statements) {
             Statement stmt = null;
             try {
                 stmt = CCJSqlParserUtil.parse(statement);
-                if (!databaseTypes.isEmpty()) {
+                if (!capabilities.isEmpty()) {
                     StatementValidator validator = new StatementValidator();
+                    validator.setCapabilities(capabilities);
                     stmt.accept(validator);
 
-                    for (Entry<DatabaseType, Set<String>> e : validator
-                            .getValidationErrors(databaseTypes).entrySet()) {
-                        errors.add(new ValidationError(statement).withDatabaseType(e.getKey())
+                    for (Entry<ValidationCapability, Set<String>> e : validator
+                            .getValidationErrors().entrySet()) {
+                        errors.add(new ValidationError(statement).withCapability(e.getKey())
                                 .addErrors(e.getValue()));
                     }
                 }

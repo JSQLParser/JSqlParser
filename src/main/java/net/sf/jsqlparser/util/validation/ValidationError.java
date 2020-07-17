@@ -17,7 +17,7 @@ public class ValidationError {
     private final String statement;
 
     private Set<String> errors = new HashSet<>();
-    private DatabaseType databaseType;
+    private ValidationCapability capability;
     private Exception exception;
 
     public ValidationError(String statement) {
@@ -38,16 +38,16 @@ public class ValidationError {
         return errors;
     }
 
-    public DatabaseType getDatabaseType() {
-        return databaseType;
+    public ValidationCapability getCapability() {
+        return capability;
     }
 
-    public void setDatabaseType(DatabaseType databaseType) {
-        this.databaseType = databaseType;
+    public void setCapability(ValidationCapability databaseType) {
+        this.capability = databaseType;
     }
 
-    public ValidationError withDatabaseType(DatabaseType databaseType) {
-        setDatabaseType(databaseType);
+    public ValidationError withCapability(ValidationCapability databaseType) {
+        setCapability(databaseType);
         return this;
     }
 

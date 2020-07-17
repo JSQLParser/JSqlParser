@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.util.validation;
 
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import net.sf.jsqlparser.expression.*;
@@ -28,11 +27,12 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.util.validation.DatabaseMetaDataValidation.NamedObject;
 
 public class ExpressionValidator extends AbstractValidator<Expression> implements ExpressionVisitor {
 
@@ -93,15 +93,23 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     }
 
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
-        expression.getLeftExpression().accept(this);
-        if (expression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
-            Validation.mapAllExcept(errors, EnumSet.of(DatabaseType.oracle),
-                    String.format("oldOracleJoinSyntax=%d not supported", expression.getOldOracleJoinSyntax()));
-        }
-        expression.getRightExpression().accept(this);
-        if (expression.getOraclePriorPosition() != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
-            Validation.mapAllExcept(errors, EnumSet.of(DatabaseType.oracle),
-                    String.format("oraclePriorPosition=%d not supported", expression.getOraclePriorPosition()));
+        for (ValidationCapability c : getCapabilities()) {
+            expression.getLeftExpression().accept(this);
+            if (c instanceof FeatureSetValidation
+                    && expression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
+                if (((FeatureSetValidation) c).isNotValid(Feature.joinOldOracleSyntax)) {
+                    putError(c, c.getErrorMessage(
+                            String.format("oldOracleJoinSyntax=%d", expression.getOldOracleJoinSyntax())));
+                }
+            }
+            expression.getRightExpression().accept(this);
+            if (c instanceof FeatureSetValidation
+                    && expression.getOraclePriorPosition() != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
+                if (((FeatureSetValidation) c).isNotValid(Feature.oraclePriorPosition)) {
+                    putError(c, c.getErrorMessage(
+                            String.format("oraclePriorPosition=%d", expression.getOldOracleJoinSyntax())));
+                }
+            }
         }
     }
 
@@ -277,18 +285,15 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(Column tableColumn) {
-        final Table table = tableColumn.getTable();
-        String tableName = null;
-        if (table != null) {
-            if (table.getAlias() != null) {
-                tableName = table.getAlias().getName();
-            } else {
-                tableName = table.getFullyQualifiedName();
+        for (ValidationCapability c : getCapabilities()) {
+            if (c instanceof DatabaseMetaDataValidation && tableColumn.getTable() != null) {
+                tableColumn.getTable().accept(getValidator(SelectValidator.class));
+
+                if (((DatabaseMetaDataValidation) c).isNotValid(NamedObject.column, tableColumn.getFullyQualifiedName())) {
+                    putError(c, c.getErrorMessage(tableColumn.getFullyQualifiedName()));
+                }
             }
         }
-        if (tableName != null && !tableName.isEmpty()) {
-        }
-
     }
 
     @Override

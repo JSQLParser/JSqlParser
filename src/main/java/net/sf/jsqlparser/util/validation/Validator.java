@@ -1,0 +1,83 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2020 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
+package net.sf.jsqlparser.util.validation;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+public interface Validator<S> {
+
+    /**
+     * @return <code>true</code>, all {@link ValidationCapability}'s have no errors
+     */
+    default boolean isValid() {
+        return getValidationErrors().isEmpty();
+    }
+
+    /**
+     * @param capabilities
+     * @return <code>true</code>, if the given {@link ValidationCapability}'s have no errors.
+     *         <code>false</code> otherwise.
+     */
+    default boolean isValid(ValidationCapability... capabilities) {
+        return getValidationErrors(capabilities).isEmpty();
+    }
+
+    /**
+     * @return the {@link ValidationCapability}'s requested mapped to a set of error-messages
+     */
+    public Map<ValidationCapability, Set<String>> getValidationErrors();
+
+    /**
+     * @param capabilities
+     * @return the filtered view of requested {@link ValidationCapability}'s mapped to a set
+     *         of error-messages
+     */
+    default Map<ValidationCapability, Set<String>> getValidationErrors(ValidationCapability... capabilities) {
+        return getValidationErrors(Arrays.asList(capabilities));
+    }
+
+    /**
+     * @param capabilities
+     * @return the filtered view of requested {@link ValidationCapability}'s mapped
+     *         to a set of error-messages
+     */
+    default Map<ValidationCapability, Set<String>> getValidationErrors(Collection<ValidationCapability> capabilities) {
+        Map<ValidationCapability, Set<String>> map = new HashMap<>();
+        for (Entry<ValidationCapability, Set<String>> e : getValidationErrors().entrySet()) {
+            if (capabilities.contains(e.getKey())) {
+                map.put(e.getKey(), e.getValue());
+            }
+        }
+        return map;
+    }
+
+    /**
+     * Set the {@link ValidationCapability}'s this {@link Validator} should check.
+     * 
+     * @param capabilities
+     */
+    public void setCapabilities(Collection<ValidationCapability> capabilities);
+
+    /**
+     * validates given statement.
+     * 
+     * @param statement
+     * @see #getValidationErrors()
+     * @see #getValidationErrors(Collection)
+     * @see #getValidationErrors(ValidationCapability...)
+     */
+    public abstract void validate(S statement);
+
+}

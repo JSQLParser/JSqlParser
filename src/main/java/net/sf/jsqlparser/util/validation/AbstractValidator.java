@@ -10,12 +10,12 @@
 package net.sf.jsqlparser.util.validation;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.EnumMap;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 
@@ -24,33 +24,50 @@ import net.sf.jsqlparser.schema.Column;
  *
  * @param <S> the type of statement this DeParser supports
  */
-public abstract class AbstractValidator<S> implements Validation {
+public abstract class AbstractValidator<S> implements Validator<S> {
 
-    protected Map<DatabaseType, Set<String>> errors = new EnumMap<>(DatabaseType.class);
+    private Map<ValidationCapability, Set<String>> errors = new HashMap<>();
 
     private Map<Class<? extends AbstractValidator<?>>, AbstractValidator<?>> validatorForwards = new HashMap<>();
 
+    private Collection<ValidationCapability> capabilities;
+
     public <T extends AbstractValidator<?>> T getValidator(Class<T> type) {
-        return type.cast(validatorForwards.computeIfAbsent(type, AbstractValidator::newObject));
+        return type.cast(validatorForwards.computeIfAbsent(type, this::newObject));
     }
 
-    private static <E> E newObject(Class<E> type) {
+    private <E extends Validator<?>> E newObject(Class<E> type) {
         try {
-            return type.cast(type.getConstructor().newInstance());
+            E e = type.cast(type.getConstructor().newInstance());
+            e.setCapabilities(capabilities);
+            return e;
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             throw new IllegalStateException("Type " + type + " cannot be constructed by empty constructor!");
         }
     }
 
+    protected void putError(ValidationCapability c, String error) {
+        errors.computeIfAbsent(c, k -> new HashSet<>()).add(error);
+    }
+
     @Override
-    public final Map<DatabaseType, Set<String>> getValidationErrors() {
-        Map<DatabaseType, Set<String>> map = new EnumMap<>(DatabaseType.class);
+    public final Map<ValidationCapability, Set<String>> getValidationErrors() {
+        Map<ValidationCapability, Set<String>> map = new HashMap<>();
         map.putAll(errors);
         for (AbstractValidator<?> v : validatorForwards.values()) {
-            Validation.mergeTo(v.getValidationErrors(), map);
+            map.putAll(v.getValidationErrors());
         }
         return map;
+    }
+
+    @Override
+    public final void setCapabilities(Collection<ValidationCapability> capabilities) {
+        this.capabilities = capabilities;
+    }
+
+    public Collection<ValidationCapability> getCapabilities() {
+        return capabilities;
     }
 
     protected void validateOptionalExpressions(List<Expression> expressions) {
@@ -67,5 +84,4 @@ public abstract class AbstractValidator<S> implements Validation {
         }
     }
 
-    public abstract void validate(S statement);
 }

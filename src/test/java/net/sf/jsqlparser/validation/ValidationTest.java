@@ -24,6 +24,7 @@ import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.DatabaseType;
 import net.sf.jsqlparser.util.validation.StatementValidator;
 import net.sf.jsqlparser.util.validation.ValidationError;
@@ -39,13 +40,20 @@ public class ValidationTest {
         Statement stmt = CCJSqlParserUtil.parse(sql);
 
         StatementValidator validator = new StatementValidator();
+        validator.setCapabilities(Arrays.asList(DatabaseType.sqlserver, DatabaseType.postgresql));
         stmt.accept(validator);
 
-        Map<DatabaseType, Set<String>> unsupportedErrors = validator.getValidationErrors(DatabaseType.sqlserver);
+        Map<ValidationCapability, Set<String>> unsupportedErrors = validator.getValidationErrors(DatabaseType.sqlserver);
         assertNotNull(unsupportedErrors);
         assertEquals(1, unsupportedErrors.size());
-        assertEquals(new HashSet<>(Arrays.asList("oldOracleJoinSyntax=1 not supported")),
+        assertEquals(new HashSet<>(Arrays.asList("oldOracleJoinSyntax=1 not supported.")),
                 unsupportedErrors.get(DatabaseType.sqlserver));
+
+        unsupportedErrors = validator.getValidationErrors(DatabaseType.postgresql);
+        assertNotNull(unsupportedErrors);
+        assertEquals(1, unsupportedErrors.size());
+        assertEquals(new HashSet<>(Arrays.asList("oldOracleJoinSyntax=1 not supported.")),
+                unsupportedErrors.get(DatabaseType.postgresql));
     }
 
     @Test
@@ -58,8 +66,8 @@ public class ValidationTest {
         assertNotNull(errors);
         assertEquals(1, errors.size());
         assertEquals(stmt, errors.get(0).getStatement());
-        assertEquals(DatabaseType.sqlserver, errors.get(0).getDatabaseType());
-        assertEquals(new HashSet<>(Arrays.asList("oldOracleJoinSyntax=1 not supported")), errors.get(0).getErrors());
+        assertEquals(DatabaseType.sqlserver, errors.get(0).getCapability());
+        assertEquals(new HashSet<>(Arrays.asList("oldOracleJoinSyntax=1 not supported.")), errors.get(0).getErrors());
         assertNull(errors.get(0).getException());
 
     }
