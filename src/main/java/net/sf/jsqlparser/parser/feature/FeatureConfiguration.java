@@ -16,7 +16,7 @@ public class FeatureConfiguration {
     }
 
     private FeatureConfiguration() {
-        enable(EnumSet.allOf(Feature.class));
+        EnumSet.allOf(Feature.class).forEach(f -> set(f, f.isEnabled()));
     }
 
     public FeatureConfiguration enable(Collection<Feature> features) {
@@ -27,9 +27,13 @@ public class FeatureConfiguration {
         return set(features, Boolean.TRUE);
     }
 
-    private FeatureConfiguration set(Collection<Feature> features, Boolean b) {
-        features.forEach(f -> featureStatus.put(f, b));
+    public FeatureConfiguration set(Collection<Feature> features, Boolean b) {
+        features.forEach(f -> set(f, b));
         return this;
+    }
+
+    public Boolean set(Feature f, Boolean b) {
+        return featureStatus.put(f, b);
     }
 
     public boolean isEnabled(Feature feature) {
