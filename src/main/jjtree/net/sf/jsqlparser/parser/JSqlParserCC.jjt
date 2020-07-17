@@ -3030,15 +3030,25 @@ Expression AnyComparisonExpression() :
 Expression SimpleExpression():
 {
     Expression retval = null;
+    UserVariable user = null;
+    Token operation = null;
 }
 {
-  (
-        retval=ConcatExpression()
-  )
-
-   {
-      return retval;
-   }
+    [ LOOKAHEAD(UserVariable() ("=" | ":=") ) 
+        user = UserVariable() 
+       ( operation = "=" | operation = ":=" )
+    ]
+    retval=ConcatExpression()
+    {
+        if (user != null) {
+            VariableAssignment assignment = new VariableAssignment();
+            assignment.setVariable(user);
+            assignment.setOperation(operation.image);
+            assignment.setExpression(retval);
+            return assignment;
+        } else 
+            return retval;
+    }
 }
 
 Expression ConcatExpression():
@@ -3359,7 +3369,7 @@ IntervalExpression IntervalExpression() : {
 {
 
 { interval = new IntervalExpression(); }
-    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | expr = Column())
+    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | expr = Column() | expr = JdbcNamedParameter() )
     {
         if (expr != null) {
             if (signed) expr = new SignedExpression('-', expr);
@@ -3600,6 +3610,9 @@ RowConstructor RowConstructor(): {
     }
 }
 
+/**
+TODO: VariableExpression should be a standalone class with more operations available. 
+*/
 EqualsTo VariableExpression(): {
     Expression left;
     Expression right;

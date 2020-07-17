@@ -50,6 +50,7 @@ import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
+import net.sf.jsqlparser.expression.VariableAssignment;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.WindowElement;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
@@ -892,5 +893,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     void deParse(Expression statement) {
         statement.accept(this);
+    }
+    
+    @Override
+    public void visit(VariableAssignment var) {
+        var.getVariable().accept(this);
+        buffer.append(" ").append(var.getOperation()).append(" ");
+        var.getExpression().accept(this);
     }
 }
