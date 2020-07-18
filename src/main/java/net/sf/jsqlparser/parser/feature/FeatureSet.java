@@ -14,4 +14,12 @@ import java.util.Set;
 public interface FeatureSet {
 
     public Set<Feature> getFeatures();
+
+    /**
+     * @return <code>true</code> if the feature is identical to one of the features
+     *         contained in this set, <code>false</code> otherwise
+     */
+    default boolean contains(Feature feature) {
+        return getFeatures().contains(feature);
+    }
 }

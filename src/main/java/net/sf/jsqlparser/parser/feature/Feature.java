@@ -10,6 +10,23 @@
 package net.sf.jsqlparser.parser.feature;
 
 public enum Feature {
+    select,
+    /**
+     * insert with multi-value is allowed
+     */
+    insertWithMulivalue,
+    /**
+     * SQL "INSERT" statement is allowed
+     */
+    insert,
+    /**
+     * SQL "UPDATE" statement is allowed
+     */
+    update,
+    /**
+     * SQL "DELETE" statement is allowed
+     */
+    delete,
     /**
      * SQL "UPSERT" statement is allowed
      */
@@ -19,13 +36,18 @@ public enum Feature {
      */
     merge,
     /**
-     * SQL "INSERT" statement is allowed
+     * SQL "ALTER" statement is allowed
      */
-    insert,
+    alter,
     /**
-     * insert with multi-value is allowed
+     * SQL "TRUNCATE" statement is allowed
      */
-    insertWithMulivalue,
+    truncate,
+    /**
+     * SQL "EXECUTE" statement is allowed
+     */
+    execute,
+
     /**
      * allows old oracle join syntax (+)
      */
@@ -35,30 +57,37 @@ public enum Feature {
      */
     oraclePriorPosition,
     /**
-     * allows square brackets for names, default is <code>false</code>
+     * allows square brackets for names, disabled by default
      */
     allowSquareBracketQuotation(false);
 
-    private boolean enabled;
+    private boolean parserEnabled;
+    private boolean switchable;
 
     /**
-     * a feature which is enabled by default
+     * a feature which can't be enabled or disabled within the parser
      */
     private Feature() {
-        this(true);
+        this.parserEnabled = true;
+        this.switchable = false;
     }
 
     /**
-     * Use this constructor to disable a feature by default.
+     * a feature which can be enabled or disabled by {@link FeatureConfiguration}
      *
-     * @param enabledByDefault
+     * @param parserEnabled
      */
-    private Feature(boolean enabledByDefault) {
-        this.enabled = enabledByDefault;
+    private Feature(boolean parserEnabled) {
+        this.parserEnabled = parserEnabled;
+        this.switchable = true;
     }
 
-    public boolean isEnabled() {
-        return enabled;
+    public boolean isParserEnabled() {
+        return parserEnabled;
+    }
+
+    public boolean isSwitchable() {
+        return switchable;
     }
 
 }

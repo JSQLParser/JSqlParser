@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util.validation;
 
+import java.util.function.Consumer;
+
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
@@ -111,26 +114,41 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(Select select) {
-        // selectValidator.setBuffer(errors);
-        // expressionDeParser.setSelectVisitor(selectValidator);
-        //        expressionDeParser.setBuffer(errors);
-        // selectValidator.setExpressionVisitor(expressionDeParser);
-        //        if (select.getWithItemsList() != null && !select.getWithItemsList().isEmpty()) {
-        //            errors.append("WITH ");
-        //            for (Iterator<WithItem> iter = select.getWithItemsList().iterator(); iter.hasNext();) {
-        //                WithItem withItem = iter.next();
-        // withItem.accept(selectValidator);
-        //                if (iter.hasNext()) {
-        //                    errors.append(",");
-        //                }
-        //                errors.append(" ");
-        //            }
-        //        }
-        select.getSelectBody().accept(getValidator(SelectValidator.class));
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.select), messageConsumer);
+            }
+            // selectValidator.setBuffer(errors);
+            // expressionDeParser.setSelectVisitor(selectValidator);
+            // expressionDeParser.setBuffer(errors);
+            // selectValidator.setExpressionVisitor(expressionDeParser);
+            // if (select.getWithItemsList() != null &&
+            // !select.getWithItemsList().isEmpty()) {
+            // errors.append("WITH ");
+            // for (Iterator<WithItem> iter = select.getWithItemsList().iterator();
+            // iter.hasNext();) {
+            // WithItem withItem = iter.next();
+            // withItem.accept(selectValidator);
+            // if (iter.hasNext()) {
+            // errors.append(",");
+            // }
+            // errors.append(" ");
+            // }
+            // }
+            select.getSelectBody().accept(getValidator(SelectValidator.class));
+        }
+
     }
 
     @Override
     public void visit(Truncate truncate) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.truncate), messageConsumer);
+            }
+        }
         //        errors.append("TRUNCATE TABLE ");
         //        errors.append(truncate.getTable());
         //        if (truncate.getCascade()) {
@@ -140,6 +158,12 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(Update update) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.update), messageConsumer);
+            }
+        }
         //        selectValidator.setBuffer(errors);
         //        expressionDeParser.setSelectVisitor(selectValidator);
         //        expressionDeParser.setBuffer(errors);
@@ -151,6 +175,12 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(Alter alter) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.alter), messageConsumer);
+            }
+        }
         //        AlterDeParser alterDeParser = new AlterDeParser(errors);
         //        alterDeParser.deParse(alter);
         //
@@ -158,11 +188,17 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(Statements stmts) {
-        //        stmts.accept(this);
+        stmts.getStatements().forEach(s -> s.accept(this));
     }
 
     @Override
     public void visit(Execute execute) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.execute), messageConsumer);
+            }
+        }
         //        selectValidator.setBuffer(errors);
         //        expressionDeParser.setSelectVisitor(selectValidator);
         //        expressionDeParser.setBuffer(errors);
@@ -183,6 +219,12 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(Merge merge) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.merge), messageConsumer);
+            }
+        }
         //TODO implementation of a deparser
         //        errors.append(merge.toString());
     }
@@ -194,6 +236,12 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(Upsert upsert) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.upsert), messageConsumer);
+            }
+        }
         //        selectValidator.setBuffer(errors);
         //        expressionDeParser.setSelectVisitor(selectValidator);
         //        expressionDeParser.setBuffer(errors);

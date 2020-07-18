@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.statement.Statement;
 
 public class ValidationUtil {
@@ -39,22 +40,36 @@ public class ValidationUtil {
      * @param statements
      * @return a list of {@link ValidationError}'s
      */
-    public static List<ValidationError> validate(Collection<? extends ValidationCapability> capabilities,
+    public static List<ValidationError> validate(
+            Collection<? extends ValidationCapability> capabilities,
             List<String> statements) {
+        return validate(new FeatureConfiguration(), capabilities, statements);
+    }
+
+    /**
+     * @param config
+     * @param capabilities
+     * @param statements
+     * @return a list of {@link ValidationError}'s
+     */
+    public static List<ValidationError> validate(FeatureConfiguration config,
+            Collection<? extends ValidationCapability> capabilities, List<String> statements) {
         List<ValidationError> errors = new ArrayList<>();
         for (String statement : statements) {
             Statement stmt = null;
             try {
-                stmt = CCJSqlParserUtil.parse(statement);
+                stmt = CCJSqlParserUtil.parseStatement(
+                        CCJSqlParserUtil.newParser(statement).withConfiguration(config));
                 if (!capabilities.isEmpty()) {
                     StatementValidator validator = new StatementValidator();
                     validator.setCapabilities(new ArrayList<>(capabilities));
+                    validator.setConfiguration(config);
                     validator.validate(stmt);
 
                     for (Entry<ValidationCapability, Set<String>> e : validator
                             .getValidationErrors().entrySet()) {
-                        errors.add(new ValidationError(statement).withCapability(e.getKey())
-                                .addErrors(e.getValue()));
+                        errors.add(new ValidationError(statement)
+                                .withCapability(e.getKey()).addErrors(e.getValue()));
                     }
                 }
             } catch (JSQLParserException e) {

@@ -62,7 +62,7 @@ public enum DatabaseType implements FeatureSetValidation {
     }
 
     public enum PostgresqlVersion implements Version {
-        V11("11", EnumSet.of(Feature.upsert)), //
+        V11("11", EnumSet.of(Feature.select, Feature.insert, Feature.update, Feature.delete, Feature.upsert)), //
         V12("12", V11.getFeatures());
 
         private Set<Feature> features;

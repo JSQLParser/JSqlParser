@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.schema.Column;
 
 /**
@@ -28,13 +29,11 @@ import net.sf.jsqlparser.schema.Column;
  */
 public abstract class AbstractValidator<S> implements Validator<S> {
 
-    private static final ThreadLocal<ValidationContext> CONTEXT = ThreadLocal.withInitial(ValidationContext::new);
+    private ValidationContext context = new ValidationContext();
 
     private Map<ValidationCapability, Set<String>> errors = new HashMap<>();
 
     private Map<Class<? extends AbstractValidator<?>>, AbstractValidator<?>> validatorForwards = new HashMap<>();
-
-    private Collection<ValidationCapability> capabilities;
 
     public <T extends AbstractValidator<?>> T getValidator(Class<T> type) {
         return type.cast(validatorForwards.computeIfAbsent(type, this::newObject));
@@ -43,7 +42,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     private <E extends Validator<?>> E newObject(Class<E> type) {
         try {
             E e = type.cast(type.getConstructor().newInstance());
-            e.setCapabilities(capabilities);
+            e.setContext(context());
             return e;
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
@@ -55,12 +54,12 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         return s -> putError(c, s);
     }
 
-    protected static ValidationContext context() {
+    protected ValidationContext context() {
         return context(true);
     }
 
-    protected static ValidationContext context(boolean reInit) {
-        return CONTEXT.get().reinit(reInit);
+    protected ValidationContext context(boolean reInit) {
+        return context.reinit(reInit);
     }
 
     protected void putError(ValidationCapability c, String error) {
@@ -79,11 +78,21 @@ public abstract class AbstractValidator<S> implements Validator<S> {
 
     @Override
     public final void setCapabilities(Collection<ValidationCapability> capabilities) {
-        this.capabilities = capabilities;
+        context().setCapabilities(capabilities);
+    }
+
+    @Override
+    public final void setConfiguration(FeatureConfiguration configuration) {
+        context().setConfiguration(configuration);
     }
 
     public Collection<ValidationCapability> getCapabilities() {
-        return capabilities;
+        return context().getCapabilities();
+    }
+
+    @Override
+    public final void setContext(ValidationContext context) {
+        this.context = context;
     }
 
     protected void validateOptionalExpressions(List<Expression> expressions) {

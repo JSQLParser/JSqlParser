@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.parser.feature.FeatureSet;
 
 public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
@@ -31,9 +30,9 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
     @Override
     default void validate(ValidationContext ctx, Consumer<String> errorMessageConsumer) {
         Feature feature = ctx.get(Keys.feature, Feature.class);
-        if (!getFeatures().contains(feature)) {
+        if (!contains(feature)) {
             errorMessageConsumer.accept(getNotSupportedMessage(feature));
-        } else if (FeatureConfiguration.getInstance().isDisabled(feature)) {
+        } else if (feature.isSwitchable() && ctx.isDisabled(feature)) {
             errorMessageConsumer.accept(getDisabledMessage(feature));
         }
     }

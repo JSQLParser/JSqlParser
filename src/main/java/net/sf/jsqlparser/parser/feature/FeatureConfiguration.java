@@ -1,47 +1,70 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2020 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.parser.feature;
 
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FeatureConfiguration {
 
-    private Map<Feature, Boolean> featureStatus = new EnumMap<>(Feature.class);
+    private static final Logger LOG = Logger.getLogger(FeatureConfiguration.class.getName());
 
-    private static final FeatureConfiguration INSTANCE = new FeatureConfiguration();
+    private Map<Feature, Boolean> featureEnabled = new EnumMap<>(Feature.class);
 
-    public static FeatureConfiguration getInstance() {
-        return INSTANCE;
+    public FeatureConfiguration() {
+        // set default-value for all switchable features
+        EnumSet.allOf(Feature.class).stream().filter(Feature::isSwitchable)
+        .forEach(f -> setEnabled(f, f.isParserEnabled()));
     }
 
-    private FeatureConfiguration() {
-        EnumSet.allOf(Feature.class).forEach(f -> set(f, f.isEnabled()));
-    }
-
-    public FeatureConfiguration enable(Collection<Feature> features) {
-        return set(features, Boolean.TRUE);
-    }
-
-    public FeatureConfiguration disable(Collection<Feature> features) {
-        return set(features, Boolean.TRUE);
-    }
-
-    public FeatureConfiguration set(Collection<Feature> features, Boolean b) {
-        features.forEach(f -> set(f, b));
+    /**
+     * @param features
+     * @param enabled
+     * @return <code>this</code>
+     */
+    public FeatureConfiguration setEnabled(Collection<Feature> features, boolean enabled) {
+        features.forEach(f -> setEnabled(f, enabled));
         return this;
     }
 
-    public Boolean set(Feature f, Boolean b) {
-        return featureStatus.put(f, b);
+    /**
+     * @param feature
+     * @param enabled
+     * @return <code>this</code>
+     */
+    public FeatureConfiguration setEnabled(Feature feature, boolean enabled) {
+        if (feature.isSwitchable()) {
+            featureEnabled.put(feature, enabled);
+        } else {
+            if (LOG.isLoggable(Level.WARNING)) {
+                LOG.warning(feature.name() + " is not switchable - cannot set enabled = " + enabled);
+            }
+        }
+        return this;
     }
 
     public boolean isEnabled(Feature feature) {
-        return featureStatus.get(feature);
+        if (feature.isSwitchable()) {
+            return featureEnabled.get(feature);
+        } else {
+            return feature.isParserEnabled();
+        }
     }
 
     public boolean isDisabled(Feature feature) {
         return !isEnabled(feature);
     }
+
 
 }

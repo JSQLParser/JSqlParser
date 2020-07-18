@@ -24,9 +24,10 @@ import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.DatabaseType;
+import net.sf.jsqlparser.util.validation.FeaturesAllowed;
 import net.sf.jsqlparser.util.validation.StatementValidator;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationError;
 import net.sf.jsqlparser.util.validation.ValidationUtil;
 import org.hamcrest.core.StringStartsWith;
@@ -94,6 +95,32 @@ public class ValidationTest {
         assertNotNull(errors.get(0).getException());
         assertThat(errors.get(0).getErrors().stream().findFirst().get(),
                 StringStartsWith.startsWith("Cannot parse statement"));
+
+    }
+
+    @Test
+    public void testWithValidatonUtilAcceptOnlyUpdates() throws JSQLParserException {
+
+        String stmt = "SELECT * FROM tab1 JOIN tab2 WHERE tab1.id = tab2.ref";
+        List<ValidationError> errors = ValidationUtil.validate(
+                Arrays.asList(DatabaseType.postgresql, FeaturesAllowed.UPDATE), stmt);
+
+        assertNotNull(errors);
+        assertEquals(1, errors.size());
+        assertNull(errors.get(0).getException());
+        assertEquals(new HashSet<>(Arrays.asList("select not supported.")), errors.get(0).getErrors());
+
+    }
+
+    @Test
+    public void testWithValidatonUtilAcceptOnlySelects() throws JSQLParserException {
+
+        String stmt = "SELECT * FROM tab1 JOIN tab2 WHERE tab1.id = tab2.ref";
+        List<ValidationError> errors = ValidationUtil.validate(
+                Arrays.asList(DatabaseType.postgresql, FeaturesAllowed.SELECT), stmt);
+
+        assertNotNull(errors);
+        assertEquals(0, errors.size());
 
     }
 
