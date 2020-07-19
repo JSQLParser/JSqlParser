@@ -19,6 +19,10 @@ import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 
 import java.util.Set;
 
+/**
+ * @author gitmotte
+ * @param <S>
+ */
 public interface Validator<S> {
 
     /**

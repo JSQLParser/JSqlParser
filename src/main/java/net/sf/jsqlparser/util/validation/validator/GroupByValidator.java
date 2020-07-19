@@ -9,12 +9,20 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.select.GroupByElement;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
 
+/**
+ * @author gitmotte
+ */
 public class GroupByValidator extends AbstractValidator<GroupByElement> {
 
     @Override
     public void validate(GroupByElement groupBy) {
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(c, Feature.selectGroupBy);
+        }
         //        buffer.append("GROUP BY ");
         //        for (Iterator<Expression> iter = groupBy.getGroupByExpressions().iterator(); iter.hasNext();) {
         //            iter.next().accept(expressionVisitor);

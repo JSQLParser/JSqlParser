@@ -14,6 +14,9 @@ import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
+/**
+ * @author gitmotte
+ */
 public class AlterViewValidator extends AbstractValidator<AlterView> {
 
     @Override

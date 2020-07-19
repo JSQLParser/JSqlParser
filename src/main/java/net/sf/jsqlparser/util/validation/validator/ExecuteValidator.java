@@ -9,24 +9,20 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import java.util.function.Consumer;
-
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.execute.Execute;
-import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
-import net.sf.jsqlparser.util.validation.feature.FeatureContext;
 
+/**
+ * @author gitmotte
+ */
 public class ExecuteValidator extends AbstractValidator<Execute> {
 
 
     @Override
     public void validate(Execute execute) {
         for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureContext.feature, Feature.execute), messageConsumer);
-            }
+            validateFeature(c, Feature.execute);
         }
         //        buffer.append(execute.getExecType().name()).append(" ").append(execute.getName());
         //        if (execute.isParenthesis()) {

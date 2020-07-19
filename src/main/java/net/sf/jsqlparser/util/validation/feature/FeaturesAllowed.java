@@ -19,8 +19,9 @@ import net.sf.jsqlparser.parser.feature.Feature;
 public class FeaturesAllowed implements FeatureSetValidation {
 
     public static final FeaturesAllowed INSERT = new FeaturesAllowed(Feature.insert,
-            Feature.insertWithMulivalue).unmodifyable();
-    public static final FeaturesAllowed SELECT = new FeaturesAllowed(Feature.select).unmodifyable();
+            Feature.insertValues).unmodifyable();
+    public static final FeaturesAllowed SELECT = new FeaturesAllowed(Feature.select, Feature.limit,
+            Feature.selectGroupBy).unmodifyable();
     public static final FeaturesAllowed UPDATE = new FeaturesAllowed(Feature.update).unmodifyable();
     public static final FeaturesAllowed DELETE = new FeaturesAllowed(Feature.delete).unmodifyable();
 

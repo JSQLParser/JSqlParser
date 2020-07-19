@@ -48,8 +48,10 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
+/**
+ * @author gitmotte
+ */
 public class StatementValidator extends AbstractValidator<Statement> implements StatementVisitor {
-
 
     @Override
     public void visit(CreateIndex createIndex) {

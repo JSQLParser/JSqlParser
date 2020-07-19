@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import java.util.function.Consumer;
-
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
@@ -18,20 +16,18 @@ import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.SubSelect;
-import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
-import net.sf.jsqlparser.util.validation.feature.FeatureContext;
 
+/**
+ * @author gitmotte
+ */
 public class ReplaceValidator extends AbstractValidator<Replace> implements ItemsListVisitor {
 
 
     @Override
     public void validate(Replace replace) {
         for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureContext.feature, Feature.replace), messageConsumer);
-            }
+            validateFeature(c, Feature.replace);
         }
         //        buffer.append("REPLACE ");
         //        if (replace.isUseIntoTables()) {

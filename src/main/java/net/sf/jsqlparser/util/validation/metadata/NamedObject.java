@@ -25,4 +25,8 @@ public enum NamedObject {
     index,
     constraint,
     uniqueConstraint,
+    /**
+     * a name constisting of max. 3 identifiers, i.e. [catalog].[schema].[sequence]
+     */
+    sequence,
 }

@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
@@ -36,13 +37,20 @@ import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
+/**
+ * @author gitmotte
+ */
 public class SelectValidator extends AbstractValidator<SelectItem>
 implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     @Override
     public void visit(PlainSelect plainSelect) {
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(c, Feature.select);
+        }
         //        if (plainSelect.isUseBrackets()) {
         //            errors.append("(");
         //        }

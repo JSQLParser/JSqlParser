@@ -9,19 +9,20 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
- * A class to de-parse (that is, transform from JSqlParser hierarchy into a string) a
- * {@link net.sf.jsqlparser.statement.alter.sequence.AlterSequence}
+ * @author gitmotte
  */
 public class AlterSequenceValidator extends AbstractValidator<AlterSequence> {
 
 
     @Override
     public void validate(AlterSequence statement) {
-        //        buffer.append("ALTER SEQUENCE ");
-        //        buffer.append(statement.getSequence());
+        validateFeatureAndName(Feature.alterSequence, NamedObject.sequence,
+                statement.getSequence().getFullyQualifiedName());
     }
 
 

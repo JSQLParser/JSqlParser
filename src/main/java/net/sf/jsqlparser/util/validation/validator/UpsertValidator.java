@@ -9,38 +9,34 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import java.util.function.Consumer;
-
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
-import net.sf.jsqlparser.util.validation.feature.FeatureContext;
 
+/**
+ * @author gitmotte
+ */
 public class UpsertValidator extends AbstractValidator<Upsert> {
 
     @Override
     public void validate(Upsert upsert) {
         for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureContext.feature, Feature.upsert), messageConsumer);
-            }
+            validateFeature(c, Feature.upsert);
+        }
+        upsert.getTable().accept(getValidator(SelectValidator.class));
 
-            upsert.getTable().accept(getValidator(SelectValidator.class));
-            validateOptionalColumns(upsert.getColumns());
+        validateOptionalColumns(upsert.getColumns());
 
-            if (upsert.getItemsList() != null) {
-                upsert.getItemsList().accept(getValidator(ItemListValidator.class));
-            }
+        if (upsert.getItemsList() != null) {
+            upsert.getItemsList().accept(getValidator(ItemListValidator.class));
+        }
 
-            if (upsert.getSelect() != null) {
-                validateSelect(upsert);
-            }
+        if (upsert.getSelect() != null) {
+            validateSelect(upsert);
+        }
 
-            if (upsert.isUseDuplicate()) {
-                validateDuplicate(upsert);
-            }
+        if (upsert.isUseDuplicate()) {
+            validateDuplicate(upsert);
         }
     }
 

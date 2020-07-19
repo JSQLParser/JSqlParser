@@ -12,6 +12,9 @@ package net.sf.jsqlparser.util.validation.validator;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.OrderByVisitor;
 
+/**
+ * @author gitmotte
+ */
 public class OrderByValidator extends AbstractValidator<OrderByElement> implements OrderByVisitor {
 
     @Override

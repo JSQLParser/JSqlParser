@@ -100,6 +100,9 @@ import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.feature.FeatureContext;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
+/**
+ * @author gitmotte
+ */
 public class ExpressionValidator extends AbstractValidator<Expression> implements ExpressionVisitor {
 
 
@@ -248,6 +251,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(JdbcParameter jdbcParameter) {
+        validateFeature(Feature.jdbcParameter);
     }
 
     @Override
@@ -543,10 +547,12 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(JdbcNamedParameter jdbcNamedParameter) {
+        validateFeature(Feature.jdbcNamedParameter);
     }
 
     @Override
     public void visit(OracleHierarchicalExpression oexpr) {
+        validateFeature(Feature.oracleHierarchicalExpression);
     }
 
     @Override

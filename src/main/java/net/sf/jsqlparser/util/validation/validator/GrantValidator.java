@@ -9,13 +9,20 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.grant.Grant;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
 
+/**
+ * @author gitmotte
+ */
 public class GrantValidator extends AbstractValidator<Grant> {
-
 
     @Override
     public void validate(Grant grant) {
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(c, Feature.grant);
+        }
         //        buffer.append("GRANT ");
         //        if (grant.getRole() != null) {
         //            buffer.append(grant.getRole());

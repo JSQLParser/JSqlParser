@@ -9,25 +9,26 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import java.util.function.Consumer;
-
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
-import net.sf.jsqlparser.util.validation.feature.FeatureContext;
 
+/**
+ * @author gitmotte
+ */
 public class CreateTableValidator extends AbstractValidator<CreateTable> {
 
 
     @Override
     public void validate(CreateTable createTable) {
         for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureContext.feature, Feature.createTable), messageConsumer);
-            }
+            validateFeature(Feature.createTable);
+            // TODO validate for not existing ?? this may be a little bit more complex
+            // because database-names share one space in most databases
+            // validateNameNotExists(c, NamedObject.table,
+            // createTable.getTable().getFullyQualifiedName());
         }
+
         //        buffer.append("CREATE ");
         //        if (createTable.isUnlogged()) {
         //            buffer.append("UNLOGGED ");

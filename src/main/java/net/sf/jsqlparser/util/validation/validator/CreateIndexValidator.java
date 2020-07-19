@@ -9,58 +9,29 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import java.util.function.Consumer;
-
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
-import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
+import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
-import net.sf.jsqlparser.util.validation.feature.FeatureContext;
 
+/**
+ * @author gitmotte
+ */
 public class CreateIndexValidator extends AbstractValidator<CreateIndex> {
-
 
     @Override
     public void validate(CreateIndex createIndex) {
+        Index index = createIndex.getIndex();
+        String tableFqn = createIndex.getTable().getFullyQualifiedName();
         for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureContext.feature, Feature.createIndex), messageConsumer);
-            }
+            validateFeature(Feature.createIndex);
+            validateName(c, NamedObject.table, tableFqn);
+         // TODO validate for not existing ?? this may be a little bit more complex
+            // because database-names share one space in most databases
+            //            validateNameNotExists(c, NamedObject.index, index.getName());
+            validateOptionalColumnNames(ValidatorUtil.concat(tableFqn, index.getColumnsNames()), c);
         }
-        //        Index index = createIndex.getIndex();
-        //
-        //        buffer.append("CREATE ");
-        //
-        //        if (index.getType() != null) {
-        //            buffer.append(index.getType());
-        //            buffer.append(" ");
-        //        }
-        //
-        //        buffer.append("INDEX ");
-        //        buffer.append(index.getName());
-        //        buffer.append(" ON ");
-        //        buffer.append(createIndex.getTable().getFullyQualifiedName());
-        //
-        //        String using = index.getUsing();
-        //        if (using != null) {
-        //            buffer.append(" USING ");
-        //            buffer.append(using);
-        //        }
-        //
-        //        if (index.getColumnsNames() != null) {
-        //            buffer.append(" (");
-        //            buffer.append(index.getColumnWithParams().stream()
-        //                    .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : ""))
-        //                    .collect(joining(", ")));
-        //            buffer.append(")");
-        //        }
-        //
-        //        if (createIndex.getTailParameters() != null) {
-        //            for (String param : createIndex.getTailParameters()) {
-        //                buffer.append(" ").append(param);
-        //            }
-        //        }
     }
 
 }

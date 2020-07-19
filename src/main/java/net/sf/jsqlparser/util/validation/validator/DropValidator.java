@@ -9,24 +9,20 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import java.util.function.Consumer;
-
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.drop.Drop;
-import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
-import net.sf.jsqlparser.util.validation.feature.FeatureContext;
 
+/**
+ * @author gitmotte
+ */
 public class DropValidator extends AbstractValidator<Drop> {
 
 
     @Override
     public void validate(Drop drop) {
         for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureContext.feature, Feature.drop), messageConsumer);
-            }
+            validateFeature(c, Feature.drop);
         }
         //        buffer.append("DROP ");
         //        buffer.append(drop.getType());

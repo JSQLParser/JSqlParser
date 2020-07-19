@@ -35,6 +35,7 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  * A abstract base for a Validation
  *
  * @param <S> the type of statement this DeParser supports
+ * @author gitmotte
  */
 public abstract class AbstractValidator<S> implements Validator<S> {
 

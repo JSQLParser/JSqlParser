@@ -9,18 +9,24 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
 
 /**
- * A class to de-parse (that is, transform from JSqlParser hierarchy into a string) a
- * {@link net.sf.jsqlparser.statement.create.sequence.CreateSequence}
+ * @author gitmotte
  */
 public class CreateSequenceValidator extends AbstractValidator<CreateSequence> {
 
 
     @Override
     public void validate(CreateSequence statement) {
-        //        buffer.append("CREATE SEQUENCE ");
-        //        buffer.append(statement.getSequence());
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(Feature.createSequence);
+            // TODO validate for not existing ?? this may be a little bit more complex
+            // because database-names share one space in most databases
+            // validateNameNotExists(c, NamedObject.sequence,
+            // statement.getSequence().getFullyQualifiedName());
+        }
     }
 }

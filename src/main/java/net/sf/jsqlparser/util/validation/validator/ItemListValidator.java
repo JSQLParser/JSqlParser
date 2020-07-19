@@ -12,6 +12,9 @@ package net.sf.jsqlparser.util.validation.validator;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
+/**
+ * @author gitmotte
+ */
 public class ItemListValidator extends AbstractValidator<ItemsList> implements ItemsListVisitor {
 
     @Override
