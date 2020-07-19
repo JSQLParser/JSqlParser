@@ -10,6 +10,8 @@
 package net.sf.jsqlparser.parser.feature;
 
 public enum Feature {
+
+    // STATEMENT FEATURES
     select,
     /**
      * insert with multi-value is allowed
@@ -47,7 +49,59 @@ public enum Feature {
      * SQL "EXECUTE" statement is allowed
      */
     execute,
+    /**
+     * SQL "REPLACE" statement is allowed
+     */
+    replace,
+    /**
+     * SQL "DROP" statement is allowed
+     */
+    drop,
+    /**
+     * SQL "ALTER VIEW" statement is allowed
+     */
+    alterView,
+    /**
+     * SQL "CREATE VIEW" statement is allowed
+     */
+    createView,
+    /**
+     * SQL "CREATE TABLE" statement is allowed
+     */
+    createTable,
+    /**
+     * SQL "CREATE INDEX" statement is allowed
+     */
+    createIndex,
+    /**
+     * SQL "COMMIT" statement is allowed
+     */
+    commit,
+    /**
+     * SQL block starting with "BEGIN" and ends with "END" statement is allowed
+     */
+    block,
+    /**
+     * SQL "COMMENT" statement is allowed
+     */
+    comment,
+    /**
+     * SQL "DESCRIBE" statement is allowed
+     */
+    describe,
+    /**
+     * SQL "EXPLAIN" statement is allowed
+     */
+    explain,
+    /**
+     * SQL "CREATE SCHEMA" statement is allowed
+     */
+    createSchema,
+    function,
+    procedure,
+    functionalStatement,
 
+    // SYNTAX FEATURES
     /**
      * allows old oracle join syntax (+)
      */

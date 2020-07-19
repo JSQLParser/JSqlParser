@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.validation;
 
+import java.util.function.Consumer;
+
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
@@ -16,10 +18,10 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
 
     @Override
     public void validate(Upsert upsert) {
-
         for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
             if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.upsert), getMessageConsumer(c));
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.upsert), messageConsumer);
             }
 
             upsert.getTable().accept(getValidator(SelectValidator.class));
@@ -36,9 +38,7 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
             if (upsert.isUseDuplicate()) {
                 validateDuplicate(upsert);
             }
-
         }
-
     }
 
     private void validateSelect(Upsert upsert) {

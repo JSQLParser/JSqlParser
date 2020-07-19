@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.util.validation;
 
-import java.util.function.Consumer;
-
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
@@ -28,7 +26,9 @@ import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
+import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.procedure.CreateProcedure;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -46,144 +46,76 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.util.validation.DatabaseMetaDataValidation.NamedObject;
 
 public class StatementValidator extends AbstractValidator<Statement> implements StatementVisitor {
 
 
     @Override
     public void visit(CreateIndex createIndex) {
-        //        CreateIndexDeParser createIndexDeParser = new CreateIndexDeParser(errors);
-        //        createIndexDeParser.deParse(createIndex);
+        getValidator(CreateIndexValidator.class).validate(createIndex);
     }
 
     @Override
     public void visit(CreateTable createTable) {
-        //        CreateTableDeParser createTableDeParser = new CreateTableDeParser(this, buffer);
-        //        createTableDeParser.deParse(createTable);
+        getValidator(CreateTableValidator.class).validate(createTable);
     }
 
     @Override
     public void visit(CreateView createView) {
-        //        CreateViewDeParser createViewDeParser = new CreateViewDeParser(buffer);
-        //        createViewDeParser.deParse(createView);
+        getValidator(CreateViewValidator.class).validate(createView);
     }
 
     @Override
     public void visit(AlterView alterView) {
-        //        AlterViewDeParser alterViewDeParser = new AlterViewDeParser(buffer);
-        //        alterViewDeParser.deParse(alterView);
+        getValidator(AlterViewValidator.class).validate(alterView);
     }
 
     @Override
     public void visit(Delete delete) {
-        // selectValidator.setBuffer(buffer);
-        // expressionDeParser.setSelectVisitor(selectValidator);
-        //        expressionDeParser.setBuffer(buffer);
-        // selectValidator.setExpressionVisitor(expressionDeParser);
-        //        DeleteDeParser deleteDeParser = new DeleteDeParser(expressionDeParser, buffer);
-        //        deleteDeParser.deParse(delete);
+        getValidator(DeleteValidator.class).validate(delete);
     }
 
     @Override
     public void visit(Drop drop) {
-        //        DropDeParser dropDeParser = new DropDeParser(buffer);
-        //        dropDeParser.deParse(drop);
+        getValidator(DropValidator.class).validate(drop);
     }
 
     @Override
     public void visit(Insert insert) {
-        // selectValidator.setBuffer(buffer);
-        // expressionDeParser.setSelectVisitor(selectValidator);
-        //        expressionDeParser.setBuffer(buffer);
-        // selectValidator.setExpressionVisitor(expressionDeParser);
-        // InsertDeParser insertDeParser = new InsertDeParser(expressionDeParser,
-        // selectValidator, buffer);
-        //        insertDeParser.deParse(insert);
+        getValidator(InsertValidator.class).validate(insert);
     }
 
     @Override
     public void visit(Replace replace) {
-        // selectValidator.setBuffer(buffer);
-        // expressionDeParser.setSelectVisitor(selectValidator);
-        //        expressionDeParser.setBuffer(buffer);
-        // selectValidator.setExpressionVisitor(expressionDeParser);
-        // ReplaceDeParser replaceDeParser = new ReplaceDeParser(expressionDeParser,
-        // selectValidator, buffer);
-        //        replaceDeParser.deParse(replace);
+        getValidator(ReplaceValidator.class).validate(replace);
     }
 
     @Override
     public void visit(Select select) {
-        for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.select), messageConsumer);
-            }
-            // selectValidator.setBuffer(errors);
-            // expressionDeParser.setSelectVisitor(selectValidator);
-            // expressionDeParser.setBuffer(errors);
-            // selectValidator.setExpressionVisitor(expressionDeParser);
-            // if (select.getWithItemsList() != null &&
-            // !select.getWithItemsList().isEmpty()) {
-            // errors.append("WITH ");
-            // for (Iterator<WithItem> iter = select.getWithItemsList().iterator();
-            // iter.hasNext();) {
-            // WithItem withItem = iter.next();
-            // withItem.accept(selectValidator);
-            // if (iter.hasNext()) {
-            // errors.append(",");
-            // }
-            // errors.append(" ");
-            // }
-            // }
-            select.getSelectBody().accept(getValidator(SelectValidator.class));
-        }
+        validateFeature(Feature.select);
 
+        SelectValidator selectValidator = getValidator(SelectValidator.class);
+        if (select.getWithItemsList() != null) {
+            select.getWithItemsList().forEach(wi -> wi.accept(selectValidator));
+        }
+        select.getSelectBody().accept(selectValidator);
     }
 
     @Override
     public void visit(Truncate truncate) {
-        for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.truncate), messageConsumer);
-            }
-        }
-        //        errors.append("TRUNCATE TABLE ");
-        //        errors.append(truncate.getTable());
-        //        if (truncate.getCascade()) {
-        //            errors.append(" CASCADE");
-        //        }
+        validateFeature(Feature.truncate);
+        truncate.getTable().accept(getValidator(SelectValidator.class));
     }
 
     @Override
     public void visit(Update update) {
-        for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.update), messageConsumer);
-            }
-        }
-        //        selectValidator.setBuffer(errors);
-        //        expressionDeParser.setSelectVisitor(selectValidator);
-        //        expressionDeParser.setBuffer(errors);
-        //        UpdateDeParser updateDeParser = new UpdateDeParser(expressionDeParser, selectValidator, errors);
-        //        selectValidator.setExpressionVisitor(expressionDeParser);
-        //        updateDeParser.deParse(update);
-
+        getValidator(UpdateValidator.class).validate(update);
     }
 
     @Override
     public void visit(Alter alter) {
-        for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.alter), messageConsumer);
-            }
-        }
-        //        AlterDeParser alterDeParser = new AlterDeParser(errors);
-        //        alterDeParser.deParse(alter);
-        //
+        getValidator(AlterValidator.class).validate(alter);
     }
 
     @Override
@@ -193,148 +125,107 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(Execute execute) {
-        for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.execute), messageConsumer);
-            }
-        }
-        //        selectValidator.setBuffer(errors);
-        //        expressionDeParser.setSelectVisitor(selectValidator);
-        //        expressionDeParser.setBuffer(errors);
-        //        ExecuteDeParser executeDeParser = new ExecuteDeParser(expressionDeParser, errors);
-        //        selectValidator.setExpressionVisitor(expressionDeParser);
-        //        executeDeParser.deParse(execute);
+        getValidator(ExecuteValidator.class).validate(execute);
     }
 
     @Override
     public void visit(SetStatement set) {
-        //        selectValidator.setBuffer(errors);
-        //        expressionDeParser.setSelectVisitor(selectValidator);
-        //        expressionDeParser.setBuffer(errors);
-        //        SetStatementDeParser setStatementDeparser = new SetStatementDeParser(expressionDeParser, errors);
-        //        selectValidator.setExpressionVisitor(expressionDeParser);
-        //        setStatementDeparser.deParse(set);
+        getValidator(SetStatementValidator.class).validate(set);
     }
 
     @Override
     public void visit(Merge merge) {
-        for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.merge), messageConsumer);
-            }
-        }
-        //TODO implementation of a deparser
-        //        errors.append(merge.toString());
+        getValidator(MergeValidator.class).validate(merge);
     }
 
     @Override
     public void visit(Commit commit) {
-        //        errors.append(commit.toString());
+        validateFeature(Feature.commit);
     }
 
     @Override
     public void visit(Upsert upsert) {
-        for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
-            if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.upsert), messageConsumer);
-            }
-        }
-        //        selectValidator.setBuffer(errors);
-        //        expressionDeParser.setSelectVisitor(selectValidator);
-        //        expressionDeParser.setBuffer(errors);
-        //        selectValidator.setExpressionVisitor(expressionDeParser);
-        //        UpsertDeParser upsertDeParser = new UpsertDeParser(expressionDeParser, selectValidator, errors);
-        //        upsertDeParser.deParse(upsert);
+        getValidator(UpsertValidator.class).validate(upsert);
     }
 
     @Override
     public void visit(UseStatement use) {
-        //        new UseStatementDeParser(errors).deParse(use);
+        getValidator(UseStatementValidator.class).validate(use);
     }
 
     @Override
     public void visit(ShowColumnsStatement show) {
-        //        new ShowColumnsStatementDeParser(errors).deParse(show);
+        getValidator(ShowColumnsStatementValidator.class).validate(show);
     }
 
     @Override
     public void visit(Block block) {
-        //        errors.append("BEGIN\n");
-        //        if (block.getStatements() != null) {
-        //            for (Statement stmt : block.getStatements().getStatements()) {
-        //                stmt.accept(this);
-        //                errors.append(";\n");
-        //            }
-        //        }
-        //        errors.append("END");
+        validateFeature(Feature.block);
+        block.getStatements().accept(this);
     }
 
     @Override
     public void visit(Comment comment) {
-        //        errors.append(comment.toString());
+        validateFeature(Feature.comment);
     }
+
 
     @Override
     public void visit(ValuesStatement values) {
-        //        expressionDeParser.setBuffer(errors);
-        //        new ValuesStatementDeParser(expressionDeParser, errors).deParse(values);
+        getValidator(ValuesStatementValidator.class).validate(values);
     }
 
     @Override
     public void visit(DescribeStatement describe) {
-        //        errors.append("DESCRIBE ");
-        //        errors.append(describe.getTable());
+        validateFeature(Feature.describe);
+        describe.getTable().accept(getValidator(SelectValidator.class));
     }
 
     @Override
     public void visit(ExplainStatement explain) {
-        //        errors.append("EXPLAIN ");
-        //        if (explain.getOptions() != null) {
-        //            errors.append(explain.getOptions().values().stream().map(ExplainStatement.Option::formatOption)
-        //                    .collect(Collectors.joining(" ")));
-        //            errors.append(" ");
-        //        }
-        //        explain.getStatement().accept(this);
+        validateFeature(Feature.explain);
+        explain.getStatement().accept(this);
     }
 
     @Override
     public void visit(ShowStatement show) {
-        //        new ShowStatementDeParser(errors).deParse(show);
+        getValidator(ShowStatementValidator.class).validate(show);
     }
 
     @Override
     public void visit(DeclareStatement declare) {
-        //        expressionDeParser.setBuffer(errors);
-        //        new DeclareStatementDeParser(expressionDeParser, errors).deParse(declare);
+        getValidator(DeclareStatementValidator.class).validate(declare);
     }
 
     @Override
     public void visit(Grant grant) {
-        //        GrantDeParser grantDeParser = new GrantDeParser(errors);
-        //        grantDeParser.deParse(grant);
+        getValidator(GrantValidator.class).validate(grant);
     }
 
     @Override
     public void visit(CreateSchema aThis) {
-        //        errors.append(aThis.toString());
+        validateFeatureAndName(Feature.createSchema, NamedObject.schema, aThis.getSchemaName());
+        aThis.getStatements().forEach(s -> s.accept(this));
     }
 
     @Override
     public void visit(CreateSequence createSequence) {
-        //        new CreateSequenceDeParser(errors).deParse(createSequence);
+        getValidator(CreateSequenceValidator.class).validate(createSequence);
     }
 
     @Override
     public void visit(AlterSequence alterSequence) {
-        //        new AlterSequenceDeParser(errors).deParse(alterSequence);
+        getValidator(AlterSequenceValidator.class).validate(alterSequence);
     }
 
     @Override
     public void visit(CreateFunctionalStatement createFunctionalStatement) {
-        //        errors.append(createFunctionalStatement.toString());
+        validateFeature(Feature.functionalStatement);
+        if (createFunctionalStatement instanceof CreateFunction) {
+            validateFeature(Feature.function);
+        } else if (createFunctionalStatement instanceof CreateProcedure) {
+            validateFeature(Feature.procedure);
+        }
     }
 
     @Override

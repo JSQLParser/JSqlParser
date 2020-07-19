@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util.validation;
 
+import java.util.function.Consumer;
+
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.drop.Drop;
 
 public class DropValidator extends AbstractValidator<Drop> {
@@ -16,6 +19,12 @@ public class DropValidator extends AbstractValidator<Drop> {
 
     @Override
     public void validate(Drop drop) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.drop), messageConsumer);
+            }
+        }
         //        buffer.append("DROP ");
         //        buffer.append(drop.getType());
         //        if (drop.isIfExists()) {

@@ -19,8 +19,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.util.validation.DatabaseMetaDataValidation.NamedObject;
 
 /**
  * A abstract base for a Validation
@@ -106,6 +108,96 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         if (columns != null && !columns.isEmpty()) {
             ExpressionValidator e = getValidator(ExpressionValidator.class);
             columns.forEach(c -> c.accept(e));
+        }
+    }
+
+    /**
+     * Iterates through all {@link ValidationCapability} and validates the feature
+     * with {@link #validateFeature(ValidationCapability, Feature)
+     *
+     * @param feature
+     */
+    protected void validateFeature(Feature feature) {
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(c, feature);
+        }
+    }
+
+    /**
+     * Iterates through all {@link ValidationCapability} and validates
+     * <ul>
+     * <li>the name with
+     * {@link #validateName(ValidationCapability, NamedObject, String)}</li>
+     * <li>the feature with
+     * {@link #validateFeature(ValidationCapability, Feature)}</li>
+     * </ul>
+     *
+     * @param feature
+     * @param namedObject
+     * @param fqn
+     */
+    protected void validateFeatureAndName(Feature feature, NamedObject namedObject, String fqn) {
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(c, feature);
+            validateName(c, namedObject, fqn);
+        }
+    }
+
+    /**
+     * Iterates through all {@link ValidationCapability} and validates for the name
+     * with {@link #validateName(ValidationCapability, NamedObject, String)}
+     *
+     * @param fqn
+     */
+    protected void validateName(String fqn) {
+        for (ValidationCapability c : getCapabilities()) {
+            validateName(c, NamedObject.column, fqn);
+        }
+    }
+
+    /**
+     * Validates the feature if given {@link ValidationCapability} is a
+     * {@link FeatureSetValidation}
+     *
+     * @param capability
+     * @param feature
+     */
+    protected void validateFeature(ValidationCapability capability, Feature feature) {
+        if (capability instanceof FeatureSetValidation) {
+            capability.validate(context().put(FeatureSetValidation.Keys.feature, feature),
+                    getMessageConsumer(capability));
+        }
+    }
+
+    /**
+     * Validates the feature if given {@link ValidationCapability} is a
+     * {@link DatabaseMetaDataValidation}
+     *
+     * @param capability
+     * @param feature
+     */
+    protected void validateName(ValidationCapability capability, NamedObject namedObject, String fqn) {
+        if (capability instanceof DatabaseMetaDataValidation) {
+            capability.validate(context()
+                    .put(DatabaseMetaDataValidation.Keys.namedobject, namedObject)
+                    .put(DatabaseMetaDataValidation.Keys.fqn, fqn),
+                    getMessageConsumer(capability));
+        }
+    }
+
+    protected void validateOptionalColumnName(String name, ValidationCapability c) {
+        validateOptionalName(name, NamedObject.column, c);
+    }
+
+    protected void validateOptionalColumnNames(List<String> columnNames, ValidationCapability c) {
+        if (columnNames != null) {
+            columnNames.forEach(n -> validateOptionalName(n, NamedObject.column, c));
+        }
+    }
+
+    protected void validateOptionalName(String name, NamedObject namedObject, ValidationCapability c) {
+        if (name != null) {
+            validateName(c, namedObject, name);
         }
     }
 

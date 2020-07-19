@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util.validation;
 
+import java.util.function.Consumer;
+
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 
 public class CreateIndexValidator extends AbstractValidator<CreateIndex> {
@@ -16,6 +19,12 @@ public class CreateIndexValidator extends AbstractValidator<CreateIndex> {
 
     @Override
     public void validate(CreateIndex createIndex) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.createIndex), messageConsumer);
+            }
+        }
         //        Index index = createIndex.getIndex();
         //
         //        buffer.append("CREATE ");

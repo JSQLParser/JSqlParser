@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util.validation;
 
+import java.util.function.Consumer;
+
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.delete.Delete;
 
 public class DeleteValidator extends AbstractValidator<Delete> {
@@ -16,6 +19,12 @@ public class DeleteValidator extends AbstractValidator<Delete> {
 
     @Override
     public void validate(Delete delete) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.delete), messageConsumer);
+            }
+        }
         //        buffer.append("DELETE");
         //        if (delete.getTables() != null && !delete.getTables().isEmpty()) {
         //            buffer.append(

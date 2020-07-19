@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util.validation;
 
+import java.util.function.Consumer;
+
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.execute.Execute;
 
 public class ExecuteValidator extends AbstractValidator<Execute> {
@@ -16,6 +19,12 @@ public class ExecuteValidator extends AbstractValidator<Execute> {
 
     @Override
     public void validate(Execute execute) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.execute), messageConsumer);
+            }
+        }
         //        buffer.append(execute.getExecType().name()).append(" ").append(execute.getName());
         //        if (execute.isParenthesis()) {
         //            buffer.append(" (");

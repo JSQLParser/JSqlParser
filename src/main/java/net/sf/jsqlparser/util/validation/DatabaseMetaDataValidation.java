@@ -25,7 +25,7 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
     }
 
     public enum NamedObject {
-        database, schema, table, column, index, constraint
+        database, schema, table, column, index, constraint, uniqueConstraint, view
     }
 
     /**

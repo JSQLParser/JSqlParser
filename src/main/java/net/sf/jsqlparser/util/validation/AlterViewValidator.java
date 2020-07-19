@@ -9,25 +9,20 @@
  */
 package net.sf.jsqlparser.util.validation;
 
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.create.view.AlterView;
+import net.sf.jsqlparser.util.validation.DatabaseMetaDataValidation.NamedObject;
 
 public class AlterViewValidator extends AbstractValidator<AlterView> {
 
-
     @Override
     public void validate(AlterView alterView) {
-        //        if (alterView.isUseReplace()) {
-        //            buffer.append("REPLACE ");
-        //        } else {
-        //            buffer.append("ALTER ");
-        //        }
-        //        buffer.append("VIEW ").append(alterView.getView().getFullyQualifiedName());
-        //        if (alterView.getColumnNames() != null) {
-        //            buffer.append(PlainSelect.getStringList(alterView.getColumnNames(), true, true));
-        //        }
-        //        buffer.append(" AS ");
-        //
-        //        alterView.getSelectBody().accept(selectVisitor);
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(Feature.alterView);
+            validateName(c, NamedObject.view, alterView.getView().getFullyQualifiedName());
+            validateOptionalColumnNames(alterView.getColumnNames(), c);
+        }
+        alterView.getSelectBody().accept(getValidator(SelectValidator.class));
     }
 
 }

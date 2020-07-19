@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util.validation;
 
+import java.util.function.Consumer;
+
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.OrderByVisitor;
 import net.sf.jsqlparser.statement.update.Update;
@@ -17,6 +20,12 @@ public class UpdateValidator extends AbstractValidator<Update> implements OrderB
 
     @Override
     public void validate(Update update) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.update), messageConsumer);
+            }
+        }
         //        buffer.append("UPDATE ").append(update.getTable());
         //        if (update.getStartJoins() != null) {
         //            for (Join join : update.getStartJoins()) {

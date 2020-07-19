@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util.validation;
 
+import java.util.function.Consumer;
+
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 
 public class CreateTableValidator extends AbstractValidator<CreateTable> {
@@ -16,6 +19,12 @@ public class CreateTableValidator extends AbstractValidator<CreateTable> {
 
     @Override
     public void validate(CreateTable createTable) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.createTable), messageConsumer);
+            }
+        }
         //        buffer.append("CREATE ");
         //        if (createTable.isUnlogged()) {
         //            buffer.append("UNLOGGED ");

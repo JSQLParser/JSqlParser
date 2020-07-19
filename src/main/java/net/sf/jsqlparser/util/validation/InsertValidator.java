@@ -9,10 +9,13 @@
  */
 package net.sf.jsqlparser.util.validation;
 
+import java.util.function.Consumer;
+
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
@@ -21,6 +24,12 @@ public class InsertValidator extends AbstractValidator<Insert> implements ItemsL
 
     @Override
     public void validate(Insert insert) {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
+            if (c instanceof FeatureSetValidation) {
+                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.insert), messageConsumer);
+            }
+        }
         //        buffer.append("INSERT ");
         //        if (insert.getModifierPriority() != null) {
         //            buffer.append(insert.getModifierPriority()).append(" ");
