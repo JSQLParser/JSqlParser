@@ -7,29 +7,24 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.feature;
 
 import java.util.Set;
 import java.util.function.Consumer;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureSet;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.ValidationContext;
 
 public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
-
-    public enum Keys implements ContextKey {
-        /**
-         * @see Feature
-         */
-        feature
-    }
 
     /**
      * @param feature
      */
     @Override
     default void validate(ValidationContext ctx, Consumer<String> errorMessageConsumer) {
-        Feature feature = ctx.get(Keys.feature, Feature.class);
+        Feature feature = ctx.get(FeatureContext.feature, Feature.class);
         if (!contains(feature)) {
             errorMessageConsumer.accept(getNotSupportedMessage(feature));
         } else if (feature.isSwitchable() && ctx.isDisabled(feature)) {
@@ -55,6 +50,11 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
      */
     default String getDisabledMessage(Feature feature) {
         return feature.name() + " is disabled.";
+    }
+
+    @Override
+    default String getName() {
+        return "feature set";
     }
 
 

@@ -7,11 +7,12 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.create.view.AlterView;
-import net.sf.jsqlparser.util.validation.DatabaseMetaDataValidation.NamedObject;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 public class AlterViewValidator extends AbstractValidator<AlterView> {
 

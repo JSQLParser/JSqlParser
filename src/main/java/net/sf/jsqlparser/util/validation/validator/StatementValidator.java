@@ -7,7 +7,7 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.Block;
@@ -46,7 +46,7 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
-import net.sf.jsqlparser.util.validation.DatabaseMetaDataValidation.NamedObject;
+import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 public class StatementValidator extends AbstractValidator<Statement> implements StatementVisitor {
 

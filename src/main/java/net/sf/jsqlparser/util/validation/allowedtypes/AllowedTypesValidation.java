@@ -7,34 +7,22 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.allowedtypes;
 
 import java.util.Collection;
 import java.util.function.Consumer;
 
-public class AllowedTypesValidation implements ValidationCapability {
+import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.ValidationContext;
 
-    public enum Keys implements ContextKey {
-        /**
-         * a collection of allowed {@link Class}es
-         */
-        allowed_types,
-        /**
-         * the object given (may be null)
-         */
-        argument,
-        /**
-         * a boolean, default = true
-         */
-        allow_null
-    }
+public class AllowedTypesValidation implements ValidationCapability {
 
     @Override
     public void validate(ValidationContext context, Consumer<String> errorMessageConsumer) {
-        Object arg = context.get(Keys.argument, Object.class);
-        Boolean allowNull = context.get(Keys.allow_null, Boolean.class);
+        Object arg = context.getOptional(AllowedTypesContext.argument, Object.class);
+        Boolean allowNull = context.getOptional(AllowedTypesContext.allow_null, Boolean.class);
         @SuppressWarnings("unchecked")
-        Collection<Class<?>> allowedTypes = context.get(Keys.allowed_types, Collection.class);
+        Collection<Class<?>> allowedTypes = context.get(AllowedTypesContext.allowed_types, Collection.class);
         if (arg != null) {
             boolean error = true;
             for (Class<?> cls : allowedTypes) {
@@ -52,5 +40,9 @@ public class AllowedTypesValidation implements ValidationCapability {
         }
     }
 
+    @Override
+    public String getName() {
+        return "allowed types";
+    }
 
 }

@@ -7,7 +7,7 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.function.Consumer;
 
@@ -18,6 +18,9 @@ import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.feature.FeatureContext;
 
 public class ReplaceValidator extends AbstractValidator<Replace> implements ItemsListVisitor {
 
@@ -27,7 +30,7 @@ public class ReplaceValidator extends AbstractValidator<Replace> implements Item
         for (ValidationCapability c : getCapabilities()) {
             Consumer<String> messageConsumer = getMessageConsumer(c);
             if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.replace), messageConsumer);
+                c.validate(context().put(FeatureContext.feature, Feature.replace), messageConsumer);
             }
         }
         //        buffer.append("REPLACE ");

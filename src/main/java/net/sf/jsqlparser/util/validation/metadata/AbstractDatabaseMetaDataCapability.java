@@ -7,9 +7,11 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.metadata;
 
 import java.sql.Connection;
+
+import net.sf.jsqlparser.util.validation.ValidationException;
 
 public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMetaDataValidation {
 

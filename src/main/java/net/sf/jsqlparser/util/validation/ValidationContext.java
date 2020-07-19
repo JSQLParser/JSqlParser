@@ -28,6 +28,14 @@ public class ValidationContext {
     }
 
     public <T> T get(ContextKey key, Class<T> type) {
+        T t = getOptional(key, type);
+        if (t == null) {
+            throw new IllegalStateException(key + ": value missing");
+        }
+        return t;
+    }
+
+    public <T> T getOptional(ContextKey key, Class<T> type) {
         return type.cast(contextMap.get(key));
     }
 

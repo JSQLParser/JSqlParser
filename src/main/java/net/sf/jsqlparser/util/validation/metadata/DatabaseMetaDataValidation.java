@@ -7,49 +7,15 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.metadata;
 
 import java.util.function.Consumer;
 
+import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.ValidationContext;
+import net.sf.jsqlparser.util.validation.ValidationException;
+
 public interface DatabaseMetaDataValidation extends ValidationCapability {
-
-    public enum Keys implements ContextKey {
-        /**
-         * @see NamedObject
-         */
-        namedobject,
-        /**
-         * the fully qualified name
-         */
-        fqn
-    }
-
-    public enum NamedObject {
-        /**
-         * a name constisting of max. 1 identifiers, i.e. [database]
-         */
-        database,
-        /**
-         * a name constisting of max. 2 identifiers, i.e. [database].[schema]
-         */
-        schema,
-        /**
-         * a name constisting of max. 3 identifiers, i.e. [catalog].[schema].[table]
-         */
-        table,
-        /**
-         * a name constisting of max. 3 identifiers, i.e. [catalog].[schema].[view]
-         */
-        view,
-        /**
-         * a name constisting of max. 4 identifiers, i.e.
-         * [catalog].[schema].[table].[columnName]
-         */
-        column,
-        index,
-        constraint,
-        uniqueConstraint,
-    }
 
     /**
      * @param o
@@ -57,13 +23,15 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
      * @throws ValidationException
      */
     @Override
-    default void validate(ValidationContext ctx, Consumer<String> errorMessageConsumer) throws ValidationException {
+    default void validate(ValidationContext ctx, Consumer<String> errorMessageConsumer) {
+        String fqn = ctx.get(MetadataContext.fqn, String.class);
         try {
-            String fqn = ctx.get(Keys.fqn, String.class);
-            NamedObject namedObject = ctx.get(Keys.namedobject, NamedObject.class);
+            NamedObject namedObject = ctx.get(MetadataContext.namedobject, NamedObject.class);
             if (!exists(namedObject, fqn)) {
                 errorMessageConsumer.accept(getErrorMessage(fqn));
             }
+        } catch (ValidationException e) {
+            errorMessageConsumer.accept(getErrorMessage(fqn, e));
         } catch (UnsupportedOperationException uoe) {
             // should we log this on a trace level?
         }
@@ -84,6 +52,19 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
      */
     default String getErrorMessage(String fqn) {
         return fqn + " does not exist.";
+    }
+
+    /**
+     * @param fqn
+     * @return
+     */
+    default String getErrorMessage(String fqn, ValidationException e) {
+        return fqn + " does not exist. " + e.getMessage();
+    }
+
+    @Override
+    default String getName() {
+        return "meta data";
     }
 
 }

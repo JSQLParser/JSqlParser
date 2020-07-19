@@ -7,7 +7,7 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.metadata;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,6 +15,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import net.sf.jsqlparser.util.validation.ValidationException;
 
 /**
  * Validates against schema by jdbc-metadata in a very basic way without
@@ -39,16 +41,17 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
     @Override
     protected boolean columnExists(String name) throws ValidationException {
         String[] names = name.split("\\.");
-        if (names.length == 0 || names.length > 4) {
+        if (names.length < 2 || names.length > 4) {
             return false;
         }
 
         String columnName = names[names.length - 1];
-        String query = String.format("SELECT %s FROM %s", columnName, name.substring(0, name.lastIndexOf(".")));
+        int lastIndexOf = name.lastIndexOf(".");
+        String query = String.format("SELECT %s FROM %s", columnName, name.substring(0, lastIndexOf));
         try (PreparedStatement ps = connection.prepareStatement(query)) {
             return columnName.equalsIgnoreCase(ps.getMetaData().getColumnLabel(1));
         } catch (SQLException e) {
-            throw new ValidationException("error on evaluation of column-name: " + name, e);
+            throw new ValidationException(e);
         }
     }
 

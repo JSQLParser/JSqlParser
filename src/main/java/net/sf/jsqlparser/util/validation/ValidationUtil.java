@@ -19,6 +19,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.util.validation.validator.StatementValidator;
 
 public class ValidationUtil {
 

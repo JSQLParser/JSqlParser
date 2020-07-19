@@ -7,7 +7,7 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.Iterator;
 import java.util.List;
@@ -95,7 +95,10 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
-import net.sf.jsqlparser.util.validation.DatabaseMetaDataValidation.NamedObject;
+import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.feature.FeatureContext;
+import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 public class ExpressionValidator extends AbstractValidator<Expression> implements ExpressionVisitor {
 
@@ -161,13 +164,13 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
             expression.getLeftExpression().accept(this);
             if (c instanceof FeatureSetValidation
                     && expression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
-                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.joinOldOracleSyntax),
+                c.validate(context().put(FeatureContext.feature, Feature.joinOldOracleSyntax),
                         messageConsumer);
             }
             expression.getRightExpression().accept(this);
             if (c instanceof FeatureSetValidation
                     && expression.getOraclePriorPosition() != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
-                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.oraclePriorPosition),
+                c.validate(context().put(FeatureContext.feature, Feature.oraclePriorPosition),
                         messageConsumer);
             }
         }

@@ -7,11 +7,9 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.feature;
 
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Set;
 import net.sf.jsqlparser.parser.feature.Feature;
 
@@ -24,7 +22,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
  */
 public enum DatabaseType implements FeatureSetValidation {
 
-    oracle, mysql, sqlserver, mariadb, postgresql(PostgresqlVersion.values()), h2, hsqldb;
+    oracle, mysql, sqlserver, mariadb, postgresql(PostgresqlVersion.values()), h2(H2Version.values()), hsqldb;
 
     private Version[] versions;
 
@@ -57,38 +55,9 @@ public enum DatabaseType implements FeatureSetValidation {
         }
     }
 
-    public interface Version extends FeatureSetValidation {
-        public String getVersionString();
+    @Override
+    public String getName() {
+        return name();
     }
-
-    public enum PostgresqlVersion implements Version {
-        V11("11", EnumSet.of(Feature.select, Feature.insert, Feature.update, Feature.delete, Feature.upsert)), //
-        V12("12", V11.getFeatures());
-
-        private Set<Feature> features;
-        private String versionString;
-
-        private PostgresqlVersion(String versionString, Set<Feature> featuresSupported) {
-            this(versionString, featuresSupported, Collections.emptySet());
-        }
-
-        private PostgresqlVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
-            this.versionString = versionString;
-            this.features = new HashSet<>(featuresSupported);
-            this.features.removeAll(unsupported);
-        }
-
-        @Override
-        public String getVersionString() {
-            return versionString;
-        }
-
-        @Override
-        public Set<Feature> getFeatures() {
-            return features;
-        }
-
-    }
-
 
 }

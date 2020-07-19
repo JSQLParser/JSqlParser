@@ -7,7 +7,7 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.validator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -22,7 +22,14 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.util.validation.DatabaseMetaDataValidation.NamedObject;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.ValidationContext;
+import net.sf.jsqlparser.util.validation.Validator;
+import net.sf.jsqlparser.util.validation.feature.FeatureContext;
+import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
+import net.sf.jsqlparser.util.validation.metadata.DatabaseMetaDataValidation;
+import net.sf.jsqlparser.util.validation.metadata.MetadataContext;
+import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
  * A abstract base for a Validation
@@ -165,7 +172,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      */
     protected void validateFeature(ValidationCapability capability, Feature feature) {
         if (capability instanceof FeatureSetValidation) {
-            capability.validate(context().put(FeatureSetValidation.Keys.feature, feature),
+            capability.validate(context().put(FeatureContext.feature, feature),
                     getMessageConsumer(capability));
         }
     }
@@ -180,8 +187,8 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     protected void validateName(ValidationCapability capability, NamedObject namedObject, String fqn) {
         if (capability instanceof DatabaseMetaDataValidation) {
             capability.validate(context()
-                    .put(DatabaseMetaDataValidation.Keys.namedobject, namedObject)
-                    .put(DatabaseMetaDataValidation.Keys.fqn, fqn),
+                    .put(MetadataContext.namedobject, namedObject)
+                    .put(MetadataContext.fqn, fqn),
                     getMessageConsumer(capability));
         }
     }

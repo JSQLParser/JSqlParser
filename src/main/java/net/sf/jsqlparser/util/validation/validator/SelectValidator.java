@@ -7,7 +7,7 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
@@ -36,7 +36,7 @@ import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
-import net.sf.jsqlparser.util.validation.DatabaseMetaDataValidation.NamedObject;
+import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 public class SelectValidator extends AbstractValidator<SelectItem>
 implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {

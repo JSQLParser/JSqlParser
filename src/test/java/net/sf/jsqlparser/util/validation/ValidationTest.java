@@ -7,7 +7,7 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.validation;
+package net.sf.jsqlparser.util.validation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -24,12 +24,12 @@ import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.util.validation.DatabaseType;
-import net.sf.jsqlparser.util.validation.FeaturesAllowed;
-import net.sf.jsqlparser.util.validation.StatementValidator;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationError;
 import net.sf.jsqlparser.util.validation.ValidationUtil;
+import net.sf.jsqlparser.util.validation.feature.DatabaseType;
+import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
+import net.sf.jsqlparser.util.validation.validator.StatementValidator;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Test;
 

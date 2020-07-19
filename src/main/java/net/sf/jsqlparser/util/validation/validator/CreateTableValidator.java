@@ -7,12 +7,15 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.util.validation;
+package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.function.Consumer;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.feature.FeatureContext;
 
 public class CreateTableValidator extends AbstractValidator<CreateTable> {
 
@@ -22,7 +25,7 @@ public class CreateTableValidator extends AbstractValidator<CreateTable> {
         for (ValidationCapability c : getCapabilities()) {
             Consumer<String> messageConsumer = getMessageConsumer(c);
             if (c instanceof FeatureSetValidation) {
-                c.validate(context().put(FeatureSetValidation.Keys.feature, Feature.createTable), messageConsumer);
+                c.validate(context().put(FeatureContext.feature, Feature.createTable), messageConsumer);
             }
         }
         //        buffer.append("CREATE ");

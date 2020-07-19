@@ -19,4 +19,12 @@ public interface ValidationCapability {
      */
     void validate(ValidationContext context, Consumer<String> errorMessageConsumer) throws ValidationException;
 
+    /**
+     * @return a name of this {@link ValidationCapability}, forwards by default to
+     *         {@link #toString()}
+     */
+    default String getName() {
+        return getClass().getSimpleName();
+    }
+
 }
