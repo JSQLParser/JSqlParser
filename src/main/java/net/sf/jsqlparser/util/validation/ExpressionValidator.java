@@ -95,6 +95,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.util.validation.DatabaseMetaDataValidation.NamedObject;
 
 public class ExpressionValidator extends AbstractValidator<Expression> implements ExpressionVisitor {
 
@@ -344,7 +345,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(Column tableColumn) {
-        validateName(tableColumn.getFullyQualifiedName());
+        validateName(NamedObject.column, tableColumn.getFullyQualifiedName());
         if (tableColumn.getTable() != null) {
             tableColumn.getTable().accept(getValidator(SelectValidator.class));
         }

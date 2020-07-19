@@ -13,11 +13,10 @@ import java.util.function.Consumer;
 
 public interface ValidationCapability {
 
-
     /**
      * @param context
      * @param errorMessageConsumer
      */
-    void validate(ValidationContext context, Consumer<String> errorMessageConsumer);
+    void validate(ValidationContext context, Consumer<String> errorMessageConsumer) throws ValidationException;
 
 }

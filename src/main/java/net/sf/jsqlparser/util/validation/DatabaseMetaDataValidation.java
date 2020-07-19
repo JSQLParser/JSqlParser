@@ -25,15 +25,39 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
     }
 
     public enum NamedObject {
-        database, schema, table, column, index, constraint, uniqueConstraint, view
+        /**
+         * a name constisting of max. 1 identifiers, i.e. [database]
+         */
+        database,
+        /**
+         * a name constisting of max. 2 identifiers, i.e. [database].[schema]
+         */
+        schema,
+        /**
+         * a name constisting of max. 3 identifiers, i.e. [catalog].[schema].[table]
+         */
+        table,
+        /**
+         * a name constisting of max. 3 identifiers, i.e. [catalog].[schema].[view]
+         */
+        view,
+        /**
+         * a name constisting of max. 4 identifiers, i.e.
+         * [catalog].[schema].[table].[columnName]
+         */
+        column,
+        index,
+        constraint,
+        uniqueConstraint,
     }
 
     /**
      * @param o
      * @param fqn - fully qualified name
+     * @throws ValidationException
      */
     @Override
-    default void validate(ValidationContext ctx, Consumer<String> errorMessageConsumer) {
+    default void validate(ValidationContext ctx, Consumer<String> errorMessageConsumer) throws ValidationException {
         try {
             String fqn = ctx.get(Keys.fqn, String.class);
             NamedObject namedObject = ctx.get(Keys.namedobject, NamedObject.class);
@@ -52,7 +76,7 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
      * @throws UnsupportedOperationException - if testing of given
      *                                       {@link NamedObject} is not supported.
      */
-    public boolean exists(NamedObject o, String fqn);
+    public boolean exists(NamedObject o, String fqn) throws ValidationException;
 
     /**
      * @param fqn

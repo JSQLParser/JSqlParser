@@ -147,11 +147,12 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      * Iterates through all {@link ValidationCapability} and validates for the name
      * with {@link #validateName(ValidationCapability, NamedObject, String)}
      *
+     * @param namedObject
      * @param fqn
      */
-    protected void validateName(String fqn) {
+    protected void validateName(NamedObject namedObject, String fqn) {
         for (ValidationCapability c : getCapabilities()) {
-            validateName(c, NamedObject.column, fqn);
+            validateName(c, namedObject, fqn);
         }
     }
 
