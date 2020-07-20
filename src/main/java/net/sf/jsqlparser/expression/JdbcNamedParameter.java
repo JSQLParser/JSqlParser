@@ -11,6 +11,9 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+/**
+ * A ':'<name> in a statement, e.g. :id
+ */
 public class JdbcNamedParameter extends ASTNodeAccessImpl implements Expression {
 
     private String name;
