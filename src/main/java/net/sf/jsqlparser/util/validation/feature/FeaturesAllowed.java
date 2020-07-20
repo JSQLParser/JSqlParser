@@ -41,6 +41,14 @@ public class FeaturesAllowed implements FeatureSetValidation {
         return this;
     }
 
+    /**
+     * @return <code>featureName + " not allowed."</code>
+     */
+    @Override
+    public String getMessage(Feature feature) {
+        return feature.name() + " not allowed.";
+    }
+
     @Override
     public Set<Feature> getFeatures() {
         return features;

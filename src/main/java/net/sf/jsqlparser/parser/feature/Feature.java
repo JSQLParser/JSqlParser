@@ -251,33 +251,33 @@ public enum Feature {
     allowSquareBracketQuotation(false);
 
 
-    private boolean parserEnabled;
-    private boolean switchable;
+    private Object value;
+    private boolean configurable;
 
     /**
-     * a feature which can't be enabled or disabled within the parser
+     * a feature which can't configured within the parser
      */
     private Feature() {
-        this.parserEnabled = true;
-        this.switchable = false;
+        this.value = null;
+        this.configurable = false;
     }
 
     /**
-     * a feature which can be enabled or disabled by {@link FeatureConfiguration}
+     * a feature which can be configured by {@link FeatureConfiguration}
      *
-     * @param parserEnabled
+     * @param value
      */
-    private Feature(boolean parserEnabled) {
-        this.parserEnabled = parserEnabled;
-        this.switchable = true;
+    private Feature(Object value) {
+        this.value = value;
+        this.configurable = true;
     }
 
-    public boolean isParserEnabled() {
-        return parserEnabled;
+    public Object getDefaultValue() {
+        return value;
     }
 
-    public boolean isSwitchable() {
-        return switchable;
+    public boolean isConfigurable() {
+        return configurable;
     }
 
 }

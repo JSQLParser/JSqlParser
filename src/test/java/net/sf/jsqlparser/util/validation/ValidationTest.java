@@ -24,9 +24,6 @@ import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.util.validation.ValidationCapability;
-import net.sf.jsqlparser.util.validation.ValidationError;
-import net.sf.jsqlparser.util.validation.ValidationUtil;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import net.sf.jsqlparser.util.validation.validator.StatementValidator;
@@ -108,7 +105,7 @@ public class ValidationTest {
         assertNotNull(errors);
         assertEquals(1, errors.size());
         assertNull(errors.get(0).getException());
-        assertEquals(new HashSet<>(Arrays.asList("select not supported.")), errors.get(0).getErrors());
+        assertEquals(new HashSet<>(Arrays.asList("select not allowed.")), errors.get(0).getErrors());
 
     }
 

@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.parser.feature;
 
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
@@ -20,22 +19,12 @@ public class FeatureConfiguration {
 
     private static final Logger LOG = Logger.getLogger(FeatureConfiguration.class.getName());
 
-    private Map<Feature, Boolean> featureEnabled = new EnumMap<>(Feature.class);
+    private Map<Feature, Object> featureEnabled = new EnumMap<>(Feature.class);
 
     public FeatureConfiguration() {
         // set default-value for all switchable features
-        EnumSet.allOf(Feature.class).stream().filter(Feature::isSwitchable)
-        .forEach(f -> setEnabled(f, f.isParserEnabled()));
-    }
-
-    /**
-     * @param features
-     * @param enabled
-     * @return <code>this</code>
-     */
-    public FeatureConfiguration setEnabled(Collection<Feature> features, boolean enabled) {
-        features.forEach(f -> setEnabled(f, enabled));
-        return this;
+        EnumSet.allOf(Feature.class).stream().filter(Feature::isConfigurable)
+        .forEach(f -> setValue(f, f.getDefaultValue()));
     }
 
     /**
@@ -43,28 +32,38 @@ public class FeatureConfiguration {
      * @param enabled
      * @return <code>this</code>
      */
-    public FeatureConfiguration setEnabled(Feature feature, boolean enabled) {
-        if (feature.isSwitchable()) {
-            featureEnabled.put(feature, enabled);
+    public FeatureConfiguration setValue(Feature feature, Object value) {
+        if (feature.isConfigurable()) {
+            featureEnabled.put(feature, value);
         } else {
             if (LOG.isLoggable(Level.WARNING)) {
-                LOG.warning(feature.name() + " is not switchable - cannot set enabled = " + enabled);
+                LOG.warning(feature.name() + " is not switchable - cannot set enabled = " + value);
             }
         }
         return this;
     }
 
-    public boolean isEnabled(Feature feature) {
-        if (feature.isSwitchable()) {
+    /**
+     * @param feature
+     * @return the configured feature value - can be <code>null</code>
+     * @throws IllegalStateException - if given {@link Feature#isConfigurable()} ==
+     *                               false
+     */
+    public Object getValue(Feature feature) {
+        if (feature.isConfigurable()) {
             return featureEnabled.get(feature);
         } else {
-            return feature.isParserEnabled();
+            throw new IllegalStateException("The feature " + feature + " is not configurable!");
         }
     }
 
-    public boolean isDisabled(Feature feature) {
-        return !isEnabled(feature);
+    public boolean getAsBoolean(Feature f) {
+        return Boolean.valueOf(String.valueOf(getValue(f)));
     }
 
+    public String getAsString(Feature f) {
+        Object value = getValue(f);
+        return value == null ? null : String.valueOf(value);
+    }
 
 }

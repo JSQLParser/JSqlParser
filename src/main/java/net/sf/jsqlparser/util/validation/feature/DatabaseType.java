@@ -55,6 +55,14 @@ public enum DatabaseType implements FeatureSetValidation {
         }
     }
 
+    /**
+     * @return <code>featureName + " not supported."</code>
+     */
+    @Override
+    public String getMessage(Feature feature) {
+        return feature.name() + " not supported.";
+    }
+
     @Override
     public String getName() {
         return name();

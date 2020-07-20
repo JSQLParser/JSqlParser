@@ -54,12 +54,12 @@ public class ValidationContext {
         return configuration;
     }
 
-    public boolean isEnabled(Feature f) {
-        return getConfiguration().isEnabled(f);
+    public boolean getAsBoolean(Feature f) {
+        return getConfiguration().getAsBoolean(f);
     }
 
-    public boolean isDisabled(Feature f) {
-        return getConfiguration().isDisabled(f);
+    public String getAsString(Feature f) {
+        return getConfiguration().getAsString(f);
     }
 
     public Collection<ValidationCapability> getCapabilities() {

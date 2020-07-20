@@ -26,9 +26,7 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
     default void validate(ValidationContext ctx, Consumer<String> errorMessageConsumer) {
         Feature feature = ctx.get(FeatureContext.feature, Feature.class);
         if (!contains(feature)) {
-            errorMessageConsumer.accept(getNotSupportedMessage(feature));
-        } else if (feature.isSwitchable() && ctx.isDisabled(feature)) {
-            errorMessageConsumer.accept(getDisabledMessage(feature));
+            errorMessageConsumer.accept(getMessage(feature));
         }
     }
 
@@ -39,18 +37,9 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
     public Set<Feature> getFeatures();
 
     /**
-     * @return <code>featureName + " not supported."</code>
+     * @return the default message if not contained in the feature set
      */
-    default String getNotSupportedMessage(Feature feature) {
-        return feature.name() + " not supported.";
-    }
-
-    /**
-     * @return <code>featureName + " not supported."</code>
-     */
-    default String getDisabledMessage(Feature feature) {
-        return feature.name() + " is disabled.";
-    }
+    public String getMessage(Feature feature);
 
     @Override
     default String getName() {

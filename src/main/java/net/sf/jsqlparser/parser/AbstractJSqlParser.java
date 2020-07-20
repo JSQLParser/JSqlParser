@@ -26,7 +26,7 @@ public abstract class AbstractJSqlParser<P> {
     }
 
     public P withFeature(Feature f, boolean enabled) {
-        getConfiguration().setEnabled(f, enabled);
+        getConfiguration().setValue(f, enabled);
         return me();
     }
 
@@ -34,12 +34,8 @@ public abstract class AbstractJSqlParser<P> {
 
     public abstract P me();
 
-    public boolean isEnabled(Feature f) {
-        return getConfiguration().isEnabled(f);
-    }
-
-    public boolean isDisabled(Feature f) {
-        return getConfiguration().isDisabled(f);
+    public boolean getAsBoolean(Feature f) {
+        return getConfiguration().getAsBoolean(f);
     }
 
     public void setErrorRecovery(boolean errorRecovery) {
