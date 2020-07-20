@@ -22,7 +22,13 @@ import net.sf.jsqlparser.parser.feature.Feature;
  */
 public enum DatabaseType implements FeatureSetValidation {
 
-    oracle, mysql, sqlserver, mariadb, postgresql(PostgresqlVersion.values()), h2(H2Version.values()), hsqldb;
+    oracle(OracleVersion.values()),
+    mysql(MySqlVersion.values()),
+    sqlserver(SqlServerVersion.values()),
+    mariadb(MariaDbVersion.values()),
+    postgresql(PostgresqlVersion.values()),
+    h2(H2Version.values()),
+    hsqldb(HSQLDBVersion.values());
 
     private Version[] versions;
 
