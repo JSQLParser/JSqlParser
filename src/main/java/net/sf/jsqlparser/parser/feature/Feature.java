@@ -12,6 +12,7 @@ package net.sf.jsqlparser.parser.feature;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
@@ -39,6 +40,7 @@ import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
+import net.sf.jsqlparser.statement.select.KSQLWindow;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -49,12 +51,33 @@ public enum Feature {
     // SQL KEYWORD FEATURES
     select,
     selectGroupBy,
+    selectHaving,
+    selectInto,
+
     limit,
+    skip,
+    first,
+    top,
+
+    selectUnique,
+    distinct,
+    distinctOn,
+
+    orderBy,
+    orderByNullOrdering,
+
     /**
-     * oracle SQL "CONNECT BY"
-     * @see OracleHierarchicalExpression
+     * @see KSQLWindow
      */
-    oracleHierarchicalExpression,
+    window,
+    selectForXmlPath,
+
+    selectForUpdate,
+    selectForUpdateOfTable,
+    selectForUpdateWait,
+    selectForUpdateNoWait,
+
+
     /**
      * SQL "INSERT" statement is allowed
      */
@@ -237,19 +260,47 @@ public enum Feature {
     jdbcNamedParameter,
 
     // SYNTAX FEATURES
+
+    // ORACLE
+
     /**
      * allows old oracle join syntax (+)
+     *
+     * @see SupportsOldOracleJoinSyntax
      */
-    joinOldOracleSyntax,
+    oracleOldJoinSyntax,
     /**
      * allows oracle prior position
+     *
+     * @see SupportsOldOracleJoinSyntax
      */
     oraclePriorPosition,
     /**
+     * @see OracleHint
+     */
+    oracleHint,
+    /**
+     * oracle SQL "CONNECT BY"
+     *
+     * @see OracleHierarchicalExpression
+     */
+    oracleHierarchicalExpression,
+    oracleOrderBySiblings,
+
+    // MYSQL
+
+    mySqlHintStraightJoin,
+    mysqlSqlNoCache,
+    mysqlCalcFoundRows,
+
+    // SQLSERVER
+
+    /**
      * allows square brackets for names, disabled by default
      */
-    allowSquareBracketQuotation(false);
+    allowSquareBracketQuotation(false)
 
+    ;
 
     private Object value;
     private boolean configurable;

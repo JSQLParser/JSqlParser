@@ -10,15 +10,13 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.OrderByVisitor;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 
 /**
  * @author gitmotte
  */
-public class UpdateValidator extends AbstractValidator<Update> implements OrderByVisitor {
+public class UpdateValidator extends AbstractValidator<Update> {
 
     @Override
     public void validate(Update update) {
@@ -110,18 +108,4 @@ public class UpdateValidator extends AbstractValidator<Update> implements OrderB
     }
 
 
-    @Override
-    public void visit(OrderByElement orderBy) {
-        //        orderBy.getExpression().accept(expressionVisitor);
-        //        if (!orderBy.isAsc()) {
-        //            buffer.append(" DESC");
-        //        } else if (orderBy.isAscDescPresent()) {
-        //            buffer.append(" ASC");
-        //        }
-        //        if (orderBy.getNullOrdering() != null) {
-        //            buffer.append(' ');
-        //            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST"
-        //                    : "NULLS LAST");
-        //        }
-    }
 }

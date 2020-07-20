@@ -166,6 +166,20 @@ public abstract class AbstractValidator<S> implements Validator<S> {
 
     /**
      * Validates the feature if given {@link ValidationCapability} is a
+     * {@link FeatureSetValidation} and condition is <code>true</code>
+     *
+     * @param capability
+     * @param condition
+     * @param feature
+     */
+    protected void validateFeature(ValidationCapability capability, boolean condition, Feature feature) {
+        if (condition) {
+            validateFeature(capability, feature);
+        }
+    }
+
+    /**
+     * Validates the feature if given {@link ValidationCapability} is a
      * {@link FeatureSetValidation}
      *
      * @param capability

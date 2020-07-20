@@ -167,7 +167,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
             expression.getLeftExpression().accept(this);
             if (c instanceof FeatureSetValidation
                     && expression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
-                c.validate(context().put(FeatureContext.feature, Feature.joinOldOracleSyntax),
+                c.validate(context().put(FeatureContext.feature, Feature.oracleOldJoinSyntax),
                         messageConsumer);
             }
             expression.getRightExpression().accept(this);

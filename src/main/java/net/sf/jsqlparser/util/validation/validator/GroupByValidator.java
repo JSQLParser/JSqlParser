@@ -11,15 +11,21 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.select.GroupByElement;
+import net.sf.jsqlparser.statement.select.GroupByVisitor;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 
 /**
  * @author gitmotte
  */
-public class GroupByValidator extends AbstractValidator<GroupByElement> {
+public class GroupByValidator extends AbstractValidator<GroupByElement> implements GroupByVisitor {
 
     @Override
     public void validate(GroupByElement groupBy) {
+        groupBy.accept(this);
+    }
+
+    @Override
+    public void visit(GroupByElement groupBy) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.selectGroupBy);
         }
@@ -49,6 +55,5 @@ public class GroupByValidator extends AbstractValidator<GroupByElement> {
         //            buffer.append(")");
         //        }
     }
-
 
 }

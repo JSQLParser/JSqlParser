@@ -9,8 +9,10 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.OrderByVisitor;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
 
 /**
  * @author gitmotte
@@ -24,6 +26,12 @@ public class OrderByValidator extends AbstractValidator<OrderByElement> implemen
 
     @Override
     public void visit(OrderByElement orderBy) {
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(c, Feature.orderBy);
+            if (orderBy.getNullOrdering() != null) {
+                validateFeature(c, Feature.orderByNullOrdering);
+            }
+        }
         getValidator(ExpressionValidator.class).validate(orderBy.getExpression());
     }
 

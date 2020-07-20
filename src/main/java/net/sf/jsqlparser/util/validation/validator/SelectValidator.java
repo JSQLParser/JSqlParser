@@ -20,6 +20,7 @@ import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.Offset;
+import net.sf.jsqlparser.statement.select.OptimizeFor;
 import net.sf.jsqlparser.statement.select.ParenthesisFromItem;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
@@ -50,153 +51,95 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
     public void visit(PlainSelect plainSelect) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.select);
+            validateFeature(c, plainSelect.getMySqlHintStraightJoin(), Feature.mySqlHintStraightJoin);
+            validateFeature(c, plainSelect.getOracleHint() != null, Feature.oracleHint);
+            validateFeature(c, plainSelect.getSkip() != null, Feature.skip);
+            validateFeature(c, plainSelect.getFirst() != null, Feature.first);
+
+            if (plainSelect.getDistinct() != null) {
+                if (plainSelect.getDistinct().isUseUnique()) {
+                    validateFeature(c, Feature.selectUnique);
+                } else {
+                    validateFeature(c, Feature.distinct);
+                }
+                validateFeature(c, plainSelect.getDistinct().getOnSelectItems() != null, Feature.distinctOn);
+            }
+
+            validateFeature(c, plainSelect.getTop() != null, Feature.top);
+            validateFeature(c, plainSelect.getMySqlSqlNoCache(), Feature.mysqlSqlNoCache);
+            validateFeature(c, plainSelect.getMySqlSqlCalcFoundRows(), Feature.mysqlCalcFoundRows);
+            validateFeature(c, plainSelect.getIntoTables() != null, Feature.selectInto);
+            validateFeature(c, plainSelect.getKsqlWindow() != null, Feature.window);
+            validateFeature(c, plainSelect.getOrderByElements() != null && plainSelect.isOracleSiblings(),
+                    Feature.oracleOrderBySiblings);
+
+            if (plainSelect.isForUpdate()) {
+                validateFeature(c, Feature.selectForUpdate);
+                validateFeature(c, plainSelect.getForUpdateTable() != null, Feature.selectForUpdateOfTable);
+                validateFeature(c, plainSelect.getWait() != null, Feature.selectForUpdateWait);
+                validateFeature(c, plainSelect.isNoWait(), Feature.selectForUpdateNoWait);
+            }
+
+            validateFeature(c, plainSelect.getForXmlPath() != null, Feature.selectForXmlPath);
         }
-        //        if (plainSelect.isUseBrackets()) {
-        //            errors.append("(");
-        //        }
-        //        errors.append("SELECT ");
-        //
-        //        if (plainSelect.getMySqlHintStraightJoin()) {
-        //            errors.append("STRAIGHT_JOIN ");
-        //        }
-        //
-        //        OracleHint hint = plainSelect.getOracleHint();
-        //        if (hint != null) {
-        //            errors.append(hint).append(" ");
-        //        }
-        //
-        //        Skip skip = plainSelect.getSkip();
-        //        if (skip != null) {
-        //            errors.append(skip).append(" ");
-        //        }
-        //
-        //        First first = plainSelect.getFirst();
-        //        if (first != null) {
-        //            errors.append(first).append(" ");
-        //        }
-        //
-        //        if (plainSelect.getDistinct() != null) {
-        //            if (plainSelect.getDistinct().isUseUnique()) {
-        //                errors.append("UNIQUE ");
-        //            } else {
-        //                errors.append("DISTINCT ");
-        //            }
-        //            if (plainSelect.getDistinct().getOnSelectItems() != null) {
-        //                errors.append("ON (");
-        //                for (Iterator<SelectItem> iter = plainSelect.getDistinct().getOnSelectItems().
-        //                        iterator(); iter.hasNext();) {
-        //                    SelectItem selectItem = iter.next();
-        //                    selectItem.accept(this);
-        //                    if (iter.hasNext()) {
-        //                        errors.append(", ");
-        //                    }
-        //                }
-        //                errors.append(") ");
-        //            }
-        //
-        //        }
-        //
-        //        Top top = plainSelect.getTop();
-        //        if (top != null) {
-        //            errors.append(top).append(" ");
-        //        }
-        //
-        //        if (plainSelect.getMySqlSqlNoCache()) {
-        //            errors.append("SQL_NO_CACHE").append(" ");
-        //        }
-        //
-        //        if (plainSelect.getMySqlSqlCalcFoundRows()) {
-        //            errors.append("SQL_CALC_FOUND_ROWS").append(" ");
-        //        }
-        //
-        //        for (Iterator<SelectItem> iter = plainSelect.getSelectItems().iterator(); iter.hasNext();) {
-        //            SelectItem selectItem = iter.next();
-        //            selectItem.accept(this);
-        //            if (iter.hasNext()) {
-        //                errors.append(", ");
-        //            }
-        //        }
-        //
-        //        if (plainSelect.getIntoTables() != null) {
-        //            errors.append(" INTO ");
-        //            for (Iterator<Table> iter = plainSelect.getIntoTables().iterator(); iter.hasNext();) {
-        //                visit(iter.next());
-        //                if (iter.hasNext()) {
-        //                    errors.append(", ");
-        //                }
-        //            }
-        //        }
-        //
-        //        if (plainSelect.getFromItem() != null) {
-        //            errors.append(" FROM ");
-        //            plainSelect.getFromItem().accept(this);
-        //        }
-        //
-        //        if (plainSelect.getJoins() != null) {
-        //            for (Join join : plainSelect.getJoins()) {
-        //                deparseJoin(join);
-        //            }
-        //        }
-        //
-        //        if (plainSelect.getKsqlWindow() != null) {
-        //            errors.append(" WINDOW ");
-        //            errors.append(plainSelect.getKsqlWindow().toString());
-        //        }
+
+        if (plainSelect.getFromItem() != null) {
+            plainSelect.getFromItem().accept(this);
+        }
+
+        if (plainSelect.getIntoTables() != null) {
+            plainSelect.getIntoTables().forEach(this::visit);
+        }
+
+        if (plainSelect.getJoins() != null) {
+            for (Join join : plainSelect.getJoins()) {
+                deparseJoin(join);
+            }
+        }
 
         if (plainSelect.getWhere() != null) {
             plainSelect.getWhere().accept(getValidator(ExpressionValidator.class));
         }
 
-        //        if (plainSelect.getOracleHierarchical() != null) {
-        //            plainSelect.getOracleHierarchical().accept(expressionVisitor);
-        //        }
-        //
-        //        if (plainSelect.getGroupBy() != null) {
-        //            errors.append(" ");
-        //            new GroupByDeParser(expressionVisitor, errors).deParse(plainSelect.getGroupBy());
-        //        }
-        //
-        //        if (plainSelect.getHaving() != null) {
-        //            errors.append(" HAVING ");
-        //            plainSelect.getHaving().accept(expressionVisitor);
-        //        }
-        //
-        //        if (plainSelect.getOrderByElements() != null) {
-        //            new OrderByDeParser(expressionVisitor, errors).
-        //            deParse(plainSelect.isOracleSiblings(), plainSelect.getOrderByElements());
-        //        }
-        //
-        //        if (plainSelect.getLimit() != null) {
-        //            new LimitDeparser(errors).deParse(plainSelect.getLimit());
-        //        }
-        //        if (plainSelect.getOffset() != null) {
-        //            deparseOffset(plainSelect.getOffset());
-        //        }
-        //        if (plainSelect.getFetch() != null) {
-        //            deparseFetch(plainSelect.getFetch());
-        //        }
-        //        if (plainSelect.isForUpdate()) {
-        //            errors.append(" FOR UPDATE");
-        //            if (plainSelect.getForUpdateTable() != null) {
-        //                errors.append(" OF ").append(plainSelect.getForUpdateTable());
-        //            }
-        //            if (plainSelect.getWait() != null) {
-        //                // wait's toString will do the formatting for us
-        //                errors.append(plainSelect.getWait());
-        //            }
-        //            if (plainSelect.isNoWait()) {
-        //                errors.append(" NOWAIT");
-        //            }
-        //        }
-        //        if (plainSelect.getOptimizeFor() != null) {
-        //            deparseOptimizeFor(plainSelect.getOptimizeFor());
-        //        }
-        //        if (plainSelect.getForXmlPath() != null) {
-        //            errors.append(" FOR XML PATH(").append(plainSelect.getForXmlPath()).append(")");
-        //        }
-        //        if (plainSelect.isUseBrackets()) {
-        //            errors.append(")");
-        //        }
+        if (plainSelect.getOracleHierarchical() != null) {
+            plainSelect.getOracleHierarchical().accept(getValidator(ExpressionValidator.class));
+        }
+
+        if (plainSelect.getGroupBy() != null) {
+            plainSelect.getGroupBy().accept(getValidator(GroupByValidator.class));
+        }
+
+        if (plainSelect.getHaving() != null) {
+            plainSelect.getHaving().accept(getValidator(ExpressionValidator.class));
+        }
+
+        if (plainSelect.getOrderByElements() != null) {
+            OrderByValidator v = getValidator(OrderByValidator.class);
+            plainSelect.getOrderByElements().forEach(o -> o.accept(v));
+        }
+
+        if (plainSelect.getLimit() != null) {
+            getValidator(LimitValidator.class).validate(plainSelect.getLimit());
+        }
+
+        if (plainSelect.getOffset() != null) {
+            validateOffset(plainSelect.getOffset());
+        }
+
+        if (plainSelect.getFetch() != null) {
+            validateFetch(plainSelect.getFetch());
+        }
+
+        if (plainSelect.getOptimizeFor() != null) {
+            validateOptimizeFor(plainSelect.getOptimizeFor());
+        }
+
+
+    }
+
+    private void validateOptimizeFor(OptimizeFor optimizeFor) {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
@@ -309,7 +252,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
         //        errors.append("))");
     }
 
-    public void deparseOffset(Offset offset) {
+    public void validateOffset(Offset offset) {
         //        // OFFSET offset
         //        // or OFFSET offset (ROW | ROWS)
         //        if (offset.getOffsetJdbcParameter() != null) {
@@ -324,7 +267,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     }
 
-    public void deparseFetch(Fetch fetch) {
+    public void validateFetch(Fetch fetch) {
         //        // FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
         //        errors.append(" FETCH ");
         //        if (fetch.isFetchParamFirst()) {

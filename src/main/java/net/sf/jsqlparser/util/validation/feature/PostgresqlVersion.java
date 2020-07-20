@@ -12,6 +12,17 @@ public enum PostgresqlVersion implements Version {
             EnumSet.of(
                     // https://www.postgresql.org/docs/current/sql-select.html
                     Feature.select,
+                    Feature.selectGroupBy,
+                    Feature.limit,
+                    Feature.distinct,
+                    Feature.distinctOn,
+                    Feature.selectHaving,
+                    Feature.window,
+                    Feature.orderBy,
+                    Feature.orderByNullOrdering,
+                    Feature.selectForUpdate,
+                    Feature.selectForUpdateOfTable,
+                    Feature.selectForUpdateNoWait,
                     // https://www.postgresql.org/docs/current/sql-insert.html
                     Feature.insert,
                     // https://www.postgresql.org/docs/current/sql-update.html
