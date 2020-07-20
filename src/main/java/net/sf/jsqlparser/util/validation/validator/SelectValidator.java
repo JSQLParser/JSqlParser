@@ -20,7 +20,6 @@ import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.Offset;
-import net.sf.jsqlparser.statement.select.OptimizeFor;
 import net.sf.jsqlparser.statement.select.ParenthesisFromItem;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
@@ -45,7 +44,7 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  * @author gitmotte
  */
 public class SelectValidator extends AbstractValidator<SelectItem>
-implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
+        implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     @Override
     public void visit(PlainSelect plainSelect) {
@@ -81,6 +80,8 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             }
 
             validateFeature(c, plainSelect.getForXmlPath() != null, Feature.selectForXmlPath);
+            validateFeature(c, plainSelect.getOptimizeFor() != null, Feature.optimizeFor);
+
         }
 
         if (plainSelect.getFromItem() != null) {
@@ -130,55 +131,34 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             validateFetch(plainSelect.getFetch());
         }
 
-        if (plainSelect.getOptimizeFor() != null) {
-            validateOptimizeFor(plainSelect.getOptimizeFor());
-        }
-
-
-    }
-
-    private void validateOptimizeFor(OptimizeFor optimizeFor) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void visit(AllTableColumns allTableColumns) {
-        //        errors.append(allTableColumns.getTable().getFullyQualifiedName()).append(".*");
+        // nothing to validate - allTableColumns.getTable() will be validated with from
+        // clause
+    }
+
+    @Override
+    public void visit(AllColumns allColumns) {
+        // nothing to validate
     }
 
     @Override
     public void visit(SelectExpressionItem selectExpressionItem) {
-        //        selectExpressionItem.getExpression().accept(expressionVisitor);
-        //        if (selectExpressionItem.getAlias() != null) {
-        //            errors.append(selectExpressionItem.getAlias().toString());
-        //        }
+        selectExpressionItem.getExpression().accept(getValidator(ExpressionValidator.class));
     }
 
     @Override
     public void visit(SubSelect subSelect) {
-        //        errors.append("(");
-        //        if (subSelect.getWithItemsList() != null && !subSelect.getWithItemsList().isEmpty()) {
-        //            errors.append("WITH ");
-        //            for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.hasNext();) {
-        //                WithItem withItem = iter.next();
-        //                withItem.accept(this);
-        //                if (iter.hasNext()) {
-        //                    errors.append(",");
-        //                }
-        //                errors.append(" ");
-        //            }
-        //        }
-        //        subSelect.getSelectBody().accept(this);
-        //        errors.append(")");
-        //        Alias alias = subSelect.getAlias();
-        //        if (alias != null) {
-        //            errors.append(alias.toString());
-        //        }
-        //        Pivot pivot = subSelect.getPivot();
-        //        if (pivot != null) {
-        //            pivot.accept(this);
-        //        }
+        if (subSelect.getWithItemsList() != null) {
+            subSelect.getWithItemsList().forEach(withItem -> withItem.accept(this));
+        }
+        subSelect.getSelectBody().accept(this);
+        Pivot pivot = subSelect.getPivot();
+        if (pivot != null) {
+            pivot.accept(this);
+        }
     }
 
     @Override
@@ -422,10 +402,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
         //        errors.append(valuesList.toString());
     }
 
-    @Override
-    public void visit(AllColumns allColumns) {
-        //        errors.append('*');
-    }
+
 
     @Override
     public void visit(TableFunction tableFunction) {

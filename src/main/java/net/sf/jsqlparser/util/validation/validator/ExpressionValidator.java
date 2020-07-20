@@ -94,7 +94,6 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SubSelect;
-import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.feature.FeatureContext;
@@ -334,20 +333,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(SubSelect subSelect) {
-        if (subSelect.isUseBrackets()) {
-        }
-        if (subSelect.getWithItemsList() != null) {
-            for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.
-                    hasNext();) {
-                iter.next().accept(getValidator(SelectValidator.class));
-                if (iter.hasNext()) {
-                }
-            }
-        }
-
-        subSelect.getSelectBody().accept(getValidator(SelectValidator.class));
-        if (subSelect.isUseBrackets()) {
-        }
+        subSelect.accept(getValidator(SelectValidator.class));
     }
 
     @Override

@@ -58,6 +58,7 @@ public enum Feature {
     skip,
     first,
     top,
+    optimizeFor,
 
     selectUnique,
     distinct,
@@ -82,6 +83,14 @@ public enum Feature {
      * SQL "INSERT" statement is allowed
      */
     insert,
+    insertFromSelect,
+    insertModifierPriority,
+    insertModifierIgnore,
+    insertUseSet,
+    insertUseDuplicateKeyUpdate,
+    insertReturning,
+    insertReturningExpressionList,
+
     /**
      * @see ValuesStatement
      */
@@ -298,7 +307,7 @@ public enum Feature {
     /**
      * allows square brackets for names, disabled by default
      */
-    allowSquareBracketQuotation(false)
+    allowSquareBracketQuotation(false),
 
     ;
 
