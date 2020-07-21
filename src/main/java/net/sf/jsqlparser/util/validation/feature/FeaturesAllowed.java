@@ -15,7 +15,13 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.parser.feature.FeatureSet;
 
+/**
+ * Privileges/Features allowed
+ *
+ * @author gitmotte
+ */
 public class FeaturesAllowed implements FeatureSetValidation {
 
     public static final FeaturesAllowed INSERT = new FeaturesAllowed(Feature.insert,
@@ -24,11 +30,23 @@ public class FeaturesAllowed implements FeatureSetValidation {
             Feature.selectGroupBy).unmodifyable();
     public static final FeaturesAllowed UPDATE = new FeaturesAllowed(Feature.update).unmodifyable();
     public static final FeaturesAllowed DELETE = new FeaturesAllowed(Feature.delete).unmodifyable();
+    public static final FeaturesAllowed EXECUTE = new FeaturesAllowed(Feature.execute).unmodifyable();
+    public static final FeaturesAllowed ALTER = new FeaturesAllowed(Feature.alter).unmodifyable();
+    public static final FeaturesAllowed DROP = new FeaturesAllowed(Feature.drop).unmodifyable();
 
     private Set<Feature> features = new HashSet<>();
 
+    public FeaturesAllowed(FeatureSet... s) {
+        add(s);
+    }
+
     public FeaturesAllowed(Feature... f) {
         add(f);
+    }
+
+    public FeaturesAllowed add(FeatureSet... s) {
+        Stream.of(s).map(FeatureSet::getFeatures).forEach(fs -> features.addAll(fs));
+        return this;
     }
 
     public FeaturesAllowed add(Feature... f) {
