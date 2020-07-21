@@ -40,6 +40,7 @@ import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
+import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.KSQLWindow;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
@@ -80,6 +81,23 @@ public enum Feature {
      * @see Offset#getOffsetParam()
      */
     offsetParam,
+
+    /**
+     * @see Fetch
+     */
+    fetch,
+    /**
+     * "FETCH FIRST row_count (ROW | ROWS) ONLY"
+     * @see Fetch#isFetchParamFirst()
+     */
+    fetchFirst,
+    /**
+     * "FETCH NEXT row_count (ROW | ROWS) ONLY"
+     * if not {@link #fetchFirst}
+     * 
+     * @see Fetch#isFetchParamFirst()
+     */
+    fetchNext,
 
     skip,
     first,

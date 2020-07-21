@@ -240,29 +240,16 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
     }
 
     public void validateFetch(Fetch fetch) {
-        //        // FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
-        //        errors.append(" FETCH ");
-        //        if (fetch.isFetchParamFirst()) {
-        //            errors.append("FIRST ");
-        //        } else {
-        //            errors.append("NEXT ");
-        //        }
-        //        if (fetch.getFetchJdbcParameter() != null) {
-        //            errors.append(fetch.getFetchJdbcParameter().toString());
-        //        } else {
-        //            errors.append(fetch.getRowCount());
-        //        }
-        //        errors.append(" ").append(fetch.getFetchParam()).append(" ONLY");
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(c, Feature.fetch);
+            validateFeature(c, fetch.isFetchParamFirst(), Feature.fetchFirst);
+            validateFeature(c, !fetch.isFetchParamFirst(), Feature.fetchNext);
+        }
 
+        if (fetch.getFetchJdbcParameter() != null) {
+            fetch.getFetchJdbcParameter().accept(getValidator(ExpressionValidator.class));
+        }
     }
-
-    //    public ExpressionVisitor getExpressionVisitor() {
-    //        return expressionVisitor;
-    //    }
-    //
-    //    public void setExpressionVisitor(ExpressionVisitor visitor) {
-    //        expressionVisitor = visitor;
-    //    }
 
     @Override
     public void visit(SubJoin subjoin) {
