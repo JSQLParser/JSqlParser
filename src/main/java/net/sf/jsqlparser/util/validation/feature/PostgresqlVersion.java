@@ -13,7 +13,11 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-select.html
                     Feature.select,
                     Feature.selectGroupBy,
+                    // https://www.postgresql.org/docs/current/queries-limit.html
                     Feature.limit,
+                    Feature.limitAll, //
+                    Feature.limitNull,
+                    Feature.offset,
                     Feature.distinct,
                     Feature.distinctOn,
                     Feature.selectHaving,
@@ -23,6 +27,7 @@ public enum PostgresqlVersion implements Version {
                     Feature.selectForUpdate,
                     Feature.selectForUpdateOfTable,
                     Feature.selectForUpdateNoWait,
+
                     // https://www.postgresql.org/docs/current/sql-insert.html
                     Feature.insert,
                     // https://www.postgresql.org/docs/current/sql-update.html

@@ -41,6 +41,8 @@ import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.KSQLWindow;
+import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -54,7 +56,27 @@ public enum Feature {
     selectHaving,
     selectInto,
 
+    /**
+     * @see Limit
+     */
     limit,
+    /**
+     * @see Limit#isLimitNull()
+     */
+    limitNull,
+    /**
+     * @see Limit#isLimitAll()
+     */
+    limitAll,
+    /**
+     * @see Limit#getOffset()
+     */
+    limitOffset,
+    /**
+     * @see Offset
+     */
+    offset,
+
     skip,
     first,
     top,

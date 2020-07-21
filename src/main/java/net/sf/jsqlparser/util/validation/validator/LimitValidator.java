@@ -23,22 +23,9 @@ public class LimitValidator extends AbstractValidator<Limit> {
     public void validate(Limit limit) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.limit);
+            validateFeature(c, limit.isLimitNull(), Feature.limitNull);
+            validateFeature(c, limit.isLimitAll(), Feature.limitAll);
+            validateFeature(c, limit.getOffset() != null, Feature.limitOffset);
         }
-        //        buffer.append(" LIMIT ");
-        //        if (limit.isLimitNull()) {
-        //            buffer.append("NULL");
-        //        } else {
-        //            if (limit.isLimitAll()) {
-        //                buffer.append("ALL");
-        //            } else {
-        //                if (null != limit.getOffset()) {
-        //                    buffer.append(limit.getOffset()).append(", ");
-        //                }
-        //
-        //                if (null != limit.getRowCount()) {
-        //                    buffer.append(limit.getRowCount());
-        //                }
-        //            }
-        //        }
     }
 }
