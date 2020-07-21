@@ -112,6 +112,18 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         }
     }
 
+    protected void validateOptionalExpression(Expression expression) {
+        if (expression != null) {
+            expression.accept(getValidator(ExpressionValidator.class));
+        }
+    }
+    
+    protected void validateOptionalExpression(Expression expression, ExpressionValidator v) {
+        if (expression != null) {
+            expression.accept(v);
+        }
+    }
+
     protected void validateOptionalColumns(List<Column> columns) {
         if (columns != null && !columns.isEmpty()) {
             ExpressionValidator e = getValidator(ExpressionValidator.class);

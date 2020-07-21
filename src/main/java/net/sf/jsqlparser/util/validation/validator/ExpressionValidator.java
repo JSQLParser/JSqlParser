@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -54,6 +53,8 @@ import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.VariableAssignment;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.WindowElement;
+import net.sf.jsqlparser.expression.WindowOffset;
+import net.sf.jsqlparser.expression.WindowRange;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -94,9 +95,9 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SubSelect;
-import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.feature.FeatureContext;
+import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
@@ -112,7 +113,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(AndExpression andExpression) {
-        visitBinaryExpression(andExpression, andExpression.isUseOperator()?" && ":" AND ");
+        visitBinaryExpression(andExpression, andExpression.isUseOperator() ? " && " : " AND ");
     }
 
     @Override
@@ -139,10 +140,12 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(DoubleValue doubleValue) {
+        // nothing to validate
     }
 
     @Override
     public void visit(HexValue hexValue) {
+        // nothing to validate
     }
 
     @Override
@@ -191,18 +194,19 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(InExpression inExpression) {
-        if (inExpression.getLeftExpression() == null) {
-            inExpression.getLeftItemsList().accept(getValidator(ItemListValidator.class));
-        } else {
+        for (ValidationCapability c : getCapabilities()) {
+            Consumer<String> messageConsumer = getMessageConsumer(c);
             inExpression.getLeftExpression().accept(this);
-            if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
+            if (c instanceof FeatureSetValidation
+                    && inExpression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
+                c.validate(context().put(FeatureContext.feature, Feature.oracleOldJoinSyntax),
+                        messageConsumer);
             }
-        }
-        if (inExpression.isNot()) {
+
         }
 
         if (inExpression.getMultiExpressionList() != null) {
-            parseMultiExpressionList(inExpression);
+            validateMultiExpressionList(inExpression.getMultiExpressionList());
         } else {
             if (inExpression.getRightExpression() != null) {
                 inExpression.getRightExpression().accept(this);
@@ -213,24 +217,16 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     }
 
     /**
-     * Produces a multi-expression in clause: {@code ((a, b), (c, d))}
+     * a multi-expression in clause: {@code ((a, b), (c, d))}
      */
-    private void parseMultiExpressionList(InExpression inExpression) {
-        MultiExpressionList multiExprList = inExpression.getMultiExpressionList();
-        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
-            for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter.hasNext();) {
-                Expression expression = iter.next();
-                expression.accept(this);
-                if (iter.hasNext()) {
-                }
-            }
-            if (it.hasNext()) {
-            }
-        }
+    private void validateMultiExpressionList(MultiExpressionList multiExprList) {
+        multiExprList.getExpressionLists().stream().map(ExpressionList::getExpressions)
+        .flatMap(List::stream).forEach(e -> e.accept(this));
     }
 
     @Override
     public void visit(FullTextSearch fullTextSearch) {
+        validateOptionalColumns(fullTextSearch.getMatchColumns());
     }
 
     @Override
@@ -262,15 +258,12 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(ExistsExpression existsExpression) {
-        if (existsExpression.isNot()) {
-        } else {
-        }
         existsExpression.getRightExpression().accept(this);
     }
 
     @Override
     public void visit(LongValue longValue) {
-
+        // nothing to validate
     }
 
     @Override
@@ -294,12 +287,11 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     @Override
     public void visit(NotEqualsTo notEqualsTo) {
         visitOldOracleJoinBinaryExpression(notEqualsTo, " " + notEqualsTo.getStringExpression() + " ");
-
     }
 
     @Override
     public void visit(NullValue nullValue) {
-
+        // nothing to validate
     }
 
     @Override
@@ -315,9 +307,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(StringValue stringValue) {
-        if (stringValue.getPrefix() != null) {
-        }
-
+        // nothing to validate
     }
 
     @Override
@@ -328,7 +318,6 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     protected void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
         binaryExpression.getLeftExpression().accept(this);
         binaryExpression.getRightExpression().accept(this);
-
     }
 
     @Override
@@ -346,39 +335,35 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(Function function) {
-        if (function.isEscaped()) {
-        }
+        validateFeature(Feature.function);
 
-        if (function.isAllColumns() && function.getParameters() == null) {
-        } else if (function.getParameters() == null && function.getNamedParameters() == null) {
-        } else {
-            if (function.getNamedParameters() != null) {
-                getValidator(ItemListValidator.class).validate(function.getNamedParameters());
-            }
-            if (function.getParameters() != null) {
-                getValidator(ItemListValidator.class).validate(function.getNamedParameters());
-            }
+        if (function.getNamedParameters() != null) {
+            function.getNamedParameters().accept(getValidator(ItemListValidator.class));
         }
-
+        if (function.getParameters() != null) {
+            function.getParameters().accept(getValidator(ItemListValidator.class));
+        }
         if (function.getAttribute() != null) {
-        } else if (function.getAttributeName() != null) {
+            function.getAttribute().accept(this);
         }
         if (function.getKeep() != null) {
-        }
-        if (function.isEscaped()) {
+            function.getKeep().accept(this);
         }
     }
 
     @Override
     public void visit(DateValue dateValue) {
+        // nothing to validate
     }
 
     @Override
     public void visit(TimestampValue timestampValue) {
+        // nothing to validate
     }
 
     @Override
     public void visit(TimeValue timeValue) {
+        // nothing to validate
     }
 
     @Override
@@ -388,15 +373,12 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
             switchExp.accept(this);
         }
 
-        for (Expression exp : caseExpression.getWhenClauses()) {
-            exp.accept(this);
-        }
+        caseExpression.getWhenClauses().forEach(wc -> wc.accept(this));
 
         Expression elseExp = caseExpression.getElseExpression();
         if (elseExp != null) {
             elseExp.accept(this);
         }
-
     }
 
     @Override
@@ -442,11 +424,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(CastExpression cast) {
-        if (cast.isUseCastKeyword()) {
-            cast.getLeftExpression().accept(this);
-        } else {
-            cast.getLeftExpression().accept(this);
-        }
+        cast.getLeftExpression().accept(this);
     }
 
     @Override
@@ -456,70 +434,35 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(AnalyticExpression aexpr) {
-        Expression expression = aexpr.getExpression();
-        Expression offset = aexpr.getOffset();
-        Expression defaultValue = aexpr.getDefaultValue();
-        boolean isAllColumns = aexpr.isAllColumns();
-        KeepExpression keep = aexpr.getKeep();
-        ExpressionList partitionExpressionList = aexpr.getPartitionExpressionList();
-        List<OrderByElement> orderByElements = aexpr.getOrderByElements();
+        validateOptionalExpression(aexpr.getExpression(), this);
+        validateOptionalExpression(aexpr.getOffset(), this);
+        validateOptionalExpression(aexpr.getDefaultValue(), this);
+        validateOptionalExpression(aexpr.getKeep(), this);
+        validateOptionalExpressionList(aexpr.getPartitionExpressionList());
+        validateOptionalOrderByElements(aexpr.getOrderByElements());
         WindowElement windowElement = aexpr.getWindowElement();
-
-        if (aexpr.isDistinct()) {
-        }
-        if (expression != null) {
-            expression.accept(this);
-            if (offset != null) {
-                offset.accept(this);
-                if (defaultValue != null) {
-                    defaultValue.accept(this);
-                }
-            }
-        } else if (isAllColumns) {
-        }
-        if (aexpr.isIgnoreNulls()) {
-        }
-        if (keep != null) {
-            keep.accept(this);
-        }
-
-        if (aexpr.getFilterExpression() != null) {
-            aexpr.getFilterExpression().accept(this);
-        }
-
-        switch (aexpr.getType()) {
-        case WITHIN_GROUP:
-            break;
-        default:
-        }
-
-        if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
-            if (aexpr.isPartitionByBrackets()) {
-            }
-            List<Expression> expressions = partitionExpressionList.getExpressions();
-            for (int i = 0; i < expressions.size(); i++) {
-                if (i > 0) {
-                }
-                expressions.get(i).accept(this);
-            }
-            if (aexpr.isPartitionByBrackets()) {
-            }
-        }
-        if (orderByElements != null && !orderByElements.isEmpty()) {
-            //            orderByDeValidator.setExpressionVisitor(this);
-            //            orderByDeValidator.setBuffer(errors);
-            for (int i = 0; i < orderByElements.size(); i++) {
-                if (i > 0) {
-                }
-                //                orderByDeParser.deParseElement(orderByElements.get(i));
-            }
-        }
-
         if (windowElement != null) {
-            if (orderByElements != null && !orderByElements.isEmpty()) {
+            validateOptionalWindowOffset(windowElement.getOffset());
+            WindowRange range = windowElement.getRange();
+            if (range != null) {
+                validateOptionalWindowOffset(range.getStart());
+                validateOptionalWindowOffset(range.getEnd());
             }
         }
+        validateOptionalExpression(aexpr.getFilterExpression());
+    }
 
+    private void validateOptionalWindowOffset(WindowOffset offset) {
+        if (offset != null) {
+            validateOptionalExpression(offset.getExpression());
+        }
+    }
+
+    private void validateOptionalOrderByElements(List<OrderByElement> orderByElements) {
+        if (orderByElements != null) {
+            OrderByValidator v = getValidator(OrderByValidator.class);
+            orderByElements.forEach(ob -> ob.accept(v));
+        }
     }
 
     @Override
@@ -529,6 +472,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(IntervalExpression iexpr) {
+        validateOptionalExpression(iexpr.getExpression());
     }
 
     @Override
@@ -553,6 +497,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(JsonExpression jsonExpr) {
+        validateOptionalExpression(jsonExpr.getColumn());
     }
 
     @Override
@@ -562,55 +507,63 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(UserVariable var) {
+        // nothing to validate
     }
 
     @Override
     public void visit(NumericBind bind) {
+        // nothing to validate
     }
 
     @Override
     public void visit(KeepExpression aexpr) {
+        validateOptionalOrderByElements(aexpr.getOrderByElements());
     }
 
     @Override
     public void visit(MySQLGroupConcat groupConcat) {
+        validateOptionalExpressionList(groupConcat.getExpressionList());
+        validateOptionalOrderByElements(groupConcat.getOrderByElements());
+    }
+
+    private void validateOptionalExpressionList(ExpressionList expressionList) {
+        if (expressionList != null) {
+            expressionList.accept(getValidator(ItemListValidator.class));
+        }
     }
 
     @Override
     public void visit(ValueListExpression valueList) {
+        validateOptionalExpressionList(valueList.getExpressionList());
     }
 
     @Override
     public void visit(RowConstructor rowConstructor) {
-        if (rowConstructor.getName() != null) {
-        }
-        boolean first = true;
-        for (Expression expr : rowConstructor.getExprList().getExpressions()) {
-            if (first) {
-                first = false;
-            } else {
-            }
-            expr.accept(this);
-        }
+        validateOptionalExpressionList(rowConstructor.getExprList());
     }
 
     @Override
     public void visit(OracleHint hint) {
+        // nothing to validate
     }
 
     @Override
     public void visit(TimeKeyExpression timeKeyExpression) {
+        // nothing to validate
     }
     @Override
     public void visit(DateTimeLiteralExpression literal) {
+        // nothing to validate
     }
 
     @Override
     public void visit(NextValExpression nextVal) {
+        validateName(NamedObject.sequence, nextVal.getName());
     }
 
     @Override
     public void visit(CollateExpression col) {
+        validateOptionalExpression(col.getLeftExpression());
     }
 
     @Override
@@ -630,9 +583,11 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     }
 
     @Override
-    public void visit(VariableAssignment aThis) {
-        // TODO Auto-generated method stub
-
+    public void visit(VariableAssignment a) {
+        validateOptionalExpression(a.getExpression());
+        if (a.getVariable() != null) {
+            a.getVariable().accept(this);
+        }
     }
 
 }
