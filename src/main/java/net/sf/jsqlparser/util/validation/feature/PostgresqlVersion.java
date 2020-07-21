@@ -64,7 +64,7 @@ public enum PostgresqlVersion implements Version {
 
     @Override
     public String getName() {
-        return DatabaseType.postgresql.name() + " " + name();
+        return DatabaseType.POSTGRESQL.name() + " " + name();
     }
 
 }

@@ -22,13 +22,13 @@ import net.sf.jsqlparser.parser.feature.Feature;
  */
 public enum DatabaseType implements FeatureSetValidation {
 
-    oracle(OracleVersion.values()),
-    mysql(MySqlVersion.values()),
-    sqlserver(SqlServerVersion.values()),
-    mariadb(MariaDbVersion.values()),
-    postgresql(PostgresqlVersion.values()),
-    h2(H2Version.values()),
-    hsqldb(HSQLDBVersion.values());
+    ORACLE(OracleVersion.values()),
+    MYSQL(MySqlVersion.values()),
+    SQLSERVER(SqlServerVersion.values()),
+    MARIADB(MariaDbVersion.values()),
+    POSTGRESQL(PostgresqlVersion.values()),
+    H2(H2Version.values()),
+    HSQLDB(HSQLDBVersion.values());
 
     private Version[] versions;
 
@@ -46,7 +46,7 @@ public enum DatabaseType implements FeatureSetValidation {
      * @throws NullPointerException if {@code jdbcIdentifier} is null
      */
     public static DatabaseType get(String jdbcIdentifier) {
-        return DatabaseType.valueOf(jdbcIdentifier.toLowerCase());
+        return DatabaseType.valueOf(jdbcIdentifier.toUpperCase());
     }
 
     /**

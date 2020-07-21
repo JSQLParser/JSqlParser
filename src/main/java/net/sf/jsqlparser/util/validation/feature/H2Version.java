@@ -54,7 +54,7 @@ public enum H2Version implements Version {
 
     @Override
     public String getName() {
-        return DatabaseType.h2.name() + " " + name();
+        return DatabaseType.H2.name() + " " + name();
     }
 
 }

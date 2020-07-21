@@ -39,20 +39,20 @@ public class ValidationTest {
         Statement stmt = CCJSqlParserUtil.parse(sql);
 
         StatementValidator validator = new StatementValidator();
-        validator.setCapabilities(Arrays.asList(DatabaseType.sqlserver, DatabaseType.postgresql));
+        validator.setCapabilities(Arrays.asList(DatabaseType.SQLSERVER, DatabaseType.POSTGRESQL));
         stmt.accept(validator);
 
-        Map<ValidationCapability, Set<String>> unsupportedErrors = validator.getValidationErrors(DatabaseType.sqlserver);
+        Map<ValidationCapability, Set<String>> unsupportedErrors = validator.getValidationErrors(DatabaseType.SQLSERVER);
         assertNotNull(unsupportedErrors);
         assertEquals(1, unsupportedErrors.size());
         assertEquals(new HashSet<>(Arrays.asList(Feature.oracleOldJoinSyntax + " not supported.")),
-                unsupportedErrors.get(DatabaseType.sqlserver));
+                unsupportedErrors.get(DatabaseType.SQLSERVER));
 
-        unsupportedErrors = validator.getValidationErrors(DatabaseType.postgresql);
+        unsupportedErrors = validator.getValidationErrors(DatabaseType.POSTGRESQL);
         assertNotNull(unsupportedErrors);
         assertEquals(1, unsupportedErrors.size());
         assertEquals(new HashSet<>(Arrays.asList(Feature.oracleOldJoinSyntax + " not supported.")),
-                unsupportedErrors.get(DatabaseType.postgresql));
+                unsupportedErrors.get(DatabaseType.POSTGRESQL));
     }
 
     @Test
@@ -60,12 +60,12 @@ public class ValidationTest {
 
         String stmt = "SELECT * FROM tab1, tab2 WHERE tab1.id (+) = tab2.ref";
         List<ValidationError> errors = ValidationUtil.validate(
-                Collections.singletonList(DatabaseType.sqlserver), stmt);
+                Collections.singletonList(DatabaseType.SQLSERVER), stmt);
 
         assertNotNull(errors);
         assertEquals(1, errors.size());
         assertEquals(stmt, errors.get(0).getStatement());
-        assertEquals(DatabaseType.sqlserver, errors.get(0).getCapability());
+        assertEquals(DatabaseType.SQLSERVER, errors.get(0).getCapability());
         assertEquals(new HashSet<>(Arrays.asList(Feature.oracleOldJoinSyntax + " not supported.")),
                 errors.get(0).getErrors());
         assertNull(errors.get(0).getException());
@@ -102,7 +102,7 @@ public class ValidationTest {
 
         String stmt = "SELECT * FROM tab1 JOIN tab2 WHERE tab1.id = tab2.ref";
         List<ValidationError> errors = ValidationUtil.validate(
-                Arrays.asList(DatabaseType.postgresql, FeaturesAllowed.UPDATE), stmt);
+                Arrays.asList(DatabaseType.POSTGRESQL, FeaturesAllowed.UPDATE), stmt);
 
         assertNotNull(errors);
         assertEquals(1, errors.size());
@@ -116,7 +116,7 @@ public class ValidationTest {
 
         String stmt = "SELECT * FROM tab1 JOIN tab2 WHERE tab1.id = tab2.ref";
         List<ValidationError> errors = ValidationUtil.validate(
-                Arrays.asList(DatabaseType.postgresql, FeaturesAllowed.SELECT), stmt);
+                Arrays.asList(DatabaseType.POSTGRESQL, FeaturesAllowed.SELECT), stmt);
 
         assertNotNull(errors);
         assertEquals(0, errors.size());

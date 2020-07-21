@@ -41,7 +41,7 @@ public enum OracleVersion implements Version {
 
     @Override
     public String getName() {
-        return DatabaseType.oracle.name() + " " + name();
+        return DatabaseType.ORACLE.name() + " " + name();
     }
 
 }
