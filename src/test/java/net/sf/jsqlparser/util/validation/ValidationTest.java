@@ -98,16 +98,16 @@ public class ValidationTest {
     }
 
     @Test
-    public void testWithValidatonUtilAcceptOnlyUpdates() throws JSQLParserException {
+    public void testWithValidatonUtilUpdateButAcceptOnlySelects() throws JSQLParserException {
 
-        String stmt = "SELECT * FROM tab1 JOIN tab2 WHERE tab1.id = tab2.ref";
+        String stmt = "UPDATE tab1 t1 SET t1.ref = ? WHERE t1.id = ?";
         List<ValidationError> errors = ValidationUtil.validate(
-                Arrays.asList(DatabaseType.POSTGRESQL, FeaturesAllowed.UPDATE), stmt);
+                Arrays.asList(DatabaseType.POSTGRESQL, FeaturesAllowed.SELECT), stmt);
 
         assertNotNull(errors);
         assertEquals(1, errors.size());
         assertNull(errors.get(0).getException());
-        assertEquals(new HashSet<>(Arrays.asList("select not allowed.")), errors.get(0).getErrors());
+        assertEquals(new HashSet<>(Arrays.asList("update not allowed.")), errors.get(0).getErrors());
 
     }
 
