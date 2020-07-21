@@ -8,7 +8,7 @@ import java.util.Set;
 import net.sf.jsqlparser.parser.feature.Feature;
 
 public enum OracleVersion implements Version {
-    _19c("19c",
+    V19C("19c",
             EnumSet.of(
                     Feature.oracleOldJoinSyntax,
                     Feature.oraclePriorPosition,
