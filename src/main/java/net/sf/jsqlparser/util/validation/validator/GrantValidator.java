@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.validation.validator;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
  * @author gitmotte
@@ -22,29 +23,15 @@ public class GrantValidator extends AbstractValidator<Grant> {
     public void validate(Grant grant) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.grant);
+            if (grant.getUsers() != null) {
+                grant.getUsers().forEach(u -> validateName(NamedObject.user, u));
+            }
+            if (grant.getRole() != null) {
+                validateName(NamedObject.role, grant.getRole());
+            }
+
+            // can't validate grant.getObjectName() - don't know the kind of this object.
         }
-        //        buffer.append("GRANT ");
-        //        if (grant.getRole() != null) {
-        //            buffer.append(grant.getRole());
-        //        } else {
-        //            for (Iterator<String> iter = grant.getPrivileges().iterator(); iter.hasNext();) {
-        //                String privilege = iter.next();
-        //                buffer.append(privilege);
-        //                if (iter.hasNext()) {
-        //                    buffer.append(", ");
-        //                }
-        //            }
-        //            buffer.append(" ON ");
-        //            buffer.append(grant.getObjectName());
-        //        }
-        //        buffer.append(" TO ");
-        //        for (Iterator<String> iter = grant.getUsers().iterator(); iter.hasNext();) {
-        //            String user = iter.next();
-        //            buffer.append(user);
-        //            if (iter.hasNext()) {
-        //                buffer.append(", ");
-        //            }
-        //        }
     }
 
 }

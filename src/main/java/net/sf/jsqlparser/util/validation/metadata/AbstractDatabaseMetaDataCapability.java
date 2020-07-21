@@ -47,9 +47,21 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
             return viewExists(name);
         case procedure:
             return procedureExists(name);
+        case user:
+            return userExists(name);
+        case role:
+            return roleExists(name);
         default:
         }
         throw new UnsupportedOperationException("cannot evaluate for " + o + " and " + name);
+    }
+
+    protected boolean roleExists(String name) throws ValidationException {
+        return true;
+    }
+
+    protected boolean userExists(String name) throws ValidationException {
+        return true;
     }
 
     protected boolean procedureExists(String name) throws ValidationException {
