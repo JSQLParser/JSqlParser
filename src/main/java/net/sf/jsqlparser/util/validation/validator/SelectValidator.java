@@ -44,7 +44,7 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  * @author gitmotte
  */
 public class SelectValidator extends AbstractValidator<SelectItem>
-        implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
+implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     @Override
     public void visit(PlainSelect plainSelect) {
@@ -233,18 +233,10 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     }
 
     public void validateOffset(Offset offset) {
-        //        // OFFSET offset
-        //        // or OFFSET offset (ROW | ROWS)
-        //        if (offset.getOffsetJdbcParameter() != null) {
-        //            errors.append(" OFFSET ").append(offset.getOffsetJdbcParameter());
-        //        } else {
-        //            errors.append(" OFFSET ");
-        //            errors.append(offset.getOffset());
-        //        }
-        //        if (offset.getOffsetParam() != null) {
-        //            errors.append(" ").append(offset.getOffsetParam());
-        //        }
-
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(c, Feature.offset);
+            validateFeature(c, offset.getOffsetParam() != null, Feature.offsetParam);
+        }
     }
 
     public void validateFetch(Fetch fetch) {

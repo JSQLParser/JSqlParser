@@ -76,6 +76,10 @@ public enum Feature {
      * @see Offset
      */
     offset,
+    /**
+     * @see Offset#getOffsetParam()
+     */
+    offsetParam,
 
     skip,
     first,
