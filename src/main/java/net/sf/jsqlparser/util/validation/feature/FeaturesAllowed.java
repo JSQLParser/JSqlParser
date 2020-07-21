@@ -24,12 +24,52 @@ import net.sf.jsqlparser.parser.feature.FeatureSet;
  */
 public class FeaturesAllowed implements FeatureSetValidation {
 
+    /**
+     * all {@link Feature}' within SQL SELECT without modification features like
+     * {@link Feature#selectInto}
+     */
+    public static final FeaturesAllowed SELECT = new FeaturesAllowed(
+            Feature.select,
+            Feature.selectGroupBy,
+            Feature.selectHaving,
+            Feature.limit,
+            Feature.limitNull,
+            Feature.limitAll,
+            Feature.limitOffset,
+            Feature.offset,
+            Feature.offsetParam,
+            Feature.fetch,
+            Feature.fetchFirst,
+            Feature.fetchNext,
+            Feature.skip,
+            Feature.first,
+            Feature.top,
+            Feature.optimizeFor,
+            Feature.selectUnique,
+            Feature.distinct,
+            Feature.distinctOn,
+            Feature.orderBy,
+            Feature.orderByNullOrdering).unmodifyable();
+
+    /**
+     * all {@link Feature}' for SQL INSERT including {@link #SELECT} and
+     * {@link Feature#selectInto}
+     */
     public static final FeaturesAllowed INSERT = new FeaturesAllowed(Feature.insert,
-            Feature.insertValues).unmodifyable();
-    public static final FeaturesAllowed SELECT = new FeaturesAllowed(Feature.select, Feature.limit,
-            Feature.selectGroupBy).unmodifyable();
-    public static final FeaturesAllowed UPDATE = new FeaturesAllowed(Feature.update).unmodifyable();
-    public static final FeaturesAllowed DELETE = new FeaturesAllowed(Feature.delete).unmodifyable();
+            Feature.insertValues, Feature.selectInto).add(SELECT).unmodifyable();
+
+    /**
+     * all {@link Feature}' for SQL UPDATE including {@link #SELECT}
+     */
+    public static final FeaturesAllowed UPDATE = new FeaturesAllowed(Feature.update)
+            .add(SELECT).unmodifyable();
+
+    /**
+     * all {@link Feature}' for SQL UPDATE including {@link #SELECT}
+     */
+    public static final FeaturesAllowed DELETE = new FeaturesAllowed(Feature.delete)
+            .add(SELECT).unmodifyable();
+
     public static final FeaturesAllowed EXECUTE = new FeaturesAllowed(Feature.execute).unmodifyable();
     public static final FeaturesAllowed ALTER = new FeaturesAllowed(Feature.alter).unmodifyable();
     public static final FeaturesAllowed DROP = new FeaturesAllowed(Feature.drop).unmodifyable();
