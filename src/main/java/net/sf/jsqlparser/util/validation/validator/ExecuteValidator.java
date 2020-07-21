@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.validation.validator;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
  * @author gitmotte
@@ -23,25 +24,13 @@ public class ExecuteValidator extends AbstractValidator<Execute> {
     public void validate(Execute execute) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.execute);
+            validateName(NamedObject.procedure, execute.getName());
         }
-        //        buffer.append(execute.getExecType().name()).append(" ").append(execute.getName());
-        //        if (execute.isParenthesis()) {
-        //            buffer.append(" (");
-        //        } else if (execute.getExprList() != null) {
-        //            buffer.append(" ");
-        //        }
-        //        if (execute.getExprList() != null) {
-        //            List<Expression> expressions = execute.getExprList().getExpressions();
-        //            for (int i = 0; i < expressions.size(); i++) {
-        //                if (i > 0) {
-        //                    buffer.append(", ");
-        //                }
-        //                expressions.get(i).accept(expressionVisitor);
-        //            }
-        //        }
-        //        if (execute.isParenthesis()) {
-        //            buffer.append(")");
-        //        }
+
+        if (execute.getExprList() != null) {
+            execute.getExprList().accept(getValidator(ItemListValidator.class));
+        }
+
     }
 
 }

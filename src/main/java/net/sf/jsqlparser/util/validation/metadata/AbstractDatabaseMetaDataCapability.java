@@ -13,6 +13,12 @@ import java.sql.Connection;
 
 import net.sf.jsqlparser.util.validation.ValidationException;
 
+/**
+ * Adapter class always returning <code>true</code> for all exists - methods.
+ *
+ * @author gitmotte
+ *
+ */
 public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMetaDataValidation {
 
     protected Connection connection;
@@ -39,9 +45,15 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
             return constraintExists(name);
         case view:
             return viewExists(name);
+        case procedure:
+            return procedureExists(name);
         default:
         }
         throw new UnsupportedOperationException("cannot evaluate for " + o + " and " + name);
+    }
+
+    protected boolean procedureExists(String name) throws ValidationException {
+        return true;
     }
 
     protected boolean databaseExists(String name) throws ValidationException {
