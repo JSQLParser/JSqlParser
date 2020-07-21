@@ -44,6 +44,7 @@ import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.KSQLWindow;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
+import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -302,6 +303,19 @@ public enum Feature {
      */
     set,
 
+    /**
+     * @see Pivot
+     */
+    pivot,
+    /**
+     * @see UnPivot
+     */
+    unpivot,
+    /**
+     * @see PivotXml
+     */
+    pivotXml,
+
     // EXPRESSIONS
     /**
      * @see JdbcParameter
@@ -352,6 +366,7 @@ public enum Feature {
      * allows square brackets for names, disabled by default
      */
     allowSquareBracketQuotation(false),
+
 
     ;
 

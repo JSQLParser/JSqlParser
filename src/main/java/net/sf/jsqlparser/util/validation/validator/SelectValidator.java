@@ -162,21 +162,21 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
     }
 
     @Override
-    public void visit(Table tableName) {
-        validateName(NamedObject.table, tableName.getFullyQualifiedName());
-        Pivot pivot = tableName.getPivot();
+    public void visit(Table table) {
+        validateName(NamedObject.table, table.getFullyQualifiedName());
+        Pivot pivot = table.getPivot();
         if (pivot != null) {
             pivot.accept(this);
         }
-        UnPivot unpivot = tableName.getUnPivot();
+        UnPivot unpivot = table.getUnPivot();
         if (unpivot != null) {
             unpivot.accept(this);
         }
-        MySQLIndexHint indexHint = tableName.getIndexHint();
+        MySQLIndexHint indexHint = table.getIndexHint();
         if (indexHint != null && indexHint.getIndexNames() != null) {
             indexHint.getIndexNames().forEach(i -> validateName(NamedObject.index, i));
         }
-        SQLServerHints sqlServerHints = tableName.getSqlServerHints();
+        SQLServerHints sqlServerHints = table.getSqlServerHints();
         if (sqlServerHints != null) {
             validateName(NamedObject.index, sqlServerHints.getIndexName());
         }
@@ -184,52 +184,31 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     @Override
     public void visit(Pivot pivot) {
-        //        List<Column> forColumns = pivot.getForColumns();
-        //        errors.append(" PIVOT (")
-        //        .append(PlainSelect.getStringList(pivot.getFunctionItems()))
-        //        .append(" FOR ")
-        //        .append(PlainSelect.
-        //                getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)).
-        //        append(" IN ")
-        //        .append(PlainSelect.getStringList(pivot.getInItems(), true, true))
-        //        .append(")");
-        //        if (pivot.getAlias() != null) {
-        //            errors.append(pivot.getAlias().toString());
-        //        }
+        validateFeature(Feature.pivot);
+        validateOptionalColumns(pivot.getForColumns());
     }
 
     @Override
     public void visit(UnPivot unpivot) {
-        //        boolean showOptions = unpivot.getIncludeNullsSpecified();
-        //        boolean includeNulls = unpivot.getIncludeNulls();
-        //        List<Column> unpivotForClause = unpivot.getUnPivotForClause();
-        //        errors.append(" UNPIVOT")
-        //        .append(showOptions && includeNulls ? " INCLUDE NULLS" : "")
-        //        .append(showOptions && !includeNulls ? " EXCULDE NULLS" : "")
-        //        .append(" (")
-        //        .append(unpivot.getUnPivotClause())
-        //        .append(" FOR ").append(PlainSelect.getStringList(unpivotForClause, true, unpivotForClause != null && unpivotForClause.size() > 1))
-        //        .append(" IN ").append(PlainSelect.getStringList(unpivot.getUnPivotInClause(), true, true))
-        //        .append(")");
+        validateFeature(Feature.unpivot);
+
+        validateOptionalColumns(unpivot.getUnPivotForClause());
+        if (unpivot.getUnPivotClause() != null) {
+            unpivot.getUnPivotClause().accept(getValidator(ExpressionValidator.class));
+        }
     }
 
     @Override
     public void visit(PivotXml pivot) {
-        //        List<Column> forColumns = pivot.getForColumns();
-        //        errors.append(" PIVOT XML (")
-        //        .append(PlainSelect.getStringList(pivot.getFunctionItems()))
-        //        .append(" FOR ")
-        //        .append(PlainSelect.
-        //                getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)).
-        //        append(" IN (");
-        //        if (pivot.isInAny()) {
-        //            errors.append("ANY");
-        //        } else if (pivot.getInSelect() != null) {
-        //            errors.append(pivot.getInSelect());
-        //        } else {
-        //            errors.append(PlainSelect.getStringList(pivot.getInItems()));
-        //        }
-        //        errors.append("))");
+        validateFeature(Feature.pivotXml);
+        validateOptionalColumns(pivot.getForColumns());
+        if (pivot.getFunctionItems() != null) {
+            ExpressionValidator v = getValidator(ExpressionValidator.class);
+            pivot.getFunctionItems().forEach(f -> f.getFunction().accept(v));
+        }
+        if (pivot.getInSelect() != null) {
+            pivot.getInSelect().accept(this);
+        }
     }
 
     public void validateOffset(Offset offset) {
