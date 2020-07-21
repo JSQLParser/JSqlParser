@@ -16,12 +16,14 @@ import net.sf.jsqlparser.parser.feature.Feature;
 /**
  * <p>
  * The DatabaseType is named like the identifier used within the
- * jdbc-connection-url, this may change in future, therefore use
+ * jdbc-connection-url (upper case), this may change in future, therefore use
  * {@link #get(String)} to retrieve the {@link DatabaseType}.
  * </p>
  */
 public enum DatabaseType implements FeatureSetValidation {
 
+    ANSI_SQL(SQLVersion.values()),
+    // DBMS
     ORACLE(OracleVersion.values()),
     MYSQL(MySqlVersion.values()),
     SQLSERVER(SqlServerVersion.values()),
