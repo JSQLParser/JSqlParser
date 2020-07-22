@@ -38,7 +38,7 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
         } catch (UnsupportedOperationException uoe) {
             // should we log this on a trace level?
         } catch (Exception e) {
-            errorConsumer.accept(getErrorMessage(fqn, namedObject, e));
+            errorConsumer.accept(getUnexprectedErrorMessage(fqn, namedObject, e));
         }
     }
 
@@ -69,7 +69,7 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
      * @param fqn
      * @return
      */
-    default ValidationException getErrorMessage(String fqn, NamedObject namedObject, Exception e) {
+    default ValidationException getUnexprectedErrorMessage(String fqn, NamedObject namedObject, Exception e) {
         return new UnexpectedValidationException(
                 fqn + ": cannot validate " + namedObject + "-name. detail: " + e.getMessage(), e);
     }
