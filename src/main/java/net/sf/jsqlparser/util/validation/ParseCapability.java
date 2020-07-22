@@ -16,17 +16,29 @@ final class ParseCapability implements ValidationCapability {
 
     public static final String NAME = "parsing";
 
-    private Statement stmt;
+    private String statement;
+    private Statement parsedStatement;
 
-    public Statement getStatement() {
-        return stmt;
+    public ParseCapability(String statement) {
+        this.statement = statement;
+    }
+
+    public String getStatement() {
+        return statement;
+    }
+
+    /**
+     * @return <code>null</code> on parse error, otherwise the {@link Statement}
+     *         parsed.
+     */
+    public Statement getParsedStatement() {
+        return parsedStatement;
     }
 
     @Override
     public void validate(ValidationContext context, Consumer<ValidationException> errorConsumer) {
-        String statement = context.get(ParseContext.statement, String.class);
         try {
-            stmt = CCJSqlParserUtil.parseStatement(
+            this.parsedStatement = CCJSqlParserUtil.parseStatement(
                     CCJSqlParserUtil.newParser(statement).withConfiguration(context.getConfiguration()));
         } catch (JSQLParserException e) {
             errorConsumer.accept(new ParseException("Cannot parse statement: " + e.getMessage(), e));

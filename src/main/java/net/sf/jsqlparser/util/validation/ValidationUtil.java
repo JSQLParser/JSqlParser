@@ -57,17 +57,15 @@ public class ValidationUtil {
             Collection<? extends ValidationCapability> capabilities, List<String> statements) {
         List<ValidationError> errors = new ArrayList<>();
 
-        ParseCapability parse = new ParseCapability();
-
         ValidationContext context = createValidationContext(config, capabilities);
         for (String statement : statements) {
 
-            parse.validate(context.put(ParseContext.statement, statement),
-                    e -> errors.add(new ValidationError(statement).withCapability(parse).addError(e)));
+            ParseCapability parse = new ParseCapability(statement);
+            parse.validate(context, e -> errors.add(new ValidationError(statement).withCapability(parse).addError(e)));
 
-            Statement stmt = parse.getStatement();
-            if (!capabilities.isEmpty()) {
-                Map<ValidationCapability, Set<ValidationException>> errorMap = validate(stmt, context);
+            Statement parsedStatement = parse.getParsedStatement();
+            if (parsedStatement != null && !capabilities.isEmpty()) {
+                Map<ValidationCapability, Set<ValidationException>> errorMap = validate(parsedStatement, context);
                 errors.addAll(toValidationErrors(statement, errorMap));
             }
 
