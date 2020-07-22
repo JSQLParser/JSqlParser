@@ -13,10 +13,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.validation.validator.StatementValidator;
@@ -56,29 +56,64 @@ public class ValidationUtil {
     public static List<ValidationError> validate(FeatureConfiguration config,
             Collection<? extends ValidationCapability> capabilities, List<String> statements) {
         List<ValidationError> errors = new ArrayList<>();
-        for (String statement : statements) {
-            Statement stmt = null;
-            try {
-                stmt = CCJSqlParserUtil.parseStatement(
-                        CCJSqlParserUtil.newParser(statement).withConfiguration(config));
-                if (!capabilities.isEmpty()) {
-                    StatementValidator validator = new StatementValidator();
-                    validator.setCapabilities(new ArrayList<>(capabilities));
-                    validator.setConfiguration(config);
-                    validator.validate(stmt);
 
-                    for (Entry<ValidationCapability, Set<ValidationException>> e : validator
-                            .getValidationErrors().entrySet()) {
-                        errors.add(new ValidationError(statement)
-                                .withCapability(e.getKey()).addErrors(e.getValue()));
-                    }
-                }
-            } catch (JSQLParserException e) {
-                errors.add(new ValidationError(statement)
-                        .addError(new ParseException("Cannot parse statement: " + e.getMessage(), e)));
+        ParseCapability parse = new ParseCapability();
+
+        ValidationContext context = createValidationContext(config, capabilities);
+        for (String statement : statements) {
+
+            parse.validate(context.put(ParseContext.statement, statement),
+                    e -> errors.add(new ValidationError(statement).withCapability(parse).addError(e)));
+
+            Statement stmt = parse.getStatement();
+            if (!capabilities.isEmpty()) {
+                Map<ValidationCapability, Set<ValidationException>> errorMap = validate(stmt, context);
+                errors.addAll(toValidationErrors(statement, errorMap));
             }
+
         }
         return errors;
+    }
+
+    /**
+     * @param config
+     * @param capabilities
+     * @return a {@link ValidationContext} of the given config and capabilities
+     */
+    public static ValidationContext createValidationContext(FeatureConfiguration config,
+            Collection<? extends ValidationCapability> capabilities) {
+        ValidationContext context = new ValidationContext();
+        context.setCapabilities(new ArrayList<>(capabilities));
+        context.setConfiguration(config);
+        return context;
+    }
+
+    /**
+     * @param statement
+     * @param errorMap
+     * @return a list of {@link ValidationError}'
+     */
+    public static List<ValidationError> toValidationErrors(String statement,
+            Map<ValidationCapability, Set<ValidationException>> errorMap) {
+        List<ValidationError> errors = new ArrayList<>();
+        for (Entry<ValidationCapability, Set<ValidationException>> e : errorMap.entrySet()) {
+            errors.add(new ValidationError(statement)
+                    .withCapability(e.getKey()).addErrors(e.getValue()));
+        }
+        return errors;
+    }
+
+    /**
+     * @param stmt
+     * @param context
+     * @return
+     */
+    public static Map<ValidationCapability, Set<ValidationException>> validate(Statement stmt,
+            ValidationContext context) {
+        StatementValidator validator = new StatementValidator();
+        validator.setContext(context);
+        validator.validate(stmt);
+        return validator.getValidationErrors();
     }
 
 }

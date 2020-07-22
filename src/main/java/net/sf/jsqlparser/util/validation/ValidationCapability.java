@@ -14,19 +14,19 @@ import java.util.function.Consumer;
 public interface ValidationCapability {
 
     /**
-     * @param context
-     * @param errorConsumer
-     * @throws ValidationException
-     */
-    void validate(ValidationContext context, Consumer<ValidationException> errorConsumer);
-
-    /**
-     * @return a name of this {@link ValidationCapability}, forwards by default to
-     *         {@link #toString()}
+     * @return a name of this {@link ValidationCapability}
      */
     default String getName() {
         return getClass().getSimpleName();
     }
+
+    /**
+     * Validate and add {@link ValidationException}'s to given consumer.
+     *
+     * @param context
+     * @param errorConsumer
+     */
+    void validate(ValidationContext context, Consumer<ValidationException> errorConsumer);
 
     default ValidationException toError(String message) {
         return new ValidationException(message);
