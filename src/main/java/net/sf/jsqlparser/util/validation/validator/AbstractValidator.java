@@ -72,8 +72,14 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         return context.reinit(reInit);
     }
 
-    protected void putError(ValidationCapability c, String error) {
-        errors.computeIfAbsent(c, k -> new HashSet<>()).add(error);
+    /**
+     * adds an error for this {@link ValidationCapability}
+     * 
+     * @param capability
+     * @param error
+     */
+    protected void putError(ValidationCapability capability, String error) {
+        errors.computeIfAbsent(capability, k -> new HashSet<>()).add(error);
     }
 
     @Override
@@ -117,7 +123,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
             expression.accept(getValidator(ExpressionValidator.class));
         }
     }
-    
+
     protected void validateOptionalExpression(Expression expression, ExpressionValidator v) {
         if (expression != null) {
             expression.accept(v);
