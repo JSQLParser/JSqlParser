@@ -15,9 +15,10 @@ public interface ValidationCapability {
 
     /**
      * @param context
-     * @param errorMessageConsumer
+     * @param errorConsumer
+     * @throws ValidationException
      */
-    void validate(ValidationContext context, Consumer<String> errorMessageConsumer) throws ValidationException;
+    void validate(ValidationContext context, Consumer<ValidationException> errorConsumer);
 
     /**
      * @return a name of this {@link ValidationCapability}, forwards by default to
@@ -25,6 +26,14 @@ public interface ValidationCapability {
      */
     default String getName() {
         return getClass().getSimpleName();
+    }
+
+    default ValidationException toError(String message) {
+        return new ValidationException(message);
+    }
+
+    default ValidationException toError(String message, Throwable th) {
+        return new ValidationException(message, th);
     }
 
 }

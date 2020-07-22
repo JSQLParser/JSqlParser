@@ -24,6 +24,7 @@ import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationContext;
+import net.sf.jsqlparser.util.validation.ValidationException;
 import net.sf.jsqlparser.util.validation.Validator;
 import net.sf.jsqlparser.util.validation.feature.FeatureContext;
 import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
@@ -41,7 +42,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
 
     private ValidationContext context = new ValidationContext();
 
-    private Map<ValidationCapability, Set<String>> errors = new HashMap<>();
+    private Map<ValidationCapability, Set<ValidationException>> errors = new HashMap<>();
 
     private Map<Class<? extends AbstractValidator<?>>, AbstractValidator<?>> validatorForwards = new HashMap<>();
 
@@ -60,7 +61,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         }
     }
 
-    protected Consumer<String> getMessageConsumer(ValidationCapability c) {
+    protected Consumer<ValidationException> getMessageConsumer(ValidationCapability c) {
         return s -> putError(c, s);
     }
 
@@ -78,13 +79,13 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      * @param capability
      * @param error
      */
-    protected void putError(ValidationCapability capability, String error) {
+    protected void putError(ValidationCapability capability, ValidationException error) {
         errors.computeIfAbsent(capability, k -> new HashSet<>()).add(error);
     }
 
     @Override
-    public final Map<ValidationCapability, Set<String>> getValidationErrors() {
-        Map<ValidationCapability, Set<String>> map = new HashMap<>();
+    public final Map<ValidationCapability, Set<ValidationException>> getValidationErrors() {
+        Map<ValidationCapability, Set<ValidationException>> map = new HashMap<>();
         map.putAll(errors);
         for (AbstractValidator<?> v : validatorForwards.values()) {
             map.putAll(v.getValidationErrors());

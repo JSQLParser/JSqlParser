@@ -16,25 +16,24 @@ import java.util.Set;
 public class ValidationError {
     private final String statement;
 
-    private Set<String> errors = new HashSet<>();
+    private Set<ValidationException> errors = new HashSet<>();
     private ValidationCapability capability;
-    private Exception exception;
 
     public ValidationError(String statement) {
         this.statement = statement;
     }
 
-    public ValidationError addError(String error) {
+    public ValidationError addError(ValidationException error) {
         this.errors.add(error);
         return this;
     }
 
-    public ValidationError addErrors(Collection<String> errors) {
+    public ValidationError addErrors(Collection<ValidationException> errors) {
         this.errors.addAll(errors);
         return this;
     }
 
-    public Set<String> getErrors() {
+    public Set<ValidationException> getErrors() {
         return errors;
     }
 
@@ -48,19 +47,6 @@ public class ValidationError {
 
     public ValidationError withCapability(ValidationCapability databaseType) {
         setCapability(databaseType);
-        return this;
-    }
-
-    public Exception getException() {
-        return exception;
-    }
-
-    public void setException(Exception exception) {
-        this.exception = exception;
-    }
-
-    public ValidationError withException(Exception exception) {
-        setException(exception);
         return this;
     }
 

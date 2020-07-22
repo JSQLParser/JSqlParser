@@ -13,9 +13,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
-
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureSet;
+import net.sf.jsqlparser.util.validation.ValidationException;
 
 /**
  * Privileges/Features allowed
@@ -103,8 +103,8 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * @return <code>featureName + " not allowed."</code>
      */
     @Override
-    public String getMessage(Feature feature) {
-        return feature.name() + " not allowed.";
+    public ValidationException getMessage(Feature feature) {
+        return toError(feature.name() + " not allowed.");
     }
 
     @Override

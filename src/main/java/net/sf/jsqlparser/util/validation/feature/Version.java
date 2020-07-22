@@ -1,6 +1,7 @@
 package net.sf.jsqlparser.util.validation.feature;
 
 import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.util.validation.ValidationException;
 
 public interface Version extends FeatureSetValidation {
 
@@ -13,8 +14,8 @@ public interface Version extends FeatureSetValidation {
      * @return <code>featureName + " not supported."</code>
      */
     @Override
-    default String getMessage(Feature feature) {
-        return feature.name() + " not supported.";
+    default ValidationException getMessage(Feature feature) {
+        return toError(feature.name() + " not supported.");
     }
 
 }

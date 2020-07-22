@@ -14,13 +14,14 @@ import java.util.function.Consumer;
 
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationContext;
+import net.sf.jsqlparser.util.validation.ValidationException;
 
 public class AllowedTypesValidation implements ValidationCapability {
 
     public static final String NAME = "allowed types";
 
     @Override
-    public void validate(ValidationContext context, Consumer<String> errorMessageConsumer) {
+    public void validate(ValidationContext context, Consumer<ValidationException> errorConsumer) {
         Object arg = context.getOptional(AllowedTypesContext.argument, Object.class);
         Boolean allowNull = context.getOptional(AllowedTypesContext.allow_null, Boolean.class);
         @SuppressWarnings("unchecked")
@@ -34,11 +35,10 @@ public class AllowedTypesValidation implements ValidationCapability {
                 }
             }
             if (error) {
-                errorMessageConsumer.accept(
-                        arg.getClass() + " is not a valid argument - expected one of " + allowedTypes);
+                errorConsumer.accept(toError(arg.getClass() + " is not a valid argument - expected one of " + allowedTypes));
             }
         } else if (Boolean.FALSE.equals(allowNull)) {
-            errorMessageConsumer.accept("argument is missing one of " + allowedTypes);
+            errorConsumer.accept(toError("argument is missing one of " + allowedTypes));
         }
     }
 

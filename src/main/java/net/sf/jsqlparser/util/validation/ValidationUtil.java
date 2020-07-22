@@ -67,15 +67,15 @@ public class ValidationUtil {
                     validator.setConfiguration(config);
                     validator.validate(stmt);
 
-                    for (Entry<ValidationCapability, Set<String>> e : validator
+                    for (Entry<ValidationCapability, Set<ValidationException>> e : validator
                             .getValidationErrors().entrySet()) {
                         errors.add(new ValidationError(statement)
                                 .withCapability(e.getKey()).addErrors(e.getValue()));
                     }
                 }
             } catch (JSQLParserException e) {
-                errors.add(new ValidationError(statement).withException(e)
-                        .addError("Cannot parse statement: " + e.getMessage()));
+                errors.add(new ValidationError(statement)
+                        .addError(new ValidationParseException("Cannot parse statement: " + e.getMessage(), e)));
             }
         }
         return errors;

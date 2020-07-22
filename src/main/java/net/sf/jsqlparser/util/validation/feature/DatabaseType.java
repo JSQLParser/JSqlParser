@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.validation.feature;
 import java.util.EnumSet;
 import java.util.Set;
 import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.util.validation.ValidationException;
 
 /**
  * <p>
@@ -76,8 +77,8 @@ public enum DatabaseType implements FeatureSetValidation {
      * @return <code>featureName + " not supported."</code>
      */
     @Override
-    public String getMessage(Feature feature) {
-        return feature.name() + " not supported.";
+    public ValidationException getMessage(Feature feature) {
+        return toError(feature.name() + " not supported.");
     }
 
     /**

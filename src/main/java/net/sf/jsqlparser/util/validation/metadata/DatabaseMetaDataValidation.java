@@ -9,8 +9,9 @@
  */
 package net.sf.jsqlparser.util.validation.metadata;
 
+import java.sql.SQLException;
 import java.util.function.Consumer;
-
+import net.sf.jsqlparser.util.validation.UnexpectedValidationException;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationContext;
 import net.sf.jsqlparser.util.validation.ValidationException;
@@ -25,43 +26,52 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
      * @throws ValidationException
      */
     @Override
-    default void validate(ValidationContext ctx, Consumer<String> errorMessageConsumer) {
-        String fqn = ctx.get(MetadataContext.fqn, String.class);
+    default void validate(ValidationContext context, Consumer<ValidationException> errorConsumer) {
+        String fqn = context.get(MetadataContext.fqn, String.class);
+        NamedObject namedObject = context.get(MetadataContext.namedobject, NamedObject.class);
         try {
-            NamedObject namedObject = ctx.get(MetadataContext.namedobject, NamedObject.class);
             if (!exists(namedObject, fqn)) {
-                errorMessageConsumer.accept(getErrorMessage(fqn));
+                errorConsumer.accept(getErrorMessage(fqn));
             }
-        } catch (ValidationException e) {
-            errorMessageConsumer.accept(getErrorMessage(fqn, e));
+        } catch (ValidationException ve) {
+            errorConsumer.accept(ve);
         } catch (UnsupportedOperationException uoe) {
             // should we log this on a trace level?
+        } catch (Exception e) {
+            errorConsumer.accept(getErrorMessage(fqn, namedObject, e));
         }
     }
 
     /**
      * @param o
      * @param fqn
-     * @return
+     * @return <code>true</code>, if the object exists, <code>false</code>
+     *         otherwise.
+     * @throws ValidationException           - on specific errors like
+     *                                       {@link DatabaseException} on
+     *                                       database-errors wrapping a
+     *                                       {@link SQLException} or
+     *                                       PersistenceException
      * @throws UnsupportedOperationException - if testing of given
      *                                       {@link NamedObject} is not supported.
      */
-    public boolean exists(NamedObject o, String fqn) throws ValidationException;
+    public boolean exists(NamedObject o, String fqn);
 
     /**
      * @param fqn
      * @return
      */
-    default String getErrorMessage(String fqn) {
-        return fqn + " does not exist.";
+    default ValidationException getErrorMessage(String fqn) {
+        return toError(fqn + " does not exist.");
     }
 
     /**
      * @param fqn
      * @return
      */
-    default String getErrorMessage(String fqn, ValidationException e) {
-        return fqn + " does not exist. " + e.getMessage();
+    default ValidationException getErrorMessage(String fqn, NamedObject namedObject, Exception e) {
+        return new UnexpectedValidationException(
+                fqn + ": cannot validate " + namedObject + "-name. detail: " + e.getMessage(), e);
     }
 
     @Override

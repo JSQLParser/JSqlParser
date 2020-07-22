@@ -11,10 +11,9 @@ package net.sf.jsqlparser.util.validation.metadata;
 
 import java.sql.Connection;
 
-import net.sf.jsqlparser.util.validation.ValidationException;
-
 /**
- * Adapter class always returning <code>true</code> for all exists - methods.
+ * Adapter class always throwing {@link UnsupportedOperationException} for all
+ * exists - methods.
  *
  * @author gitmotte
  *
@@ -28,7 +27,7 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
     }
 
     @Override
-    public boolean exists(NamedObject o, String name) throws ValidationException {
+    public boolean exists(NamedObject o, String name) {
         switch (o) {
         case table:
             return tableExists(name);
@@ -53,47 +52,51 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
             return roleExists(name);
         default:
         }
-        throw new UnsupportedOperationException("cannot evaluate for " + o + " and " + name);
+        throw new UnsupportedOperationException(name + ": evaluation of " + o + "-name not implemented.");
     }
 
-    protected boolean roleExists(String name) throws ValidationException {
-        return true;
+    protected boolean roleExists(String name) {
+        throw unsupported(NamedObject.role, name);
     }
 
-    protected boolean userExists(String name) throws ValidationException {
-        return true;
+    protected boolean userExists(String name) {
+        throw unsupported(NamedObject.user, name);
     }
 
-    protected boolean procedureExists(String name) throws ValidationException {
-        return true;
+    protected boolean procedureExists(String name) {
+        throw unsupported(NamedObject.procedure, name);
     }
 
-    protected boolean databaseExists(String name) throws ValidationException {
-        return true;
+    protected boolean databaseExists(String name) {
+        throw unsupported(NamedObject.database, name);
     }
 
-    protected boolean constraintExists(String name) throws ValidationException {
-        return true;
+    protected boolean constraintExists(String name) {
+        throw unsupported(NamedObject.constraint, name);
     }
 
-    protected boolean viewExists(String name) throws ValidationException {
-        return true;
+    protected boolean viewExists(String name) {
+        throw unsupported(NamedObject.view, name);
     }
 
-    protected boolean indexExists(String name) throws ValidationException {
-        return true;
+    protected boolean indexExists(String name) {
+        throw unsupported(NamedObject.index, name);
     }
 
-    protected boolean schemaExists(String name) throws ValidationException {
-        return true;
+    protected boolean schemaExists(String name) {
+        throw unsupported(NamedObject.schema, name);
     }
 
-    protected boolean columnExists(String name) throws ValidationException {
-        return true;
+    protected boolean columnExists(String name) {
+        throw unsupported(NamedObject.column, name);
     }
 
-    protected boolean tableExists(String name) throws ValidationException {
-        return true;
+    protected boolean tableExists(String name) {
+        throw unsupported(NamedObject.table, name);
+    }
+
+    protected UnsupportedOperationException unsupported(NamedObject namedObject, String name) {
+        return new UnsupportedOperationException(name + ": evaluation of " + namedObject + "-name not supported.");
     }
 
 }

@@ -16,6 +16,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureSet;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationContext;
+import net.sf.jsqlparser.util.validation.ValidationException;
 
 public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
 
@@ -25,10 +26,10 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
      * @param feature
      */
     @Override
-    default void validate(ValidationContext ctx, Consumer<String> errorMessageConsumer) {
-        Feature feature = ctx.get(FeatureContext.feature, Feature.class);
+    default void validate(ValidationContext context, Consumer<ValidationException> errorConsumer) {
+        Feature feature = context.get(FeatureContext.feature, Feature.class);
         if (!contains(feature)) {
-            errorMessageConsumer.accept(getMessage(feature));
+            errorConsumer.accept(getMessage(feature));
         }
     }
 
@@ -41,7 +42,7 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
     /**
      * @return the default message if not contained in the feature set
      */
-    public String getMessage(Feature feature);
+    public ValidationException getMessage(Feature feature);
 
     @Override
     default String getName() {

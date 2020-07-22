@@ -34,8 +34,7 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
 
     @Override
     protected boolean viewExists(String name) throws ValidationException {
-        String[] types = new String[] { "VIEW" };
-        return jdbcMetadataTables(name, types);
+        return jdbcMetadataTables(name, new String[] { "VIEW" });
     }
 
     @Override
@@ -51,14 +50,13 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
         try (PreparedStatement ps = connection.prepareStatement(query)) {
             return columnName.equalsIgnoreCase(ps.getMetaData().getColumnLabel(1));
         } catch (SQLException e) {
-            throw new ValidationException(e);
+            throw createDatabaseException(name, new String[] { "COLUMN" }, e);
         }
     }
 
     @Override
     protected boolean tableExists(String name) throws ValidationException {
-        String[] types = new String[] { "TABLE" };
-        return jdbcMetadataTables(name, types);
+        return jdbcMetadataTables(name, new String[] { "TABLE" });
     }
 
     protected boolean jdbcMetadataTables(String name, String[] types) throws ValidationException {
@@ -105,12 +103,14 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
                 }
             }
         } catch (SQLException e) {
-            throw new ValidationException("cannot evaluate existance of " + types + " by name '" + name + "'", e);
+            throw createDatabaseException(name, types, e);
         }
 
         return !tables.isEmpty();
     }
 
-
+    private DatabaseException createDatabaseException(String name, String[] types, SQLException e) {
+        throw new DatabaseException("cannot evaluate existance of " + types + " by name '" + name + "'", e);
+    }
 
 }
