@@ -10,8 +10,6 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.List;
-import java.util.function.Consumer;
-
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -96,8 +94,6 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
-import net.sf.jsqlparser.util.validation.feature.FeatureContext;
-import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
@@ -165,18 +161,13 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
         for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
             expression.getLeftExpression().accept(this);
-            if (c instanceof FeatureSetValidation
-                    && expression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
-                c.validate(context().put(FeatureContext.feature, Feature.oracleOldJoinSyntax),
-                        messageConsumer);
+            if (expression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
+                validateFeature(c, Feature.oracleOldJoinSyntax);
             }
             expression.getRightExpression().accept(this);
-            if (c instanceof FeatureSetValidation
-                    && expression.getOraclePriorPosition() != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
-                c.validate(context().put(FeatureContext.feature, Feature.oraclePriorPosition),
-                        messageConsumer);
+            if (expression.getOraclePriorPosition() != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
+                validateFeature(c, Feature.oraclePriorPosition);
             }
         }
     }
@@ -195,14 +186,10 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     @Override
     public void visit(InExpression inExpression) {
         for (ValidationCapability c : getCapabilities()) {
-            Consumer<String> messageConsumer = getMessageConsumer(c);
             inExpression.getLeftExpression().accept(this);
-            if (c instanceof FeatureSetValidation
-                    && inExpression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
-                c.validate(context().put(FeatureContext.feature, Feature.oracleOldJoinSyntax),
-                        messageConsumer);
+            if (inExpression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
+                validateFeature(c, Feature.oracleOldJoinSyntax);
             }
-
         }
 
         if (inExpression.getMultiExpressionList() != null) {
