@@ -19,6 +19,8 @@ import net.sf.jsqlparser.util.validation.ValidationContext;
 
 public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
 
+    public static final String DEFAULT_NAME = "feature set";
+
     /**
      * @param feature
      */
@@ -43,7 +45,7 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
 
     @Override
     default String getName() {
-        return "feature set";
+        return DEFAULT_NAME;
     }
 
 

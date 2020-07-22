@@ -17,6 +17,8 @@ import net.sf.jsqlparser.util.validation.ValidationException;
 
 public interface DatabaseMetaDataValidation extends ValidationCapability {
 
+    public static final String NAME = "meta data";
+
     /**
      * @param o
      * @param fqn - fully qualified name
@@ -64,7 +66,7 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
 
     @Override
     default String getName() {
-        return "meta data";
+        return NAME;
     }
 
 }

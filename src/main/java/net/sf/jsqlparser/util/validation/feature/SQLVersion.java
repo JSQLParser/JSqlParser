@@ -51,7 +51,7 @@ public enum SQLVersion implements Version {
 
     @Override
     public String getName() {
-        return DatabaseType.SQLSERVER.name() + " " + name();
+        return DatabaseType.SQLSERVER.getName() + " " + getVersionString();
     }
 
 }

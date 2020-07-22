@@ -36,7 +36,7 @@ public enum MariaDbVersion implements Version {
 
     @Override
     public String getName() {
-        return DatabaseType.MARIADB.name() + " " + name();
+        return DatabaseType.MARIADB.getName() + " " + getVersionString();
     }
 
 }

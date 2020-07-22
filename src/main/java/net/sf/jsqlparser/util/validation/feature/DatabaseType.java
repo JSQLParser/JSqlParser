@@ -22,7 +22,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
  */
 public enum DatabaseType implements FeatureSetValidation {
 
-    ANSI_SQL(SQLVersion.values()),
+    ANSI_SQL("ANSI SQL", SQLVersion.values()),
     // DBMS
     ORACLE(OracleVersion.values()),
     MYSQL(MySqlVersion.values()),
@@ -32,12 +32,21 @@ public enum DatabaseType implements FeatureSetValidation {
     H2(H2Version.values()),
     HSQLDB(HSQLDBVersion.values());
 
+    private String name;
     private Version[] versions;
 
     /**
      * @param versions - ordered ascending - the last version is the latest.
      */
     private DatabaseType(Version... versions) {
+        this.versions = versions;
+    }
+
+    /**
+     * @param versions - ordered ascending - the last version is the latest.
+     */
+    private DatabaseType(String name, Version... versions) {
+        this.name = name;
         this.versions = versions;
     }
 
@@ -71,9 +80,11 @@ public enum DatabaseType implements FeatureSetValidation {
         return feature.name() + " not supported.";
     }
 
+    /**
+     */
     @Override
     public String getName() {
-        return name();
+        return name == null ? name() : name;
     }
 
 }

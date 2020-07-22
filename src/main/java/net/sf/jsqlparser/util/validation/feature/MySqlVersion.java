@@ -47,7 +47,7 @@ public enum MySqlVersion implements Version {
 
     @Override
     public String getName() {
-        return DatabaseType.MYSQL.name() + " " + name();
+        return DatabaseType.MYSQL.getName() + " " + name();
     }
 
 }

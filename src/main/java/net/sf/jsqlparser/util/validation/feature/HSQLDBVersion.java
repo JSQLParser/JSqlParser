@@ -43,7 +43,7 @@ public enum HSQLDBVersion implements Version {
 
     @Override
     public String getName() {
-        return DatabaseType.H2.name() + " " + name();
+        return DatabaseType.HSQLDB.getName() + " " + getVersionString();
     }
 
 }

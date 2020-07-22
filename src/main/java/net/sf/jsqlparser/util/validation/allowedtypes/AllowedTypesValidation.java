@@ -17,6 +17,8 @@ import net.sf.jsqlparser.util.validation.ValidationContext;
 
 public class AllowedTypesValidation implements ValidationCapability {
 
+    public static final String NAME = "allowed types";
+
     @Override
     public void validate(ValidationContext context, Consumer<String> errorMessageConsumer) {
         Object arg = context.getOptional(AllowedTypesContext.argument, Object.class);
@@ -42,7 +44,7 @@ public class AllowedTypesValidation implements ValidationCapability {
 
     @Override
     public String getName() {
-        return "allowed types";
+        return NAME;
     }
 
 }
