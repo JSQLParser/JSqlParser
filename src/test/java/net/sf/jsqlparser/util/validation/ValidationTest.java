@@ -92,7 +92,7 @@ public class ValidationTest {
         assertNotNull(errors);
         assertEquals(1, errors.size());
         ValidationException actual = errors.get(0).getErrors().stream().findFirst().get();
-        assertThat(actual, CoreMatchers.instanceOf(ValidationParseException.class));
+        assertThat(actual, CoreMatchers.instanceOf(ParseException.class));
         assertThat(actual.getMessage(), StringStartsWith.startsWith("Cannot parse statement"));
 
     }

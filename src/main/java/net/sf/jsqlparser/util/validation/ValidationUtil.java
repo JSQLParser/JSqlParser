@@ -75,7 +75,7 @@ public class ValidationUtil {
                 }
             } catch (JSQLParserException e) {
                 errors.add(new ValidationError(statement)
-                        .addError(new ValidationParseException("Cannot parse statement: " + e.getMessage(), e)));
+                        .addError(new ParseException("Cannot parse statement: " + e.getMessage(), e)));
             }
         }
         return errors;
