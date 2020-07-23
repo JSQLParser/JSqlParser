@@ -1220,7 +1220,7 @@ Statement Merge() : {
         ( table=Table() { merge.setUsingTable(table); }
             | "(" select=SubSelect() { merge.setUsingSelect(select); } ")" )
      [ alias = Alias() { merge.setUsingAlias(alias); } ] <K_ON>
-       "(" condition = Expression() { merge.setOnCondition(condition); } ")"
+       condition = Expression() { merge.setOnCondition(condition); }
 
     [
         ( LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); }
