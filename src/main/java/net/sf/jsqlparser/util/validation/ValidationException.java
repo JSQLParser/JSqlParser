@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.validation;
 
+import java.util.Objects;
+
 public class ValidationException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
@@ -23,6 +25,29 @@ public class ValidationException extends RuntimeException {
 
     public ValidationException(Throwable cause) {
         super(cause == null ? null : cause.getMessage(), cause);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (this == o) {
+            return true;
+        }
+
+        if (o.getClass().equals(this.getClass())) {
+            // exact type match!
+            ValidationException ve = (ValidationException) o;
+            return Objects.equals(getMessage(), ve.getMessage()) && Objects.equals(getCause(), ve.getCause());
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return getMessage().hashCode() + (getCause() == null ? 0 : getCause().toString().hashCode());
     }
 
 }
