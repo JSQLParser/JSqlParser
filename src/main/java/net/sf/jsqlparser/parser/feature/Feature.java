@@ -55,6 +55,7 @@ public enum Feature {
     // SQL KEYWORD FEATURES
     select,
     selectGroupBy,
+    selectGroupByGroupingSets,
     selectHaving,
     selectInto,
 

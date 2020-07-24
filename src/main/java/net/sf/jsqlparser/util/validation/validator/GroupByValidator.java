@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.select.GroupByElement;
 import net.sf.jsqlparser.statement.select.GroupByVisitor;
@@ -28,32 +30,22 @@ public class GroupByValidator extends AbstractValidator<GroupByElement> implemen
     public void visit(GroupByElement groupBy) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.selectGroupBy);
+            if (groupBy.getGroupingSets() != null && !groupBy.getGroupingSets().isEmpty()) {
+                validateFeature(c, Feature.selectGroupByGroupingSets);
+            }
         }
-        //        buffer.append("GROUP BY ");
-        //        for (Iterator<Expression> iter = groupBy.getGroupByExpressions().iterator(); iter.hasNext();) {
-        //            iter.next().accept(expressionVisitor);
-        //            if (iter.hasNext()) {
-        //                buffer.append(", ");
-        //            }
-        //        }
-        //        if (!groupBy.getGroupingSets().isEmpty()) {
-        //            buffer.append("GROUPING SETS (");
-        //            boolean first = true;
-        //            for (Object o : groupBy.getGroupingSets()) {
-        //                if (first) {
-        //                    first = false;
-        //                } else {
-        //                    buffer.append(", ");
-        //                }
-        //                if (o instanceof Expression) {
-        //                    buffer.append(o.toString());
-        //                } else if (o instanceof ExpressionList) {
-        //                    ExpressionList list = (ExpressionList) o;
-        //                    buffer.append(list.getExpressions() == null ? "()" : list.toString());
-        //                }
-        //            }
-        //            buffer.append(")");
-        //        }
+
+        validateOptionalExpressions(groupBy.getGroupByExpressions());
+
+        if (groupBy.getGroupingSets() != null && !groupBy.getGroupingSets().isEmpty()) {
+            for (Object o : groupBy.getGroupingSets()) {
+                if (o instanceof Expression) {
+                    validateOptionalExpression((Expression) o);
+                } else if (o instanceof ExpressionList) {
+                    validateOptionalExpressions(((ExpressionList) o).getExpressions());
+                }
+            }
+        }
     }
 
 }

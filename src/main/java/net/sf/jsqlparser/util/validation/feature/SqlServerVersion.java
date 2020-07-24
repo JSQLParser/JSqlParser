@@ -10,7 +10,8 @@ import net.sf.jsqlparser.parser.feature.Feature;
 public enum SqlServerVersion implements Version {
     V2019("2019",
             EnumSet.of(Feature.select, Feature.top, Feature.use, Feature.allowSquareBracketQuotation, //
-                    Feature.pivot, Feature.unpivot, Feature.pivotXml));
+                    Feature.pivot, Feature.unpivot, Feature.pivotXml, Feature.selectGroupBy,
+                    Feature.selectGroupByGroupingSets));
 
     private Set<Feature> features;
     private String versionString;
