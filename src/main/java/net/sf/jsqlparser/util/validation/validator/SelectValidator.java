@@ -54,9 +54,9 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.select);
             validateFeature(c, plainSelect.getMySqlHintStraightJoin(), Feature.mySqlHintStraightJoin);
-            validateFeature(c, plainSelect.getOracleHint() != null, Feature.oracleHint);
-            validateFeature(c, plainSelect.getSkip() != null, Feature.skip);
-            validateFeature(c, plainSelect.getFirst() != null, Feature.first);
+            validateOptionalFeature(c, plainSelect.getOracleHint(), Feature.oracleHint);
+            validateOptionalFeature(c, plainSelect.getSkip(), Feature.skip);
+            validateOptionalFeature(c, plainSelect.getFirst(), Feature.first);
 
             if (plainSelect.getDistinct() != null) {
                 if (plainSelect.getDistinct().isUseUnique()) {
@@ -64,36 +64,31 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
                 } else {
                     validateFeature(c, Feature.distinct);
                 }
-                validateFeature(c, plainSelect.getDistinct().getOnSelectItems() != null, Feature.distinctOn);
+                validateOptionalFeature(c, plainSelect.getDistinct().getOnSelectItems(), Feature.distinctOn);
             }
 
-            validateFeature(c, plainSelect.getTop() != null, Feature.top);
+            validateOptionalFeature(c, plainSelect.getTop(), Feature.top);
             validateFeature(c, plainSelect.getMySqlSqlNoCache(), Feature.mysqlSqlNoCache);
             validateFeature(c, plainSelect.getMySqlSqlCalcFoundRows(), Feature.mysqlCalcFoundRows);
-            validateFeature(c, plainSelect.getIntoTables() != null, Feature.selectInto);
-            validateFeature(c, plainSelect.getKsqlWindow() != null, Feature.window);
+            validateOptionalFeature(c, plainSelect.getIntoTables(), Feature.selectInto);
+            validateOptionalFeature(c, plainSelect.getKsqlWindow(), Feature.window);
             validateFeature(c, plainSelect.getOrderByElements() != null && plainSelect.isOracleSiblings(),
                     Feature.oracleOrderBySiblings);
 
             if (plainSelect.isForUpdate()) {
                 validateFeature(c, Feature.selectForUpdate);
-                validateFeature(c, plainSelect.getForUpdateTable() != null, Feature.selectForUpdateOfTable);
-                validateFeature(c, plainSelect.getWait() != null, Feature.selectForUpdateWait);
+                validateOptionalFeature(c, plainSelect.getForUpdateTable(), Feature.selectForUpdateOfTable);
+                validateOptionalFeature(c, plainSelect.getWait(), Feature.selectForUpdateWait);
                 validateFeature(c, plainSelect.isNoWait(), Feature.selectForUpdateNoWait);
             }
 
-            validateFeature(c, plainSelect.getForXmlPath() != null, Feature.selectForXmlPath);
-            validateFeature(c, plainSelect.getOptimizeFor() != null, Feature.optimizeFor);
+            validateOptionalFeature(c, plainSelect.getForXmlPath(), Feature.selectForXmlPath);
+            validateOptionalFeature(c, plainSelect.getOptimizeFor(), Feature.optimizeFor);
         } // end for
 
         validateOptionalFromItem(plainSelect.getFromItem());
-
-        if (plainSelect.getIntoTables() != null) {
-            plainSelect.getIntoTables().forEach(this::visit);
-        }
-
+        validateOptionalFromItems(plainSelect.getIntoTables());
         validateOptionalJoins(plainSelect.getJoins());
-
         validateOptionalExpression(plainSelect.getWhere());
         validateOptionalExpression(plainSelect.getOracleHierarchical());
 
@@ -194,7 +189,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
     public void validateOffset(Offset offset) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.offset);
-            validateFeature(c, offset.getOffsetParam() != null, Feature.offsetParam);
+            validateOptionalFeature(c, offset.getOffsetParam(), Feature.offsetParam);
         }
     }
 

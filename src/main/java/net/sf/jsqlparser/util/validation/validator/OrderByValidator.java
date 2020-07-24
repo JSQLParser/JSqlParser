@@ -28,9 +28,7 @@ public class OrderByValidator extends AbstractValidator<OrderByElement> implemen
     public void visit(OrderByElement orderBy) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.orderBy);
-            if (orderBy.getNullOrdering() != null) {
-                validateFeature(c, Feature.orderByNullOrdering);
-            }
+            validateOptionalFeature(c, orderBy.getNullOrdering(), Feature.orderByNullOrdering);
         }
         getValidator(ExpressionValidator.class).validate(orderBy.getExpression());
     }

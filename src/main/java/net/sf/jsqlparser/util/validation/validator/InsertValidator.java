@@ -23,13 +23,13 @@ public class InsertValidator extends AbstractValidator<Insert> {
     public void validate(Insert insert) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.insert);
-            validateFeature(c, insert.getModifierPriority() != null, Feature.insertModifierPriority);
+            validateOptionalFeature(c, insert.getModifierPriority(), Feature.insertModifierPriority);
             validateFeature(c, insert.isModifierIgnore(), Feature.insertModifierIgnore);
-            validateFeature(c, insert.getSelect() != null, Feature.insertFromSelect);
+            validateOptionalFeature(c, insert.getSelect(), Feature.insertFromSelect);
             validateFeature(c, insert.isUseSet(), Feature.insertUseSet);
             validateFeature(c, insert.isUseDuplicate(), Feature.insertUseDuplicateKeyUpdate);
             validateFeature(c, insert.isReturningAllColumns(), Feature.insertReturning);
-            validateFeature(c, insert.getReturningExpressionList() != null, Feature.insertReturningExpressionList);
+            validateOptionalFeature(c, insert.getReturningExpressionList(), Feature.insertReturningExpressionList);
         }
 
         validateOptionalFromItem(insert.getTable());

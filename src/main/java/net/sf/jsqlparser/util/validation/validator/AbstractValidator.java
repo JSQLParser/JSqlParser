@@ -144,7 +144,11 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     }
 
     protected void validateOptionalFromItems(FromItem... fromItems) {
-        validateOptionalList(Arrays.asList(fromItems), () -> getValidator(SelectValidator.class),
+        validateOptionalFromItems(Arrays.asList(fromItems));
+    }
+
+    protected void validateOptionalFromItems(List<? extends FromItem> fromItems) {
+        validateOptionalList(fromItems, () -> getValidator(SelectValidator.class),
                 this::validateOptionalFromItem);
     }
 
@@ -221,6 +225,14 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         if (condition) {
             validateFeature(capability, feature);
         }
+    }
+
+    protected void validateOptionalFeature(ValidationCapability c, List<?> elements, Feature feature) {
+        validateFeature(c, elements != null && !elements.isEmpty(), feature);
+    }
+
+    protected void validateOptionalFeature(ValidationCapability c, Object element, Feature feature) {
+        validateFeature(c, element != null, feature);
     }
 
     /**

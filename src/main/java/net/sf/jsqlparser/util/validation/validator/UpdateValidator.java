@@ -26,21 +26,11 @@ public class UpdateValidator extends AbstractValidator<Update> {
 
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.update);
-            if (update.getFromItem() != null) {
-                validateFeature(c, Feature.updateFrom);
-            }
-            if (update.getStartJoins() != null) {
-                validateFeature(c, Feature.updateJoins);
-            }
-            if (update.isUseSelect()) {
-                validateFeature(c, Feature.updateUseSelect);
-            }
-            if (update.getOrderByElements() != null) {
-                validateFeature(c, Feature.updateOrderBy);
-            }
-            if (update.getLimit() != null) {
-                validateFeature(c, Feature.updateLimit);
-            }
+            validateOptionalFeature(c, update.getFromItem(), Feature.updateFrom);
+            validateOptionalFeature(c, update.getStartJoins(), Feature.updateJoins);
+            validateFeature(c, update.isUseSelect(), Feature.updateUseSelect);
+            validateOptionalFeature(c, update.getOrderByElements(), Feature.updateOrderBy);
+            validateOptionalFeature(c, update.getLimit(), Feature.updateLimit);
             if (update.getReturningExpressionList() != null || update.isReturningAllColumns()) {
                 validateFeature(c, Feature.updateReturning);
             }
@@ -77,6 +67,5 @@ public class UpdateValidator extends AbstractValidator<Update> {
                     .map(SelectExpressionItem::getExpression).collect(Collectors.toList()));
         }
     }
-
 
 }
