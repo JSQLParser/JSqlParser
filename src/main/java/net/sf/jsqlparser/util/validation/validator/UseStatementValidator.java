@@ -11,7 +11,7 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.UseStatement;
-import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
  * @author gitmotte
@@ -20,9 +20,6 @@ public class UseStatementValidator extends AbstractValidator<UseStatement> {
 
     @Override
     public void validate(UseStatement set) {
-        for (ValidationCapability c : getCapabilities()) {
-            validateFeature(c, Feature.use);
-        }
-        //        buffer.append("USE ").append(set.getName());
+        validateFeatureAndName(Feature.use, NamedObject.schema, set.getName());
     }
 }
