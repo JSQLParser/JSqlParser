@@ -161,11 +161,11 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
         for (ValidationCapability c : getCapabilities()) {
-            expression.getLeftExpression().accept(this);
+            validateOptionalExpression(expression.getLeftExpression(), this);
             if (expression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
                 validateFeature(c, Feature.oracleOldJoinSyntax);
             }
-            expression.getRightExpression().accept(this);
+            validateOptionalExpression(expression.getRightExpression(), this);
             if (expression.getOraclePriorPosition() != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
                 validateFeature(c, Feature.oraclePriorPosition);
             }
@@ -186,7 +186,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     @Override
     public void visit(InExpression inExpression) {
         for (ValidationCapability c : getCapabilities()) {
-            inExpression.getLeftExpression().accept(this);
+            validateOptionalExpression(inExpression.getLeftExpression(), this);
             if (inExpression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
                 validateFeature(c, Feature.oracleOldJoinSyntax);
             }
@@ -195,11 +195,8 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         if (inExpression.getMultiExpressionList() != null) {
             validateMultiExpressionList(inExpression.getMultiExpressionList());
         } else {
-            if (inExpression.getRightExpression() != null) {
-                inExpression.getRightExpression().accept(this);
-            } else {
-                inExpression.getRightItemsList().accept(getValidator(ItemListValidator.class));
-            }
+            validateOptionalExpression(inExpression.getRightExpression(), this);
+            validateOptionalItemsList(inExpression.getRightItemsList());
         }
     }
 
@@ -322,18 +319,10 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     public void visit(Function function) {
         validateFeature(Feature.function);
 
-        if (function.getNamedParameters() != null) {
-            function.getNamedParameters().accept(getValidator(ItemListValidator.class));
-        }
-        if (function.getParameters() != null) {
-            function.getParameters().accept(getValidator(ItemListValidator.class));
-        }
-        if (function.getAttribute() != null) {
-            function.getAttribute().accept(this);
-        }
-        if (function.getKeep() != null) {
-            function.getKeep().accept(this);
-        }
+        validateOptionalItemsList(function.getNamedParameters());
+        validateOptionalItemsList(function.getParameters());
+        validateOptionalExpression(function.getAttribute(), this);
+        validateOptionalExpression(function.getKeep(), this);
     }
 
     @Override
@@ -513,7 +502,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     private void validateOptionalExpressionList(ExpressionList expressionList) {
         if (expressionList != null) {
-            expressionList.accept(getValidator(ItemListValidator.class));
+            expressionList.accept(getValidator(ItemsListValidator.class));
         }
     }
 

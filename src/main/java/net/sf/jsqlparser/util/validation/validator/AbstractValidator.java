@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.schema.Column;
@@ -154,6 +155,12 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     protected void validateOptionalFromItem(FromItem fromItem, SelectValidator v) {
         if (fromItem != null) {
             fromItem.accept(v);
+        }
+    }
+
+    protected void validateOptionalItemsList(ItemsList itemsList) {
+        if (itemsList != null) {
+            itemsList.accept(getValidator(ItemsListValidator.class));
         }
     }
 

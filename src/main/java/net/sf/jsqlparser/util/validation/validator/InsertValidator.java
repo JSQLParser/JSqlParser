@@ -33,15 +33,8 @@ public class InsertValidator extends AbstractValidator<Insert> {
         }
 
         validateOptionalFromItem(insert.getTable());
-
-        if (insert.getColumns() != null) {
-            ExpressionValidator v = getValidator(ExpressionValidator.class);
-            insert.getColumns().forEach(c -> c.accept(v));
-        }
-
-        if (insert.getItemsList() != null) {
-            insert.getItemsList().accept(getValidator(ItemListValidator.class));
-        }
+        validateOptionalColumns(insert.getColumns());
+        validateOptionalItemsList(insert.getItemsList());
 
         if (insert.getSelect() != null) {
             insert.getSelect().accept(getValidator(StatementValidator.class));

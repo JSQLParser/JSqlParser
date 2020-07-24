@@ -27,10 +27,7 @@ public class ExecuteValidator extends AbstractValidator<Execute> {
             validateName(NamedObject.procedure, execute.getName());
         }
 
-        if (execute.getExprList() != null) {
-            execute.getExprList().accept(getValidator(ItemListValidator.class));
-        }
-
+        validateOptionalItemsList(execute.getExprList());
     }
 
 }

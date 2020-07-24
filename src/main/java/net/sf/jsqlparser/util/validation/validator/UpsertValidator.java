@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 
@@ -25,26 +26,21 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
         }
         validateOptionalFromItem(upsert.getTable());
         validateOptionalColumns(upsert.getColumns());
-
-        if (upsert.getItemsList() != null) {
-            upsert.getItemsList().accept(getValidator(ItemListValidator.class));
-        }
-
-        if (upsert.getSelect() != null) {
-            validateSelect(upsert);
-        }
-
+        validateOptionalItemsList(upsert.getItemsList());
+        validateOptionalSelect(upsert.getSelect());
         if (upsert.isUseDuplicate()) {
             validateDuplicate(upsert);
         }
     }
 
-    private void validateSelect(Upsert upsert) {
-        SelectValidator v = getValidator(SelectValidator.class);
-        if (upsert.getSelect().getWithItemsList() != null) {
-            upsert.getSelect().getWithItemsList().forEach(with -> with.accept(v));
+    private void validateOptionalSelect(Select select) {
+        if (select != null) {
+            SelectValidator v = getValidator(SelectValidator.class);
+            if (select.getWithItemsList() != null) {
+                select.getWithItemsList().forEach(with -> with.accept(v));
+            }
+            select.getSelectBody().accept(v);
         }
-        upsert.getSelect().getSelectBody().accept(v);
     }
 
     private void validateDuplicate(Upsert upsert) {
