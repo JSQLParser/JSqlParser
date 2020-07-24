@@ -113,7 +113,7 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
     }
 
     private DatabaseException createDatabaseException(String name, String[] types, SQLException e) {
-        throw new DatabaseException("cannot evaluate existance of " + types + " by name '" + name + "'", e);
+        throw new DatabaseException("cannot evaluate existence of " + types + " by name '" + name + "'", e);
     }
 
 }
