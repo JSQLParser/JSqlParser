@@ -19,9 +19,8 @@ import java.util.List;
 import net.sf.jsqlparser.util.validation.ValidationException;
 
 /**
- * Validates against schema by jdbc-metadata in a very basic way without
- * meta-data-caching and comparing names by
- * {@link String#equalsIgnoreCase(String)}
+ * Validates against schema by jdbc-metadata in a very basic way with simple
+ * caching and comparing names by {@link String#equalsIgnoreCase(String)}
  *
  * @author gitmotte
  *
@@ -30,6 +29,10 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
 
     public JdbcDatabaseMetaDataCapability(Connection connection) {
         super(connection);
+    }
+
+    public JdbcDatabaseMetaDataCapability(Connection connection, boolean cacheResults) {
+        super(connection, cacheResults);
     }
 
     @Override
