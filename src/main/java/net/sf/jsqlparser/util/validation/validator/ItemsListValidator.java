@@ -15,7 +15,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 /**
  * @author gitmotte
  */
-public class ItemListValidator extends AbstractValidator<ItemsList> implements ItemsListVisitor {
+public class ItemsListValidator extends AbstractValidator<ItemsList> implements ItemsListVisitor {
 
     @Override
     public void visit(SubSelect subSelect) {
