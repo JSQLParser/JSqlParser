@@ -26,9 +26,14 @@ public class FeaturesAllowed implements FeatureSetValidation {
 
     /**
      * all {@link Feature}' within SQL SELECT without modification features like
-     * {@link Feature#selectInto}
+     * {@link Feature#selectInto}, but jdbc-features like
+     * {@link Feature#jdbcParameter} and {@link Feature#jdbcNamedParameter}
      */
     public static final FeaturesAllowed SELECT = new FeaturesAllowed(
+            // always allowed if used with jdbc
+            Feature.jdbcParameter,
+            Feature.jdbcNamedParameter,
+            // select features
             Feature.select,
             Feature.selectGroupBy,
             Feature.selectHaving,

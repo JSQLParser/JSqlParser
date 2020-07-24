@@ -2,7 +2,6 @@ package net.sf.jsqlparser.util.validation.feature;
 
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Set;
 
 import net.sf.jsqlparser.parser.feature.Feature;
@@ -10,6 +9,9 @@ import net.sf.jsqlparser.parser.feature.Feature;
 public enum H2Version implements Version {
     V_1_4_200("1.4.200",
             EnumSet.of(
+                    // supported if used with jdbc
+                    Feature.jdbcParameter,
+                    Feature.jdbcNamedParameter,
                     // http://h2database.com/html/commands.html#select
                     Feature.select,
                     // http://h2database.com/html/commands.html#insert
@@ -32,13 +34,24 @@ public enum H2Version implements Version {
     private Set<Feature> features;
     private String versionString;
 
+    /**
+     * @param versionString
+     * @param featuresSupported
+     * @see #getFeaturesClone() to copy from previous version
+     */
     private H2Version(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
     }
 
+    /**
+     * @param versionString
+     * @param featuresSupported
+     * @param unsupported
+     * @see #getFeaturesClone() to copy from previous version
+     */
     private H2Version(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;
-        this.features = new HashSet<>(featuresSupported);
+        this.features = featuresSupported;
         this.features.removeAll(unsupported);
     }
 
