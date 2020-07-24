@@ -9,7 +9,10 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import java.util.stream.Collectors;
+
 import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 
@@ -20,91 +23,59 @@ public class UpdateValidator extends AbstractValidator<Update> {
 
     @Override
     public void validate(Update update) {
+
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.update);
+            if (update.getFromItem() != null) {
+                validateFeature(c, Feature.updateFrom);
+            }
+            if (update.getStartJoins() != null) {
+                validateFeature(c, Feature.updateJoins);
+            }
+            if (update.isUseSelect()) {
+                validateFeature(c, Feature.updateUseSelect);
+            }
+            if (update.getOrderByElements() != null) {
+                validateFeature(c, Feature.updateOrderBy);
+            }
+            if (update.getLimit() != null) {
+                validateFeature(c, Feature.updateLimit);
+            }
+            if (update.getReturningExpressionList() != null || update.isReturningAllColumns()) {
+                validateFeature(c, Feature.updateReturning);
+            }
         }
-        //        buffer.append("UPDATE ").append(update.getTable());
-        //        if (update.getStartJoins() != null) {
-        //            for (Join join : update.getStartJoins()) {
-        //                if (join.isSimple()) {
-        //                    buffer.append(", ").append(join);
-        //                } else {
-        //                    buffer.append(" ").append(join);
-        //                }
-        //            }
-        //        }
-        //        buffer.append(" SET ");
-        //
-        //        if (!update.isUseSelect()) {
-        //            for (int i = 0; i < update.getColumns().size(); i++) {
-        //                Column column = update.getColumns().get(i);
-        //                column.accept(expressionVisitor);
-        //
-        //                buffer.append(" = ");
-        //
-        //                Expression expression = update.getExpressions().get(i);
-        //                expression.accept(expressionVisitor);
-        //                if (i < update.getColumns().size() - 1) {
-        //                    buffer.append(", ");
-        //                }
-        //            }
-        //        } else {
-        //            if (update.isUseColumnsBrackets()) {
-        //                buffer.append("(");
-        //            }
-        //            for (int i = 0; i < update.getColumns().size(); i++) {
-        //                if (i != 0) {
-        //                    buffer.append(", ");
-        //                }
-        //                Column column = update.getColumns().get(i);
-        //                column.accept(expressionVisitor);
-        //            }
-        //            if (update.isUseColumnsBrackets()) {
-        //                buffer.append(")");
-        //            }
-        //            buffer.append(" = ");
-        //            buffer.append("(");
-        //            Select select = update.getSelect();
-        //            select.getSelectBody().accept(selectVisitor);
-        //            buffer.append(")");
-        //        }
-        //
-        //        if (update.getFromItem() != null) {
-        //            buffer.append(" FROM ").append(update.getFromItem());
-        //            if (update.getJoins() != null) {
-        //                for (Join join : update.getJoins()) {
-        //                    if (join.isSimple()) {
-        //                        buffer.append(", ").append(join);
-        //                    } else {
-        //                        buffer.append(" ").append(join);
-        //                    }
-        //                }
-        //            }
-        //        }
-        //
-        //        if (update.getWhere() != null) {
-        //            buffer.append(" WHERE ");
-        //            update.getWhere().accept(expressionVisitor);
-        //        }
-        //        if (update.getOrderByElements() != null) {
-        //            new OrderByValidator().validate(update.getOrderByElements());
-        //        }
-        //        if (update.getLimit() != null) {
-        //            new LimitValidator(buffer).deParse(update.getLimit());
-        //        }
-        //
-        //        if (update.isReturningAllColumns()) {
-        //            buffer.append(" RETURNING *");
-        //        } else if (update.getReturningExpressionList() != null) {
-        //            buffer.append(" RETURNING ");
-        //            for (Iterator<SelectExpressionItem> iter = update.getReturningExpressionList().iterator(); iter
-        //                    .hasNext();) {
-        //                buffer.append(iter.next().toString());
-        //                if (iter.hasNext()) {
-        //                    buffer.append(", ");
-        //                }
-        //            }
-        //        }
+
+        validateOptionalFromItem(update.getTable());
+
+        validateOptional(update.getStartJoins(),
+                j -> getValidator(SelectValidator.class).validateOptionalJoins(j));
+
+        if (update.isUseSelect()) {
+            validateOptionalExpressions(update.getColumns());
+            validateOptional(update.getSelect(), e -> e.getSelectBody().accept(getValidator(SelectValidator.class)));
+        } else {
+            validateOptionalExpressions(update.getColumns());
+            validateOptionalExpressions(update.getExpressions());
+        }
+
+        if (update.getFromItem() != null) {
+            validateOptionalFromItem(update.getFromItem());
+            validateOptional(update.getJoins(),
+                    j -> getValidator(SelectValidator.class).validateOptionalJoins(j));
+        }
+
+        validateOptionalExpression(update.getWhere());
+        validateOptionalOrderByElements(update.getOrderByElements());
+
+        if (update.getLimit() != null) {
+            getValidator(LimitValidator.class).validate(update.getLimit());
+        }
+
+        if (update.getReturningExpressionList() != null) {
+            validateOptionalExpressions(update.getReturningExpressionList().stream()
+                    .map(SelectExpressionItem::getExpression).collect(Collectors.toList()));
+        }
     }
 
 
