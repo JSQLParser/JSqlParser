@@ -159,6 +159,10 @@ public enum Feature {
      * @see Delete
      */
     delete,
+    deleteJoin,
+    deleteTables,
+    deleteLimit,
+    deleteOrderBy,
     /**
      * SQL "UPSERT" statement is allowed
      *

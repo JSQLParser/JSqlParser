@@ -23,35 +23,30 @@ public class DeleteValidator extends AbstractValidator<Delete> {
     public void validate(Delete delete) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.delete);
+
+            validateOptionalFeature(c, delete.getTables(), Feature.deleteTables);
+            validateOptionalFeature(c, delete.getJoins(), Feature.deleteJoin);
+            validateOptionalFeature(c, delete.getLimit(), Feature.deleteLimit);
+            validateOptionalFeature(c, delete.getOrderByElements(), Feature.deleteOrderBy);
         }
-        //        buffer.append("DELETE");
-        //        if (delete.getTables() != null && !delete.getTables().isEmpty()) {
-        //            buffer.append(
-        //                    delete.getTables().stream().map(Table::getFullyQualifiedName).collect(joining(", ", " ", "")));
-        //        }
-        //        buffer.append(" FROM ").append(delete.getTable().toString());
-        //
-        //        if (delete.getJoins() != null) {
-        //            for (Join join : delete.getJoins()) {
-        //                if (join.isSimple()) {
-        //                    buffer.append(", ").append(join);
-        //                } else {
-        //                    buffer.append(" ").append(join);
-        //                }
-        //            }
-        //        }
-        //
-        //        if (delete.getWhere() != null) {
-        //            buffer.append(" WHERE ");
-        //            delete.getWhere().accept(expressionVisitor);
-        //        }
-        //
-        //        if (delete.getOrderByElements() != null) {
-        //            new OrderByValidator().validate(delete.getOrderByElements());
-        //        }
-        //        if (delete.getLimit() != null) {
-        //            new LimitValidator(buffer).deParse(delete.getLimit());
-        //        }
+
+        SelectValidator v = getValidator(SelectValidator.class);
+        delete.getTable().accept(v);
+
+        if (delete.getTables() != null) {
+            delete.getTables().forEach(t -> t.accept(v));
+        }
+
+        validateOptionalExpression(delete.getWhere());
+        validateOptionalOrderByElements(delete.getOrderByElements());
+
+        if (delete.getJoins() != null) {
+            v.validateOptionalJoins(delete.getJoins());
+        }
+
+        if (delete.getLimit() != null) {
+            getValidator(LimitValidator.class).validate(delete.getLimit());
+        }
 
     }
 
