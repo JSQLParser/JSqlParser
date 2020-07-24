@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ValidationError {
+
     private final String statement;
 
     private Set<ValidationException> errors = new HashSet<>();
@@ -52,6 +53,13 @@ public class ValidationError {
 
     public String getStatement() {
         return statement;
+    }
+
+    @Override
+    public String toString() {
+        return "ValidationError [statement=" + statement
+                + ", capability=" + (capability != null ? capability.getName() : "<null>")
+                + ", errors=" + errors + "]";
     }
 
 }

@@ -50,4 +50,9 @@ public class ValidationException extends RuntimeException {
         return getMessage().hashCode() + (getCause() == null ? 0 : getCause().toString().hashCode());
     }
 
+    @Override
+    public String toString () {
+        return getClass().getSimpleName() + ": " + getMessage();
+    }
+
 }
