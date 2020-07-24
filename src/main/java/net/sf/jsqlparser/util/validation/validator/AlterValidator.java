@@ -26,7 +26,7 @@ public class AlterValidator extends AbstractValidator<Alter> {
     public void validate(Alter alter) {
         validateFeature(Feature.alter);
 
-        alter.getTable().accept(getValidator(SelectValidator.class));
+        validateOptionalFromItem(alter.getTable());
 
         alter.getAlterExpressions().forEach(e -> validate(alter, e));
     }

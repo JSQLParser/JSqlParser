@@ -27,7 +27,7 @@ public class DropValidator extends AbstractValidator<Drop> {
         }
         String type = drop.getType();
         if (NamedObject.table.name().equalsIgnoreCase(type)) {
-            drop.getName().accept(getValidator(SelectValidator.class));
+            validateOptionalFromItem(drop.getName());
         }
     }
 

@@ -19,7 +19,7 @@ public class ItemListValidator extends AbstractValidator<ItemsList> implements I
 
     @Override
     public void visit(SubSelect subSelect) {
-        subSelect.accept(getValidator(SelectValidator.class));
+        validateOptionalFromItem(subSelect);
     }
 
     @Override

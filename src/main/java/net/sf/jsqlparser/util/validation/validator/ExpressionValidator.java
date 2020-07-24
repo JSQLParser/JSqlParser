@@ -309,15 +309,13 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(SubSelect subSelect) {
-        subSelect.accept(getValidator(SelectValidator.class));
+        validateOptionalFromItem(subSelect);
     }
 
     @Override
     public void visit(Column tableColumn) {
         validateName(NamedObject.column, tableColumn.getFullyQualifiedName());
-        if (tableColumn.getTable() != null) {
-            tableColumn.getTable().accept(getValidator(SelectValidator.class));
-        }
+        validateOptionalFromItem(tableColumn.getTable());
     }
 
     @Override

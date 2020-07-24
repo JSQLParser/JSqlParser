@@ -107,7 +107,7 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     @Override
     public void visit(Truncate truncate) {
         validateFeature(Feature.truncate);
-        truncate.getTable().accept(getValidator(SelectValidator.class));
+        validateOptionalFromItem(truncate.getTable());
     }
 
     @Override
@@ -180,7 +180,7 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     @Override
     public void visit(DescribeStatement describe) {
         validateFeature(Feature.describe);
-        describe.getTable().accept(getValidator(SelectValidator.class));
+        validateOptionalFromItem(describe.getTable());
     }
 
     @Override

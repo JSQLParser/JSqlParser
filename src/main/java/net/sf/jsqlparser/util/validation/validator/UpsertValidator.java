@@ -23,8 +23,7 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.upsert);
         }
-        upsert.getTable().accept(getValidator(SelectValidator.class));
-
+        validateOptionalFromItem(upsert.getTable());
         validateOptionalColumns(upsert.getColumns());
 
         if (upsert.getItemsList() != null) {

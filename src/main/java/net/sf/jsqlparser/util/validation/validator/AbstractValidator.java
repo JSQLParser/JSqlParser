@@ -22,6 +22,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationContext;
 import net.sf.jsqlparser.util.validation.ValidationException;
@@ -135,6 +136,24 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         if (columns != null && !columns.isEmpty()) {
             ExpressionValidator e = getValidator(ExpressionValidator.class);
             columns.forEach(c -> c.accept(e));
+        }
+    }
+
+    protected void validateOptionalFromItems(FromItem... fromItems) {
+        for (FromItem t : fromItems) {
+            SelectValidator v = getValidator(SelectValidator.class);
+            validateOptionalFromItem(t, v);
+        }
+    }
+
+    protected void validateOptionalFromItem(FromItem fromItem) {
+        SelectValidator v = getValidator(SelectValidator.class);
+        validateOptionalFromItem(fromItem, v);
+    }
+
+    protected void validateOptionalFromItem(FromItem fromItem, SelectValidator v) {
+        if (fromItem != null) {
+            fromItem.accept(v);
         }
     }
 

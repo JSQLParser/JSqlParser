@@ -32,7 +32,7 @@ public class InsertValidator extends AbstractValidator<Insert> {
             validateFeature(c, insert.getReturningExpressionList() != null, Feature.insertReturningExpressionList);
         }
 
-        insert.getTable().accept(getValidator(SelectValidator.class));
+        validateOptionalFromItem(insert.getTable());
 
         if (insert.getColumns() != null) {
             ExpressionValidator v = getValidator(ExpressionValidator.class);
