@@ -25,7 +25,7 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
             validateFeature(c, Feature.upsert);
         }
         validateOptionalFromItem(upsert.getTable());
-        validateOptionalColumns(upsert.getColumns());
+        validateOptionalExpressions(upsert.getColumns());
         validateOptionalItemsList(upsert.getItemsList());
         validateOptionalSelect(upsert.getSelect());
         if (upsert.isUseDuplicate()) {
@@ -44,7 +44,7 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
     }
 
     private void validateDuplicate(Upsert upsert) {
-        validateOptionalColumns(upsert.getDuplicateUpdateColumns());
+        validateOptionalExpressions(upsert.getDuplicateUpdateColumns());
         validateOptionalExpressions(upsert.getDuplicateUpdateExpressionList());
     }
 

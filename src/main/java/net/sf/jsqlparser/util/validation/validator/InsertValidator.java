@@ -33,7 +33,7 @@ public class InsertValidator extends AbstractValidator<Insert> {
         }
 
         validateOptionalFromItem(insert.getTable());
-        validateOptionalColumns(insert.getColumns());
+        validateOptionalExpressions(insert.getColumns());
         validateOptionalItemsList(insert.getItemsList());
 
         if (insert.getSelect() != null) {

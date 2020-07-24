@@ -10,20 +10,23 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationContext;
 import net.sf.jsqlparser.util.validation.ValidationException;
@@ -77,7 +80,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
 
     /**
      * adds an error for this {@link ValidationCapability}
-     * 
+     *
      * @param capability
      * @param error
      */
@@ -114,54 +117,51 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         this.context = context;
     }
 
-    protected void validateOptionalExpressions(List<Expression> expressions) {
-        if (expressions != null && !expressions.isEmpty()) {
-            ExpressionValidator v = getValidator(ExpressionValidator.class);
-            expressions.forEach(v::validate);
+    protected <E> void validateOptional(E element, Consumer<E> elementConsumer) {
+        if (element != null) {
+            elementConsumer.accept(element);
+        }
+    }
+
+    protected <E, V extends Validator<?>> void validateOptionalList(
+            List<E> elementList, Supplier<V> validatorSupplier, BiConsumer<E, V> elementConsumer) {
+        if (elementList != null && !elementList.isEmpty()) {
+            V validator = validatorSupplier.get();
+            elementList.forEach(e -> elementConsumer.accept(e, validator));
         }
     }
 
     protected void validateOptionalExpression(Expression expression) {
-        if (expression != null) {
-            expression.accept(getValidator(ExpressionValidator.class));
-        }
+        validateOptional(expression, e -> e.accept(getValidator(ExpressionValidator.class)));
     }
 
     protected void validateOptionalExpression(Expression expression, ExpressionValidator v) {
-        if (expression != null) {
-            expression.accept(v);
-        }
+        validateOptional(expression, e -> e.accept(v));
     }
 
-    protected void validateOptionalColumns(List<Column> columns) {
-        if (columns != null && !columns.isEmpty()) {
-            ExpressionValidator e = getValidator(ExpressionValidator.class);
-            columns.forEach(c -> c.accept(e));
-        }
+    protected void validateOptionalExpressions(List<? extends Expression> expressions) {
+        validateOptionalList(expressions, () -> getValidator(ExpressionValidator.class), (o, v) -> o.accept(v));
     }
 
     protected void validateOptionalFromItems(FromItem... fromItems) {
-        for (FromItem t : fromItems) {
-            SelectValidator v = getValidator(SelectValidator.class);
-            validateOptionalFromItem(t, v);
-        }
+        validateOptionalList(Arrays.asList(fromItems), () -> getValidator(SelectValidator.class),
+                this::validateOptionalFromItem);
+    }
+
+    protected void validateOptionalOrderByElements(List<OrderByElement> orderByElements) {
+        validateOptionalList(orderByElements, () -> getValidator(OrderByValidator.class), (o, v) -> o.accept(v));
     }
 
     protected void validateOptionalFromItem(FromItem fromItem) {
-        SelectValidator v = getValidator(SelectValidator.class);
-        validateOptionalFromItem(fromItem, v);
+        validateOptional(fromItem, i -> i.accept(getValidator(SelectValidator.class)));
     }
 
     protected void validateOptionalFromItem(FromItem fromItem, SelectValidator v) {
-        if (fromItem != null) {
-            fromItem.accept(v);
-        }
+        validateOptional(fromItem, i -> i.accept(v));
     }
 
     protected void validateOptionalItemsList(ItemsList itemsList) {
-        if (itemsList != null) {
-            itemsList.accept(getValidator(ItemsListValidator.class));
-        }
+        validateOptional(itemsList, i -> i.accept(getValidator(ItemsListValidator.class)));
     }
 
     /**

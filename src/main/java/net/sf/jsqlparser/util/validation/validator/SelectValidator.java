@@ -48,6 +48,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     @Override
     public void visit(PlainSelect plainSelect) {
+
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.select);
             validateFeature(c, plainSelect.getMySqlHintStraightJoin(), Feature.mySqlHintStraightJoin);
@@ -81,12 +82,9 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
             validateFeature(c, plainSelect.getForXmlPath() != null, Feature.selectForXmlPath);
             validateFeature(c, plainSelect.getOptimizeFor() != null, Feature.optimizeFor);
+        } // end for
 
-        }
-
-        if (plainSelect.getFromItem() != null) {
-            plainSelect.getFromItem().accept(this);
-        }
+        validateOptionalFromItem(plainSelect.getFromItem());
 
         if (plainSelect.getIntoTables() != null) {
             plainSelect.getIntoTables().forEach(this::visit);
@@ -98,26 +96,15 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             }
         }
 
-        if (plainSelect.getWhere() != null) {
-            plainSelect.getWhere().accept(getValidator(ExpressionValidator.class));
-        }
-
-        if (plainSelect.getOracleHierarchical() != null) {
-            plainSelect.getOracleHierarchical().accept(getValidator(ExpressionValidator.class));
-        }
+        validateOptionalExpression(plainSelect.getWhere());
+        validateOptionalExpression(plainSelect.getOracleHierarchical());
 
         if (plainSelect.getGroupBy() != null) {
             plainSelect.getGroupBy().accept(getValidator(GroupByValidator.class));
         }
 
-        if (plainSelect.getHaving() != null) {
-            plainSelect.getHaving().accept(getValidator(ExpressionValidator.class));
-        }
-
-        if (plainSelect.getOrderByElements() != null) {
-            OrderByValidator v = getValidator(OrderByValidator.class);
-            plainSelect.getOrderByElements().forEach(o -> o.accept(v));
-        }
+        validateOptionalExpression(plainSelect.getHaving());
+        validateOptionalOrderByElements(plainSelect.getOrderByElements());
 
         if (plainSelect.getLimit() != null) {
             getValidator(LimitValidator.class).validate(plainSelect.getLimit());
@@ -155,10 +142,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             subSelect.getWithItemsList().forEach(withItem -> withItem.accept(this));
         }
         subSelect.getSelectBody().accept(this);
-        Pivot pivot = subSelect.getPivot();
-        if (pivot != null) {
-            pivot.accept(this);
-        }
+        validateOptional(subSelect.getPivot(), p -> p.accept(this));
     }
 
     @Override
@@ -185,23 +169,21 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
     @Override
     public void visit(Pivot pivot) {
         validateFeature(Feature.pivot);
-        validateOptionalColumns(pivot.getForColumns());
+        validateOptionalExpressions(pivot.getForColumns());
     }
 
     @Override
     public void visit(UnPivot unpivot) {
         validateFeature(Feature.unpivot);
 
-        validateOptionalColumns(unpivot.getUnPivotForClause());
-        if (unpivot.getUnPivotClause() != null) {
-            unpivot.getUnPivotClause().accept(getValidator(ExpressionValidator.class));
-        }
+        validateOptionalExpressions(unpivot.getUnPivotForClause());
+        validateOptionalExpression(unpivot.getUnPivotClause());
     }
 
     @Override
     public void visit(PivotXml pivot) {
         validateFeature(Feature.pivotXml);
-        validateOptionalColumns(pivot.getForColumns());
+        validateOptionalExpressions(pivot.getForColumns());
         if (pivot.getFunctionItems() != null) {
             ExpressionValidator v = getValidator(ExpressionValidator.class);
             pivot.getFunctionItems().forEach(f -> f.getFunction().accept(v));

@@ -27,7 +27,7 @@ public class ReplaceValidator extends AbstractValidator<Replace> {
         validateOptionalFromItem(replace.getTable());
         validateOptionalItemsList(replace.getItemsList());
         validateOptionalExpressions(replace.getExpressions());
-        validateOptionalColumns(replace.getColumns());
+        validateOptionalExpressions(replace.getColumns());
     }
 
 }

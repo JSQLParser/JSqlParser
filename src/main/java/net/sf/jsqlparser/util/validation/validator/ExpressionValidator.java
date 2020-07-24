@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.List;
+
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -91,7 +92,6 @@ import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
@@ -210,7 +210,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(FullTextSearch fullTextSearch) {
-        validateOptionalColumns(fullTextSearch.getMatchColumns());
+        validateOptionalExpressions(fullTextSearch.getMatchColumns());
     }
 
     @Override
@@ -429,13 +429,6 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     private void validateOptionalWindowOffset(WindowOffset offset) {
         if (offset != null) {
             validateOptionalExpression(offset.getExpression());
-        }
-    }
-
-    private void validateOptionalOrderByElements(List<OrderByElement> orderByElements) {
-        if (orderByElements != null) {
-            OrderByValidator v = getValidator(OrderByValidator.class);
-            orderByElements.forEach(ob -> ob.accept(v));
         }
     }
 
