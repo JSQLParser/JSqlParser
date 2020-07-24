@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import java.util.List;
+
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.parser.feature.Feature;
@@ -90,11 +92,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             plainSelect.getIntoTables().forEach(this::visit);
         }
 
-        if (plainSelect.getJoins() != null) {
-            for (Join join : plainSelect.getJoins()) {
-                deparseJoin(join);
-            }
-        }
+        validateOptionalJoins(plainSelect.getJoins());
 
         validateOptionalExpression(plainSelect.getWhere());
         validateOptionalExpression(plainSelect.getOracleHierarchical());
@@ -207,83 +205,84 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             validateFeature(c, !fetch.isFetchParamFirst(), Feature.fetchNext);
         }
 
-        if (fetch.getFetchJdbcParameter() != null) {
-            fetch.getFetchJdbcParameter().accept(getValidator(ExpressionValidator.class));
-        }
+        validateOptionalExpression(fetch.getFetchJdbcParameter());
     }
 
     @Override
     public void visit(SubJoin subjoin) {
-        //        errors.append("(");
-        //        subjoin.getLeft().accept(this);
-        //        for (Join join : subjoin.getJoinList()) {
-        //            deparseJoin(join);
-        //        }
-        //        errors.append(")");
-        //
-        //        if (subjoin.getPivot() != null) {
-        //            subjoin.getPivot().accept(this);
-        //        }
+        validateOptionalFromItem(subjoin.getLeft());
+        validateOptionalJoins(subjoin.getJoinList());
+        validateOptional(subjoin.getPivot(), e -> e.accept(this));
     }
 
-    public void deparseJoin(Join join) {
-        //        if (join.isSimple() && join.isOuter()) {
-        //            errors.append(", OUTER ");
-        //        } else if (join.isSimple()) {
-        //            errors.append(", ");
-        //        } else {
-        //
-        //            if (join.isRight()) {
-        //                errors.append(" RIGHT");
-        //            } else if (join.isNatural()) {
-        //                errors.append(" NATURAL");
-        //            } else if (join.isFull()) {
-        //                errors.append(" FULL");
-        //            } else if (join.isLeft()) {
-        //                errors.append(" LEFT");
-        //            } else if (join.isCross()) {
-        //                errors.append(" CROSS");
-        //            }
-        //
-        //            if (join.isOuter()) {
-        //                errors.append(" OUTER");
-        //            } else if (join.isInner()) {
-        //                errors.append(" INNER");
-        //            } else if (join.isSemi()) {
-        //                errors.append(" SEMI");
-        //            }
-        //
-        //            if (join.isStraight()) {
-        //                errors.append(" STRAIGHT_JOIN ");
-        //            } else if (join.isApply()) {
-        //                errors.append(" APPLY ");
-        //            } else {
-        //                errors.append(" JOIN ");
-        //            }
-        //
-        //        }
-        //
-        //        FromItem fromItem = join.getRightItem();
-        //        fromItem.accept(this);
-        //        if (join.isWindowJoin()) {
-        //            errors.append(" WITHIN ");
-        //            errors.append(join.getJoinWindow().toString());
-        //        }
-        //        if (join.getOnExpression() != null) {
-        //            errors.append(" ON ");
-        //            join.getOnExpression().accept(expressionVisitor);
-        //        }
-        //        if (join.getUsingColumns() != null) {
-        //            errors.append(" USING (");
-        //            for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator.hasNext();) {
-        //                Column column = iterator.next();
-        //                errors.append(column.toString());
-        //                if (iterator.hasNext()) {
-        //                    errors.append(", ");
-        //                }
-        //            }
-        //            errors.append(")");
-        //        }
+    public void validateOptionalJoins(List<Join> joins) {
+        if (joins != null) {
+            for (Join join : joins) {
+                validateOptionalJoin(join);
+            }
+        }
+    }
+
+    public void validateOptionalJoin(Join join) {
+        if (join != null) {
+            //        if (join.isSimple() && join.isOuter()) {
+            //            errors.append(", OUTER ");
+            //        } else if (join.isSimple()) {
+            //            errors.append(", ");
+            //        } else {
+            //
+            //            if (join.isRight()) {
+            //                errors.append(" RIGHT");
+            //            } else if (join.isNatural()) {
+            //                errors.append(" NATURAL");
+            //            } else if (join.isFull()) {
+            //                errors.append(" FULL");
+            //            } else if (join.isLeft()) {
+            //                errors.append(" LEFT");
+            //            } else if (join.isCross()) {
+            //                errors.append(" CROSS");
+            //            }
+            //
+            //            if (join.isOuter()) {
+            //                errors.append(" OUTER");
+            //            } else if (join.isInner()) {
+            //                errors.append(" INNER");
+            //            } else if (join.isSemi()) {
+            //                errors.append(" SEMI");
+            //            }
+            //
+            //            if (join.isStraight()) {
+            //                errors.append(" STRAIGHT_JOIN ");
+            //            } else if (join.isApply()) {
+            //                errors.append(" APPLY ");
+            //            } else {
+            //                errors.append(" JOIN ");
+            //            }
+            //
+            //        }
+            //
+            //        FromItem fromItem = join.getRightItem();
+            //        fromItem.accept(this);
+            //        if (join.isWindowJoin()) {
+            //            errors.append(" WITHIN ");
+            //            errors.append(join.getJoinWindow().toString());
+            //        }
+            //        if (join.getOnExpression() != null) {
+            //            errors.append(" ON ");
+            //            join.getOnExpression().accept(expressionVisitor);
+            //        }
+            //        if (join.getUsingColumns() != null) {
+            //            errors.append(" USING (");
+            //            for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator.hasNext();) {
+            //                Column column = iterator.next();
+            //                errors.append(column.toString());
+            //                if (iterator.hasNext()) {
+            //                    errors.append(", ");
+            //                }
+            //            }
+            //            errors.append(")");
+            //        }
+        }
 
     }
 
@@ -366,8 +365,9 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     @Override
     public void validate(SelectItem statement) {
-        // TODO Auto-generated method stub
-
+        statement.accept(this);
     }
+
+
 
 }

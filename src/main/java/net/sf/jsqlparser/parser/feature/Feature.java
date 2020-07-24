@@ -96,7 +96,7 @@ public enum Feature {
     /**
      * "FETCH NEXT row_count (ROW | ROWS) ONLY"
      * if not {@link #fetchFirst}
-     * 
+     *
      * @see Fetch#isFetchParamFirst()
      */
     fetchNext,
@@ -147,6 +147,12 @@ public enum Feature {
      * @see Update
      */
     update,
+    updateFrom,
+    updateJoins,
+    updateUseSelect,
+    updateOrderBy,
+    updateLimit,
+    updateReturning,
     /**
      * SQL "DELETE" statement is allowed
      *
