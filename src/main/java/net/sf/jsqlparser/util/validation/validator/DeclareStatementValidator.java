@@ -23,19 +23,10 @@ public class DeclareStatementValidator extends AbstractValidator<DeclareStatemen
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.declare);
         }
-        //        buffer.append("DECLARE ");
+        validateOptionalExpression(declare.getUserVariable());
         //
-        //        if (declare.getUserVariable() != null) {
-        //            declare.getUserVariable().accept(expressionVisitor);
-        //        }
         //
-        //        if (declare.getType() == DeclareType.AS) {
-        //            buffer.append(" AS ");
-        //            buffer.append(declare.getTypeName());
-        //            return;
-        //        }
-        //
-        //        if (declare.getType() == DeclareType.TABLE) {
+        //        if (declare.getDeclareType() == DeclareType.TABLE) {
         //            buffer.append(" TABLE (");
         //            for (int i = 0; i < declare.getColumnDefinitions().size(); i++) {
         //                if (i > 0) {
