@@ -343,6 +343,15 @@ public enum Feature {
      */
     pivotXml,
 
+    setOperation,
+
+    withItem,
+    withItemRecursive,
+
+    lateralSubSelect,
+    valuesList,
+    tableFunction,
+
     // EXPRESSIONS
     /**
      * @see JdbcParameter
@@ -393,7 +402,6 @@ public enum Feature {
      * allows square brackets for names, disabled by default
      */
     allowSquareBracketQuotation(false),
-
 
     ;
 

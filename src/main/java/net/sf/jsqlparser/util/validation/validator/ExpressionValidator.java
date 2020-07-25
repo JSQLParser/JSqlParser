@@ -192,20 +192,19 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
             }
         }
 
-        if (inExpression.getMultiExpressionList() != null) {
-            validateMultiExpressionList(inExpression.getMultiExpressionList());
-        } else {
-            validateOptionalExpression(inExpression.getRightExpression(), this);
-            validateOptionalItemsList(inExpression.getRightItemsList());
-        }
+        validateOptionalMultiExpressionList(inExpression.getMultiExpressionList());
+        validateOptionalExpression(inExpression.getRightExpression(), this);
+        validateOptionalItemsList(inExpression.getRightItemsList());
     }
 
     /**
      * a multi-expression in clause: {@code ((a, b), (c, d))}
      */
-    private void validateMultiExpressionList(MultiExpressionList multiExprList) {
-        multiExprList.getExpressionLists().stream().map(ExpressionList::getExpressions)
-        .flatMap(List::stream).forEach(e -> e.accept(this));
+    public void validateOptionalMultiExpressionList(MultiExpressionList multiExprList) {
+        if (multiExprList != null) {
+            multiExprList.getExpressionLists().stream().map(ExpressionList::getExpressions)
+            .flatMap(List::stream).forEach(e -> e.accept(this));
+        }
     }
 
     @Override

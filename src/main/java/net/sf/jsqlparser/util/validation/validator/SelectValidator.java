@@ -141,14 +141,10 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
     @Override
     public void visit(Table table) {
         validateName(NamedObject.table, table.getFullyQualifiedName());
-        Pivot pivot = table.getPivot();
-        if (pivot != null) {
-            pivot.accept(this);
-        }
-        UnPivot unpivot = table.getUnPivot();
-        if (unpivot != null) {
-            unpivot.accept(this);
-        }
+
+        validateOptional(table.getPivot(), p -> p.accept(this));
+        validateOptional(table.getUnPivot(), up -> up.accept(this));
+
         MySQLIndexHint indexHint = table.getIndexHint();
         if (indexHint != null && indexHint.getIndexNames() != null) {
             indexHint.getIndexNames().forEach(i -> validateName(NamedObject.index, i));
@@ -247,79 +243,74 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     @Override
     public void visit(SetOperationList list) {
-        //        for (int i = 0; i < list.getSelects().size(); i++) {
-        //            if (i != 0) {
-        //                errors.append(' ').append(list.getOperations().get(i - 1)).append(' ');
-        //            }
-        //            boolean brackets = list.getBrackets() == null || list.getBrackets().get(i);
-        //            if (brackets) {
-        //                errors.append("(");
-        //            }
-        //            list.getSelects().get(i).accept(this);
-        //            if (brackets) {
-        //                errors.append(")");
-        //            }
-        //        }
-        //        if (list.getOrderByElements() != null) {
-        //            new OrderByDeParser(expressionVisitor, errors).deParse(list.getOrderByElements());
-        //        }
-        //
-        //        if (list.getLimit() != null) {
-        //            new LimitDeparser(errors).deParse(list.getLimit());
-        //        }
-        //        if (list.getOffset() != null) {
-        //            deparseOffset(list.getOffset());
-        //        }
-        //        if (list.getFetch() != null) {
-        //            deparseFetch(list.getFetch());
-        //        }
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(c, Feature.setOperation);
+        }
+
+        if (list.getSelects() != null) {
+            list.getSelects().forEach(s -> s.accept(this));
+        }
+
+        validateOptionalOrderByElements(list.getOrderByElements());
+
+        if (list.getLimit() != null) {
+            getValidator(LimitValidator.class).validate(list.getLimit());
+        }
+
+        if (list.getOffset() != null) {
+            validateOffset(list.getOffset());
+        }
+
+        if (list.getFetch() != null) {
+            validateFetch(list.getFetch());
+        }
     }
 
     @Override
     public void visit(WithItem withItem) {
-        //        if (withItem.isRecursive()) {
-        //            errors.append("RECURSIVE ");
-        //        }
-        //        errors.append(withItem.getName());
-        //        if (withItem.getWithItemList() != null) {
-        //            errors.append(" ").append(PlainSelect.
-        //                    getStringList(withItem.getWithItemList(), true, true));
-        //        }
-        //        errors.append(" AS (");
-        //        withItem.getSelectBody().accept(this);
-        //        errors.append(")");
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(c, Feature.withItem);
+            validateFeature(c, withItem.isRecursive(), Feature.withItemRecursive);
+        }
+        if (withItem.getWithItemList() != null) {
+            withItem.getWithItemList().forEach(wi -> wi.accept(this));
+        }
+        withItem.getSelectBody().accept(this);
     }
 
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
-        //        errors.append(lateralSubSelect.toString());
+        validateFeature(Feature.lateralSubSelect);
+        validateOptional(lateralSubSelect.getPivot(), p -> p.accept(this));
+        validateOptional(lateralSubSelect.getUnPivot(), up -> up.accept(this));
+        validateOptional(lateralSubSelect.getSubSelect(), e -> e.accept(this));
     }
 
     @Override
     public void visit(ValuesList valuesList) {
-        //        errors.append(valuesList.toString());
+        validateFeature(Feature.valuesList);
+        getValidator(ExpressionValidator.class)
+        .validateOptionalMultiExpressionList(valuesList.getMultiExpressionList());
     }
 
 
 
     @Override
     public void visit(TableFunction tableFunction) {
-        //        errors.append(tableFunction.toString());
+        validateFeature(Feature.tableFunction);
+
+        validateOptional(tableFunction.getPivot(), p -> p.accept(this));
+        validateOptional(tableFunction.getUnPivot(), up -> up.accept(this));
     }
 
     @Override
     public void visit(ParenthesisFromItem parenthesis) {
-        //        errors.append("(");
-        //        parenthesis.getFromItem().accept(this);
-        //        errors.append(")");
-        //        if (parenthesis.getAlias() != null) {
-        //            errors.append(parenthesis.getAlias().toString());
-        //        }
+        validateOptional(parenthesis.getFromItem(), e -> e.accept(this));
     }
 
     @Override
     public void visit(ValuesStatement values) {
-        //        new ValuesStatementDeParser(expressionVisitor, errors).deParse(values);
+        validateOptionalExpressions(values.getExpressions());
     }
 
     @Override
