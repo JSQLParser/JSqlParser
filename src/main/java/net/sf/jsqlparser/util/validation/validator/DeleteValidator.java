@@ -40,9 +40,7 @@ public class DeleteValidator extends AbstractValidator<Delete> {
         validateOptionalExpression(delete.getWhere());
         validateOptionalOrderByElements(delete.getOrderByElements());
 
-        if (delete.getJoins() != null) {
-            v.validateOptionalJoins(delete.getJoins());
-        }
+        v.validateOptionalJoins(delete.getJoins());
 
         if (delete.getLimit() != null) {
             getValidator(LimitValidator.class).validate(delete.getLimit());
