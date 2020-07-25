@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.parser.feature;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public interface FeatureSet {
@@ -21,5 +22,12 @@ public interface FeatureSet {
      */
     default boolean contains(Feature feature) {
         return getFeatures().contains(feature);
+    }
+
+    /**
+     * @return a new {@link HashSet} with a copy of supported features
+     */
+    default Set<Feature> getFeaturesClone() {
+        return new HashSet<>(getFeatures());
     }
 }

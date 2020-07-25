@@ -15,6 +15,16 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-select.html
                     Feature.select,
                     Feature.selectGroupBy,
+                    Feature.join,
+                    Feature.joinSimple,
+                    Feature.joinRight,
+                    Feature.joinFull,
+                    Feature.joinLeft,
+                    Feature.joinCross,
+                    Feature.joinOuter,
+                    Feature.joinInner,
+                    Feature.joinUsingColumns,
+
                     // https://www.postgresql.org/docs/current/queries-limit.html
                     Feature.limit,
                     Feature.limitAll, //

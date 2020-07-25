@@ -101,6 +101,22 @@ public enum Feature {
      */
     fetchNext,
 
+    join,
+    joinOuterSimple,
+    joinSimple,
+    joinRight,
+    joinNatural,
+    joinFull,
+    joinLeft,
+    joinCross,
+    joinOuter,
+    joinSemi,
+    joinInner,
+    joinStaight,
+    joinApply,
+    joinWindow,
+    joinUsingColumns,
+
     skip,
     first,
     top,

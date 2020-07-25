@@ -9,10 +9,13 @@
  */
 package net.sf.jsqlparser.util.validation.feature;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
+
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureSet;
 import net.sf.jsqlparser.util.validation.ValidationException;
@@ -24,19 +27,38 @@ import net.sf.jsqlparser.util.validation.ValidationException;
  */
 public class FeaturesAllowed implements FeatureSetValidation {
 
+    public static final FeaturesAllowed JDBC = new FeaturesAllowed(
+            // always allowed if used with jdbc
+            Feature.jdbcParameter,
+            Feature.jdbcNamedParameter).unmodifyable();
+
     /**
      * all {@link Feature}' within SQL SELECT without modification features like
      * {@link Feature#selectInto}, but jdbc-features like
      * {@link Feature#jdbcParameter} and {@link Feature#jdbcNamedParameter}
      */
     public static final FeaturesAllowed SELECT = new FeaturesAllowed(
-            // always allowed if used with jdbc
-            Feature.jdbcParameter,
-            Feature.jdbcNamedParameter,
             // select features
             Feature.select,
             Feature.selectGroupBy,
             Feature.selectHaving,
+
+            Feature.join,
+            Feature.joinOuterSimple,
+            Feature.joinSimple,
+            Feature.joinRight,
+            Feature.joinNatural,
+            Feature.joinFull,
+            Feature.joinLeft,
+            Feature.joinCross,
+            Feature.joinOuter,
+            Feature.joinSemi,
+            Feature.joinInner,
+            Feature.joinStaight,
+            Feature.joinApply,
+            Feature.joinWindow,
+            Feature.joinUsingColumns,
+
             Feature.limit,
             Feature.limitNull,
             Feature.limitAll,
@@ -81,25 +103,82 @@ public class FeaturesAllowed implements FeatureSetValidation {
 
     private Set<Feature> features = new HashSet<>();
 
-    public FeaturesAllowed(FeatureSet... s) {
-        add(s);
+    /**
+     * @param features
+     */
+    public FeaturesAllowed(Feature... features) {
+        add(features);
     }
 
-    public FeaturesAllowed(Feature... f) {
-        add(f);
-    }
-
-    public FeaturesAllowed add(FeatureSet... s) {
-        Stream.of(s).map(FeatureSet::getFeatures).forEach(fs -> features.addAll(fs));
+    /**
+     * @param featureSets
+     * @return <code>this</code>
+     */
+    public FeaturesAllowed add(FeatureSet... featureSets) {
+        Stream.of(featureSets).map(FeatureSet::getFeatures).forEach(fs -> features.addAll(fs));
         return this;
     }
 
-    public FeaturesAllowed add(Feature... f) {
-        Stream.of(f).forEach(features::add);
+    /**
+     * @param features
+     * @return <code>this</code>
+     */
+    public FeaturesAllowed add(Feature... features) {
+        Collections.addAll(this.features, features);
         return this;
     }
 
-    private FeaturesAllowed unmodifyable() {
+    /**
+     * @param features
+     * @return <code>this</code>
+     */
+    public FeaturesAllowed add(Collection<Feature> features) {
+        this.features.addAll(features);
+        return this;
+    }
+
+    /**
+     * @param featureSets
+     * @return <code>this</code>
+     */
+    public FeaturesAllowed remove(FeatureSet... featureSets) {
+        Stream.of(featureSets).map(FeatureSet::getFeatures).forEach(fs -> features.removeAll(fs));
+        return this;
+    }
+
+    /**
+     * @param features
+     * @return <code>this</code>
+     */
+    public FeaturesAllowed remove(Feature... features) {
+        this.features.removeAll(Arrays.asList(features));
+        return this;
+    }
+
+    /**
+     * @param features
+     * @return <code>this</code>
+     */
+    public FeaturesAllowed remove(Collection<Feature> features) {
+        this.features.removeAll(features);
+        return this;
+    }
+
+    /**
+     * @return returns a modifiable copy of this {@link FeaturesAllowed} object
+     * @see #unmodifyable()
+     */
+    public FeaturesAllowed copy() {
+        return new FeaturesAllowed().add(getFeatures());
+    }
+
+    /**
+     * makes the inner {@link Feature}-set unmodifiable
+     *
+     * @return <code>this</code>
+     * @see #copy()
+     */
+    public FeaturesAllowed unmodifyable() {
         this.features = Collections.unmodifiableSet(features);
         return this;
     }

@@ -102,7 +102,7 @@ public class ValidationTest {
 
         String stmt = "UPDATE tab1 t1 SET t1.ref = ? WHERE t1.id = ?";
         List<ValidationError> errors = ValidationUtil.validate(
-                Arrays.asList(DatabaseType.POSTGRESQL, FeaturesAllowed.SELECT), stmt);
+                Arrays.asList(DatabaseType.POSTGRESQL, FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC)), stmt);
 
         assertNotNull(errors);
         assertEquals(1, errors.size());

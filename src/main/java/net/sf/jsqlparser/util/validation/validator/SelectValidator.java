@@ -219,66 +219,30 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
     }
 
     public void validateOptionalJoin(Join join) {
-        if (join != null) {
-            //        if (join.isSimple() && join.isOuter()) {
-            //            errors.append(", OUTER ");
-            //        } else if (join.isSimple()) {
-            //            errors.append(", ");
-            //        } else {
-            //
-            //            if (join.isRight()) {
-            //                errors.append(" RIGHT");
-            //            } else if (join.isNatural()) {
-            //                errors.append(" NATURAL");
-            //            } else if (join.isFull()) {
-            //                errors.append(" FULL");
-            //            } else if (join.isLeft()) {
-            //                errors.append(" LEFT");
-            //            } else if (join.isCross()) {
-            //                errors.append(" CROSS");
-            //            }
-            //
-            //            if (join.isOuter()) {
-            //                errors.append(" OUTER");
-            //            } else if (join.isInner()) {
-            //                errors.append(" INNER");
-            //            } else if (join.isSemi()) {
-            //                errors.append(" SEMI");
-            //            }
-            //
-            //            if (join.isStraight()) {
-            //                errors.append(" STRAIGHT_JOIN ");
-            //            } else if (join.isApply()) {
-            //                errors.append(" APPLY ");
-            //            } else {
-            //                errors.append(" JOIN ");
-            //            }
-            //
-            //        }
-            //
-            //        FromItem fromItem = join.getRightItem();
-            //        fromItem.accept(this);
-            //        if (join.isWindowJoin()) {
-            //            errors.append(" WITHIN ");
-            //            errors.append(join.getJoinWindow().toString());
-            //        }
-            //        if (join.getOnExpression() != null) {
-            //            errors.append(" ON ");
-            //            join.getOnExpression().accept(expressionVisitor);
-            //        }
-            //        if (join.getUsingColumns() != null) {
-            //            errors.append(" USING (");
-            //            for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator.hasNext();) {
-            //                Column column = iterator.next();
-            //                errors.append(column.toString());
-            //                if (iterator.hasNext()) {
-            //                    errors.append(", ");
-            //                }
-            //            }
-            //            errors.append(")");
-            //        }
-        }
 
+        if (join != null) {
+            for (ValidationCapability c : getCapabilities()) {
+                validateFeature(c, Feature.join);
+                validateFeature(c, join.isSimple() && join.isOuter(), Feature.joinOuterSimple);
+                validateFeature(c, join.isSimple(), Feature.joinSimple);
+                validateFeature(c, join.isRight(), Feature.joinRight);
+                validateFeature(c, join.isNatural(), Feature.joinNatural);
+                validateFeature(c, join.isFull(), Feature.joinFull);
+                validateFeature(c, join.isLeft(), Feature.joinLeft);
+                validateFeature(c, join.isCross(), Feature.joinCross);
+                validateFeature(c, join.isOuter(), Feature.joinOuter);
+                validateFeature(c, join.isInner(), Feature.joinInner);
+                validateFeature(c, join.isSemi(), Feature.joinSemi);
+                validateFeature(c, join.isStraight(), Feature.joinStaight);
+                validateFeature(c, join.isApply(), Feature.joinApply);
+                validateFeature(c, join.isWindowJoin(), Feature.joinWindow);
+                validateOptionalFeature(c, join.getUsingColumns(), Feature.joinUsingColumns);
+            }
+
+            validateOptionalFromItem(join.getRightItem());
+            validateOptionalExpression(join.getOnExpression());
+            validateOptionalExpressions(join.getUsingColumns());
+        }
     }
 
     @Override
