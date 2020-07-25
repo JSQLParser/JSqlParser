@@ -14,6 +14,21 @@ public enum H2Version implements Version {
                     Feature.jdbcNamedParameter,
                     // http://h2database.com/html/commands.html#select
                     Feature.select,
+                    Feature.selectGroupBy,
+                    // https://h2database.com/html/grammar.html?#table_expression
+                    // https://h2database.com/html/grammar.html?#join_specification
+                    Feature.join,
+                    Feature.joinSimple,
+                    Feature.joinRight,
+                    Feature.joinFull,
+                    Feature.joinLeft,
+                    Feature.joinCross,
+                    Feature.joinOuter,
+                    Feature.joinInner,
+                    Feature.joinNatural,
+                    Feature.joinUsingColumns,
+
+                    Feature.distinct,
                     // http://h2database.com/html/commands.html#insert
                     Feature.insert,
                     // http://h2database.com/html/commands.html#update

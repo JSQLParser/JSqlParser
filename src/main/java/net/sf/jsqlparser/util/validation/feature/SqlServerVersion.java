@@ -15,6 +15,18 @@ public enum SqlServerVersion implements Version {
                     // common features
                     Feature.select,
                     Feature.selectGroupBy,
+                    Feature.distinct,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/queries/from-transact-sql?view=sql-server-ver15#syntax
+                    Feature.join,
+                    Feature.joinSimple,
+                    Feature.joinRight,
+                    Feature.joinFull,
+                    Feature.joinLeft,
+                    Feature.joinCross,
+                    Feature.joinOuter,
+                    Feature.joinInner,
+                    Feature.joinApply,
+
                     Feature.insert,
                     Feature.update,
                     Feature.delete,
