@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -93,7 +94,14 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         Map<ValidationCapability, Set<ValidationException>> map = new HashMap<>();
         map.putAll(errors);
         for (AbstractValidator<?> v : validatorForwards.values()) {
-            map.putAll(v.getValidationErrors());
+            for (Entry<ValidationCapability, Set<ValidationException>> e : v.getValidationErrors().entrySet()) {
+                Set<ValidationException> set = map.get(e.getKey());
+                if (set == null) {
+                    map.put(e.getKey(), e.getValue());
+                } else {
+                    set.addAll(e.getValue());
+                }
+            }
         }
         return map;
     }
