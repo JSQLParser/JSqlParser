@@ -77,16 +77,14 @@ public class ForeignKeyIndex extends NamedConstraint {
 
     @Override
     public String toString() {
-        String referenceOptions = "";
+        StringBuilder b = new StringBuilder(super.toString());
         if (onDeleteReferentialAction != null) {
-            referenceOptions += " ON DELETE " + onDeleteReferentialAction.getAction();
+            b.append(" ON DELETE ").append(onDeleteReferentialAction.getAction());
         }
         if (onUpdateReferentialAction != null) {
-            referenceOptions += " ON UPDATE " + onUpdateReferentialAction.getAction();
+            b.append(" ON UPDATE ").append(onUpdateReferentialAction.getAction());
         }
-        return super.toString()
-                + " REFERENCES " + table + PlainSelect.
-                        getStringList(getReferencedColumnNames(), true, true)
-                + referenceOptions;
+        return b.append(" REFERENCES ").append(table)
+                .append(PlainSelect.getStringList(getReferencedColumnNames(), true, true)).toString();
     }
 }

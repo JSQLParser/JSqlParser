@@ -365,11 +365,11 @@ public class AlterExpression {
                     .append(fkSourceTable).append(" (").append(
                             PlainSelect.getStringList(fkSourceColumns))
                     .append(")");
-            if (getOnUpdateReferentialAction() != null) {
-                b.append(" ON UPDATE ").append(getOnUpdateReferentialAction().getAction());
-            }
             if (getOnDeleteReferentialAction() != null) {
                 b.append(" ON DELETE ").append(getOnDeleteReferentialAction().getAction());
+            }
+            if (getOnUpdateReferentialAction() != null) {
+                b.append(" ON UPDATE ").append(getOnUpdateReferentialAction().getAction());
             }
         } else if (index != null) {
             b.append(index);
