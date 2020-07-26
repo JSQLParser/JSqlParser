@@ -590,17 +590,17 @@ public class AlterTest {
         AlterExpression alterExpression = parsed.getAlterExpressions().get(0);
         ForeignKeyIndex index = (ForeignKeyIndex) alterExpression.getIndex();
 
+        // remove line if deprecated methods are removed.
+        index.setOnDeleteReferenceOption(index.getOnDeleteReferenceOption());
         if (onDelete != null) {
-            // remove line if deprecated methods are removed.
-            index.setOnDeleteReferenceOption(index.getOnDeleteReferenceOption());
             assertEquals(onDelete, index.getOnDeleteReferentialAction());
         } else {
             assertNull(index.getOnDeleteReferentialAction());
         }
 
+        // remove line if deprecated methods are removed.
+        index.setOnUpdateReferenceOption(index.getOnUpdateReferenceOption());
         if (onUpdate != null) {
-            // remove line if deprecated methods are removed.
-            index.setOnUpdateReferenceOption(index.getOnUpdateReferenceOption());
             assertEquals(onUpdate, index.getOnUpdateReferentialAction());
         } else {
             assertNull(index.getOnUpdateReferentialAction());
