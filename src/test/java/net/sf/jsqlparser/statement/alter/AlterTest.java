@@ -487,4 +487,22 @@ public class AlterTest {
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
+    @Test
+    public void testIssue985_1() throws JSQLParserException {
+        String statement = "ALTER TABLE texto_fichero " +
+                "ADD CONSTRAINT texto_fichero_fichero_id_foreign FOREIGN KEY (fichero_id) REFERENCES fichero(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+                +
+                "ADD CONSTRAINT texto_fichero_texto_id_foreign FOREIGN KEY (texto_id) REFERENCES texto(id) ON DELETE CASCADE ON UPDATE CASCADE";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testIssue985_2() throws JSQLParserException {
+        String statement = "ALTER TABLE texto " +
+                "ADD CONSTRAINT texto_autor_id_foreign FOREIGN KEY (autor_id) REFERENCES users(id) ON UPDATE CASCADE, "
+                +
+                "ADD CONSTRAINT texto_tipotexto_id_foreign FOREIGN KEY (tipotexto_id) REFERENCES tipotexto(id) ON UPDATE CASCADE";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
 }
