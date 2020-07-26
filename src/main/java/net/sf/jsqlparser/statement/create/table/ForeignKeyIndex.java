@@ -55,22 +55,24 @@ public class ForeignKeyIndex extends NamedConstraint {
 
     @Deprecated
     public String getOnDeleteReferenceOption() {
-        return onDeleteReferentialAction.toString();
+        return onDeleteReferentialAction == null ? null : onDeleteReferentialAction.getAction();
     }
 
     @Deprecated
     public void setOnDeleteReferenceOption(String onDeleteReferenceOption) {
-        setOnDeleteReferentialAction(ReferentialAction.byAction(onDeleteReferenceOption));
+        setOnDeleteReferentialAction(
+                onDeleteReferenceOption == null ? null : ReferentialAction.byAction(onDeleteReferenceOption));
     }
 
     @Deprecated
     public String getOnUpdateReferenceOption() {
-        return onUpdateReferentialAction.toString();
+        return onUpdateReferentialAction == null ? null : onUpdateReferentialAction.getAction();
     }
 
     @Deprecated
     public void setOnUpdateReferenceOption(String onUpdateReferenceOption) {
-        setOnUpdateReferentialAction(ReferentialAction.byAction(onUpdateReferenceOption));
+        setOnUpdateReferentialAction(
+                onUpdateReferenceOption == null ? null : ReferentialAction.byAction(onUpdateReferenceOption));
     }
 
     @Override

@@ -25,7 +25,7 @@ public class AlterExpression {
     private String optionalSpecifier;
     private String columnName;
     private String columnOldName;
-    //private ColDataType dataType;
+    // private ColDataType dataType;
 
     private List<ColumnDataType> colDataTypeList;
     private List<ColumnDropNotNull> columnDropNotNullList;
@@ -105,7 +105,7 @@ public class AlterExpression {
      */
     @Deprecated
     public void setOnDeleteCascade(boolean onDeleteCascade) {
-        setOnDeleteReferentialAction(ReferentialAction.CASCADE);
+        setOnDeleteReferentialAction(onDeleteCascade ? ReferentialAction.CASCADE : null);
     }
 
     /**
@@ -123,7 +123,7 @@ public class AlterExpression {
      */
     @Deprecated
     public void setOnDeleteRestrict(boolean onDeleteRestrict) {
-        setOnDeleteReferentialAction(ReferentialAction.RESTRICT);
+        setOnDeleteReferentialAction(onDeleteRestrict ? ReferentialAction.RESTRICT : null);
     }
 
     /**
@@ -141,7 +141,7 @@ public class AlterExpression {
      */
     @Deprecated
     public void setOnDeleteSetNull(boolean onDeleteSetNull) {
-        setOnDeleteReferentialAction(ReferentialAction.SET_NULL);
+        setOnDeleteReferentialAction(onDeleteSetNull ? ReferentialAction.SET_NULL : null);
     }
 
     public List<String> getFkColumns() {
@@ -361,9 +361,10 @@ public class AlterExpression {
             }
             b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
-            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).
-                    append(") REFERENCES ").append(fkSourceTable).append(" (").append(
-                    PlainSelect.getStringList(fkSourceColumns)).append(")");
+            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).append(") REFERENCES ")
+                    .append(fkSourceTable).append(" (").append(
+                            PlainSelect.getStringList(fkSourceColumns))
+                    .append(")");
             if (getOnUpdateReferentialAction() != null) {
                 b.append(" ON UPDATE ").append(getOnUpdateReferentialAction().getAction());
             }
