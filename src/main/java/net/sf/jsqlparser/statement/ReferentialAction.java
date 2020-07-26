@@ -23,7 +23,9 @@ public enum ReferentialAction {
     private String action;
 
     /**
-     * @return the {@link ReferentialAction}, if found, otherwise <code>null</code>
+     * @param action
+     * @return the {@link ReferentialAction}, if found, otherwise
+     *         <code>null</code>
      */
     public static ReferentialAction byAction(String action) {
         for (ReferentialAction a : values()) {
