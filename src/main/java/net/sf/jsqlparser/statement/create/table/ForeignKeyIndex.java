@@ -60,8 +60,7 @@ public class ForeignKeyIndex extends NamedConstraint {
 
     @Deprecated
     public void setOnDeleteReferenceOption(String onDeleteReferenceOption) {
-        setOnDeleteReferentialAction(
-                onDeleteReferenceOption == null ? null : ReferentialAction.byAction(onDeleteReferenceOption));
+        setOnDeleteReferentialAction(ReferentialAction.byAction(onDeleteReferenceOption));
     }
 
     @Deprecated
@@ -71,20 +70,19 @@ public class ForeignKeyIndex extends NamedConstraint {
 
     @Deprecated
     public void setOnUpdateReferenceOption(String onUpdateReferenceOption) {
-        setOnUpdateReferentialAction(
-                onUpdateReferenceOption == null ? null : ReferentialAction.byAction(onUpdateReferenceOption));
+        setOnUpdateReferentialAction(ReferentialAction.byAction(onUpdateReferenceOption));
     }
 
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder(super.toString());
+        StringBuilder b = new StringBuilder(super.toString()).append(" REFERENCES ").append(table)
+                .append(PlainSelect.getStringList(getReferencedColumnNames(), true, true));
         if (onDeleteReferentialAction != null) {
             b.append(" ON DELETE ").append(onDeleteReferentialAction.getAction());
         }
         if (onUpdateReferentialAction != null) {
             b.append(" ON UPDATE ").append(onUpdateReferentialAction.getAction());
         }
-        return b.append(" REFERENCES ").append(table)
-                .append(PlainSelect.getStringList(getReferencedColumnNames(), true, true)).toString();
+        return b.toString();
     }
 }
