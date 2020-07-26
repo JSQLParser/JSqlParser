@@ -447,61 +447,70 @@ public class AlterTest {
 
     @Test
     public void testAlterOnUpdateCascade() throws JSQLParserException {
-        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON UPDATE CASCADE";
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON UPDATE CASCADE";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
     @Test
     public void testAlterOnUpdateSetNull() throws JSQLParserException {
-        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON UPDATE SET NULL";
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON UPDATE SET NULL";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
     @Test
     public void testAlterOnUpdateRestrict() throws JSQLParserException {
-        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON UPDATE RESTRICT";
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON UPDATE RESTRICT";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
     @Test
     public void testAlterOnUpdateSetDefault() throws JSQLParserException {
-        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON UPDATE SET DEFAULT";
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON UPDATE SET DEFAULT";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
     @Test
     public void testAlterOnUpdateNoAction() throws JSQLParserException {
-        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON UPDATE NO ACTION";
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON UPDATE NO ACTION";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
     @Test
     public void testAlterOnDeleteSetDefault() throws JSQLParserException {
-        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON DELETE SET DEFAULT";
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON DELETE SET DEFAULT";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
     @Test
     public void testAlterOnDeleteNoAction() throws JSQLParserException {
-        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON DELETE NO ACTION";
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON DELETE NO ACTION";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
     @Test
     public void testIssue985_1() throws JSQLParserException {
         String statement = "ALTER TABLE texto_fichero " +
-                "ADD CONSTRAINT texto_fichero_fichero_id_foreign FOREIGN KEY (fichero_id) REFERENCES fichero(id) ON DELETE CASCADE ON UPDATE CASCADE, "
-                +
-                "ADD CONSTRAINT texto_fichero_texto_id_foreign FOREIGN KEY (texto_id) REFERENCES texto(id) ON DELETE CASCADE ON UPDATE CASCADE";
+                "ADD CONSTRAINT texto_fichero_fichero_id_foreign FOREIGN KEY (fichero_id) "
+                + "REFERENCES fichero(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+                + "ADD CONSTRAINT texto_fichero_texto_id_foreign FOREIGN KEY (texto_id) "
+                + "REFERENCES texto(id) ON DELETE CASCADE ON UPDATE CASCADE";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
     @Test
     public void testIssue985_2() throws JSQLParserException {
         String statement = "ALTER TABLE texto " +
-                "ADD CONSTRAINT texto_autor_id_foreign FOREIGN KEY (autor_id) REFERENCES users(id) ON UPDATE CASCADE, "
-                +
-                "ADD CONSTRAINT texto_tipotexto_id_foreign FOREIGN KEY (tipotexto_id) REFERENCES tipotexto(id) ON UPDATE CASCADE";
+                "ADD CONSTRAINT texto_autor_id_foreign FOREIGN KEY (autor_id) "
+                + "REFERENCES users(id) ON UPDATE CASCADE, "
+                + "ADD CONSTRAINT texto_tipotexto_id_foreign FOREIGN KEY (tipotexto_id) "
+                + "REFERENCES tipotexto(id) ON UPDATE CASCADE";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
