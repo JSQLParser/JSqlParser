@@ -11,14 +11,15 @@ package net.sf.jsqlparser.statement.create.table;
 
 import java.util.List;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class ForeignKeyIndex extends NamedConstraint {
 
     private Table table;
     private List<String> referencedColumnNames;
-    private String onDeleteReferenceOption;
-    private String onUpdateReferenceOption;
+    private ReferentialAction onDeleteReferentialAction;
+    private ReferentialAction onUpdateReferentialAction;
 
     public Table getTable() {
         return table;
@@ -36,30 +37,50 @@ public class ForeignKeyIndex extends NamedConstraint {
         this.referencedColumnNames = referencedColumnNames;
     }
 
+    public ReferentialAction getOnDeleteReferentialAction() {
+        return onDeleteReferentialAction;
+    }
+
+    public void setOnDeleteReferentialAction(ReferentialAction onDeleteReferentialAction) {
+        this.onDeleteReferentialAction = onDeleteReferentialAction;
+    }
+
+    public ReferentialAction getOnUpdateReferentialAction() {
+        return onUpdateReferentialAction;
+    }
+
+    public void setOnUpdateReferentialAction(ReferentialAction onUpdateReferentialAction) {
+        this.onUpdateReferentialAction = onUpdateReferentialAction;
+    }
+
+    @Deprecated
     public String getOnDeleteReferenceOption() {
-        return onDeleteReferenceOption;
+        return onDeleteReferentialAction.toString();
     }
 
+    @Deprecated
     public void setOnDeleteReferenceOption(String onDeleteReferenceOption) {
-        this.onDeleteReferenceOption = onDeleteReferenceOption;
+        setOnDeleteReferentialAction(ReferentialAction.byAction(onDeleteReferenceOption));
     }
 
+    @Deprecated
     public String getOnUpdateReferenceOption() {
-        return onUpdateReferenceOption;
+        return onUpdateReferentialAction.toString();
     }
 
+    @Deprecated
     public void setOnUpdateReferenceOption(String onUpdateReferenceOption) {
-        this.onUpdateReferenceOption = onUpdateReferenceOption;
+        setOnUpdateReferentialAction(ReferentialAction.byAction(onUpdateReferenceOption));
     }
 
     @Override
     public String toString() {
         String referenceOptions = "";
-        if (onDeleteReferenceOption != null) {
-            referenceOptions += " ON DELETE " + onDeleteReferenceOption;
+        if (onDeleteReferentialAction != null) {
+            referenceOptions += " ON DELETE " + onDeleteReferentialAction.getAction();
         }
-        if (onUpdateReferenceOption != null) {
-            referenceOptions += " ON UPDATE " + onUpdateReferenceOption;
+        if (onUpdateReferentialAction != null) {
+            referenceOptions += " ON UPDATE " + onUpdateReferentialAction.getAction();
         }
         return super.toString()
                 + " REFERENCES " + table + PlainSelect.

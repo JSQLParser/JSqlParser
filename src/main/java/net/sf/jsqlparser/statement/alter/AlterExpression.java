@@ -12,6 +12,8 @@ package net.sf.jsqlparser.statement.alter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
@@ -34,9 +36,10 @@ public class AlterExpression {
     private Index index = null;
     private String constraintName;
     private boolean constraintIfExists;
-    private boolean onDeleteRestrict;
-    private boolean onDeleteSetNull;
-    private boolean onDeleteCascade;
+
+    private ReferentialAction onDeleteReferentialAction;
+    private ReferentialAction onUpdateReferentialAction;
+
     private List<String> fkColumns;
     private String fkSourceTable;
     private List<String> fkSourceColumns;
@@ -71,28 +74,74 @@ public class AlterExpression {
         this.optionalSpecifier = optionalSpecifier;
     }
 
+    public ReferentialAction getOnDeleteReferentialAction() {
+        return onDeleteReferentialAction;
+    }
+
+    public void setOnDeleteReferentialAction(ReferentialAction onDeleteReferentialAction) {
+        this.onDeleteReferentialAction = onDeleteReferentialAction;
+    }
+
+    public ReferentialAction getOnUpdateReferentialAction() {
+        return onUpdateReferentialAction;
+    }
+
+    public void setOnUpdateReferentialAction(ReferentialAction onUpdateReferentialAction) {
+        this.onUpdateReferentialAction = onUpdateReferentialAction;
+    }
+
+    /**
+     * @return
+     * @deprecated use {@link #getOnDeleteReferentialAction()}
+     */
+    @Deprecated
     public boolean isOnDeleteCascade() {
-        return onDeleteCascade;
+        return ReferentialAction.CASCADE.equals(onDeleteReferentialAction);
     }
 
+    /**
+     * @return
+     * @deprecated use {@link #setOnDeleteReferentialAction(ReferentialAction)
+     */
+    @Deprecated
     public void setOnDeleteCascade(boolean onDeleteCascade) {
-        this.onDeleteCascade = onDeleteCascade;
+        setOnDeleteReferentialAction(ReferentialAction.CASCADE);
     }
 
+    /**
+     * @return
+     * @deprecated use {@link #getOnDeleteReferentialAction()}
+     */
+    @Deprecated
     public boolean isOnDeleteRestrict() {
-        return onDeleteRestrict;
+        return ReferentialAction.RESTRICT.equals(onDeleteReferentialAction);
     }
 
+    /**
+     * @return
+     * @deprecated use {@link #setOnDeleteReferentialAction(ReferentialAction)
+     */
+    @Deprecated
     public void setOnDeleteRestrict(boolean onDeleteRestrict) {
-        this.onDeleteRestrict = onDeleteRestrict;
+        setOnDeleteReferentialAction(ReferentialAction.RESTRICT);
     }
 
+    /**
+     * @return
+     * @deprecated use {@link #getOnDeleteReferentialAction()}
+     */
+    @Deprecated
     public boolean isOnDeleteSetNull() {
-        return onDeleteSetNull;
+        return ReferentialAction.SET_NULL.equals(onDeleteReferentialAction);
     }
 
+    /**
+     * @return
+     * @deprecated use {@link #setOnDeleteReferentialAction(ReferentialAction)
+     */
+    @Deprecated
     public void setOnDeleteSetNull(boolean onDeleteSetNull) {
-        this.onDeleteSetNull = onDeleteSetNull;
+        setOnDeleteReferentialAction(ReferentialAction.SET_NULL);
     }
 
     public List<String> getFkColumns() {
@@ -315,12 +364,11 @@ public class AlterExpression {
             b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).
                     append(") REFERENCES ").append(fkSourceTable).append(" (").append(
                     PlainSelect.getStringList(fkSourceColumns)).append(")");
-            if (isOnDeleteCascade()) {
-                b.append(" ON DELETE CASCADE");
-            } else if (isOnDeleteRestrict()) {
-                b.append(" ON DELETE RESTRICT");
-            } else if (isOnDeleteSetNull()) {
-                b.append(" ON DELETE SET NULL");
+            if (getOnUpdateReferentialAction() != null) {
+                b.append(" ON UPDATE ").append(getOnUpdateReferentialAction().getAction());
+            }
+            if (getOnDeleteReferentialAction() != null) {
+                b.append(" ON DELETE ").append(getOnDeleteReferentialAction().getAction());
             }
         } else if (index != null) {
             b.append(index);

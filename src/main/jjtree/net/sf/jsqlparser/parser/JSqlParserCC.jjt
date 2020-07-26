@@ -4103,13 +4103,31 @@ CreateTable CreateTable():
                             indexes.add(fkIndex);
                         }
                         [LOOKAHEAD(2) (<K_ON> <K_DELETE>
-                                  (<K_CASCADE> {fkIndex.setOnDeleteReferenceOption("CASCADE");}
+                                  (<K_CASCADE> {fkIndex.setOnDeleteReferentialAction(ReferentialAction.CASCADE);}
                                    |
-                                   <K_NO> <K_ACTION> {fkIndex.setOnDeleteReferenceOption("NO ACTION");}
+                                   <K_RESTRICT> {fkIndex.setOnDeleteReferentialAction(ReferentialAction.RESTRICT);}
                                    |
-                                   <K_SET> <K_NULL> {fkIndex.setOnDeleteReferenceOption("SET NULL");}
+                                   <K_NO> <K_ACTION> {fkIndex.setOnDeleteReferentialAction(ReferentialAction.NO_ACTION);}
+                                   |
+                                   <K_SET> (
+										<K_NULL> {fkIndex.setOnDeleteReferentialAction(ReferentialAction.SET_NULL);}
+                        		    	|
+                        		   		<K_DEFAULT> {fkIndex.setOnDeleteReferentialAction(ReferentialAction.SET_DEFAULT);}
+                        		   		   )
                                     ))]
-                        [LOOKAHEAD(2) (<K_ON> <K_UPDATE> (<K_CASCADE> {fkIndex.setOnUpdateReferenceOption("CASCADE");}|<K_NO> <K_ACTION> {fkIndex.setOnUpdateReferenceOption("NO ACTION");}))]
+                        [LOOKAHEAD(2) (<K_ON> <K_UPDATE>
+                        		  (<K_CASCADE> {fkIndex.setOnUpdateReferentialAction(ReferentialAction.CASCADE);}
+                        		  	|
+                        		   <K_RESTRICT> {fkIndex.setOnUpdateReferentialAction(ReferentialAction.RESTRICT);}
+                        		  	|
+                        		   <K_NO> <K_ACTION> {fkIndex.setOnUpdateReferentialAction(ReferentialAction.NO_ACTION);}
+                        		    |
+                        		   <K_SET> (
+										<K_NULL> {fkIndex.setOnUpdateReferentialAction(ReferentialAction.SET_NULL);}
+                        		    	|
+                        		   		<K_DEFAULT> {fkIndex.setOnUpdateReferentialAction(ReferentialAction.SET_DEFAULT);}
+                        		   		   )
+                        		   ))]
                 )
                 |
                  LOOKAHEAD(3)(
@@ -4606,10 +4624,33 @@ AlterExpression AlterExpression():
             ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); columnNames = null; }
                  <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
                         { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
-                [<K_ON> <K_DELETE>
-                                (<K_CASCADE> { alterExp.setOnDeleteCascade(true); }
-                                | <K_RESTRICT> { alterExp.setOnDeleteRestrict(true); }
-                                | <K_SET> <K_NULL> { alterExp.setOnDeleteSetNull(true); } ) ]
+                                
+                [LOOKAHEAD(2) (<K_ON> <K_DELETE>
+                                  (<K_CASCADE> {alterExp.setOnDeleteReferentialAction(ReferentialAction.CASCADE);}
+                                   |
+                                   <K_RESTRICT> {alterExp.setOnDeleteReferentialAction(ReferentialAction.RESTRICT);}
+                                   |
+                                   <K_NO> <K_ACTION> {alterExp.setOnDeleteReferentialAction(ReferentialAction.NO_ACTION);}
+                                   |
+                                   <K_SET> (
+										<K_NULL> {alterExp.setOnDeleteReferentialAction(ReferentialAction.SET_NULL);}
+                        		    	|
+                        		   		<K_DEFAULT> {alterExp.setOnDeleteReferentialAction(ReferentialAction.SET_DEFAULT);}
+                        		   		   )
+                                    ))]
+                [LOOKAHEAD(2) (<K_ON> <K_UPDATE> 
+                        		  (<K_CASCADE> {alterExp.setOnUpdateReferentialAction(ReferentialAction.CASCADE);}
+                        		  	|
+                        		   <K_RESTRICT> {alterExp.setOnUpdateReferentialAction(ReferentialAction.RESTRICT);}
+                        		  	|
+                        		   <K_NO> <K_ACTION> {alterExp.setOnUpdateReferentialAction(ReferentialAction.NO_ACTION);}
+                        		    |
+                        		   <K_SET> (
+										<K_NULL> {alterExp.setOnUpdateReferentialAction(ReferentialAction.SET_NULL);}
+                        		    	|
+                        		   		<K_DEFAULT> {alterExp.setOnUpdateReferentialAction(ReferentialAction.SET_DEFAULT);}
+                        		   		   )
+                        		   ))]
             )
             |
             (
@@ -4630,10 +4671,33 @@ AlterExpression AlterExpression():
                         fkIndex.setReferencedColumnNames(columnNames);
                         alterExp.setIndex(fkIndex);
                     }
-                    [<K_ON> <K_DELETE>
-                                (<K_CASCADE> { fkIndex.setOnDeleteReferenceOption("CASCADE"); }
-                                | <K_RESTRICT> { fkIndex.setOnDeleteReferenceOption("RESTRICT"); }
-                                | <K_SET> <K_NULL> { fkIndex.setOnDeleteReferenceOption("SET NULL"); } ) ]
+                                
+                [LOOKAHEAD(2) (<K_ON> <K_DELETE>
+                                  (<K_CASCADE> {fkIndex.setOnDeleteReferentialAction(ReferentialAction.CASCADE);}
+                                   |
+                                   <K_RESTRICT> {fkIndex.setOnDeleteReferentialAction(ReferentialAction.RESTRICT);}
+                                   |
+                                   <K_NO> <K_ACTION> {fkIndex.setOnDeleteReferentialAction(ReferentialAction.NO_ACTION);}
+                                   |
+                                   <K_SET> (
+										<K_NULL> {fkIndex.setOnDeleteReferentialAction(ReferentialAction.SET_NULL);}
+                        		    	|
+                        		   		<K_DEFAULT> {fkIndex.setOnDeleteReferentialAction(ReferentialAction.SET_DEFAULT);}
+                        		   		   )
+                                    ))]
+                [LOOKAHEAD(2) (<K_ON> <K_UPDATE> 
+                        		  (<K_CASCADE> {fkIndex.setOnUpdateReferentialAction(ReferentialAction.CASCADE);}
+                        		  	|
+                        		   <K_RESTRICT> {fkIndex.setOnUpdateReferentialAction(ReferentialAction.RESTRICT);}
+                        		  	|
+                        		   <K_NO> <K_ACTION> {fkIndex.setOnUpdateReferentialAction(ReferentialAction.NO_ACTION);}
+                        		    |
+                        		   <K_SET> (
+										<K_NULL> {fkIndex.setOnUpdateReferentialAction(ReferentialAction.SET_NULL);}
+                        		    	|
+                        		   		<K_DEFAULT> {fkIndex.setOnUpdateReferentialAction(ReferentialAction.SET_DEFAULT);}
+                        		   		   )
+                        		   ))]
                     constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                 )
                 |

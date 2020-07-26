@@ -9,18 +9,21 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
-import java.util.Arrays;
-import java.util.List;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.List;
+
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import org.junit.Test;
 
 public class AlterTest {
@@ -441,4 +444,47 @@ public class AlterTest {
         assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE texto_fichero MODIFY id COMMENT 'some comment'");
     }
+
+    @Test
+    public void testAlterOnUpdateCascade() throws JSQLParserException {
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON UPDATE CASCADE";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testAlterOnUpdateSetNull() throws JSQLParserException {
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON UPDATE SET NULL";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testAlterOnUpdateRestrict() throws JSQLParserException {
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON UPDATE RESTRICT";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testAlterOnUpdateSetDefault() throws JSQLParserException {
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON UPDATE SET DEFAULT";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testAlterOnUpdateNoAction() throws JSQLParserException {
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON UPDATE NO ACTION";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testAlterOnDeleteSetDefault() throws JSQLParserException {
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON DELETE SET DEFAULT";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testAlterOnDeleteNoAction() throws JSQLParserException {
+        String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) REFERENCES reftab(id) ON DELETE NO ACTION";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
 }
