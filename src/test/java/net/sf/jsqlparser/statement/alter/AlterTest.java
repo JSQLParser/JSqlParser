@@ -453,6 +453,12 @@ public class AlterTest {
                 + "REFERENCES reftab(id) ON UPDATE CASCADE";
         Alter parsed = (Alter) CCJSqlParserUtil.parse(statement);
         assertStatementCanBeDeparsedAs(parsed, statement, true);
+        assertReferentialActionOnConstraint(parsed, ReferentialAction.CASCADE, null);
+
+        statement = "ALTER TABLE mytab ADD FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON UPDATE CASCADE";
+        parsed = (Alter) CCJSqlParserUtil.parse(statement);
+        assertStatementCanBeDeparsedAs(parsed, statement, true);
         assertReferentialAction(parsed, ReferentialAction.CASCADE, null);
     }
 
@@ -461,6 +467,12 @@ public class AlterTest {
         String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) "
                 + "REFERENCES reftab(id) ON UPDATE SET NULL";
         Alter parsed = (Alter) CCJSqlParserUtil.parse(statement);
+        assertStatementCanBeDeparsedAs(parsed, statement, true);
+        assertReferentialActionOnConstraint(parsed, ReferentialAction.SET_NULL, null);
+
+        statement = "ALTER TABLE mytab ADD FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON UPDATE SET NULL";
+        parsed = (Alter) CCJSqlParserUtil.parse(statement);
         assertStatementCanBeDeparsedAs(parsed, statement, true);
         assertReferentialAction(parsed, ReferentialAction.SET_NULL, null);
     }
@@ -471,6 +483,12 @@ public class AlterTest {
                 + "REFERENCES reftab(id) ON UPDATE RESTRICT";
         Alter parsed = (Alter) CCJSqlParserUtil.parse(statement);
         assertStatementCanBeDeparsedAs(parsed, statement, true);
+        assertReferentialActionOnConstraint(parsed, ReferentialAction.RESTRICT, null);
+
+        statement = "ALTER TABLE mytab ADD FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON UPDATE RESTRICT";
+        parsed = (Alter) CCJSqlParserUtil.parse(statement);
+        assertStatementCanBeDeparsedAs(parsed, statement, true);
         assertReferentialAction(parsed, ReferentialAction.RESTRICT, null);
     }
 
@@ -479,6 +497,12 @@ public class AlterTest {
         String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) "
                 + "REFERENCES reftab(id) ON UPDATE SET DEFAULT";
         Alter parsed = (Alter) CCJSqlParserUtil.parse(statement);
+        assertStatementCanBeDeparsedAs(parsed, statement, true);
+        assertReferentialActionOnConstraint(parsed, ReferentialAction.SET_DEFAULT, null);
+
+        statement = "ALTER TABLE mytab ADD FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON UPDATE SET DEFAULT";
+        parsed = (Alter) CCJSqlParserUtil.parse(statement);
         assertStatementCanBeDeparsedAs(parsed, statement, true);
         assertReferentialAction(parsed, ReferentialAction.SET_DEFAULT, null);
     }
@@ -489,6 +513,12 @@ public class AlterTest {
                 + "REFERENCES reftab(id) ON UPDATE NO ACTION";
         Alter parsed = (Alter) CCJSqlParserUtil.parse(statement);
         assertStatementCanBeDeparsedAs(parsed, statement, true);
+        assertReferentialActionOnConstraint(parsed, ReferentialAction.NO_ACTION, null);
+
+        statement = "ALTER TABLE mytab ADD FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON UPDATE NO ACTION";
+        parsed = (Alter) CCJSqlParserUtil.parse(statement);
+        assertStatementCanBeDeparsedAs(parsed, statement, true);
         assertReferentialAction(parsed, ReferentialAction.NO_ACTION, null);
     }
 
@@ -497,6 +527,12 @@ public class AlterTest {
         String statement = "ALTER TABLE mytab ADD CONSTRAINT fk_mytab FOREIGN KEY (col) "
                 + "REFERENCES reftab(id) ON DELETE SET DEFAULT";
         Alter parsed = (Alter) CCJSqlParserUtil.parse(statement);
+        assertStatementCanBeDeparsedAs(parsed, statement, true);
+        assertReferentialActionOnConstraint(parsed, null, ReferentialAction.SET_DEFAULT);
+
+        statement = "ALTER TABLE mytab ADD FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON DELETE SET DEFAULT";
+        parsed = (Alter) CCJSqlParserUtil.parse(statement);
         assertStatementCanBeDeparsedAs(parsed, statement, true);
         assertReferentialAction(parsed, null, ReferentialAction.SET_DEFAULT);
     }
@@ -507,6 +543,12 @@ public class AlterTest {
                 + "REFERENCES reftab(id) ON DELETE NO ACTION";
         Alter parsed = (Alter) CCJSqlParserUtil.parse(statement);
         assertStatementCanBeDeparsedAs(parsed, statement, true);
+        assertReferentialActionOnConstraint(parsed, null, ReferentialAction.NO_ACTION);
+
+        statement = "ALTER TABLE mytab ADD FOREIGN KEY (col) "
+                + "REFERENCES reftab(id) ON DELETE NO ACTION";
+        parsed = (Alter) CCJSqlParserUtil.parse(statement);
+        assertStatementCanBeDeparsedAs(parsed, statement, true);
         assertReferentialAction(parsed, null, ReferentialAction.NO_ACTION);
     }
 
@@ -514,12 +556,21 @@ public class AlterTest {
     public void testIssue985_1() throws JSQLParserException {
         String statement = "ALTER TABLE texto_fichero " +
                 "ADD CONSTRAINT texto_fichero_fichero_id_foreign FOREIGN KEY (fichero_id) "
-                + "REFERENCES fichero (id) ON DELETE CASCADE ON UPDATE CASCADE, "
+                + "REFERENCES fichero (id) ON DELETE SET DEFAULT ON UPDATE CASCADE, "
                 + "ADD CONSTRAINT texto_fichero_texto_id_foreign FOREIGN KEY (texto_id) "
-                + "REFERENCES texto(id) ON DELETE CASCADE ON UPDATE CASCADE";
+                + "REFERENCES texto(id) ON DELETE SET DEFAULT ON UPDATE CASCADE";
         Alter parsed = (Alter) CCJSqlParserUtil.parse(statement);
         assertStatementCanBeDeparsedAs(parsed, statement, true);
-        assertReferentialAction(parsed, ReferentialAction.CASCADE, ReferentialAction.CASCADE);
+        assertReferentialActionOnConstraint(parsed, ReferentialAction.CASCADE, ReferentialAction.SET_DEFAULT);
+
+        statement = "ALTER TABLE texto_fichero " +
+                "ADD FOREIGN KEY (fichero_id) "
+                + "REFERENCES fichero (id) ON DELETE SET DEFAULT ON UPDATE CASCADE, "
+                + "ADD FOREIGN KEY (texto_id) "
+                + "REFERENCES texto(id) ON DELETE SET DEFAULT ON UPDATE CASCADE";
+        parsed = (Alter) CCJSqlParserUtil.parse(statement);
+        assertStatementCanBeDeparsedAs(parsed, statement, true);
+        assertReferentialAction(parsed, ReferentialAction.CASCADE, ReferentialAction.SET_DEFAULT);
     }
 
     @Test
@@ -531,10 +582,11 @@ public class AlterTest {
                 + "REFERENCES tipotexto(id) ON UPDATE CASCADE";
         Alter parsed = (Alter) CCJSqlParserUtil.parse(statement);
         assertStatementCanBeDeparsedAs(parsed, statement, true);
-        assertReferentialAction(parsed, ReferentialAction.CASCADE, null);
+        assertReferentialActionOnConstraint(parsed, ReferentialAction.CASCADE, null);
     }
 
-    private void assertReferentialAction(Alter parsed, ReferentialAction onUpdate, ReferentialAction onDelete) {
+    private void assertReferentialActionOnConstraint(Alter parsed, ReferentialAction onUpdate,
+            ReferentialAction onDelete) {
         AlterExpression alterExpression = parsed.getAlterExpressions().get(0);
         ForeignKeyIndex index = (ForeignKeyIndex) alterExpression.getIndex();
 
@@ -552,6 +604,34 @@ public class AlterTest {
             assertEquals(onUpdate, index.getOnUpdateReferentialAction());
         } else {
             assertNull(index.getOnUpdateReferentialAction());
+        }
+    }
+
+    private void assertReferentialAction(Alter parsed, ReferentialAction onUpdate, ReferentialAction onDelete) {
+        AlterExpression alterExpression = parsed.getAlterExpressions().get(0);
+
+        if (onDelete != null) {
+            ReferentialAction actual = alterExpression.getOnDeleteReferentialAction();
+            assertEquals(onDelete, actual);
+            // remove line if deprecated methods are removed.
+            if (ReferentialAction.CASCADE.equals(actual)) {
+                alterExpression.setOnDeleteCascade(alterExpression.isOnDeleteCascade());
+            }
+            if (ReferentialAction.RESTRICT.equals(actual)) {
+                alterExpression.setOnDeleteRestrict(alterExpression.isOnDeleteRestrict());
+            }
+            if (ReferentialAction.SET_NULL.equals(actual)) {
+                alterExpression.setOnDeleteSetNull(alterExpression.isOnDeleteSetNull());
+            }
+        } else {
+            assertNull(alterExpression.getOnDeleteReferentialAction());
+        }
+
+        if (onUpdate != null) {
+            // remove line if deprecated methods are removed.
+            assertEquals(onUpdate, alterExpression.getOnUpdateReferentialAction());
+        } else {
+            assertNull(alterExpression.getOnUpdateReferentialAction());
         }
     }
 
