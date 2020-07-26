@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -663,5 +664,16 @@ public class CreateTableTest {
     public void tableMovementWithAS() throws JSQLParserException {
         String sql = "CREATE TABLE test (startdate DATE) DISABLE ROW MOVEMENT AS SELECT 1 FROM dual";
         assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    @Ignore(value = "https://github.com/JSQLParser/JSqlParser/issues/1022")
+    public void testCreateTableWithDefault() throws JSQLParserException {
+        // Cannot parse statement: Encountered unexpected token: \"nextval\" \"NEXTVAL\"
+        String createTableWithDefaults = "CREATE TABLE myschema.tableName ("
+                + "id bigint NOT NULL DEFAULT nextval('myschema.mysequence'::regclass), " +
+                "bool_col boolean NOT NULL DEFAULT false, " +
+                "int_col integer NOT NULL DEFAULT 0)";
+        assertSqlCanBeParsedAndDeparsed(createTableWithDefaults);
     }
 }
