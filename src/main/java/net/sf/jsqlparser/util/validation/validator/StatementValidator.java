@@ -46,6 +46,7 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
@@ -168,7 +169,13 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(Comment comment) {
-        validateFeature(Feature.comment);
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(c, Feature.comment);
+            validateOptionalFeature(c, comment.getTable(), Feature.commentOnTable);
+            validateOptionalFeature(c, comment.getColumn(), Feature.commentOnColumn);
+            // see https://github.com/JSQLParser/JSqlParser/pull/1024
+            // validateOptionalFeature(c, comment.getView(), Feature.commentOnView);
+        }
     }
 
 

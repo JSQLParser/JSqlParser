@@ -269,6 +269,10 @@ public enum Feature {
      * @see Comment
      */
     comment,
+    commentOnTable,
+    commentOnColumn,
+    commentOnView,
+
     /**
      * SQL "DESCRIBE" statement is allowed
      *
