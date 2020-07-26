@@ -17,10 +17,13 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.ExceptOp;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.IntersectOp;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.MinusOp;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.ParenthesisFromItem;
 import net.sf.jsqlparser.statement.select.Pivot;
@@ -36,6 +39,7 @@ import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.UnPivot;
+import net.sf.jsqlparser.statement.select.UnionOp;
 import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
@@ -245,6 +249,14 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
     public void visit(SetOperationList list) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.setOperation);
+            validateFeature(c, list.getOperations().stream().anyMatch(o -> o instanceof UnionOp),
+                    Feature.setOperationUnion);
+            validateFeature(c, list.getOperations().stream().anyMatch(o -> o instanceof IntersectOp),
+                    Feature.setOperationIntersect);
+            validateFeature(c, list.getOperations().stream().anyMatch(o -> o instanceof ExceptOp),
+                    Feature.setOperationExcept);
+            validateFeature(c, list.getOperations().stream().anyMatch(o -> o instanceof MinusOp),
+                    Feature.setOperationMinus);
         }
 
         if (list.getSelects() != null) {

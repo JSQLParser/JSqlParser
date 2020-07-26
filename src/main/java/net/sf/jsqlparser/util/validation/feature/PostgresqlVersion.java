@@ -33,6 +33,9 @@ public enum PostgresqlVersion implements Version {
                     Feature.joinOuter,
                     Feature.joinInner,
                     Feature.joinUsingColumns,
+                    // https://www.postgresql.org/docs/current/queries-with.html
+                    Feature.withItem,
+                    Feature.withItemRecursive,
 
                     // https://www.postgresql.org/docs/current/queries-limit.html
                     Feature.limit,
@@ -42,12 +45,21 @@ public enum PostgresqlVersion implements Version {
                     Feature.distinct,
                     Feature.distinctOn,
                     Feature.selectHaving,
+                    Feature.selectInto,
                     Feature.window,
                     Feature.orderBy,
                     Feature.orderByNullOrdering,
                     Feature.selectForUpdate,
                     Feature.selectForUpdateOfTable,
                     Feature.selectForUpdateNoWait,
+
+                    // https://www.postgresql.org/docs/current/queries-union.html
+                    Feature.setOperation,
+                    Feature.setOperationUnion,
+                    Feature.setOperationIntersect,
+                    Feature.setOperationExcept,
+
+                    Feature.comment,
 
                     Feature.createSchema,
 
@@ -61,6 +73,7 @@ public enum PostgresqlVersion implements Version {
 
                     // https://www.postgresql.org/docs/current/sql-insert.html
                     Feature.insert,
+                    Feature.insertFromSelect,
                     // https://www.postgresql.org/docs/current/sql-update.html
                     Feature.update,
                     // https://www.postgresql.org/docs/current/sql-delete.html

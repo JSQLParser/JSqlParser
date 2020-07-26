@@ -344,6 +344,10 @@ public enum Feature {
     pivotXml,
 
     setOperation,
+    setOperationUnion,
+    setOperationIntersect,
+    setOperationExcept,
+    setOperationMinus,
 
     withItem,
     withItemRecursive,
