@@ -22,13 +22,16 @@ public enum ReferentialAction {
 
     private String action;
 
+    /**
+     * @return the {@link ReferentialAction}, if found, otherwise <code>null</code>
+     */
     public static ReferentialAction byAction(String action) {
         for (ReferentialAction a : values()) {
             if (a.getAction().equals(action)) {
                 return a;
             }
         }
-        return ReferentialAction.valueOf(action);
+        return null;
     }
 
     public String getAction() {
