@@ -4822,6 +4822,7 @@ Comment Comment():
 {
     Comment result = new Comment();
     Table table;
+    Table view;
     Column column;
     Token comment;
 }
@@ -4834,6 +4835,10 @@ Comment Comment():
         |
         (
             <K_COLUMN> column = Column() { result.setColumn(column); }
+        )
+        |
+        (
+            <K_VIEW> view = Table() { result.setView(view); }
         )
     )
     <K_IS> comment=<S_CHAR_LITERAL> { result.setComment(new StringValue(comment.image)); }
