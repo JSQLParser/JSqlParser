@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2020 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.util.validation.feature;
 
 import java.util.Collections;
@@ -39,6 +48,16 @@ public enum PostgresqlVersion implements Version {
                     Feature.selectForUpdate,
                     Feature.selectForUpdateOfTable,
                     Feature.selectForUpdateNoWait,
+
+                    Feature.createSchema,
+
+                    Feature.createSequence,
+                    Feature.alterSequence,
+
+                    Feature.createIndex,
+                    Feature.createTable,
+                    Feature.createView,
+                    Feature.alterView,
 
                     // https://www.postgresql.org/docs/current/sql-insert.html
                     Feature.insert,
