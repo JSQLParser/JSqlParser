@@ -69,7 +69,9 @@ public class AlterValidator extends AbstractValidator<Alter> {
 
             if (e.getIndex() != null) {
                 validateName(c, NamedObject.index, e.getIndex().getName());
-                validateOptionalColumnNames(ValidatorUtil.concat(tableFqn, e.getIndex().getColumnsNames()), c);
+                if (e.getIndex().getColumns() != null) {
+                    validateOptionalColumnNames(ValidatorUtil.concat(tableFqn, e.getIndex().getColumnsNames()), c);
+                }
             }
         }
     }
