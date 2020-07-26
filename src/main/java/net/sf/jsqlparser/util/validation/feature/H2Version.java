@@ -37,9 +37,44 @@ public enum H2Version implements Version {
                     Feature.joinNatural,
                     Feature.joinUsingColumns,
 
+                    // http://h2database.com/html/commands.html#comment
+                    Feature.comment,
+                    Feature.commentOnTable,
+                    Feature.commentOnColumn,
+                    Feature.commentOnView,
+
+                    // http://h2database.com/html/functions.html#table
+                    Feature.tableFunction,
+
+                    // http://h2database.com/html/commands.html#select
+                    Feature.setOperation,
+                    Feature.setOperationUnion,
+                    Feature.setOperationIntersect,
+                    Feature.setOperationExcept,
+                    Feature.setOperationMinus,
+
+                    // http://h2database.com/html/commands.html#create_sequence
+                    Feature.createSequence,
+                    // http://h2database.com/html/commands.html#alter_sequence
+                    Feature.alterSequence,
+                    // http://h2database.com/html/commands.html#create_schema
+                    Feature.createSchema,
+                    // http://h2database.com/html/commands.html#create_index
+                    Feature.createIndex,
+                    // http://h2database.com/html/commands.html#create_table
+                    Feature.createTable,
+                    // http://h2database.com/html/commands.html#create_view
+                    Feature.createView,
+                    // http://h2database.com/html/commands.html#alter_view_rename
+                    // Feature.alterView,
+
+                    // http://h2database.com/html/commands.html#select
+                    Feature.top,
+
                     Feature.distinct,
                     // http://h2database.com/html/commands.html#insert
                     Feature.insert,
+                    Feature.insertFromSelect,
                     // http://h2database.com/html/commands.html#update
                     Feature.update,
                     // http://h2database.com/html/commands.html#delete

@@ -59,17 +59,26 @@ public enum PostgresqlVersion implements Version {
                     Feature.setOperationIntersect,
                     Feature.setOperationExcept,
 
+                    // https://www.postgresql.org/docs/current/sql-comment.html
                     Feature.comment,
+                    Feature.commentOnTable,
+                    Feature.commentOnColumn,
+                    Feature.commentOnView,
 
-                    Feature.createSchema,
-
+                    // https://www.postgresql.org/docs/current/sql-createsequence.html
                     Feature.createSequence,
+                    // https://www.postgresql.org/docs/current/sql-altersequence.html
                     Feature.alterSequence,
-
+                    // https://www.postgresql.org/docs/current/sql-createschema.html
+                    Feature.createSchema,
+                    // https://www.postgresql.org/docs/current/sql-createindex.html
                     Feature.createIndex,
+                    // https://www.postgresql.org/docs/current/sql-createtable.html
                     Feature.createTable,
+                    // https://www.postgresql.org/docs/current/sql-createview.html
                     Feature.createView,
-                    Feature.alterView,
+                    // https://www.postgresql.org/docs/current/sql-alterview.html
+                    // Feature.alterView,
 
                     // https://www.postgresql.org/docs/current/sql-insert.html
                     Feature.insert,
