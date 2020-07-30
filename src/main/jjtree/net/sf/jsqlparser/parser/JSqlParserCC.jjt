@@ -4010,7 +4010,7 @@ CreateTable CreateTable():
     CheckConstraint checkCs = null;
     ExcludeConstraint excludeC = null;
     RowMovement rowMovement = null;
-    ReferentialAction referentialAction = null;
+    ReferentialAction.Action action = null;
 }
 {
     <K_CREATE>
@@ -4103,12 +4103,12 @@ CreateTable CreateTable():
                             fkIndex.setReferencedColumnNames(colNames2);
                             indexes.add(fkIndex);
                         }
-                        [LOOKAHEAD(2) (<K_ON> <K_DELETE> referentialAction = ReferentialAction()
-                        		  { fkIndex.setOnDeleteReferentialAction(referentialAction); }
+                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                        		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
                                   )]
-                        [LOOKAHEAD(2) (<K_ON> <K_UPDATE> referentialAction = ReferentialAction()
-                        		  { fkIndex.setOnUpdateReferentialAction(referentialAction); }
-                        		  )]
+                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                        		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                           		  )]
                 )
                 |
                  LOOKAHEAD(3)(
@@ -4240,24 +4240,24 @@ CreateView CreateView():
     { return createView; }
 }
 
-ReferentialAction ReferentialAction():
+ReferentialAction.Action Action():
 {
-    ReferentialAction referentialAction = null;
+    ReferentialAction.Action action = null;
 }
 {
-    (<K_CASCADE> { referentialAction=ReferentialAction.CASCADE;}
-                                   |
-                                   <K_RESTRICT> {referentialAction=ReferentialAction.RESTRICT;}
-                                   |
-                                   <K_NO> <K_ACTION> {referentialAction=ReferentialAction.NO_ACTION;}
-                                   |
-                                   <K_SET> (
-										<K_NULL> {referentialAction=ReferentialAction.SET_NULL;}
-                        		    	|
-                        		   		<K_DEFAULT> {referentialAction=ReferentialAction.SET_DEFAULT;}
-                        		   		   )
-                                    )
-    { return referentialAction; }
+    (<K_CASCADE> { action=ReferentialAction.Action.CASCADE;}
+     |
+     <K_RESTRICT> {action=ReferentialAction.Action.RESTRICT;}
+     |
+     <K_NO> <K_ACTION> {action=ReferentialAction.Action.NO_ACTION;}
+     |
+     <K_SET> (
+	          <K_NULL> {action=ReferentialAction.Action.SET_NULL;}
+              |
+              <K_DEFAULT> {action=ReferentialAction.Action.SET_DEFAULT;}
+             )
+     )
+    { return action; }
 }
 
 AlterView AlterView():
@@ -4580,7 +4580,7 @@ AlterExpression AlterExpression():
     Table fkTable = null;
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
-    ReferentialAction referentialAction = null;
+    ReferentialAction.Action action = null;
 }
 {
 
@@ -4627,12 +4627,12 @@ AlterExpression AlterExpression():
                  <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
                         { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
                                 
-                [LOOKAHEAD(2) (<K_ON> <K_DELETE> referentialAction = ReferentialAction()
-                        		  { alterExp.setOnDeleteReferentialAction(referentialAction); }
+                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                        		  { alterExp.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
                                   )]
-                [LOOKAHEAD(2) (<K_ON> <K_UPDATE> referentialAction = ReferentialAction()
-                        		  { alterExp.setOnUpdateReferentialAction(referentialAction); }
-                        		  )]
+                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                        		  { alterExp.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                           		  )]
             )
             |
             (
@@ -4654,12 +4654,12 @@ AlterExpression AlterExpression():
                         alterExp.setIndex(fkIndex);
                     }
                                 
-                [LOOKAHEAD(2) (<K_ON> <K_DELETE> referentialAction = ReferentialAction()
-                        		  { fkIndex.setOnDeleteReferentialAction(referentialAction); }
+                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                        		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
                                   )]
-                [LOOKAHEAD(2) (<K_ON> <K_UPDATE> referentialAction = ReferentialAction()
-                        		  { fkIndex.setOnUpdateReferentialAction(referentialAction); }
-                        		  )]
+                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                        		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                           		  )]
                     constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                 )
                 |

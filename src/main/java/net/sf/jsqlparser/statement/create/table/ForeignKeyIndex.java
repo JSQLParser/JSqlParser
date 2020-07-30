@@ -9,17 +9,21 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ReferentialAction;
+import net.sf.jsqlparser.statement.ReferentialAction.Action;
+import net.sf.jsqlparser.statement.ReferentialAction.Type;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class ForeignKeyIndex extends NamedConstraint {
 
     private Table table;
     private List<String> referencedColumnNames;
-    private ReferentialAction onDeleteReferentialAction;
-    private ReferentialAction onUpdateReferentialAction;
+    private Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
 
     public Table getTable() {
         return table;
@@ -37,52 +41,77 @@ public class ForeignKeyIndex extends NamedConstraint {
         this.referencedColumnNames = referencedColumnNames;
     }
 
-    public ReferentialAction getOnDeleteReferentialAction() {
-        return onDeleteReferentialAction;
+    /**
+     * @param type
+     * @param action
+     */
+    public void setReferentialAction(Type type, Action action) {
+        setReferentialAction(type, action, true);
     }
 
-    public void setOnDeleteReferentialAction(ReferentialAction onDeleteReferentialAction) {
-        this.onDeleteReferentialAction = onDeleteReferentialAction;
+    /**
+     * @param type
+     */
+    public void removeReferentialAction(Type type) {
+        setReferentialAction(type, null, false);
     }
 
-    public ReferentialAction getOnUpdateReferentialAction() {
-        return onUpdateReferentialAction;
+    /**
+     * @param type
+     * @return
+     */
+    public ReferentialAction getReferentialAction(Type type) {
+        return referentialActions.stream().filter(ra -> type.equals(ra.getType())).findFirst().orElse(null);
     }
 
-    public void setOnUpdateReferentialAction(ReferentialAction onUpdateReferentialAction) {
-        this.onUpdateReferentialAction = onUpdateReferentialAction;
+    private void setReferentialAction(Type type, Action action, boolean set) {
+        ReferentialAction found = getReferentialAction(type);
+        if (set) {
+            if (found == null) {
+                referentialActions.add(new ReferentialAction(type, action));
+            } else {
+                found.setAction(action);
+            }
+        } else if (found != null) {
+            referentialActions.remove(found);
+        }
     }
 
     @Deprecated
     public String getOnDeleteReferenceOption() {
-        return onDeleteReferentialAction == null ? null : onDeleteReferentialAction.getAction();
+        ReferentialAction a = getReferentialAction(Type.DELETE);
+        return a == null ? null : a.getAction().getAction();
     }
 
     @Deprecated
     public void setOnDeleteReferenceOption(String onDeleteReferenceOption) {
-        setOnDeleteReferentialAction(ReferentialAction.byAction(onDeleteReferenceOption));
+        if (onDeleteReferenceOption == null) {
+            removeReferentialAction(Type.DELETE);
+        } else {
+            setReferentialAction(Type.DELETE, Action.byAction(onDeleteReferenceOption));
+        }
     }
 
     @Deprecated
     public String getOnUpdateReferenceOption() {
-        return onUpdateReferentialAction == null ? null : onUpdateReferentialAction.getAction();
+        ReferentialAction a = getReferentialAction(Type.UPDATE);
+        return a == null ? null : a.getAction().getAction();
     }
 
     @Deprecated
     public void setOnUpdateReferenceOption(String onUpdateReferenceOption) {
-        setOnUpdateReferentialAction(ReferentialAction.byAction(onUpdateReferenceOption));
+        if (onUpdateReferenceOption == null) {
+            removeReferentialAction(Type.UPDATE);
+        } else {
+            setReferentialAction(Type.UPDATE, Action.byAction(onUpdateReferenceOption));
+        }
     }
 
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder(super.toString()).append(" REFERENCES ").append(table)
                 .append(PlainSelect.getStringList(getReferencedColumnNames(), true, true));
-        if (onDeleteReferentialAction != null) {
-            b.append(" ON DELETE ").append(onDeleteReferentialAction.getAction());
-        }
-        if (onUpdateReferentialAction != null) {
-            b.append(" ON UPDATE ").append(onUpdateReferentialAction.getAction());
-        }
+        referentialActions.forEach(b::append);
         return b.toString();
     }
 }
