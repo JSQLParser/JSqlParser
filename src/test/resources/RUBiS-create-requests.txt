@@ -365,6 +365,18 @@ true
 tmp_ids
 id.unique category
 
+#begin
+create table test.json_test (
+  c1 INTEGER PRIMARY KEY,
+  c2 varchar(20) not null,
+  c3 json default null
+)
+#end
+true
+test.json_test
+c1.unique c2 c3
+
+
 // -----------------------------------------------------------------------------------------------------------------------
 // Other tests
 // -----------------------------------------------------------------------------------------------------------------------
