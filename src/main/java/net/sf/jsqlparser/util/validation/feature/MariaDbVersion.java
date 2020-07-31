@@ -15,6 +15,11 @@ import java.util.Set;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 
+/**
+ * Please add Features supported and place a link to public documentation
+ * 
+ * @author gitmotte
+ */
 public enum MariaDbVersion implements Version {
     V10_5_4("10.5.4",
             EnumSet.of(// supported if used with jdbc

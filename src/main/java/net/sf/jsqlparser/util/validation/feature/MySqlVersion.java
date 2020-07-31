@@ -16,7 +16,8 @@ import java.util.Set;
 import net.sf.jsqlparser.parser.feature.Feature;
 
 /**
- *
+ * Please add Features supported and place a link to public documentation
+ * 
  * @author gitmotte
  * @see https://dev.mysql.com/doc/refman/8.0/en/
  */

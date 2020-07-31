@@ -15,6 +15,11 @@ import java.util.Set;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 
+/**
+ * Please add Features supported and place a link to public documentation
+ * 
+ * @author gitmotte
+ */
 public enum SqlServerVersion implements Version {
     V2019("2019",
             EnumSet.of(

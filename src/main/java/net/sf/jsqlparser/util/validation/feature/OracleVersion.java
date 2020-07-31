@@ -15,6 +15,11 @@ import java.util.Set;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 
+/**
+ * Please add Features supported and place a link to public documentation
+ * 
+ * @author gitmotte
+ */
 public enum OracleVersion implements Version {
     V19C("19c",
             EnumSet.of(
@@ -29,6 +34,13 @@ public enum OracleVersion implements Version {
                     Feature.truncate,
                     Feature.drop,
                     Feature.alter,
+
+                    // https://www.oracletutorial.com/oracle-basics/oracle-select-distinct/
+                    Feature.distinct, Feature.selectUnique,
+
+                    // https://www.oracletutorial.com/oracle-basics/oracle-merge/
+                    Feature.merge,
+
                     // special oracle features
                     Feature.oracleOldJoinSyntax,
                     Feature.oraclePriorPosition,

@@ -15,6 +15,11 @@ import java.util.Set;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 
+/**
+ * Please add Features supported and place a link to public documentation
+ * 
+ * @author gitmotte
+ */
 public enum HSQLDBVersion implements Version {
     V_2_5_0("2.5.0",
             EnumSet.of(

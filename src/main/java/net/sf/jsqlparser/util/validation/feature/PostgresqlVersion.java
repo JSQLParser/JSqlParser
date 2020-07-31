@@ -15,15 +15,25 @@ import java.util.Set;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 
+/**
+ * Please add Features supported and place a link to public documentation
+ * 
+ * @author gitmotte
+ * @see https://www.postgresql.org/docs/current
+ */
 public enum PostgresqlVersion implements Version {
     V10("10",
             EnumSet.of(
                     // supported if used with jdbc
                     Feature.jdbcParameter,
                     Feature.jdbcNamedParameter,
+
                     // https://www.postgresql.org/docs/current/sql-select.html
                     Feature.select,
                     Feature.selectGroupBy,
+                    Feature.selectHaving,
+
+                    // https://www.postgresql.org/docs/current/sql-select.html#join_type
                     Feature.join,
                     Feature.joinSimple,
                     Feature.joinRight,
@@ -33,22 +43,34 @@ public enum PostgresqlVersion implements Version {
                     Feature.joinOuter,
                     Feature.joinInner,
                     Feature.joinUsingColumns,
+
                     // https://www.postgresql.org/docs/current/queries-with.html
                     Feature.withItem,
                     Feature.withItemRecursive,
 
                     // https://www.postgresql.org/docs/current/queries-limit.html
+                    // https://www.postgresql.org/docs/current/sql-select.html#SQL-LIMIT
                     Feature.limit,
                     Feature.limitAll, //
                     Feature.limitNull,
                     Feature.offset,
+
+                    // https://www.postgresql.org/docs/current/sql-select.html
+                    Feature.fetch, //
+                    Feature.fetchFirst, //
+                    Feature.fetchNext,
+
+                    // https://www.postgresql.org/docs/current/sql-select.html
                     Feature.distinct,
                     Feature.distinctOn,
-                    Feature.selectHaving,
-                    Feature.selectInto,
+
+                    // https://www.postgresql.org/docs/current/sql-select.html
                     Feature.window,
+
+                    // https://www.postgresql.org/docs/current/sql-select.html
                     Feature.orderBy,
                     Feature.orderByNullOrdering,
+
                     Feature.selectForUpdate,
                     Feature.selectForUpdateOfTable,
                     Feature.selectForUpdateNoWait,
@@ -93,7 +115,9 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-dropindex.html
                     Feature.drop,
                     // https://www.postgresql.org/docs/current/sql-altertable.html
-                    Feature.alter
+                    Feature.alter,
+                    // https://www.postgresql.org/docs/current/using-explain.html
+                    Feature.explain
                     )),
     V11("11", V10.getFeaturesClone()),
     V12("12", V11.getFeaturesClone());

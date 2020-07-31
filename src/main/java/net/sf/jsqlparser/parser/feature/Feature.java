@@ -41,10 +41,13 @@ import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Fetch;
+import net.sf.jsqlparser.statement.select.First;
 import net.sf.jsqlparser.statement.select.KSQLWindow;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.PivotXml;
+import net.sf.jsqlparser.statement.select.Skip;
+import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -53,10 +56,25 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 public enum Feature {
 
     // SQL KEYWORD FEATURES
+    /**
+     * "SELECT"
+     */
     select,
+    /**
+     * "GROUP BY"
+     */
     selectGroupBy,
+    /**
+     * "GROUPING SETS"
+     */
     selectGroupByGroupingSets,
+    /**
+     * "HAVING"
+     */
     selectHaving,
+    /**
+     * "INTO"
+     */
     selectInto,
 
     /**
@@ -101,24 +119,79 @@ public enum Feature {
      */
     fetchNext,
 
+    /**
+     * "JOIN"
+     */
     join,
+    /**
+     * join tables by ", OUTER" placing the join specification in WHERE-clause
+     */
     joinOuterSimple,
+    /**
+     * join tables by "," placing the join specification in WHERE-clause
+     */
     joinSimple,
+    /**
+     * "RIGHT" join
+     */
     joinRight,
+    /**
+     * "NATURAL" join
+     */
     joinNatural,
+    /**
+     * "FULL" join
+     */
     joinFull,
+    /**
+     * "LEFT" join
+     */
     joinLeft,
+    /**
+     * "CROSS" join
+     */
     joinCross,
+    /**
+     * "OUTER" join
+     */
     joinOuter,
+    /**
+     * "SEMI" join
+     */
     joinSemi,
+    /**
+     * "INNER" join
+     */
     joinInner,
+    /**
+     * "STRAIGHT_JOIN" join
+     */
     joinStaight,
+    /**
+     * "APPLY" join
+     */
     joinApply,
+
     joinWindow,
     joinUsingColumns,
 
+    /**
+     * @see Skip
+     */
     skip,
+    /**
+     * "FIRST" \?|[0-9]+|variable
+     * or
+     * "LIMIT" \?|[0-9]+|variable
+     * 
+     * @see First
+     */
     first,
+    /**
+     * "TOP" ? "PERCENT"
+     * 
+     * @see Top
+     */
     top,
     optimizeFor,
 
@@ -126,7 +199,13 @@ public enum Feature {
     distinct,
     distinctOn,
 
+    /**
+     * "ORDER BY"
+     */
     orderBy,
+    /**
+     * "ORDER BY expression [ NULLS { FIRST | LAST } ]"
+     */
     orderByNullOrdering,
 
     /**

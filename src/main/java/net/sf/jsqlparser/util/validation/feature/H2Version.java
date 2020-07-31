@@ -15,6 +15,12 @@ import java.util.Set;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 
+/**
+ * Please add Features supported and place a link to public documentation
+ * 
+ * @author gitmotte
+ * @see http://www.h2database.com/html/commands.html
+ */
 public enum H2Version implements Version {
     V_1_4_200("1.4.200",
             EnumSet.of(
@@ -24,6 +30,7 @@ public enum H2Version implements Version {
                     // http://h2database.com/html/commands.html#select
                     Feature.select,
                     Feature.selectGroupBy,
+                    Feature.selectHaving,
                     // https://h2database.com/html/grammar.html?#table_expression
                     // https://h2database.com/html/grammar.html?#join_specification
                     Feature.join,
@@ -36,6 +43,10 @@ public enum H2Version implements Version {
                     Feature.joinInner,
                     Feature.joinNatural,
                     Feature.joinUsingColumns,
+
+                    // http://www.h2database.com/html/commands.html?highlight=ORDER%20BY&search=SELECT#firstFound
+                    // http://www.h2database.com/html/grammar.html#order
+                    Feature.orderBy, Feature.orderByNullOrdering,
 
                     // http://h2database.com/html/commands.html#comment
                     Feature.comment,
@@ -70,8 +81,13 @@ public enum H2Version implements Version {
 
                     // http://h2database.com/html/commands.html#select
                     Feature.top,
+                    // http://www.h2database.com/html/advanced.html?search=limit#result_sets
+                    Feature.fetch, Feature.fetchFirst,
 
+                    // http://www.h2database.com/html/commands.html?highlight=DISTINCT&search=SELECT#firstFound
                     Feature.distinct,
+                    // http://www.h2database.com/html/commands.html?highlight=DISTINCT%20ON&search=SELECT#firstFound
+                    Feature.distinctOn,
                     // http://h2database.com/html/commands.html#insert
                     Feature.insert,
                     Feature.insertFromSelect,
@@ -88,7 +104,9 @@ public enum H2Version implements Version {
                     // http://h2database.com/html/commands.html#alter_table_add
                     // http://h2database.com/html/commands.html#alter_table_add_constraint
                     // ...
-                    Feature.alter));
+                    Feature.alter,
+                    // http://www.h2database.com/html/commands.html#explain
+                    Feature.explain));
 
     private Set<Feature> features;
     private String versionString;
