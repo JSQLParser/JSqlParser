@@ -31,7 +31,7 @@ public class UpdateValidator extends AbstractValidator<Update> {
             validateFeature(c, update.isUseSelect(), Feature.updateUseSelect);
             validateOptionalFeature(c, update.getOrderByElements(), Feature.updateOrderBy);
             validateOptionalFeature(c, update.getLimit(), Feature.updateLimit);
-            if (update.getReturningExpressionList() != null || update.isReturningAllColumns()) {
+            if (isNotEmpty(update.getReturningExpressionList()) || update.isReturningAllColumns()) {
                 validateFeature(c, Feature.updateReturning);
             }
         }
