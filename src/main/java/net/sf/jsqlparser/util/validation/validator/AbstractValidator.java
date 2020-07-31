@@ -235,10 +235,25 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         }
     }
 
+    /**
+     * validates for the feature if given elements is not empty - see
+     * {@link #isNotEmpty(Collection)}
+     * 
+     * @param c
+     * @param element
+     * @param feature
+     */
     protected void validateOptionalFeature(ValidationCapability c, List<?> elements, Feature feature) {
-        validateFeature(c, elements != null && !elements.isEmpty(), feature);
+        validateFeature(c, isNotEmpty(elements), feature);
     }
 
+    /**
+     * validates for the feature if given element is not <code>null</code>
+     * 
+     * @param c
+     * @param element
+     * @param feature
+     */
     protected void validateOptionalFeature(ValidationCapability c, Object element, Feature feature) {
         validateFeature(c, element != null, feature);
     }
@@ -287,6 +302,14 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         if (name != null) {
             validateName(c, namedObject, name);
         }
+    }
+
+    protected boolean isNotEmpty(Collection<?> c) {
+        return c != null && !c.isEmpty();
+    }
+
+    protected boolean isNotEmpty(String c) {
+        return c != null && !c.isEmpty();
     }
 
 }

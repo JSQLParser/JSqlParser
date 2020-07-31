@@ -30,14 +30,14 @@ public class GroupByValidator extends AbstractValidator<GroupByElement> implemen
     public void visit(GroupByElement groupBy) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.selectGroupBy);
-            if (groupBy.getGroupingSets() != null && !groupBy.getGroupingSets().isEmpty()) {
+            if (isNotEmpty(groupBy.getGroupingSets())) {
                 validateFeature(c, Feature.selectGroupByGroupingSets);
             }
         }
 
         validateOptionalExpressions(groupBy.getGroupByExpressions());
 
-        if (groupBy.getGroupingSets() != null && !groupBy.getGroupingSets().isEmpty()) {
+        if (isNotEmpty(groupBy.getGroupingSets())) {
             for (Object o : groupBy.getGroupingSets()) {
                 if (o instanceof Expression) {
                     validateOptionalExpression((Expression) o);
