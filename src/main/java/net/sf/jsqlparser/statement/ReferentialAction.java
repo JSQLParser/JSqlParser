@@ -14,6 +14,10 @@ public class ReferentialAction {
     private Type type;
     private Action action;
 
+    public ReferentialAction() {
+        // default constructor
+    }
+
     public ReferentialAction(Type type, Action action) {
         this.type = type;
         this.action = action;
