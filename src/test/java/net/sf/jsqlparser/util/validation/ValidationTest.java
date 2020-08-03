@@ -58,6 +58,19 @@ public class ValidationTest {
     }
 
     @Test
+    public void testValidatonMultipleStatements() throws JSQLParserException {
+        String sql = "UPDATE tab1 SET val = ? WHERE id = ?; DELETE FROM tab2 t2 WHERE t2.id = ?;";
+
+        ValidationUtil validation = new ValidationUtil( //
+                Arrays.asList(DatabaseType.SQLSERVER, DatabaseType.POSTGRESQL), sql);
+        List<ValidationError> errors = validation.validate();
+
+        assertNotNull(errors);
+        assertEquals(0, errors.size());
+        assertEquals(2, validation.getParsedStatements().getStatements().size());
+    }
+
+    @Test
     public void testWithValidatonUtil() throws JSQLParserException {
 
         String stmt = "SELECT * FROM tab1, tab2 WHERE tab1.id (+) = tab2.ref";
@@ -66,7 +79,7 @@ public class ValidationTest {
 
         assertNotNull(errors);
         assertEquals(1, errors.size());
-        assertEquals(stmt, errors.get(0).getStatement());
+        assertEquals(stmt, errors.get(0).getStatements());
         assertEquals(DatabaseType.SQLSERVER, errors.get(0).getCapability());
         assertEquals(new HashSet<>(Arrays.asList(Feature.oracleOldJoinSyntax + " not supported.")),
                 errors.get(0).getErrors().stream().map(Exception::getMessage).collect(Collectors.toSet()));

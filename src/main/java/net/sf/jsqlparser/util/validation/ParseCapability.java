@@ -10,10 +10,9 @@
 package net.sf.jsqlparser.util.validation;
 
 import java.util.function.Consumer;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.Statements;
 
 /**
  * package - private class for {@link ValidationUtil} to parse the statements
@@ -25,30 +24,30 @@ final class ParseCapability implements ValidationCapability {
 
     public static final String NAME = "parsing";
 
-    private String statement;
-    private Statement parsedStatement;
+    private String statements;
+    private Statements parsedStatement;
 
-    public ParseCapability(String statement) {
-        this.statement = statement;
+    public ParseCapability(String statements) {
+        this.statements = statements;
     }
 
-    public String getStatement() {
-        return statement;
+    public String getStatements() {
+        return statements;
     }
 
     /**
-     * @return <code>null</code> on parse error, otherwise the {@link Statement}
+     * @return <code>null</code> on parse error, otherwise the {@link Statements}
      *         parsed.
      */
-    public Statement getParsedStatement() {
+    public Statements getParsedStatements() {
         return parsedStatement;
     }
 
     @Override
     public void validate(ValidationContext context, Consumer<ValidationException> errorConsumer) {
         try {
-            this.parsedStatement = CCJSqlParserUtil.parseStatement(
-                    CCJSqlParserUtil.newParser(statement).withConfiguration(context.getConfiguration()));
+            this.parsedStatement = CCJSqlParserUtil.parseStatements(
+                    CCJSqlParserUtil.newParser(statements).withConfiguration(context.getConfiguration()));
         } catch (JSQLParserException e) {
             errorConsumer.accept(new ParseException("Cannot parse statement: " + e.getMessage(), e));
         }

@@ -16,15 +16,78 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.util.validation.validator.StatementValidator;
 
+/**
+ * 
+ * 
+ * @author gitmotte
+ */
 public class ValidationUtil {
 
-    private ValidationUtil() {
+    private FeatureConfiguration featureConfiguration;
+    private Collection<? extends ValidationCapability> capabilities;
+    private List<String> statementsList;
+
+    private List<ValidationError> errors;
+    private Statements parsedStatements;
+
+    public ValidationUtil(Collection<? extends ValidationCapability> capabilities, String... statements) {
+        this(new FeatureConfiguration(), capabilities, statements);
     }
+
+    public ValidationUtil(FeatureConfiguration featureConfiguration,
+            Collection<? extends ValidationCapability> capabilities, String... statements) {
+        this.featureConfiguration = featureConfiguration;
+        this.capabilities = capabilities;
+        this.statementsList = Arrays.asList(statements);
+    }
+
+    public List<ValidationError> validate() {
+        this.errors = new ArrayList<>();
+
+        ValidationContext context = createValidationContext(featureConfiguration, capabilities);
+        for (String statements : statementsList) {
+
+            ParseCapability parse = new ParseCapability(statements);
+            parse.validate(context, e -> errors.add(new ValidationError(statements).withCapability(parse).addError(e)));
+
+            parsedStatements = parse.getParsedStatements();
+            if (parsedStatements != null && parsedStatements.getStatements() != null && !capabilities.isEmpty() ) {
+                for (Statement parsedStatement : parsedStatements.getStatements()) {
+                    Map<ValidationCapability, Set<ValidationException>> errorMap = validate(parsedStatement, context);
+                    errors.addAll(toValidationErrors(statements, parsedStatement, errorMap));
+                }
+            }
+
+        }
+        return errors;
+    }
+
+    public FeatureConfiguration getFeatureConfiguration() {
+        return featureConfiguration;
+    }
+
+    public Collection<? extends ValidationCapability> getCapabilities() {
+        return capabilities;
+    }
+
+    public List<String> getStatements() {
+        return statementsList;
+    }
+
+    public List<ValidationError> getErrors() {
+        return errors;
+    }
+
+    public Statements getParsedStatements() {
+        return parsedStatements;
+    }
+
+    // STATIC util-methods
 
     /**
      * @param capabilities
@@ -33,44 +96,7 @@ public class ValidationUtil {
      */
     public static List<ValidationError> validate(Collection<? extends ValidationCapability> capabilities,
             String... statements) {
-        return validate(capabilities, Arrays.asList(statements));
-    }
-
-    /**
-     * @param capabilities
-     * @param statements
-     * @return a list of {@link ValidationError}'s
-     */
-    public static List<ValidationError> validate(
-            Collection<? extends ValidationCapability> capabilities,
-            List<String> statements) {
-        return validate(new FeatureConfiguration(), capabilities, statements);
-    }
-
-    /**
-     * @param config
-     * @param capabilities
-     * @param statements
-     * @return a list of {@link ValidationError}'s
-     */
-    public static List<ValidationError> validate(FeatureConfiguration config,
-            Collection<? extends ValidationCapability> capabilities, List<String> statements) {
-        List<ValidationError> errors = new ArrayList<>();
-
-        ValidationContext context = createValidationContext(config, capabilities);
-        for (String statement : statements) {
-
-            ParseCapability parse = new ParseCapability(statement);
-            parse.validate(context, e -> errors.add(new ValidationError(statement).withCapability(parse).addError(e)));
-
-            Statement parsedStatement = parse.getParsedStatement();
-            if (parsedStatement != null && !capabilities.isEmpty()) {
-                Map<ValidationCapability, Set<ValidationException>> errorMap = validate(parsedStatement, context);
-                errors.addAll(toValidationErrors(statement, errorMap));
-            }
-
-        }
-        return errors;
+        return new ValidationUtil(capabilities, statements).validate();
     }
 
     /**
@@ -87,15 +113,16 @@ public class ValidationUtil {
     }
 
     /**
-     * @param statement
+     * @param statements
+     * @param parsedStatement
      * @param errorMap
      * @return a list of {@link ValidationError}'
      */
-    public static List<ValidationError> toValidationErrors(String statement,
-            Map<ValidationCapability, Set<ValidationException>> errorMap) {
+    public static List<ValidationError> toValidationErrors(String statements,
+            Statement parsedStatement, Map<ValidationCapability, Set<ValidationException>> errorMap) {
         List<ValidationError> errors = new ArrayList<>();
         for (Entry<ValidationCapability, Set<ValidationException>> e : errorMap.entrySet()) {
-            errors.add(new ValidationError(statement)
+            errors.add(new ValidationError(statements).withParsedStatement(parsedStatement)
                     .withCapability(e.getKey()).addErrors(e.getValue()));
         }
         return errors;
