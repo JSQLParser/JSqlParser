@@ -136,4 +136,16 @@ public class ValidationTest {
 
     }
 
+    @Test
+    public void testFeatureSetName() {
+        assertEquals("SELECT + jdbc", FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC).getName());
+        assertEquals("UPDATE + SELECT", FeaturesAllowed.UPDATE.getName());
+        assertEquals("DELETE + SELECT", FeaturesAllowed.DELETE.getName());
+        assertEquals("DELETE + SELECT + UPDATE + jdbc",
+                FeaturesAllowed.DELETE.copy().add(FeaturesAllowed.UPDATE).add(FeaturesAllowed.JDBC).getName());
+        assertEquals("UPDATE + SELECT", new FeaturesAllowed().add(FeaturesAllowed.UPDATE).getName());
+        assertEquals("UPDATE + SELECT + feature set",
+                FeaturesAllowed.UPDATE.copy().add(new FeaturesAllowed(Feature.commit)).getName());
+    }
+
 }

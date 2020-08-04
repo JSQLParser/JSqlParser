@@ -13,9 +13,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureSet;
 import net.sf.jsqlparser.util.validation.ValidationException;
@@ -27,7 +28,10 @@ import net.sf.jsqlparser.util.validation.ValidationException;
  */
 public class FeaturesAllowed implements FeatureSetValidation {
 
-    public static final FeaturesAllowed JDBC = new FeaturesAllowed(
+    private static final String SEPERATOR_REGEX = " \\+ ";
+    private static final String SEPERATOR = " + ";
+
+    public static final FeaturesAllowed JDBC = new FeaturesAllowed("jdbc",
             // always allowed if used with jdbc
             Feature.jdbcParameter,
             Feature.jdbcNamedParameter).unmodifyable();
@@ -37,7 +41,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * {@link Feature#selectInto}, but jdbc-features like
      * {@link Feature#jdbcParameter} and {@link Feature#jdbcNamedParameter}
      */
-    public static final FeaturesAllowed SELECT = new FeaturesAllowed(
+    public static final FeaturesAllowed SELECT = new FeaturesAllowed("SELECT",
             // select features
             Feature.select,
             Feature.selectGroupBy,
@@ -82,25 +86,26 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * all {@link Feature}' for SQL INSERT including {@link #SELECT} and
      * {@link Feature#selectInto}
      */
-    public static final FeaturesAllowed INSERT = new FeaturesAllowed(Feature.insert,
+    public static final FeaturesAllowed INSERT = new FeaturesAllowed("INSERT", Feature.insert,
             Feature.insertValues, Feature.selectInto).add(SELECT).unmodifyable();
 
     /**
      * all {@link Feature}' for SQL UPDATE including {@link #SELECT}
      */
-    public static final FeaturesAllowed UPDATE = new FeaturesAllowed(Feature.update)
+    public static final FeaturesAllowed UPDATE = new FeaturesAllowed("UPDATE", Feature.update)
             .add(SELECT).unmodifyable();
 
     /**
      * all {@link Feature}' for SQL UPDATE including {@link #SELECT}
      */
-    public static final FeaturesAllowed DELETE = new FeaturesAllowed(Feature.delete)
+    public static final FeaturesAllowed DELETE = new FeaturesAllowed("DELETE", Feature.delete)
             .add(SELECT).unmodifyable();
 
-    public static final FeaturesAllowed EXECUTE = new FeaturesAllowed(Feature.execute).unmodifyable();
-    public static final FeaturesAllowed ALTER = new FeaturesAllowed(Feature.alter).unmodifyable();
-    public static final FeaturesAllowed DROP = new FeaturesAllowed(Feature.drop).unmodifyable();
+    public static final FeaturesAllowed EXECUTE = new FeaturesAllowed("EXECUTE", Feature.execute).unmodifyable();
+    public static final FeaturesAllowed ALTER = new FeaturesAllowed("ALTER", Feature.alter).unmodifyable();
+    public static final FeaturesAllowed DROP = new FeaturesAllowed("DROP", Feature.drop).unmodifyable();
 
+    private Set<String> names = new LinkedHashSet<>();
     private Set<Feature> features = new HashSet<>();
 
     /**
@@ -111,11 +116,26 @@ public class FeaturesAllowed implements FeatureSetValidation {
     }
 
     /**
+     * @param features
+     */
+    public FeaturesAllowed(String name, Feature... features) {
+        this.names.add(name);
+        add(features);
+    }
+
+    /**
      * @param featureSets
      * @return <code>this</code>
      */
     public FeaturesAllowed add(FeatureSet... featureSets) {
-        Stream.of(featureSets).map(FeatureSet::getFeatures).forEach(fs -> features.addAll(fs));
+        Stream.of(featureSets).forEach(fs -> {
+            features.addAll(fs.getFeatures());
+            if (fs instanceof FeatureSetValidation) {
+                String name = ((FeatureSetValidation) fs).getName();
+                names.addAll(Stream.of(name.split(SEPERATOR_REGEX)).map(String::trim)
+                        .collect(Collectors.toList()));
+            }
+        });
         return this;
     }
 
@@ -169,7 +189,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * @see #unmodifyable()
      */
     public FeaturesAllowed copy() {
-        return new FeaturesAllowed().add(getFeatures());
+        return new FeaturesAllowed().add(this);
     }
 
     /**
@@ -190,6 +210,12 @@ public class FeaturesAllowed implements FeatureSetValidation {
     public ValidationException getMessage(Feature feature) {
         return toError(feature.name() + " not allowed.");
     }
+
+    @Override
+    public String getName() {
+        return names.isEmpty() ? FeatureSetValidation.super.getName() : names.stream().collect(Collectors.joining(SEPERATOR));
+    }
+
 
     @Override
     public Set<Feature> getFeatures() {
