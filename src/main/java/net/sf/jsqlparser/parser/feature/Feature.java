@@ -45,7 +45,9 @@ import net.sf.jsqlparser.statement.select.First;
 import net.sf.jsqlparser.statement.select.KSQLWindow;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
+import net.sf.jsqlparser.statement.select.OptimizeFor;
 import net.sf.jsqlparser.statement.select.PivotXml;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.Skip;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.truncate.Truncate;
@@ -73,7 +75,7 @@ public enum Feature {
      */
     selectHaving,
     /**
-     * "INTO"
+     * "INTO table(, table)*"
      */
     selectInto,
 
@@ -82,22 +84,31 @@ public enum Feature {
      */
     limit,
     /**
+     * "LIMIT NULL"
+     * 
      * @see Limit#isLimitNull()
      */
     limitNull,
     /**
+     * "LIMIT ALL"
+     * 
      * @see Limit#isLimitAll()
      */
     limitAll,
     /**
+     * "LIMIT offset, limit"
+     * 
      * @see Limit#getOffset()
      */
     limitOffset,
     /**
+     * "OFFSET offset"
      * @see Offset
      */
     offset,
     /**
+     * "OFFSET param"
+     * 
      * @see Offset#getOffsetParam()
      */
     offsetParam,
@@ -176,6 +187,8 @@ public enum Feature {
     joinUsingColumns,
 
     /**
+     * "SKIP variable" | "SKIP ?" | "SKIP rowCount"
+     * 
      * @see Skip
      */
     skip,
@@ -193,6 +206,11 @@ public enum Feature {
      * @see Top
      */
     top,
+    /**
+     * "OPTIMIZE FOR rowCount ROWS"
+     * 
+     * @see OptimizeFor
+     */
     optimizeFor,
 
     selectUnique,
@@ -214,9 +232,21 @@ public enum Feature {
     window,
     selectForXmlPath,
 
+    /**
+     * "FOR UPDATE"
+     */
     selectForUpdate,
+    /**
+     * "FOR UPDATE OF table"
+     */
     selectForUpdateOfTable,
+    /**
+     * "FOR UPDATE WAIT timeout"
+     */
     selectForUpdateWait,
+    /**
+     * "FOR UPDATE NOWAIT"
+     */
     selectForUpdateNoWait,
 
 
@@ -224,26 +254,61 @@ public enum Feature {
      * SQL "INSERT" statement is allowed
      */
     insert,
+    /**
+     * "INSERT .. SELECT"
+     */
     insertFromSelect,
+    /**
+     * "LOW_PRIORITY | DELAYED | HIGH_PRIORITY | IGNORE"
+     */
     insertModifierPriority,
+    /**
+     * "IGNORE"
+     */
     insertModifierIgnore,
+    /**
+     * "INSERT .. SET"
+     */
     insertUseSet,
+    /**
+     * "ON DUPLICATE KEY UPDATE"
+     */
     insertUseDuplicateKeyUpdate,
-    insertReturning,
+    /**
+     * "RETURNING *"
+     */
+    insertReturningAll,
+    /**
+     * "RETURNING expr(, expr)*"
+     * 
+     * @see SelectExpressionItem
+     */
     insertReturningExpressionList,
 
     /**
+     * "VALUES"
+     * 
      * @see ValuesStatement
      */
     insertValues,
+
     /**
      * SQL "UPDATE" statement is allowed
      *
      * @see Update
      */
     update,
+    /**
+     * "UPDATE table1 SET ... FROM table2
+     */
     updateFrom,
+    /**
+     * "UPDATE table1, table2 ..."
+     */
     updateJoins,
+    /**
+     * UPDATE table SET (col, ...) = (SELECT col, ... )"
+     */
     updateUseSelect,
     updateOrderBy,
     updateLimit,
@@ -254,10 +319,23 @@ public enum Feature {
      * @see Delete
      */
     delete,
+    /**
+     * "DELETE FROM table1, table1 ..."
+     */
     deleteJoin,
+    /**
+     * "DELETE table1, table1 FROM table ..."
+     */
     deleteTables,
+    /**
+     * "LIMIT row_count"
+     */
     deleteLimit,
+    /**
+     * "ORDER BY ..."
+     */
     deleteOrderBy,
+
     /**
      * SQL "UPSERT" statement is allowed
      *
@@ -343,13 +421,22 @@ public enum Feature {
      */
     commit,
     /**
-     * SQL "COMMENT" statement is allowed
+     * SQL "COMMENT ON" statement is allowed
      *
      * @see Comment
      */
     comment,
+    /**
+     * "COMMENT ON table"
+     */
     commentOnTable,
+    /**
+     * "COMMENT ON column"
+     */
     commentOnColumn,
+    /**
+     * "COMMENT ON view"
+     */
     commentOnView,
 
     /**

@@ -19,6 +19,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
  * Please add Features supported and place a link to public documentation
  * 
  * @author gitmotte
+ * @see https://mariadb.com/kb/en/sql-statements-structure/
  */
 public enum MariaDbVersion implements Version {
     V10_5_4("10.5.4",
@@ -26,13 +27,72 @@ public enum MariaDbVersion implements Version {
                     Feature.jdbcParameter,
                     Feature.jdbcNamedParameter,
                     // common features
+                    // https://mariadb.com/kb/en/select/
                     Feature.select,
-                    Feature.insert,
+                    Feature.selectGroupBy, Feature.selectHaving,
+                    Feature.limit, Feature.limitOffset, Feature.offset, Feature.offsetParam,
+                    Feature.orderBy,
+                    Feature.selectForUpdate, Feature.selectForUpdateWait, Feature.selectForUpdateNoWait,
+
+                    // https://mariadb.com/kb/en/join-syntax/
+                    Feature.join, Feature.joinSimple, Feature.joinRight, Feature.joinNatural, Feature.joinLeft,
+                    Feature.joinCross, Feature.joinOuter, Feature.joinInner, Feature.joinStaight,
+                    Feature.joinUsingColumns,
+
+                    // https://mariadb.com/kb/en/select/#distinct
+                    Feature.distinct,
+
+                    // https://mariadb.com/kb/en/insert/
+                    Feature.insert, Feature.insertValues,
+                    Feature.insertFromSelect, Feature.insertModifierPriority, Feature.insertModifierIgnore,
+                    Feature.insertUseSet, Feature.insertUseDuplicateKeyUpdate, Feature.insertReturningExpressionList,
+
+                    // https://mariadb.com/kb/en/update/
                     Feature.update,
+                    Feature.updateJoins,
+                    Feature.updateOrderBy, Feature.updateLimit,
+
+                    // https://mariadb.com/kb/en/delete/
                     Feature.delete,
+                    Feature.deleteTables,
+                    Feature.deleteLimit, Feature.deleteOrderBy,
+
+                    // https://mariadb.com/kb/en/truncate-table/
                     Feature.truncate,
+
+                    // https://mariadb.com/kb/en/drop/
                     Feature.drop,
-                    Feature.alter));
+
+                    // https://mariadb.com/kb/en/replace/
+                    Feature.replace,
+
+                    // https://mariadb.com/kb/en/alter/
+                    Feature.alter,
+                    // https://mariadb.com/kb/en/alter-sequence/
+                    Feature.alterSequence,
+                    // https://mariadb.com/kb/en/alter-view/
+                    Feature.alterView,
+                    // https://mariadb.com/kb/en/create-view/
+                    Feature.createView,
+                    // https://mariadb.com/kb/en/create-table/
+                    Feature.createTable,
+                    // https://mariadb.com/kb/en/create-index/
+                    Feature.createIndex,
+                    // https://mariadb.com/kb/en/create-sequence/
+                    Feature.createSequence,
+                    // https://mariadb.com/kb/en/create-database/
+                    Feature.createSchema,
+                    // https://mariadb.com/kb/en/describe/
+                    Feature.describe,
+                    // https://mariadb.com/kb/en/explain/
+                    Feature.explain, Feature.show,
+                    // https://mariadb.com/kb/en/show-columns/
+                    Feature.showColumns,
+                    // https://mariadb.com/kb/en/use/
+                    Feature.use,
+                    // https://mariadb.com/kb/en/grant/
+                    Feature.grant)),
+    ORACLE_MODE("oracle_mode", EnumSet.of(Feature.selectUnique));
 
     private Set<Feature> features;
     private String versionString;
