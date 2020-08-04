@@ -391,6 +391,10 @@ public enum Feature {
      */
     alterView,
     /**
+     * SQL "ALTER INDEX" statement is allowed
+     */
+    alterIndex,
+    /**
      * SQL "CREATE VIEW" statement is allowed
      *
      * @see CreateView
@@ -414,6 +418,10 @@ public enum Feature {
      * @see CreateSequence
      */
     createSequence,
+    /**
+     * SQL "CREATE TRIGGER" statement is allowed
+     */
+    createTrigger,
     /**
      * SQL "COMMIT" statement is allowed
      *
@@ -519,6 +527,9 @@ public enum Feature {
     setOperationExcept,
     setOperationMinus,
 
+    /**
+     * "WITH name query"
+     */
     withItem,
     withItemRecursive,
 

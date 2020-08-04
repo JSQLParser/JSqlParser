@@ -26,10 +26,24 @@ public enum SqlServerVersion implements Version {
                     // supported if used with jdbc
                     Feature.jdbcParameter,
                     Feature.jdbcNamedParameter,
-                    // common features
+                    // https://docs.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql?view=sql-server-ver15
                     Feature.select,
+                    Feature.selectInto,
+                    Feature.withItem,
                     Feature.selectGroupBy,
+                    Feature.selectHaving, Feature.orderBy,
                     Feature.distinct,
+                    Feature.withItem, Feature.withItemRecursive,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/queries/top-transact-sql?view=sql-server-ver15
+                    Feature.top,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-ver15
+                    Feature.offset, Feature.fetch, Feature.fetchFirst, Feature.fetchNext,
+
+                    // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/set-operators-except-and-intersect-transact-sql?view=sql-server-ver15
+                    // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/set-operators-union-transact-sql?view=sql-server-ver15
+                    Feature.setOperation, Feature.setOperationUnion, Feature.setOperationIntersect,
+                    Feature.setOperationExcept,
+
                     // https://docs.microsoft.com/en-us/sql/t-sql/queries/from-transact-sql?view=sql-server-ver15#syntax
                     Feature.join,
                     Feature.joinSimple,
@@ -41,14 +55,37 @@ public enum SqlServerVersion implements Version {
                     Feature.joinInner,
                     Feature.joinApply,
 
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/insert-transact-sql?view=sql-server-ver15
                     Feature.insert,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/queries/update-transact-sql?view=sql-server-ver15
                     Feature.update,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/delete-transact-sql?view=sql-server-ver15
                     Feature.delete,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/truncate-table-transact-sql?view=sql-server-ver15
                     Feature.truncate,
                     Feature.drop,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-table-transact-sql?view=sql-server-ver15
                     Feature.alter,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-sequence-transact-sql?view=sql-server-ver15
+                    Feature.alterSequence,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-view-transact-sql?view=sql-server-ver15
+                    Feature.alterView,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-index-transact-sql?view=sql-server-ver15
+                    Feature.alterIndex,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-index-transact-sql?view=sql-server-ver15
+                    Feature.createIndex,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver15
+                    Feature.functionalStatement, Feature.procedure,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-schema-transact-sql?view=sql-server-ver15
+                    Feature.createSchema,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-view-transact-sql?view=sql-server-ver15
+                    Feature.createView,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-trigger-transact-sql?view=sql-server-ver15
+                    Feature.createTrigger,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/merge-transact-sql?view=sql-server-ver15
+                    Feature.merge,
                     // special sql-server features
-                    Feature.top, Feature.use, Feature.allowSquareBracketQuotation, //
+                    Feature.use, Feature.allowSquareBracketQuotation, //
                     Feature.pivot, Feature.unpivot, Feature.pivotXml,
                     Feature.selectGroupByGroupingSets));
 
