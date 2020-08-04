@@ -132,7 +132,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
         Stream.of(featureSets).forEach(fs -> {
             features.addAll(fs.getFeatures());
             if (fs instanceof FeatureSetValidation) {
-                names.addAll(collectNames(fs));
+                names.addAll(collectNames((FeatureSetValidation) fs));
             }
         });
         return this;
@@ -164,7 +164,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
         Stream.of(featureSets).forEach(fs -> {
             features.removeAll(fs.getFeatures());
             if (fs instanceof FeatureSetValidation) {
-                names.removeAll(collectNames(fs));
+                names.removeAll(collectNames((FeatureSetValidation) fs));
             }
         });
         return this;
@@ -226,8 +226,8 @@ public class FeaturesAllowed implements FeatureSetValidation {
         return features;
     }
 
-    private List<String> collectNames(FeatureSet fs) {
-        String name = ((FeatureSetValidation) fs).getName();
+    private List<String> collectNames(FeatureSetValidation fs) {
+        String name = fs.getName();
         List<String> collect = Stream.of(name.split(SEPERATOR_REGEX)).map(String::trim).collect(Collectors.toList());
         return collect;
     }
