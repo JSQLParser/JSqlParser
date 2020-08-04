@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -131,9 +132,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
         Stream.of(featureSets).forEach(fs -> {
             features.addAll(fs.getFeatures());
             if (fs instanceof FeatureSetValidation) {
-                String name = ((FeatureSetValidation) fs).getName();
-                names.addAll(Stream.of(name.split(SEPERATOR_REGEX)).map(String::trim)
-                        .collect(Collectors.toList()));
+                names.addAll(collectNames(fs));
             }
         });
         return this;
@@ -162,7 +161,12 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * @return <code>this</code>
      */
     public FeaturesAllowed remove(FeatureSet... featureSets) {
-        Stream.of(featureSets).map(FeatureSet::getFeatures).forEach(fs -> features.removeAll(fs));
+        Stream.of(featureSets).forEach(fs -> {
+            features.removeAll(fs.getFeatures());
+            if (fs instanceof FeatureSetValidation) {
+                names.removeAll(collectNames(fs));
+            }
+        });
         return this;
     }
 
@@ -220,6 +224,12 @@ public class FeaturesAllowed implements FeatureSetValidation {
     @Override
     public Set<Feature> getFeatures() {
         return features;
+    }
+
+    private List<String> collectNames(FeatureSet fs) {
+        String name = ((FeatureSetValidation) fs).getName();
+        List<String> collect = Stream.of(name.split(SEPERATOR_REGEX)).map(String::trim).collect(Collectors.toList());
+        return collect;
     }
 
 }
