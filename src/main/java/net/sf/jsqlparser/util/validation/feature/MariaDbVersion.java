@@ -42,6 +42,14 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/select/#distinct
                     Feature.distinct,
 
+                    Feature.setOperation,
+                    // https://mariadb.com/kb/en/union/
+                    Feature.setOperationUnion,
+                    // https://mariadb.com/kb/en/intersect/
+                    Feature.setOperationIntersect,
+                    // https://mariadb.com/kb/en/except/
+                    Feature.setOperationExcept,
+
                     // https://mariadb.com/kb/en/insert/
                     Feature.insert, Feature.insertValues,
                     Feature.insertFromSelect, Feature.insertModifierPriority, Feature.insertModifierIgnore,
