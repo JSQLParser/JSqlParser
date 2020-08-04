@@ -48,6 +48,9 @@ public enum H2Version implements Version {
                     // http://www.h2database.com/html/grammar.html#order
                     Feature.orderBy, Feature.orderByNullOrdering,
 
+                    // http://www.h2database.com/html/commands.html?highlight=select&search=SELECT#with
+                    Feature.withItem, Feature.withItemRecursive,
+
                     // http://h2database.com/html/commands.html#comment
                     Feature.comment,
                     Feature.commentOnTable,
