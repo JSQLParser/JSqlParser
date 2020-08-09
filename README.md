@@ -67,6 +67,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 3.3
 
+* **COMMENT ON VIEW** implemented
 * allowed Jdbc named parameters within interval expressions
 * allow variable assignments in select statements in different positions
 * allow keywords as object names **of**, **exclude**
