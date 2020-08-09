@@ -69,6 +69,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 * allowed Jdbc named parameters within interval expressions
 * allow variable assignments in select statements in different positions
+* allow keywords as object names **of**, **exclude**
+* multi part **Table** name gets automatically resized if the last item is removed
 
 ## Extensions of JSqlParser releases
 
