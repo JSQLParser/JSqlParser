@@ -1192,15 +1192,15 @@ public class SelectTest {
         PlainSelect plainSelect = (PlainSelect) ((Select) parsed).getSelectBody();
         assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), where);
     }
-    
+
     @Test
     public void testNotExists() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed( "SELECT * FROM tab1 WHERE NOT EXISTS (SELECT * FROM tab2)");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM tab1 WHERE NOT EXISTS (SELECT * FROM tab2)");
     }
-    
+
     @Test
     public void testNotExistsIssue() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed( "SELECT * FROM t001 t WHERE NOT EXISTS (SELECT * FROM t002 t1 WHERE t.c1 = t1.c1 AND t.c2 = t1.c2 AND ('241' IN (t1.c3 || t1.c4)))");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t001 t WHERE NOT EXISTS (SELECT * FROM t002 t1 WHERE t.c1 = t1.c1 AND t.c2 = t1.c2 AND ('241' IN (t1.c3 || t1.c4)))");
     }
 
     @Test
@@ -1332,7 +1332,7 @@ public class SelectTest {
     public void testIssue862CaseWhenConcat() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT c1, CASE c1 || c2 WHEN '091' THEN '2' ELSE '1' END AS c11 FROM T2");
     }
-    
+
     @Test
     public void testExpressionsInCaseBeforeWhen() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a FROM tbl1 LEFT JOIN tbl2 ON CASE tbl1.col1 WHEN tbl1.col1 = 1 THEN tbl1.col2 = tbl2.col2 ELSE tbl1.col3 = tbl2.col3 END");
@@ -1911,12 +1911,12 @@ public class SelectTest {
     public void testAnalyticFunctionFilterIssue866() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) FILTER (WHERE name = 'Raj') OVER (PARTITION BY name ) FROM table");
     }
-    
+
     @Test
     public void testAnalyticPartitionBooleanExpressionIssue864() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) OVER (PARTITION BY (event = 'admit' OR event = 'family visit') ORDER BY day ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) family_visits FROM patients");
     }
-    
+
     @Test
     public void testAnalyticPartitionBooleanExpressionIssue864_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) OVER (PARTITION BY (event = 'admit' OR event = 'family visit') ) family_visits FROM patients");
@@ -2207,7 +2207,7 @@ public class SelectTest {
     @Test
     public void testLateralComplex1() throws IOException, JSQLParserException {
         String stmt = IOUtils.toString(SelectTest.class.
-                getResourceAsStream("complex-lateral-select-request.txt"), 
+                getResourceAsStream("complex-lateral-select-request.txt"),
                 Charset.forName("UTF-8"));
         Select select = (Select) parserManager.parse(new StringReader(stmt));
         assertEquals("SELECT O.ORDERID, O.CUSTNAME, OL.LINETOTAL, OC.ORDCHGTOTAL, OT.TAXTOTAL FROM ORDERS O, LATERAL(SELECT SUM(NETAMT) AS LINETOTAL FROM ORDERLINES LINES WHERE LINES.ORDERID = O.ORDERID) AS OL, LATERAL(SELECT SUM(CHGAMT) AS ORDCHGTOTAL FROM ORDERCHARGES CHARGES WHERE LINES.ORDERID = O.ORDERID) AS OC, LATERAL(SELECT SUM(TAXAMT) AS TAXTOTAL FROM ORDERTAXES TAXES WHERE TAXES.ORDERID = O.ORDERID) AS OT", select.
@@ -2637,7 +2637,7 @@ public class SelectTest {
             assertStatementCanBeDeparsedAs(select, statement, true);
         }
     }
-    
+
     @Test
     public void testJsonExpressionWithIntegerParameterIssue909() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select uc.\"id\", u.nickname, u.avatar, b.title, uc.images, uc.created_at as createdAt from library.ugc_comment uc INNER JOIN library.book b on (uc.books_id ->> 0)::INTEGER = b.\"id\" INNER JOIN library.users u ON uc.user_id = u.user_id where uc.id = 1", true);
@@ -3210,8 +3210,8 @@ public class SelectTest {
     }
 
     /**
-     * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> correctly sets a {@link Wait} with the
-     * correct timeout value.
+     * Validates that a SELECT with FOR UPDATE WAIT <TIMEOUT> correctly sets a {@link Wait} with the correct timeout
+     * value.
      */
     @Test
     public void testForUpdateWaitWithTimeout() throws JSQLParserException {
@@ -3257,17 +3257,17 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 IGNORE INDEX (index1,index2)");
         assertSqlCanBeParsedAndDeparsed("SELECT column FROM testtable AS t0 FORCE INDEX (index1,index2)");
     }
-    
+
     @Test
     public void testSqlServerHints() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM TB_Sys_Pedido WITH (NOLOCK) WHERE ID_Pedido = :ID_Pedido");
     }
-    
+
     @Test
     public void testSqlServerHintsWithIndexIssue915() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM tableName1 WITH (INDEX (idx1), NOLOCK)");
     }
-    
+
     @Test
     public void testSqlServerHintsWithIndexIssue915_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM tableName1 AS t1 WITH (INDEX (idx1)) JOIN tableName2 AS t2 WITH (INDEX (idx2)) ON t1.id = t2.id");
@@ -3360,7 +3360,7 @@ public class SelectTest {
 
     @Test
     public void testIssue566LargeView() throws IOException, JSQLParserException {
-        String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-issue-566.txt"), 
+        String stmt = IOUtils.toString(SelectTest.class.getResourceAsStream("large-sql-issue-566.txt"),
                 Charset.forName("UTF-8"));
         assertSqlCanBeParsedAndDeparsed(stmt, true);
     }
@@ -3518,7 +3518,7 @@ public class SelectTest {
     public void testMultiPartNamesIssue608() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @@sessions.tx_read_only");
     }
-    
+
     @Test
     public void testMultiPartNamesForFunctionsIssue944() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT pg_catalog.now()");
@@ -4053,7 +4053,7 @@ public class SelectTest {
                 + "            else calc1.student_full_name end as summary\n"
                 + ") calc2", true);
     }
-    
+
     @Test
     public void testOuterApplyIssue930() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable D OUTER APPLY (SELECT * FROM mytable2 E WHERE E.ColID = D.ColID) A");
@@ -4087,24 +4087,24 @@ public class SelectTest {
                 + "ELSE 1 = 1\n"
                 + "END\n", true);
     }
-    
+
     @Test
     public void testOrderKeywordIssue932() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT order FROM tmp3");
         assertSqlCanBeParsedAndDeparsed("SELECT tmp3.order FROM tmp3");
     }
-    
+
     @Test
     public void testOrderKeywordIssue932_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT group FROM tmp3");
         assertSqlCanBeParsedAndDeparsed("SELECT tmp3.group FROM tmp3");
     }
-    
+
     @Test
     public void testTableFunctionInExprIssue923() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE func(a) IN func(b)");
     }
-    
+
 //    @Test
 //    public void testTableFunctionInExprIssue923_2() throws JSQLParserException, IOException {
 //        String stmt = IOUtils.toString(
@@ -4112,92 +4112,95 @@ public class SelectTest {
 //                .replace("@Prompt", "MyFunc");
 //        assertSqlCanBeParsedAndDeparsed(stmt, true);
 //    }
-    
     @Test
     public void testTableFunctionInExprIssue923_3() throws JSQLParserException, IOException {
         String stmt = IOUtils.toString(
                 SelectTest.class.getResourceAsStream("large-sql-issue-923-2.txt"), "UTF-8");
         assertSqlCanBeParsedAndDeparsed(stmt, true);
     }
-    
+
     @Test
     public void testTableFunctionInExprIssue923_4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT MAX(CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '1' THEN COALESCE(CLAIM_STATUS2,CLAIM_STATUS1) ELSE NULL END) AS DUPE_1_KINAL_CLAIM_STATUS", true);
     }
-    
+
     @Test
     public void testTableFunctionInExprIssue923_5() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN DUPLICATE_CLAIM_NUMBER IN  '1' THEN COALESCE(CLAIM_STATUS2,CLAIM_STATUS1) ELSE NULL END", true);
     }
-    
+
     @Test
     public void testTableFunctionInExprIssue923_6() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE func(a) IN '1'");
     }
-    
+
     @Test
     public void testKeyWordCreateIssue941() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT b.create FROM table b WHERE b.id = 1");
     }
-    
-    
+
     @Test
     public void testKeyWordCreateIssue941_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select f.select from `from` f", true);
     }
-    
+
     @Test
     public void testCurrentIssue940() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT date(current) AS test_date FROM systables WHERE tabid = 1");
     }
-    
+
     @Test
     public void testKeyWordView() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ma.m_a_id, ma.anounsment, ma.max_view, ma.end_date, ma.view FROM member_anounsment as ma WHERE ( ( (ma.end_date > now() ) AND (ma.max_view >= ma.view) ) AND ( (ma.member_id='xxx') ) )", true);
     }
-    
+
     @Test
     public void testPreserveAndOperator() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE 1 = 2 && 2 = 3");
     }
-    
+
     @Test
     public void testPreserveAndOperator_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (field_1 && ?)");
     }
-    
+
     @Test
     public void testCheckDateFunctionIssue() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT DATEDIFF(NOW(), MIN(s.startTime))");
     }
-    
+
     @Test
     public void testCheckDateFunctionIssue_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT DATE_SUB(NOW(), INTERVAL :days DAY)");
     }
-    
+
     @Test
     public void testCheckDateFunctionIssue_3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT DATE_SUB(NOW(), INTERVAL 1 DAY)");
     }
-    
+
     @Test
     public void testCheckColonVariable() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE (col1, col2) IN ((:qp0, :qp1), (:qp2, :qp3))");
     }
-    
+
     @Test
     public void testVariableAssignment() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @SELECTVariable = 2");
     }
-    
+
     @Test
     public void testVariableAssignment2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @var = 1");
     }
-    
+
     @Test
     public void testVariableAssignment3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT @varname := @varname + 1 AS counter");
+    }
+
+    @Test
+    public void testKeyWordOfIssue1029() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT of.Full_Name_c AS FullName FROM comdb.Offer_c AS of");
     }
 }
