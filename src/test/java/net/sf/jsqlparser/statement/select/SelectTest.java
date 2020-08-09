@@ -4203,4 +4203,9 @@ public class SelectTest {
     public void testKeyWordOfIssue1029() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT of.Full_Name_c AS FullName FROM comdb.Offer_c AS of");
     }
+    
+    @Test
+    public void testKeyWordExceptIssue1026() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM xxx WHERE exclude = 1");
+    }
 }
