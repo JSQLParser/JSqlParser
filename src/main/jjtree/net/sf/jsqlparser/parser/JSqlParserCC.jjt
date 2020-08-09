@@ -4010,6 +4010,7 @@ CreateTable CreateTable():
     CheckConstraint checkCs = null;
     ExcludeConstraint excludeC = null;
     RowMovement rowMovement = null;
+    ReferentialAction.Action action = null;
 }
 {
     <K_CREATE>
@@ -4102,14 +4103,12 @@ CreateTable CreateTable():
                             fkIndex.setReferencedColumnNames(colNames2);
                             indexes.add(fkIndex);
                         }
-                        [LOOKAHEAD(2) (<K_ON> <K_DELETE>
-                                  (<K_CASCADE> {fkIndex.setOnDeleteReferenceOption("CASCADE");}
-                                   |
-                                   <K_NO> <K_ACTION> {fkIndex.setOnDeleteReferenceOption("NO ACTION");}
-                                   |
-                                   <K_SET> <K_NULL> {fkIndex.setOnDeleteReferenceOption("SET NULL");}
-                                    ))]
-                        [LOOKAHEAD(2) (<K_ON> <K_UPDATE> (<K_CASCADE> {fkIndex.setOnUpdateReferenceOption("CASCADE");}|<K_NO> <K_ACTION> {fkIndex.setOnUpdateReferenceOption("NO ACTION");}))]
+                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                        		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                                  )]
+                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                        		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                           		  )]
                 )
                 |
                  LOOKAHEAD(3)(
@@ -4195,7 +4194,7 @@ ColDataType ColDataType():
 		(tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 		| tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_DATE_LITERAL> | tk=<K_XML> | tk=<K_INTERVAL>
-			| tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> | tk=<K_BINARY> )
+			| tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> | tk=<K_BINARY> | tk=<K_JSON> )
 				{ colDataType.setDataType(tk.image); }
 		| tk=<K_UNSIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
 		| LOOKAHEAD(2) tk=<K_SIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
@@ -4239,6 +4238,26 @@ CreateView CreateView():
     select=Select() { createView.setSelect(select); }
     [ <K_WITH> <K_READ> <K_ONLY> { createView.setWithReadOnly(true); } ]
     { return createView; }
+}
+
+ReferentialAction.Action Action():
+{
+    ReferentialAction.Action action = null;
+}
+{
+    (<K_CASCADE> { action=ReferentialAction.Action.CASCADE;}
+     |
+     <K_RESTRICT> {action=ReferentialAction.Action.RESTRICT;}
+     |
+     <K_NO> <K_ACTION> {action=ReferentialAction.Action.NO_ACTION;}
+     |
+     <K_SET> (
+	          <K_NULL> {action=ReferentialAction.Action.SET_NULL;}
+              |
+              <K_DEFAULT> {action=ReferentialAction.Action.SET_DEFAULT;}
+             )
+     )
+    { return action; }
 }
 
 AlterView AlterView():
@@ -4561,6 +4580,7 @@ AlterExpression AlterExpression():
     Table fkTable = null;
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
+    ReferentialAction.Action action = null;
 }
 {
 
@@ -4606,10 +4626,13 @@ AlterExpression AlterExpression():
             ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); columnNames = null; }
                  <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
                         { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
-                [<K_ON> <K_DELETE>
-                                (<K_CASCADE> { alterExp.setOnDeleteCascade(true); }
-                                | <K_RESTRICT> { alterExp.setOnDeleteRestrict(true); }
-                                | <K_SET> <K_NULL> { alterExp.setOnDeleteSetNull(true); } ) ]
+                                
+                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                        		  { alterExp.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                                  )]
+                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                        		  { alterExp.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                           		  )]
             )
             |
             (
@@ -4630,10 +4653,13 @@ AlterExpression AlterExpression():
                         fkIndex.setReferencedColumnNames(columnNames);
                         alterExp.setIndex(fkIndex);
                     }
-                    [<K_ON> <K_DELETE>
-                                (<K_CASCADE> { fkIndex.setOnDeleteReferenceOption("CASCADE"); }
-                                | <K_RESTRICT> { fkIndex.setOnDeleteReferenceOption("RESTRICT"); }
-                                | <K_SET> <K_NULL> { fkIndex.setOnDeleteReferenceOption("SET NULL"); } ) ]
+                                
+                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                        		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                                  )]
+                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                        		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                           		  )]
                     constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                 )
                 |
