@@ -15,6 +15,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -61,5 +62,13 @@ public class TableTest {
 
         deparser.visit((PlainSelect) select.getSelectBody());
 
+    }
+    
+    @Test
+    public void testTableRemoveNameParts() {
+        Table table = new Table("link", "DICTIONARY");
+        assertThat(table.getFullyQualifiedName()).isEqualTo("link.DICTIONARY");
+        table.setSchemaName(null);
+        assertThat(table.getFullyQualifiedName()).isEqualTo("DICTIONARY");
     }
 }
