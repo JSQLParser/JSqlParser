@@ -11,7 +11,13 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+
+import net.sf.jsqlparser.statement.ReferentialAction;
+import net.sf.jsqlparser.statement.ReferentialAction.Action;
+import net.sf.jsqlparser.statement.ReferentialAction.Type;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
@@ -23,7 +29,7 @@ public class AlterExpression {
     private String optionalSpecifier;
     private String columnName;
     private String columnOldName;
-    //private ColDataType dataType;
+    // private ColDataType dataType;
 
     private List<ColumnDataType> colDataTypeList;
     private List<ColumnDropNotNull> columnDropNotNullList;
@@ -34,9 +40,9 @@ public class AlterExpression {
     private Index index = null;
     private String constraintName;
     private boolean constraintIfExists;
-    private boolean onDeleteRestrict;
-    private boolean onDeleteSetNull;
-    private boolean onDeleteCascade;
+
+    private Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
+
     private List<String> fkColumns;
     private String fkSourceTable;
     private List<String> fkSourceColumns;
@@ -71,28 +77,96 @@ public class AlterExpression {
         this.optionalSpecifier = optionalSpecifier;
     }
 
+    /**
+     * @param type
+     * @param action
+     */
+    public void setReferentialAction(Type type, Action action) {
+        setReferentialAction(type, action, true);
+    }
+
+    /**
+     * @param type
+     */
+    public void removeReferentialAction(Type type) {
+        setReferentialAction(type, null, false);
+    }
+
+    /**
+     * @param type
+     * @return
+     */
+    public ReferentialAction getReferentialAction(Type type) {
+        return referentialActions.stream().filter(ra -> type.equals(ra.getType())).findFirst().orElse(null);
+    }
+
+    private void setReferentialAction(Type type, Action action, boolean set) {
+        ReferentialAction found = getReferentialAction(type);
+        if (set) {
+            if (found == null) {
+                referentialActions.add(new ReferentialAction(type, action));
+            } else {
+                found.setAction(action);
+            }
+        } else if (found != null) {
+            referentialActions.remove(found);
+        }
+    }
+    /**
+     * @return
+     * @deprecated use {@link #getOnDeleteReferentialAction()}
+     */
+    @Deprecated
     public boolean isOnDeleteCascade() {
-        return onDeleteCascade;
+        ReferentialAction found = getReferentialAction(Type.DELETE);
+        return found != null && Action.CASCADE.equals(found.getAction());
     }
 
+    /**
+     * @return
+     * @deprecated use {@link #setOnDeleteReferentialAction(Action)
+     */
+    @Deprecated
     public void setOnDeleteCascade(boolean onDeleteCascade) {
-        this.onDeleteCascade = onDeleteCascade;
+        setReferentialAction(Type.DELETE, Action.CASCADE, onDeleteCascade);
     }
 
+    /**
+     * @return
+     * @deprecated use {@link #getOnDeleteReferentialAction()}
+     */
+    @Deprecated
     public boolean isOnDeleteRestrict() {
-        return onDeleteRestrict;
+        ReferentialAction found = getReferentialAction(Type.DELETE);
+        return found != null && Action.RESTRICT.equals(found.getAction());
     }
 
+    /**
+     * @return
+     * @deprecated use {@link #setOnDeleteReferentialAction(Action)
+     */
+    @Deprecated
     public void setOnDeleteRestrict(boolean onDeleteRestrict) {
-        this.onDeleteRestrict = onDeleteRestrict;
+        setReferentialAction(Type.DELETE, Action.RESTRICT, onDeleteRestrict);
     }
 
+    /**
+     * @return
+     * @deprecated use {@link #getOnDeleteReferentialAction()}
+     */
+    @Deprecated
     public boolean isOnDeleteSetNull() {
-        return onDeleteSetNull;
+        ReferentialAction found = getReferentialAction(Type.DELETE);
+        return found != null && Action.SET_NULL.equals(found.getAction());
     }
 
+    /**
+     * @return
+     * @deprecated use {@link #setOnDeleteReferentialAction(Action)
+     */
+    @Deprecated
     public void setOnDeleteSetNull(boolean onDeleteSetNull) {
-        this.onDeleteSetNull = onDeleteSetNull;
+        setReferentialAction(Type.DELETE, Action.SET_NULL, onDeleteSetNull);
     }
 
     public List<String> getFkColumns() {
@@ -121,14 +195,14 @@ public class AlterExpression {
 
     public void addColDataType(ColumnDataType columnDataType) {
         if (colDataTypeList == null) {
-            colDataTypeList = new ArrayList<ColumnDataType>();
+            colDataTypeList = new ArrayList<>();
         }
         colDataTypeList.add(columnDataType);
     }
 
     public void addColDropNotNull(ColumnDropNotNull columnDropNotNull) {
         if (columnDropNotNullList == null) {
-            columnDropNotNullList = new ArrayList<ColumnDropNotNull>();
+            columnDropNotNullList = new ArrayList<>();
         }
         columnDropNotNullList.add(columnDropNotNull);
     }
@@ -219,7 +293,7 @@ public class AlterExpression {
 
     public void addParameters(String... params) {
         if (parameters == null) {
-            parameters = new ArrayList<String>();
+            parameters = new ArrayList<>();
         }
         parameters.addAll(Arrays.asList(params));
     }
@@ -312,16 +386,11 @@ public class AlterExpression {
             }
             b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
-            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).
-                    append(") REFERENCES ").append(fkSourceTable).append(" (").append(
-                    PlainSelect.getStringList(fkSourceColumns)).append(")");
-            if (isOnDeleteCascade()) {
-                b.append(" ON DELETE CASCADE");
-            } else if (isOnDeleteRestrict()) {
-                b.append(" ON DELETE RESTRICT");
-            } else if (isOnDeleteSetNull()) {
-                b.append(" ON DELETE SET NULL");
-            }
+            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).append(") REFERENCES ")
+            .append(fkSourceTable).append(" (").append(
+                    PlainSelect.getStringList(fkSourceColumns))
+            .append(")");
+            referentialActions.forEach(b::append);
         } else if (index != null) {
             b.append(index);
         }

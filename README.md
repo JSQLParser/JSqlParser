@@ -67,8 +67,13 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 3.3
 
+* **ON UPDATE CASCADE** implemented
+* add generated sources to classpath to avoid maven eclipse problems
+* **COMMENT ON VIEW** implemented
 * allowed Jdbc named parameters within interval expressions
 * allow variable assignments in select statements in different positions
+* allow keywords as object names **of**, **exclude**
+* multi part **Table** name gets automatically resized if the last item is removed
 
 ## Extensions of JSqlParser releases
 
