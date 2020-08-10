@@ -21,6 +21,8 @@ import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import org.apache.commons.io.IOUtils;
+
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -4207,5 +4209,17 @@ public class SelectTest {
     @Test
     public void testKeyWordExceptIssue1026() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM xxx WHERE exclude = 1");
+    }
+
+    @Test
+    public void testSelectConditionsIssue720And991() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT column IS NOT NULL FROM table");
+        assertSqlCanBeParsedAndDeparsed("SELECT 0 IS NULL");
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 + 2");
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 < 2");
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 > 2");
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 + 2 AS a, 3 < 4 AS b");
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 < 2 AS a, 0 IS NULL AS b");
+//        assertSqlCanBeParsedAndDeparsed("SELECT 1 < 2 AS a, (0 IS NULL) AS b");
     }
 }
