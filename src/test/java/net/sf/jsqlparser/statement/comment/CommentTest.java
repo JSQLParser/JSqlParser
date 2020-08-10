@@ -9,8 +9,7 @@
  */
 package net.sf.jsqlparser.statement.comment;
 
-import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.junit.Assert.assertEquals;
@@ -106,4 +105,14 @@ public class CommentTest {
         assertThat(comment.getColumn().getTable().getName()).isEqualTo("myTable");
         assertThat(comment.getColumn().getTable().getSchemaName()).isEqualTo("mySchema");
     }   
+
+    @Test
+    public void testCommentOnView() throws JSQLParserException {
+        String statement = "COMMENT ON VIEW myschema.myView IS 'myComment'";
+        Comment comment = (Comment) CCJSqlParserUtil.parse(statement);
+        assertThat(comment.getTable()).isNull();
+        assertThat(comment.getColumn()).isNull();
+        assertThat(comment.getView().getFullyQualifiedName()).isEqualTo("myschema.myView");
+        assertStatementCanBeDeparsedAs(comment, statement);
+    }
 }

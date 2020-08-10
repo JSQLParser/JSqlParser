@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.schema;
 
 import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -60,5 +61,13 @@ public class TableTest {
 
         deparser.visit((PlainSelect) select.getSelectBody());
 
+    }
+    
+    @Test
+    public void testTableRemoveNameParts() {
+        Table table = new Table("link", "DICTIONARY");
+        assertThat(table.getFullyQualifiedName()).isEqualTo("link.DICTIONARY");
+        table.setSchemaName(null);
+        assertThat(table.getFullyQualifiedName()).isEqualTo("DICTIONARY");
     }
 }

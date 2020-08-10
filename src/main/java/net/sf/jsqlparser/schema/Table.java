@@ -130,7 +130,12 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         for (int i = 0; i < idx - size + 1; i++) {
             partItems.add(null);
         }
-        partItems.set(idx, value);
+
+        if (value == null && idx == partItems.size() - 1) {
+            partItems.remove(idx);
+        } else {
+            partItems.set(idx, value);
+        }
     }
 
     private String getIndex(int idx) {
