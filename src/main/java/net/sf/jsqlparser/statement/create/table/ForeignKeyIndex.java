@@ -113,17 +113,10 @@ public class ForeignKeyIndex extends NamedConstraint {
 
     @Override
     public String toString() {
-        String referenceOptions = "";
-        if (onDeleteReferenceOption != null) {
-            referenceOptions += " ON DELETE " + onDeleteReferenceOption;
-        }
-        if (onUpdateReferenceOption != null) {
-            referenceOptions += " ON UPDATE " + onUpdateReferenceOption;
-        }
-        return super.toString()
-                + " REFERENCES " + table + PlainSelect.
-                getStringList(getReferencedColumnNames(), true, true)
-                + referenceOptions;
+        StringBuilder b = new StringBuilder(super.toString()).append(" REFERENCES ").append(table)
+                .append(PlainSelect.getStringList(getReferencedColumnNames(), true, true));
+        referentialActions.forEach(b::append);
+        return b.toString();
     }
 
     public ForeignKeyIndex withTable(Table table) {
