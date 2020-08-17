@@ -52,6 +52,11 @@ public class ForeignKeyIndex extends NamedConstraint {
         setReferentialAction(type, action, true);
     }
 
+    public ForeignKeyIndex withReferentialAction(Type type, Action action) {
+        setReferentialAction(type, action);
+        return this;
+    }
+
     /**
      * @param type
      */

@@ -89,6 +89,11 @@ public class AlterExpression {
         setReferentialAction(type, action, true);
     }
 
+    public AlterExpression withReferentialAction(Type type, Action action) {
+        setReferentialAction(type, action);
+        return this;
+    }
+
     /**
      * @param type
      */
@@ -515,10 +520,10 @@ public class AlterExpression {
         this.setCommentText(commentText);
         return this;
     }
-    
+
     public AlterExpression withColumnOldName(String columnOldName) {
-      setColumnOldName(columnOldName);
-      return this;
+        setColumnOldName(columnOldName);
+        return this;
     }
 
     public AlterExpression addPkColumns(String... pkColumns) {
