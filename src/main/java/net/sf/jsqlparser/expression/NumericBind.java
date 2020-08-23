@@ -32,4 +32,9 @@ public class NumericBind extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return ":" + bindId;
     }
+
+    public NumericBind withBindId(int bindId) {
+        this.setBindId(bindId);
+        return this;
+    }
 }

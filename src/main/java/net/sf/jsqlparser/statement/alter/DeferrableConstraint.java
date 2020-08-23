@@ -13,6 +13,10 @@ public class DeferrableConstraint implements ConstraintState {
 
     private boolean not;
 
+    public DeferrableConstraint() {
+        // empty constructor
+    }
+
     public DeferrableConstraint(boolean not) {
         this.not = not;
     }
@@ -33,5 +37,10 @@ public class DeferrableConstraint implements ConstraintState {
         }
         b.append("DEFERRABLE");
         return b.toString();
+    }
+
+    public DeferrableConstraint withNot(boolean not) {
+        this.setNot(not);
+        return this;
     }
 }

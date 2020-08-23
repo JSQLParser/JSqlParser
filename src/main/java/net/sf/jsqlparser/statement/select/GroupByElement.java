@@ -10,7 +10,10 @@
 package net.sf.jsqlparser.statement.select;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
@@ -78,5 +81,39 @@ public class GroupByElement {
         }
 
         return b.toString();
+    }
+
+    public GroupByElement withGroupByExpressions(List<Expression> groupByExpressions) {
+        this.setGroupByExpressions(groupByExpressions);
+        return this;
+    }
+
+    public GroupByElement withGroupingSets(List groupingSets) {
+        this.setGroupingSets(groupingSets);
+        return this;
+    }
+
+    public GroupByElement addGroupByExpressions(Expression... groupByExpressions) {
+        List<Expression> collection = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, groupByExpressions);
+        return this.withGroupByExpressions(collection);
+    }
+
+    public GroupByElement addGroupByExpressions(Collection<? extends Expression> groupByExpressions) {
+        List<Expression> collection = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
+        collection.addAll(groupByExpressions);
+        return this.withGroupByExpressions(collection);
+    }
+
+    public GroupByElement addGroupingSets(Object... groupingSets) {
+        List collection = Optional.ofNullable(getGroupingSets()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, groupingSets);
+        return this.withGroupingSets(collection);
+    }
+
+    public GroupByElement addGroupingSets(Collection<? extends Object> groupingSets) {
+        List collection = Optional.ofNullable(getGroupingSets()).orElseGet(ArrayList::new);
+        collection.addAll(groupingSets);
+        return this.withGroupingSets(collection);
     }
 }

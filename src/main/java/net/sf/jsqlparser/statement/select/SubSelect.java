@@ -9,8 +9,12 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
@@ -130,5 +134,52 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
         }
 
         return retval.toString();
+    }
+
+    @Override
+    public SubSelect withAlias(Alias alias) {
+        this.setAlias(alias);
+        return this;
+    }
+
+    public SubSelect withUseBrackets(boolean useBrackets) {
+        this.setUseBrackets(useBrackets);
+        return this;
+    }
+
+    public SubSelect withItemsList(List<WithItem> withItemsList) {
+        this.setWithItemsList(withItemsList);
+        return this;
+    }
+
+    public SubSelect withSelectBody(SelectBody selectBody) {
+        this.setSelectBody(selectBody);
+        return this;
+    }
+
+    @Override
+    public SubSelect withPivot(Pivot pivot) {
+        return (SubSelect) FromItem.super.withPivot(pivot);
+    }
+
+    @Override
+    public SubSelect withUnPivot(UnPivot unpivot) {
+        return (SubSelect) FromItem.super.withUnPivot(unpivot);
+    }
+
+    public SubSelect addWithItemsList(WithItem... withItemsList) {
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, withItemsList);
+        return this.withItemsList(collection);
+    }
+
+    public SubSelect addWithItemsList(Collection<? extends WithItem> withItemsList) {
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        collection.addAll(withItemsList);
+        return this.withItemsList(collection);
+    }
+
+    public <E extends SelectBody> E getSelectBody(Class<E> type) {
+        return type.cast(getSelectBody());
     }
 }

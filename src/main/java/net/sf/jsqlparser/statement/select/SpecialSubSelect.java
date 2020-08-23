@@ -76,4 +76,21 @@ public abstract class SpecialSubSelect implements FromItem {
                 + ((pivot != null) ? " " + pivot : "")
                 + ((unpivot != null) ? " " + unpivot : "");
     }
+
+    public SpecialSubSelect withSubSelect(SubSelect subSelect) {
+        this.setSubSelect(subSelect);
+        return this;
+    }
+
+    @Override
+    public SpecialSubSelect withAlias(Alias alias) {
+        this.setAlias(alias);
+        return this;
+    }
+
+    @Override
+    public SpecialSubSelect withPivot(Pivot pivot) {
+        this.setPivot(pivot);
+        return this;
+    }
 }

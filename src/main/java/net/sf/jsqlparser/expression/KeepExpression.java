@@ -9,10 +9,13 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
-
-import java.util.List;
 
 public class KeepExpression extends ASTNodeAccessImpl implements Expression {
 
@@ -73,5 +76,32 @@ public class KeepExpression extends ASTNodeAccessImpl implements Expression {
                 b.append(orderByElements.get(i).toString());
             }
         }
+    }
+
+    public KeepExpression withName(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public KeepExpression withOrderByElements(List<OrderByElement> orderByElements) {
+        this.setOrderByElements(orderByElements);
+        return this;
+    }
+
+    public KeepExpression withFirst(boolean first) {
+        this.setFirst(first);
+        return this;
+    }
+
+    public KeepExpression addOrderByElements(OrderByElement... orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, orderByElements);
+        return this.withOrderByElements(collection);
+    }
+
+    public KeepExpression addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        collection.addAll(orderByElements);
+        return this.withOrderByElements(collection);
     }
 }

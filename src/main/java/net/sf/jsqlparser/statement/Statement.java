@@ -9,7 +9,9 @@
  */
 package net.sf.jsqlparser.statement;
 
-public interface Statement {
+import net.sf.jsqlparser.Model;
+
+public interface Statement extends Model {
 
     void accept(StatementVisitor statementVisitor);
 }

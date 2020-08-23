@@ -54,4 +54,14 @@ public class SQLServerHints {
                 + String.join(", ", hints)
                 + ")";
     }
+
+    public SQLServerHints withNoLock(Boolean noLock) {
+        this.setNoLock(noLock);
+        return this;
+    }
+
+    public SQLServerHints withIndexName(String indexName) {
+        this.setIndexName(indexName);
+        return this;
+    }
 }

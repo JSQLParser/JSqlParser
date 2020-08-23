@@ -65,4 +65,36 @@ public class Between extends ASTNodeAccessImpl implements Expression {
         return leftExpression + " " + (not ? "NOT " : "") + "BETWEEN " + betweenExpressionStart + " AND "
                 + betweenExpressionEnd;
     }
+
+    public Between withLeftExpression(Expression leftExpression) {
+        this.setLeftExpression(leftExpression);
+        return this;
+    }
+
+    public Between withNot(boolean not) {
+        this.setNot(not);
+        return this;
+    }
+
+    public Between withBetweenExpressionStart(Expression betweenExpressionStart) {
+        this.setBetweenExpressionStart(betweenExpressionStart);
+        return this;
+    }
+
+    public Between withBetweenExpressionEnd(Expression betweenExpressionEnd) {
+        this.setBetweenExpressionEnd(betweenExpressionEnd);
+        return this;
+    }
+
+    public <E extends Expression> E getBetweenExpressionEnd(Class<E> type) {
+        return type.cast(getBetweenExpressionEnd());
+    }
+
+    public <E extends Expression> E getBetweenExpressionStart(Class<E> type) {
+        return type.cast(getBetweenExpressionStart());
+    }
+
+    public <E extends Expression> E getLeftExpression(Class<E> type) {
+        return type.cast(getLeftExpression());
+    }
 }

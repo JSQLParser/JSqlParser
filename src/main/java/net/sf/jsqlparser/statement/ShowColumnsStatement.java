@@ -13,6 +13,10 @@ public class ShowColumnsStatement implements Statement {
 
     private String tableName;
 
+    public ShowColumnsStatement() {
+        // empty constructor
+    }
+
     public ShowColumnsStatement(String tableName) {
         this.tableName = tableName;
     }
@@ -33,5 +37,10 @@ public class ShowColumnsStatement implements Statement {
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
+    }
+
+    public ShowColumnsStatement withTableName(String tableName) {
+        this.setTableName(tableName);
+        return this;
     }
 }

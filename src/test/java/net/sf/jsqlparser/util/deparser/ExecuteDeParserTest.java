@@ -9,7 +9,7 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
@@ -18,24 +18,24 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.execute.Execute.EXEC_TYPE;
 
 public class ExecuteDeParserTest {
-    private ExecuteDeParser executeDeParser;
 
-    @Mock
-    private ExpressionVisitor expressionVisitor;
+    private ExecuteDeParser executeDeParser;
+    private ExpressionDeParser expressionVisitor;
 
     private StringBuilder buffer;
 
     @Before
     public void setUp() {
         buffer = new StringBuilder();
+        expressionVisitor = new ExpressionDeParser();
+        expressionVisitor.setBuffer(buffer);
         executeDeParser = new ExecuteDeParser(expressionVisitor, buffer);
     }
 
@@ -43,37 +43,35 @@ public class ExecuteDeParserTest {
     public void shouldDeParseExecute() {
         Execute execute = new Execute();
         String name = "name";
-        ExpressionList exprList = new ExpressionList();
-        List<Expression> expressions = new ArrayList<Expression>();
-        Expression expression1 = mock(Expression.class);
-        Expression expression2 = mock(Expression.class);
 
-        execute.setName(name);
-        execute.setExprList(exprList);
-        exprList.setExpressions(expressions);
-        expressions.add(expression1);
-        expressions.add(expression2);
+        List<Expression> expressions = new ArrayList<>();
+        expressions.add(new JdbcParameter());
+        expressions.add(new JdbcParameter());
+
+        execute.withName(name)
+        .withExecType(EXEC_TYPE.EXECUTE).withParenthesis(true)
+        .withExprList(new ExpressionList().withExpressions(expressions));
 
         executeDeParser.deParse(execute);
 
         String actual = buffer.toString();
-        assertTrue(actual.matches("EXECUTE " + name + " .*?, .*"));
+        assertEquals("EXECUTE " + name + " (?, ?)", actual);
     }
 
     @Test
     public void shouldUseProvidedExpressionVisitorWhenDeParsingExecute() {
         Execute execute = new Execute();
         String name = "name";
-        ExpressionList exprList = new ExpressionList();
-        List<Expression> expressions = new ArrayList<Expression>();
+
         Expression expression1 = mock(Expression.class);
         Expression expression2 = mock(Expression.class);
 
-        execute.setName(name);
-        execute.setExprList(exprList);
-        exprList.setExpressions(expressions);
+        List<Expression> expressions = new ArrayList<>();
         expressions.add(expression1);
         expressions.add(expression2);
+
+        ExpressionList exprList = new ExpressionList().addExpressions(expressions);
+        execute.withName(name).withExprList(exprList);
 
         executeDeParser.deParse(execute);
 

@@ -9,8 +9,12 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 
 /**
@@ -72,5 +76,39 @@ public class NamedExpressionList implements ItemsList {
         ret.append(")");
 
         return ret.toString();
+    }
+
+    public NamedExpressionList withExpressions(List<Expression> expressions) {
+        this.setExpressions(expressions);
+        return this;
+    }
+
+    public NamedExpressionList withNames(List<String> names) {
+        this.setNames(names);
+        return this;
+    }
+
+    public NamedExpressionList addExpressions(Expression... expressions) {
+        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, expressions);
+        return this.withExpressions(collection);
+    }
+
+    public NamedExpressionList addExpressions(Collection<? extends Expression> expressions) {
+        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
+        collection.addAll(expressions);
+        return this.withExpressions(collection);
+    }
+
+    public NamedExpressionList addNames(String... names) {
+        List<String> collection = Optional.ofNullable(getNames()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, names);
+        return this.withNames(collection);
+    }
+
+    public NamedExpressionList addNames(Collection<String> names) {
+        List<String> collection = Optional.ofNullable(getNames()).orElseGet(ArrayList::new);
+        collection.addAll(names);
+        return this.withNames(collection);
     }
 }

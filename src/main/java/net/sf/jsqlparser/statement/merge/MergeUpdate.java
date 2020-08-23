@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.merge;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 
@@ -69,5 +73,57 @@ public class MergeUpdate {
             b.append(" DELETE WHERE ").append(deleteWhereCondition.toString());
         }
         return b.toString();
+    }
+
+    public MergeUpdate withColumns(List<Column> columns) {
+        this.setColumns(columns);
+        return this;
+    }
+
+    public MergeUpdate withValues(List<Expression> values) {
+        this.setValues(values);
+        return this;
+    }
+
+    public MergeUpdate withWhereCondition(Expression whereCondition) {
+        this.setWhereCondition(whereCondition);
+        return this;
+    }
+
+    public MergeUpdate withDeleteWhereCondition(Expression deleteWhereCondition) {
+        this.setDeleteWhereCondition(deleteWhereCondition);
+        return this;
+    }
+
+    public MergeUpdate addColumns(Column... columns) {
+        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columns);
+        return this.withColumns(collection);
+    }
+
+    public MergeUpdate addColumns(Collection<? extends Column> columns) {
+        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        collection.addAll(columns);
+        return this.withColumns(collection);
+    }
+
+    public MergeUpdate addValues(Expression... values) {
+        List<Expression> collection = Optional.ofNullable(getValues()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, values);
+        return this.withValues(collection);
+    }
+
+    public MergeUpdate addValues(Collection<? extends Expression> values) {
+        List<Expression> collection = Optional.ofNullable(getValues()).orElseGet(ArrayList::new);
+        collection.addAll(values);
+        return this.withValues(collection);
+    }
+
+    public <E extends Expression> E getWhereCondition(Class<E> type) {
+        return type.cast(getWhereCondition());
+    }
+
+    public <E extends Expression> E getDeleteWhereCondition(Class<E> type) {
+        return type.cast(getDeleteWhereCondition());
     }
 }

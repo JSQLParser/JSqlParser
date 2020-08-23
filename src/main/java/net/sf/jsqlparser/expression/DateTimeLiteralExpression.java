@@ -42,6 +42,16 @@ public class DateTimeLiteralExpression extends ASTNodeAccessImpl implements Expr
         return type.name() + " " + value;
     }
 
+    public DateTimeLiteralExpression withValue(String value) {
+        this.setValue(value);
+        return this;
+    }
+
+    public DateTimeLiteralExpression withType(DateTime type) {
+        this.setType(type);
+        return this;
+    }
+
     public static enum DateTime {
         DATE, TIME, TIMESTAMP;
     }

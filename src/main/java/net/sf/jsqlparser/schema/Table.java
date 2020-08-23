@@ -12,29 +12,42 @@ package net.sf.jsqlparser.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.MySQLIndexHint;
+import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.IntoTableVisitor;
+import net.sf.jsqlparser.statement.select.Pivot;
+import net.sf.jsqlparser.statement.select.UnPivot;
 
 /**
  * A table. It can have an alias and the schema name it belongs to.
  */
 public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName {
 
-//    private Database database;
-//    private String schemaName;
-//    private String name;
+    // private Database database;
+    // private String schemaName;
+    // private String name;
     private static final int NAME_IDX = 0;
+
     private static final int SCHEMA_IDX = 1;
+
     private static final int DATABASE_IDX = 2;
+
     private static final int SERVER_IDX = 3;
 
     private List<String> partItems = new ArrayList<>();
 
     private Alias alias;
+
     private Pivot pivot;
+
     private UnPivot unpivot;
+
     private MySQLIndexHint mysqlHints;
+
     private SQLServerHints sqlServerHints;
 
     public Table() {
@@ -64,6 +77,11 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return new Database(getIndex(DATABASE_IDX));
     }
 
+    public Table withDatabase(Database database) {
+        setDatabase(database);
+        return this;
+    }
+
     public void setDatabase(Database database) {
         setIndex(DATABASE_IDX, database.getDatabaseName());
         if (database.getServer() != null) {
@@ -75,16 +93,26 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return getIndex(SCHEMA_IDX);
     }
 
-    public void setSchemaName(String string) {
-        setIndex(SCHEMA_IDX, string);
+    public Table withSchemaName(String schemaName) {
+        setSchemaName(schemaName);
+        return this;
+    }
+
+    public void setSchemaName(String schemaName) {
+        setIndex(SCHEMA_IDX, schemaName);
     }
 
     public String getName() {
         return getIndex(NAME_IDX);
     }
 
-    public void setName(String string) {
-        setIndex(NAME_IDX, string);
+    public Table withName(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public void setName(String name) {
+        setIndex(NAME_IDX, name);
     }
 
     @Override
@@ -169,6 +197,11 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return mysqlHints;
     }
 
+    public Table withHint(MySQLIndexHint hint) {
+        setHint(hint);
+        return this;
+    }
+
     public void setHint(MySQLIndexHint hint) {
         this.mysqlHints = hint;
     }
@@ -183,11 +216,29 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     @Override
     public String toString() {
-        return getFullyQualifiedName()
-                + ((alias != null) ? alias.toString() : "")
-                + ((pivot != null) ? " " + pivot : "")
-                + ((unpivot != null) ? " " + unpivot : "")
+        return getFullyQualifiedName() + ((alias != null) ? alias.toString() : "")
+                + ((pivot != null) ? " " + pivot : "") + ((unpivot != null) ? " " + unpivot : "")
                 + ((mysqlHints != null) ? mysqlHints.toString() : "")
                 + ((sqlServerHints != null) ? sqlServerHints.toString() : "");
+    }
+
+    @Override
+    public Table withUnPivot(UnPivot unpivot) {
+        return (Table) FromItem.super.withUnPivot(unpivot);
+    }
+
+    @Override
+    public Table withAlias(Alias alias) {
+        return (Table) FromItem.super.withAlias(alias);
+    }
+
+    @Override
+    public Table withPivot(Pivot pivot) {
+        return (Table) FromItem.super.withPivot(pivot);
+    }
+
+    public Table withSqlServerHints(SQLServerHints sqlServerHints) {
+        this.setSqlServerHints(sqlServerHints);
+        return this;
     }
 }

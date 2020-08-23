@@ -39,4 +39,9 @@ public class CreateSequence implements Statement {
         sql = "CREATE SEQUENCE " + sequence;
         return sql;
     }
+
+    public CreateSequence withSequence(Sequence sequence) {
+        this.setSequence(sequence);
+        return this;
+    }
 }

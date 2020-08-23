@@ -15,9 +15,23 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class OrExpression extends BinaryExpression {
 
+    public OrExpression() {
+        // nothing
+    }
+
     public OrExpression(Expression leftExpression, Expression rightExpression) {
         setLeftExpression(leftExpression);
         setRightExpression(rightExpression);
+    }
+
+    @Override
+    public OrExpression withLeftExpression(Expression expression) {
+        return (OrExpression) super.withLeftExpression(expression);
+    }
+
+    @Override
+    public OrExpression withRightExpression(Expression expression) {
+        return (OrExpression) super.withRightExpression(expression);
     }
 
     @Override
@@ -29,4 +43,5 @@ public class OrExpression extends BinaryExpression {
     public String getStringExpression() {
         return "OR";
     }
+
 }

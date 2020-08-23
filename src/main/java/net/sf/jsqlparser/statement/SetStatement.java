@@ -17,6 +17,10 @@ public final class SetStatement implements Statement {
 
     private final List<NameExpr> values = new ArrayList<>();
 
+    public SetStatement() {
+        // empty constructor
+    }
+
     public SetStatement(String name, Expression expression) {
         add(name, expression, true);
     }
@@ -41,10 +45,20 @@ public final class SetStatement implements Statement {
         return isUseEqual(0);
     }
 
+    public SetStatement withUseEqual(int idx, boolean useEqual) {
+        this.setUseEqual(idx, useEqual);
+        return this;
+    }
+
     public SetStatement setUseEqual(int idx, boolean useEqual) {
         values.get(idx).useEqual = useEqual;
         return this;
     }
+
+    public SetStatement withUseEqual(boolean useEqual) {
+      this.setUseEqual(useEqual);
+      return this;
+  }
 
     public SetStatement setUseEqual(boolean useEqual) {
         return setUseEqual(0, useEqual);
@@ -103,6 +117,10 @@ public final class SetStatement implements Statement {
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
+    }
+
+    public <E extends Expression> E getExpression(Class<E> type) {
+        return type.cast(getExpression());
     }
 
     static class NameExpr {

@@ -51,4 +51,18 @@ public class Offset {
     public String toString() {
         return " OFFSET " + (offsetJdbcParameter!=null ? offsetJdbcParameter.toString() : offset) + (offsetParam != null ? " " + offsetParam : "");
     }
+
+    public Offset withOffset(long offset) {
+        this.setOffset(offset);
+        return this;
+    }
+
+    public Offset withOffsetParam(String offsetParam) {
+        this.setOffsetParam(offsetParam);
+        return this;
+    }
+
+    public <E extends Expression> E getOffsetJdbcParameter(Class<E> type) {
+        return type.cast(getOffsetJdbcParameter());
+    }
 }
