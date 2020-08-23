@@ -65,9 +65,10 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 3.3
+## Extensions in the latest SNAPSHOT version 4.0
 
 * heavy updating of many class files to support fluent like class building and setting of attributes (thx to @gitmotte) 
+** update version to 4.0-SNAPSHOT due fluent PR
 * **ON UPDATE CASCADE** implemented
 * add generated sources to classpath to avoid maven eclipse problems
 * **COMMENT ON VIEW** implemented
