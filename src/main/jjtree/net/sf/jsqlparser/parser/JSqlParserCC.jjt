@@ -8,8 +8,8 @@
  * #L%
  */
 
-options{
-    IGNORE_CASE = true ;
+options {
+    IGNORE_CASE = true;
     STATIC = false;
     DEBUG_PARSER = false;
     DEBUG_LOOKAHEAD = false;
@@ -975,7 +975,7 @@ List<SelectExpressionItem> ListExpressionItem():
 }
 {
    item = SelectExpressionItem() {retval.add(item);}
-   ("," item = SelectExpressionItem() {retval.add(item);} )*
+   (<K_COMMA> item = SelectExpressionItem() {retval.add(item);} )*
    { return retval; }
 }
 
@@ -1636,7 +1636,7 @@ SelectExpressionItem SelectExpressionItem():
     Alias alias = null;
 }
 {
-     expression=SimpleExpression() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
+      expression=Condition() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
              [alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
 }
 
@@ -1785,9 +1785,20 @@ List<SelectExpressionItem> PivotSingleInItems():
    SelectExpressionItem item;
 }
 {
-   item = SelectExpressionItem() {retval.add(item);}
-   ("," item = SelectExpressionItem() {retval.add(item);} )*
+   item = PivotSelectExprItem() {retval.add(item);}
+   ("," item = PivotSelectExprItem() {retval.add(item);} )*
    { return retval; }
+}
+
+SelectExpressionItem PivotSelectExprItem():
+{
+    SelectExpressionItem selectExpressionItem = null;
+    Expression expression = null;
+    Alias alias = null;
+}
+{
+      expression=SimpleExpression() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
+             [alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
 }
 
 ExpressionListItem ExpressionListItem():
@@ -1957,12 +1968,12 @@ FromItem FromItem():
                 (
                     indexHint = MySQLIndexHint() {
                         if (fromItem instanceof Table)
-                                                    ((Table) fromItem).setHint(indexHint);
+                            ((Table) fromItem).setHint(indexHint);
                     }
                     |
                     sqlServerHints = SQLServerHints() {
                         if (fromItem instanceof Table)
-                                                    ((Table) fromItem).setSqlServerHints(sqlServerHints);
+                            ((Table) fromItem).setSqlServerHints(sqlServerHints);
                     }
                 )
             ]
