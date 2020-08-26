@@ -9,13 +9,25 @@
  */
 package net.sf.jsqlparser.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.Node;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
@@ -23,9 +35,10 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 /**
@@ -37,8 +50,13 @@ public class TestUtils {
     private static final Pattern SQL_COMMENT_PATTERN = Pattern.
             compile("(--.*$)|(/\\*.*?\\*/)", Pattern.MULTILINE);
 
-    public static void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed(statement, false);
+    /**
+     * @param statement
+     * @return the parsed {@link Statement}
+     * @throws JSQLParserException
+     */
+    public static Statement assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
+        return assertSqlCanBeParsedAndDeparsed(statement, false);
     }
 
     /**
@@ -46,16 +64,30 @@ public class TestUtils {
      *
      * @param statement
      * @param laxDeparsingCheck removes all linefeeds from the original and
-     * removes all double spaces. The check is caseinsensitive.
+     *                          removes all double spaces. The check is
+     *                          caseinsensitive.
+     * @return the parsed {@link Statement}
      * @throws JSQLParserException
      */
-    public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck) throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed(statement, laxDeparsingCheck, null);
+    public static Statement assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck)
+            throws JSQLParserException {
+        return assertSqlCanBeParsedAndDeparsed(statement, laxDeparsingCheck, null);
     }
 
-    public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+    /**
+     * @param statement
+     * @param laxDeparsingCheck removes all linefeeds from the original and
+     *                          removes all double spaces. The check is
+     *                          caseinsensitive.
+     * @param consumer
+     * @return the parsed {@link Statement}
+     * @throws JSQLParserException
+     */
+    public static Statement assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck,
+            Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         Statement parsed = CCJSqlParserUtil.parse(statement, consumer);
         assertStatementCanBeDeparsedAs(parsed, statement, laxDeparsingCheck);
+        return parsed;
     }
 
     public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
@@ -66,8 +98,158 @@ public class TestUtils {
         assertEquals(buildSqlString(statement, laxDeparsingCheck),
                 buildSqlString(parsed.toString(), laxDeparsingCheck));
 
+        assertDeparse(parsed, statement, laxDeparsingCheck);
+    }
+
+    /**
+     * Asserts that the {@link Statement} can be deparsed and deparsing results in
+     * given #statement
+     * 
+     * @param stmt
+     * @param statement
+     */
+    public static void assertDeparse(Statement stmt, String statement) {
+        assertDeparse(stmt, statement, false);
+    }
+
+    /**
+     * Compares the object-tree of a given parsed model and a created one.
+     * 
+     * @param parsed
+     * @param created
+     */
+    public static void assertEqualsObjectTree(Statement parsed, Statement created) {
+        assertEquals(toReflectionString(parsed), toReflectionString(created));
+    }
+
+    /**
+     * @param stmt
+     * @return a {@link String} build by {@link ToStringBuilder} and
+     *         {@link ObjectTreeToStringStyle#INSTANCE}
+     */
+    public static String toReflectionString(Statement stmt) {
+        return toReflectionString(stmt, false);
+    }
+
+    /**
+     * @param stmt
+     * @return a {@link String} build by {@link ToStringBuilder} and
+     *         {@link ObjectTreeToStringStyle#INSTANCE}
+     */
+    public static String toReflectionString(Statement stmt, boolean includingASTNode) {
+        ReflectionToStringBuilder strb = new ReflectionToStringBuilder(stmt,
+                includingASTNode ? ObjectTreeToStringStyle.INSTANCE_INCLUDING_AST : ObjectTreeToStringStyle.INSTANCE);
+        return strb.build();
+    }
+
+    /**
+     * Replacement of {@link Arrays#asList(Object...)} which returns
+     * java.util.Arrays$ArrayList not java.util.ArrayList, the internal model uses
+     * java.util.ArrayList by default, which supports modification
+     * 
+     * @param <T>
+     * @param obj
+     * @return a {@link ArrayList} of given items
+     */
+    @SafeVarargs
+    public static <T> List<T> asList(T... obj) {
+        return Stream.of(obj).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * <p>
+     * {@code ToStringStyle} that outputs on multiple lines without identity
+     * hashcode.
+     * </p>
+     */
+    private static final class ObjectTreeToStringStyle extends MultilineRecursiveToStringStyle {
+
+        private static final long serialVersionUID = 1L;
+
+        public static final ObjectTreeToStringStyle INSTANCE = new ObjectTreeToStringStyle(false);
+        public static final ObjectTreeToStringStyle INSTANCE_INCLUDING_AST = new ObjectTreeToStringStyle(true);
+
+        private boolean includingASTNode;
+
+        /**
+         * <p>
+         * Constructor.
+         * </p>
+         *
+         * <p>
+         * Use the static constant rather than instantiating.
+         * </p>
+         */
+        private ObjectTreeToStringStyle(boolean includingASTNode) {
+            super();
+            this.includingASTNode = includingASTNode;
+            this.setUseClassName(true);
+            this.setUseIdentityHashCode(false);
+            ToStringBuilder.setDefaultStyle(this);
+        }
+
+        @Override
+        public void append(final StringBuffer buffer, final String fieldName, final Object value,
+                final Boolean fullDetail) {
+            if (includingASTNode || !"node".equals(fieldName)) {
+                super.append(buffer, fieldName, value, fullDetail);
+            }
+        }
+
+        /**
+         * empty {@link Collection}'s should be printed as <code>null</code>, otherwise
+         * the outcome cannot be compared
+         */
+        @Override
+        protected void appendDetail(final StringBuffer buffer, final String fieldName, final Collection<?> coll) {
+            if (coll.isEmpty()) {
+                appendNullText(buffer, fieldName);
+            } else {
+                super.appendDetail(buffer, fieldName,  coll);
+            }
+        }
+
+        /**
+         * empty {@link Map}'s should be printed as <code>null</code>, otherwise the
+         * outcome cannot be compared
+         */
+        @Override
+        protected void appendDetail(final StringBuffer buffer, final String fieldName, final Map<?, ?> coll) {
+            if (coll.isEmpty()) {
+                appendNullText(buffer, fieldName);
+            } else {
+                super.appendDetail(buffer, fieldName, coll);
+            }
+        }
+
+        @Override
+        protected boolean accept(Class<?> clazz) {
+            if (includingASTNode) {
+                return super.accept(clazz);
+            } else {
+                return isNotANode(clazz) && super.accept(clazz);
+            }
+        }
+
+        public boolean isNotANode(Class<?> clazz) {
+            return !Node.class.isAssignableFrom(clazz);
+        }
+
+    }
+
+    /**
+     * Asserts that the {@link Statement} can be deparsed and deparsing results in
+     * given #statement
+     * 
+     * @param stmt
+     * @param statement
+     * @param laxDeparsingCheck removes all linefeeds from the original and
+     *                          removes all double spaces. The check is
+     *                          caseinsensitive.
+     */
+    public static void assertDeparse(Statement stmt, String statement, boolean laxDeparsingCheck) {
         StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-        parsed.accept(deParser);
+        stmt.accept(deParser);
         assertEquals(buildSqlString(statement, laxDeparsingCheck),
                 buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
     }

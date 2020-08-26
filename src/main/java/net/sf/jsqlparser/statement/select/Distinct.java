@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class Distinct {
 
@@ -48,5 +52,27 @@ public class Distinct {
         }
 
         return sql;
+    }
+
+    public Distinct withOnSelectItems(List<SelectItem> onSelectItems) {
+        this.setOnSelectItems(onSelectItems);
+        return this;
+    }
+
+    public Distinct withUseUnique(boolean useUnique) {
+        this.setUseUnique(useUnique);
+        return this;
+    }
+
+    public Distinct addOnSelectItems(SelectItem... onSelectItems) {
+        List<SelectItem> collection = Optional.ofNullable(getOnSelectItems()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, onSelectItems);
+        return this.withOnSelectItems(collection);
+    }
+
+    public Distinct addOnSelectItems(Collection<? extends SelectItem> onSelectItems) {
+        List<SelectItem> collection = Optional.ofNullable(getOnSelectItems()).orElseGet(ArrayList::new);
+        collection.addAll(onSelectItems);
+        return this.withOnSelectItems(collection);
     }
 }

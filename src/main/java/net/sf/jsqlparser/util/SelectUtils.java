@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.util;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -21,10 +19,6 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.WithItem;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public final class SelectUtils {
 
@@ -50,12 +44,8 @@ public final class SelectUtils {
     }
 
     public static Select buildSelectFromTableAndSelectItems(Table table, SelectItem... selectItems) {
-        Select select = new Select();
-        PlainSelect body = new PlainSelect();
-        body.addSelectItems(selectItems);
-        body.setFromItem(table);
-        select.setSelectBody(body);
-        return select;
+        PlainSelect body = new PlainSelect().addSelectItems(selectItems).withFromItem(table);
+        return new Select().withSelectBody(body);
     }
 
     /**
@@ -75,28 +65,11 @@ public final class SelectUtils {
      * @param expr
      */
     public static void addExpression(Select select, final Expression expr) {
-        select.getSelectBody().accept(new SelectVisitor() {
-
-            @Override
-            public void visit(PlainSelect plainSelect) {
-                plainSelect.getSelectItems().add(new SelectExpressionItem(expr));
-            }
-
-            @Override
-            public void visit(SetOperationList setOpList) {
-                throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
-            }
-
-            @Override
-            public void visit(WithItem withItem) {
-                throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
-            }
-
-            @Override
-            public void visit(ValuesStatement aThis) {
-                throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
-            }
-        });
+        if (select.getSelectBody() instanceof PlainSelect) {
+            select.getSelectBody(PlainSelect.class).getSelectItems().add(new SelectExpressionItem(expr));
+        } else {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        }
     }
 
     /**
@@ -110,19 +83,12 @@ public final class SelectUtils {
      */
     public static Join addJoin(Select select, final Table table, final Expression onExpression) {
         if (select.getSelectBody() instanceof PlainSelect) {
-            PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
-            List<Join> joins = plainSelect.getJoins();
-            if (joins == null) {
-                joins = new ArrayList<Join>();
-                plainSelect.setJoins(joins);
-            }
-            Join join = new Join();
-            join.setRightItem(table);
-            join.setOnExpression(onExpression);
-            joins.add(join);
+            Join join = new Join().withRightItem(table).withOnExpression(onExpression);
+            select.getSelectBody(PlainSelect.class).addJoins(join);
             return join;
+        } else {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
         }
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     /**
@@ -132,27 +98,10 @@ public final class SelectUtils {
      * @param expr
      */
     public static void addGroupBy(Select select, final Expression expr) {
-        select.getSelectBody().accept(new SelectVisitor() {
-
-            @Override
-            public void visit(PlainSelect plainSelect) {
-                plainSelect.addGroupByColumnReference(expr);
-            }
-
-            @Override
-            public void visit(SetOperationList setOpList) {
-                throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
-            }
-
-            @Override
-            public void visit(WithItem withItem) {
-                throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
-            }
-
-            @Override
-            public void visit(ValuesStatement aThis) {
-                throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
-            }
-        });
+        if (select.getSelectBody() instanceof PlainSelect) {
+            select.getSelectBody(PlainSelect.class).addGroupByColumnReference(expr);
+        } else {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        }
     }
 }

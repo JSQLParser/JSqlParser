@@ -13,6 +13,10 @@ public class UseStatement implements Statement {
 
     private String name;
 
+    public UseStatement() {
+        // empty constructor
+    }
+
     public UseStatement(String name) {
         this.name = name;
     }
@@ -33,5 +37,10 @@ public class UseStatement implements Statement {
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
+    }
+
+    public UseStatement withName(String name) {
+        this.setName(name);
+        return this;
     }
 }

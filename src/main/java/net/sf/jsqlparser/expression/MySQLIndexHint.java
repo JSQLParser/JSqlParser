@@ -23,6 +23,18 @@ public class MySQLIndexHint  {
         this.indexNames = indexNames;
     }
 
+    public String getAction() {
+        return action;
+    }
+
+    public String getIndexQualifier() {
+        return indexQualifier;
+    }
+
+    public List<String> getIndexNames() {
+        return indexNames;
+    }
+
     @Override
     public String toString() {
         // use|ignore|force key|index (index1,...,indexN)

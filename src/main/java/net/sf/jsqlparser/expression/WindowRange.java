@@ -39,4 +39,14 @@ public class WindowRange {
         buffer.append(end);
         return buffer.toString();
     }
+
+    public WindowRange withStart(WindowOffset start) {
+        this.setStart(start);
+        return this;
+    }
+
+    public WindowRange withEnd(WindowOffset end) {
+        this.setEnd(end);
+        return this;
+    }
 }

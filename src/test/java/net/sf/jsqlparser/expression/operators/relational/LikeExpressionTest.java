@@ -23,7 +23,6 @@ public class LikeExpressionTest {
     public void testLikeNotIssue660() {
         LikeExpression instance = new LikeExpression();
         assertFalse(instance.isNot());
-        instance.setNot(true);
-        assertTrue(instance.isNot());
+        assertTrue(instance.withNot(true).isNot());
     }
 }

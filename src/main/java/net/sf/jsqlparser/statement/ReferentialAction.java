@@ -31,12 +31,22 @@ public class ReferentialAction {
         this.type = type;
     }
 
+    public ReferentialAction withType(Type type) {
+        setType(type);
+        return this;
+    }
+
     public Action getAction() {
         return action;
     }
 
     public void setAction(Action action) {
         this.action = action;
+    }
+
+    public ReferentialAction withAction(Action action) {
+        setAction(action);
+        return this;
     }
 
     @Override
@@ -91,7 +101,7 @@ public class ReferentialAction {
             this.action = action;
         }
 
-        private String action;
+        private final String action;
 
         /**
          * @param action

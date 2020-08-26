@@ -36,13 +36,13 @@ public class SelectASTTest {
         PlainSelect ps = (PlainSelect) select.getSelectBody();
         for (SelectItem item : ps.getSelectItems()) {
             SelectExpressionItem sei = (SelectExpressionItem) item;
-            Column c = (Column) sei.getExpression();
+            Column c = sei.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().beginColumn - 1, '*');
         }
         for (OrderByElement item : ps.getOrderByElements()) {
-            Column c = (Column) item.getExpression();
+            Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().beginColumn - 1, '#');
@@ -95,13 +95,13 @@ public class SelectASTTest {
         PlainSelect ps = (PlainSelect) select.getSelectBody();
         for (SelectItem item : ps.getSelectItems()) {
             SelectExpressionItem sei = (SelectExpressionItem) item;
-            Column c = (Column) sei.getExpression();
+            Column c = sei.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '*');
         }
         for (OrderByElement item : ps.getOrderByElements()) {
-            Column c = (Column) item.getExpression();
+            Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '#');
@@ -118,13 +118,13 @@ public class SelectASTTest {
         PlainSelect ps = (PlainSelect) select.getSelectBody();
         for (SelectItem item : ps.getSelectItems()) {
             SelectExpressionItem sei = (SelectExpressionItem) item;
-            Column c = (Column) sei.getExpression();
+            Column c = sei.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '*');
         }
         for (OrderByElement item : ps.getOrderByElements()) {
-            Column c = (Column) item.getExpression();
+            Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '#');
@@ -141,13 +141,13 @@ public class SelectASTTest {
         PlainSelect ps = (PlainSelect) select.getSelectBody();
         for (SelectItem item : ps.getSelectItems()) {
             SelectExpressionItem sei = (SelectExpressionItem) item;
-            Column c = (Column) sei.getExpression();
+            Column c = sei.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '*');
         }
         for (OrderByElement item : ps.getOrderByElements()) {
-            Column c = (Column) item.getExpression();
+            Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '#');

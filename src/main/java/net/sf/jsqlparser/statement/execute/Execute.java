@@ -76,10 +76,29 @@ public class Execute implements Statement {
                 + PlainSelect.getStringList(exprList.getExpressions(), true, parenthesis) : "");
     }
 
+    public Execute withExecType(EXEC_TYPE execType) {
+        this.setExecType(execType);
+        return this;
+    }
+
+    public Execute withName(String name) {
+        this.setName(name);
+        return this;
+    }
+
+    public Execute withExprList(ExpressionList exprList) {
+        this.setExprList(exprList);
+        return this;
+    }
+
+    public Execute withParenthesis(boolean parenthesis) {
+        this.setParenthesis(parenthesis);
+        return this;
+    }
+
     public static enum EXEC_TYPE {
         EXECUTE,
         EXEC,
         CALL
     }
-
 }

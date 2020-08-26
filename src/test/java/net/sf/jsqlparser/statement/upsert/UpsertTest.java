@@ -21,7 +21,6 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -36,14 +35,12 @@ public class UpsertTest {
         assertEquals("TEST", upsert.getTable().getName());
         assertTrue(upsert.isUseValues());
         assertEquals(2, upsert.getColumns().size());
-        assertEquals("NAME", ((Column) upsert.getColumns().get(0)).getColumnName());
-        assertEquals("ID", ((Column) upsert.getColumns().get(1)).getColumnName());
+        assertEquals("NAME", upsert.getColumns().get(0).getColumnName());
+        assertEquals("ID", upsert.getColumns().get(1).getColumnName());
         assertEquals(2, ((ExpressionList) upsert.getItemsList()).getExpressions().size());
         assertEquals("foo",
-                ((StringValue) ((ExpressionList) upsert.getItemsList()).getExpressions().get(0)).
-                        getValue());
-        assertEquals(123, ((LongValue) ((ExpressionList) upsert.getItemsList()).getExpressions().
-                get(1)).getValue());
+                ((StringValue) upsert.getItemsList(ExpressionList.class).getExpressions().get(0)).getValue());
+        assertEquals(123, ((LongValue) upsert.getItemsList(ExpressionList.class).getExpressions().get(1)).getValue());
         assertFalse(upsert.isUseSelectBrackets());
         assertFalse(upsert.isUseDuplicate());
         assertEquals(statement, "" + upsert);
@@ -56,15 +53,13 @@ public class UpsertTest {
         assertEquals("TEST", upsert.getTable().getName());
         assertEquals(2, upsert.getColumns().size());
         assertTrue(upsert.isUseValues());
-        assertEquals("ID", ((Column) upsert.getColumns().get(0)).getColumnName());
-        assertEquals("COUNTER", ((Column) upsert.getColumns().get(1)).getColumnName());
+        assertEquals("ID", upsert.getColumns().get(0).getColumnName());
+        assertEquals("COUNTER", upsert.getColumns().get(1).getColumnName());
         assertEquals(2, ((ExpressionList) upsert.getItemsList()).getExpressions().size());
-        assertEquals(123, ((LongValue) ((ExpressionList) upsert.getItemsList()).getExpressions().
-                get(0)).getValue());
-        assertEquals(0, ((LongValue) ((ExpressionList) upsert.getItemsList()).getExpressions().
-                get(1)).getValue());
+        assertEquals(123, ((LongValue) upsert.getItemsList(ExpressionList.class).getExpressions().get(0)).getValue());
+        assertEquals(0, ((LongValue) upsert.getItemsList(ExpressionList.class).getExpressions().get(1)).getValue());
         assertEquals(1, upsert.getDuplicateUpdateColumns().size());
-        assertEquals("COUNTER", ((Column) upsert.getDuplicateUpdateColumns().get(0)).getColumnName());
+        assertEquals("COUNTER", upsert.getDuplicateUpdateColumns().get(0).getColumnName());
         assertEquals(1, upsert.getDuplicateUpdateExpressionList().size());
         assertEquals("COUNTER + 1", upsert.getDuplicateUpdateExpressionList().get(0).toString());
         assertFalse(upsert.isUseSelectBrackets());
@@ -79,8 +74,8 @@ public class UpsertTest {
         assertEquals("test.targetTable", upsert.getTable().getFullyQualifiedName());
         assertEquals(2, upsert.getColumns().size());
         assertFalse(upsert.isUseValues());
-        assertEquals("col1", ((Column) upsert.getColumns().get(0)).getColumnName());
-        assertEquals("col2", ((Column) upsert.getColumns().get(1)).getColumnName());
+        assertEquals("col1", upsert.getColumns().get(0).getColumnName());
+        assertEquals("col2", upsert.getColumns().get(1).getColumnName());
         assertNull(upsert.getItemsList());
         assertNotNull(upsert.getSelect());
         assertEquals("test.sourceTable",
@@ -97,11 +92,9 @@ public class UpsertTest {
         assertEquals(3, ((ExpressionList) upsert.getItemsList()).getExpressions().size());
         assertTrue(upsert.isUseValues());
         assertEquals("foo",
-                ((StringValue) ((ExpressionList) upsert.getItemsList()).getExpressions().get(0)).
-                        getValue());
+                ((StringValue) upsert.getItemsList(ExpressionList.class).getExpressions().get(0)).getValue());
         assertEquals("bar",
-                ((StringValue) ((ExpressionList) upsert.getItemsList()).getExpressions().get(1)).
-                        getValue());
+                ((StringValue) upsert.getItemsList(ExpressionList.class).getExpressions().get(1)).getValue());
         assertEquals(3, ((LongValue) ((ExpressionList) upsert.getItemsList()).getExpressions().
                 get(2)).getValue());
         assertFalse(upsert.isUseSelectBrackets());

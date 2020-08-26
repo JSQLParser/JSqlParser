@@ -9,12 +9,15 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 
 public class ValuesList implements FromItem {
 
@@ -115,5 +118,47 @@ public class ValuesList implements FromItem {
 
     public void setColumnNames(List<String> columnNames) {
         this.columnNames = columnNames;
+    }
+
+    @Override
+    public ValuesList withAlias(Alias alias) {
+        return (ValuesList) FromItem.super.withAlias(alias);
+    }
+
+    @Override
+    public ValuesList withPivot(Pivot pivot) {
+        return (ValuesList) FromItem.super.withPivot(pivot);
+    }
+
+    @Override
+    public ValuesList withUnPivot(UnPivot unpivot) {
+        return (ValuesList) FromItem.super.withUnPivot(unpivot);
+    }
+
+    public ValuesList withMultiExpressionList(MultiExpressionList multiExpressionList) {
+        this.setMultiExpressionList(multiExpressionList);
+        return this;
+    }
+
+    public ValuesList withNoBrackets(boolean noBrackets) {
+        this.setNoBrackets(noBrackets);
+        return this;
+    }
+
+    public ValuesList withColumnNames(List<String> columnNames) {
+        this.setColumnNames(columnNames);
+        return this;
+    }
+
+    public ValuesList addColumnNames(String... columnNames) {
+        List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columnNames);
+        return this.withColumnNames(collection);
+    }
+
+    public ValuesList addColumnNames(Collection<String> columnNames) {
+        List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
+        collection.addAll(columnNames);
+        return this.withColumnNames(collection);
     }
 }

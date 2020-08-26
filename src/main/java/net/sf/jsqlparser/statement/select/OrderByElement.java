@@ -77,4 +77,24 @@ public class OrderByElement {
         }
         return b.toString();
     }
+
+    public OrderByElement withExpression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
+
+    public OrderByElement withAsc(boolean asc) {
+        this.setAsc(asc);
+        return this;
+    }
+
+    public OrderByElement withNullOrdering(NullOrdering nullOrdering) {
+        this.setNullOrdering(nullOrdering);
+        return this;
+    }
+
+    public <E extends Expression> E getExpression(Class<E> type) {
+        return type.cast(getExpression());
+    }
+
 }

@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class LikeExpression extends BinaryExpression {
@@ -60,5 +61,30 @@ public class LikeExpression extends BinaryExpression {
 
     public void setCaseInsensitive(boolean caseInsensitive) {
         this.caseInsensitive = caseInsensitive;
+    }
+
+    public LikeExpression withEscape(String escape) {
+        this.setEscape(escape);
+        return this;
+    }
+
+    public LikeExpression withCaseInsensitive(boolean caseInsensitive) {
+        this.setCaseInsensitive(caseInsensitive);
+        return this;
+    }
+
+    public LikeExpression withNot(boolean not) {
+        this.setNot(not);
+        return this;
+    }
+
+    @Override
+    public LikeExpression withLeftExpression(Expression arg0) {
+        return (LikeExpression) super.withLeftExpression(arg0);
+    }
+
+    @Override
+    public LikeExpression withRightExpression(Expression arg0) {
+        return (LikeExpression) super.withRightExpression(arg0);
     }
 }

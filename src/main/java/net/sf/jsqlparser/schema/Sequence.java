@@ -9,11 +9,12 @@
  */
 package net.sf.jsqlparser.schema;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Represents the database type for a {@code SEQUENCE}
@@ -55,6 +56,11 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         }
     }
 
+    public Sequence withDatabase(Database database) {
+        setDatabase(database);
+        return this;
+    }
+    
     public String getSchemaName() {
         return getIndex(SCHEMA_IDX);
     }
@@ -63,12 +69,22 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         setIndex(SCHEMA_IDX, string);
     }
 
+    public Sequence withSchemaName(String string) {
+        setSchemaName(string);
+        return this;
+    }
+
     public String getName() {
         return getIndex(NAME_IDX);
     }
 
     public void setName(String string) {
         setIndex(NAME_IDX, string);
+    }
+
+    public Sequence withName(String string) {
+        setName(string);
+        return this;
     }
 
     private void setIndex(int idx, String value) {
@@ -116,6 +132,23 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         return sql.toString();
     }
 
+    public Sequence withParameters(List<Parameter> parameters) {
+        this.setParameters(parameters);
+        return this;
+    }
+
+    public Sequence addParameters(Parameter... parameters) {
+        List<Parameter> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, parameters);
+        return this.withParameters(collection);
+    }
+
+    public Sequence addParameters(Collection<? extends Parameter> parameters) {
+        List<Parameter> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
+        collection.addAll(parameters);
+        return this.withParameters(collection);
+    }
+
     /**
      * The available parameters to a sequence
      */
@@ -160,21 +193,26 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         public String formatParameter() {
             switch (option) {
                 case INCREMENT_BY:
-                    return withValue("INCREMENT BY");
+                    return prefix("INCREMENT BY");
                 case START_WITH:
-                    return withValue("START WITH");
+                    return prefix("START WITH");
                 case MAXVALUE:
                 case MINVALUE:
                 case CACHE:
-                    return withValue(option.name());
+                    return prefix(option.name());
                 default:
                     // fallthrough just return option name
                     return option.name();
             }
         }
 
-        private String withValue(String prefix) {
+        private String prefix(String prefix) {
             return prefix + " " + value;
+        }
+
+        public Parameter withValue(Long value) {
+            this.setValue(value);
+            return this;
         }
     }
 }

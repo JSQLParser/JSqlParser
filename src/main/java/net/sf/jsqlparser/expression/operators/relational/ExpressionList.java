@@ -9,9 +9,12 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -28,8 +31,8 @@ public class ExpressionList implements ItemsList {
     public ExpressionList(List<Expression> expressions) {
         this.expressions = expressions;
     }
-    
-    public ExpressionList(Expression ... expressions) {
+
+    public ExpressionList(Expression... expressions) {
         this.expressions = Arrays.asList(expressions);
     }
 
@@ -37,8 +40,19 @@ public class ExpressionList implements ItemsList {
         return expressions;
     }
 
-    public void setExpressions(List<Expression> list) {
-        expressions = list;
+    public ExpressionList addExpressions(Expression... elements) {
+        List<Expression> list = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
+        Collections.addAll(list, elements);
+        return withExpressions(list);
+    }
+
+    public ExpressionList withExpressions(List<Expression> expressions) {
+        this.setExpressions(expressions);
+        return this;
+    }
+
+    public void setExpressions(List<Expression> expressions) {
+        this.expressions = expressions;
     }
 
     @Override
@@ -49,5 +63,11 @@ public class ExpressionList implements ItemsList {
     @Override
     public String toString() {
         return PlainSelect.getStringList(expressions, true, true);
+    }
+
+    public ExpressionList addExpressions(Collection<? extends Expression> expressions) {
+        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
+        collection.addAll(expressions);
+        return this.withExpressions(collection);
     }
 }

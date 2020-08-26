@@ -76,7 +76,7 @@ public class CreateIndex implements Statement {
             buffer.append(" (");
 
             buffer.append(
-                    index.getColumnWithParams().stream()
+                    index.getColumns().stream()
                             .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : "")).collect(joining(", "))
             );
 
@@ -92,4 +92,18 @@ public class CreateIndex implements Statement {
         return buffer.toString();
     }
 
+    public CreateIndex withTable(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public CreateIndex withIndex(Index index) {
+        this.setIndex(index);
+        return this;
+    }
+
+    public CreateIndex withTailParameters(List<String> tailParameters) {
+        this.setTailParameters(tailParameters);
+        return this;
+    }
 }

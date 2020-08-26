@@ -61,4 +61,13 @@ public class Top {
 
         return result;
     }
+
+    public Top withExpression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
+
+    public <E extends Expression> E getExpression(Class<E> type) {
+        return type.cast(getExpression());
+    }
 }
