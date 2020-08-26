@@ -67,67 +67,67 @@ public class PivotXml extends Pivot {
         return type.cast(getInSelect());
     }
 
-    @Override()
+    @Override
     public PivotXml withAlias(Alias alias) {
         return (PivotXml) super.withAlias(alias);
     }
 
-    @Override()
+    @Override
     public PivotXml withFunctionItems(List<FunctionItem> functionItems) {
         return (PivotXml) super.withFunctionItems(functionItems);
     }
 
-    @Override()
+    @Override
     public PivotXml withForColumns(List<Column> forColumns) {
         return (PivotXml) super.withForColumns(forColumns);
     }
 
-    @Override()
+    @Override
     public PivotXml withSingleInItems(List<SelectExpressionItem> singleInItems) {
         return (PivotXml) super.withSingleInItems(singleInItems);
     }
 
-    @Override()
+    @Override
     public PivotXml withMultiInItems(List<ExpressionListItem> multiInItems) {
         return (PivotXml) super.withMultiInItems(multiInItems);
     }
 
-    @Override()
+    @Override
     public PivotXml addFunctionItems(Collection<? extends FunctionItem> functionItems) {
         return (PivotXml) super.addFunctionItems(functionItems);
     }
 
-    @Override()
+    @Override
     public PivotXml addFunctionItems(FunctionItem... functionItems) {
         return (PivotXml) super.addFunctionItems(functionItems);
     }
 
-    @Override()
+    @Override
     public PivotXml addForColumns(Collection<? extends Column> forColumns) {
         return (PivotXml) super.addForColumns(forColumns);
     }
 
-    @Override()
+    @Override
     public PivotXml addForColumns(Column... forColumns) {
         return (PivotXml) super.addForColumns(forColumns);
     }
 
-    @Override()
+    @Override
     public PivotXml addSingleInItems(Collection<? extends SelectExpressionItem> singleInItems) {
         return (PivotXml) super.addSingleInItems(singleInItems);
     }
 
-    @Override()
+    @Override
     public PivotXml addSingleInItems(SelectExpressionItem... singleInItems) {
         return (PivotXml) super.addSingleInItems(singleInItems);
     }
 
-    @Override()
+    @Override
     public PivotXml addMultiInItems(ExpressionListItem... multiInItems) {
         return (PivotXml) super.addMultiInItems(multiInItems);
     }
 
-    @Override()
+    @Override
     public PivotXml addMultiInItems(Collection<? extends ExpressionListItem> multiInItems) {
         return (PivotXml) super.addMultiInItems(multiInItems);
     }

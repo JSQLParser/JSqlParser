@@ -25,12 +25,12 @@ public class Division extends BinaryExpression {
         return "/";
     }
 
-    @Override()
+    @Override
     public Division withLeftExpression(Expression arg0) {
         return (Division) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public Division withRightExpression(Expression arg0) {
         return (Division) super.withRightExpression(arg0);
     }

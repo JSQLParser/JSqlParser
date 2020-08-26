@@ -24,22 +24,22 @@ public class Matches extends OldOracleJoinBinaryExpression {
         return "@@";
     }
 
-    @Override()
+    @Override
     public Matches withLeftExpression(Expression arg0) {
         return (Matches) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public Matches withRightExpression(Expression arg0) {
         return (Matches) super.withRightExpression(arg0);
     }
 
-    @Override()
+    @Override
     public Matches withOldOracleJoinSyntax(int oldOracleJoinSyntax) {
         return (Matches) super.withOldOracleJoinSyntax(oldOracleJoinSyntax);
     }
 
-    @Override()
+    @Override
     public Matches withOraclePriorPosition(int oraclePriorPosition) {
         return (Matches) super.withOraclePriorPosition(oraclePriorPosition);
     }

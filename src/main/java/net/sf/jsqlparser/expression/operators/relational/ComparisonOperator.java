@@ -30,22 +30,22 @@ public abstract class ComparisonOperator extends OldOracleJoinBinaryExpression {
         return operator;
     }
 
-    @Override()
+    @Override
     public ComparisonOperator withLeftExpression(Expression arg0) {
         return (ComparisonOperator) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public ComparisonOperator withRightExpression(Expression arg0) {
         return (ComparisonOperator) super.withRightExpression(arg0);
     }
 
-    @Override()
+    @Override
     public ComparisonOperator withOldOracleJoinSyntax(int oldOracleJoinSyntax) {
         return (ComparisonOperator) super.withOldOracleJoinSyntax(oldOracleJoinSyntax);
     }
 
-    @Override()
+    @Override
     public ComparisonOperator withOraclePriorPosition(int oraclePriorPosition) {
         return (ComparisonOperator) super.withOraclePriorPosition(oraclePriorPosition);
     }

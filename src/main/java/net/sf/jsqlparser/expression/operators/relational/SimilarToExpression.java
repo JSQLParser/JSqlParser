@@ -64,12 +64,12 @@ public class SimilarToExpression extends BinaryExpression {
         return this;
     }
 
-    @Override()
+    @Override
     public SimilarToExpression withLeftExpression(Expression arg0) {
         return (SimilarToExpression) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public SimilarToExpression withRightExpression(Expression arg0) {
         return (SimilarToExpression) super.withRightExpression(arg0);
     }

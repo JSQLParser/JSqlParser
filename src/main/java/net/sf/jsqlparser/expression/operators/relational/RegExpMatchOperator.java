@@ -50,12 +50,12 @@ public class RegExpMatchOperator extends BinaryExpression {
         return null;
     }
 
-    @Override()
+    @Override
     public RegExpMatchOperator withLeftExpression(Expression arg0) {
         return (RegExpMatchOperator) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public RegExpMatchOperator withRightExpression(Expression arg0) {
         return (RegExpMatchOperator) super.withRightExpression(arg0);
     }

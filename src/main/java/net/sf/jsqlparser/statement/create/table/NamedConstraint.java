@@ -23,22 +23,22 @@ public class NamedConstraint extends Index {
                         equals(idxSpecText) ? " " + idxSpecText : "");
     }
 
-    @Override()
+    @Override
     public NamedConstraint withName(List<String> name) {
         return (NamedConstraint) super.withName(name);
     }
 
-    @Override()
+    @Override
     public NamedConstraint withName(String name) {
         return (NamedConstraint) super.withName(name);
     }
 
-    @Override()
+    @Override
     public NamedConstraint withType(String type) {
         return (NamedConstraint) super.withType(type);
     }
 
-    @Override()
+    @Override
     public NamedConstraint withUsing(String using) {
         return (NamedConstraint) super.withUsing(using);
     }

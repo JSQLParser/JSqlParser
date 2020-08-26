@@ -43,17 +43,17 @@ public class ExcludeConstraint extends Index {
         return type.cast(getExpression());
     }
 
-    @Override()
+    @Override
     public ExcludeConstraint withName(List<String> name) {
         return (ExcludeConstraint) super.withName(name);
     }
 
-    @Override()
+    @Override
     public ExcludeConstraint withType(String type) {
         return (ExcludeConstraint) super.withType(type);
     }
 
-    @Override()
+    @Override
     public ExcludeConstraint withUsing(String using) {
         return (ExcludeConstraint) super.withUsing(using);
     }

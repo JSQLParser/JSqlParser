@@ -25,12 +25,12 @@ public class BitwiseOr extends BinaryExpression {
         return "|";
     }
 
-    @Override()
+    @Override
     public BitwiseOr withLeftExpression(Expression arg0) {
         return (BitwiseOr) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public BitwiseOr withRightExpression(Expression arg0) {
         return (BitwiseOr) super.withRightExpression(arg0);
     }

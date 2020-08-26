@@ -39,12 +39,12 @@ public class EqualsTo extends ComparisonOperator {
         return (EqualsTo) super.withRightExpression(expression);
     }
 
-    @Override()
+    @Override
     public EqualsTo withOldOracleJoinSyntax(int arg0) {
         return (EqualsTo) super.withOldOracleJoinSyntax(arg0);
     }
 
-    @Override()
+    @Override
     public EqualsTo withOraclePriorPosition(int arg0) {
         return (EqualsTo) super.withOraclePriorPosition(arg0);
     }

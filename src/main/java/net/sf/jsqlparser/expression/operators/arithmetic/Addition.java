@@ -25,12 +25,12 @@ public class Addition extends BinaryExpression {
         return "+";
     }
 
-    @Override()
+    @Override
     public Addition withLeftExpression(Expression arg0) {
         return (Addition) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public Addition withRightExpression(Expression arg0) {
         return (Addition) super.withRightExpression(arg0);
     }

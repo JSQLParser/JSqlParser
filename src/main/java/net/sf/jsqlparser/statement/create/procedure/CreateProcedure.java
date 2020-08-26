@@ -26,17 +26,17 @@ public class CreateProcedure extends CreateFunctionalStatement {
         super("PROCEDURE", functionDeclarationParts);
     }
 
-    @Override()
+    @Override
     public CreateProcedure withFunctionDeclarationParts(List<String> functionDeclarationParts) {
         return (CreateProcedure) super.withFunctionDeclarationParts(functionDeclarationParts);
     }
 
-    @Override()
+    @Override
     public CreateProcedure addFunctionDeclarationParts(String... functionDeclarationParts) {
         return (CreateProcedure) super.addFunctionDeclarationParts(functionDeclarationParts);
     }
 
-    @Override()
+    @Override
     public CreateProcedure addFunctionDeclarationParts(Collection<String> functionDeclarationParts) {
         return (CreateProcedure) super.addFunctionDeclarationParts(functionDeclarationParts);
     }

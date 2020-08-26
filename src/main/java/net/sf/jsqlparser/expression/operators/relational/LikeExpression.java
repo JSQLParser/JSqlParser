@@ -78,12 +78,12 @@ public class LikeExpression extends BinaryExpression {
         return this;
     }
 
-    @Override()
+    @Override
     public LikeExpression withLeftExpression(Expression arg0) {
         return (LikeExpression) super.withLeftExpression(arg0);
     }
 
-    @Override()
+    @Override
     public LikeExpression withRightExpression(Expression arg0) {
         return (LikeExpression) super.withRightExpression(arg0);
     }

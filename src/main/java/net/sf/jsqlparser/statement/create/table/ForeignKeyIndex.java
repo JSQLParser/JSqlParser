@@ -151,22 +151,22 @@ public class ForeignKeyIndex extends NamedConstraint {
         return this.withReferencedColumnNames(collection);
     }
 
-    @Override()
+    @Override
     public ForeignKeyIndex withType(String type) {
         return (ForeignKeyIndex) super.withType(type);
     }
 
-    @Override()
+    @Override
     public ForeignKeyIndex withUsing(String using) {
         return (ForeignKeyIndex) super.withUsing(using);
     }
 
-    @Override()
+    @Override
     public ForeignKeyIndex withName(List<String> name) {
         return (ForeignKeyIndex) super.withName(name);
     }
 
-    @Override()
+    @Override
     public ForeignKeyIndex withName(String name) {
         return (ForeignKeyIndex) super.withName(name);
     }
