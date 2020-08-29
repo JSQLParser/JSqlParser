@@ -1475,8 +1475,8 @@ PlainSelect PlainSelect() #PlainSelect:
 
     [LOOKAHEAD(2) first = First() { plainSelect.setFirst(first); } ]
 
-    [
-        <K_ALL>
+    [ LOOKAHEAD(2)
+        ( <K_ALL>
         |
             (
                 <K_DISTINCT> { Distinct distinct = new Distinct(); plainSelect.setDistinct(distinct); }
@@ -1494,6 +1494,7 @@ PlainSelect PlainSelect() #PlainSelect:
             (
                 <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlNoCache(true); }
             )
+        )
     ]
 
     [ LOOKAHEAD(2) top = Top() { plainSelect.setTop(top);    } ]
@@ -2606,9 +2607,9 @@ Expression Condition():
 {
     [ LOOKAHEAD(2) (<K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; })]
     (
-        LOOKAHEAD(SQLCondition()) result=SQLCondition()
-        | LOOKAHEAD(RegularCondition()) result=RegularCondition()
-        | result=SimpleExpression()
+        LOOKAHEAD(RegularCondition()) result=RegularCondition()
+        | result=SQLCondition()
+        //| result=SimpleExpression()
     )
 
     { return not?new NotExpression(result, exclamationMarkNot):result; }
@@ -2687,13 +2688,13 @@ Expression SQLCondition():
     (
     result=ExistsExpression()
     | LOOKAHEAD(InExpression()) result=InExpression()
-    | left = SimpleExpression()
-        (LOOKAHEAD(2) result=Between(left)
+    | left = SimpleExpression() { result = left; }
+        [ LOOKAHEAD(2) ((LOOKAHEAD(2) result=Between(left)
          | LOOKAHEAD(IsNullExpression()) result=IsNullExpression(left)
          | LOOKAHEAD(IsBooleanExpression()) result=IsBooleanExpression(left)
          | LOOKAHEAD(2) result=LikeExpression(left)
          | result=SimilarToExpression(left)
-        )
+        )) ]
     )
     { return result; }
 }
