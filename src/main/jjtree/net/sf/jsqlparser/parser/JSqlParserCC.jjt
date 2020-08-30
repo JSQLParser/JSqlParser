@@ -4466,6 +4466,8 @@ Drop Drop():
         tk=<K_VIEW>
         |
         tk=<K_SCHEMA>
+        |
+        tk=<K_SEQUENCE>
     )
     { drop.setType(tk.image); }
 
