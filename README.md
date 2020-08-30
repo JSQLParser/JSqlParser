@@ -67,6 +67,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.0
 
+* first try to support conditions as select items: **SELECT a < b**
+* support for **DROP SEQUENCE**
 * heavy updating of many class files to support fluent like class building and setting of attributes (thx to @gitmotte) 
 ** update version to 4.0-SNAPSHOT due fluent PR
 * **ON UPDATE CASCADE** implemented
