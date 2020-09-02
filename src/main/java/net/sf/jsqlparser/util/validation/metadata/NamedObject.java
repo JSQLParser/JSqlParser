@@ -40,5 +40,9 @@ public enum NamedObject {
     sequence,
     procedure,
     user,
-    role,
+    role;
+
+    public boolean equalsIgnoreCase(String type) {
+        return name().equalsIgnoreCase(type);
+    }
 }

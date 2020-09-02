@@ -64,7 +64,20 @@ public enum SqlServerVersion implements Version {
                     Feature.delete,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/truncate-table-transact-sql?view=sql-server-ver15
                     Feature.truncate,
+
                     Feature.drop,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-table-transact-sql?view=sql-server-ver15
+                    Feature.dropTable,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-index-transact-sql?view=sql-server-ver15
+                    Feature.dropIndex,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-view-transact-sql?view=sql-server-ver15
+                    Feature.dropView,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-schema-transact-sql?view=sql-server-ver15
+                    Feature.dropSchema,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-sequence-transact-sql?view=sql-server-ver15
+                    Feature.dropSequence,
+                    Feature.dropIfExists,
+
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-table-transact-sql?view=sql-server-ver15
                     Feature.alter,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-sequence-transact-sql?view=sql-server-ver15

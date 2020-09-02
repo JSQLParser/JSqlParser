@@ -115,9 +115,20 @@ public enum PostgresqlVersion implements Version {
                     Feature.delete,
                     // https://www.postgresql.org/docs/current/sql-truncate.html
                     Feature.truncate,
-                    // https://www.postgresql.org/docs/current/sql-droptable.html
-                    // https://www.postgresql.org/docs/current/sql-dropindex.html
+
                     Feature.drop,
+                    // https://www.postgresql.org/docs/current/sql-droptable.html
+                    Feature.dropTable,
+                    // https://www.postgresql.org/docs/current/sql-dropindex.html
+                    Feature.dropIndex,
+                    // https://www.postgresql.org/docs/current/sql-dropview.html
+                    Feature.dropView,
+                    // https://www.postgresql.org/docs/current/sql-dropschema.html
+                    Feature.dropSchema,
+                    // https://www.postgresql.org/docs/current/sql-dropsequence.html
+                    Feature.dropSequence,
+                    Feature.dropIfExists,
+
                     // https://www.postgresql.org/docs/current/sql-altertable.html
                     Feature.alter,
                     // https://www.postgresql.org/docs/current/using-explain.html

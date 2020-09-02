@@ -102,9 +102,38 @@ public class FeaturesAllowed implements FeatureSetValidation {
     public static final FeaturesAllowed DELETE = new FeaturesAllowed("DELETE", Feature.delete)
             .add(SELECT).unmodifyable();
 
+    /**
+     * all DML {@link Feature}'s
+     */
+    public static final FeaturesAllowed DML = new FeaturesAllowed("DML").add(SELECT, INSERT, UPDATE, DELETE)
+            .unmodifyable();
+
     public static final FeaturesAllowed EXECUTE = new FeaturesAllowed("EXECUTE", Feature.execute).unmodifyable();
-    public static final FeaturesAllowed ALTER = new FeaturesAllowed("ALTER", Feature.alter).unmodifyable();
-    public static final FeaturesAllowed DROP = new FeaturesAllowed("DROP", Feature.drop).unmodifyable();
+
+    /**
+     * all "CREATE" {@link Feature}'s
+     */
+    public static final FeaturesAllowed CREATE = new FeaturesAllowed("CREATE", Feature.createIndex,
+            Feature.createSchema, Feature.createSequence, Feature.createTable, Feature.createTrigger,
+            Feature.createView).unmodifyable();
+
+    /**
+     * all "ALTER" {@link Feature}'s
+     */
+    public static final FeaturesAllowed ALTER = new FeaturesAllowed("ALTER", Feature.alter, Feature.alterSequence)
+            .unmodifyable();
+
+    /**
+     * all "DROP" {@link Feature}'s
+     */
+    public static final FeaturesAllowed DROP = new FeaturesAllowed("DROP", Feature.drop, Feature.dropTable,
+            Feature.dropIndex, Feature.dropView, Feature.dropSchema, Feature.dropSequence, Feature.dropIfExists)
+            .unmodifyable();
+
+    /**
+     * all DDL {@link Feature}'s
+     */
+    public static final FeaturesAllowed DDL = new FeaturesAllowed("DDL").add(CREATE, ALTER, DROP).unmodifyable();
 
     private Set<String> names = new LinkedHashSet<>();
     private Set<Feature> features = new HashSet<>();

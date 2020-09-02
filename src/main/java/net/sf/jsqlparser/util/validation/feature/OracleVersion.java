@@ -103,6 +103,15 @@ public enum OracleVersion implements Version {
                     Feature.truncate,
 
                     Feature.drop,
+                    // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/DROP-TABLE.html
+                    Feature.dropTable,
+                    // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/DROP-INDEX.html
+                    Feature.dropIndex,
+                    // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/DROP-VIEW.html
+                    Feature.dropView,
+                    // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/DROP-SEQUENCE.html
+                    Feature.dropSequence,
+
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/ALTER-TABLE.html
                     Feature.alter,
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/ALTER-SEQUENCE.html

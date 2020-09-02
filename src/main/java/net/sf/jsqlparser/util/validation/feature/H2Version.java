@@ -103,8 +103,18 @@ public enum H2Version implements Version {
                     Feature.truncate,
                     // http://h2database.com/html/commands.html#drop_table
                     // http://h2database.com/html/commands.html#drop_index
-                    // ...
                     Feature.drop,
+                    // http://h2database.com/html/commands.html#drop_table
+                    Feature.dropTable,
+                    // http://h2database.com/html/commands.html#drop_index
+                    Feature.dropIndex,
+                    // http://h2database.com/html/commands.html#drop_view
+                    Feature.dropView,
+                    // http://h2database.com/html/commands.html#drop_schema
+                    Feature.dropSchema,
+                    // http://h2database.com/html/commands.html#drop_sequence
+                    Feature.dropSequence,
+                    Feature.dropIfExists,
                     // http://h2database.com/html/commands.html#alter_table_add
                     // http://h2database.com/html/commands.html#alter_table_add_constraint
                     // ...

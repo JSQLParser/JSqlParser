@@ -29,7 +29,6 @@ import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.procedure.CreateProcedure;
-import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -395,6 +394,12 @@ public enum Feature {
      * @see Drop
      */
     drop,
+    dropTable, 
+    dropIndex, 
+    dropView, 
+    dropSchema, 
+    dropSequence, 
+    dropIfExists,
     /**
      * SQL "ALTER VIEW" statement is allowed
      *
@@ -405,6 +410,12 @@ public enum Feature {
      * SQL "ALTER INDEX" statement is allowed
      */
     alterIndex,
+    /**
+     * SQL "CREATE SCHEMA" statement is allowed
+     *
+     * @see CreateSchema
+     */
+    createSchema,
     /**
      * SQL "CREATE VIEW" statement is allowed
      *
@@ -486,12 +497,6 @@ public enum Feature {
      * @see Grant
      */
     grant,
-    /**
-     * SQL "CREATE SCHEMA" statement is allowed
-     *
-     * @see CreateSchema
-     */
-    createSchema,
     /**
      * @see CreateFunction
      */

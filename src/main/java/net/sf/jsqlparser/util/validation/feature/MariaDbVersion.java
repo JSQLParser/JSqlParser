@@ -70,6 +70,17 @@ public enum MariaDbVersion implements Version {
 
                     // https://mariadb.com/kb/en/drop/
                     Feature.drop,
+                    // https://mariadb.com/kb/en/drop-index/
+                    Feature.dropIndex,
+                    // https://mariadb.com/kb/en/drop-table/
+                    Feature.dropTable,
+                    // https://mariadb.com/kb/en/drop-database/
+                    // SCHEMA = DATABASE
+                    Feature.dropSchema,
+                    // https://mariadb.com/kb/en/drop-view/
+                    Feature.dropView,
+                    // https://mariadb.com/kb/en/drop-sequence/
+                    Feature.dropSequence, Feature.dropIfExists,
 
                     // https://mariadb.com/kb/en/replace/
                     Feature.replace,
