@@ -99,7 +99,11 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/use/
                     Feature.use,
                     // https://mariadb.com/kb/en/grant/
-                    Feature.grant)),
+                    Feature.grant,
+                    // https://mariadb.com/kb/en/optimizer-hints/
+                    Feature.mySqlHintStraightJoin,
+                    Feature.mysqlCalcFoundRows, Feature.mysqlSqlNoCache)),
+
     ORACLE_MODE("oracle_mode", EnumSet.of(Feature.selectUnique));
 
     private Set<Feature> features;
