@@ -233,7 +233,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
                 validateFeature(c, join.isOuter(), Feature.joinOuter);
                 validateFeature(c, join.isInner(), Feature.joinInner);
                 validateFeature(c, join.isSemi(), Feature.joinSemi);
-                validateFeature(c, join.isStraight(), Feature.joinStaight);
+                validateFeature(c, join.isStraight(), Feature.joinStraight);
                 validateFeature(c, join.isApply(), Feature.joinApply);
                 validateFeature(c, join.isWindowJoin(), Feature.joinWindow);
                 validateOptionalFeature(c, join.getUsingColumns(), Feature.joinUsingColumns);

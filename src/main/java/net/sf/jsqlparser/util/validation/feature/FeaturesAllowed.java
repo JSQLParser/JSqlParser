@@ -59,7 +59,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
             Feature.joinOuter,
             Feature.joinSemi,
             Feature.joinInner,
-            Feature.joinStaight,
+            Feature.joinStraight,
             Feature.joinApply,
             Feature.joinWindow,
             Feature.joinUsingColumns,

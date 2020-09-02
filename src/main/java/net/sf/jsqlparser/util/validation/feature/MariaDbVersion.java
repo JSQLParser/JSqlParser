@@ -36,7 +36,7 @@ public enum MariaDbVersion implements Version {
 
                     // https://mariadb.com/kb/en/join-syntax/
                     Feature.join, Feature.joinSimple, Feature.joinRight, Feature.joinNatural, Feature.joinLeft,
-                    Feature.joinCross, Feature.joinOuter, Feature.joinInner, Feature.joinStaight,
+                    Feature.joinCross, Feature.joinOuter, Feature.joinInner, Feature.joinStraight,
                     Feature.joinUsingColumns,
 
                     // https://mariadb.com/kb/en/select/#distinct

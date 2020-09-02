@@ -177,7 +177,7 @@ public enum Feature {
     /**
      * "STRAIGHT_JOIN" join
      */
-    joinStaight,
+    joinStraight,
     /**
      * "APPLY" join
      */
