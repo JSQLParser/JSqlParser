@@ -213,8 +213,17 @@ public enum Feature {
      */
     optimizeFor,
 
+    /**
+     * "UNIQUE" keyword
+     */
     selectUnique,
+    /**
+     * "DISTINCT" keyword
+     */
     distinct,
+    /**
+     * "DISTINCT ON (col1, ...)"
+     */
     distinctOn,
 
     /**
@@ -536,7 +545,13 @@ public enum Feature {
     withItemRecursive,
 
     lateralSubSelect,
+    /**
+     * @see ValuesList
+     */
     valuesList,
+    /**
+     * @see TableFunction
+     */
     tableFunction,
 
     // EXPRESSIONS
