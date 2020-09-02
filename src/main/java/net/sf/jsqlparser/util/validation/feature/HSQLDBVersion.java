@@ -19,6 +19,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
  * Please add Features supported and place a link to public documentation
  * 
  * @author gitmotte
+ * @see http://www.hsqldb.org/doc/2.0/guide/sqlgeneral-chapt.html
  */
 public enum HSQLDBVersion implements Version {
     V_2_5_0("2.5.0",
@@ -28,13 +29,16 @@ public enum HSQLDBVersion implements Version {
                     Feature.jdbcNamedParameter,
                     // common features
                     Feature.select,
+                    Feature.distinct,
+                    
                     Feature.insert,
                     Feature.insertValues,
                     Feature.update,
                     Feature.delete,
                     Feature.truncate,
                     Feature.drop,
-                    Feature.alter));
+                    Feature.alter)),
+    V_2_5_1("2.5.1", V_2_5_0.getFeaturesClone());
 
     private Set<Feature> features;
     private String versionString;
