@@ -23,6 +23,7 @@ public class InsertValidator extends AbstractValidator<Insert> {
     public void validate(Insert insert) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.insert);
+            validateOptionalFeature(c, insert.getItemsList(), Feature.insertValues);
             validateOptionalFeature(c, insert.getModifierPriority(), Feature.insertModifierPriority);
             validateFeature(c, insert.isModifierIgnore(), Feature.insertModifierIgnore);
             validateOptionalFeature(c, insert.getSelect(), Feature.insertFromSelect);

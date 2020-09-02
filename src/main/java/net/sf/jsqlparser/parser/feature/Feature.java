@@ -287,10 +287,12 @@ public enum Feature {
 
     /**
      * "VALUES"
-     * 
-     * @see ValuesStatement
      */
     insertValues,
+    /**
+     * @see ValuesStatement
+     */
+    values,
 
     /**
      * SQL "UPDATE" statement is allowed

@@ -31,6 +31,7 @@ public enum SQLVersion implements Version {
             Feature.select,
             Feature.selectGroupBy,
             Feature.insert,
+            Feature.insertValues,
             Feature.update,
             Feature.delete,
             Feature.truncate,

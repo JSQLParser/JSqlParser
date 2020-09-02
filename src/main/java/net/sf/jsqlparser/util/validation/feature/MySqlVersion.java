@@ -30,6 +30,7 @@ public enum MySqlVersion implements Version {
                     // common features
                     Feature.select,
                     Feature.insert,
+                    Feature.insertValues,
                     Feature.update,
                     Feature.delete,
                     Feature.truncate,

@@ -93,6 +93,7 @@ public enum H2Version implements Version {
                     Feature.distinctOn,
                     // http://h2database.com/html/commands.html#insert
                     Feature.insert,
+                    Feature.insertValues,
                     Feature.insertFromSelect,
                     // http://h2database.com/html/commands.html#update
                     Feature.update,
