@@ -54,7 +54,7 @@ public class UnPivot {
         this.unpivotForClause = forColumns;
     }
 
-    public List<?> getUnPivotInClause() {
+    public List<SelectExpressionItem> getUnPivotInClause() {
         return unpivotInClause;
     }
 
