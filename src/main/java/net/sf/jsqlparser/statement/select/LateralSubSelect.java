@@ -52,8 +52,12 @@ public class LateralSubSelect extends SpecialSubSelect implements SupportsOldOra
 
     @Override
     public String toString() {
+        if (oldOracleJoinSyntax == NO_ORACLE_JOIN) {
+            return super.toString();
+        }
+
         return getPrefix() + getSubSelect().toString()
-                + (oldOracleJoinSyntax == ORACLE_JOIN_LEFT ? "(+)" : "")
+                + "(+)"
                 + ((getAlias() != null) ? getAlias().toString() : "")
                 + ((getPivot() != null) ? " " + getPivot() : "")
                 + ((getUnPivot() != null) ? " " + getUnPivot() : "");
