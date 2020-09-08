@@ -17,7 +17,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 
 /**
  * Please add Features supported and place a link to public documentation
- * 
+ *
  * @author gitmotte
  * @see https://www.postgresql.org/docs/current
  */
@@ -30,7 +30,7 @@ public enum PostgresqlVersion implements Version {
 
                     // https://www.postgresql.org/docs/current/sql-select.html
                     Feature.select,
-                    Feature.selectGroupBy,
+                    Feature.selectGroupBy, Feature.function,
                     Feature.selectHaving,
                     // https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUPING-SETS
                     Feature.selectGroupByGroupingSets,

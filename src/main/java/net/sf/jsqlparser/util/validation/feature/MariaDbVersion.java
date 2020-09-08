@@ -17,7 +17,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 
 /**
  * Please add Features supported and place a link to public documentation
- * 
+ *
  * @author gitmotte
  * @see https://mariadb.com/kb/en/sql-statements-structure/
  */
@@ -29,7 +29,8 @@ public enum MariaDbVersion implements Version {
                     // common features
                     // https://mariadb.com/kb/en/select/
                     Feature.select,
-                    Feature.selectGroupBy, Feature.selectHaving,
+                    Feature.selectGroupBy, Feature.function,
+                    Feature.selectHaving,
                     Feature.limit, Feature.limitOffset, Feature.offset, Feature.offsetParam,
                     Feature.orderBy,
                     Feature.selectForUpdate, Feature.selectForUpdateWait, Feature.selectForUpdateNoWait,

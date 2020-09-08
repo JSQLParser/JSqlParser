@@ -17,7 +17,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 
 /**
  * Please add Features supported and place a link to public documentation
- * 
+ *
  * @author gitmotte
  */
 public enum SqlServerVersion implements Version {
@@ -30,7 +30,7 @@ public enum SqlServerVersion implements Version {
                     Feature.select,
                     Feature.selectInto,
                     Feature.withItem,
-                    Feature.selectGroupBy,
+                    Feature.selectGroupBy, Feature.function,
                     Feature.selectHaving, Feature.orderBy,
                     Feature.distinct,
                     Feature.withItem, Feature.withItemRecursive,
@@ -88,8 +88,10 @@ public enum SqlServerVersion implements Version {
                     Feature.alterIndex,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-index-transact-sql?view=sql-server-ver15
                     Feature.createIndex,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-function-transact-sql?view=sql-server-ver15
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver15
-                    Feature.functionalStatement, Feature.procedure,
+                    Feature.functionalStatement, Feature.createProcedure, Feature.createFunction, Feature.block,
+                    Feature.declare,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-schema-transact-sql?view=sql-server-ver15
                     Feature.createSchema,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-view-transact-sql?view=sql-server-ver15

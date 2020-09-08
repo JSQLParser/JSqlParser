@@ -81,7 +81,9 @@ public class FeaturesAllowed implements FeatureSetValidation {
             Feature.distinct,
             Feature.distinctOn,
             Feature.orderBy,
-            Feature.orderByNullOrdering).unmodifyable();
+            Feature.orderByNullOrdering,
+
+            Feature.function).unmodifyable();
 
     /**
      * all {@link Feature}' for SQL INSERT including {@link #SELECT} and

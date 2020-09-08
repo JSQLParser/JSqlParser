@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.parser.feature;
 
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
@@ -84,19 +85,19 @@ public enum Feature {
     limit,
     /**
      * "LIMIT NULL"
-     * 
+     *
      * @see Limit#isLimitNull()
      */
     limitNull,
     /**
      * "LIMIT ALL"
-     * 
+     *
      * @see Limit#isLimitAll()
      */
     limitAll,
     /**
      * "LIMIT offset, limit"
-     * 
+     *
      * @see Limit#getOffset()
      */
     limitOffset,
@@ -107,7 +108,7 @@ public enum Feature {
     offset,
     /**
      * "OFFSET param"
-     * 
+     *
      * @see Offset#getOffsetParam()
      */
     offsetParam,
@@ -187,7 +188,7 @@ public enum Feature {
 
     /**
      * "SKIP variable" | "SKIP ?" | "SKIP rowCount"
-     * 
+     *
      * @see Skip
      */
     skip,
@@ -195,19 +196,19 @@ public enum Feature {
      * "FIRST" \?|[0-9]+|variable
      * or
      * "LIMIT" \?|[0-9]+|variable
-     * 
+     *
      * @see First
      */
     first,
     /**
      * "TOP" ? "PERCENT"
-     * 
+     *
      * @see Top
      */
     top,
     /**
      * "OPTIMIZE FOR rowCount ROWS"
-     * 
+     *
      * @see OptimizeFor
      */
     optimizeFor,
@@ -288,7 +289,7 @@ public enum Feature {
     insertReturningAll,
     /**
      * "RETURNING expr(, expr)*"
-     * 
+     *
      * @see SelectExpressionItem
      */
     insertReturningExpressionList,
@@ -394,11 +395,11 @@ public enum Feature {
      * @see Drop
      */
     drop,
-    dropTable, 
-    dropIndex, 
-    dropView, 
-    dropSchema, 
-    dropSequence, 
+    dropTable,
+    dropIndex,
+    dropView,
+    dropSchema,
+    dropSequence,
     dropIfExists,
     /**
      * SQL "ALTER VIEW" statement is allowed
@@ -498,13 +499,17 @@ public enum Feature {
      */
     grant,
     /**
-     * @see CreateFunction
+     * @see Function
      */
     function,
     /**
+     * @see CreateFunction
+     */
+    createFunction,
+    /**
      * @see CreateProcedure
      */
-    procedure,
+    createProcedure,
     /**
      * @see CreateFunctionalStatement
      */

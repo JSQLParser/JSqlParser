@@ -237,9 +237,9 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     public void visit(CreateFunctionalStatement createFunctionalStatement) {
         validateFeature(Feature.functionalStatement);
         if (createFunctionalStatement instanceof CreateFunction) {
-            validateFeature(Feature.function);
+            validateFeature(Feature.createFunction);
         } else if (createFunctionalStatement instanceof CreateProcedure) {
-            validateFeature(Feature.procedure);
+            validateFeature(Feature.createProcedure);
         }
     }
 

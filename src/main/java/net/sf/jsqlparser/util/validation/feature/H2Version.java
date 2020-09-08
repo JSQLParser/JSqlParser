@@ -17,7 +17,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 
 /**
  * Please add Features supported and place a link to public documentation
- * 
+ *
  * @author gitmotte
  * @see http://www.h2database.com/html/commands.html
  */
@@ -29,7 +29,7 @@ public enum H2Version implements Version {
                     Feature.jdbcNamedParameter,
                     // http://h2database.com/html/commands.html#select
                     Feature.select,
-                    Feature.selectGroupBy,
+                    Feature.selectGroupBy, Feature.function,
                     Feature.selectHaving,
                     // https://h2database.com/html/grammar.html?#table_expression
                     // https://h2database.com/html/grammar.html?#join_specification

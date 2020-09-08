@@ -17,7 +17,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 
 /**
  * Please add Features supported and place a link to public documentation
- * 
+ *
  * @author gitmotte
  * @see https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/index.html
  */
@@ -31,7 +31,7 @@ public enum OracleVersion implements Version {
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/SELECT.html
                     Feature.select,
                     // https://www.oracletutorial.com/oracle-basics/oracle-group-by/
-                    Feature.selectGroupBy,
+                    Feature.selectGroupBy, Feature.function,
                     // https://www.oracletutorial.com/oracle-basics/oracle-grouping-sets/
                     Feature.selectGroupByGroupingSets,
                     // https://www.oracletutorial.com/oracle-basics/oracle-having/
@@ -145,7 +145,8 @@ public enum OracleVersion implements Version {
                     // https://www.oracletutorial.com/oracle-basics/oracle-merge/
                     Feature.merge,
 
-                    Feature.function, Feature.procedure, Feature.functionalStatement, Feature.block, Feature.declare,
+                    Feature.createFunction, Feature.createProcedure, Feature.functionalStatement, Feature.block,
+                    Feature.declare,
 
                     // special oracle features
                     Feature.oracleOldJoinSyntax,
