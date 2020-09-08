@@ -53,6 +53,7 @@ import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.VariableAssignment;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.WindowElement;
+import net.sf.jsqlparser.expression.XMLSerializeExpr;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -709,11 +710,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         switch (aexpr.getType()) {
-        case WITHIN_GROUP:
-            buffer.append("WITHIN GROUP");
-            break;
-        default:
-            buffer.append("OVER");
+            case WITHIN_GROUP:
+                buffer.append("WITHIN GROUP");
+                break;
+            default:
+                buffer.append("OVER");
         }
         buffer.append(" (");
 
@@ -894,11 +895,26 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     void deParse(Expression statement) {
         statement.accept(this);
     }
-    
+
     @Override
     public void visit(VariableAssignment var) {
         var.getVariable().accept(this);
         buffer.append(" ").append(var.getOperation()).append(" ");
         var.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(XMLSerializeExpr expr) {
+        //xmlserialize(xmlagg(xmltext(COMMENT_LINE) ORDER BY COMMENT_SEQUENCE) as varchar(1024))
+        buffer.append("xmlserialize(xmlagg(xmltext(");
+        expr.getColumn().accept(this);
+        buffer.append(") ORDER BY ");
+        for (Iterator<OrderByElement> i = expr.getOrderByElements().iterator(); i.hasNext();) {
+            buffer.append(i.next().toString());
+            if (i.hasNext()) {
+                buffer.append(", ");
+            }
+        }
+        buffer.append(") AS ").append(expr.getDataType()).append(")");
     }
 }
