@@ -54,6 +54,7 @@ import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.WindowElement;
 import net.sf.jsqlparser.expression.WindowOffset;
 import net.sf.jsqlparser.expression.WindowRange;
+import net.sf.jsqlparser.expression.XMLSerializeExpr;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -554,6 +555,11 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         if (a.getVariable() != null) {
             a.getVariable().accept(this);
         }
+    }
+
+    @Override
+    public void visit(XMLSerializeExpr xml) {
+        // TODO this feature seams very close to a jsqlparser-user usecase
     }
 
 }
