@@ -32,4 +32,14 @@ public class SelectXMLSerializeTest {
     public void testXmlAgg3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT xmlserialize(xmlagg(xmltext(COMMENT_LINE) ORDER BY COMMENT_SEQUENCE) AS varchar (1024))");
     }
+    
+    @Test
+    public void testXmlAgg4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT xmlserialize(xmlagg(xmltext(COMMENT_LINE_PREFIX || COMMENT_LINE) ORDER BY COMMENT_SEQUENCE) AS varchar (1024))");
+    }
+
+    @Test
+    public void testXmlAgg5() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT xmlserialize(xmlagg(xmltext(CONCAT(', ', TRIM(SOME_COLUMN))) ORDER BY MY_SEQUENCE) AS varchar (1024))");
+    }
 }
