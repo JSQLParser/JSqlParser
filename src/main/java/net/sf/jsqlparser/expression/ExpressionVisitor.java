@@ -160,4 +160,5 @@ public interface ExpressionVisitor {
 
     public void visit(VariableAssignment aThis);
 
+    public void visit(XMLSerializeExpr aThis);
 }

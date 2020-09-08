@@ -355,6 +355,9 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WITHIN:"WITHIN">
 |   <K_WITHOUT:"WITHOUT">
 |   <K_XML:"XML">
+|   <K_XMLSERIALIZE:"XMLSERIALIZE">
+|   <K_XMLAGG:"XMLAGG">
+|   <K_XMLTEXT:"XMLTEXT">
 |   <K_YAML:"YAML">
 |   <K_ZONE:"ZONE">
 }
@@ -1475,8 +1478,8 @@ PlainSelect PlainSelect() #PlainSelect:
 
     [LOOKAHEAD(2) first = First() { plainSelect.setFirst(first); } ]
 
-    [
-        <K_ALL>
+    [ LOOKAHEAD(2)
+        ( <K_ALL>
         |
             (
                 <K_DISTINCT> { Distinct distinct = new Distinct(); plainSelect.setDistinct(distinct); }
@@ -1494,6 +1497,7 @@ PlainSelect PlainSelect() #PlainSelect:
             (
                 <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlNoCache(true); }
             )
+        )
     ]
 
     [ LOOKAHEAD(2) top = Top() { plainSelect.setTop(top);    } ]
@@ -2606,9 +2610,9 @@ Expression Condition():
 {
     [ LOOKAHEAD(2) (<K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; })]
     (
-        LOOKAHEAD(SQLCondition()) result=SQLCondition()
-        | LOOKAHEAD(RegularCondition()) result=RegularCondition()
-        | result=SimpleExpression()
+        LOOKAHEAD(RegularCondition()) result=RegularCondition()
+        | result=SQLCondition()
+        //| result=SimpleExpression()
     )
 
     { return not?new NotExpression(result, exclamationMarkNot):result; }
@@ -2687,13 +2691,13 @@ Expression SQLCondition():
     (
     result=ExistsExpression()
     | LOOKAHEAD(InExpression()) result=InExpression()
-    | left = SimpleExpression()
-        (LOOKAHEAD(2) result=Between(left)
+    | left = SimpleExpression() { result = left; }
+        [ LOOKAHEAD(2) ((LOOKAHEAD(2) result=Between(left)
          | LOOKAHEAD(IsNullExpression()) result=IsNullExpression(left)
          | LOOKAHEAD(IsBooleanExpression()) result=IsBooleanExpression(left)
          | LOOKAHEAD(2) result=LikeExpression(left)
          | result=SimilarToExpression(left)
-        )
+        )) ]
     )
     { return result; }
 }
@@ -3225,6 +3229,8 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD(3) retval=ExtractExpression()
 
         | retval=MySQLGroupConcat()
+
+        | retval=XMLSerializeExpr()
 
         | LOOKAHEAD(JsonExpression()) retval=JsonExpression()
 
@@ -3781,6 +3787,29 @@ Function InternalFunction(Function retval) :
         return retval;
     }
 }
+
+XMLSerializeExpr XMLSerializeExpr(): {
+   XMLSerializeExpr result;
+   Column column;
+   List<OrderByElement> orderByElements;
+   ColDataType dataType;
+}
+{
+    <K_XMLSERIALIZE> 
+        "(" <K_XMLAGG> 
+                "(" <K_XMLTEXT> 
+                        "(" column=Column() ")" 
+                        orderByElements=OrderByElements() ")" 
+                        <K_AS> dataType=ColDataType() ")"
+    {
+        result = new XMLSerializeExpr();
+        result.setColumn(column);
+        result.setOrderByElements(orderByElements);
+        result.setDataType(dataType);
+        return result;
+    }
+}
+
 
 MySQLGroupConcat MySQLGroupConcat():{
     MySQLGroupConcat retval = new MySQLGroupConcat();
@@ -4465,6 +4494,8 @@ Drop Drop():
         tk=<K_VIEW>
         |
         tk=<K_SCHEMA>
+        |
+        tk=<K_SEQUENCE>
     )
     { drop.setType(tk.image); }
 

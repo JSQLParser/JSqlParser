@@ -547,4 +547,12 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         var.getVariable().accept(this);
         var.getExpression().accept(this);
     }
+
+    @Override
+    public void visit(XMLSerializeExpr expr) {
+        expr.getColumn().accept(this);
+        for (OrderByElement elm : expr.getOrderByElements()) {
+            elm.getExpression().accept(this);
+        }
+    }
 }
