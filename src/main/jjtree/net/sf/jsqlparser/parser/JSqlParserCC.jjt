@@ -2036,7 +2036,10 @@ LateralSubSelect LateralSubSelect():
 }
 {
     <K_LATERAL> { specialSubSelect = new LateralSubSelect(); }
-     "(" subSelect=SubSelect() ")"
+    "(" subSelect=SubSelect() ")"
+
+    [ "(" "+" ")" { specialSubSelect.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_LEFT); } ]
+
     {
         specialSubSelect.setSubSelect(subSelect);
         return specialSubSelect;

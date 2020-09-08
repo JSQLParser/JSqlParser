@@ -10,17 +10,21 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 
 /**
  * lateral sub select
+ *
  * @author tobens
  */
-public class LateralSubSelect extends SpecialSubSelect {
-    
+public class LateralSubSelect extends SpecialSubSelect implements SupportsOldOracleJoinSyntax {
+
+    private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
+
     public LateralSubSelect() {
         super("LATERAL");
     }
-    
+
     @Override
     public void accept(FromItemVisitor fromItemVisitor) {
         fromItemVisitor.visit(this);
@@ -46,4 +50,49 @@ public class LateralSubSelect extends SpecialSubSelect {
         return (LateralSubSelect) super.withUnPivot(unpivot);
     }
 
+    @Override
+    public String toString() {
+        return getPrefix() + getSubSelect().toString()
+                + (oldOracleJoinSyntax == ORACLE_JOIN_LEFT ? "(+)" : "")
+                + ((getAlias() != null) ? getAlias().toString() : "")
+                + ((getPivot() != null) ? " " + getPivot() : "")
+                + ((getUnPivot() != null) ? " " + getUnPivot() : "");
+    }
+
+    @Override
+    public int getOldOracleJoinSyntax() {
+        return oldOracleJoinSyntax;
+    }
+
+    @Override
+    public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
+        this.oldOracleJoinSyntax = oldOracleJoinSyntax;
+        if (oldOracleJoinSyntax != 0 && oldOracleJoinSyntax != 2) {
+            throw new IllegalArgumentException("unknown join type for oracle found (type=" + oldOracleJoinSyntax + ")");
+        }
+    }
+
+    @Override
+    public SupportsOldOracleJoinSyntax withOldOracleJoinSyntax(int oldOracleJoinSyntax) {
+        this.setOldOracleJoinSyntax(oldOracleJoinSyntax);
+        return this;
+    }
+
+    @Override
+    public int getOraclePriorPosition() {
+        return SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR;
+    }
+
+    @Override
+    public void setOraclePriorPosition(int priorPosition) {
+        if (priorPosition != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
+            throw new IllegalArgumentException("unexpected prior for oracle found");
+        }
+    }
+
+    @Override
+    public SupportsOldOracleJoinSyntax withOraclePriorPosition(int priorPosition) {
+        this.setOraclePriorPosition(priorPosition);
+        return this;
+    }
 }
