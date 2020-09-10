@@ -52,8 +52,8 @@ public class XMLSerializeExpr extends ASTNodeAccessImpl implements Expression {
     
     @Override
     public String toString() {
-        return "xmlserialize(xmlagg(xmltext(" + expression + ") ORDER BY " +
-                orderByElements.stream().map(item -> item.toString()).collect(joining(", ")) + 
-                ") AS " + dataType + ")";
+        return "xmlserialize(xmlagg(xmltext(" + expression + ")"
+                + (orderByElements != null ? " ORDER BY " + orderByElements.stream().map(item -> item.toString()).collect(joining(", ")) : "")
+                + ") AS " + dataType + ")";
     }
 }

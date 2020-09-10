@@ -3791,7 +3791,7 @@ Function InternalFunction(Function retval) :
 XMLSerializeExpr XMLSerializeExpr(): {
    XMLSerializeExpr result;
    Expression expression;
-   List<OrderByElement> orderByElements;
+   List<OrderByElement> orderByElements = null;
    ColDataType dataType;
 }
 {
@@ -3799,8 +3799,9 @@ XMLSerializeExpr XMLSerializeExpr(): {
         "(" <K_XMLAGG> 
                 "(" <K_XMLTEXT> 
                         "(" expression=SimpleExpression() ")"
-                        orderByElements=OrderByElements() ")" 
-                        <K_AS> dataType=ColDataType() ")"
+                [ orderByElements=OrderByElements() ]
+        ")"
+        <K_AS> dataType=ColDataType() ")"
     {
         result = new XMLSerializeExpr();
         result.setExpression(expression);

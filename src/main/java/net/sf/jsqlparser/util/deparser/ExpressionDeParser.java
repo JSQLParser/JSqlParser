@@ -908,11 +908,14 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         //xmlserialize(xmlagg(xmltext(COMMENT_LINE) ORDER BY COMMENT_SEQUENCE) as varchar(1024))
         buffer.append("xmlserialize(xmlagg(xmltext(");
         expr.getExpression().accept(this);
-        buffer.append(") ORDER BY ");
-        for (Iterator<OrderByElement> i = expr.getOrderByElements().iterator(); i.hasNext();) {
-            buffer.append(i.next().toString());
-            if (i.hasNext()) {
-                buffer.append(", ");
+        buffer.append(")");
+        if (expr.getOrderByElements() != null){
+            buffer.append(" ORDER BY ");
+            for (Iterator<OrderByElement> i = expr.getOrderByElements().iterator(); i.hasNext();) {
+                buffer.append(i.next().toString());
+                if (i.hasNext()) {
+                    buffer.append(", ");
+                }
             }
         }
         buffer.append(") AS ").append(expr.getDataType()).append(")");
