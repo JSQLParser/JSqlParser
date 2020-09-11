@@ -140,7 +140,9 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * all "DROP" {@link Feature}'s
      */
     public static final FeaturesAllowed DROP = new FeaturesAllowed("DROP", Feature.drop, Feature.dropTable,
-            Feature.dropIndex, Feature.dropView, Feature.dropSchema, Feature.dropSequence, Feature.dropIfExists)
+            Feature.dropIndex, Feature.dropView, Feature.dropSchema, Feature.dropSequence, Feature.dropTableIfExists,
+            Feature.dropIndexIfExists, Feature.dropViewIfExists, Feature.dropSchemaIfExists,
+            Feature.dropSequenceIfExists)
             .unmodifyable();
 
     /**

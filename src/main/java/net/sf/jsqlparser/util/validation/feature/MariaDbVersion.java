@@ -26,7 +26,7 @@ public enum MariaDbVersion implements Version {
             EnumSet.of(// supported if used with jdbc
                     Feature.jdbcParameter,
                     Feature.jdbcNamedParameter,
-                    // common features
+
                     // https://mariadb.com/kb/en/select/
                     Feature.select,
                     Feature.selectGroupBy, Feature.function,
@@ -51,6 +51,12 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/except/
                     Feature.setOperationExcept,
 
+                    // https://mariadb.com/kb/en/common-table-expressions/
+                    // https://mariadb.com/kb/en/with/
+                    // https://mariadb.com/kb/en/non-recursive-common-table-expressions-overview/
+                    // https://mariadb.com/kb/en/recursive-common-table-expressions-overview/
+                    Feature.withItem, Feature.withItemRecursive,
+
                     // https://mariadb.com/kb/en/insert/
                     Feature.insert, Feature.insertValues,
                     Feature.insertFromSelect, Feature.insertModifierPriority, Feature.insertModifierIgnore,
@@ -63,7 +69,7 @@ public enum MariaDbVersion implements Version {
 
                     // https://mariadb.com/kb/en/delete/
                     Feature.delete,
-                    Feature.deleteTables,
+                    Feature.deleteJoin, Feature.deleteTables,
                     Feature.deleteLimit, Feature.deleteOrderBy,
 
                     // https://mariadb.com/kb/en/truncate-table/
@@ -81,7 +87,8 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/drop-view/
                     Feature.dropView,
                     // https://mariadb.com/kb/en/drop-sequence/
-                    Feature.dropSequence, Feature.dropIfExists,
+                    Feature.dropSequence, Feature.dropTableIfExists, Feature.dropIndexIfExists,
+                    Feature.dropViewIfExists, Feature.dropSchemaIfExists, Feature.dropSequenceIfExists,
 
                     // https://mariadb.com/kb/en/replace/
                     Feature.replace,
@@ -93,6 +100,7 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/alter-view/
                     Feature.alterView,
                     // https://mariadb.com/kb/en/create-view/
+
                     Feature.createView,
                     // https://mariadb.com/kb/en/create-table/
                     Feature.createTable,
@@ -102,10 +110,18 @@ public enum MariaDbVersion implements Version {
                     Feature.createSequence,
                     // https://mariadb.com/kb/en/create-database/
                     Feature.createSchema,
+                    // https://mariadb.com/kb/en/create-trigger/
+                    Feature.createTrigger,
+
+                    // https://mariadb.com/kb/en/execute-statement/
+                    Feature.execute,
+
                     // https://mariadb.com/kb/en/describe/
                     Feature.describe,
                     // https://mariadb.com/kb/en/explain/
-                    Feature.explain, Feature.show,
+                    Feature.explain,
+                    // https://mariadb.com/kb/en/show-tables/
+                    Feature.show,
                     // https://mariadb.com/kb/en/show-columns/
                     Feature.showColumns,
                     // https://mariadb.com/kb/en/use/

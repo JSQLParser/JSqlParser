@@ -25,12 +25,21 @@ public class DropValidator extends AbstractValidator<Drop> {
         String type = drop.getType();
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.drop);
-            validateFeature(c, drop.isIfExists(), Feature.dropIfExists);
             validateFeature(c, NamedObject.table.name().equalsIgnoreCase(type), Feature.dropTable);
             validateFeature(c, NamedObject.index.equalsIgnoreCase(type), Feature.dropIndex);
             validateFeature(c, NamedObject.view.equalsIgnoreCase(type), Feature.dropView);
             validateFeature(c, NamedObject.schema.equalsIgnoreCase(type), Feature.dropSchema);
             validateFeature(c, NamedObject.sequence.equalsIgnoreCase(type), Feature.dropSequence);
+
+            validateFeature(c, drop.isIfExists() && NamedObject.table.name().equalsIgnoreCase(type),
+                    Feature.dropTableIfExists);
+            validateFeature(c, drop.isIfExists() && NamedObject.index.equalsIgnoreCase(type),
+                    Feature.dropIndexIfExists);
+            validateFeature(c, drop.isIfExists() && NamedObject.view.equalsIgnoreCase(type), Feature.dropViewIfExists);
+            validateFeature(c, drop.isIfExists() && NamedObject.schema.equalsIgnoreCase(type),
+                    Feature.dropSchemaIfExists);
+            validateFeature(c, drop.isIfExists() && NamedObject.sequence.equalsIgnoreCase(type),
+                    Feature.dropSequenceIfExists);
         }
 
         if (NamedObject.table.equalsIgnoreCase(type)) {

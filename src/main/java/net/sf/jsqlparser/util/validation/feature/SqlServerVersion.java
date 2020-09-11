@@ -76,7 +76,8 @@ public enum SqlServerVersion implements Version {
                     Feature.dropSchema,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/drop-sequence-transact-sql?view=sql-server-ver15
                     Feature.dropSequence,
-                    Feature.dropIfExists,
+                    Feature.dropTableIfExists, Feature.dropIndexIfExists, Feature.dropViewIfExists,
+                    Feature.dropSchemaIfExists, Feature.dropSequenceIfExists,
 
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-table-transact-sql?view=sql-server-ver15
                     Feature.alter,
@@ -101,6 +102,8 @@ public enum SqlServerVersion implements Version {
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/merge-transact-sql?view=sql-server-ver15
                     Feature.merge,
                     // special sql-server features
+                    // https://docs.microsoft.com/en-us/sql/relational-databases/xml/for-xml-sql-server?view=sql-server-ver15
+                    Feature.selectForXmlPath,
                     Feature.use, Feature.allowSquareBracketQuotation, //
                     Feature.pivot, Feature.unpivot, Feature.pivotXml,
                     Feature.selectGroupByGroupingSets));

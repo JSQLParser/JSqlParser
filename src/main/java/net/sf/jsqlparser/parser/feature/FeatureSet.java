@@ -30,4 +30,26 @@ public interface FeatureSet {
     default Set<Feature> getFeaturesClone() {
         return new HashSet<>(getFeatures());
     }
+
+    /**
+     * @param features
+     * @return all features within this feature set which are not contained in given
+     *         set
+     */
+    default Set<Feature> getNotContained(Set<Feature> features) {
+        Set<Feature> f = new HashSet<>(getFeatures());
+        f.removeAll(features);
+        return f;
+    }
+
+    /**
+     * @param features
+     * @return all features within this feature set which are contained in given
+     *         set too.
+     */
+    default Set<Feature> retainAll(Set<Feature> features) {
+        Set<Feature> f = new HashSet<>(getFeatures());
+        f.retainAll(features);
+        return f;
+    }
 }

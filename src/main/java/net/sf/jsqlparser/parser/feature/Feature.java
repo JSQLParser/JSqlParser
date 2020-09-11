@@ -42,7 +42,6 @@ import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
-import net.sf.jsqlparser.statement.select.KSQLWindow;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.OptimizeFor;
@@ -236,12 +235,6 @@ public enum Feature {
     orderByNullOrdering,
 
     /**
-     * @see KSQLWindow
-     */
-    window,
-    selectForXmlPath,
-
-    /**
      * "FOR UPDATE"
      */
     selectForUpdate,
@@ -359,6 +352,7 @@ public enum Feature {
      * @see Merge
      */
     merge,
+
     /**
      * SQL "ALTER" statement is allowed
      *
@@ -371,6 +365,17 @@ public enum Feature {
      * @see AlterSequence
      */
     alterSequence,
+    /**
+     * SQL "ALTER VIEW" statement is allowed
+     *
+     * @see AlterView
+     */
+    alterView,
+    /**
+     * SQL "ALTER INDEX" statement is allowed
+     */
+    alterIndex,
+
     /**
      * SQL "TRUNCATE" statement is allowed
      *
@@ -400,17 +405,8 @@ public enum Feature {
     dropView,
     dropSchema,
     dropSequence,
-    dropIfExists,
-    /**
-     * SQL "ALTER VIEW" statement is allowed
-     *
-     * @see AlterView
-     */
-    alterView,
-    /**
-     * SQL "ALTER INDEX" statement is allowed
-     */
-    alterIndex,
+    dropTableIfExists, dropIndexIfExists, dropViewIfExists, dropSchemaIfExists, dropSequenceIfExists,
+
     /**
      * SQL "CREATE SCHEMA" statement is allowed
      *
@@ -574,7 +570,12 @@ public enum Feature {
      */
     jdbcNamedParameter,
 
-    // SYNTAX FEATURES
+    // VENDOR SPECIFIC SYNTAX FEATURES
+
+    /**
+     * @see KSQLWindow
+     */
+    kSqlWindow,
 
     // ORACLE
 
@@ -609,6 +610,11 @@ public enum Feature {
     mysqlCalcFoundRows,
 
     // SQLSERVER
+
+    /**
+     * "FOR XML PATH(...)"
+     */
+    selectForXmlPath,
 
     /**
      * allows square brackets for names, disabled by default

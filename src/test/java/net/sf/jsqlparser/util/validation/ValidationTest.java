@@ -28,9 +28,16 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
+import net.sf.jsqlparser.util.validation.feature.MariaDbVersion;
+import net.sf.jsqlparser.util.validation.feature.MySqlVersion;
 import net.sf.jsqlparser.util.validation.validator.StatementValidator;
 
 public class ValidationTest {
+
+    public static void main(String args[]) {
+        System.out.println("mysql" + MySqlVersion.V8_0.getNotContained(MariaDbVersion.V10_5_4.getFeatures()));
+        System.out.println("mariadb" + MariaDbVersion.V10_5_4.getNotContained(MySqlVersion.V8_0.getFeatures()));
+    }
 
     @Test
     public void testValidaton() throws JSQLParserException {

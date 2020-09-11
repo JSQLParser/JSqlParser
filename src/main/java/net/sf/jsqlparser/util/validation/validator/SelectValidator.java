@@ -75,7 +75,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             validateFeature(c, plainSelect.getMySqlSqlNoCache(), Feature.mysqlSqlNoCache);
             validateFeature(c, plainSelect.getMySqlSqlCalcFoundRows(), Feature.mysqlCalcFoundRows);
             validateOptionalFeature(c, plainSelect.getIntoTables(), Feature.selectInto);
-            validateOptionalFeature(c, plainSelect.getKsqlWindow(), Feature.window);
+            validateOptionalFeature(c, plainSelect.getKsqlWindow(), Feature.kSqlWindow);
             validateFeature(c, plainSelect.getOrderByElements() != null && plainSelect.isOracleSiblings(),
                     Feature.oracleOrderBySiblings);
 

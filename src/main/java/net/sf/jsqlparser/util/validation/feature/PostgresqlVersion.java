@@ -67,9 +67,6 @@ public enum PostgresqlVersion implements Version {
                     Feature.distinctOn,
 
                     // https://www.postgresql.org/docs/current/sql-select.html
-                    Feature.window,
-
-                    // https://www.postgresql.org/docs/current/sql-select.html
                     Feature.orderBy,
                     Feature.orderByNullOrdering,
 
@@ -127,7 +124,8 @@ public enum PostgresqlVersion implements Version {
                     Feature.dropSchema,
                     // https://www.postgresql.org/docs/current/sql-dropsequence.html
                     Feature.dropSequence,
-                    Feature.dropIfExists,
+                    Feature.dropTableIfExists, Feature.dropIndexIfExists, Feature.dropViewIfExists,
+                    Feature.dropSchemaIfExists, Feature.dropSequenceIfExists,
 
                     // https://www.postgresql.org/docs/current/sql-altertable.html
                     Feature.alter,

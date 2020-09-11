@@ -114,7 +114,8 @@ public enum H2Version implements Version {
                     Feature.dropSchema,
                     // http://h2database.com/html/commands.html#drop_sequence
                     Feature.dropSequence,
-                    Feature.dropIfExists,
+                    Feature.dropTableIfExists, Feature.dropIndexIfExists, Feature.dropViewIfExists,
+                    Feature.dropSchemaIfExists, Feature.dropSequenceIfExists,
                     // http://h2database.com/html/commands.html#alter_table_add
                     // http://h2database.com/html/commands.html#alter_table_add_constraint
                     // ...
