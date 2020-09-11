@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.parser.feature;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,8 +37,8 @@ public interface FeatureSet {
      * @return all features within this feature set which are not contained in given
      *         set
      */
-    default Set<Feature> getNotContained(Set<Feature> features) {
-        Set<Feature> f = new HashSet<>(getFeatures());
+    default Set<Feature> getNotContained(Collection<Feature> features) {
+        Set<Feature> f = getFeaturesClone();
         f.removeAll(features);
         return f;
     }
@@ -47,8 +48,8 @@ public interface FeatureSet {
      * @return all features within this feature set which are contained in given
      *         set too.
      */
-    default Set<Feature> retainAll(Set<Feature> features) {
-        Set<Feature> f = new HashSet<>(getFeatures());
+    default Set<Feature> retainAll(Collection<Feature> features) {
+        Set<Feature> f = getFeaturesClone();
         f.retainAll(features);
         return f;
     }
