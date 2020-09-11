@@ -30,8 +30,7 @@ public enum DatabaseType implements FeatureSetValidation {
     SQLSERVER(SqlServerVersion.values()),
     MARIADB(MariaDbVersion.values()),
     POSTGRESQL(PostgresqlVersion.values()),
-    H2(H2Version.values()),
-    HSQLDB(HSQLDBVersion.values());
+    H2(H2Version.values());
 
     private String name;
     private Version[] versions;
