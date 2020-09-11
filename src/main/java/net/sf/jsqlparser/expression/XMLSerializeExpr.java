@@ -12,13 +12,12 @@ package net.sf.jsqlparser.expression;
 import java.util.List;
 import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 public class XMLSerializeExpr extends ASTNodeAccessImpl implements Expression {
 
-    private Column column;
+    private Expression expression;
     private List<OrderByElement> orderByElements;
     private ColDataType dataType;
 
@@ -27,12 +26,12 @@ public class XMLSerializeExpr extends ASTNodeAccessImpl implements Expression {
         expressionVisitor.visit(this);
     }
 
-    public Column getColumn() {
-        return column;
+    public Expression getExpression() {
+        return expression;
     }
 
-    public void setColumn(Column column) {
-        this.column = column;
+    public void setExpression(Expression expression) {
+        this.expression = expression;
     }
 
     public List<OrderByElement> getOrderByElements() {
@@ -53,8 +52,8 @@ public class XMLSerializeExpr extends ASTNodeAccessImpl implements Expression {
     
     @Override
     public String toString() {
-        return "xmlserialize(xmlagg(xmltext(" + column + ") ORDER BY " + 
-                orderByElements.stream().map(item -> item.toString()).collect(joining(", ")) + 
-                ") AS " + dataType + ")";
+        return "xmlserialize(xmlagg(xmltext(" + expression + ")"
+                + (orderByElements != null ? " ORDER BY " + orderByElements.stream().map(item -> item.toString()).collect(joining(", ")) : "")
+                + ") AS " + dataType + ")";
     }
 }

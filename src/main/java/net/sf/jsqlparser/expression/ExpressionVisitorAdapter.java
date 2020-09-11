@@ -550,7 +550,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(XMLSerializeExpr expr) {
-        expr.getColumn().accept(this);
+        expr.getExpression().accept(this);
         for (OrderByElement elm : expr.getOrderByElements()) {
             elm.getExpression().accept(this);
         }

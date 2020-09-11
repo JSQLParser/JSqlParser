@@ -3788,20 +3788,21 @@ Function InternalFunction(Function retval) :
 
 XMLSerializeExpr XMLSerializeExpr(): {
    XMLSerializeExpr result;
-   Column column;
-   List<OrderByElement> orderByElements;
+   Expression expression;
+   List<OrderByElement> orderByElements = null;
    ColDataType dataType;
 }
 {
     <K_XMLSERIALIZE> 
         "(" <K_XMLAGG> 
                 "(" <K_XMLTEXT> 
-                        "(" column=Column() ")" 
-                        orderByElements=OrderByElements() ")" 
-                        <K_AS> dataType=ColDataType() ")"
+                        "(" expression=SimpleExpression() ")"
+                [ orderByElements=OrderByElements() ]
+        ")"
+        <K_AS> dataType=ColDataType() ")"
     {
         result = new XMLSerializeExpr();
-        result.setColumn(column);
+        result.setExpression(expression);
         result.setOrderByElements(orderByElements);
         result.setDataType(dataType);
         return result;
