@@ -12,7 +12,6 @@ package net.sf.jsqlparser.util.validation.feature;
 import java.util.EnumSet;
 import java.util.Set;
 import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.util.validation.ValidationException;
 
 /**
  * <p>
@@ -21,7 +20,7 @@ import net.sf.jsqlparser.util.validation.ValidationException;
  * {@link #get(String)} to retrieve the {@link DatabaseType}.
  * </p>
  */
-public enum DatabaseType implements FeatureSetValidation {
+public enum DatabaseType implements FeatureSetValidation, Version {
 
     ANSI_SQL("ANSI SQL", SQLVersion.values()),
     // DBMS
@@ -64,6 +63,14 @@ public enum DatabaseType implements FeatureSetValidation {
     }
 
     /**
+     * 
+     */
+    @Override
+    public String getName() {
+        return name == null ? name() : name;
+    }
+
+    /**
      * @return the features supported by the latest version.
      */
     @Override
@@ -76,18 +83,15 @@ public enum DatabaseType implements FeatureSetValidation {
     }
 
     /**
-     * @return <code>featureName + " not supported."</code>
+     * @return the latest version-string.
      */
     @Override
-    public ValidationException getMessage(Feature feature) {
-        return toError(feature.name() + " not supported.");
-    }
-
-    /**
-     */
-    @Override
-    public String getName() {
-        return name == null ? name() : name;
+    public String getVersionString() {
+        if (versions.length > 0) {
+            return versions[versions.length - 1].getVersionString();
+        } else {
+            return null;
+        }
     }
 
 }

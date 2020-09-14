@@ -1,14 +1,9 @@
 package net.sf.jsqlparser.util.validation.validator;
 
-import java.util.Arrays;
-import java.util.List;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.util.validation.ValidationError;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
-import net.sf.jsqlparser.util.validation.ValidationUtil;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 
@@ -17,20 +12,13 @@ public class UpdateValidatorTest extends ValidationTestAsserts {
     @Test
     public void testValidationUpdate() throws JSQLParserException {
         String sql = "UPDATE tab1 SET ref = 5 WHERE id = 10;";
-        validateNoErrors(sql, 1, DatabaseType.DATABASES);
+        validateNoErrors(sql, 1, DatabaseType.values());
     }
 
     @Test
     public void testValidationUpdateNotAllowed() throws JSQLParserException {
         String sql = "UPDATE tab1 SET ref = ? WHERE id = ?;";
-
-        ValidationUtil validation = new ValidationUtil( //
-                Arrays.asList(FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC)), sql);
-        List<ValidationError> errors = validation.validate();
-
-        assertErrorsSize(errors, 1);
-        assertEquals(1, validation.getParsedStatements().getStatements().size());
-        assertNotAllowed(errors.get(0).getErrors(), Feature.update);
+        validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC), Feature.update);
     }
 
     @Test

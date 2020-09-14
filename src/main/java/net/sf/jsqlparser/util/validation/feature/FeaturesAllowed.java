@@ -281,8 +281,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
 
     private List<String> collectNames(FeatureSetValidation fs) {
         String name = fs.getName();
-        List<String> collect = Stream.of(name.split(SEPERATOR_REGEX)).map(String::trim).collect(Collectors.toList());
-        return collect;
+        return Stream.of(name.split(SEPERATOR_REGEX)).map(String::trim).collect(Collectors.toList());
     }
 
 }
