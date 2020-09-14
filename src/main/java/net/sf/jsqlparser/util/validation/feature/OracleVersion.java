@@ -95,6 +95,7 @@ public enum OracleVersion implements Version {
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/UPDATE.html
                     Feature.update,
                     Feature.updateReturning,
+                    Feature.updateUseSelect,
 
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/DELETE.html
                     Feature.delete,
@@ -161,7 +162,7 @@ public enum OracleVersion implements Version {
     /**
      * @param versionString
      * @param featuresSupported
-     * @see #getFeaturesClone() to copy from previous version
+     * @see #copy() to copy from previous version
      */
     private OracleVersion(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
@@ -171,7 +172,7 @@ public enum OracleVersion implements Version {
      * @param versionString
      * @param featuresSupported
      * @param unsupported
-     * @see #getFeaturesClone() to copy from previous version
+     * @see #copy() to copy from previous version
      */
     private OracleVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;

@@ -132,8 +132,7 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/using-explain.html
                     Feature.explain
                     )),
-    V11("11", V10.getFeaturesClone()),
-    V12("12", V11.getFeaturesClone());
+    V11("11", V10.copy().getFeatures()), V12("12", V11.copy().getFeatures());
 
     private Set<Feature> features;
     private String versionString;
@@ -141,7 +140,7 @@ public enum PostgresqlVersion implements Version {
     /**
      * @param versionString
      * @param featuresSupported
-     * @see #getFeaturesClone() to copy from previous version
+     * @see #copy() to copy from previous version
      */
     private PostgresqlVersion(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
@@ -151,7 +150,7 @@ public enum PostgresqlVersion implements Version {
      * @param versionString
      * @param featuresSupported
      * @param unsupported
-     * @see #getFeaturesClone() to copy from previous version
+     * @see #copy() to copy from previous version
      */
     private PostgresqlVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;

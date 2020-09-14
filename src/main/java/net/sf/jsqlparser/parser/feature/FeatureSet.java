@@ -12,6 +12,7 @@ package net.sf.jsqlparser.parser.feature;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 
 public interface FeatureSet {
 
@@ -52,5 +53,9 @@ public interface FeatureSet {
         Set<Feature> f = getFeaturesClone();
         f.retainAll(features);
         return f;
+    }
+
+    default ModifyableFeatureSet copy() {
+        return new FeaturesAllowed().add(this.getFeatures());
     }
 }

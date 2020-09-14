@@ -60,6 +60,8 @@ public enum SqlServerVersion implements Version {
                     Feature.insertValues,
                     // https://docs.microsoft.com/en-us/sql/t-sql/queries/update-transact-sql?view=sql-server-ver15
                     Feature.update,
+                    Feature.updateFrom,
+
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/delete-transact-sql?view=sql-server-ver15
                     Feature.delete,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/truncate-table-transact-sql?view=sql-server-ver15
@@ -114,7 +116,7 @@ public enum SqlServerVersion implements Version {
     /**
      * @param versionString
      * @param featuresSupported
-     * @see #getFeaturesClone() to copy from previous version
+     * @see #copy() to copy from previous version
      */
     private SqlServerVersion(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
@@ -124,7 +126,7 @@ public enum SqlServerVersion implements Version {
      * @param versionString
      * @param featuresSupported
      * @param unsupported
-     * @see #getFeaturesClone() to copy from previous version
+     * @see #copy() to copy from previous version
      */
     private SqlServerVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;

@@ -132,7 +132,7 @@ public enum MariaDbVersion implements Version {
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlCalcFoundRows, Feature.mysqlSqlNoCache)),
 
-    ORACLE_MODE("oracle_mode", EnumSet.of(Feature.selectUnique));
+    ORACLE_MODE("oracle_mode", V10_5_4.copy().add(Feature.selectUnique).getFeatures());
 
     private Set<Feature> features;
     private String versionString;
@@ -140,7 +140,7 @@ public enum MariaDbVersion implements Version {
     /**
      * @param versionString
      * @param featuresSupported
-     * @see #getFeaturesClone() to copy from previous version
+     * @see #copy() to copy from previous version
      */
     private MariaDbVersion(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
@@ -150,7 +150,7 @@ public enum MariaDbVersion implements Version {
      * @param versionString
      * @param featuresSupported
      * @param unsupported
-     * @see #getFeaturesClone() to copy from previous version
+     * @see #copy() to copy from previous version
      */
     private MariaDbVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;

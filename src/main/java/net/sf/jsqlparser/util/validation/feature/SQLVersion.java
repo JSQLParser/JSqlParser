@@ -37,15 +37,15 @@ public enum SQLVersion implements Version {
             Feature.truncate,
             Feature.drop,
             Feature.alter)), //
-    SQL1989("SQL-89", SQL1986.getFeaturesClone()), //
-    SQL1992("SQL-92", SQL1989.getFeaturesClone()), //
-    SQL1999("SQL:1999", SQL1992.getFeaturesClone()), //
-    SQL2003("SQL:2003", SQL1999.getFeaturesClone()), //
-    SQL2006("SQL:2006", SQL2003.getFeaturesClone()), //
-    SQL2008("SQL:2008", SQL2006.getFeaturesClone()), //
-    SQL2011("SQL:2011", SQL2008.getFeaturesClone()), //
-    SQL2016("SQL:2016", SQL2011.getFeaturesClone()), //
-    SQL2019("SQL:2019", SQL2016.getFeaturesClone());
+    SQL1989("SQL-89", SQL1986.copy().getFeatures()), //
+    SQL1992("SQL-92", SQL1989.copy().getFeatures()), //
+    SQL1999("SQL:1999", SQL1992.copy().getFeatures()), //
+    SQL2003("SQL:2003", SQL1999.copy().getFeatures()), //
+    SQL2006("SQL:2006", SQL2003.copy().getFeatures()), //
+    SQL2008("SQL:2008", SQL2006.copy().getFeatures()), //
+    SQL2011("SQL:2011", SQL2008.copy().getFeatures()), //
+    SQL2016("SQL:2016", SQL2011.copy().getFeatures()), //
+    SQL2019("SQL:2019", SQL2016.copy().getFeatures());
 
     private Set<Feature> features;
     private String versionString;
@@ -53,7 +53,7 @@ public enum SQLVersion implements Version {
     /**
      * @param versionString
      * @param featuresSupported
-     * @see #getFeaturesClone() to copy from previous version
+     * @see #copy() to copy from previous version
      */
     private SQLVersion(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
@@ -63,7 +63,7 @@ public enum SQLVersion implements Version {
      * @param versionString
      * @param featuresSupported
      * @param unsupported
-     * @see #getFeaturesClone() to copy from previous version
+     * @see #copy() to copy from previous version
      */
     private SQLVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;

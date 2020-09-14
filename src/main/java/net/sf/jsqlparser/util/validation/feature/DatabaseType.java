@@ -32,6 +32,9 @@ public enum DatabaseType implements FeatureSetValidation {
     POSTGRESQL(PostgresqlVersion.values()),
     H2(H2Version.values());
 
+    public static final DatabaseType[] DATABASES = new DatabaseType[] { ORACLE, MYSQL, SQLSERVER, MARIADB, POSTGRESQL,
+            H2 };
+
     private String name;
     private Version[] versions;
 

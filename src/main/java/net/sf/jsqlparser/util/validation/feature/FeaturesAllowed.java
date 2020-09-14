@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureSet;
+import net.sf.jsqlparser.parser.feature.ModifyableFeatureSet;
 import net.sf.jsqlparser.util.validation.ValidationException;
 
 /**
@@ -27,7 +28,7 @@ import net.sf.jsqlparser.util.validation.ValidationException;
  *
  * @author gitmotte
  */
-public class FeaturesAllowed implements FeatureSetValidation {
+public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureSet {
 
     private static final String SEPERATOR_REGEX = " \\+ ";
     private static final String SEPERATOR = " + ";
@@ -172,6 +173,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * @param featureSets
      * @return <code>this</code>
      */
+    @Override
     public FeaturesAllowed add(FeatureSet... featureSets) {
         Stream.of(featureSets).forEach(fs -> {
             features.addAll(fs.getFeatures());
@@ -186,6 +188,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * @param features
      * @return <code>this</code>
      */
+    @Override
     public FeaturesAllowed add(Feature... features) {
         Collections.addAll(this.features, features);
         return this;
@@ -195,6 +198,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * @param features
      * @return <code>this</code>
      */
+    @Override
     public FeaturesAllowed add(Collection<Feature> features) {
         this.features.addAll(features);
         return this;
@@ -204,6 +208,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * @param featureSets
      * @return <code>this</code>
      */
+    @Override
     public FeaturesAllowed remove(FeatureSet... featureSets) {
         Stream.of(featureSets).forEach(fs -> {
             features.removeAll(fs.getFeatures());
@@ -218,6 +223,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * @param features
      * @return <code>this</code>
      */
+    @Override
     public FeaturesAllowed remove(Feature... features) {
         this.features.removeAll(Arrays.asList(features));
         return this;
@@ -227,6 +233,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * @param features
      * @return <code>this</code>
      */
+    @Override
     public FeaturesAllowed remove(Collection<Feature> features) {
         this.features.removeAll(features);
         return this;
@@ -236,6 +243,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * @return returns a modifiable copy of this {@link FeaturesAllowed} object
      * @see #unmodifyable()
      */
+    @Override
     public FeaturesAllowed copy() {
         return new FeaturesAllowed().add(this);
     }
@@ -246,6 +254,7 @@ public class FeaturesAllowed implements FeatureSetValidation {
      * @return <code>this</code>
      * @see #copy()
      */
+    @Override
     public FeaturesAllowed unmodifyable() {
         this.features = Collections.unmodifiableSet(features);
         return this;

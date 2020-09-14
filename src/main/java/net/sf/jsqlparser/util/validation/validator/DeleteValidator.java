@@ -33,7 +33,7 @@ public class DeleteValidator extends AbstractValidator<Delete> {
         SelectValidator v = getValidator(SelectValidator.class);
         delete.getTable().accept(v);
 
-        if (delete.getTables() != null) {
+        if (isNotEmpty(delete.getTables())) {
             delete.getTables().forEach(t -> t.accept(v));
         }
 
