@@ -58,6 +58,7 @@ public enum SqlServerVersion implements Version {
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/insert-transact-sql?view=sql-server-ver15
                     Feature.insert,
                     Feature.insertValues,
+                    Feature.insertFromSelect,
                     // https://docs.microsoft.com/en-us/sql/t-sql/queries/update-transact-sql?view=sql-server-ver15
                     Feature.update,
                     Feature.updateFrom,

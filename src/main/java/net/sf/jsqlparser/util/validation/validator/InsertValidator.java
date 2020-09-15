@@ -59,7 +59,7 @@ public class InsertValidator extends AbstractValidator<Insert> {
             insert.getDuplicateUpdateExpressionList().forEach(c -> c.accept(v));
         }
 
-        if (insert.getReturningExpressionList() != null) {
+        if (isNotEmpty(insert.getReturningExpressionList())) {
             ExpressionValidator v = getValidator(ExpressionValidator.class);
             insert.getReturningExpressionList().forEach(c -> c.getExpression().accept(v));
         }
