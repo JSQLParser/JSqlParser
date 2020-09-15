@@ -128,13 +128,17 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      * all "CREATE" {@link Feature}'s
      */
     public static final FeaturesAllowed CREATE = new FeaturesAllowed("CREATE", Feature.createIndex,
-            Feature.createSchema, Feature.createSequence, Feature.createTable, Feature.createTrigger,
+            Feature.createSchema, Feature.createSequence, Feature.createTable, Feature.createTableUnlogged,
+            Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
+            Feature.createTableIfNotExists, Feature.createTableRowMovement, Feature.createTableFromSelect,
+            Feature.createTrigger,
             Feature.createView).unmodifyable();
 
     /**
      * all "ALTER" {@link Feature}'s
      */
-    public static final FeaturesAllowed ALTER = new FeaturesAllowed("ALTER", Feature.alter, Feature.alterSequence)
+    public static final FeaturesAllowed ALTER = new FeaturesAllowed("ALTER", Feature.alter, Feature.alterSequence,
+            Feature.alterView, Feature.alterIndex)
             .unmodifyable();
 
     /**
