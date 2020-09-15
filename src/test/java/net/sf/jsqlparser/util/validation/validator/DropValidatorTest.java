@@ -5,6 +5,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
+import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 
 public class DropValidatorTest extends ValidationTestAsserts {
 
@@ -12,6 +13,12 @@ public class DropValidatorTest extends ValidationTestAsserts {
     public void testValidationDrop() throws JSQLParserException {
         String sql = "DROP TABLE tab1; DROP TABLE tab2;";
         validateNoErrors(sql, 2, DatabaseType.DATABASES);
+    }
+
+    @Test
+    public void testValidationDropNotAllowed() throws JSQLParserException {
+        String sql = "DROP VIEW myview";
+        validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.drop, Feature.dropView);
     }
 
     @Test
