@@ -23,7 +23,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -136,6 +138,17 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         if (elementList != null && !elementList.isEmpty()) {
             V validator = validatorSupplier.get();
             elementList.forEach(e -> elementConsumer.accept(e, validator));
+        }
+    }
+
+    /**
+     * a multi-expression in clause: {@code ((a, b), (c, d))}
+     */
+    protected void validateOptionalMultiExpressionList(MultiExpressionList multiExprList) {
+        if (multiExprList != null) {
+            ExpressionValidator v = getValidator(ExpressionValidator.class);
+            multiExprList.getExpressionLists().stream().map(ExpressionList::getExpressions).flatMap(List::stream)
+            .forEach(e -> e.accept(v));
         }
     }
 

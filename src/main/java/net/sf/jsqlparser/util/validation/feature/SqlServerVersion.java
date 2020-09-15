@@ -26,6 +26,8 @@ public enum SqlServerVersion implements Version {
                     // supported if used with jdbc
                     Feature.jdbcParameter,
                     Feature.jdbcNamedParameter,
+                    // expressions
+                    Feature.exprLike,
                     // https://docs.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql?view=sql-server-ver15
                     Feature.select,
                     Feature.selectInto,

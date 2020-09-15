@@ -27,6 +27,8 @@ public enum OracleVersion implements Version {
                     // supported if used with jdbc
                     Feature.jdbcParameter,
                     Feature.jdbcNamedParameter,
+                    // expressions
+                    Feature.exprLike,
                     // common features
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/SELECT.html
                     Feature.select,

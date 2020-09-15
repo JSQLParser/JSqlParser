@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import java.util.List;
-
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -84,7 +82,6 @@ import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
@@ -198,16 +195,6 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         validateOptionalItemsList(inExpression.getRightItemsList());
     }
 
-    /**
-     * a multi-expression in clause: {@code ((a, b), (c, d))}
-     */
-    public void validateOptionalMultiExpressionList(MultiExpressionList multiExprList) {
-        if (multiExprList != null) {
-            multiExprList.getExpressionLists().stream().map(ExpressionList::getExpressions)
-            .flatMap(List::stream).forEach(e -> e.accept(this));
-        }
-    }
-
     @Override
     public void visit(FullTextSearch fullTextSearch) {
         validateOptionalExpressions(fullTextSearch.getMatchColumns());
@@ -235,6 +222,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(LikeExpression likeExpression) {
+        validateFeature(Feature.exprLike);
         visitBinaryExpression(likeExpression,
                 (likeExpression.isNot() ? " NOT" : "")
                 + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
@@ -535,6 +523,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(SimilarToExpression expr) {
+        validateFeature(Feature.exprSimilarTo);
         visitBinaryExpression(expr, (expr.isNot() ? " NOT" : "") + " SIMILAR TO ");
     }
 

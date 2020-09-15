@@ -115,6 +115,12 @@ public class SelectValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
+    public void testOracleJoin() throws JSQLParserException {
+        validateNoErrors("SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)", 1, 
+                DatabaseType.ORACLE);
+    }
+
+    @Test
     public void testValidationLeftRightJoin() throws JSQLParserException {
         for (String sql : Arrays
                 .asList("SELECT t1.col, t2.col, t1.id FROM tab1 t1 LEFT JOIN tab2 t2 ON t1.id = t2.id",
@@ -143,6 +149,12 @@ public class SelectValidatorTest extends ValidationTestAsserts {
         validateNoErrors(statement, 1, DatabaseType.H2, DatabaseType.MARIADB, DatabaseType.MYSQL,
                 DatabaseType.SQLSERVER, DatabaseType.POSTGRESQL);
         validateNotSupported(statement, 1, 1, DatabaseType.ORACLE, Feature.withItemRecursive);
+    }
+
+    @Test
+    public void testSelectMulipleExpressionList() {
+        String sql = "SELECT * FROM mytable WHERE (SSN, SSM) IN (('11111111111111', '22222222222222'))";
+        validateNoErrors(sql, 1, DatabaseType.DATABASES);
     }
 
 }

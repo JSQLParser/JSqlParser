@@ -27,6 +27,8 @@ public enum H2Version implements Version {
                     // supported if used with jdbc
                     Feature.jdbcParameter,
                     Feature.jdbcNamedParameter,
+                    // expressions
+                    Feature.exprLike,
                     // http://h2database.com/html/commands.html#select
                     Feature.select,
                     Feature.selectGroupBy, Feature.function,

@@ -38,6 +38,9 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
             Feature.jdbcParameter,
             Feature.jdbcNamedParameter).unmodifyable();
 
+    public static final FeaturesAllowed EXPRESSIONS = new FeaturesAllowed("EXPRESSIONS", Feature.exprLike,
+            Feature.exprSimilarTo);
+
     /**
      * all {@link Feature}' within SQL SELECT without modification features like
      * {@link Feature#selectInto}, but jdbc-features like

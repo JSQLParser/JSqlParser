@@ -90,6 +90,10 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             validateOptionalFeature(c, plainSelect.getOptimizeFor(), Feature.optimizeFor);
         } // end for
 
+        if (isNotEmpty(plainSelect.getSelectItems())) {
+            plainSelect.getSelectItems().forEach(s -> s.accept(this));
+        }
+
         validateOptionalFromItem(plainSelect.getFromItem());
         validateOptionalFromItems(plainSelect.getIntoTables());
         validateOptionalJoins(plainSelect.getJoins());
@@ -298,11 +302,8 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
     @Override
     public void visit(ValuesList valuesList) {
         validateFeature(Feature.valuesList);
-        getValidator(ExpressionValidator.class)
-        .validateOptionalMultiExpressionList(valuesList.getMultiExpressionList());
+        validateOptionalMultiExpressionList(valuesList.getMultiExpressionList());
     }
-
-
 
     @Override
     public void visit(TableFunction tableFunction) {

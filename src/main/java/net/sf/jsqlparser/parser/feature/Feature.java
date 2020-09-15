@@ -584,7 +584,7 @@ public enum Feature {
      */
     tableFunction,
 
-    // EXPRESSIONS
+    // JDBC
     /**
      * @see JdbcParameter
      */
@@ -593,6 +593,16 @@ public enum Feature {
      * @see JdbcNamedParameter
      */
     jdbcNamedParameter,
+
+    // EXPRESSIONS
+    /**
+     * "LIKE"
+     */
+    exprLike,
+    /**
+     * "SIMILAR TO"
+     */
+    exprSimilarTo,
 
     // VENDOR SPECIFIC SYNTAX FEATURES
 
