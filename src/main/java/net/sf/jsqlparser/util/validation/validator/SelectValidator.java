@@ -219,62 +219,59 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
     }
 
     public void validateOptionalJoin(Join join) {
-
-        if (join != null) {
-            for (ValidationCapability c : getCapabilities()) {
-                validateFeature(c, Feature.join);
-                validateFeature(c, join.isSimple() && join.isOuter(), Feature.joinOuterSimple);
-                validateFeature(c, join.isSimple(), Feature.joinSimple);
-                validateFeature(c, join.isRight(), Feature.joinRight);
-                validateFeature(c, join.isNatural(), Feature.joinNatural);
-                validateFeature(c, join.isFull(), Feature.joinFull);
-                validateFeature(c, join.isLeft(), Feature.joinLeft);
-                validateFeature(c, join.isCross(), Feature.joinCross);
-                validateFeature(c, join.isOuter(), Feature.joinOuter);
-                validateFeature(c, join.isInner(), Feature.joinInner);
-                validateFeature(c, join.isSemi(), Feature.joinSemi);
-                validateFeature(c, join.isStraight(), Feature.joinStraight);
-                validateFeature(c, join.isApply(), Feature.joinApply);
-                validateFeature(c, join.isWindowJoin(), Feature.joinWindow);
-                validateOptionalFeature(c, join.getUsingColumns(), Feature.joinUsingColumns);
-            }
-
-            validateOptionalFromItem(join.getRightItem());
-            validateOptionalExpression(join.getOnExpression());
-            validateOptionalExpressions(join.getUsingColumns());
+        for (ValidationCapability c : getCapabilities()) {
+            validateFeature(c, Feature.join);
+            validateFeature(c, join.isSimple() && join.isOuter(), Feature.joinOuterSimple);
+            validateFeature(c, join.isSimple(), Feature.joinSimple);
+            validateFeature(c, join.isRight(), Feature.joinRight);
+            validateFeature(c, join.isNatural(), Feature.joinNatural);
+            validateFeature(c, join.isFull(), Feature.joinFull);
+            validateFeature(c, join.isLeft(), Feature.joinLeft);
+            validateFeature(c, join.isCross(), Feature.joinCross);
+            validateFeature(c, join.isOuter(), Feature.joinOuter);
+            validateFeature(c, join.isInner(), Feature.joinInner);
+            validateFeature(c, join.isSemi(), Feature.joinSemi);
+            validateFeature(c, join.isStraight(), Feature.joinStraight);
+            validateFeature(c, join.isApply(), Feature.joinApply);
+            validateFeature(c, join.isWindowJoin(), Feature.joinWindow);
+            validateOptionalFeature(c, join.getUsingColumns(), Feature.joinUsingColumns);
         }
+
+        validateOptionalFromItem(join.getRightItem());
+        validateOptionalExpression(join.getOnExpression());
+        validateOptionalExpressions(join.getUsingColumns());
     }
 
     @Override
-    public void visit(SetOperationList list) {
+    public void visit(SetOperationList setOperation) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.setOperation);
-            validateFeature(c, list.getOperations().stream().anyMatch(o -> o instanceof UnionOp),
+            validateFeature(c, setOperation.getOperations().stream().anyMatch(o -> o instanceof UnionOp),
                     Feature.setOperationUnion);
-            validateFeature(c, list.getOperations().stream().anyMatch(o -> o instanceof IntersectOp),
+            validateFeature(c, setOperation.getOperations().stream().anyMatch(o -> o instanceof IntersectOp),
                     Feature.setOperationIntersect);
-            validateFeature(c, list.getOperations().stream().anyMatch(o -> o instanceof ExceptOp),
+            validateFeature(c, setOperation.getOperations().stream().anyMatch(o -> o instanceof ExceptOp),
                     Feature.setOperationExcept);
-            validateFeature(c, list.getOperations().stream().anyMatch(o -> o instanceof MinusOp),
+            validateFeature(c, setOperation.getOperations().stream().anyMatch(o -> o instanceof MinusOp),
                     Feature.setOperationMinus);
         }
 
-        if (list.getSelects() != null) {
-            list.getSelects().forEach(s -> s.accept(this));
+        if (setOperation.getSelects() != null) {
+            setOperation.getSelects().forEach(s -> s.accept(this));
         }
 
-        validateOptionalOrderByElements(list.getOrderByElements());
+        validateOptionalOrderByElements(setOperation.getOrderByElements());
 
-        if (list.getLimit() != null) {
-            getValidator(LimitValidator.class).validate(list.getLimit());
+        if (setOperation.getLimit() != null) {
+            getValidator(LimitValidator.class).validate(setOperation.getLimit());
         }
 
-        if (list.getOffset() != null) {
-            validateOffset(list.getOffset());
+        if (setOperation.getOffset() != null) {
+            validateOffset(setOperation.getOffset());
         }
 
-        if (list.getFetch() != null) {
-            validateFetch(list.getFetch());
+        if (setOperation.getFetch() != null) {
+            validateFetch(setOperation.getFetch());
         }
     }
 

@@ -37,7 +37,7 @@ public enum SqlServerVersion implements Version {
                     // https://docs.microsoft.com/en-us/sql/t-sql/queries/top-transact-sql?view=sql-server-ver15
                     Feature.top,
                     // https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-ver15
-                    Feature.offset, Feature.fetch, Feature.fetchFirst, Feature.fetchNext,
+                    Feature.offset, Feature.offsetParam, Feature.fetch, Feature.fetchFirst, Feature.fetchNext,
 
                     // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/set-operators-except-and-intersect-transact-sql?view=sql-server-ver15
                     // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/set-operators-union-transact-sql?view=sql-server-ver15

@@ -106,7 +106,7 @@ public enum Feature {
      */
     offset,
     /**
-     * "OFFSET param"
+     * "OFFSET offset param" where param is ROW | ROWS
      *
      * @see Offset#getOffsetParam()
      */

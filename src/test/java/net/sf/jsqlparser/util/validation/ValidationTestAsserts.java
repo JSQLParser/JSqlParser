@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import net.sf.jsqlparser.util.validation.feature.Version;
 
@@ -56,11 +55,11 @@ public class ValidationTestAsserts {
      * 
      * @param sql
      * @param statementCount
-     * @param databaseTypes
+     * @param versions
      */
-    public static void validateNoErrors(String sql, int statementCount, DatabaseType... databaseTypes) {
+    public static void validateNoErrors(String sql, int statementCount, Version... versions) {
         ValidationUtil validation = new ValidationUtil( //
-                Arrays.asList(databaseTypes), sql);
+                Arrays.asList(versions), sql);
         List<ValidationError> errors = validation.validate();
 
         assertErrorsSize(errors, 0);
