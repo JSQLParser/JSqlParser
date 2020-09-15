@@ -426,6 +426,30 @@ public enum Feature {
      */
     createTable,
     /**
+     * "CREATE GLOBAL UNLOGGED"
+     */
+    createTableUnlogged,
+    /**
+     * i.e. "CREATE GLOBAL TEMPORARY TABLE", "CREATE SHARDED TABLE"
+     */
+    createTableCreateOptionStrings,
+    /**
+     * i.e. "ENGINE = InnoDB AUTO_INCREMENT = 8761 DEFAULT CHARSET = utf8"
+     */
+    createTableTableOptionStrings,
+    /**
+     * "CREATE TABLE IF NOT EXISTS table"
+     */
+    createTableIfNotExists,
+    /**
+     * " ROW MOVEMENT"
+     */
+    createTableRowMovement,
+    /**
+     * "CREATE TABLE (colspec) SELECT ... 
+     */
+    createTableFromSelect,
+    /**
      * SQL "CREATE INDEX" statement is allowed
      *
      * @see CreateIndex

@@ -119,7 +119,8 @@ public enum OracleVersion implements Version {
 
                     Feature.createView,
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/CREATE-TABLE.html
-                    Feature.createTable,
+                    Feature.createTable, Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
+                    Feature.createTableFromSelect, Feature.createTableRowMovement,
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/CREATE-INDEX.html
                     Feature.createIndex,
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/CREATE-SEQUENCE.html

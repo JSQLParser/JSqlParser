@@ -95,7 +95,9 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-createindex.html
                     Feature.createIndex,
                     // https://www.postgresql.org/docs/current/sql-createtable.html
-                    Feature.createTable,
+                    Feature.createTable, Feature.createTableUnlogged, 
+                    Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
+                    Feature.createTableFromSelect, Feature.createTableIfNotExists,
                     // https://www.postgresql.org/docs/current/sql-createview.html
                     Feature.createView,
                     // https://www.postgresql.org/docs/current/sql-alterview.html

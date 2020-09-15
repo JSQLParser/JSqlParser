@@ -76,7 +76,9 @@ public enum H2Version implements Version {
                     // http://h2database.com/html/commands.html#create_index
                     Feature.createIndex,
                     // http://h2database.com/html/commands.html#create_table
-                    Feature.createTable,
+                    Feature.createTable, Feature.createTableCreateOptionStrings,
+                    Feature.createTableTableOptionStrings, Feature.createTableFromSelect,
+                    Feature.createTableIfNotExists,
                     // http://h2database.com/html/commands.html#create_view
                     Feature.createView,
                     // http://h2database.com/html/commands.html#alter_view_rename

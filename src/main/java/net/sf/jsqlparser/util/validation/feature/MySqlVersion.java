@@ -90,7 +90,8 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/create-view.html
                     Feature.createView,
                     // https://dev.mysql.com/doc/refman/8.0/en/create-table.html
-                    Feature.createTable,
+                    Feature.createTable, Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
+                    Feature.createTableFromSelect, Feature.createTableIfNotExists,
                     // https://dev.mysql.com/doc/refman/8.0/en/create-index.html
                     Feature.createIndex,
                     // https://dev.mysql.com/doc/refman/8.0/en/create-trigger.html
