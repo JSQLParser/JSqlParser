@@ -84,9 +84,8 @@ public class ValidationError {
 
     @Override
     public String toString() {
-        return "ValidationError [statement=" + statements
-                + ", capability=" + (capability != null ? capability.getName() : "<null>")
-                + ", errors=" + errors + "]";
+        return "ValidationError [\nstatement=" + statements + "\ncapability="
+                + (capability != null ? capability.getName() : "<null>") + "\nerrors=" + errors + "\n]";
     }
 
 
