@@ -101,8 +101,9 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/alter-view/
                     Feature.alterView,
                     // https://mariadb.com/kb/en/create-view/
-
                     Feature.createView,
+                    Feature.createOrReplaceView,
+
                     // https://mariadb.com/kb/en/create-table/
                     Feature.createTable, Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
                     Feature.createTableFromSelect, Feature.createTableIfNotExists,

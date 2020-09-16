@@ -420,6 +420,22 @@ public enum Feature {
      */
     createView,
     /**
+     * "CREATE FORCE VIEW"
+     */
+    createViewForce,
+    /**
+     * "CREATE TEMPORARAY VIEW"
+     */
+    createViewTemporary,
+    /**
+     * "CREATE OR REPLACE VIEW"
+     */
+    createOrReplaceView,
+    /**
+     * SQL "CREATE MATERIALIZED VIEW" statement is allowed
+     */
+    createViewMaterialized,
+    /**
      * SQL "CREATE TABLE" statement is allowed
      *
      * @see CreateTable

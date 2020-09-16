@@ -101,7 +101,7 @@ public enum PostgresqlVersion implements Version {
                     Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
                     Feature.createTableFromSelect, Feature.createTableIfNotExists,
                     // https://www.postgresql.org/docs/current/sql-createview.html
-                    Feature.createView,
+                    Feature.createView, Feature.createViewTemporary, Feature.createOrReplaceView,
                     // https://www.postgresql.org/docs/current/sql-alterview.html
                     // Feature.alterView,
 

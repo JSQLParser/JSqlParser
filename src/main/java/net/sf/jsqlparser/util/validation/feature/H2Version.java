@@ -83,6 +83,7 @@ public enum H2Version implements Version {
                     Feature.createTableIfNotExists,
                     // http://h2database.com/html/commands.html#create_view
                     Feature.createView,
+                    Feature.createViewForce, Feature.createOrReplaceView,
                     // http://h2database.com/html/commands.html#alter_view_rename
                     // Feature.alterView,
 

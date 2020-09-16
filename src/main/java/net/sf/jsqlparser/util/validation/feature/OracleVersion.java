@@ -118,8 +118,11 @@ public enum OracleVersion implements Version {
                     Feature.alterSequence,
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/EXECUTE-IMMEDIATE-statement.html
                     Feature.execute,
-
+                    // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/CREATE-VIEW.html
                     Feature.createView,
+                    Feature.createViewForce, Feature.createOrReplaceView,
+                    // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/CREATE-MATERIALIZED-VIEW.htm
+                    Feature.createViewMaterialized,
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/CREATE-TABLE.html
                     Feature.createTable, Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
                     Feature.createTableFromSelect, Feature.createTableRowMovement,
