@@ -1979,6 +1979,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testAnalyticFunctionFilterIssue934() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) FILTER (WHERE name = 'Raj') FROM table");
+    }
+
+    @Test
     public void testFunctionLeft() throws JSQLParserException {
         String statement = "SELECT left(table1.col1, 4) FROM table1";
         assertSqlCanBeParsedAndDeparsed(statement);

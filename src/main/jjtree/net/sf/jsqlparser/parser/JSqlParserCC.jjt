@@ -3432,25 +3432,13 @@ KeepExpression KeepExpression() : {
     }
 }
 
-AnalyticExpression AnalyticExpression(Function function) :
-{
-    AnalyticExpression retval = new AnalyticExpression(function);
-    ExpressionList expressionList = null;
-    List<OrderByElement> olist = null;
-    Token token = null;
-    Expression expr = null;
-    Expression offset = null;
-    Expression defaultValue = null;
-    WindowElement windowElement = null;
-    //KeepExpression keep = null;
-    //boolean distinct = false;
-    boolean partitionByBrackets = false;
-    Expression filter = null;
-}
-{
 
-    [ <K_FILTER> "(" <K_WHERE> filter = Expression() ")" ]
-
+void windowFun(AnalyticExpression retval):{
+         ExpressionList expressionList = null;
+         List<OrderByElement> olist = null;
+         WindowElement windowElement = null;
+         boolean partitionByBrackets = false;
+} {
     (<K_OVER> {retval.setType(AnalyticType.OVER);}
         | <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);} )
 
@@ -3461,15 +3449,24 @@ AnalyticExpression AnalyticExpression(Function function) :
         ]
         [olist=OrderByElements() ]
         [windowElement = WindowElement() ]
-
-    {
-        retval.setPartitionExpressionList(expressionList, partitionByBrackets);
-        retval.setOrderByElements(olist);
-        retval.setWindowElement(windowElement);
-        retval.setFilterExpression(filter);
-    }
+        {
+            retval.setPartitionExpressionList(expressionList, partitionByBrackets);
+            retval.setOrderByElements(olist);
+            retval.setWindowElement(windowElement);
+        }
     ")"
+}
+
+AnalyticExpression AnalyticExpression(Function function) :
+{
+    AnalyticExpression retval = new AnalyticExpression(function);
+    Expression filter = null;
+}
+{
+    ((<K_FILTER> "(" <K_WHERE> {retval.setType(AnalyticType.FILTER_ONLY);} filter = Expression() ")" [ LOOKAHEAD(2) windowFun(retval) ] )
+        | windowFun(retval))
     {
+        retval.setFilterExpression(filter);
         return retval;
     }
 }
