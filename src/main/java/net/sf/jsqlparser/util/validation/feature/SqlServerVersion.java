@@ -94,6 +94,8 @@ public enum SqlServerVersion implements Version {
                     Feature.alterIndex,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-index-transact-sql?view=sql-server-ver15
                     Feature.createIndex,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-sequence-transact-sql?view=sql-server-ver15
+                    Feature.createSequence,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-table-transact-sql?view=sql-server-ver15
                     Feature.createTable, Feature.createTableTableOptionStrings,
                     Feature.createTableFromSelect,
