@@ -30,18 +30,6 @@ public class SelectValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
-    public void testValidationSelectGroupBy() {
-        String sql = "SELECT MAX(a, b, c), COUNT(*), D FROM tab1 GROUP BY D";
-        validateNoErrors(sql, 1, DatabaseType.DATABASES);
-    }
-
-    @Test
-    public void testValidationHaving() throws JSQLParserException {
-        String sql = "SELECT MAX(tab1.b) FROM tab1 WHERE a > 34 GROUP BY tab1.b HAVING MAX(tab1.b) > 56";
-        validateNoErrors(sql, 1, DatabaseType.DATABASES);
-    }
-
-    @Test
     public void testValidationLimitOffset() throws JSQLParserException {
         String sql = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 3, ?";
         validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL);
