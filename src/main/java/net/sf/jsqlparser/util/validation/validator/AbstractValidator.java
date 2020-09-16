@@ -135,7 +135,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
 
     protected <E, V extends Validator<?>> void validateOptionalList(
             List<E> elementList, Supplier<V> validatorSupplier, BiConsumer<E, V> elementConsumer) {
-        if (elementList != null && !elementList.isEmpty()) {
+        if (isNotEmpty(elementList)) {
             V validator = validatorSupplier.get();
             elementList.forEach(e -> elementConsumer.accept(e, validator));
         }
