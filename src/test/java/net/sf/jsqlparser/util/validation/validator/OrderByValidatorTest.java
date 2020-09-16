@@ -2,12 +2,20 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import org.junit.Test;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
+import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 
 public class OrderByValidatorTest extends ValidationTestAsserts {
 
     @Test
-    public void test() {
-
+    public void testOrderBy() {
+        String sql = "SELECT * FROM tab ORDER BY a ASC, b DESC, c";
+        validateNoErrors(sql, 1, DatabaseType.DATABASES);
+    }
+    @Test
+    public void testOrderByNullOrdering() {
+        String sql = "SELECT * FROM tab ORDER BY a ASC NULLS FIRST, b DESC NULLS LAST";
+        validateNoErrors(sql, 1, DatabaseType.ORACLE, DatabaseType.POSTGRESQL,
+                DatabaseType.H2);
     }
 
 }
