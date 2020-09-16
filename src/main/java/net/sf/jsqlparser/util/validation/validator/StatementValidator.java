@@ -174,8 +174,7 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
             validateFeature(c, Feature.comment);
             validateOptionalFeature(c, comment.getTable(), Feature.commentOnTable);
             validateOptionalFeature(c, comment.getColumn(), Feature.commentOnColumn);
-            // see https://github.com/JSQLParser/JSqlParser/pull/1024
-            // validateOptionalFeature(c, comment.getView(), Feature.commentOnView);
+            validateOptionalFeature(c, comment.getView(), Feature.commentOnView);
         }
     }
 
