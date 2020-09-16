@@ -1,13 +1,46 @@
 package net.sf.jsqlparser.util.validation.validator;
 
+import java.util.Arrays;
 import org.junit.Test;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
+import net.sf.jsqlparser.util.validation.feature.DatabaseType;
+import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 
 public class StatementValidatorTest extends ValidationTestAsserts {
 
     @Test
-    public void test() {
+    public void testValidateCreateSchema() throws JSQLParserException {
+        for (String sql : Arrays.asList("CREATE SCHEMA my_schema",
+                "CREATE SCHEMA myschema AUTHORIZATION myauth")) {
+            validateNoErrors(sql, 1, DatabaseType.DATABASES);
+        }
+    }
 
+    @Test
+    public void testValidateCreateSchemaNotAllowed() throws JSQLParserException {
+        for (String sql : Arrays.asList("CREATE SCHEMA my_schema", "CREATE SCHEMA myschema AUTHORIZATION myauth")) {
+            validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.createSchema);
+        }
+    }
+
+    @Test
+    public void testValidateTruncate() throws JSQLParserException {
+        validateNoErrors("TRUNCATE TABLE my_table", 1, DatabaseType.DATABASES);
+    }
+
+    @Test
+    public void testValidateUse() throws JSQLParserException {
+        validateNoErrors("USE my_schema", 1, DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.MYSQL);
+    }
+
+    @Test
+    public void testValidateComment() throws JSQLParserException {
+        for (String sql : Arrays.asList("COMMENT ON VIEW myschema.myView IS 'myComment'",
+                "COMMENT ON COLUMN myTable.myColumn is 'Some comment'", "COMMENT ON TABLE table1 IS 'comment1'")) {
+            validateNoErrors(sql, 1, DatabaseType.H2, DatabaseType.ORACLE, DatabaseType.POSTGRESQL);
+        }
     }
 
 }
