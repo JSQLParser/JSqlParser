@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.validation.metadata;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,12 +28,12 @@ import net.sf.jsqlparser.util.validation.ValidationException;
  */
 public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapability {
 
-    public JdbcDatabaseMetaDataCapability(Connection connection) {
-        super(connection);
+    public JdbcDatabaseMetaDataCapability(Connection connection, NamesLookup namesLookup) {
+        super(connection, namesLookup);
     }
 
-    public JdbcDatabaseMetaDataCapability(Connection connection, boolean cacheResults) {
-        super(connection, cacheResults);
+    public JdbcDatabaseMetaDataCapability(Connection connection, NamesLookup namesLookup, boolean cacheResults) {
+        super(connection, namesLookup, cacheResults);
     }
 
     @Override
@@ -49,12 +50,18 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
 
         String columnName = names[names.length - 1];
         int lastIndexOf = name.lastIndexOf(".");
-        String query = String.format("SELECT %s FROM %s", columnName, name.substring(0, lastIndexOf));
+        String query = String.format("SELECT * FROM %s", name.substring(0, lastIndexOf));
         try (PreparedStatement ps = connection.prepareStatement(query)) {
-            return columnName.equalsIgnoreCase(ps.getMetaData().getColumnLabel(1));
+            ResultSetMetaData metaData = ps.getMetaData();
+            for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                if (columnName.equalsIgnoreCase(metaData.getColumnLabel(i))) {
+                    return true;
+                }
+            }
         } catch (SQLException e) {
             throw createDatabaseException(name, new String[] { "COLUMN" }, e);
         }
+        return false;
     }
 
     @Override

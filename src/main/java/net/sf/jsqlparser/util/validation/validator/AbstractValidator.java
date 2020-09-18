@@ -217,7 +217,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     protected void validateFeatureAndName(Feature feature, NamedObject namedObject, String fqn) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, feature);
-            validateName(c, namedObject, fqn);
+            validateName(c, namedObject, fqn, true);
         }
     }
 
@@ -230,7 +230,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      */
     protected void validateName(NamedObject namedObject, String fqn) {
         for (ValidationCapability c : getCapabilities()) {
-            validateName(c, namedObject, fqn);
+            validateName(c, namedObject, fqn, true);
         }
     }
 
@@ -261,7 +261,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     }
 
     /**
-     * validates for the feature if given element is not <code>null</code>
+     * Validates for the feature if given element is not <code>null</code>
      * 
      * @param c
      * @param element
@@ -272,7 +272,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     }
 
     /**
-     * Validates the feature if given {@link ValidationCapability} is a
+     * Validates if given {@link ValidationCapability} is a
      * {@link FeatureSetValidation}
      *
      * @param capability
@@ -286,34 +286,57 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     }
 
     /**
-     * Validates the feature if given {@link ValidationCapability} is a
+     * Validates if given {@link ValidationCapability} is a
      * {@link DatabaseMetaDataValidation}
      *
      * @param capability
-     * @param feature
+     * @param namedObject
+     * @param fqn
      */
     protected void validateName(ValidationCapability capability, NamedObject namedObject, String fqn) {
+        validateName(capability, namedObject, fqn, true);
+    }
+
+    /**
+     * Validates if given {@link ValidationCapability} is a
+     * {@link DatabaseMetaDataValidation}
+     *
+     * @param capability
+     * @param namedObject
+     * @param fqn
+     * @param exists      - <code>true</code>, check for existence,
+     *                    <code>false</code>, check for non-existence
+     */
+    protected void validateName(ValidationCapability capability, NamedObject namedObject, String fqn, boolean exists) {
         if (capability instanceof DatabaseMetaDataValidation) {
             capability.validate(context()
                     .put(MetadataContext.namedobject, namedObject)
-                    .put(MetadataContext.fqn, fqn),
+                    .put(MetadataContext.fqn, fqn).put(MetadataContext.exists, exists),
                     getMessageConsumer(capability));
         }
     }
 
     protected void validateOptionalColumnName(String name, ValidationCapability c) {
-        validateOptionalName(name, NamedObject.column, c);
+        validateOptionalName(name, NamedObject.column, c, true);
     }
 
     protected void validateOptionalColumnNames(List<String> columnNames, ValidationCapability c) {
+        validateOptionalColumnNames(columnNames, c, true);
+    }
+
+    protected void validateOptionalColumnNames(List<String> columnNames, ValidationCapability c, boolean exists) {
         if (columnNames != null) {
-            columnNames.forEach(n -> validateOptionalName(n, NamedObject.column, c));
+            columnNames.forEach(n -> validateOptionalName(n, NamedObject.column, c, exists));
         }
     }
 
     protected void validateOptionalName(String name, NamedObject namedObject, ValidationCapability c) {
+        validateOptionalName(name, namedObject, c, true);
+    }
+
+    protected void validateOptionalName(String name, NamedObject namedObject, ValidationCapability c, boolean exists) {
         if (name != null) {
-            validateName(c, namedObject, name);
+            validateName(c, namedObject, name, exists);
         }
     }
 

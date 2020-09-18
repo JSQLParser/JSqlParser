@@ -47,9 +47,8 @@ public class AlterValidator extends AbstractValidator<Alter> {
             }
 
             if (e.getColDataTypeList() != null) {
-                validateOptionalColumnNames(ValidationUtil.concat(tableFqn, e.getColDataTypeList()
-                        .stream()
-                        .map(ColumnDataType::getColumnName)), c);
+                validateOptionalColumnNames(ValidationUtil.concat(tableFqn,
+                        e.getColDataTypeList().stream().map(ColumnDataType::getColumnName)), c, false);
             }
 
             validateOptionalName(e.getConstraintName(), NamedObject.constraint, c);

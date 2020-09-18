@@ -19,5 +19,10 @@ public enum MetadataContext implements ContextKey {
     /**
      * the fully qualified name
      */
-    fqn
+    fqn,
+    /**
+     * <code>true</code>, check for existence,
+     * <code>false</code>, check for non-existence
+     */
+    exists
 }

@@ -13,7 +13,9 @@ import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 /**
  * Adapter class always throwing {@link UnsupportedOperationException} for all
@@ -60,12 +62,33 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
 
     }
 
-    public AbstractDatabaseMetaDataCapability(Connection connection) {
-        this(connection, true);
+    public enum NamesLookup {
+        UPPERCASE(String::toUpperCase), LOWERCASE(String::toLowerCase), NO_TRANSFORMATION(UnaryOperator.identity());
+
+        private Function<String, String> fn;
+
+        private NamesLookup(UnaryOperator<String> fn) {
+            this.fn = fn;
+        }
+
+        public String transform(String name) {
+            return name == null ? null : fn.apply(name);
+        }
     }
 
-    public AbstractDatabaseMetaDataCapability(Connection connection, boolean cacheResults) {
+    private NamesLookup namesLookup = NamesLookup.NO_TRANSFORMATION;
+
+    public NamesLookup getNamesLookup() {
+        return namesLookup;
+    }
+
+    public AbstractDatabaseMetaDataCapability(Connection connection, NamesLookup namesLookup) {
+        this(connection, namesLookup, true);
+    }
+
+    public AbstractDatabaseMetaDataCapability(Connection connection, NamesLookup namesLookup, boolean cacheResults) {
         this.connection = connection;
+        this.namesLookup = namesLookup;
         this.cacheResults = cacheResults;
     }
 
@@ -86,6 +109,9 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
     public final boolean exists(NamedObject o, String name) {
         Objects.requireNonNull(o);
         Objects.requireNonNull(name);
+
+        name = getNamesLookup().transform(name);
+
         switch (o) {
         case table:
             return cache(o, name, this::tableExists);

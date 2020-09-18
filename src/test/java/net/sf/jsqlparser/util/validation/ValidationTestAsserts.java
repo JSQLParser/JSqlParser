@@ -8,12 +8,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import net.sf.jsqlparser.util.validation.feature.Version;
+import net.sf.jsqlparser.util.validation.metadata.DatabaseMetaDataValidation;
 
 public class ValidationTestAsserts {
 
@@ -31,6 +32,17 @@ public class ValidationTestAsserts {
      */
     public static void assertNotAllowed(Collection<ValidationException> errors, Feature... feature) {
         assertEquals(toSet(f -> f + " not allowed.", feature), toErrorsSet(errors));
+    }
+
+    /**
+     * @param errors
+     * @param checkForExists
+     * @param names
+     */
+    public static void assertMetadata(Collection<ValidationException> errors, boolean checkForExists, String... names) {
+        assertEquals(Stream.of(names).map(
+                f -> String.format("%s does %sexist.", f, checkForExists ? "not " : "")).collect(Collectors.toSet()),
+                toErrorsSet(errors));
     }
 
     /**
@@ -58,13 +70,55 @@ public class ValidationTestAsserts {
      * @param statementCount
      * @param versions
      */
-    public static void validateNoErrors(String sql, int statementCount, FeatureSetValidation... versions) {
+    public static void validateNoErrors(String sql, int statementCount, ValidationCapability... versions) {
         Validation validation = new Validation( //
                 Arrays.asList(versions), sql);
         List<ValidationError> errors = validation.validate();
 
         assertErrorsSize(errors, 0);
         assertEquals(statementCount, validation.getParsedStatements().getStatements().size());
+    }
+
+    public static List<ValidationError> validate(String sql, int statementCount, int errorCount,
+            Collection<? extends ValidationCapability> validationCapabilities) {
+        Validation validation = new Validation(validationCapabilities, sql);
+        List<ValidationError> errors = validation.validate();
+        assertErrorsSize(errors, errorCount);
+        assertEquals(statementCount, validation.getParsedStatements().getStatements().size());
+        return errors;
+    }
+
+    public static List<ValidationError> validate(String sql, int statementCount, int errorCount,
+            ValidationCapability ...validationCapabilities ) {
+        return validate(sql, statementCount, errorCount, Arrays.asList(validationCapabilities));
+    }
+
+    /**
+     * @param sql
+     * @param statementCount
+     * @param errorCount
+     * @param allowed
+     * @param exists
+     * @param names
+     */
+    public static void validateMetadata(String sql, int statementCount, int errorCount,
+            DatabaseMetaDataValidation allowed,
+            boolean exists, String... names) {
+        validateMetadata(sql, statementCount, errorCount, Collections.singleton(allowed), exists, names);
+    }
+
+    /**
+     * @param sql
+     * @param statementCount
+     * @param errorCount
+     * @param allowed
+     * @param exists
+     * @param names
+     */
+    public static void validateMetadata(String sql, int statementCount, int errorCount,
+            Collection<DatabaseMetaDataValidation> allowed, boolean exists, String... names) {
+        List<ValidationError> errors = validate(sql, statementCount, errorCount, allowed);
+        assertMetadata(errors.get(0).getErrors(), exists, names);
     }
 
     /**
@@ -93,11 +147,7 @@ public class ValidationTestAsserts {
     public static void validateNotAllowed(String sql, int statementCount, int errorCount,
             Collection<FeaturesAllowed> allowed,
             Feature... features) {
-        Validation validation = new Validation(allowed, sql);
-        List<ValidationError> errors = validation.validate();
-
-        assertErrorsSize(errors, errorCount);
-        assertEquals(statementCount, validation.getParsedStatements().getStatements().size());
+        List<ValidationError> errors = validate(sql, statementCount, errorCount, allowed);
         assertNotAllowed(errors.get(0).getErrors(), features);
     }
 
@@ -126,15 +176,8 @@ public class ValidationTestAsserts {
      */
     public static void validateNotSupported(String sql, int statementCount, int errorCount,
             Collection<Version> supported, Feature... features) {
-        Validation validation = new Validation(supported //
-                , sql);
-        List<ValidationError> errors = validation.validate();
-
-        assertErrorsSize(errors, errorCount);
-        assertEquals(statementCount, validation.getParsedStatements().getStatements().size());
-        assertErrorsSize(errors.get(0).getErrors(), features.length);
+        List<ValidationError> errors = validate(sql, statementCount, errorCount, supported);
         assertNotSupported(errors.get(0).getErrors(), features);
-
     }
 
     // PRIVATES //

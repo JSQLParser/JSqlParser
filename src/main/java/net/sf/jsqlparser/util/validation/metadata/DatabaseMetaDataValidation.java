@@ -29,9 +29,11 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
     default void validate(ValidationContext context, Consumer<ValidationException> errorConsumer) {
         String fqn = context.get(MetadataContext.fqn, String.class);
         NamedObject namedObject = context.get(MetadataContext.namedobject, NamedObject.class);
+        boolean checkForExists = context.get(MetadataContext.exists, Boolean.class);
         try {
-            if (!exists(namedObject, fqn)) {
-                errorConsumer.accept(getErrorMessage(fqn));
+            boolean exists = exists(namedObject, fqn);
+            if (exists ^ checkForExists) { // XOR
+                errorConsumer.accept(getErrorMessage(fqn, checkForExists));
             }
         } catch (ValidationException ve) {
             errorConsumer.accept(ve);
@@ -61,8 +63,8 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
      * @param fqn
      * @return
      */
-    default ValidationException getErrorMessage(String fqn) {
-        return toError(fqn + " does not exist.");
+    default ValidationException getErrorMessage(String fqn, boolean checkForExists) {
+        return toError(String.format("%s does %sexist.", fqn, checkForExists ? "not " : ""));
     }
 
     /**
