@@ -59,7 +59,7 @@ public class ValidationTestAsserts {
      * @param versions
      */
     public static void validateNoErrors(String sql, int statementCount, FeatureSetValidation... versions) {
-        ValidationUtil validation = new ValidationUtil( //
+        Validation validation = new Validation( //
                 Arrays.asList(versions), sql);
         List<ValidationError> errors = validation.validate();
 
@@ -93,7 +93,7 @@ public class ValidationTestAsserts {
     public static void validateNotAllowed(String sql, int statementCount, int errorCount,
             Collection<FeaturesAllowed> allowed,
             Feature... features) {
-        ValidationUtil validation = new ValidationUtil(allowed, sql);
+        Validation validation = new Validation(allowed, sql);
         List<ValidationError> errors = validation.validate();
 
         assertErrorsSize(errors, errorCount);
@@ -126,7 +126,7 @@ public class ValidationTestAsserts {
      */
     public static void validateNotSupported(String sql, int statementCount, int errorCount,
             Collection<Version> supported, Feature... features) {
-        ValidationUtil validation = new ValidationUtil(supported //
+        Validation validation = new Validation(supported //
                 , sql);
         List<ValidationError> errors = validation.validate();
 

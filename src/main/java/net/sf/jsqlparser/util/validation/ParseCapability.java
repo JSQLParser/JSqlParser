@@ -15,7 +15,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statements;
 
 /**
- * package - private class for {@link ValidationUtil} to parse the statements
+ * package - private class for {@link Validation} to parse the statements
  * within it's own {@link ValidationCapability}
  *
  * @author gitmotte

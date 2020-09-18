@@ -9,136 +9,45 @@
  */
 package net.sf.jsqlparser.util.validation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.Statements;
-import net.sf.jsqlparser.util.validation.validator.StatementValidator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-/**
- * 
- * 
- * @author gitmotte
- */
 public class ValidationUtil {
 
-    private FeatureConfiguration featureConfiguration;
-    private Collection<? extends ValidationCapability> capabilities;
-    private List<String> statementsList;
-
-    private List<ValidationError> errors;
-    private Statements parsedStatements;
-
-    public ValidationUtil(Collection<? extends ValidationCapability> capabilities, String... statements) {
-        this(new FeatureConfiguration(), capabilities, statements);
-    }
-
-    public ValidationUtil(FeatureConfiguration featureConfiguration,
-            Collection<? extends ValidationCapability> capabilities, String... statements) {
-        this.featureConfiguration = featureConfiguration;
-        this.capabilities = capabilities;
-        this.statementsList = Arrays.asList(statements);
-    }
-
-    public List<ValidationError> validate() {
-        this.errors = new ArrayList<>();
-
-        ValidationContext context = createValidationContext(featureConfiguration, capabilities);
-        for (String statements : statementsList) {
-
-            ParseCapability parse = new ParseCapability(statements);
-            parse.validate(context, e -> errors.add(new ValidationError(statements).withCapability(parse).addError(e)));
-
-            parsedStatements = parse.getParsedStatements();
-            if (parsedStatements != null && parsedStatements.getStatements() != null && !capabilities.isEmpty() ) {
-                for (Statement parsedStatement : parsedStatements.getStatements()) {
-                    Map<ValidationCapability, Set<ValidationException>> errorMap = validate(parsedStatement, context);
-                    errors.addAll(toValidationErrors(statements, parsedStatement, errorMap));
-                }
-            }
-
-        }
-        return errors;
-    }
-
-    public FeatureConfiguration getFeatureConfiguration() {
-        return featureConfiguration;
-    }
-
-    public Collection<? extends ValidationCapability> getCapabilities() {
-        return capabilities;
-    }
-
-    public List<String> getStatements() {
-        return statementsList;
-    }
-
-    public List<ValidationError> getErrors() {
-        return errors;
-    }
-
-    public Statements getParsedStatements() {
-        return parsedStatements;
-    }
-
-    // STATIC util-methods
-
-    /**
-     * @param capabilities
-     * @param statements
-     * @return a list of {@link ValidationError}'s
-     */
-    public static List<ValidationError> validate(Collection<? extends ValidationCapability> capabilities,
-            String... statements) {
-        return new ValidationUtil(capabilities, statements).validate();
+    private ValidationUtil() {
+        // no construction allowed
     }
 
     /**
-     * @param config
-     * @param capabilities
-     * @return a {@link ValidationContext} of the given config and capabilities
+     * @param prefix
+     * @param values
+     * @return a list of strings prefixed with given prefix and "." as separator, or
+     *         <code>null</code> if
+     *         given collection is null.
      */
-    public static ValidationContext createValidationContext(FeatureConfiguration config,
-            Collection<? extends ValidationCapability> capabilities) {
-        ValidationContext context = new ValidationContext();
-        context.setCapabilities(new ArrayList<>(capabilities));
-        context.setConfiguration(config);
-        return context;
+    public static List<String> concat(String prefix, Collection<String> values) {
+        return values == null ? null : ValidationUtil.concat(prefix, values.stream());
     }
 
     /**
-     * @param statements
-     * @param parsedStatement
-     * @param errorMap
-     * @return a list of {@link ValidationError}'
+     * @param prefix
+     * @param values
+     * @return a list of strings prefixed with given prefix and "." as separator.
      */
-    public static List<ValidationError> toValidationErrors(String statements,
-            Statement parsedStatement, Map<ValidationCapability, Set<ValidationException>> errorMap) {
-        List<ValidationError> errors = new ArrayList<>();
-        for (Entry<ValidationCapability, Set<ValidationException>> e : errorMap.entrySet()) {
-            errors.add(new ValidationError(statements).withParsedStatement(parsedStatement)
-                    .withCapability(e.getKey()).addErrors(e.getValue()));
-        }
-        return errors;
+    public static List<String> concat(String prefix, Stream<String> values) {
+        return values.map(v -> ValidationUtil.concat(prefix, v)).collect(Collectors.toList());
     }
 
     /**
-     * @param stmt
-     * @param context
-     * @return
+     * @param prefix
+     * @param name
+     * @return if given name is not <code>null</code>, the name is prefixed by the
+     *         given prefix and "." as separator, otherwise <code>null</code>
      */
-    public static Map<ValidationCapability, Set<ValidationException>> validate(Statement stmt,
-            ValidationContext context) {
-        StatementValidator validator = new StatementValidator();
-        validator.setContext(context);
-        validator.validate(stmt);
-        return validator.getValidationErrors();
+    public static String concat(String prefix, String name) {
+        return name == null ? null : new StringBuilder(prefix).append(".").append(name).toString();
     }
 
 }

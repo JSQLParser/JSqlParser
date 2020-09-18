@@ -15,6 +15,7 @@ import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDropNotNull;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.ValidationUtil;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
@@ -35,42 +36,42 @@ public class AlterValidator extends AbstractValidator<Alter> {
         String tableFqn = alter.getTable().getFullyQualifiedName();
         for (ValidationCapability c : getCapabilities()) {
 
-            validateOptionalColumnName(ValidatorUtil.concat(tableFqn, e.getColumnOldName()), c);
-            validateOptionalColumnName(ValidatorUtil.concat(tableFqn, e.getColumnName()), c);
+            validateOptionalColumnName(ValidationUtil.concat(tableFqn, e.getColumnOldName()), c);
+            validateOptionalColumnName(ValidationUtil.concat(tableFqn, e.getColumnName()), c);
 
             if (e.getColumnDropNotNullList() != null) {
                 validateOptionalColumnNames(
-                        ValidatorUtil.concat(tableFqn, e.getColumnDropNotNullList()
+                        ValidationUtil.concat(tableFqn, e.getColumnDropNotNullList()
                                 .stream()
                                 .map(ColumnDropNotNull::getColumnName)), c);
             }
 
             if (e.getColDataTypeList() != null) {
-                validateOptionalColumnNames(ValidatorUtil.concat(tableFqn, e.getColDataTypeList()
+                validateOptionalColumnNames(ValidationUtil.concat(tableFqn, e.getColDataTypeList()
                         .stream()
                         .map(ColumnDataType::getColumnName)), c);
             }
 
             validateOptionalName(e.getConstraintName(), NamedObject.constraint, c);
             if (e.getPkColumns() != null) {
-                validateOptionalColumnNames(ValidatorUtil.concat(tableFqn, e.getPkColumns()), c);
+                validateOptionalColumnNames(ValidationUtil.concat(tableFqn, e.getPkColumns()), c);
             }
 
             if (e.getFkColumns() != null) {
                 validateName(c, NamedObject.table, e.getFkSourceTable());
-                validateOptionalColumnNames(ValidatorUtil.concat(tableFqn, e.getFkColumns()), c);
-                validateOptionalColumnNames(ValidatorUtil.concat(tableFqn, e.getFkSourceColumns()), c);
+                validateOptionalColumnNames(ValidationUtil.concat(tableFqn, e.getFkColumns()), c);
+                validateOptionalColumnNames(ValidationUtil.concat(tableFqn, e.getFkSourceColumns()), c);
             }
 
             if (e.getUk()) {
                 validateName(c, NamedObject.uniqueConstraint, e.getUkName());
-                validateOptionalColumnNames(ValidatorUtil.concat(tableFqn, e.getUkColumns()), c);
+                validateOptionalColumnNames(ValidationUtil.concat(tableFqn, e.getUkColumns()), c);
             }
 
             if (e.getIndex() != null) {
                 validateName(c, NamedObject.index, e.getIndex().getName());
                 if (e.getIndex().getColumns() != null) {
-                    validateOptionalColumnNames(ValidatorUtil.concat(tableFqn, e.getIndex().getColumnsNames()), c);
+                    validateOptionalColumnNames(ValidationUtil.concat(tableFqn, e.getIndex().getColumnsNames()), c);
                 }
             }
         }

@@ -37,7 +37,7 @@ public class ValidationTest extends ValidationTestAsserts {
     }
 
     @Test
-    public void testValidation() throws JSQLParserException {
+    public void testValidationWithStatementValidator() throws JSQLParserException {
         String sql = "SELECT * FROM tab1, tab2 WHERE tab1.id (+) = tab2.ref";
         Statement stmt = CCJSqlParserUtil.parse(sql);
 
@@ -56,23 +56,10 @@ public class ValidationTest extends ValidationTestAsserts {
     }
 
     @Test
-    public void testValidationMultipleStatements() throws JSQLParserException {
-        String sql = "UPDATE tab1 SET val = ? WHERE id = ?; DELETE FROM tab2 t2 WHERE t2.id = ?;";
-
-        ValidationUtil validation = new ValidationUtil( //
-                Arrays.asList(DatabaseType.SQLSERVER, DatabaseType.POSTGRESQL), sql);
-        List<ValidationError> errors = validation.validate();
-
-        assertErrorsSize(errors, 0);
-        assertEquals(2, validation.getParsedStatements().getStatements().size());
-    }
-
-    @Test
-    public void testWithValidationUtil() throws JSQLParserException {
+    public void testWithValidation() throws JSQLParserException {
 
         String stmt = "SELECT * FROM tab1, tab2 WHERE tab1.id (+) = tab2.ref";
-        List<ValidationError> errors = ValidationUtil.validate(
-                Collections.singletonList(DatabaseType.SQLSERVER), stmt);
+        List<ValidationError> errors = Validation.validate(Collections.singletonList(DatabaseType.SQLSERVER), stmt);
 
         assertErrorsSize(errors, 1);
         assertEquals(stmt, errors.get(0).getStatements());
@@ -81,19 +68,31 @@ public class ValidationTest extends ValidationTestAsserts {
     }
 
     @Test
-    public void testWithValidationUtilOnlyParse() throws JSQLParserException {
+    public void testWithValidationMultipleStatements() throws JSQLParserException {
+        String sql = "UPDATE tab1 SET val = ? WHERE id = ?; DELETE FROM tab2 t2 WHERE t2.id = ?;";
+
+        Validation validation = new Validation( //
+                Arrays.asList(DatabaseType.SQLSERVER, DatabaseType.POSTGRESQL), sql);
+        List<ValidationError> errors = validation.validate();
+
+        assertErrorsSize(errors, 0);
+        assertEquals(2, validation.getParsedStatements().getStatements().size());
+    }
+
+    @Test
+    public void testWithValidationOnlyParse() throws JSQLParserException {
 
         String stmt = "SELECT * FROM tab1, tab2 WHERE tab1.id (+) = tab2.ref";
-        List<ValidationError> errors = ValidationUtil.validate(Collections.emptyList(), stmt);
+        List<ValidationError> errors = Validation.validate(Collections.emptyList(), stmt);
 
         assertErrorsSize(errors, 0);
     }
 
     @Test
-    public void testWithValidationUtilOnlyParseInvalid() throws JSQLParserException {
+    public void testWithValidationOnlyParseInvalid() throws JSQLParserException {
 
         String stmt = "SELECT * FROM tab1 JOIN tab2 WHERE tab1.id (++) = tab2.ref";
-        List<ValidationError> errors = ValidationUtil.validate(Collections.emptyList(), stmt);
+        List<ValidationError> errors = Validation.validate(Collections.emptyList(), stmt);
 
         assertErrorsSize(errors, 1);
         ValidationException actual = errors.get(0).getErrors().stream().findFirst().get();
@@ -103,10 +102,10 @@ public class ValidationTest extends ValidationTestAsserts {
     }
 
     @Test
-    public void testWithValidationUtilUpdateButAcceptOnlySelects() throws JSQLParserException {
+    public void testWithValidationUpdateButAcceptOnlySelects() throws JSQLParserException {
 
         String stmt = "UPDATE tab1 t1 SET t1.ref = ? WHERE t1.id = ?";
-        List<ValidationError> errors = ValidationUtil.validate(
+        List<ValidationError> errors = Validation.validate(
                 Arrays.asList(DatabaseType.POSTGRESQL, FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC)), stmt);
 
         assertErrorsSize(errors, 1);
@@ -114,10 +113,10 @@ public class ValidationTest extends ValidationTestAsserts {
     }
 
     @Test
-    public void testWithValidatonUtilAcceptOnlySelects() throws JSQLParserException {
+    public void testWithValidatonAcceptOnlySelects() throws JSQLParserException {
 
         String stmt = "SELECT * FROM tab1 JOIN tab2 WHERE tab1.id = tab2.ref";
-        List<ValidationError> errors = ValidationUtil.validate(
+        List<ValidationError> errors = Validation.validate(
                 Arrays.asList(DatabaseType.POSTGRESQL, FeaturesAllowed.SELECT), stmt);
         assertErrorsSize(errors, 0);
     }
