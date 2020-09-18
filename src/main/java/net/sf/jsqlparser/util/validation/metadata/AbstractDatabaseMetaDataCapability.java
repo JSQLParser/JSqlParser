@@ -106,37 +106,37 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
     }
 
     @Override
-    public final boolean exists(NamedObject o, String name) {
-        Objects.requireNonNull(o);
+    public final boolean exists(NamedObject namedObject, String name) {
+        Objects.requireNonNull(namedObject);
         Objects.requireNonNull(name);
 
-        name = getNamesLookup().transform(name);
+        String lookup = getNamesLookup().transform(name);
 
-        switch (o) {
-        case table:
-            return cache(o, name, this::tableExists);
-        case column:
-            return cache(o, name, this::columnExists);
-        case schema:
-            return cache(o, name, this::schemaExists);
-        case index:
-            return cache(o, name, this::indexExists);
-        case database:
-            return cache(o, name, this::databaseExists);
-        case constraint:
-        case uniqueConstraint:
-            return cache(o, name, this::constraintExists);
-        case view:
-            return cache(o, name, this::viewExists);
-        case procedure:
-            return cache(o, name, this::procedureExists);
-        case user:
-            return cache(o, name, this::userExists);
-        case role:
-            return cache(o, name, this::roleExists);
-        default:
+        switch (namedObject) {
+            case table:
+                return cache(namedObject, lookup, this::tableExists);
+            case column:
+                return cache(namedObject, lookup, this::columnExists);
+            case schema:
+                return cache(namedObject, lookup, this::schemaExists);
+            case index:
+                return cache(namedObject, lookup, this::indexExists);
+            case database:
+                return cache(namedObject, lookup, this::databaseExists);
+            case constraint:
+            case uniqueConstraint:
+                return cache(namedObject, lookup, this::constraintExists);
+            case view:
+                return cache(namedObject, lookup, this::viewExists);
+            case procedure:
+                return cache(namedObject, lookup, this::procedureExists);
+            case user:
+                return cache(namedObject, lookup, this::userExists);
+            case role:
+                return cache(namedObject, lookup, this::roleExists);
+            default:
         }
-        throw new UnsupportedOperationException(name + ": evaluation of " + o + "-name not implemented.");
+        throw new UnsupportedOperationException(name + ": evaluation of " + namedObject + "-name not implemented.");
     }
 
     protected boolean cache(NamedObject o, String name, Predicate<String> fn) {
