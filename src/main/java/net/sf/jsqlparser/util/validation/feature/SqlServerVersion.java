@@ -115,6 +115,8 @@ public enum SqlServerVersion implements Version {
                     Feature.createTrigger,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/merge-transact-sql?view=sql-server-ver15
                     Feature.merge,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/statements/grant-transact-sql?view=sql-server-ver15
+                    Feature.grant,
                     // special sql-server features
                     // https://docs.microsoft.com/en-us/sql/relational-databases/xml/for-xml-sql-server?view=sql-server-ver15
                     Feature.selectForXmlPath,

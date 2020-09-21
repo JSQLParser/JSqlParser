@@ -138,7 +138,9 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-altertable.html
                     Feature.alter,
                     // https://www.postgresql.org/docs/current/using-explain.html
-                    Feature.explain
+                    Feature.explain,
+                    // https://www.postgresql.org/docs/current/sql-grant.html
+                    Feature.grant
                     )),
     V11("11", V10.copy().getFeatures()), V12("12", V11.copy().getFeatures());
 

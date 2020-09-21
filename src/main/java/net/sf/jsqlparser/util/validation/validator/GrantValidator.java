@@ -23,7 +23,7 @@ public class GrantValidator extends AbstractValidator<Grant> {
     public void validate(Grant grant) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.grant);
-            if (grant.getUsers() != null) {
+            if (isNotEmpty(grant.getUsers())) {
                 grant.getUsers().forEach(u -> validateName(NamedObject.user, u));
             }
             if (grant.getRole() != null) {
