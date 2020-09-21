@@ -374,6 +374,12 @@ public enum Feature {
      */
     alterView,
     /**
+     * SQL "REPLACE VIEW" statement is allowed
+     *
+     * @see AlterView
+     */
+    alterViewReplace,
+    /**
      * SQL "ALTER INDEX" statement is allowed
      */
     alterIndex,

@@ -23,6 +23,7 @@ public class AlterViewValidator extends AbstractValidator<AlterView> {
     public void validate(AlterView alterView) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(Feature.alterView);
+            validateFeature(c, alterView.isUseReplace(), Feature.alterViewReplace);
             validateName(c, NamedObject.view, alterView.getView().getFullyQualifiedName());
             validateOptionalColumnNames(alterView.getColumnNames(), c);
         }
