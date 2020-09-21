@@ -106,6 +106,10 @@ public enum H2Version implements Version {
                     Feature.delete,
                     // http://h2database.com/html/commands.html#truncate_table
                     Feature.truncate,
+
+                    // http://www.h2database.com/html/commands.html#execute_immediate
+                    Feature.executeStatementImmediate,
+
                     // http://h2database.com/html/commands.html#drop_table
                     // http://h2database.com/html/commands.html#drop_index
                     Feature.drop,

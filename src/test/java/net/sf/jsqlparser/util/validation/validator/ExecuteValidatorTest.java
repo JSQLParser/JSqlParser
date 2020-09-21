@@ -36,6 +36,13 @@ public class ExecuteValidatorTest extends ValidationTestAsserts {
     @Test
     public void testValidationCall() throws Exception {
         for (String sql : Arrays.asList("CALL myproc 'a', 2, 'b'", "CALL BAR.FOO", "CALL myproc ('a', 2, 'b')")) {
+            validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.MYSQL);
+        }
+    }
+
+    @Test
+    public void testValidationCallNotSupported() throws Exception {
+        for (String sql : Arrays.asList("CALL myproc 'a', 2, 'b'", "CALL BAR.FOO", "CALL myproc ('a', 2, 'b')")) {
             validateNotSupported(sql, 1, 1, DatabaseType.SQLSERVER, Feature.executeCall);
         }
     }

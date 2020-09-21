@@ -69,6 +69,9 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/truncate-table.html
                     Feature.truncate,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/call.html
+                    Feature.execute, Feature.executeCall,
+
                     Feature.drop,
                     // https://dev.mysql.com/doc/refman/8.0/en/drop-table.html
                     Feature.dropTable,

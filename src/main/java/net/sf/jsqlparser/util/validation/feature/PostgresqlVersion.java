@@ -118,6 +118,9 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-truncate.html
                     Feature.truncate,
 
+                    // https://www.postgresql.org/docs/current/sql-call.html
+                    Feature.execute, Feature.executeCall,
+
                     Feature.drop,
                     // https://www.postgresql.org/docs/current/sql-droptable.html
                     Feature.dropTable,
