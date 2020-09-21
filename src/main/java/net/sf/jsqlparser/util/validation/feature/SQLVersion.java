@@ -36,7 +36,7 @@ public enum SQLVersion implements Version {
             Feature.delete,
             Feature.truncate,
             Feature.drop,
-            Feature.alter)), //
+            Feature.alterTable)), //
     SQL1989("SQL-89", SQL1986.copy().getFeatures()), //
     SQL1992("SQL-92", SQL1989.copy().getFeatures()), //
     SQL1999("SQL:1999", SQL1992.copy().add(Feature.exprSimilarTo).getFeatures()), //

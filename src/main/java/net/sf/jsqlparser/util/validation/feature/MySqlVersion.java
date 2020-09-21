@@ -85,7 +85,7 @@ public enum MySqlVersion implements Version {
                     Feature.dropSchemaIfExists, Feature.dropSequenceIfExists,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/alter-table.html
-                    Feature.alter,
+                    Feature.alterTable,
                     // https://dev.mysql.com/doc/refman/8.0/en/alter-view.html
                     Feature.alterView,
 

@@ -89,7 +89,7 @@ public enum SqlServerVersion implements Version {
                     Feature.executeExec, Feature.executeExecute,
 
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-table-transact-sql?view=sql-server-ver15
-                    Feature.alter,
+                    Feature.alterTable,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-sequence-transact-sql?view=sql-server-ver15
                     Feature.alterSequence,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-view-transact-sql?view=sql-server-ver15

@@ -98,7 +98,7 @@ public enum MariaDbVersion implements Version {
                     Feature.replace,
 
                     // https://mariadb.com/kb/en/alter/
-                    Feature.alter,
+                    Feature.alterTable,
                     // https://mariadb.com/kb/en/alter-sequence/
                     Feature.alterSequence,
                     // https://mariadb.com/kb/en/alter-view/

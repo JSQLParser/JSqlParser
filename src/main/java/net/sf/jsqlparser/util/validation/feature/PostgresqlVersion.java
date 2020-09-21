@@ -136,7 +136,7 @@ public enum PostgresqlVersion implements Version {
                     Feature.dropSchemaIfExists, Feature.dropSequenceIfExists,
 
                     // https://www.postgresql.org/docs/current/sql-altertable.html
-                    Feature.alter,
+                    Feature.alterTable,
                     // https://www.postgresql.org/docs/current/using-explain.html
                     Feature.explain,
                     // https://www.postgresql.org/docs/current/sql-grant.html

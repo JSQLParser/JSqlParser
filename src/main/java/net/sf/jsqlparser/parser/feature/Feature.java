@@ -360,7 +360,7 @@ public enum Feature {
      *
      * @see Alter
      */
-    alter,
+    alterTable,
     /**
      * SQL "ALTER SEQUENCE" statement is allowed
      *

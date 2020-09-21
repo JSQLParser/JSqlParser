@@ -25,7 +25,7 @@ public class AlterValidator extends AbstractValidator<Alter> {
 
     @Override
     public void validate(Alter alter) {
-        validateFeature(Feature.alter);
+        validateFeature(Feature.alterTable);
 
         validateOptionalFromItem(alter.getTable());
 

@@ -128,7 +128,7 @@ public enum H2Version implements Version {
                     // http://h2database.com/html/commands.html#alter_table_add
                     // http://h2database.com/html/commands.html#alter_table_add_constraint
                     // ...
-                    Feature.alter,
+                    Feature.alterTable,
                     // http://www.h2database.com/html/commands.html#explain
                     Feature.explain,
                     // http://www.h2database.com/html/commands.html#grant_right

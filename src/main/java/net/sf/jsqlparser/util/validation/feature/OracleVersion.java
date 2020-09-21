@@ -113,7 +113,7 @@ public enum OracleVersion implements Version {
                     Feature.dropSequence,
 
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/ALTER-TABLE.html
-                    Feature.alter,
+                    Feature.alterTable,
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/ALTER-SEQUENCE.html
                     Feature.alterSequence,
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/EXECUTE-IMMEDIATE-statement.html
