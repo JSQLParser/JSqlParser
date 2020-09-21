@@ -133,6 +133,8 @@ public enum MariaDbVersion implements Version {
                     Feature.use,
                     // https://mariadb.com/kb/en/grant/
                     Feature.grant,
+                    // https://mariadb.com/kb/en/commit/
+                    Feature.commit,
                     // https://mariadb.com/kb/en/optimizer-hints/
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlCalcFoundRows, Feature.mysqlSqlNoCache)),

@@ -140,7 +140,9 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/using-explain.html
                     Feature.explain,
                     // https://www.postgresql.org/docs/current/sql-grant.html
-                    Feature.grant
+                    Feature.grant,
+                    // https://www.postgresql.org/docs/current/sql-commit.html
+                    Feature.commit
                     )),
     V11("11", V10.copy().getFeatures()), V12("12", V11.copy().getFeatures());
 

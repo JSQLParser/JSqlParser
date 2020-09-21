@@ -116,6 +116,8 @@ public enum MySqlVersion implements Version {
                     Feature.grant,
                     // https://dev.mysql.com/doc/refman/8.0/en/use.html
                     Feature.use,
+                    // https://dev.mysql.com/doc/refman/8.0/en/commit.html
+                    Feature.commit,
                     //
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSqlNoCache,

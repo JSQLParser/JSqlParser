@@ -45,6 +45,11 @@ public class StatementValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
+    public void testValidateCommit() throws JSQLParserException {
+        validateNoErrors("COMMIT", 1, DatabaseType.DATABASES);
+    }
+
+    @Test
     public void testValidateComment() throws JSQLParserException {
         for (String sql : Arrays.asList("COMMENT ON VIEW myschema.myView IS 'myComment'",
                 "COMMENT ON COLUMN myTable.myColumn is 'Some comment'", "COMMENT ON TABLE table1 IS 'comment1'")) {

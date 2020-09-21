@@ -90,9 +90,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             validateOptionalFeature(c, plainSelect.getOptimizeFor(), Feature.optimizeFor);
         } // end for
 
-        if (isNotEmpty(plainSelect.getSelectItems())) {
-            plainSelect.getSelectItems().forEach(s -> s.accept(this));
-        }
+        validateOptionalList(plainSelect.getSelectItems(), () -> this, (e, v) -> e.accept(v));
 
         validateOptionalFromItem(plainSelect.getFromItem());
         validateOptionalFromItems(plainSelect.getIntoTables());
