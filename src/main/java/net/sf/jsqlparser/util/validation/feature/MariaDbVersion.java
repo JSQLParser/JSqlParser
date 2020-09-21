@@ -123,8 +123,10 @@ public enum MariaDbVersion implements Version {
                     Feature.describe,
                     // https://mariadb.com/kb/en/explain/
                     Feature.explain,
-                    // https://mariadb.com/kb/en/show-tables/
+                    // https://mariadb.com/kb/en/show/
                     Feature.show,
+                    // https://mariadb.com/kb/en/show-tables/
+                    Feature.showTables,
                     // https://mariadb.com/kb/en/show-columns/
                     Feature.showColumns,
                     // https://mariadb.com/kb/en/use/

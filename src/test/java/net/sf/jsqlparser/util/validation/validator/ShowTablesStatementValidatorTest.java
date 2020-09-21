@@ -16,19 +16,21 @@ import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 
-public class ShowColumnsStatementValidatorTest extends ValidationTestAsserts {
+public class ShowTablesStatementValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidationShowTables() throws Exception {
-        for (String sql : Arrays.asList("SHOW COLUMNS FROM mytable")) {
+        for (String sql : Arrays.asList("SHOW TABLES", "SHOW EXTENDED FULL TABLES", "SHOW EXTENDED TABLES FROM db_name",
+                "SHOW FULL TABLES IN db_name", "SHOW TABLES LIKE '%FOO%'", "SHOW TABLES WHERE table_name = 'FOO'")) {
             validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL);
         }
     }
 
     @Test
     public void testValidationShowTablesNotAllowed() throws Exception {
-        for (String sql : Arrays.asList("SHOW COLUMNS FROM mytable")) {
-            validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.showColumns);
+        for (String sql : Arrays.asList("SHOW TABLES", "SHOW EXTENDED FULL TABLES", "SHOW EXTENDED TABLES FROM db_name",
+                "SHOW FULL TABLES IN db_name", "SHOW TABLES LIKE '%FOO%'", "SHOW TABLES WHERE table_name = 'FOO'")) {
+            validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.showTables);
         }
     }
 

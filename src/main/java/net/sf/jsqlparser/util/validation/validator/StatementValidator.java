@@ -158,8 +158,18 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     }
 
     @Override
+    public void visit(ShowStatement show) {
+        getValidator(ShowStatementValidator.class).validate(show);
+    }
+
+    @Override
     public void visit(ShowColumnsStatement show) {
         getValidator(ShowColumnsStatementValidator.class).validate(show);
+    }
+
+    @Override
+    public void visit(ShowTablesStatement showTables) {
+        getValidator(ShowTablesStatementValidator.class).validate(showTables);
     }
 
     @Override
@@ -196,10 +206,6 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
         explain.getStatement().accept(this);
     }
 
-    @Override
-    public void visit(ShowStatement show) {
-        getValidator(ShowStatementValidator.class).validate(show);
-    }
 
     @Override
     public void visit(DeclareStatement declare) {
@@ -225,11 +231,6 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     @Override
     public void visit(AlterSequence alterSequence) {
         getValidator(AlterSequenceValidator.class).validate(alterSequence);
-    }
-
-    @Override
-    public void visit(ShowTablesStatement showTables) {
-        // TODO
     }
 
     @Override

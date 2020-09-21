@@ -49,6 +49,7 @@ import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.Skip;
 import net.sf.jsqlparser.statement.select.Top;
+import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -522,6 +523,10 @@ public enum Feature {
      * @see ShowStatement
      */
     show,
+    /**
+     * @see ShowTablesStatement
+     */
+    showTables,
     /**
      * @see ShowColumnsStatement
      */
