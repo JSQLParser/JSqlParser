@@ -384,11 +384,23 @@ public enum Feature {
      */
     truncate,
     /**
-     * SQL "EXECUTE" statement is allowed
+     * SQL "CALL|EXEC|EXECUTE" stored procedure is allowed
      *
      * @see Execute
      */
     execute,
+    executeExec, executeCall, executeExecute,
+
+    /**
+     * SQL "EXECUTE" statement is allowed
+     */
+    executeStatement,
+    /**
+     * SQL "EXECUTE IMMEDIATE" statement is allowed
+     */
+    executeStatementImmediate,
+
+    executeUsing,
     /**
      * SQL "REPLACE" statement is allowed
      *

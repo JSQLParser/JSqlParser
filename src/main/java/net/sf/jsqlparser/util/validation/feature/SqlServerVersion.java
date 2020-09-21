@@ -84,6 +84,10 @@ public enum SqlServerVersion implements Version {
                     Feature.dropTableIfExists, Feature.dropIndexIfExists, Feature.dropViewIfExists,
                     Feature.dropSchemaIfExists, Feature.dropSequenceIfExists,
 
+                    // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/execute-transact-sql?view=sql-server-ver15
+                    Feature.execute,
+                    Feature.executeExec, Feature.executeExecute,
+
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-table-transact-sql?view=sql-server-ver15
                     Feature.alter,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-sequence-transact-sql?view=sql-server-ver15

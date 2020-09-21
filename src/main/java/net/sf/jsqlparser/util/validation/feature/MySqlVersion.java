@@ -99,8 +99,6 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/create-trigger.html
                     Feature.createTrigger,
 
-                    // https://dev.mysql.com/doc/refman/8.0/en/execute.html
-                    Feature.execute,
                     // https://dev.mysql.com/doc/refman/8.0/en/describe.html
                     Feature.describe,
                     // https://dev.mysql.com/doc/refman/8.0/en/explain.html
