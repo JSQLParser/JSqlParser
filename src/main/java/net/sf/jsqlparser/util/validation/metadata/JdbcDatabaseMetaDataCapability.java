@@ -16,6 +16,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 import net.sf.jsqlparser.util.validation.ValidationException;
 
@@ -28,11 +29,12 @@ import net.sf.jsqlparser.util.validation.ValidationException;
  */
 public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapability {
 
-    public JdbcDatabaseMetaDataCapability(Connection connection, NamesLookup namesLookup) {
+    public JdbcDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup) {
         super(connection, namesLookup);
     }
 
-    public JdbcDatabaseMetaDataCapability(Connection connection, NamesLookup namesLookup, boolean cacheResults) {
+    public JdbcDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup,
+            boolean cacheResults) {
         super(connection, namesLookup, cacheResults);
     }
 
