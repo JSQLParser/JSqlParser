@@ -62,31 +62,33 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
 
     }
 
-    public enum NamesLookup {
+    public enum NamesLookup implements UnaryOperator<String> {
         UPPERCASE(String::toUpperCase), LOWERCASE(String::toLowerCase), NO_TRANSFORMATION(UnaryOperator.identity());
 
-        private Function<String, String> fn;
+        private Function<String, String> strategy;
 
-        private NamesLookup(UnaryOperator<String> fn) {
-            this.fn = fn;
+        private NamesLookup(UnaryOperator<String> strategy) {
+            this.strategy = strategy;
         }
 
-        public String transform(String name) {
-            return name == null ? null : fn.apply(name);
+        @Override
+        public String apply(String name) {
+            return name == null ? null : strategy.apply(name);
         }
     }
 
-    private NamesLookup namesLookup = NamesLookup.NO_TRANSFORMATION;
+    private UnaryOperator<String> namesLookup = NamesLookup.NO_TRANSFORMATION;
 
-    public NamesLookup getNamesLookup() {
+    public UnaryOperator<String> getNamesLookup() {
         return namesLookup;
     }
 
-    public AbstractDatabaseMetaDataCapability(Connection connection, NamesLookup namesLookup) {
+    public AbstractDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup) {
         this(connection, namesLookup, true);
     }
 
-    public AbstractDatabaseMetaDataCapability(Connection connection, NamesLookup namesLookup, boolean cacheResults) {
+    public AbstractDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup,
+            boolean cacheResults) {
         this.connection = connection;
         this.namesLookup = namesLookup;
         this.cacheResults = cacheResults;
@@ -110,7 +112,7 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
         Objects.requireNonNull(namedObject);
         Objects.requireNonNull(name);
 
-        String lookup = getNamesLookup().transform(name);
+        String lookup = getNamesLookup().apply(name);
 
         switch (namedObject) {
             case table:
