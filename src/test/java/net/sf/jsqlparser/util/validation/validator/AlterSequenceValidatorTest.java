@@ -22,9 +22,13 @@ public class AlterSequenceValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidatorAlterSequence() throws JSQLParserException {
-        for (String sql : Arrays.asList("ALTER SEQUENCE my_seq","ALTER SEQUENCE my_seq INCREMENT BY 1","ALTER SEQUENCE my_seq START WITH 10","ALTER SEQUENCE my_seq MAXVALUE 5",
-                "ALTER SEQUENCE my_seq NOMAXVALUE","ALTER SEQUENCE my_seq MINVALUE 5","ALTER SEQUENCE my_seq NOMINVALUE","ALTER SEQUENCE my_seq CYCLE",
-                "ALTER SEQUENCE my_sec INCREMENT BY 2 START WITH 10","ALTER SEQUENCE my_sec START WITH 2 INCREMENT BY 5 NOCACHE","ALTER SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE")) { 
+        for (String sql : Arrays.asList("ALTER SEQUENCE my_seq", "ALTER SEQUENCE my_seq INCREMENT BY 1",
+                "ALTER SEQUENCE my_seq START WITH 10", "ALTER SEQUENCE my_seq MAXVALUE 5",
+                "ALTER SEQUENCE my_seq NOMAXVALUE", "ALTER SEQUENCE my_seq MINVALUE 5",
+                "ALTER SEQUENCE my_seq NOMINVALUE", "ALTER SEQUENCE my_seq CYCLE",
+                "ALTER SEQUENCE my_sec INCREMENT BY 2 START WITH 10",
+                "ALTER SEQUENCE my_sec START WITH 2 INCREMENT BY 5 NOCACHE",
+                "ALTER SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE")) {
             validateNoErrors(sql, 1, DATABASES_SUPPORTING_SEQUENCES);
         }
     }
