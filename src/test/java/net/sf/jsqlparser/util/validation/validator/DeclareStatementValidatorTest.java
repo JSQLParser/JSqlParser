@@ -10,13 +10,15 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import org.junit.Test;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
+import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 
 public class DeclareStatementValidatorTest extends ValidationTestAsserts {
 
     @Test
-    public void test() {
-
+    public void testValidateDeclare() throws JSQLParserException {
+        validateNoErrors("DECLARE @find nvarchar (30)", 1, DatabaseType.SQLSERVER);
     }
 
 }
