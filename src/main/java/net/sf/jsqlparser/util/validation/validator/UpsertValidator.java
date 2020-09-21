@@ -36,7 +36,7 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
     private void validateOptionalSelect(Select select) {
         if (select != null) {
             SelectValidator v = getValidator(SelectValidator.class);
-            if (select.getWithItemsList() != null) {
+            if (isNotEmpty(select.getWithItemsList())) {
                 select.getWithItemsList().forEach(with -> with.accept(v));
             }
             select.getSelectBody().accept(v);

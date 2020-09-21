@@ -345,6 +345,7 @@ public enum Feature {
      * SQL "UPSERT" statement is allowed
      *
      * @see Upsert
+     * @see https://wiki.postgresql.org/wiki/UPSERT
      */
     upsert,
     /**
