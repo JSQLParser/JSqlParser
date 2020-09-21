@@ -76,7 +76,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             validateFeature(c, plainSelect.getMySqlSqlCalcFoundRows(), Feature.mysqlCalcFoundRows);
             validateOptionalFeature(c, plainSelect.getIntoTables(), Feature.selectInto);
             validateOptionalFeature(c, plainSelect.getKsqlWindow(), Feature.kSqlWindow);
-            validateFeature(c, plainSelect.getOrderByElements() != null && plainSelect.isOracleSiblings(),
+            validateFeature(c, isNotEmpty(plainSelect.getOrderByElements()) && plainSelect.isOracleSiblings(),
                     Feature.oracleOrderBySiblings);
 
             if (plainSelect.isForUpdate()) {
@@ -139,7 +139,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     @Override
     public void visit(SubSelect subSelect) {
-        if (subSelect.getWithItemsList() != null) {
+        if (isNotEmpty(subSelect.getWithItemsList())) {
             subSelect.getWithItemsList().forEach(withItem -> withItem.accept(this));
         }
         subSelect.getSelectBody().accept(this);
@@ -154,7 +154,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
         validateOptional(table.getUnPivot(), up -> up.accept(this));
 
         MySQLIndexHint indexHint = table.getIndexHint();
-        if (indexHint != null && indexHint.getIndexNames() != null) {
+        if (indexHint != null && isNotEmpty(indexHint.getIndexNames())) {
             indexHint.getIndexNames().forEach(i -> validateName(NamedObject.index, i));
         }
         SQLServerHints sqlServerHints = table.getSqlServerHints();
@@ -181,7 +181,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
     public void visit(PivotXml pivot) {
         validateFeature(Feature.pivotXml);
         validateOptionalExpressions(pivot.getForColumns());
-        if (pivot.getFunctionItems() != null) {
+        if (isNotEmpty(pivot.getFunctionItems())) {
             ExpressionValidator v = getValidator(ExpressionValidator.class);
             pivot.getFunctionItems().forEach(f -> f.getFunction().accept(v));
         }
@@ -260,7 +260,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
                     Feature.setOperationMinus);
         }
 
-        if (setOperation.getSelects() != null) {
+        if (isNotEmpty(setOperation.getSelects())) {
             setOperation.getSelects().forEach(s -> s.accept(this));
         }
 
@@ -285,7 +285,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             validateFeature(c, Feature.withItem);
             validateFeature(c, withItem.isRecursive(), Feature.withItemRecursive);
         }
-        if (withItem.getWithItemList() != null) {
+        if (isNotEmpty(withItem.getWithItemList())) {
             withItem.getWithItemList().forEach(wi -> wi.accept(this));
         }
         withItem.getSelectBody().accept(this);
