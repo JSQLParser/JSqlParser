@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
-
+import net.sf.jsqlparser.util.validation.UnexpectedValidationException;
 import net.sf.jsqlparser.util.validation.ValidationException;
 
 /**
@@ -49,15 +49,16 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
 
     @Override
     protected boolean viewExists(String name) throws ValidationException {
-        return jdbcMetadataTables(name, new String[] { "VIEW" });
+        return jdbcMetadataTables(NamedObject.view, name, new String[] { "VIEW" });
     }
 
     @Override
     protected boolean columnExists(String name) throws ValidationException {
-        String[] names = name.split("\\.");
+        String[] names = splitAndValidateMinMax(NamedObject.column, name, 1, 4);
         String columnName = names[names.length - 1];
         int lastIndexOf = name.lastIndexOf(".");
-        String query = String.format("SELECT * FROM %s", name.substring(0, lastIndexOf));
+        String fromClause = name.substring(0, lastIndexOf);
+        String query = String.format("SELECT * FROM %s", fromClause);
         try (PreparedStatement ps = connection.prepareStatement(query)) {
             ResultSetMetaData metaData = ps.getMetaData();
             for (int i = 1; i <= metaData.getColumnCount(); i++) {
@@ -73,14 +74,11 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
 
     @Override
     protected boolean tableExists(String name) throws ValidationException {
-        return jdbcMetadataTables(name, new String[] { "TABLE" });
+        return jdbcMetadataTables(NamedObject.table, name, new String[] { "TABLE" });
     }
 
-    protected boolean jdbcMetadataTables(String name, String[] types) throws ValidationException {
-        String[] names = name.split("\\.");
-        if (names.length == 0 || names.length > 3) {
-            return false;
-        }
+    protected boolean jdbcMetadataTables(NamedObject named, String name, String[] types) throws ValidationException {
+        String[] names = splitAndValidateMinMax(named, name, 1, 3);
 
         String catalog = null;
         String schemaPattern = null;
@@ -124,6 +122,24 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
         }
 
         return !tables.isEmpty();
+    }
+
+    /**
+     * Split name by "." and validate expected path-elements
+     * 
+     * @param named
+     * @param name
+     * @param min
+     * @param max
+     * @return
+     */
+    private String[] splitAndValidateMinMax(NamedObject named, String name, int min, int max) {
+        String[] names = name.split("\\.");
+        if (names.length < min || names.length > max) {
+            throw new UnexpectedValidationException(String.format(
+                    "%s has to much path-elements, needs to be between %s and %s for %s", name, min, max, named));
+        }
+        return names;
     }
 
     private DatabaseException createDatabaseException(String name, String[] types, SQLException e) {
