@@ -29,10 +29,19 @@ import net.sf.jsqlparser.util.validation.ValidationException;
  */
 public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapability {
 
+    /**
+     * @param connection
+     * @param namesLookup - see {@link NamesLookup}
+     */
     public JdbcDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup) {
         super(connection, namesLookup);
     }
 
+    /**
+     * @param connection
+     * @param namesLookup  - see {@link NamesLookup}
+     * @param cacheResults - whether the results should be cached for later lookups
+     */
     public JdbcDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup,
             boolean cacheResults) {
         super(connection, namesLookup, cacheResults);

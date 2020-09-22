@@ -29,6 +29,7 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
     protected Connection connection;
     protected boolean cacheResults;
     protected Map<CacheKey, Boolean> results = new HashMap<>();
+    protected UnaryOperator<String> namesLookup = NamesLookup.NO_TRANSFORMATION;
 
     protected static class CacheKey {
         final NamedObject o;
@@ -62,6 +63,10 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
 
     }
 
+    /**
+     * A strategy for transformation of database-names before lookup in
+     * database-catalog-metadata
+     */
     public enum NamesLookup implements UnaryOperator<String> {
         UPPERCASE(String::toUpperCase), LOWERCASE(String::toLowerCase), NO_TRANSFORMATION(UnaryOperator.identity());
 
@@ -77,21 +82,32 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
         }
     }
 
-    private UnaryOperator<String> namesLookup = NamesLookup.NO_TRANSFORMATION;
-
-    public UnaryOperator<String> getNamesLookup() {
-        return namesLookup;
-    }
-
+    /**
+     * With caching enabled - see {@link #isCacheResults()}
+     * 
+     * @param connection
+     * @param namesLookup - see {@link NamesLookup}
+     * @see #AbstractDatabaseMetaDataCapability(Connection, UnaryOperator, boolean)
+     */
     public AbstractDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup) {
         this(connection, namesLookup, true);
     }
 
+    /**
+     * @param connection
+     * @param namesLookup  - see {@link NamesLookup}
+     * @param cacheResults - whether the results should be cached for later lookups
+     * @see #AbstractDatabaseMetaDataCapability(Connection, UnaryOperator)
+     */
     public AbstractDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup,
             boolean cacheResults) {
         this.connection = connection;
         this.namesLookup = namesLookup;
         this.cacheResults = cacheResults;
+    }
+
+    public UnaryOperator<String> getNamesLookup() {
+        return namesLookup;
     }
 
     public Connection getConnection() {
@@ -115,28 +131,28 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
         String lookup = getNamesLookup().apply(name);
 
         switch (namedObject) {
-            case table:
-                return cache(namedObject, lookup, this::tableExists);
-            case column:
-                return cache(namedObject, lookup, this::columnExists);
-            case schema:
-                return cache(namedObject, lookup, this::schemaExists);
-            case index:
-                return cache(namedObject, lookup, this::indexExists);
-            case database:
-                return cache(namedObject, lookup, this::databaseExists);
-            case constraint:
-            case uniqueConstraint:
-                return cache(namedObject, lookup, this::constraintExists);
-            case view:
-                return cache(namedObject, lookup, this::viewExists);
-            case procedure:
-                return cache(namedObject, lookup, this::procedureExists);
-            case user:
-                return cache(namedObject, lookup, this::userExists);
-            case role:
-                return cache(namedObject, lookup, this::roleExists);
-            default:
+        case table:
+            return cache(namedObject, lookup, this::tableExists);
+        case column:
+            return cache(namedObject, lookup, this::columnExists);
+        case schema:
+            return cache(namedObject, lookup, this::schemaExists);
+        case index:
+            return cache(namedObject, lookup, this::indexExists);
+        case database:
+            return cache(namedObject, lookup, this::databaseExists);
+        case constraint:
+        case uniqueConstraint:
+            return cache(namedObject, lookup, this::constraintExists);
+        case view:
+            return cache(namedObject, lookup, this::viewExists);
+        case procedure:
+            return cache(namedObject, lookup, this::procedureExists);
+        case user:
+            return cache(namedObject, lookup, this::userExists);
+        case role:
+            return cache(namedObject, lookup, this::roleExists);
+        default:
         }
         throw new UnsupportedOperationException(name + ": evaluation of " + namedObject + "-name not implemented.");
     }
