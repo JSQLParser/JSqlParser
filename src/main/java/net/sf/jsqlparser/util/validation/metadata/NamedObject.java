@@ -42,7 +42,11 @@ public enum NamedObject {
     user,
     role;
 
-    public boolean equalsIgnoreCase(String type) {
-        return name().equalsIgnoreCase(type);
+    public boolean equalsIgnoreCase(String name) {
+        return name().equalsIgnoreCase(name);
+    }
+
+    public static NamedObject forName(String name) {
+        return NamedObject.valueOf(name.toLowerCase());
     }
 }

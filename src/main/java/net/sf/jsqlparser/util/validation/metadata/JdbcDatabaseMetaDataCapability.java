@@ -55,10 +55,6 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
     @Override
     protected boolean columnExists(String name) throws ValidationException {
         String[] names = name.split("\\.");
-        if (names.length < 2 || names.length > 4) {
-            return false;
-        }
-
         String columnName = names[names.length - 1];
         int lastIndexOf = name.lastIndexOf(".");
         String query = String.format("SELECT * FROM %s", name.substring(0, lastIndexOf));

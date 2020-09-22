@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import java.util.Arrays;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
@@ -42,8 +43,9 @@ public class DropValidator extends AbstractValidator<Drop> {
                     Feature.dropSequenceIfExists);
         }
 
-        if (NamedObject.table.equalsIgnoreCase(type)) {
-            validateOptionalFromItem(drop.getName());
+        NamedObject named = NamedObject.forName(type);
+        if (Arrays.asList(NamedObject.table, NamedObject.view).contains(named)) {
+            validateName(named, drop.getName().getFullyQualifiedName());
         }
     }
 
