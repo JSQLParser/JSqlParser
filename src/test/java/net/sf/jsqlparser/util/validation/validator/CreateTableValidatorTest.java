@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import java.util.Arrays;
 import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.feature.Feature;
@@ -53,5 +54,13 @@ public class CreateTableValidatorTest extends ValidationTestAsserts {
         validateNoErrors(sql, 1, DatabaseType.DATABASES);
     }
 
+    @Test
+    public void testValidationRowMovementOption() throws JSQLParserException {
+        for (String sql : Arrays.asList("CREATE TABLE test (startdate DATE) ENABLE ROW MOVEMENT",
+                "CREATE TABLE test (startdate DATE) DISABLE ROW MOVEMENT",
+                "CREATE TABLE test (startdate DATE) DISABLE ROW MOVEMENT AS SELECT 1 FROM dual")) {
+            validateNoErrors(sql, 1, DatabaseType.ORACLE);
+        }
+    }
 
 }
