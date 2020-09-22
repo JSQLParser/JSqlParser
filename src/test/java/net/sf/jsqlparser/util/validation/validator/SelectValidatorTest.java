@@ -174,10 +174,23 @@ public class SelectValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
+    public void testValidateSubJoin() throws JSQLParserException {
+        validateNoErrors("SELECT * FROM ((tabc c INNER JOIN tabn n ON n.ref = c.id) INNER JOIN taba a ON a.REF = c.id)",
+                1, DatabaseType.SQLSERVER);
+    }
+
+    @Test
     public void testValidateTableFunction() {
         for (String sql : Arrays.asList("SELECT f2 FROM SOME_FUNCTION()", "SELECT f2 FROM SOME_FUNCTION(1, 'val')")) {
             validateNoErrors(sql, 1, DatabaseType.POSTGRESQL, DatabaseType.H2, DatabaseType.SQLSERVER);
         }
+    }
+
+    @Test
+    public void testValidateLateral() throws JSQLParserException {
+        validateNoErrors(
+                "SELECT O.ORDERID, O.CUSTNAME, OL.LINETOTAL FROM ORDERS AS O, LATERAL(SELECT SUM(NETAMT) AS LINETOTAL FROM ORDERLINES AS LINES WHERE LINES.ORDERID = O.ORDERID) AS OL",
+                1, DatabaseType.POSTGRESQL, DatabaseType.ORACLE);
     }
 
 }
