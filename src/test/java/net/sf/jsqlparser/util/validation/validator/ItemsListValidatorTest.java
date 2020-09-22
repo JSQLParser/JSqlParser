@@ -10,13 +10,21 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import org.junit.Test;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
+import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 
 public class ItemsListValidatorTest extends ValidationTestAsserts {
 
     @Test
-    public void test() {
+    public void testValidationExpressionList() {
+        validateNoErrors("select coalesce(a, b, c) from tab", 1, DatabaseType.DATABASES);
+    }
 
+    @Test
+    public void testInsertMultiRowValue() throws JSQLParserException {
+        String sql = "INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e)";
+        validateNoErrors(sql, 1, DatabaseType.SQLSERVER);
     }
 
 }

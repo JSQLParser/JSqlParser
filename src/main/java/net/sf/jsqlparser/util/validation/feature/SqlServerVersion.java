@@ -94,6 +94,9 @@ public enum SqlServerVersion implements Version {
                     Feature.execute,
                     Feature.executeExec, Feature.executeExecute,
 
+                    //https://docs.microsoft.com/en-us/sql/t-sql/language-elements/set-local-variable-transact-sql?view=sql-server-ver15
+                    Feature.set,
+
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-table-transact-sql?view=sql-server-ver15
                     Feature.alterTable,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-sequence-transact-sql?view=sql-server-ver15
@@ -130,7 +133,8 @@ public enum SqlServerVersion implements Version {
                     Feature.selectForXmlPath,
                     Feature.use, Feature.allowSquareBracketQuotation, //
                     Feature.pivot, Feature.unpivot, Feature.pivotXml,
-                    Feature.selectGroupByGroupingSets));
+                    Feature.selectGroupByGroupingSets
+                    ));
 
     private Set<Feature> features;
     private String versionString;
