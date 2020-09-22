@@ -11,7 +11,7 @@ package net.sf.jsqlparser;
 
 public class JSQLParserException extends Exception {
 
-    private static final long serialVersionUID = -1099039459759769980L;
+    private static final long serialVersionUID = -4200894355696788796L;
 
     public JSQLParserException() {
         super();
