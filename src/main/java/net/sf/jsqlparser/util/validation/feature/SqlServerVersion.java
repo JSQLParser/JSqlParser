@@ -49,6 +49,9 @@ public enum SqlServerVersion implements Version {
                     Feature.setOperation, Feature.setOperationUnion, Feature.setOperationIntersect,
                     Feature.setOperationExcept,
 
+                    // https://docs.microsoft.com/en-us/sql/t-sql/queries/table-value-constructor-transact-sql?view=sql-server-ver15
+                    Feature.values,
+
                     // https://docs.microsoft.com/en-us/sql/t-sql/queries/from-transact-sql?view=sql-server-ver15#syntax
                     Feature.join,
                     Feature.joinSimple,

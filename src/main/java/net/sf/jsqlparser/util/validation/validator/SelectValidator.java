@@ -318,7 +318,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     @Override
     public void visit(ValuesStatement values) {
-        validateOptionalExpressions(values.getExpressions());
+        getValidator(ValuesStatementValidator.class).validate(values);
     }
 
     @Override
