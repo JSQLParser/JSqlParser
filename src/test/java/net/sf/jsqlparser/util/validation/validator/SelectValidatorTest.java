@@ -154,4 +154,23 @@ public class SelectValidatorTest extends ValidationTestAsserts {
         validateNoErrors(sql, 1, DatabaseType.DATABASES);
     }
 
+    @Test
+    public void testValidatePivotWithAlias() throws JSQLParserException {
+        validateNoErrors(
+                "SELECT * FROM (SELECT * FROM mytable LEFT JOIN mytable2 ON Factor_ID = Id) f PIVOT (max(f.value) FOR f.factoryCode IN (ZD, COD, SW, PH))",
+                1, DatabaseType.SQLSERVER);
+    }
+
+    @Test
+    public void testValidatePivotXml() throws JSQLParserException {
+        validateNoErrors("SELECT * FROM mytable PIVOT XML (count(a) FOR b IN ('val1'))", 1, DatabaseType.SQLSERVER);
+    }
+
+    @Test
+    public void testValidateUnPivot() throws JSQLParserException {
+        validateNoErrors(
+                "select * from pivot_table unpivot (yearly_total for order_mode in (store as 'direct', internet as 'online')) order by year, order_mode",
+                1, DatabaseType.SQLSERVER);
+    }
+
 }
