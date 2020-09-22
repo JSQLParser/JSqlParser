@@ -39,21 +39,6 @@ public class SelectValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
-    public void testValidationLimitOffset() throws JSQLParserException {
-        String sql = "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 3, ?";
-        validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL);
-    }
-
-    @Test
-    public void testValidationLimitAndOffset() throws JSQLParserException {
-        for (String sql : Arrays.asList("SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 3",
-                "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ? OFFSET 3",
-                "SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?")) {
-            validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL, DatabaseType.POSTGRESQL);
-        }
-    }
-
-    @Test
     public void testValidationFetchAndOffset() throws JSQLParserException {
         for (String sql : Arrays.asList(
                 "SELECT * FROM mytable t WHERE t.col = 9 ORDER BY t.id FETCH FIRST 5 ROWS ONLY",
