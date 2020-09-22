@@ -32,7 +32,7 @@ public enum PostgresqlVersion implements Version {
                     Feature.exprSimilarTo,
                     // https://www.postgresql.org/docs/current/sql-select.html
                     Feature.select,
-                    Feature.selectGroupBy, Feature.function,
+                    Feature.selectGroupBy, Feature.function, Feature.tableFunction,
                     Feature.selectHaving,
                     // https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUPING-SETS
                     Feature.selectGroupByGroupingSets,

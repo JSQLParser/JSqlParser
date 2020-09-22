@@ -173,4 +173,11 @@ public class SelectValidatorTest extends ValidationTestAsserts {
                 1, DatabaseType.SQLSERVER);
     }
 
+    @Test
+    public void testValidateTableFunction() {
+        for (String sql : Arrays.asList("SELECT f2 FROM SOME_FUNCTION()", "SELECT f2 FROM SOME_FUNCTION(1, 'val')")) {
+            validateNoErrors(sql, 1, DatabaseType.POSTGRESQL, DatabaseType.H2, DatabaseType.SQLSERVER);
+        }
+    }
+
 }

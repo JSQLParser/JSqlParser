@@ -33,6 +33,9 @@ public enum SqlServerVersion implements Version {
                     Feature.selectInto,
                     Feature.withItem,
                     Feature.selectGroupBy, Feature.function,
+                    // https://docs.microsoft.com/en-us/sql/t-sql/queries/from-transact-sql?view=sql-server-ver15
+                    // see user_defined_function
+                    Feature.tableFunction,
                     Feature.selectHaving, Feature.orderBy,
                     Feature.distinct,
                     Feature.withItem, Feature.withItemRecursive,
