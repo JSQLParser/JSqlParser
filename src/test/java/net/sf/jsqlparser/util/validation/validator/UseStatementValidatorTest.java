@@ -10,13 +10,15 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import org.junit.Test;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
+import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 
 public class UseStatementValidatorTest extends ValidationTestAsserts {
 
     @Test
-    public void test() {
-
+    public void testValidateUse() throws JSQLParserException {
+        validateNoErrors("USE my_schema", 1, DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.MYSQL);
     }
 
 }

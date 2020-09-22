@@ -40,11 +40,6 @@ public class StatementValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
-    public void testValidateUse() throws JSQLParserException {
-        validateNoErrors("USE my_schema", 1, DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.MYSQL);
-    }
-
-    @Test
     public void testValidateCommit() throws JSQLParserException {
         validateNoErrors("COMMIT", 1, DatabaseType.DATABASES);
     }
