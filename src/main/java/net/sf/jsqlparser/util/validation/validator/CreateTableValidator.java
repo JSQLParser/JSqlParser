@@ -36,10 +36,7 @@ public class CreateTableValidator extends AbstractValidator<CreateTable> {
                     validateName(c, NamedObject.index, i.getName());
                 }
             }
-            // TODO validate for not existing ?? this may be a little bit more complex
-            // because database-names share one space in most databases
-            // validateNameNotExists(c, NamedObject.table,
-            // createTable.getTable().getFullyQualifiedName());
+            validateName(c, NamedObject.table, createTable.getTable().getFullyQualifiedName(), false);
         }
 
         if (createTable.getSelect() != null) {

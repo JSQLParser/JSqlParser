@@ -15,6 +15,7 @@ import net.sf.jsqlparser.statement.create.view.ForceOption;
 import net.sf.jsqlparser.statement.create.view.TemporaryOption;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
  * @author gitmotte
@@ -29,12 +30,7 @@ public class CreateViewValidator extends AbstractValidator<CreateView> {
             validateFeature(c, !ForceOption.NONE.equals(createView.getForce()), Feature.createViewForce);
             validateFeature(c, !TemporaryOption.NONE.equals(createView.getTemporary()), Feature.createViewTemporary);
             validateFeature(c, createView.isMaterialized(), Feature.createViewMaterialized);
-
-            // TODO validate for not existing ?? this may be a little bit more complex
-            // because database-names share one space in most databases
-            // validateNameNotExists(c, NamedObject.view,
-            // createView.getView().getFullyQualifiedName());
-            // validateOptionalColumnNames(createView.getColumnNames(), c);
+            validateName(c, NamedObject.view, createView.getView().getFullyQualifiedName(), false);
         }
         SelectValidator v = getValidator(SelectValidator.class);
         Select select = createView.getSelect();

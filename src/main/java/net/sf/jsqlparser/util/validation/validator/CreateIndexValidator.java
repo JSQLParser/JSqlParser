@@ -26,11 +26,9 @@ public class CreateIndexValidator extends AbstractValidator<CreateIndex> {
         Index index = createIndex.getIndex();
         String tableFqn = createIndex.getTable().getFullyQualifiedName();
         for (ValidationCapability c : getCapabilities()) {
-            validateFeature(Feature.createIndex);
+            validateFeature(c, Feature.createIndex);
             validateName(c, NamedObject.table, tableFqn);
-         // TODO validate for not existing ?? this may be a little bit more complex
-            // because database-names share one space in most databases
-            //            validateNameNotExists(c, NamedObject.index, index.getName());
+            validateName(c, NamedObject.index, index.getName(), false);
             validateOptionalColumnNames(ValidationUtil.concat(tableFqn, index.getColumnsNames()), c);
         }
     }
