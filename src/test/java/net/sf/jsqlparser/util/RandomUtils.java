@@ -140,7 +140,11 @@ public class RandomUtils {
                 }
             }
         }
-        return type.cast(value);
+        // do not use type.cast (does not support primitive types and
+        // autoboxing/unboxing
+        @SuppressWarnings("unchecked")
+        T t = (T) value;
+        return t;
     }
 
 }
