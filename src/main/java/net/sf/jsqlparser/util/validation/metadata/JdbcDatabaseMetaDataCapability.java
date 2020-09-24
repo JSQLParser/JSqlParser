@@ -54,7 +54,7 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
 
     @Override
     protected boolean columnExists(String name) throws ValidationException {
-        String[] names = splitAndValidateMinMax(NamedObject.column, name, 1, 4);
+        String[] names = splitAndValidateMinMax(NamedObject.column, name, 2, 4);
         String columnName = names[names.length - 1];
         int lastIndexOf = name.lastIndexOf(".");
         String fromClause = name.substring(0, lastIndexOf);
@@ -126,7 +126,7 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
 
     /**
      * Split name by "." and validate expected path-elements
-     * 
+     *
      * @param named
      * @param name
      * @param min
