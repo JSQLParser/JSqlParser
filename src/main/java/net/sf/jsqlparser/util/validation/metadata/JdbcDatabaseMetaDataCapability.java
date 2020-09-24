@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.UnaryOperator;
 import net.sf.jsqlparser.util.validation.UnexpectedValidationException;
@@ -143,7 +144,8 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
     }
 
     private DatabaseException createDatabaseException(String name, String[] types, SQLException e) {
-        throw new DatabaseException("cannot evaluate existence of " + types + " by name '" + name + "'", e);
+        throw new DatabaseException(String.format(
+                "cannot evaluate existence of %s by name '%s'", Arrays.toString(types), name), e);
     }
 
 }
