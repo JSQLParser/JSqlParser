@@ -40,13 +40,25 @@ public enum NamedObject {
     sequence,
     procedure,
     user,
-    role;
+    role,
+    trigger,
+    alias;
 
     public boolean equalsIgnoreCase(String name) {
         return name().equalsIgnoreCase(name);
     }
 
+    /**
+     * @param name
+     * @return <code>null</code>, if not found, otherwise the
+     *         {@link NamedObject}
+     */
     public static NamedObject forName(String name) {
-        return NamedObject.valueOf(name.toLowerCase());
+        for (NamedObject o : values()) {
+            if (o.equalsIgnoreCase(name)) {
+                return o;
+            }
+        }
+        return null;
     }
 }
