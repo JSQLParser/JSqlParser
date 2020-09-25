@@ -15,8 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
-
 import java.util.Set;
 
 /**
@@ -72,17 +70,19 @@ public interface Validator<S> {
         return map;
     }
 
-    /**
-     * Set the {@link ValidationCapability}'s this {@link Validator} should check.
-     *
-     * @param capabilities
-     */
-    public void setCapabilities(Collection<ValidationCapability> capabilities);
-
-    /**
-     * @param configuration
-     */
-    public void setConfiguration(FeatureConfiguration configuration);
+    // /**
+    // * Set the {@link ValidationCapability}'s this {@link Validator} should
+    // check.
+    // *
+    // * @param capabilities
+    // */
+    // public void setCapabilities(Collection<ValidationCapability>
+    // capabilities);
+    //
+    // /**
+    // * @param configuration
+    // */
+    // public void setConfiguration(FeatureConfiguration configuration);
 
     /**
      * @param ctx

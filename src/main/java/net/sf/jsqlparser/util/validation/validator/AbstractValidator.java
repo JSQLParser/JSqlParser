@@ -27,7 +27,6 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
@@ -106,16 +105,6 @@ public abstract class AbstractValidator<S> implements Validator<S> {
             }
         }
         return map;
-    }
-
-    @Override
-    public final void setCapabilities(Collection<ValidationCapability> capabilities) {
-        context().setCapabilities(capabilities);
-    }
-
-    @Override
-    public final void setConfiguration(FeatureConfiguration configuration) {
-        context().setConfiguration(configuration);
     }
 
     public Collection<ValidationCapability> getCapabilities() {
