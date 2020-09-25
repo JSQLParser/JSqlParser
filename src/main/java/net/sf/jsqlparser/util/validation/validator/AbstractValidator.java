@@ -251,7 +251,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     /**
      * validates for the feature if given elements is not empty - see
      * {@link #isNotEmpty(Collection)}
-     * 
+     *
      * @param c
      * @param element
      * @param feature
@@ -262,7 +262,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
 
     /**
      * Validates for the feature if given element is not <code>null</code>
-     * 
+     *
      * @param c
      * @param element
      * @param feature
@@ -311,7 +311,8 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         if (capability instanceof DatabaseMetaDataValidation) {
             capability.validate(context()
                     .put(MetadataContext.namedobject, namedObject)
-                    .put(MetadataContext.fqn, fqn).put(MetadataContext.exists, exists),
+                    .put(MetadataContext.fqn, fqn)
+                    .put(MetadataContext.exists, exists),
                     getMessageConsumer(capability));
         }
     }

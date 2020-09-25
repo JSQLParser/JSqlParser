@@ -43,6 +43,13 @@ public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
     }
 
     @Test
+    public void testValidationAlterTableAlterColumn() throws JSQLParserException, SQLException {
+        String sql = "ALTER TABLE mytable ALTER COLUMN description SET NOT NULL";
+        JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
+        validateNoErrors(sql, 1, DatabaseType.H2, meta); // no errors
+    }
+
+    @Test
     public void testValidationDropView3Parts() throws JSQLParserException, SQLException {
         String sql = String.format("DROP VIEW %s.public.myview", databaseName);
         JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE,
@@ -66,7 +73,5 @@ public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
         // view does not exist
         validateMetadata(sql, 1, 1, meta, true, String.format("public.anotherView", databaseName));
     }
-
-
 
 }

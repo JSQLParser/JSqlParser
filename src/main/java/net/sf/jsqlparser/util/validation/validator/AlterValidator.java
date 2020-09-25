@@ -9,9 +9,12 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import java.util.EnumSet;
+
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
+import net.sf.jsqlparser.statement.alter.AlterOperation;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDropNotNull;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
@@ -47,8 +50,9 @@ public class AlterValidator extends AbstractValidator<Alter> {
             }
 
             if (e.getColDataTypeList() != null) {
+                boolean validateForExist = !EnumSet.of(AlterOperation.ADD).contains(e.getOperation());
                 validateOptionalColumnNames(ValidationUtil.concat(tableFqn,
-                        e.getColDataTypeList().stream().map(ColumnDataType::getColumnName)), c, false);
+                        e.getColDataTypeList().stream().map(ColumnDataType::getColumnName)), c, validateForExist);
             }
 
             validateOptionalName(e.getConstraintName(), NamedObject.constraint, c);
