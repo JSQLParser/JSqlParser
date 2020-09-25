@@ -138,7 +138,7 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
         String[] names = name.split("\\.");
         if (names.length < min || names.length > max) {
             throw new UnexpectedValidationException(String.format(
-                    "%s has to much path-elements, needs to be between %s and %s for %s", name, min, max, named));
+                    "%s path-elements count needs to be between %s and %s for %s", name, min, max, named));
         }
         return names;
     }
