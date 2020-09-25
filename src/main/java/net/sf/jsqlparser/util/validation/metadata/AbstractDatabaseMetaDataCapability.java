@@ -13,7 +13,6 @@ import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
@@ -61,25 +60,6 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
             }
         }
 
-    }
-
-    /**
-     * A strategy for transformation of database-names before lookup in
-     * database-catalog-metadata
-     */
-    public enum NamesLookup implements UnaryOperator<String> {
-        UPPERCASE(String::toUpperCase), LOWERCASE(String::toLowerCase), NO_TRANSFORMATION(UnaryOperator.identity());
-
-        private Function<String, String> strategy;
-
-        private NamesLookup(UnaryOperator<String> strategy) {
-            this.strategy = strategy;
-        }
-
-        @Override
-        public String apply(String name) {
-            return name == null ? null : strategy.apply(name);
-        }
     }
 
     /**

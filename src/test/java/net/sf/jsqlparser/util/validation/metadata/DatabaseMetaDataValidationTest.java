@@ -18,7 +18,6 @@ import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
-import net.sf.jsqlparser.util.validation.metadata.AbstractDatabaseMetaDataCapability.NamesLookup;
 
 public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
 
