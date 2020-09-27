@@ -4286,4 +4286,9 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT 1 < 2 AS a, 0 IS NULL AS b");
 //        assertSqlCanBeParsedAndDeparsed("SELECT 1 < 2 AS a, (0 IS NULL) AS b");
     }
+    
+    @Test
+    public void testKeyWordExceptIssue1040() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT FORMAT(100000, 2)");
+    }
 }
