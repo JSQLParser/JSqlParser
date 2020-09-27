@@ -14,6 +14,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.UUID;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
@@ -48,6 +49,32 @@ public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
         JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
         validateNoErrors(sql, 1, DatabaseType.H2, meta); // no errors
     }
+
+    @Test
+    @Ignore // TODO
+    public void testValidationMetadataInsert() throws JSQLParserException, SQLException {
+        String sql = "INSERT INTO mytable (id, description, active) VALUES (1, 'test', 1)";
+        JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
+        validateNoErrors(sql, 1, DatabaseType.H2, meta); // no errors
+    }
+
+    @Test
+    @Ignore // TODO
+    public void testValidationMetadataSelectWithColumns() throws JSQLParserException, SQLException {
+        String sql = "SELECT * FROM mytable t JOIN mysecondtable t2 WHERE t.ref = t2.id AND t.id = ?";
+        JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
+        validateNoErrors(sql, 1, DatabaseType.H2, meta); // no errors
+    }
+
+    @Test
+    public void testValidationMetadataSelectWithoutColumns() throws JSQLParserException, SQLException {
+        String sql = String.format("SELECT * FROM %s.public.mytable", databaseName);
+        JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
+        validateNoErrors(sql, 1, DatabaseType.H2, meta);
+        sql = String.format("SELECT * FROM public.mytable", databaseName);
+        validateNoErrors(sql, 1, DatabaseType.H2, meta.clearCache());
+    }
+
 
     @Test
     public void testValidationDropView3Parts() throws JSQLParserException, SQLException {
