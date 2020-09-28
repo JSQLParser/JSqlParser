@@ -46,8 +46,18 @@ public class ValidationContext {
         return this;
     }
 
-    public void setConfiguration(FeatureConfiguration configuration) {
+    public ValidationContext setCapabilities(Collection<ValidationCapability> capabilities) {
+        this.capabilities = capabilities;
+        return this;
+    }
+
+    public Collection<ValidationCapability> getCapabilities() {
+        return capabilities;
+    }
+
+    public ValidationContext setConfiguration(FeatureConfiguration configuration) {
         this.configuration = configuration;
+        return this;
     }
 
     public FeatureConfiguration getConfiguration() {
@@ -60,14 +70,6 @@ public class ValidationContext {
 
     public String getAsString(Feature f) {
         return getConfiguration().getAsString(f);
-    }
-
-    public Collection<ValidationCapability> getCapabilities() {
-        return capabilities;
-    }
-
-    public void setCapabilities(Collection<ValidationCapability> capabilities) {
-        this.capabilities = capabilities;
     }
 
 }

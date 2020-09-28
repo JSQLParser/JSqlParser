@@ -42,7 +42,8 @@ public class ValidationTest extends ValidationTestAsserts {
         Statement stmt = CCJSqlParserUtil.parse(sql);
 
         StatementValidator validator = new StatementValidator();
-        validator.setCapabilities(Arrays.asList(DatabaseType.SQLSERVER, DatabaseType.POSTGRESQL));
+        validator.setContext(new ValidationContext()
+                .setCapabilities(Arrays.asList(DatabaseType.SQLSERVER, DatabaseType.POSTGRESQL)));
         stmt.accept(validator);
 
         Map<ValidationCapability, Set<ValidationException>> unsupportedErrors = validator
