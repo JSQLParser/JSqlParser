@@ -21,8 +21,8 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
     public static final String NAME = "meta data";
 
     /**
-     * @param o
-     * @param named - fully qualified name
+     * @param context
+     * @param errorConsumer
      * @throws ValidationException
      */
     @Override

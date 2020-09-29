@@ -19,7 +19,8 @@ import net.sf.jsqlparser.parser.feature.Feature;
  * Please add Features supported and place a link to public documentation
  *
  * @author gitmotte
- * @see https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/index.html
+ * @see <a href=
+ *      "https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/index.html">https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/index.html</a>
  */
 public enum OracleVersion implements Version {
     V19C("19c",

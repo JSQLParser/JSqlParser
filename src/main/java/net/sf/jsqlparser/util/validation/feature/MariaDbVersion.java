@@ -19,7 +19,8 @@ import net.sf.jsqlparser.parser.feature.Feature;
  * Please add Features supported and place a link to public documentation
  *
  * @author gitmotte
- * @see https://mariadb.com/kb/en/sql-statements-structure/
+ * @see <a href=
+ *      "https://mariadb.com/kb/en/sql-statements-structure/">https://mariadb.com/kb/en/sql-statements-structure/</a>
  */
 public enum MariaDbVersion implements Version {
     V10_5_4("10.5.4",

@@ -18,7 +18,8 @@ import net.sf.jsqlparser.parser.feature.Feature;
  * Please add Features supported and place a link to public documentation
  * 
  * @author gitmotte
- * @see https://dev.mysql.com/doc/refman/8.0/en/
+ * @see <a href=
+ *      "https://dev.mysql.com/doc/refman/8.0/en/">https://dev.mysql.com/doc/refman/8.0/en/</a>
  */
 public enum MySqlVersion implements Version {
     V8_0("8.0",

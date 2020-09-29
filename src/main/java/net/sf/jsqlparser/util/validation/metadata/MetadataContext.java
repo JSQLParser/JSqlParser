@@ -13,7 +13,7 @@ import net.sf.jsqlparser.util.validation.ContextKey;
 
 public enum MetadataContext implements ContextKey {
     /**
-     * @see {@link Named} 
+     * @see Named
      */
     named,
     /**

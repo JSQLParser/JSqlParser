@@ -19,7 +19,8 @@ import net.sf.jsqlparser.parser.feature.Feature;
  * Please add Features supported and place a link to public documentation
  *
  * @author gitmotte
- * @see http://www.h2database.com/html/commands.html
+ * @see <a href=
+ *      "http://www.h2database.com/html/commands.html">http://www.h2database.com/html/commands.html</a>
  */
 public enum H2Version implements Version {
     V_1_4_200("1.4.200",

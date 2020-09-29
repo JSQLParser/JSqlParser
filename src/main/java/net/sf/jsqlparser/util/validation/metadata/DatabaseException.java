@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.validation.metadata;
 
+import java.sql.SQLException;
 import net.sf.jsqlparser.util.validation.ValidationException;
 
 /**

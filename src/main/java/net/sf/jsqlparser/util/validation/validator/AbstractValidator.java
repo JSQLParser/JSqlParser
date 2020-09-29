@@ -180,7 +180,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
 
     /**
      * Iterates through all {@link ValidationCapability} and validates the feature
-     * with {@link #validateFeature(ValidationCapability, Feature)
+     * with {@link #validateFeature(ValidationCapability, Feature)}
      *
      * @param feature
      */
@@ -271,23 +271,23 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      * validates for the feature if given elements is not empty - see
      * {@link #isNotEmpty(Collection)}
      *
-     * @param c
-     * @param element
+     * @param capability
+     * @param elements
      * @param feature
      */
-    protected void validateOptionalFeature(ValidationCapability c, List<?> elements, Feature feature) {
-        validateFeature(c, isNotEmpty(elements), feature);
+    protected void validateOptionalFeature(ValidationCapability capability, List<?> elements, Feature feature) {
+        validateFeature(capability, isNotEmpty(elements), feature);
     }
 
     /**
      * Validates for the feature if given element is not <code>null</code>
      *
-     * @param c
+     * @param capability
      * @param element
      * @param feature
      */
-    protected void validateOptionalFeature(ValidationCapability c, Object element, Feature feature) {
-        validateFeature(c, element != null, feature);
+    protected void validateOptionalFeature(ValidationCapability capability, Object element, Feature feature) {
+        validateFeature(capability, element != null, feature);
     }
 
     /**

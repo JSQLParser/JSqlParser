@@ -21,9 +21,6 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
 
     public static final String DEFAULT_NAME = "feature set";
 
-    /**
-     * @param feature
-     */
     @Override
     default void validate(ValidationContext context, Consumer<ValidationException> errorConsumer) {
         Feature feature = context.get(FeatureContext.feature, Feature.class);

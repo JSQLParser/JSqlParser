@@ -137,15 +137,16 @@ public class Validation {
     }
 
     /**
-     * @param stmt
+     * @param statement
      * @param context
-     * @return
+     * @return a map mapping the {@link ValidationCapability} to a set of
+     *         {@link ValidationException}s
      */
-    public static Map<ValidationCapability, Set<ValidationException>> validate(Statement stmt,
+    public static Map<ValidationCapability, Set<ValidationException>> validate(Statement statement,
             ValidationContext context) {
         StatementValidator validator = new StatementValidator();
         validator.setContext(context);
-        validator.validate(stmt);
+        validator.validate(statement);
         return validator.getValidationErrors();
     }
 

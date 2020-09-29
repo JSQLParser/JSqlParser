@@ -19,7 +19,8 @@ import net.sf.jsqlparser.parser.feature.Feature;
  * Please add Features supported and place a link to public documentation
  *
  * @author gitmotte
- * @see https://www.postgresql.org/docs/current
+ * @see <a href=
+ *      "https://www.postgresql.org/docs/current">https://www.postgresql.org/docs/current</a>
  */
 public enum PostgresqlVersion implements Version {
     V10("10",

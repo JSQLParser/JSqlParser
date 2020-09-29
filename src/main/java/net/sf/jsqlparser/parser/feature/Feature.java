@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
@@ -30,6 +31,7 @@ import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.procedure.CreateProcedure;
+import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -42,13 +44,18 @@ import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
+import net.sf.jsqlparser.statement.select.KSQLWindow;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.OptimizeFor;
+import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.Skip;
+import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.Top;
+import net.sf.jsqlparser.statement.select.UnPivot;
+import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
@@ -345,7 +352,8 @@ public enum Feature {
      * SQL "UPSERT" statement is allowed
      *
      * @see Upsert
-     * @see https://wiki.postgresql.org/wiki/UPSERT
+     * @see <a href=
+     *      "https://wiki.postgresql.org/wiki/UPSERT">https://wiki.postgresql.org/wiki/UPSERT</a>
      */
     upsert,
     /**

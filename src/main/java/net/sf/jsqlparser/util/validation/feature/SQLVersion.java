@@ -20,7 +20,8 @@ import net.sf.jsqlparser.parser.feature.Feature;
  * :)
  *
  * @author gitmotte
- * @see https://en.wikipedia.org/wiki/SQL#Interoperability_and_standardization
+ * @see <a href=
+ *      "https://en.wikipedia.org/wiki/SQL#Interoperability_and_standardization">https://en.wikipedia.org/wiki/SQL#Interoperability_and_standardization</a>
  */
 public enum SQLVersion implements Version {
     SQL1986("SQL-86", EnumSet.of(

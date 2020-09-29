@@ -29,7 +29,7 @@ public class FeatureConfiguration {
 
     /**
      * @param feature
-     * @param enabled
+     * @param value
      * @return <code>this</code>
      */
     public FeatureConfiguration setValue(Feature feature, Object value) {
