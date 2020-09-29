@@ -10,20 +10,16 @@
 package net.sf.jsqlparser.util.validation;
 
 import java.util.Arrays;
-import java.util.Collection;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import net.sf.jsqlparser.schema.Column;
 
 public class ValidationUtilTest extends ValidationTestAsserts {
 
     @Test
-    public void testConcat() {
-        assertEquals(Arrays.asList("a.b", "a.c", "a.c"), ValidationUtil.concat("a", Arrays.asList("b", "c", "c")));
-        assertEquals(null, ValidationUtil.concat("a", (Collection<String>) null));
-        assertEquals(Arrays.asList("a.b", "a.c", "a.d"),
-                ValidationUtil.concat("a", Arrays.asList("b", "c", "d").stream()));
-        assertEquals("a.col", ValidationUtil.concat("a", "col"));
-        assertEquals(null, ValidationUtil.concat("a", (String) null));
+    public void testMap() {
+        assertEquals(Arrays.asList("col2", "col1"),
+                ValidationUtil.map(Arrays.asList(new Column("col2"), new Column("col1")), Column::getColumnName));
     }
 
 }

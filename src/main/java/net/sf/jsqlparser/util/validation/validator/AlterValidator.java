@@ -10,13 +10,12 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.EnumSet;
-
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
-import net.sf.jsqlparser.statement.alter.AlterOperation;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDropNotNull;
+import net.sf.jsqlparser.statement.alter.AlterOperation;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationUtil;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
@@ -36,45 +35,42 @@ public class AlterValidator extends AbstractValidator<Alter> {
     }
 
     public void validate(Alter alter, AlterExpression e) {
-        String tableFqn = alter.getTable().getFullyQualifiedName();
         for (ValidationCapability c : getCapabilities()) {
 
-            validateOptionalColumnName(ValidationUtil.concat(tableFqn, e.getColumnOldName()), c);
-            validateOptionalColumnName(ValidationUtil.concat(tableFqn, e.getColumnName()), c);
+            validateOptionalColumnName(c, e.getColumnOldName());
+            validateOptionalColumnName(c, e.getColumnName());
 
             if (e.getColumnDropNotNullList() != null) {
-                validateOptionalColumnNames(
-                        ValidationUtil.concat(tableFqn, e.getColumnDropNotNullList()
-                                .stream()
-                                .map(ColumnDropNotNull::getColumnName)), c);
+                validateOptionalColumnNames(c, ValidationUtil.map(e.getColumnDropNotNullList(), ColumnDropNotNull::getColumnName));
             }
 
             if (e.getColDataTypeList() != null) {
                 boolean validateForExist = !EnumSet.of(AlterOperation.ADD).contains(e.getOperation());
-                validateOptionalColumnNames(ValidationUtil.concat(tableFqn,
-                        e.getColDataTypeList().stream().map(ColumnDataType::getColumnName)), c, validateForExist);
+                validateOptionalColumnNames(c,
+                        ValidationUtil.map(e.getColDataTypeList(), ColumnDataType::getColumnName), validateForExist,
+                        NamedObject.table);
             }
 
-            validateOptionalName(e.getConstraintName(), NamedObject.constraint, c);
+            validateOptionalName(c, NamedObject.constraint, e.getConstraintName());
             if (e.getPkColumns() != null) {
-                validateOptionalColumnNames(ValidationUtil.concat(tableFqn, e.getPkColumns()), c);
+                validateOptionalColumnNames(c, e.getPkColumns());
             }
 
             if (e.getFkColumns() != null) {
                 validateName(c, NamedObject.table, e.getFkSourceTable());
-                validateOptionalColumnNames(ValidationUtil.concat(tableFqn, e.getFkColumns()), c);
-                validateOptionalColumnNames(ValidationUtil.concat(tableFqn, e.getFkSourceColumns()), c);
+                validateOptionalColumnNames(c, e.getFkColumns());
+                validateOptionalColumnNames(c, e.getFkSourceColumns());
             }
 
             if (e.getUk()) {
                 validateName(c, NamedObject.uniqueConstraint, e.getUkName());
-                validateOptionalColumnNames(ValidationUtil.concat(tableFqn, e.getUkColumns()), c);
+                validateOptionalColumnNames(c, e.getUkColumns(), NamedObject.uniqueConstraint);
             }
 
             if (e.getIndex() != null) {
                 validateName(c, NamedObject.index, e.getIndex().getName());
                 if (e.getIndex().getColumns() != null) {
-                    validateOptionalColumnNames(ValidationUtil.concat(tableFqn, e.getIndex().getColumnsNames()), c);
+                    validateOptionalColumnNames(c, e.getIndex().getColumnsNames(), NamedObject.index);
                 }
             }
         }

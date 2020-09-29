@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
@@ -37,6 +36,7 @@ import net.sf.jsqlparser.util.validation.feature.FeatureContext;
 import net.sf.jsqlparser.util.validation.feature.FeatureSetValidation;
 import net.sf.jsqlparser.util.validation.metadata.DatabaseMetaDataValidation;
 import net.sf.jsqlparser.util.validation.metadata.MetadataContext;
+import net.sf.jsqlparser.util.validation.metadata.Named;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
@@ -204,9 +204,27 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      * @param fqn
      */
     protected void validateFeatureAndName(Feature feature, NamedObject namedObject, String fqn) {
+        validateFeatureAndNameWithAlias(feature, namedObject, fqn, null);
+    }
+
+    /**
+     * Iterates through all {@link ValidationCapability} and validates
+     * <ul>
+     * <li>the name with
+     * {@link #validateName(ValidationCapability, NamedObject, String)}</li>
+     * <li>the feature with
+     * {@link #validateFeature(ValidationCapability, Feature)}</li>
+     * </ul>
+     *
+     * @param feature
+     * @param namedObject
+     * @param fqn
+     * @param alias
+     */
+    protected void validateFeatureAndNameWithAlias(Feature feature, NamedObject namedObject, String fqn, String alias) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, feature);
-            validateName(c, namedObject, fqn, true);
+            validateNameWithAlias(c, namedObject, fqn, alias, true);
         }
     }
 
@@ -218,8 +236,20 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      * @param fqn
      */
     protected void validateName(NamedObject namedObject, String fqn) {
+        validateNameWithAlias(namedObject, fqn, null);
+    }
+
+    /**
+     * Iterates through all {@link ValidationCapability} and validates for the name
+     * with {@link #validateName(ValidationCapability, NamedObject, String)}
+     *
+     * @param namedObject
+     * @param fqn
+     * @param alias
+     */
+    protected void validateNameWithAlias(NamedObject namedObject, String fqn, String alias) {
         for (ValidationCapability c : getCapabilities()) {
-            validateName(c, namedObject, fqn, true);
+            validateNameWithAlias(c, namedObject, fqn, alias, true);
         }
     }
 
@@ -281,9 +311,19 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      * @param capability
      * @param namedObject
      * @param fqn
+     * @param alias
+     */
+    protected void validateNameWithAlias(ValidationCapability capability, NamedObject namedObject, String fqn, String alias) {
+        validateNameWithAlias(capability, namedObject, fqn, alias, true);
+    }
+
+    /**
+     * @param capability
+     * @param namedObject
+     * @param fqn
      */
     protected void validateName(ValidationCapability capability, NamedObject namedObject, String fqn) {
-        validateName(capability, namedObject, fqn, true);
+        validateNameWithAlias(capability, namedObject, fqn, null, true);
     }
 
     /**
@@ -293,40 +333,113 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      * @param capability
      * @param namedObject
      * @param fqn
+     * @param alias
      * @param exists      - <code>true</code>, check for existence,
      *                    <code>false</code>, check for non-existence
      */
-    protected void validateName(ValidationCapability capability, NamedObject namedObject, String fqn, boolean exists) {
+    protected void validateNameWithAlias(ValidationCapability capability, NamedObject namedObject, String fqn, String alias,
+            boolean exists,
+            NamedObject... parents) {
         if (capability instanceof DatabaseMetaDataValidation) {
             capability.validate(context()
-                    .put(MetadataContext.namedobject, namedObject)
-                    .put(MetadataContext.fqn, fqn)
+                    .put(MetadataContext.named,
+                            new Named(namedObject, fqn).setAlias(alias).setParents(Arrays.asList(parents))) //
                     .put(MetadataContext.exists, exists),
                     getMessageConsumer(capability));
         }
     }
 
-    protected void validateOptionalColumnName(String name, ValidationCapability c) {
-        validateOptionalName(name, NamedObject.column, c, true);
+    /**
+     * @param capability
+     * @param namedObject
+     * @param fqn
+     * @param exists
+     * @param parents
+     */
+    protected void validateName(ValidationCapability capability, NamedObject namedObject, String fqn, boolean exists,
+            NamedObject... parents) {
+        validateNameWithAlias(capability, namedObject, fqn, null, exists, parents);
     }
 
-    protected void validateOptionalColumnNames(List<String> columnNames, ValidationCapability c) {
-        validateOptionalColumnNames(columnNames, c, true);
+    /**
+     * @param capability
+     * @param name
+     */
+    protected void validateOptionalColumnName(ValidationCapability capability, String name) {
+        validateOptionalName(capability, NamedObject.column, name, null, true);
     }
 
-    protected void validateOptionalColumnNames(List<String> columnNames, ValidationCapability c, boolean exists) {
+    /**
+     * @param capability
+     * @param name
+     * @param alias
+     */
+    protected void validateOptionalColumnNameWithAlias(ValidationCapability capability, String name, String alias) {
+        validateOptionalName(capability, NamedObject.column, name, alias, true);
+    }
+
+    /**
+     * @param capability
+     * @param columnNames
+     * @param parents
+     */
+    protected void validateOptionalColumnNames(ValidationCapability capability, List<String> columnNames,
+            NamedObject... parents) {
+        validateOptionalColumnNames(capability, columnNames, true, parents);
+    }
+
+    /**
+     * @param capability
+     * @param columnNames
+     * @param exists
+     * @param parents
+     */
+    protected void validateOptionalColumnNames(ValidationCapability capability, List<String> columnNames,
+            boolean exists,
+            NamedObject... parents) {
         if (columnNames != null) {
-            columnNames.forEach(n -> validateOptionalName(n, NamedObject.column, c, exists));
+            columnNames.forEach(n -> validateOptionalName(capability, NamedObject.column, n, null, exists, parents));
         }
     }
 
-    protected void validateOptionalName(String name, NamedObject namedObject, ValidationCapability c) {
-        validateOptionalName(name, namedObject, c, true);
+    /**
+     * @param capability
+     * @param namedObject
+     * @param name
+     * @param alias
+     * @param parents
+     */
+    protected void validateOptionalNameWithAlias(ValidationCapability capability, NamedObject namedObject, String name,
+            String alias,
+            NamedObject... parents) {
+        validateOptionalName(capability, namedObject, name, alias, true, parents);
     }
 
-    protected void validateOptionalName(String name, NamedObject namedObject, ValidationCapability c, boolean exists) {
+    /**
+     * @param capability
+     * @param namedObject
+     * @param name
+     * @param parents
+     */
+    protected void validateOptionalName(ValidationCapability capability, NamedObject namedObject, String name,
+            NamedObject... parents) {
+        validateOptionalNameWithAlias(capability, namedObject, name, (String) null, parents);
+    }
+
+    /**
+     * @param capability
+     * @param namedObject
+     * @param name
+     * @param alias
+     * @param exists
+     * @param parents
+     */
+    protected void validateOptionalName(ValidationCapability capability, NamedObject namedObject, String name,
+            String alias,
+            boolean exists,
+            NamedObject... parents) {
         if (name != null) {
-            validateName(c, namedObject, name, exists);
+            validateNameWithAlias(capability, namedObject, name, alias, exists, parents);
         }
     }
 

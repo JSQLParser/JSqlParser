@@ -300,7 +300,6 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     @Override
     public void visit(Column tableColumn) {
         validateName(NamedObject.column, tableColumn.getFullyQualifiedName());
-        validateOptionalFromItem(tableColumn.getTable());
     }
 
     @Override

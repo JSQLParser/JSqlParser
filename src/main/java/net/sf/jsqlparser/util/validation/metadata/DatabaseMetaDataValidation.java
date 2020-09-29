@@ -22,31 +22,29 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
 
     /**
      * @param o
-     * @param fqn - fully qualified name
+     * @param named - fully qualified name
      * @throws ValidationException
      */
     @Override
     default void validate(ValidationContext context, Consumer<ValidationException> errorConsumer) {
-        String fqn = context.get(MetadataContext.fqn, String.class);
-        NamedObject namedObject = context.get(MetadataContext.namedobject, NamedObject.class);
+        Named named = context.get(MetadataContext.named, Named.class);
         boolean checkForExists = context.get(MetadataContext.exists, Boolean.class);
         try {
-            boolean exists = exists(namedObject, fqn);
+            boolean exists = exists(named);
             if (exists ^ checkForExists) { // XOR
-                errorConsumer.accept(getErrorMessage(fqn, checkForExists));
+                errorConsumer.accept(getErrorMessage(named, checkForExists));
             }
         } catch (ValidationException ve) {
             errorConsumer.accept(ve);
         } catch (UnsupportedOperationException uoe) {
             // should we log this on a trace level?
         } catch (Exception e) {
-            errorConsumer.accept(getUnexpectedErrorMessage(fqn, namedObject, e));
+            errorConsumer.accept(getUnexpectedErrorMessage(named, e));
         }
     }
 
     /**
-     * @param o
-     * @param fqn
+     * @param named
      * @return <code>true</code>, if the object exists, <code>false</code>
      *         otherwise.
      * @throws ValidationException           - on specific errors like
@@ -57,23 +55,25 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
      * @throws UnsupportedOperationException - if testing of given
      *                                       {@link NamedObject} is not supported.
      */
-    public boolean exists(NamedObject o, String fqn);
+    public boolean exists(Named named);
 
     /**
-     * @param fqn
-     * @return
+     * @param named
+     * @param checkForExists
+     * @return a new {@link ValidationException}
      */
-    default ValidationException getErrorMessage(String fqn, boolean checkForExists) {
-        return toError(String.format("%s does %sexist.", fqn, checkForExists ? "not " : ""));
+    default ValidationException getErrorMessage(Named named, boolean checkForExists) {
+        return toError(String.format("%s does %sexist.", named.getFqn(), checkForExists ? "not " : ""));
     }
 
     /**
-     * @param fqn
-     * @return
+     * @param named
+     * @param cause
+     * @return a new {@link ValidationException}
      */
-    default ValidationException getUnexpectedErrorMessage(String fqn, NamedObject namedObject, Exception e) {
+    default ValidationException getUnexpectedErrorMessage(Named named, Exception cause) {
         return new UnexpectedValidationException(
-                fqn + ": cannot validate " + namedObject + "-name. detail: " + e.getMessage(), e);
+                named.getFqn() + ": cannot validate " + named.getNamedObject() + "-name. detail: " + cause.getMessage(), cause);
     }
 
     @Override

@@ -14,7 +14,6 @@ import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
-import net.sf.jsqlparser.util.validation.ValidationUtil;
 
 /**
  * @author gitmotte
@@ -24,12 +23,11 @@ public class CreateIndexValidator extends AbstractValidator<CreateIndex> {
     @Override
     public void validate(CreateIndex createIndex) {
         Index index = createIndex.getIndex();
-        String tableFqn = createIndex.getTable().getFullyQualifiedName();
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.createIndex);
-            validateName(c, NamedObject.table, tableFqn);
+            validateName(c, NamedObject.table, createIndex.getTable().getFullyQualifiedName());
             validateName(c, NamedObject.index, index.getName(), false);
-            validateOptionalColumnNames(ValidationUtil.concat(tableFqn, index.getColumnsNames()), c);
+            validateOptionalColumnNames(c, index.getColumnsNames(), NamedObject.table);
         }
     }
 

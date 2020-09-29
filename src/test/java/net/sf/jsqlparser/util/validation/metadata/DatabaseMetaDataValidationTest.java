@@ -14,7 +14,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.UUID;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
@@ -29,7 +28,11 @@ public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
     public void setupDatabase() throws SQLException {
         databaseName = "testdb_" + Math.abs(UUID.randomUUID().hashCode());
         connection = DriverManager.getConnection("jdbc:h2:mem:" + databaseName);
-        connection.prepareStatement("CREATE TABLE mytable (id bigint, description varchar(100), active boolean);")
+        connection
+        .prepareStatement(
+                "CREATE TABLE mytable (id bigint, ref bigint, description varchar(100), active boolean);")
+        .execute();
+        connection.prepareStatement("CREATE TABLE mysecondtable (id bigint, description varchar(100), active boolean);")
         .execute();
         connection.prepareStatement("CREATE VIEW myview AS SELECT * FROM mytable").execute();
     }
@@ -40,7 +43,7 @@ public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
         JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
         validateNoErrors(sql, 1, DatabaseType.H2, meta); // no errors
         connection.prepareStatement(sql).execute();
-        validateMetadata(sql, 1, 1, meta.clearCache(), false, "mytable.price"); // column exists
+        validateMetadata(sql, 1, 1, meta.clearCache(), false, "price"); // column exists
     }
 
     @Test
@@ -51,7 +54,6 @@ public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
     }
 
     @Test
-    @Ignore // TODO
     public void testValidationMetadataInsert() throws JSQLParserException, SQLException {
         String sql = "INSERT INTO mytable (id, description, active) VALUES (1, 'test', 1)";
         JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
@@ -59,9 +61,36 @@ public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
     }
 
     @Test
-    @Ignore // TODO
-    public void testValidationMetadataSelectWithColumns() throws JSQLParserException, SQLException {
+    public void testValidationMetadataSelectWithColumnsAndAlias() throws JSQLParserException, SQLException {
         String sql = "SELECT * FROM mytable t JOIN mysecondtable t2 WHERE t.ref = t2.id AND t.id = ?";
+        JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
+        validateNoErrors(sql, 1, DatabaseType.H2, meta); // no errors
+    }
+
+    @Test
+    public void testValidationMetadataUpdate() throws JSQLParserException, SQLException {
+        String sql = "UPDATE mytable t SET t.ref = 2 WHERE t.id = 1";
+        JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
+        validateNoErrors(sql, 1, DatabaseType.H2, meta); // no errors
+    }
+
+    @Test
+    public void testValidationMetadataDelete() throws JSQLParserException, SQLException {
+        String sql = "DELETE FROM mytable t WHERE t.id = 1 and ref = 2";
+        JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
+        validateNoErrors(sql, 1, DatabaseType.H2, meta); // no errors
+    }
+
+    @Test
+    public void testValidationMetadataDeleteError() throws JSQLParserException, SQLException {
+        String sql = "DELETE FROM mytable t WHERE t.id = 1 and x.ref = 2";
+        JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
+        validateMetadata(sql, 1, 1, meta, true, "x.ref");
+    }
+
+    @Test
+    public void testValidationMetadataSelectWithColumns() throws JSQLParserException, SQLException {
+        String sql = "SELECT * FROM mytable JOIN mysecondtable WHERE mytable.ref = mysecondtable.id AND mysecondtable.id = ?";
         JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
         validateNoErrors(sql, 1, DatabaseType.H2, meta); // no errors
     }
@@ -72,6 +101,8 @@ public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
         JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
         validateNoErrors(sql, 1, DatabaseType.H2, meta);
         sql = String.format("SELECT * FROM public.mytable", databaseName);
+        validateNoErrors(sql, 1, DatabaseType.H2, meta.clearCache());
+        sql = String.format("SELECT public.mytable.id FROM mytable", databaseName);
         validateNoErrors(sql, 1, DatabaseType.H2, meta.clearCache());
     }
 

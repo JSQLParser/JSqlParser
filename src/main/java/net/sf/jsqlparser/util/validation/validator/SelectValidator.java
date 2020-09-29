@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.List;
-
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.parser.feature.Feature;
@@ -44,6 +43,7 @@ import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
+import net.sf.jsqlparser.util.validation.ValidationUtil;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
@@ -146,7 +146,8 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     @Override
     public void visit(Table table) {
-        validateName(NamedObject.table, table.getFullyQualifiedName());
+        validateNameWithAlias(NamedObject.table, table.getFullyQualifiedName(),
+                ValidationUtil.getAlias(table.getAlias()));
 
         validateOptional(table.getPivot(), p -> p.accept(this));
         validateOptional(table.getUnPivot(), up -> up.accept(this));

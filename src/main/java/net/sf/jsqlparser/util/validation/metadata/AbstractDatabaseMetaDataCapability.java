@@ -10,10 +10,11 @@
 package net.sf.jsqlparser.util.validation.metadata;
 
 import java.sql.Connection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 import java.util.function.UnaryOperator;
 
 /**
@@ -27,40 +28,8 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
 
     protected Connection connection;
     protected boolean cacheResults;
-    protected Map<CacheKey, Boolean> results = new HashMap<>();
+    protected Map<Named, Boolean> results = new HashMap<>();
     protected UnaryOperator<String> namesLookup = NamesLookup.NO_TRANSFORMATION;
-
-    protected static class CacheKey {
-        final NamedObject o;
-        final String name;
-
-        public CacheKey(NamedObject o, String name) {
-            this.o = o;
-            this.name = name;
-        }
-
-        @Override
-        public int hashCode() {
-            return o.hashCode() + name.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() == obj.getClass()) {
-                CacheKey other = (CacheKey) obj;
-                return o.equals(other.o) && name.equals(other.name);
-            } else {
-                return false;
-            }
-        }
-
-    }
 
     /**
      * With caching enabled - see {@link #isCacheResults()}
@@ -104,89 +73,92 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
     }
 
     @Override
-    public final boolean exists(NamedObject namedObject, String name) {
-        Objects.requireNonNull(namedObject);
-        Objects.requireNonNull(name);
+    public final boolean exists(Named named) {
+        Objects.requireNonNull(named);
 
-        String lookup = getNamesLookup().apply(name);
+        named.setFqnLookup(getNamesLookup().apply(named.getFqn()));
+        named.setAliasLookup(getNamesLookup().apply(named.getAlias()));
 
-        switch (namedObject) {
+        switch (named.getNamedObject()) {
         case table:
-            return cache(namedObject, lookup, this::tableExists);
+            return cache(named, this::tableExists);
         case column:
-            return cache(namedObject, lookup, this::columnExists);
+            return cache(named, this::columnExists);
         case schema:
-            return cache(namedObject, lookup, this::schemaExists);
+            return cache(named, this::schemaExists);
         case index:
-            return cache(namedObject, lookup, this::indexExists);
+            return cache(named, this::indexExists);
         case database:
-            return cache(namedObject, lookup, this::databaseExists);
+            return cache(named, this::databaseExists);
         case constraint:
         case uniqueConstraint:
-            return cache(namedObject, lookup, this::constraintExists);
+            return cache(named, this::constraintExists);
         case view:
-            return cache(namedObject, lookup, this::viewExists);
+            return cache(named, this::viewExists);
         case procedure:
-            return cache(namedObject, lookup, this::procedureExists);
+            return cache(named, this::procedureExists);
         case user:
-            return cache(namedObject, lookup, this::userExists);
+            return cache(named, this::userExists);
         case role:
-            return cache(namedObject, lookup, this::roleExists);
+            return cache(named, this::roleExists);
         default:
         }
-        throw new UnsupportedOperationException(name + ": evaluation of " + namedObject + "-name not implemented.");
+        throw new UnsupportedOperationException(
+                named.getFqn() + ": evaluation of " + named.getNamedObject() + "-name not implemented.");
     }
 
-    protected boolean cache(NamedObject o, String name, Predicate<String> fn) {
+    protected boolean cache(Named named, BiPredicate<Map<Named, Boolean>, Named> fn) {
+        Map<Named, Boolean> m = Collections.unmodifiableMap(results);
         if (cacheResults) {
-            return results.computeIfAbsent(new CacheKey(o, name), k -> fn.test(k.name));
+            return results.computeIfAbsent(named, k -> fn.test(m, k));
         } else {
-            return fn.test(name);
+            return fn.test(m, named);
         }
     }
 
-    protected boolean roleExists(String name) {
-        throw unsupported(NamedObject.role, name);
+    protected boolean roleExists(Map<Named, Boolean> results, Named name) {
+        throw unsupported(name);
     }
 
-    protected boolean userExists(String name) {
-        throw unsupported(NamedObject.user, name);
+    protected boolean userExists(Map<Named, Boolean> results, Named name) {
+        throw unsupported(name);
     }
 
-    protected boolean procedureExists(String name) {
-        throw unsupported(NamedObject.procedure, name);
+    protected boolean procedureExists(Map<Named, Boolean> results, Named name) {
+        throw unsupported(name);
     }
 
-    protected boolean databaseExists(String name) {
-        throw unsupported(NamedObject.database, name);
+    protected boolean databaseExists(Map<Named, Boolean> results, Named name) {
+        throw unsupported(name);
     }
 
-    protected boolean constraintExists(String name) {
-        throw unsupported(NamedObject.constraint, name);
+    protected boolean constraintExists(Map<Named, Boolean> results, Named name) {
+        throw unsupported(name);
     }
 
-    protected boolean viewExists(String name) {
-        throw unsupported(NamedObject.view, name);
+    protected boolean viewExists(Map<Named, Boolean> results, Named name) {
+        throw unsupported(name);
     }
 
-    protected boolean indexExists(String name) {
-        throw unsupported(NamedObject.index, name);
+    protected boolean indexExists(Map<Named, Boolean> results, Named name) {
+        throw unsupported(name);
     }
 
-    protected boolean schemaExists(String name) {
-        throw unsupported(NamedObject.schema, name);
+    protected boolean schemaExists(Map<Named, Boolean> results, Named name) {
+        throw unsupported(name);
     }
 
-    protected boolean columnExists(String name) {
-        throw unsupported(NamedObject.column, name);
+    protected boolean columnExists(Map<Named, Boolean> results, Named name) {
+        throw unsupported(name);
     }
 
-    protected boolean tableExists(String name) {
-        throw unsupported(NamedObject.table, name);
+    protected boolean tableExists(Map<Named, Boolean> results, Named name) {
+        throw unsupported(name);
     }
 
-    protected UnsupportedOperationException unsupported(NamedObject namedObject, String name) {
-        return new UnsupportedOperationException(name + ": evaluation of " + namedObject + "-name not supported.");
+    protected UnsupportedOperationException unsupported(Named name) {
+        return new UnsupportedOperationException(
+                name.getFqn() + ": evaluation of " + name.getNamedObject() + "-name not supported.");
     }
 
 }

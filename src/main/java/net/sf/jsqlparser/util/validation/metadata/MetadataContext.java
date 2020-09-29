@@ -13,13 +13,9 @@ import net.sf.jsqlparser.util.validation.ContextKey;
 
 public enum MetadataContext implements ContextKey {
     /**
-     * @see NamedObject
+     * @see {@link Named} 
      */
-    namedobject,
-    /**
-     * the fully qualified name
-     */
-    fqn,
+    named,
     /**
      * <code>true</code>, check for existence,
      * <code>false</code>, check for non-existence

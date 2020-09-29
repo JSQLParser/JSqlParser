@@ -16,8 +16,14 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.util.validation.UnexpectedValidationException;
 import net.sf.jsqlparser.util.validation.ValidationException;
 
@@ -29,6 +35,11 @@ import net.sf.jsqlparser.util.validation.ValidationException;
  *
  */
 public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapability {
+
+    private static final String VIEW = "VIEW";
+    private static final String TABLE = "TABLE";
+    private static final String COLUMN = "COLUMN";
+    private static final Logger LOG = Logger.getLogger(JdbcDatabaseMetaDataCapability.class.getName());
 
     /**
      * @param connection
@@ -49,37 +60,69 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
     }
 
     @Override
-    protected boolean viewExists(String name) throws ValidationException {
-        return jdbcMetadataTables(NamedObject.view, name, new String[] { "VIEW" });
-    }
-
-    @Override
-    protected boolean columnExists(String name) throws ValidationException {
-        String[] names = splitAndValidateMinMax(NamedObject.column, name, 2, 4);
+    protected boolean columnExists(Map<Named, Boolean> results, Named named) throws ValidationException {
+        String[] names = splitAndValidateMinMax(COLUMN, named.getFqnLookup(), 1, 4);
         String columnName = names[names.length - 1];
-        int lastIndexOf = name.lastIndexOf(".");
-        String fromClause = name.substring(0, lastIndexOf);
-        String query = String.format("SELECT * FROM %s", fromClause);
-        try (PreparedStatement ps = connection.prepareStatement(query)) {
-            ResultSetMetaData metaData = ps.getMetaData();
-            for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                if (columnName.equalsIgnoreCase(metaData.getColumnLabel(i))) {
-                    return true;
+
+        List<String> possibleParents = null;
+        List<NamedObject> parents = named.getParents().isEmpty() ? Arrays.asList(NamedObject.table)
+                : named.getParents();
+
+        int lastIndexOf = named.getFqnLookup().lastIndexOf(".");
+        String fqnParent = lastIndexOf != -1 ? named.getFqnLookup().substring(0, lastIndexOf) : null;
+
+        // try to match parents in results
+        Predicate<? super Named> predicate = null;
+        if (fqnParent != null) {
+            predicate = n -> parents.contains(n.getNamedObject())
+                    && (fqnParent.equals(n.getAliasLookup()) || fqnParent.equals(n.getFqnLookup()));
+        } else {
+            predicate = n -> parents.contains(n.getNamedObject());
+        }
+        possibleParents = results.keySet().stream().filter(predicate).map(Named::getFqnLookup)
+                .collect(Collectors.toList());
+
+        if (possibleParents.isEmpty()) {
+            possibleParents = Collections.singletonList(fqnParent);
+        }
+
+        for (String fqn : possibleParents) {
+            if (existsFromItem(results, fqn)) {
+                String query = String.format("SELECT * FROM %s", fqn);
+                try (PreparedStatement ps = connection.prepareStatement(query)) {
+                    ResultSetMetaData metaData = ps.getMetaData();
+                    for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                        if (columnName.equalsIgnoreCase(metaData.getColumnLabel(i))) {
+                            return true;
+                        }
+                    }
+                } catch (SQLException e) {
+                    throw createDatabaseException(fqn, COLUMN, e);
                 }
+            } else if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine(String.format("%s does not exists, cannot evaluate COLUMN from %s", fqn, named.getFqn()));
             }
-        } catch (SQLException e) {
-            throw createDatabaseException(name, new String[] { "COLUMN" }, e);
         }
         return false;
     }
 
-    @Override
-    protected boolean tableExists(String name) throws ValidationException {
-        return jdbcMetadataTables(NamedObject.table, name, new String[] { "TABLE" });
+    private boolean existsFromItem(Map<Named, Boolean> results, String fqn) {
+        Named named = new Named(NamedObject.table, fqn).setFqnLookup(fqn);
+        return viewExists(results, named) || tableExists(results, named);
     }
 
-    protected boolean jdbcMetadataTables(NamedObject named, String name, String[] types) throws ValidationException {
-        String[] names = splitAndValidateMinMax(named, name, 1, 3);
+    @Override
+    protected boolean viewExists(Map<Named, Boolean> results, Named named) throws ValidationException {
+        return jdbcMetadataTables(named, VIEW);
+    }
+
+    @Override
+    protected boolean tableExists(Map<Named, Boolean> results, Named named) throws ValidationException {
+        return jdbcMetadataTables(named, TABLE);
+    }
+
+    protected boolean jdbcMetadataTables(Named named, String type) throws ValidationException {
+        String[] names = splitAndValidateMinMax(type, named.getFqnLookup(), 1, 3);
 
         String catalog = null;
         String schemaPattern = null;
@@ -97,7 +140,8 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
 
 
         List<String> tables = new ArrayList<>();
-        try (ResultSet rs = connection.getMetaData().getTables(catalog, schemaPattern, tableNamePattern, types)) {
+        try (ResultSet rs = connection.getMetaData().getTables(catalog, schemaPattern, tableNamePattern,
+                new String[] { type })) {
             while (rs.next()) {
                 String tableCat = rs.getString("TABLE_CAT");
                 String tableSchem = rs.getString("TABLE_SCHEM");
@@ -119,33 +163,33 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
                 }
             }
         } catch (SQLException e) {
-            throw createDatabaseException(name, types, e);
+            throw createDatabaseException(named.getFqn(), type, e);
         }
 
         return !tables.isEmpty();
     }
 
     /**
-     * Split name by "." and validate expected path-elements
+     * Split fqn by "." and validate expected path-elements
      *
-     * @param named
-     * @param name
+     * @param namedObject
+     * @param fqn
      * @param min
      * @param max
-     * @return
+     * @return the fqn-parts
      */
-    private String[] splitAndValidateMinMax(NamedObject named, String name, int min, int max) {
-        String[] names = name.split("\\.");
+    private String[] splitAndValidateMinMax(String type, String fqn, int min, int max) {
+        String[] names = fqn.split("\\.");
         if (names.length < min || names.length > max) {
             throw new UnexpectedValidationException(String.format(
-                    "%s path-elements count needs to be between %s and %s for %s", name, min, max, named));
+                    "%s path-elements count needs to be between %s and %s for %s", fqn, min, max, type));
         }
         return names;
     }
 
-    private DatabaseException createDatabaseException(String name, String[] types, SQLException e) {
-        throw new DatabaseException(String.format(
-                "cannot evaluate existence of %s by name '%s'", Arrays.toString(types), name), e);
+    private DatabaseException createDatabaseException(String fqn, String type, SQLException e) {
+        return new DatabaseException(String.format(
+                "cannot evaluate existence of %s by name '%s'", type, fqn), e);
     }
 
 }
