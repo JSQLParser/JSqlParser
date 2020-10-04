@@ -5092,9 +5092,10 @@ CreateFunctionalStatement CreateFunctionStatement():
   CreateFunctionalStatement type = null;
   List<String> tokens = new LinkedList<String>();
   String statementType = null;
+  boolean orReplace = false;
 }
 {
-  <K_CREATE>
+  <K_CREATE> [<K_OR> <K_REPLACE> { orReplace = true; } ]
   (
    <K_FUNCTION> { statementType = "FUNCTION"; }
    |
@@ -5103,10 +5104,10 @@ CreateFunctionalStatement CreateFunctionStatement():
   tokens=captureRest()
   {
     if(statementType.equals("FUNCTION")) {
-      type = new CreateFunction(tokens);
+      type = new CreateFunction(orReplace, tokens);
     }
     if(statementType.equals("PROCEDURE")) {
-      type = new CreateProcedure(tokens);
+      type = new CreateProcedure(orReplace, tokens);
     }
 
     return type;

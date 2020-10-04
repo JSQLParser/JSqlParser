@@ -72,4 +72,16 @@ public class CreateFunctionalStatementTest {
         assertThat(stm).isNotNull();
         assertThat(stm.formatDeclaration()).contains("remove_emp ( employee_id NUMBER )");
     }
+    
+    @Test
+    public void createOrReplaceFunctionMinimal() throws JSQLParserException {
+        String statement = "CREATE OR REPLACE FUNCTION foo RETURN 5; END;";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(
+                new CreateFunction()
+                        .withOrReplace(true)
+                        .addFunctionDeclarationParts("foo")
+                        .addFunctionDeclarationParts(Arrays.asList("RETURN 5;", "END;")),
+                statement);
+    }
 }
