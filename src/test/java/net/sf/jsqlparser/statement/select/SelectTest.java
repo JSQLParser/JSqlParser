@@ -4291,4 +4291,9 @@ public class SelectTest {
     public void testKeyWordExceptIssue1040() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT FORMAT(100000, 2)");
     }
+    
+    @Test
+    public void testKeyWordExceptIssue1044() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT SP_ID FROM ST_PR WHERE INSTR(',' || SP_OFF || ',', ',' || ? || ',') > 0");
+    }
 }
