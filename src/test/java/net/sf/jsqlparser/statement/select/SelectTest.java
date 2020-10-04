@@ -4296,4 +4296,14 @@ public class SelectTest {
     public void testKeyWordExceptIssue1044() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT SP_ID FROM ST_PR WHERE INSTR(',' || SP_OFF || ',', ',' || ? || ',') > 0");
     }
+    
+    @Test
+    public void testKeyWordExceptIssue1055() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT INTERVAL ? DAY");
+    }
+    
+    @Test
+    public void testKeyWordExceptIssue1055_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE A.end_time > now() AND A.end_time <= date_add(now(), INTERVAL ? DAY)");
+    }
 }
