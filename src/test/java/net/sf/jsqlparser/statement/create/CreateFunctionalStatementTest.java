@@ -77,11 +77,10 @@ public class CreateFunctionalStatementTest {
     public void createOrReplaceFunctionMinimal() throws JSQLParserException {
         String statement = "CREATE OR REPLACE FUNCTION foo RETURN 5; END;";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(
-                new CreateFunction()
-                        .withOrReplace(true)
-                        .addFunctionDeclarationParts("foo")
-                        .addFunctionDeclarationParts(Arrays.asList("RETURN 5;", "END;")),
-                statement);
+        final CreateFunction func = new CreateFunction()
+                .addFunctionDeclarationParts("foo")
+                .addFunctionDeclarationParts(Arrays.asList("RETURN 5;", "END;"));
+        func.setOrReplace(true);
+        assertDeparse(func, statement);
     }
 }

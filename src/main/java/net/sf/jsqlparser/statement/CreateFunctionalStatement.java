@@ -57,9 +57,8 @@ public abstract class CreateFunctionalStatement implements Statement {
         return kind;
     }
     
-    public CreateFunctionalStatement withOrReplace(boolean orReplace) {
+    public void setOrReplace(boolean orReplace) {
         this.orReplace = orReplace;
-        return this;
     }
 
     /**
