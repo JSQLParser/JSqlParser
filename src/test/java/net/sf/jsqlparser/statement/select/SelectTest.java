@@ -4311,4 +4311,14 @@ public class SelectTest {
     public void testKeyWordExceptIssue1055_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE A.end_time > now() AND A.end_time <= date_add(now(), INTERVAL ? DAY)");
     }
+    
+    @Test
+    public void testIssue1062() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE temperature.timestamp <= @to AND temperature.timestamp >= @from");
+    }
+    
+    @Test
+    public void testIssue1062_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE temperature.timestamp <= @until AND temperature.timestamp >= @from");
+    }
 }
