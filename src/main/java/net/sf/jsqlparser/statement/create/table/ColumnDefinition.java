@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
@@ -25,9 +28,13 @@ public class ColumnDefinition {
     public ColumnDefinition() {
     }
 
-    public ColumnDefinition(String columnName, ColDataType colDataType, List<String> columnSpecs) {
+    public ColumnDefinition(String columnName, ColDataType colDataType) {
         this.columnName = columnName;
         this.colDataType = colDataType;
+    }
+
+    public ColumnDefinition(String columnName, ColDataType colDataType, List<String> columnSpecs) {
+        this(columnName, colDataType);
         this.columnSpecs = columnSpecs;
     }
 
@@ -59,9 +66,36 @@ public class ColumnDefinition {
     public String toString() {
         return columnName + " " + toStringDataTypeAndSpec();
     }
-    
+
     public String toStringDataTypeAndSpec() {
         return colDataType + ((columnSpecs != null && !columnSpecs.isEmpty())? " " + PlainSelect.
                 getStringList(columnSpecs, false, false) : "");
+    }
+
+    public ColumnDefinition withColumnName(String columnName) {
+        this.setColumnName(columnName);
+        return this;
+    }
+
+    public ColumnDefinition withColDataType(ColDataType colDataType) {
+        this.setColDataType(colDataType);
+        return this;
+    }
+
+    public ColumnDefinition withColumnSpecs(List<String> columnSpecs) {
+        this.setColumnSpecs(columnSpecs);
+        return this;
+    }
+
+    public ColumnDefinition addColumnSpecs(String... columnSpecs) {
+        List<String> collection = Optional.ofNullable(getColumnSpecs()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columnSpecs);
+        return this.withColumnSpecs(collection);
+    }
+
+    public ColumnDefinition addColumnSpecs(Collection<String> columnSpecs) {
+        List<String> collection = Optional.ofNullable(getColumnSpecs()).orElseGet(ArrayList::new);
+        collection.addAll(columnSpecs);
+        return this.withColumnSpecs(collection);
     }
 }

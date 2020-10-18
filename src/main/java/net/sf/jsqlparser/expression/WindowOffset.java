@@ -66,4 +66,19 @@ public class WindowOffset {
         }
         return buffer.toString();
     }
+
+    public WindowOffset withExpression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
+
+    public WindowOffset withType(Type type) {
+        this.setType(type);
+        return this;
+    }
+
+    public <E extends Expression> E getExpression(Class<E> type) {
+        return type.cast(getExpression());
+    }
+
 }

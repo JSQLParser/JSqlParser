@@ -47,4 +47,18 @@ public class ExistsExpression extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         return getStringExpression() + " " + rightExpression.toString();
     }
+
+    public ExistsExpression withRightExpression(Expression rightExpression) {
+        this.setRightExpression(rightExpression);
+        return this;
+    }
+
+    public ExistsExpression withNot(boolean not) {
+        this.setNot(not);
+        return this;
+    }
+
+    public <E extends Expression> E getRightExpression(Class<E> type) {
+        return type.cast(getRightExpression());
+    }
 }

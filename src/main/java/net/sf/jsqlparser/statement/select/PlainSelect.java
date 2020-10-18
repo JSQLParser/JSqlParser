@@ -10,9 +10,11 @@
 package net.sf.jsqlparser.statement.select;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -75,6 +77,11 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return where;
     }
 
+    public PlainSelect withFromItem(FromItem item) {
+        this.setFromItem(item);
+        return this;
+    }
+
     public void setFromItem(FromItem item) {
         fromItem = item;
     }
@@ -83,15 +90,19 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.intoTables = intoTables;
     }
 
+    public PlainSelect withSelectItems(List<SelectItem> list) {
+        this.setSelectItems(list);
+        return this;
+    }
+
     public void setSelectItems(List<SelectItem> list) {
         selectItems = list;
     }
 
-    public void addSelectItems(SelectItem... items) {
-        if (selectItems == null) {
-            selectItems = new ArrayList<SelectItem>();
-        }
-        Collections.addAll(selectItems, items);
+    public PlainSelect addSelectItems(SelectItem... items) {
+        List<SelectItem> list = Optional.ofNullable(getSelectItems()).orElseGet(ArrayList::new);
+        Collections.addAll(list, items);
+        return withSelectItems(list);
     }
 
     public void setWhere(Expression where) {
@@ -105,6 +116,17 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
      */
     public List<Join> getJoins() {
         return joins;
+    }
+
+    public PlainSelect addJoins(Join... joins) {
+        List<Join> list = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
+        Collections.addAll(list, joins);
+        return withJoins(list);
+    }
+
+    public PlainSelect withJoins(List<Join> joins) {
+        this.setJoins(joins);
+        return this;
     }
 
     public void setJoins(List<Join> list) {
@@ -205,8 +227,8 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     /**
-     * A list of {@link Expression}s of the GROUP BY clause. It is null in case there is no GROUP BY
-     * clause
+     * A list of {@link Expression}s of the GROUP BY clause. It is null in case
+     * there is no GROUP BY clause
      *
      * @return a list of {@link Expression}s
      */
@@ -218,11 +240,10 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.groupBy = groupBy;
     }
 
-    public void addGroupByColumnReference(Expression expr) {
-        if (groupBy == null) {
-            groupBy = new GroupByElement();
-        }
+    public PlainSelect addGroupByColumnReference(Expression expr) {
+        groupBy = Optional.ofNullable(groupBy).orElseGet(GroupByElement::new);
         groupBy.addGroupByExpression(expr);
+        return this;
     }
 
     public OracleHierarchicalExpression getOracleHierarchical() {
@@ -406,7 +427,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
                 sql.append(optimizeFor);
             }
         } else {
-            //without from
+            // without from
             if (where != null) {
                 sql.append(" WHERE ").append(where);
             }
@@ -447,8 +468,8 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     /**
-     * List the toString out put of the objects in the List comma separated. If the List is null or
-     * empty an empty string is returned.
+     * List the toString out put of the objects in the List comma separated. If the
+     * List is null or empty an empty string is returned.
      *
      * The same as getStringList(list, true, false)
      *
@@ -461,17 +482,17 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     /**
-     * List the toString out put of the objects in the List that can be comma separated. If the List
-     * is null or empty an empty string is returned.
+     * List the toString out put of the objects in the List that can be comma
+     * separated. If the List is null or empty an empty string is returned.
      *
-     * @param list list of objects with toString methods
-     * @param useComma true if the list has to be comma separated
+     * @param list        list of objects with toString methods
+     * @param useComma    true if the list has to be comma separated
      * @param useBrackets true if the list has to be enclosed in brackets
      * @return comma separated list of the elements in the list
      */
     public static String getStringList(List<?> list, boolean useComma, boolean useBrackets) {
         StringBuilder ans = new StringBuilder();
-//        String ans = "";
+        //        String ans = "";
         String comma = ",";
         if (!useComma) {
             comma = "";
@@ -479,21 +500,31 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         if (list != null) {
             if (useBrackets) {
                 ans.append("(");
-//                ans += "(";
+                //                ans += "(";
             }
 
             for (int i = 0; i < list.size(); i++) {
                 ans.append(list.get(i)).append((i < list.size() - 1) ? comma + " " : "");
-//                ans += "" + list.get(i) + ((i < list.size() - 1) ? comma + " " : "");
+                //                ans += "" + list.get(i) + ((i < list.size() - 1) ? comma + " " : "");
             }
 
             if (useBrackets) {
                 ans.append(")");
-//                ans += ")";
+                //                ans += ")";
             }
         }
 
         return ans.toString();
+    }
+
+    public PlainSelect withMySqlSqlCalcFoundRows(boolean mySqlCalcFoundRows) {
+        this.setMySqlSqlCalcFoundRows(mySqlCalcFoundRows);
+        return this;
+    }
+
+    public PlainSelect withMySqlSqlNoCache(boolean sqlNoCacheFlagSet) {
+        this.setMySqlSqlNoCache(sqlNoCacheFlagSet);
+        return this;
     }
 
     public void setMySqlSqlCalcFoundRows(boolean mySqlCalcFoundRows) {
@@ -518,5 +549,168 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     public boolean isNoWait() {
         return this.noWait;
+    }
+
+    public PlainSelect withDistinct(Distinct distinct) {
+        this.setDistinct(distinct);
+        return this;
+    }
+
+    public PlainSelect withIntoTables(List<Table> intoTables) {
+        this.setIntoTables(intoTables);
+        return this;
+    }
+
+    public PlainSelect withWhere(Expression where) {
+        this.setWhere(where);
+        return this;
+    }
+
+    public PlainSelect withOrderByElements(List<OrderByElement> orderByElements) {
+        this.setOrderByElements(orderByElements);
+        return this;
+    }
+
+    public PlainSelect withLimit(Limit limit) {
+        this.setLimit(limit);
+        return this;
+    }
+
+    public PlainSelect withOffset(Offset offset) {
+        this.setOffset(offset);
+        return this;
+    }
+
+    public PlainSelect withFetch(Fetch fetch) {
+        this.setFetch(fetch);
+        return this;
+    }
+
+    public PlainSelect withOptimizeFor(OptimizeFor optimizeFor) {
+        this.setOptimizeFor(optimizeFor);
+        return this;
+    }
+
+    public PlainSelect withSkip(Skip skip) {
+        this.setSkip(skip);
+        return this;
+    }
+
+    public PlainSelect withMySqlHintStraightJoin(boolean mySqlHintStraightJoin) {
+        this.setMySqlHintStraightJoin(mySqlHintStraightJoin);
+        return this;
+    }
+
+    public PlainSelect withFirst(First first) {
+        this.setFirst(first);
+        return this;
+    }
+
+    public PlainSelect withTop(Top top) {
+        this.setTop(top);
+        return this;
+    }
+
+    public PlainSelect withOracleHierarchical(OracleHierarchicalExpression oracleHierarchical) {
+        this.setOracleHierarchical(oracleHierarchical);
+        return this;
+    }
+
+    public PlainSelect withOracleHint(OracleHint oracleHint) {
+        this.setOracleHint(oracleHint);
+        return this;
+    }
+
+    public PlainSelect withOracleSiblings(boolean oracleSiblings) {
+        this.setOracleSiblings(oracleSiblings);
+        return this;
+    }
+
+    public PlainSelect withForUpdate(boolean forUpdate) {
+        this.setForUpdate(forUpdate);
+        return this;
+    }
+
+    public PlainSelect withForUpdateTable(Table forUpdateTable) {
+        this.setForUpdateTable(forUpdateTable);
+        return this;
+    }
+
+    public PlainSelect withUseBrackets(boolean useBrackets) {
+        this.setUseBrackets(useBrackets);
+        return this;
+    }
+
+    public PlainSelect withForXmlPath(String forXmlPath) {
+        this.setForXmlPath(forXmlPath);
+        return this;
+    }
+
+    public PlainSelect withKsqlWindow(KSQLWindow ksqlWindow) {
+        this.setKsqlWindow(ksqlWindow);
+        return this;
+    }
+
+    public PlainSelect withNoWait(boolean noWait) {
+        this.setNoWait(noWait);
+        return this;
+    }
+
+    public PlainSelect withHaving(Expression having) {
+        this.setHaving(having);
+        return this;
+    }
+
+    public PlainSelect withWait(Wait wait) {
+        this.setWait(wait);
+        return this;
+    }
+
+    public PlainSelect addSelectItems(Collection<? extends SelectItem> selectItems) {
+        List<SelectItem> collection = Optional.ofNullable(getSelectItems()).orElseGet(ArrayList::new);
+        collection.addAll(selectItems);
+        return this.withSelectItems(collection);
+    }
+
+    public PlainSelect addIntoTables(Table... intoTables) {
+        List<Table> collection = Optional.ofNullable(getIntoTables()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, intoTables);
+        return this.withIntoTables(collection);
+    }
+
+    public PlainSelect addIntoTables(Collection<? extends Table> intoTables) {
+        List<Table> collection = Optional.ofNullable(getIntoTables()).orElseGet(ArrayList::new);
+        collection.addAll(intoTables);
+        return this.withIntoTables(collection);
+    }
+
+    public PlainSelect addJoins(Collection<? extends Join> joins) {
+        List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
+        collection.addAll(joins);
+        return this.withJoins(collection);
+    }
+
+    public PlainSelect addOrderByElements(OrderByElement... orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, orderByElements);
+        return this.withOrderByElements(collection);
+    }
+
+    public PlainSelect addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        collection.addAll(orderByElements);
+        return this.withOrderByElements(collection);
+    }
+
+    public <E extends FromItem> E getFromItem(Class<E> type) {
+        return type.cast(getFromItem());
+    }
+
+    public <E extends Expression> E getWhere(Class<E> type) {
+        return type.cast(getWhere());
+    }
+
+    public <E extends Expression> E getHaving(Class<E> type) {
+        return type.cast(getHaving());
     }
 }

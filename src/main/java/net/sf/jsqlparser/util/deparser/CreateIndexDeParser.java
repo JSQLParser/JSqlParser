@@ -14,14 +14,13 @@ import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.Index;
 
-public class CreateIndexDeParser {
-
-    protected StringBuilder buffer;
+public class CreateIndexDeParser extends AbstractDeParser<CreateIndex> {
 
     public CreateIndexDeParser(StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
     }
 
+    @Override
     public void deParse(CreateIndex createIndex) {
         Index index = createIndex.getIndex();
 
@@ -45,10 +44,9 @@ public class CreateIndexDeParser {
 
         if (index.getColumnsNames() != null) {
             buffer.append(" (");
-            buffer.append(
-                index.getColumnWithParams().stream()
-                        .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : "")).collect(joining(", "))
-            );
+            buffer.append(index.getColumnWithParams().stream()
+                    .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : ""))
+                    .collect(joining(", ")));
             buffer.append(")");
         }
 
@@ -57,14 +55,6 @@ public class CreateIndexDeParser {
                 buffer.append(" ").append(param);
             }
         }
-    }
-
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
     }
 
 }

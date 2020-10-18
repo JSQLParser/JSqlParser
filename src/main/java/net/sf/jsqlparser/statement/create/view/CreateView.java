@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.create.view;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -131,5 +135,52 @@ public class CreateView implements Statement {
             sql.append(" WITH READ ONLY");
         }
         return sql.toString();
+    }
+
+    public CreateView withView(Table view) {
+        this.setView(view);
+        return this;
+    }
+
+    public CreateView withSelect(Select select) {
+        this.setSelect(select);
+        return this;
+    }
+
+    public CreateView withOrReplace(boolean orReplace) {
+        this.setOrReplace(orReplace);
+        return this;
+    }
+
+    public CreateView withColumnNames(List<String> columnNames) {
+        this.setColumnNames(columnNames);
+        return this;
+    }
+
+    public CreateView withMaterialized(boolean materialized) {
+        this.setMaterialized(materialized);
+        return this;
+    }
+
+    public CreateView withForce(ForceOption force) {
+        this.setForce(force);
+        return this;
+    }
+
+    public CreateView withWithReadOnly(boolean withReadOnly) {
+        this.setWithReadOnly(withReadOnly);
+        return this;
+    }
+
+    public CreateView addColumnNames(String... columnNames) {
+        List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columnNames);
+        return this.withColumnNames(collection);
+    }
+
+    public CreateView addColumnNames(Collection<String> columnNames) {
+        List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
+        collection.addAll(columnNames);
+        return this.withColumnNames(collection);
     }
 }

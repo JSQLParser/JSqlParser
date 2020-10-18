@@ -9,10 +9,13 @@
  */
 package net.sf.jsqlparser.statement.grant;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-
-import java.util.List;
 
 public class Grant implements Statement {
 
@@ -83,5 +86,49 @@ public class Grant implements Statement {
             buffer.append(users.get(i));
         }
         return buffer.toString();
+    }
+
+    public Grant withRole(String role) {
+        this.setRole(role);
+        return this;
+    }
+
+    public Grant withPrivileges(List<String> privileges) {
+        this.setPrivileges(privileges);
+        return this;
+    }
+
+    public Grant withObjectName(String objectName) {
+        this.setObjectName(objectName);
+        return this;
+    }
+
+    public Grant withUsers(List<String> users) {
+        this.setUsers(users);
+        return this;
+    }
+
+    public Grant addPrivileges(String... privileges) {
+        List<String> collection = Optional.ofNullable(getPrivileges()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, privileges);
+        return this.withPrivileges(collection);
+    }
+
+    public Grant addPrivileges(Collection<String> privileges) {
+        List<String> collection = Optional.ofNullable(getPrivileges()).orElseGet(ArrayList::new);
+        collection.addAll(privileges);
+        return this.withPrivileges(collection);
+    }
+
+    public Grant addUsers(String... users) {
+        List<String> collection = Optional.ofNullable(getUsers()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, users);
+        return this.withUsers(collection);
+    }
+
+    public Grant addUsers(Collection<String> users) {
+        List<String> collection = Optional.ofNullable(getUsers()).orElseGet(ArrayList::new);
+        collection.addAll(users);
+        return this.withUsers(collection);
     }
 }

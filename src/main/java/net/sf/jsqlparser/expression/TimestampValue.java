@@ -19,16 +19,18 @@ import java.sql.Timestamp;
 public class TimestampValue extends ASTNodeAccessImpl implements Expression {
 
     private Timestamp value;
-    private char quotation = '\'';
+    private String rawValue;
+    private static final char QUOTATION = '\'';
+
+    public TimestampValue() {
+        // empty constructor
+    }
+
     public TimestampValue(String value) {
         if (value == null) {
             throw new java.lang.IllegalArgumentException("null string");
         } else {
-            if (value.charAt(0) == quotation) {
-                this.value = Timestamp.valueOf(value.substring(1, value.length() - 1));
-            } else {
-                this.value = Timestamp.valueOf(value.substring(0, value.length()));
-            }
+            setRawValue(value);
         }
     }
 
@@ -45,8 +47,26 @@ public class TimestampValue extends ASTNodeAccessImpl implements Expression {
         value = d;
     }
 
+    public String getRawValue() {
+        return rawValue;
+    }
+
+    public void setRawValue(String rawValue) {
+        this.rawValue = rawValue;
+        if (rawValue.charAt(0) == QUOTATION) {
+            this.value = Timestamp.valueOf(rawValue.substring(1, rawValue.length() - 1));
+        } else {
+            this.value = Timestamp.valueOf(rawValue.substring(0, rawValue.length()));
+        }
+    }
+
     @Override
     public String toString() {
         return "{ts '" + value + "'}";
+    }
+
+    public TimestampValue withValue(Timestamp value) {
+        this.setValue(value);
+        return this;
     }
 }

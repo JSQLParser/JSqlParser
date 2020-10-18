@@ -40,4 +40,8 @@ public class ValueListExpression extends ASTNodeAccessImpl implements Expression
         return expressionList.toString();
     }
 
+    public ValueListExpression withExpressionList(ExpressionList expressionList) {
+        this.setExpressionList(expressionList);
+        return this;
+    }
 }

@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class SetOperationList implements SelectBody {
 
@@ -32,6 +36,14 @@ public class SetOperationList implements SelectBody {
 
     public List<SelectBody> getSelects() {
         return selects;
+    }
+
+    public void setSelects(List<SelectBody> selects) {
+        this.selects = selects;
+    }
+
+    public void setOperations(List<SetOperation> operations) {
+        this.operations = operations;
     }
 
     public List<SetOperation> getOperations() {
@@ -112,6 +124,89 @@ public class SetOperationList implements SelectBody {
             buffer.append(fetch.toString());
         }
         return buffer.toString();
+    }
+
+    public SetOperationList withOperations(List<SetOperation> operationList) {
+        setOperations(operationList);
+        return this;
+    }
+
+    public SetOperationList withSelects(List<SelectBody> selects) {
+        setSelects(selects);
+        return this;
+    }
+
+    public SetOperationList withBrackets(List<Boolean> brackets) {
+        this.setBrackets(brackets);
+        return this;
+    }
+
+    public SetOperationList withOrderByElements(List<OrderByElement> orderByElements) {
+        this.setOrderByElements(orderByElements);
+        return this;
+    }
+
+    public SetOperationList withLimit(Limit limit) {
+        this.setLimit(limit);
+        return this;
+    }
+
+    public SetOperationList withOffset(Offset offset) {
+        this.setOffset(offset);
+        return this;
+    }
+
+    public SetOperationList withFetch(Fetch fetch) {
+        this.setFetch(fetch);
+        return this;
+    }
+
+    public SetOperationList addSelects(SelectBody... selects) {
+        List<SelectBody> collection = Optional.ofNullable(getSelects()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, selects);
+        return this.withSelects(collection);
+    }
+
+    public SetOperationList addSelects(Collection<? extends SelectBody> selects) {
+        List<SelectBody> collection = Optional.ofNullable(getSelects()).orElseGet(ArrayList::new);
+        collection.addAll(selects);
+        return this.withSelects(collection);
+    }
+
+    public SetOperationList addOperations(SetOperation... operationList) {
+        List<SetOperation> collection = Optional.ofNullable(getOperations()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, operationList);
+        return this.withOperations(collection);
+    }
+
+    public SetOperationList addOperations(Collection<? extends SetOperation> operationList) {
+        List<SetOperation> collection = Optional.ofNullable(getOperations()).orElseGet(ArrayList::new);
+        collection.addAll(operationList);
+        return this.withOperations(collection);
+    }
+
+    public SetOperationList addBrackets(Boolean... brackets) {
+        List<Boolean> collection = Optional.ofNullable(getBrackets()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, brackets);
+        return this.withBrackets(collection);
+    }
+
+    public SetOperationList addBrackets(Collection<Boolean> brackets) {
+        List<Boolean> collection = Optional.ofNullable(getBrackets()).orElseGet(ArrayList::new);
+        collection.addAll(brackets);
+        return this.withBrackets(collection);
+    }
+
+    public SetOperationList addOrderByElements(OrderByElement... orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, orderByElements);
+        return this.withOrderByElements(collection);
+    }
+
+    public SetOperationList addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
+        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        collection.addAll(orderByElements);
+        return this.withOrderByElements(collection);
     }
 
     public enum SetOperationType {

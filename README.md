@@ -65,7 +65,22 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 3.3
+## Extensions in the latest SNAPSHOT version 4.0
+
+* support for **CREATE OR REPLACE** for create function statements
+* support for JDBCParameter for interval expressions
+* support for **xmlserialize(xmlagg(xmltext( <column> ) ORDER BY <list of columns>) as <column data type> )** expression
+* first try to support conditions as select items: **SELECT a < b**
+* support for **DROP SEQUENCE**
+* heavy updating of many class files to support fluent like class building and setting of attributes (thx to @gitmotte) 
+** update version to 4.0-SNAPSHOT due fluent PR
+* **ON UPDATE CASCADE** implemented
+* add generated sources to classpath to avoid maven eclipse problems
+* **COMMENT ON VIEW** implemented
+* allowed Jdbc named parameters within interval expressions
+* allow variable assignments in select statements in different positions
+* allow keywords as object names **of**, **exclude**
+* multi part **Table** name gets automatically resized if the last item is removed
 
 ## Extensions of JSqlParser releases
 

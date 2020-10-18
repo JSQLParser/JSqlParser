@@ -13,11 +13,15 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class HexValue extends ASTNodeAccessImpl implements Expression {
 
-    private String stringValue;
+    private String value;
+
+    public HexValue() {
+        // empty constructor
+    }
 
     public HexValue(final String value) {
         String val = value;
-        this.stringValue = val;
+        this.value = val;
     }
 
     @Override
@@ -26,15 +30,20 @@ public class HexValue extends ASTNodeAccessImpl implements Expression {
     }
 
     public String getValue() {
-        return stringValue;
+        return value;
     }
 
-    public void setValue(String d) {
-        stringValue = d;
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public HexValue withValue(String value) {
+        this.setValue(value);
+        return this;
     }
 
     @Override
     public String toString() {
-        return stringValue;
+        return value;
     }
 }

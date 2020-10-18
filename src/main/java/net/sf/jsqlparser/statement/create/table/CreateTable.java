@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -65,12 +68,12 @@ public class CreateTable implements Statement {
     /**
      * A list of options (as simple strings) of this table definition, as ("TYPE", "=", "MYISAM")
      */
-    public List<?> getTableOptionsStrings() {
+    public List<String> getTableOptionsStrings() {
         return tableOptionsStrings;
     }
 
-    public void setTableOptionsStrings(List<String> list) {
-        tableOptionsStrings = list;
+    public void setTableOptionsStrings(List<String> tableOptionsStrings) {
+        this.tableOptionsStrings = tableOptionsStrings;
     }
 
     public List<String> getCreateOptionsStrings() {
@@ -158,5 +161,86 @@ public class CreateTable implements Statement {
             sql += " AS " + (selectParenthesis ? "(" : "") + select.toString() + (selectParenthesis ? ")" : "");
         }
         return sql;
+    }
+
+    public CreateTable withTable(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public CreateTable withUnlogged(boolean unlogged) {
+        this.setUnlogged(unlogged);
+        return this;
+    }
+
+    public CreateTable withCreateOptionsStrings(List<String> createOptionsStrings) {
+        this.setCreateOptionsStrings(createOptionsStrings);
+        return this;
+    }
+
+    public CreateTable withSelectParenthesis(boolean selectParenthesis) {
+        this.setSelectParenthesis(selectParenthesis);
+        return this;
+    }
+
+    public CreateTable withIfNotExists(boolean ifNotExists) {
+        this.setIfNotExists(ifNotExists);
+        return this;
+    }
+
+    public CreateTable withRowMovement(RowMovement rowMovement) {
+        this.setRowMovement(rowMovement);
+        return this;
+    }
+
+    public CreateTable withTableOptionsStrings(List<String> tableOptionsStrings) {
+        this.setTableOptionsStrings(tableOptionsStrings);
+        return this;
+    }
+
+    public CreateTable withColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
+        this.setColumnDefinitions(columnDefinitions);
+        return this;
+    }
+
+    public CreateTable withIndexes(List<Index> indexes) {
+        this.setIndexes(indexes);
+        return this;
+    }
+
+    public CreateTable addCreateOptionsStrings(String... createOptionsStrings) {
+        List<String> collection = Optional.ofNullable(getCreateOptionsStrings()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, createOptionsStrings);
+        return this.withCreateOptionsStrings(collection);
+    }
+
+    public CreateTable addCreateOptionsStrings(Collection<String> createOptionsStrings) {
+        List<String> collection = Optional.ofNullable(getCreateOptionsStrings()).orElseGet(ArrayList::new);
+        collection.addAll(createOptionsStrings);
+        return this.withCreateOptionsStrings(collection);
+    }
+
+    public CreateTable addColumnDefinitions(ColumnDefinition... columnDefinitions) {
+        List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columnDefinitions);
+        return this.withColumnDefinitions(collection);
+    }
+
+    public CreateTable addColumnDefinitions(Collection<? extends ColumnDefinition> columnDefinitions) {
+        List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
+        collection.addAll(columnDefinitions);
+        return this.withColumnDefinitions(collection);
+    }
+
+    public CreateTable addIndexes(Index... indexes) {
+        List<Index> collection = Optional.ofNullable(getIndexes()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, indexes);
+        return this.withIndexes(collection);
+    }
+
+    public CreateTable addIndexes(Collection<? extends Index> indexes) {
+        List<Index> collection = Optional.ofNullable(getIndexes()).orElseGet(ArrayList::new);
+        collection.addAll(indexes);
+        return this.withIndexes(collection);
     }
 }

@@ -12,14 +12,13 @@ package net.sf.jsqlparser.util.deparser;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-public class DropDeParser {
-
-    protected StringBuilder buffer;
+public class DropDeParser extends AbstractDeParser<Drop> {
 
     public DropDeParser(StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
     }
 
+    @Override
     public void deParse(Drop drop) {
         buffer.append("DROP ");
         buffer.append(drop.getType());
@@ -32,14 +31,6 @@ public class DropDeParser {
         if (drop.getParameters() != null && !drop.getParameters().isEmpty()) {
             buffer.append(" ").append(PlainSelect.getStringList(drop.getParameters()));
         }
-    }
-
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
     }
 
 }

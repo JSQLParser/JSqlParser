@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.merge;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -40,5 +44,39 @@ public class MergeInsert {
         return " WHEN NOT MATCHED THEN INSERT "
                 + (columns.isEmpty() ? "" : PlainSelect.getStringList(columns, true, true))
                 + " VALUES " + PlainSelect.getStringList(values, true, true);
+    }
+
+    public MergeInsert withColumns(List<Column> columns) {
+        this.setColumns(columns);
+        return this;
+    }
+
+    public MergeInsert withValues(List<Expression> values) {
+        this.setValues(values);
+        return this;
+    }
+
+    public MergeInsert addColumns(Column... columns) {
+        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columns);
+        return this.withColumns(collection);
+    }
+
+    public MergeInsert addColumns(Collection<? extends Column> columns) {
+        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        collection.addAll(columns);
+        return this.withColumns(collection);
+    }
+
+    public MergeInsert addValues(Expression... values) {
+        List<Expression> collection = Optional.ofNullable(getValues()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, values);
+        return this.withValues(collection);
+    }
+
+    public MergeInsert addValues(Collection<? extends Expression> values) {
+        List<Expression> collection = Optional.ofNullable(getValues()).orElseGet(ArrayList::new);
+        collection.addAll(values);
+        return this.withValues(collection);
     }
 }

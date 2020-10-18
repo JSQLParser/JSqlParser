@@ -9,14 +9,17 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
-
-import java.util.Iterator;
-import java.util.List;
 
 public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
 
@@ -72,5 +75,32 @@ public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
 
         return "MATCH (" + columnsListCommaSeperated + ") AGAINST (" + this._againstValue +
                 (this._searchModifier != null ? " " + this._searchModifier : "") + ")";
+    }
+
+    public FullTextSearch withMatchColumns(List<Column> matchColumns) {
+        this.setMatchColumns(matchColumns);
+        return this;
+    }
+
+    public FullTextSearch withAgainstValue(StringValue againstValue) {
+        this.setAgainstValue(againstValue);
+        return this;
+    }
+
+    public FullTextSearch withSearchModifier(String searchModifier) {
+        this.setSearchModifier(searchModifier);
+        return this;
+    }
+
+    public FullTextSearch addMatchColumns(Column... matchColumns) {
+        List<Column> collection = Optional.ofNullable(getMatchColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, matchColumns);
+        return this.withMatchColumns(collection);
+    }
+
+    public FullTextSearch addMatchColumns(Collection<? extends Column> matchColumns) {
+        List<Column> collection = Optional.ofNullable(getMatchColumns()).orElseGet(ArrayList::new);
+        collection.addAll(matchColumns);
+        return this.withMatchColumns(collection);
     }
 }

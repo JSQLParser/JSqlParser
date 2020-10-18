@@ -9,9 +9,10 @@
  */
 package net.sf.jsqlparser.statement.create.schema;
 
-import net.sf.jsqlparser.JSQLParserException;
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import org.junit.Test;
+import net.sf.jsqlparser.JSQLParserException;
 
 /**
  *
@@ -20,6 +21,15 @@ import org.junit.Test;
 public class CreateSchemaTest {  
     @Test
     public void testSimpleCreateSchema() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE SCHEMA myschema");
+        String statement = "CREATE SCHEMA myschema";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(new CreateSchema().withSchemaName("myschema"), statement);
+    }
+
+    @Test
+    public void testSimpleCreateWithAuth() throws JSQLParserException {
+        String statement = "CREATE SCHEMA myschema AUTHORIZATION myauth";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        assertDeparse(new CreateSchema().withSchemaName("myschema").withAuthorization("myauth"), statement);
     }
 }

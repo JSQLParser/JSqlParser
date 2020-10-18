@@ -9,9 +9,12 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -27,6 +30,11 @@ public class Select implements Statement {
 
     public SelectBody getSelectBody() {
         return selectBody;
+    }
+
+    public Select withSelectBody(SelectBody body) {
+        setSelectBody(body);
+        return this;
     }
 
     public void setSelectBody(SelectBody body) {
@@ -57,5 +65,26 @@ public class Select implements Statement {
 
     public void setWithItemsList(List<WithItem> withItemsList) {
         this.withItemsList = withItemsList;
+    }
+
+    public Select withWithItemsList(List<WithItem> withItemsList) {
+        this.setWithItemsList(withItemsList);
+        return this;
+    }
+
+    public <E extends SelectBody> E getSelectBody(Class<E> type) {
+        return type.cast(getSelectBody());
+    }
+
+    public Select addWithItemsList(WithItem... withItemsList) {
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, withItemsList);
+        return this.withWithItemsList(collection);
+    }
+
+    public Select addWithItemsList(Collection<? extends WithItem> withItemsList) {
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        collection.addAll(withItemsList);
+        return this.withWithItemsList(collection);
     }
 }

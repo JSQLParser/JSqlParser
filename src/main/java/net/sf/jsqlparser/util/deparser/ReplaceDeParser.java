@@ -14,37 +14,30 @@ import java.util.Iterator;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
-public class ReplaceDeParser implements ItemsListVisitor {
+public class ReplaceDeParser extends AbstractDeParser<Replace> implements ItemsListVisitor {
 
-    protected StringBuilder buffer;
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
 
     public ReplaceDeParser() {
+        super(new StringBuilder());
     }
 
     public ReplaceDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
-        this.buffer = buffer;
+        super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.selectVisitor = selectVisitor;
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
-    }
-
+    @Override
     public void deParse(Replace replace) {
         buffer.append("REPLACE ");
         if (replace.isUseIntoTables()) {
@@ -101,9 +94,9 @@ public class ReplaceDeParser implements ItemsListVisitor {
         buffer.append(")");
     }
 
-// NamedExpressionList not use by top-level Replace
     @Override
     public void visit(NamedExpressionList namedExpressionList) {
+        // NamedExpressionList not use by top-level Replace
     }
 
     @Override

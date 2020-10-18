@@ -172,8 +172,10 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         }
         if (expr.getRightExpression() != null) {
             expr.getRightExpression().accept(this);
-        } else {
+        } else if (expr.getRightItemsList() != null) {
             expr.getRightItemsList().accept(this);
+        } else {
+            expr.getMultiExpressionList().accept(this);
         }
     }
 
@@ -538,5 +540,19 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(ArrayExpression array) {
         array.getObjExpression().accept(this);
         array.getIndexExpression().accept(this);
+    }
+
+    @Override
+    public void visit(VariableAssignment var) {
+        var.getVariable().accept(this);
+        var.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(XMLSerializeExpr expr) {
+        expr.getExpression().accept(this);
+        for (OrderByElement elm : expr.getOrderByElements()) {
+            elm.getExpression().accept(this);
+        }
     }
 }

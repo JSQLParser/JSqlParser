@@ -10,7 +10,10 @@
 package net.sf.jsqlparser.statement.create.schema;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -115,5 +118,32 @@ public class CreateSchema implements Statement {
             sql += " AUTHORIZATION " + authorization;
         }
         return sql;
+    }
+
+    public CreateSchema withAuthorization(String authorization) {
+        this.setAuthorization(authorization);
+        return this;
+    }
+
+    public CreateSchema withSchemaName(String schemaName) {
+        this.setSchemaName(schemaName);
+        return this;
+    }
+
+    public CreateSchema withSchemaPath(List<String> schemaPath) {
+        this.setSchemaPath(schemaPath);
+        return this;
+    }
+
+    public CreateSchema addSchemaPath(String... schemaPath) {
+        List<String> collection = Optional.ofNullable(getSchemaPath()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, schemaPath);
+        return this.withSchemaPath(collection);
+    }
+
+    public CreateSchema addSchemaPath(Collection<String> schemaPath) {
+        List<String> collection = Optional.ofNullable(getSchemaPath()).orElseGet(ArrayList::new);
+        collection.addAll(schemaPath);
+        return this.withSchemaPath(collection);
     }
 }

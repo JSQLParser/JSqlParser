@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class RegExpMySQLOperator extends BinaryExpression {
@@ -46,5 +47,15 @@ public class RegExpMySQLOperator extends BinaryExpression {
     public String getStringExpression() {
         return (useRLike ? "RLIKE" : "REGEXP")
                 + (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
+    }
+
+    @Override
+    public RegExpMySQLOperator withLeftExpression(Expression arg0) {
+        return (RegExpMySQLOperator) super.withLeftExpression(arg0);
+    }
+
+    @Override
+    public RegExpMySQLOperator withRightExpression(Expression arg0) {
+        return (RegExpMySQLOperator) super.withRightExpression(arg0);
     }
 }

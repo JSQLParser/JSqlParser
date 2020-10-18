@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Optional;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -90,5 +93,40 @@ public class CaseExpression extends ASTNodeAccessImpl implements Expression {
         return "CASE " + ((switchExpression != null) ? switchExpression + " " : "")
                 + PlainSelect.getStringList(whenClauses, false, false) + " "
                 + ((elseExpression != null) ? "ELSE " + elseExpression + " " : "") + "END";
+    }
+
+    public CaseExpression withSwitchExpression(Expression switchExpression) {
+        this.setSwitchExpression(switchExpression);
+        return this;
+    }
+
+    public CaseExpression withWhenClauses(List<WhenClause> whenClauses) {
+        this.setWhenClauses(whenClauses);
+        return this;
+    }
+
+    public CaseExpression withElseExpression(Expression elseExpression) {
+        this.setElseExpression(elseExpression);
+        return this;
+    }
+
+    public CaseExpression addWhenClauses(WhenClause... whenClauses) {
+        List<WhenClause> collection = Optional.ofNullable(getWhenClauses()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, whenClauses);
+        return this.withWhenClauses(collection);
+    }
+
+    public CaseExpression addWhenClauses(Collection<? extends WhenClause> whenClauses) {
+        List<WhenClause> collection = Optional.ofNullable(getWhenClauses()).orElseGet(ArrayList::new);
+        collection.addAll(whenClauses);
+        return this.withWhenClauses(collection);
+    }
+
+    public <E extends Expression> E getSwitchExpression(Class<E> type) {
+        return type.cast(getSwitchExpression());
+    }
+
+    public <E extends Expression> E getElseExpression(Class<E> type) {
+        return type.cast(getElseExpression());
     }
 }

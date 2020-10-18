@@ -9,21 +9,37 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.Model;
 import net.sf.jsqlparser.expression.Alias;
 
-public interface FromItem {
+public interface FromItem extends Model {
 
     void accept(FromItemVisitor fromItemVisitor);
 
     Alias getAlias();
 
+    default FromItem withAlias(Alias alias) {
+        setAlias(alias);
+        return this;
+    }
+
     void setAlias(Alias alias);
 
     Pivot getPivot();
 
+    default FromItem withPivot(Pivot pivot) {
+        setPivot(pivot);
+        return this;
+    }
+
     void setPivot(Pivot pivot);
 
     UnPivot getUnPivot();
+
+    default FromItem withUnPivot(UnPivot unpivot) {
+        setUnPivot(unpivot);
+        return this;
+    }
 
     void setUnPivot(UnPivot unpivot);
 

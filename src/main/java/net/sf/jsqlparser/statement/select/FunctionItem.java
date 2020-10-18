@@ -9,10 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.Model;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Function;
 
-public class FunctionItem {
+public class FunctionItem implements Model {
 
     private Function function;
     private Alias alias;
@@ -36,5 +37,15 @@ public class FunctionItem {
     @Override
     public String toString() {
         return function + ((alias != null) ? alias.toString() : "");
+    }
+
+    public FunctionItem withFunction(Function function) {
+        this.setFunction(function);
+        return this;
+    }
+
+    public FunctionItem withAlias(Alias alias) {
+        this.setAlias(alias);
+        return this;
     }
 }

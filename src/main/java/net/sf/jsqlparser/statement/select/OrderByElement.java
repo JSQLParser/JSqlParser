@@ -14,15 +14,14 @@ import net.sf.jsqlparser.expression.Expression;
 public class OrderByElement {
 
     public enum NullOrdering {
-
         NULLS_FIRST,
         NULLS_LAST
     }
 
     private Expression expression;
     private boolean asc = true;
+    private boolean ascDescPresent = false;
     private NullOrdering nullOrdering;
-    private boolean ascDesc = false;
 
     public boolean isAsc() {
         return asc;
@@ -36,16 +35,16 @@ public class OrderByElement {
         this.nullOrdering = nullOrdering;
     }
 
-    public void setAsc(boolean b) {
-        asc = b;
+    public void setAsc(boolean asc) {
+        this.asc = asc;
     }
 
-    public void setAscDescPresent(boolean b) {
-        ascDesc = b;
+    public void setAscDescPresent(boolean ascDescPresent) {
+        this.ascDescPresent = ascDescPresent;
     }
 
     public boolean isAscDescPresent() {
-        return ascDesc;
+        return ascDescPresent;
     }
 
     public void accept(OrderByVisitor orderByVisitor) {
@@ -67,7 +66,7 @@ public class OrderByElement {
 
         if (!asc) {
             b.append(" DESC");
-        } else if (ascDesc) {
+        } else if (ascDescPresent) {
             b.append(" ASC");
         }
 
@@ -77,4 +76,29 @@ public class OrderByElement {
         }
         return b.toString();
     }
+
+    public OrderByElement withExpression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
+
+    public OrderByElement withAsc(boolean asc) {
+        this.setAsc(asc);
+        return this;
+    }
+
+    public OrderByElement withAscDescPresent(boolean ascDescPresent) {
+        this.setAscDescPresent(ascDescPresent);
+        return this;
+    }
+
+    public OrderByElement withNullOrdering(NullOrdering nullOrdering) {
+        this.setNullOrdering(nullOrdering);
+        return this;
+    }
+
+    public <E extends Expression> E getExpression(Class<E> type) {
+        return type.cast(getExpression());
+    }
+
 }

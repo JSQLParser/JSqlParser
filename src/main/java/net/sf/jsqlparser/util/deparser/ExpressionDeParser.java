@@ -11,8 +11,10 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 import java.util.List;
+
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
+import net.sf.jsqlparser.expression.AnalyticType;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
@@ -49,12 +51,48 @@ import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
+import net.sf.jsqlparser.expression.VariableAssignment;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.WindowElement;
-import net.sf.jsqlparser.expression.operators.arithmetic.*;
+import net.sf.jsqlparser.expression.XMLSerializeExpr;
+import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
+import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
+import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
+import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
+import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
+import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
-import net.sf.jsqlparser.expression.operators.relational.*;
+import net.sf.jsqlparser.expression.operators.relational.Between;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
+import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
+import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
+import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
+import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
+import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.expression.operators.relational.Matches;
+import net.sf.jsqlparser.expression.operators.relational.MinorThan;
+import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
+import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
+import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
+import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
+import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -62,15 +100,17 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
-public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
+public class ExpressionDeParser extends AbstractDeParser<Expression>
+        // FIXME maybe we should implement an ItemsListDeparser too?
+        implements ExpressionVisitor, ItemsListVisitor {
 
     private static final String NOT = "NOT ";
-    protected StringBuilder buffer = new StringBuilder();
     private SelectVisitor selectVisitor;
     private boolean useBracketsInExprList = true;
     private OrderByDeParser orderByDeParser = new OrderByDeParser();
 
     public ExpressionDeParser() {
+        super(new StringBuilder());
     }
 
     public ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer) {
@@ -78,17 +118,9 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     }
 
     ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer, OrderByDeParser orderByDeParser) {
+        super(buffer);
         this.selectVisitor = selectVisitor;
-        this.buffer = buffer;
         this.orderByDeParser = orderByDeParser;
-    }
-
-    public StringBuilder getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
     }
 
     @Override
@@ -98,7 +130,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
 
     @Override
     public void visit(AndExpression andExpression) {
-        visitBinaryExpression(andExpression, andExpression.isUseOperator()?" && ":" AND ");
+        visitBinaryExpression(andExpression, andExpression.isUseOperator() ? " && " : " AND ");
     }
 
     @Override
@@ -305,8 +337,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
     @Override
     public void visit(LikeExpression likeExpression) {
         visitBinaryExpression(likeExpression,
-                (likeExpression.isNot() ? " NOT" : "")
-                + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
+                (likeExpression.isNot() ? " NOT" : "") + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
         String escape = likeExpression.getEscape();
         if (escape != null) {
             buffer.append(" ESCAPE '").append(escape).append('\'');
@@ -401,8 +432,7 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         if (selectVisitor != null) {
             if (subSelect.getWithItemsList() != null) {
                 buffer.append("WITH ");
-                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.
-                        hasNext();) {
+                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.hasNext();) {
                     iter.next().accept(selectVisitor);
                     if (iter.hasNext()) {
                         buffer.append(", ");
@@ -677,10 +707,15 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         if (aexpr.getFilterExpression() != null) {
             buffer.append("FILTER (WHERE ");
             aexpr.getFilterExpression().accept(this);
-            buffer.append(") ");
+            buffer.append(")");
+            if (aexpr.getType() != AnalyticType.FILTER_ONLY) {
+                buffer.append(" ");
+            }
         }
 
         switch (aexpr.getType()) {
+            case FILTER_ONLY:
+                return;
             case WITHIN_GROUP:
                 buffer.append("WITHIN GROUP");
                 break;
@@ -860,5 +895,35 @@ public class ExpressionDeParser implements ExpressionVisitor, ItemsListVisitor {
         buffer.append("[");
         array.getIndexExpression().accept(this);
         buffer.append("]");
+    }
+
+    @Override
+    void deParse(Expression statement) {
+        statement.accept(this);
+    }
+
+    @Override
+    public void visit(VariableAssignment var) {
+        var.getVariable().accept(this);
+        buffer.append(" ").append(var.getOperation()).append(" ");
+        var.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(XMLSerializeExpr expr) {
+        //xmlserialize(xmlagg(xmltext(COMMENT_LINE) ORDER BY COMMENT_SEQUENCE) as varchar(1024))
+        buffer.append("xmlserialize(xmlagg(xmltext(");
+        expr.getExpression().accept(this);
+        buffer.append(")");
+        if (expr.getOrderByElements() != null){
+            buffer.append(" ORDER BY ");
+            for (Iterator<OrderByElement> i = expr.getOrderByElements().iterator(); i.hasNext();) {
+                buffer.append(i.next().toString());
+                if (i.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
+        }
+        buffer.append(") AS ").append(expr.getDataType()).append(")");
     }
 }

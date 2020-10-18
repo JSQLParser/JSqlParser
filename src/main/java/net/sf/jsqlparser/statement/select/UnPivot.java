@@ -54,7 +54,7 @@ public class UnPivot {
         this.unpivotForClause = forColumns;
     }
 
-    public List<?> getUnPivotInClause() {
+    public List<SelectExpressionItem> getUnPivotInClause() {
         return unpivotInClause;
     }
 
@@ -70,5 +70,10 @@ public class UnPivot {
                 + " (" + unpivotClause
                 + " FOR " + PlainSelect.getStringList(unpivotForClause, true, unpivotForClause != null && unpivotForClause.size() > 1)
                 + " IN " + PlainSelect.getStringList(unpivotInClause, true, true) + ")";
+    }
+
+    public UnPivot withIncludeNulls(boolean includeNulls) {
+        this.setIncludeNulls(includeNulls);
+        return this;
     }
 }

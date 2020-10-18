@@ -9,13 +9,15 @@
  */
 package net.sf.jsqlparser.schema;
 
+import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 /**
@@ -26,9 +28,7 @@ public class TableTest {
 
     @Test
     public void tableIndexException() {
-        Table table = new Table();
-        table.setName("bla");
-        table.setDatabase(new Database(new Server("server", "instance"), "db"));
+        Table table = new Table().withName("bla").withDatabase(new Database(new Server("server", "instance"), "db"));
     }
 
     @Test
@@ -61,5 +61,13 @@ public class TableTest {
 
         deparser.visit((PlainSelect) select.getSelectBody());
 
+    }
+    
+    @Test
+    public void testTableRemoveNameParts() {
+        Table table = new Table("link", "DICTIONARY");
+        assertThat(table.getFullyQualifiedName()).isEqualTo("link.DICTIONARY");
+        table.setSchemaName(null);
+        assertThat(table.getFullyQualifiedName()).isEqualTo("DICTIONARY");
     }
 }

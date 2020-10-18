@@ -19,6 +19,7 @@ public class Comment implements Statement {
 
     private Table table;
     private Column column;
+    private Table view;
     private StringValue comment;
 
     @Override
@@ -42,6 +43,14 @@ public class Comment implements Statement {
         this.column = column;
     }
 
+    public Table getView() {
+        return view;
+    }
+
+    public void setView(Table view) {
+        this.view = view;
+    }
+
     public StringValue getComment() {
         return comment;
     }
@@ -57,8 +66,25 @@ public class Comment implements Statement {
             sql += "TABLE " + table + " ";
         } else if (column != null) {
             sql += "COLUMN " + column + " ";
+        } else if (view != null) {
+            sql += "VIEW " + view + " ";
         }
         sql += "IS " + comment;
         return sql;
+    }
+
+    public Comment withTable(Table table) {
+        this.setTable(table);
+        return this;
+    }
+
+    public Comment withColumn(Column column) {
+        this.setColumn(column);
+        return this;
+    }
+
+    public Comment withComment(StringValue comment) {
+        this.setComment(comment);
+        return this;
     }
 }
