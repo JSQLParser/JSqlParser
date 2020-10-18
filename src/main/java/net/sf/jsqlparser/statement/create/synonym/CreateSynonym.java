@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2020 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.create.synonym;
 
 import net.sf.jsqlparser.schema.Synonym;
@@ -66,10 +75,10 @@ public class CreateSynonym implements Statement {
     public String toString() {
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("CREATE ");
-        if(orReplace) {
+        if (orReplace) {
             sqlBuilder.append("OR REPLACE ");
         }
-        if(publicSynonym) {
+        if (publicSynonym) {
             sqlBuilder.append("PUBLIC ");
         }
         sqlBuilder.append("SYNONYM " + synonym);
