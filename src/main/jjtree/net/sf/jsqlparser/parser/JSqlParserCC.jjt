@@ -43,6 +43,7 @@ import net.sf.jsqlparser.statement.create.function.*;
 import net.sf.jsqlparser.statement.create.index.*;
 import net.sf.jsqlparser.statement.create.procedure.*;
 import net.sf.jsqlparser.statement.create.schema.*;
+import net.sf.jsqlparser.statement.create.synonym.*;
 import net.sf.jsqlparser.statement.create.sequence.*;
 import net.sf.jsqlparser.statement.create.table.*;
 import net.sf.jsqlparser.statement.create.view.*;
@@ -286,6 +287,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PRIOR:"PRIOR">
 |   <K_PROCEDURE:"PROCEDURE">
+|   <K_PUBLIC:"PUBLIC">
 |   <K_RANGE: "RANGE">
 |   <K_READ: "READ" >
 |   <K_RECURSIVE:"RECURSIVE">
@@ -314,6 +316,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SKIP: "SKIP">
 |   <K_SOME:"SOME">
 |   <K_START:"START">
+|   <K_SYNONYM:"SYNONYM">
 |   <K_TABLE:"TABLE">
 |   <K_TABLES:"TABLES">
 |   <K_TABLESPACE : "TABLESPACE">
@@ -479,6 +482,9 @@ Statement SingleStatement() :
         |
         LOOKAHEAD(CreateSequence())
         stm = CreateSequence()
+        |
+        LOOKAHEAD(CreateSynonym())
+        stm = CreateSynonym()
         |
         LOOKAHEAD(CreateTable())
         stm = CreateTable()
@@ -5109,6 +5115,42 @@ CreateFunctionalStatement CreateFunctionStatement():
 
     return type;
   }
+}
+
+CreateSynonym CreateSynonym():
+{
+  CreateSynonym createSynonym = new CreateSynonym();
+  Synonym synonym;
+  boolean orReplace = false;
+  boolean publicSynonym = false;
+  List<String> data = new ArrayList<String>();
+}
+{
+  <K_CREATE>
+  [<K_OR> <K_REPLACE> { orReplace = true; } ]
+  [<K_PUBLIC> { publicSynonym = true; } ]
+  <K_SYNONYM> synonym=Synonym() { createSynonym.setSynonym(synonym); }
+  <K_FOR> data = RelObjectNameList()
+  {
+    createSynonym.setOrReplace(orReplace);
+    createSynonym.setPublicSynonym(publicSynonym);
+    createSynonym.setForList(data);
+    return createSynonym;
+  }
+}
+
+Synonym Synonym() #Synonym :
+{
+    List<String> data = new ArrayList<String>();
+    String serverName = null, databaseName = null, schemaName = null, sequenceName = null;
+}
+{
+    data = RelObjectNameList()
+    {
+        Synonym synonym = new Synonym(data);
+		linkAST(synonym,jjtThis);
+        return synonym;
+    }
 }
 
 JAVACODE
