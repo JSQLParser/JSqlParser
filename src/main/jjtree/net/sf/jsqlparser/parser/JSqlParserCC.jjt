@@ -1381,7 +1381,7 @@ String RelObjectNameExt():
 {
     ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
         | tk=<K_DOUBLE> | tk=<K_IF> | <K_OPTIMIZE> | tk=<K_LIMIT>
-        | tk=<K_OFFSET> | tk=<K_PROCEDURE> )
+        | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC> )
     {
         if (tk!=null) result=tk.image;
         return result;
