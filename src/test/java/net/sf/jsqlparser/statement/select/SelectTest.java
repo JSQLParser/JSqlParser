@@ -4321,4 +4321,10 @@ public class SelectTest {
     public void testIssue1062_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE temperature.timestamp <= @until AND temperature.timestamp >= @from");
     }
+
+    @Test
+    public void selectWithSingleIn() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM dual WHERE a IN 1");
+    }
+
 }
