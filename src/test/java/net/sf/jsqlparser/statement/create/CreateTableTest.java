@@ -670,4 +670,10 @@ public class CreateTableTest {
         String statement = "CREATE TABLE a LIKE b";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
+
+    @Test
+    public void testCreateTableWithCommentIssue413_2() throws JSQLParserException {
+        String statement = "CREATE TABLE a LIKE (b)";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
 }
