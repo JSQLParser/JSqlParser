@@ -4048,6 +4048,7 @@ CreateTable CreateTable():
     List<String> idxSpec = new ArrayList<String>();
     Table fkTable = null;
     Select select = null;
+    Table likeTable = null;
     CheckConstraint checkCs = null;
     ExcludeConstraint excludeC = null;
     RowMovement rowMovement = null;
@@ -4200,6 +4201,10 @@ CreateTable CreateTable():
     [
     <K_AS> ( LOOKAHEAD("(" Select() ")") "(" select = Select() { createTable.setSelect(select, true); } ")"
              | select = Select() { createTable.setSelect(select, false); } )
+    ]
+    [
+    <K_LIKE> ( LOOKAHEAD("(" Table() ")") "(" likeTable=Table() { createTable.setLikeTable(likeTable, true); } ")"
+                 | likeTable=Table() { createTable.setLikeTable(likeTable, false); } )
     ]
     {
         createTable.setTable(table);

@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
@@ -91,6 +92,17 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
             }
             Select sel = createTable.getSelect();
             sel.accept(this.statementDeParser);
+            if (createTable.isSelectParenthesis()) {
+                buffer.append(")");
+            }
+        }
+        if (createTable.getLikeTable() != null) {
+            buffer.append(" LIKE ");
+            if (createTable.isSelectParenthesis()) {
+                buffer.append("(");
+            }
+            Table table = createTable.getLikeTable();
+            buffer.append(table.getFullyQualifiedName());
             if (createTable.isSelectParenthesis()) {
                 buffer.append(")");
             }
