@@ -14,6 +14,7 @@ import java.util.List;
 
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
+import net.sf.jsqlparser.expression.AnalyticType;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
@@ -706,10 +707,15 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (aexpr.getFilterExpression() != null) {
             buffer.append("FILTER (WHERE ");
             aexpr.getFilterExpression().accept(this);
-            buffer.append(") ");
+            buffer.append(")");
+            if (aexpr.getType() != AnalyticType.FILTER_ONLY) {
+                buffer.append(" ");
+            }
         }
 
         switch (aexpr.getType()) {
+            case FILTER_ONLY:
+                return;
             case WITHIN_GROUP:
                 buffer.append("WITHIN GROUP");
                 break;

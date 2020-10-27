@@ -1979,6 +1979,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testAnalyticFunctionFilterIssue934() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) FILTER (WHERE name = 'Raj') FROM table");
+    }
+
+    @Test
     public void testFunctionLeft() throws JSQLParserException {
         String statement = "SELECT left(table1.col1, 4) FROM table1";
         assertSqlCanBeParsedAndDeparsed(statement);
@@ -4285,5 +4290,35 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT 1 + 2 AS a, 3 < 4 AS b");
         assertSqlCanBeParsedAndDeparsed("SELECT 1 < 2 AS a, 0 IS NULL AS b");
 //        assertSqlCanBeParsedAndDeparsed("SELECT 1 < 2 AS a, (0 IS NULL) AS b");
+    }
+    
+    @Test
+    public void testKeyWordExceptIssue1040() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT FORMAT(100000, 2)");
+    }
+    
+    @Test
+    public void testKeyWordExceptIssue1044() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT SP_ID FROM ST_PR WHERE INSTR(',' || SP_OFF || ',', ',' || ? || ',') > 0");
+    }
+    
+    @Test
+    public void testKeyWordExceptIssue1055() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT INTERVAL ? DAY");
+    }
+    
+    @Test
+    public void testKeyWordExceptIssue1055_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE A.end_time > now() AND A.end_time <= date_add(now(), INTERVAL ? DAY)");
+    }
+    
+    @Test
+    public void testIssue1062() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE temperature.timestamp <= @to AND temperature.timestamp >= @from");
+    }
+    
+    @Test
+    public void testIssue1062_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE temperature.timestamp <= @until AND temperature.timestamp >= @from");
     }
 }

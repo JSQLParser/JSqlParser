@@ -24,7 +24,11 @@ public class CreateFunction extends CreateFunctionalStatement {
     }
 
     public CreateFunction(List<String> functionDeclarationParts) {
-        super("FUNCTION", functionDeclarationParts);
+        this(false, functionDeclarationParts);
+    }
+    
+    public CreateFunction(boolean orReplace, List<String> functionDeclarationParts) {
+        super(orReplace, "FUNCTION", functionDeclarationParts);
     }
 
     @Override

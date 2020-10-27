@@ -23,7 +23,11 @@ public class CreateProcedure extends CreateFunctionalStatement {
     }
 
     public CreateProcedure(List<String> functionDeclarationParts) {
-        super("PROCEDURE", functionDeclarationParts);
+        this(false, functionDeclarationParts);
+    }
+
+    public CreateProcedure(boolean orReplace, List<String> functionDeclarationParts) {
+        super(orReplace, "PROCEDURE", functionDeclarationParts);
     }
 
     @Override
