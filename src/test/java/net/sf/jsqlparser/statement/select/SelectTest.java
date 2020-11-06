@@ -4323,8 +4323,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testIssue1068() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT t2.c AS div");
+    }
+  
+    @Test
     public void selectWithSingleIn() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM dual WHERE a IN 1");
     }
-
 }
