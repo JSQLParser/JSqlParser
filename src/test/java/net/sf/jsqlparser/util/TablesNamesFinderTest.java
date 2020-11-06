@@ -625,6 +625,15 @@ public class TablesNamesFinderTest {
         assertThatThrownBy(() -> tablesNamesFinder.getTableList(stmt)).isInstanceOf(UnsupportedOperationException.class)
         .hasMessage("Finding tables from AlterSequence is not supported");
     }
+
+    @Test
+    public void testCreateSynonym_throwsException() throws JSQLParserException {
+        String sql = "CREATE SYNONYM foo FOR bar";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        assertThatThrownBy(() -> tablesNamesFinder.getTableList(stmt)).isInstanceOf(UnsupportedOperationException.class)
+                .hasMessage("Finding tables from CreateSynonym is not supported");
+    }
     
     @Test
     public void testNPEIssue1009() throws JSQLParserException {
