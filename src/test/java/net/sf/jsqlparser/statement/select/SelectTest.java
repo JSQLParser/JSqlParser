@@ -4321,4 +4321,9 @@ public class SelectTest {
     public void testIssue1062_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE temperature.timestamp <= @until AND temperature.timestamp >= @from");
     }
+    
+    @Test
+    public void testIssue1068() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT t2.c AS div");
+    }
 }
