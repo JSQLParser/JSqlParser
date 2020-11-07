@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.insert;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
@@ -23,6 +24,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 public class Insert implements Statement {
 
@@ -45,6 +47,7 @@ public class Insert implements Statement {
     private boolean useSet = false;
     private List<Column> setColumns;
     private List<Expression> setExpressionList;
+    private List<WithItem> withItemsList;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -184,10 +187,28 @@ public class Insert implements Statement {
         return setExpressionList;
     }
 
+    public List<WithItem> getWithItemsList() {
+        return withItemsList;
+    }
+
+    public void setWithItemsList(List<WithItem> withItemsList) {
+        this.withItemsList = withItemsList;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder();
-
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            sql.append("WITH ");
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+                WithItem withItem = iter.next();
+                sql.append(withItem);
+                if (iter.hasNext()) {
+                    sql.append(",");
+                }
+                sql.append(" ");
+            }
+        }
         sql.append("INSERT ");
         if (modifierPriority != null) {
             sql.append(modifierPriority.name()).append(" ");
@@ -250,7 +271,12 @@ public class Insert implements Statement {
 
         return sql.toString();
     }
-
+    
+    public Insert withWithItemsList(List<WithItem> withList) {
+        this.withItemsList = withList;
+        return this;
+    }
+    
     public Insert withUseValues(boolean useValues) {
         this.setUseValues(useValues);
         return this;

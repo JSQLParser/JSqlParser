@@ -1,7 +1,7 @@
 # JSqlParser
 
 [![Build Status](https://travis-ci.org/JSQLParser/JSqlParser.svg?branch=master)](https://travis-ci.org/JSQLParser/JSqlParser)   [![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/00b2d91995764ae4805b55627aca8d39)](https://www.codacy.com/app/wumpz/JSqlParser?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=JSQLParser/JSqlParser&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/6f9a2d7eb98f45969749e101322634a1)](https://www.codacy.com/gh/JSQLParser/JSqlParser/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=JSQLParser/JSqlParser&amp;utm_campaign=Badge_Grade)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser/badge.svg)](http://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser)
 [![Javadocs](https://www.javadoc.io/badge/com.github.jsqlparser/jsqlparser.svg)](https://www.javadoc.io/doc/com.github.jsqlparser/jsqlparser)
 
@@ -22,6 +22,7 @@ Please provide feedback on:
 * API changes: extend visitor with return values (https://github.com/JSQLParser/JSqlParser/issues/901)
 
 ## News
+* Released version **4.0** of JSqlParser
 * Released version **3.2** of JSqlParser
 * Released version **3.1** of JSqlParser
 * Released version **3.0** of JSqlParser
@@ -29,17 +30,6 @@ Please provide feedback on:
   a parser flag (**CCJSqlParser.withSquareBracketQuotation**).
 * due to an API change the version will be 3.0
 * JSqlParser uses now Java 8 at the minimum
-* Released version **2.1** of JSqlParser
-* Released version **2.0** of JSqlParser
-* breaking **API** change: to support chained functions attribute type was changed to **Expression**
-* Released version **1.4** of JSqlParser
-* Released version **1.3** of JSqlParser
-* Changed behaviour of dotted multipart names for user variables, tables and columns to accept e.g. ORM class names. To achieve this some behaviour of name parsing had to be changed. Before this the parser would fail missing databasenames for SqlServer queries (server..schema.table). But this is allowed for the schema (server.database..table). Now the parser accepts missing inner names per se to avoid some very complicated parsing rules.
-* Released version **1.2** of JSqlParser
-* breaking **API** change: merge of *within group* and *over* (window expressions)
-* Released version **1.1** of JSqlParser. 
-* JSqlParser has now a build in checkstyle configuration to introduce source code conventions.
-* Released first major version **1.0** of JSqlParser. 
 
 More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
 
@@ -65,20 +55,17 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 4.0
+## Extensions in the latest SNAPSHOT version 4.1
 
-* support for **xmlserialize(xmlagg(xmltext( <column> ) ORDER BY <list of columns>) as <column data type> )** expression
-* first try to support conditions as select items: **SELECT a < b**
-* support for **DROP SEQUENCE**
-* heavy updating of many class files to support fluent like class building and setting of attributes (thx to @gitmotte) 
-** update version to 4.0-SNAPSHOT due fluent PR
-* **ON UPDATE CASCADE** implemented
-* add generated sources to classpath to avoid maven eclipse problems
-* **COMMENT ON VIEW** implemented
-* allowed Jdbc named parameters within interval expressions
-* allow variable assignments in select statements in different positions
-* allow keywords as object names **of**, **exclude**
-* multi part **Table** name gets automatically resized if the last item is removed
+* allow **in** as schema name
+* allow **skip**, **algorithm** as column name
+* support for functions in an interval expression
+* subArray support arr\[1:3\]
+* first support for tuples as simple expression **SELECT myfunc((f1, f2))**
+* support for array constructors **array[[1, 2], [id1, id2]]**
+* added support for **NOT** in MySqls **REGEXP** clause
+* added support for **WITH mytble as ( .. ) INSERT INTO ...**
+* added support for H2 **casewhen** function with conditional parameters
 
 ## Extensions of JSqlParser releases
 
@@ -146,7 +133,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>3.1</version>
+	<version>4.0</version>
 </dependency>
 ```
 

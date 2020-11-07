@@ -2,11 +2,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.1-SNAPSHOT</version>
     <name>JSQLParser library</name> 
     <inceptionYear>2004</inceptionYear>
     <organization>
-        <name>JSQLParser</name>
+        <name>JSQLParser</name> 
     </organization>
     <packaging>bundle</packaging>
     <url>https://github.com/JSQLParser/JSqlParser</url>
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -55,6 +55,13 @@
 		    <version>3.10</version>
 		    <scope>test</scope>
 		</dependency>
+		<dependency>
+		    <groupId>com.h2database</groupId>
+		    <artifactId>h2</artifactId>
+		    <version>1.4.200</version>
+		    <scope>test</scope>
+		</dependency>
+		
     </dependencies>
 
     <developers>
@@ -137,7 +144,7 @@
                     <dependency>
                         <groupId>net.java.dev.javacc</groupId>
                         <artifactId>javacc</artifactId>
-                        <version>7.0.4</version>
+                        <version>7.0.10</version>
                     </dependency>
                 </dependencies>
             </plugin>

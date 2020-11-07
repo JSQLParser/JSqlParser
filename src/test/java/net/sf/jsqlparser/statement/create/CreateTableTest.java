@@ -142,6 +142,12 @@ public class CreateTableTest {
     }
 
     @Test
+    public void testCreateTableParams2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TEMPORARY TABLE t1 WITH (APPENDONLY=true,ORIENTATION=column,COMPRESSTYPE=zlib,OIDS=FALSE) ON COMMIT DROP AS SELECT column FROM t2");
+    }
+
+
+    @Test
     public void testCreateTableUniqueConstraint() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE Activities (_id INTEGER PRIMARY KEY AUTOINCREMENT,uuid VARCHAR(255),user_id INTEGER,sound_id INTEGER,sound_type INTEGER,comment_id INTEGER,type String,tags VARCHAR(255),created_at INTEGER,content_id INTEGER,sharing_note_text VARCHAR(255),sharing_note_created_at INTEGER,UNIQUE (created_at, type, content_id, sound_id, user_id))", true);
     }
@@ -321,7 +327,7 @@ public class CreateTableTest {
         String statement = "CREATE TABLE abc.tabc (transaction_date TIMESTAMP WITHOUT TIME ZONE)";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new CreateTable().withTable(new Table(Arrays.asList("abc", "tabc"))).addColumnDefinitions(
-                        new ColumnDefinition("transaction_date", new ColDataType("TIMESTAMP WITHOUT TIME ZONE"))),
+                new ColumnDefinition("transaction_date", new ColDataType("TIMESTAMP WITHOUT TIME ZONE"))),
                 statement);
     }
 
@@ -499,7 +505,7 @@ public class CreateTableTest {
             if (line != null) {
                 if ((line.length() != 0)
                         && ((line.length() < 2) || (line.length() >= 2)
-                                && !(line.charAt(0) == '/' && line.charAt(1) == '/'))) {
+                        && !(line.charAt(0) == '/' && line.charAt(1) == '/'))) {
                     break;
                 }
             } else {
@@ -561,8 +567,8 @@ public class CreateTableTest {
         assertDeparse(new CreateTable().withTable(new Table().withName("foo")).withColumnDefinitions(Arrays.asList(
                 new ColumnDefinition().withColumnName("reason").withColDataType(
                         new ColDataType().withDataType("character varying")
-                        .addArgumentsStringList(Arrays.asList("255")))
-                .addColumnSpecs("DEFAULT 'Test' :: character varying", "NOT NULL"))),
+                                .addArgumentsStringList(Arrays.asList("255")))
+                        .addColumnSpecs("DEFAULT 'Test' :: character varying", "NOT NULL"))),
                 statement);
 
     }
@@ -664,4 +670,26 @@ public class CreateTableTest {
         String sql = "CREATE TABLE test (startdate DATE) DISABLE ROW MOVEMENT AS SELECT 1 FROM dual";
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+
+    @Test
+    public void testCreateTableWithCommentIssue413() throws JSQLParserException {
+        String statement = "CREATE TABLE a LIKE b";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testCreateTableWithCommentIssue413_2() throws JSQLParserException {
+        String statement = "CREATE TABLE a LIKE (b)";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testCreateTableWithParameterDefaultFalseIssue1089() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("create table ADDRESS_TYPE ( address_type CHAR(1) not null, at_name VARCHAR(250) not null, is_disabled BOOL not null default FALSE, constraint PK_ADDRESS_TYPE primary key (address_type) )", true);
+    }   
+    @Test
+    public void testDefaultArray() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (f1 text[] DEFAULT ARRAY[] :: text[] NOT NULL, f2 int[] DEFAULT ARRAY[1, 2])");
+    }
+
 }

@@ -539,7 +539,22 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     @Override
     public void visit(ArrayExpression array) {
         array.getObjExpression().accept(this);
-        array.getIndexExpression().accept(this);
+        if (array.getIndexExpression() != null) {
+            array.getIndexExpression().accept(this);
+        }
+        if (array.getStartIndexExpression() != null) {
+            array.getStartIndexExpression().accept(this);
+        }
+        if (array.getStopIndexExpression() != null) {
+            array.getStopIndexExpression().accept(this);
+        }
+    }
+
+    @Override
+    public void visit(ArrayConstructor aThis) {
+        for (Expression expression : aThis.getExpressions()) {
+            expression.accept(this);
+        }
     }
 
     @Override
@@ -550,7 +565,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(XMLSerializeExpr expr) {
-        expr.getColumn().accept(this);
+        expr.getExpression().accept(this);
         for (OrderByElement elm : expr.getOrderByElements()) {
             elm.getExpression().accept(this);
         }

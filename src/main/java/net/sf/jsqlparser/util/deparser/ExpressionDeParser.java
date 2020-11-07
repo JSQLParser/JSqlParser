@@ -14,8 +14,10 @@ import java.util.List;
 
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
+import net.sf.jsqlparser.expression.AnalyticType;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayExpression;
+import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
@@ -706,10 +708,15 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (aexpr.getFilterExpression() != null) {
             buffer.append("FILTER (WHERE ");
             aexpr.getFilterExpression().accept(this);
-            buffer.append(") ");
+            buffer.append(")");
+            if (aexpr.getType() != AnalyticType.FILTER_ONLY) {
+                buffer.append(" ");
+            }
         }
 
         switch (aexpr.getType()) {
+            case FILTER_ONLY:
+                return;
             case WITHIN_GROUP:
                 buffer.append("WITHIN GROUP");
                 break;
@@ -887,7 +894,36 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public void visit(ArrayExpression array) {
         array.getObjExpression().accept(this);
         buffer.append("[");
-        array.getIndexExpression().accept(this);
+        if (array.getIndexExpression() != null) {
+            array.getIndexExpression().accept(this);
+        } else {
+            if (array.getStartIndexExpression() != null) {
+                array.getStartIndexExpression().accept(this);
+            }
+            buffer.append(":");
+            if (array.getStopIndexExpression() != null) {
+                array.getStopIndexExpression().accept(this);
+            }
+        }
+
+        buffer.append("]");
+    }
+
+    @Override
+    public void visit(ArrayConstructor aThis) {
+        if (aThis.isArrayKeyword()) {
+            buffer.append("ARRAY");
+        }
+        buffer.append("[");
+        boolean first = true;
+        for (Expression expression : aThis.getExpressions()) {
+            if (!first) {
+                buffer.append(", ");
+            } else {
+                first = false;
+            }
+            expression.accept(this);
+        }
         buffer.append("]");
     }
 
@@ -907,12 +943,15 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public void visit(XMLSerializeExpr expr) {
         //xmlserialize(xmlagg(xmltext(COMMENT_LINE) ORDER BY COMMENT_SEQUENCE) as varchar(1024))
         buffer.append("xmlserialize(xmlagg(xmltext(");
-        expr.getColumn().accept(this);
-        buffer.append(") ORDER BY ");
-        for (Iterator<OrderByElement> i = expr.getOrderByElements().iterator(); i.hasNext();) {
-            buffer.append(i.next().toString());
-            if (i.hasNext()) {
-                buffer.append(", ");
+        expr.getExpression().accept(this);
+        buffer.append(")");
+        if (expr.getOrderByElements() != null){
+            buffer.append(" ORDER BY ");
+            for (Iterator<OrderByElement> i = expr.getOrderByElements().iterator(); i.hasNext();) {
+                buffer.append(i.next().toString());
+                if (i.hasNext()) {
+                    buffer.append(", ");
+                }
             }
         }
         buffer.append(") AS ").append(expr.getDataType()).append(")");

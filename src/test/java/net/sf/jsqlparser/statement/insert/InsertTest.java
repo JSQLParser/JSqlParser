@@ -345,4 +345,9 @@ public class InsertTest {
     public void testDisableKeywordIssue945() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO SOMESCHEMA.TEST (DISABLE, TESTCOLUMN) VALUES (1, 1)");
     }
+    
+    @Test
+    public void testWithListIssue282() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("WITH myctl AS (SELECT a, b FROM mytable) INSERT INTO mytable SELECT a, b FROM myctl");
+    }
 }

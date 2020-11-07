@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.logging.Logger;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -21,8 +22,6 @@ import net.sf.jsqlparser.JSQLParserException;
  * @author tw
  */
 public class NestedBracketsPerformanceTest {
-
-    private static final int ITERATIONS_20 = 20;
 
     @Test
     public void testIssue766() throws JSQLParserException {
@@ -51,17 +50,61 @@ public class NestedBracketsPerformanceTest {
         assertSqlCanBeParsedAndDeparsed(sql);
     }
 
+    @Test
+    public void testRecursiveBracketExpressionIssue1019() {
+        assertEquals("IF(1=1, 1, 2)", buildRecursiveBracketExpression("IF(1=1, $1, 2)", "1", 0));
+        assertEquals("IF(1=1, IF(1=1, 1, 2), 2)", buildRecursiveBracketExpression("IF(1=1, $1, 2)", "1", 1));
+        assertEquals("IF(1=1, IF(1=1, IF(1=1, 1, 2), 2), 2)", buildRecursiveBracketExpression("IF(1=1, $1, 2)", "1", 2));
+    }
+
+    @Test
+    public void testRecursiveBracketExpressionIssue1019_2() throws JSQLParserException {
+        doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 10);
+    }
+
+    @Test
+    public void testIssue1013() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ((((((((((((((((tblA)))))))))))))))) FROM mytable");
+    }
+
+    @Test
+    public void testIssue1013_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM ((((((((((((((((tblA))))))))))))))))");
+    }
+
+    @Test
+    public void testIssue1013_3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (((tblA)))");
+    }
+
+    @Test
+    public void testIssue1013_4() throws JSQLParserException {
+        String s = "tblA";
+        for (int i = 1; i < 100; i++) {
+            s = "(" + s + ")";
+        }
+        String sql = "SELECT * FROM " + s;
+        LOG.info("testing " + sql);
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+    private static final Logger LOG = Logger.getLogger(NestedBracketsPerformanceTest.class.getName());
+
     /**
-     * Try to avoid or border exceptionally big parsing time increments by adding more bracket constructs.
+     * Try to avoid or border exceptionally big parsing time increments by
+     * adding more bracket constructs.
      *
      * @throws JSQLParserException
      */
     @Test
     public void testIncreaseOfParseTime() throws JSQLParserException {
+        doIncreaseOfParseTimeTesting("concat($1,'B')", "'A'", 20);
+    }
+
+    private void doIncreaseOfParseTimeTesting(String template, String finalExpression, int maxDepth) throws JSQLParserException {
         long oldDurationTime = 1000;
         int countProblematic = 0;
-        for (int i = 0; i < ITERATIONS_20; i++) {
-            String sql = "SELECT " + buildRecursiveBracketExpression("concat($1,'B')", "'A'", i) + " FROM mytbl";
+        for (int i = 0; i < maxDepth; i++) {
+            String sql = "SELECT " + buildRecursiveBracketExpression(template, finalExpression, i) + " FROM mytbl";
             long startTime = System.currentTimeMillis();
             assertSqlCanBeParsedAndDeparsed(sql, true);
             long durationTime = System.currentTimeMillis() - startTime;

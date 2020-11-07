@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class ColDataType {
@@ -45,6 +46,10 @@ public class ColDataType {
 
     public void setDataType(String string) {
         dataType = string;
+    }
+    
+    public void setDataType(List<String> list) {
+        dataType = list.stream().collect(joining("."));
     }
 
     public String getCharacterSet() {

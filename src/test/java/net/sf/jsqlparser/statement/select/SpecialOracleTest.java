@@ -167,12 +167,14 @@ public class SpecialOracleTest {
             "pivot01.sql",
             "pivot02.sql",
             "pivot03.sql",
+            "pivot04.sql",
             "pivot05.sql",
             "pivot06.sql",
             "pivot07.sql",
             "pivot08.sql",
             "pivot09.sql",
             "pivot11.sql",
+            "pivot12.sql",
             "query_factoring01.sql",
             "query_factoring02.sql",
             "query_factoring03.sql",
@@ -242,7 +244,7 @@ public class SpecialOracleTest {
 
         LOG.
                 log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
-        assertTrue(success >= 164);
+        assertTrue(success >= 166);
     }
 
     @Test

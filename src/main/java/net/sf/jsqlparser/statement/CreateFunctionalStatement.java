@@ -21,6 +21,7 @@ import java.util.Optional;
 public abstract class CreateFunctionalStatement implements Statement {
 
     private String kind;
+    private boolean orReplace = false;
 
     private List<String> functionDeclarationParts;
 
@@ -29,6 +30,11 @@ public abstract class CreateFunctionalStatement implements Statement {
     }
 
     protected CreateFunctionalStatement(String kind, List<String> functionDeclarationParts) {
+        this(false, kind, functionDeclarationParts);
+    }
+    
+    protected CreateFunctionalStatement(boolean orReplace, String kind, List<String> functionDeclarationParts) {
+        this.orReplace = orReplace;
         this.kind = kind;
         this.functionDeclarationParts = functionDeclarationParts;
     }
@@ -49,6 +55,10 @@ public abstract class CreateFunctionalStatement implements Statement {
      */
     public String getKind() {
         return kind;
+    }
+    
+    public void setOrReplace(boolean orReplace) {
+        this.orReplace = orReplace;
     }
 
     /**
@@ -81,7 +91,9 @@ public abstract class CreateFunctionalStatement implements Statement {
 
     @Override
     public String toString() {
-        return "CREATE " + kind + " " + formatDeclaration();
+        return "CREATE " 
+                + (orReplace?"OR REPLACE ":"")
+                + kind + " " + formatDeclaration();
     }
 
     public CreateFunctionalStatement withFunctionDeclarationParts(List<String> functionDeclarationParts) {

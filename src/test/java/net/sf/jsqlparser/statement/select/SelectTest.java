@@ -9,16 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import java.io.*;
 import java.nio.charset.Charset;
-import java.util.*;
-import net.sf.jsqlparser.*;
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.expression.operators.arithmetic.*;
-import net.sf.jsqlparser.expression.operators.relational.*;
-import net.sf.jsqlparser.parser.*;
-import net.sf.jsqlparser.schema.*;
-import net.sf.jsqlparser.statement.*;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import org.apache.commons.io.IOUtils;
 
@@ -889,6 +880,12 @@ public class SelectTest {
         assertEquals("MYID", ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias().
                 getName());
         assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    @Test
+    public void testUnionWithOrderByAndLimitAndNoBrackets() throws JSQLParserException {
+        String stmt = "SELECT id FROM table1 UNION SELECT id FROM table2 ORDER BY id ASC LIMIT 55";
+        assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
     @Test
@@ -1979,6 +1976,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testAnalyticFunctionFilterIssue934() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COUNT(*) FILTER (WHERE name = 'Raj') FROM table");
+    }
+
+    @Test
     public void testFunctionLeft() throws JSQLParserException {
         String statement = "SELECT left(table1.col1, 4) FROM table1";
         assertSqlCanBeParsedAndDeparsed(statement);
@@ -2313,6 +2315,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testIntervalWithFunction() throws JSQLParserException {
+        String stmt = "SELECT DATE_ADD(start_date, INTERVAL COALESCE(duration, 21) MINUTE) AS end_datetime FROM appointment";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testInterval1() throws JSQLParserException {
         String stmt = "SELECT 5 + INTERVAL '3 days'";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -2398,6 +2406,12 @@ public class SelectTest {
     @Test
     public void testMultiValueInBinds() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE (a, b) IN ((?, ?), (?, ?))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testUnionWithBracketsAndOrderBy() throws JSQLParserException {
+        String stmt = "(SELECT a FROM tbl ORDER BY a) UNION DISTINCT (SELECT a FROM tbl ORDER BY a)";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
@@ -2512,6 +2526,16 @@ public class SelectTest {
     public void testRegexpMySQL() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE first_name REGEXP '^Ste(v|ph)en$'";
         assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+    
+    @Test
+    public void testNotRegexpMySQLIssue887() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE first_name NOT REGEXP '^Ste(v|ph)en$'");
+    }
+    
+    @Test
+    public void testNotRegexpMySQLIssue887_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE NOT first_name REGEXP '^Ste(v|ph)en$'");
     }
 
     @Test
@@ -2751,6 +2775,16 @@ public class SelectTest {
     @Test
     public void testSelectInnerWith() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (WITH actor AS (SELECT 'a' aid FROM DUAL) SELECT aid FROM actor)");
+    }
+    
+//    @Test
+//    public void testSelectInnerWithAndUnionIssue1084() throws JSQLParserException {
+//        assertSqlCanBeParsedAndDeparsed("WITH actor AS (SELECT 'b' aid FROM DUAL) SELECT aid FROM actor UNION WITH actor2 AS (SELECT 'a' aid FROM DUAL) SELECT aid FROM actor2");
+//    }
+    
+    @Test
+    public void testSelectInnerWithAndUnionIssue1084_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("WITH actor AS (SELECT 'b' aid FROM DUAL) SELECT aid FROM actor UNION SELECT aid FROM actor2");
     }
 
     @Test
@@ -3075,6 +3109,11 @@ public class SelectTest {
     @Test
     public void testWhereIssue240_0() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT count(*) FROM mytable WHERE 0");
+    }
+
+    @Test
+    public void testCaseKeyword() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM Case");
     }
 
     @Test
@@ -3985,6 +4024,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testArrayRange() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT (arr[1:3])[1] FROM MYTABLE");
+    }
+
+    @Test
     public void testIssue842() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a.id lendId, "
                 + "a.lend_code                                            lendCode, "
@@ -4285,5 +4329,170 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT 1 + 2 AS a, 3 < 4 AS b");
         assertSqlCanBeParsedAndDeparsed("SELECT 1 < 2 AS a, 0 IS NULL AS b");
 //        assertSqlCanBeParsedAndDeparsed("SELECT 1 < 2 AS a, (0 IS NULL) AS b");
+    }
+    
+    @Test
+    public void testKeyWordExceptIssue1040() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT FORMAT(100000, 2)");
+    }
+    
+    @Test
+    public void testKeyWordExceptIssue1044() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT SP_ID FROM ST_PR WHERE INSTR(',' || SP_OFF || ',', ',' || ? || ',') > 0");
+    }
+    
+    @Test
+    public void testKeyWordExceptIssue1055() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT INTERVAL ? DAY");
+    }
+    
+    @Test
+    public void testKeyWordExceptIssue1055_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE A.end_time > now() AND A.end_time <= date_add(now(), INTERVAL ? DAY)");
+    }
+    
+    @Test
+    public void testIssue1062() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE temperature.timestamp <= @to AND temperature.timestamp >= @from");
+    }
+    
+    @Test
+    public void testIssue1062_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE temperature.timestamp <= @until AND temperature.timestamp >= @from");
+    }
+
+    @Test
+    public void testIssue1068() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT t2.c AS div");
+    }
+  
+    @Test
+    public void selectWithSingleIn() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM dual WHERE a IN 1");
+    }
+    
+    @Test
+    public void testKeywordSequenceIssue1075() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a.sequence FROM all_procedures a");
+    }
+    
+    @Test
+    public void testKeywordSequenceIssue1074() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t_user WITH (NOLOCK)");
+    }
+    
+    @Test
+    public void testContionItemsSelectedIssue1077() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 > 0");
+    }
+      
+    @Test
+    public void testExistsKeywordIssue1076() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT EXISTS (4)");
+    }
+    
+    @Test
+    public void testExistsKeywordIssue1076_1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT mycol, EXISTS (SELECT mycol FROM mytable) mycol2 FROM mytable");
+    }
+    
+    @Test
+    public void testFormatKeywordIssue1078() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT FORMAT(date, 'yyyy-MM') AS year_month FROM mine_table");
+    }
+    
+    @Test
+    public void testConditionalParametersForFunctions() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT myFunc(SELECT mycol FROM mytable)");
+    }
+    
+    @Test
+    public void testCreateTableWithParameterDefaultFalseIssue1088() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT p.*, rhp.house_id FROM rel_house_person rhp INNER JOIN person p ON rhp.person_id = p.if WHERE rhp.house_id IN (SELECT house_id FROM rel_house_person WHERE person_id = :personId AND current_occupant = :current) AND rhp.current_occupant = :currentOccupant");
+    }
+    
+    @Test
+    public void testMissingLimitKeywordIssue1006() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("SELECT id, name FROM test OFFSET 20 LIMIT 10");
+        assertEquals("SELECT id, name FROM test LIMIT 10 OFFSET 20", stmt.toString());
+    }
+    
+    @Test
+    public void testKeywordUnsignedIssue961() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMN1, COLUMN2, CASE WHEN COLUMN1.DATA NOT IN ('1', '3') THEN CASE WHEN CAST(COLUMN2 AS UNSIGNED) IN ('1', '2', '3') THEN 'Q1' ELSE 'Q2' END END AS YEAR FROM TESTTABLE");
+    }
+    
+    @Test
+    public void testH2CaseWhenFunctionIssue1091() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASEWHEN(ID = 1, 'A', 'B') FROM mytable");
+    }
+    
+    @Test
+    public void testMultiPartTypesIssue992() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST('*' AS pg_catalog.text)");
+    }
+    
+    @Test
+    public void testSetOperationWithParenthesisIssue1094() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT (SELECT B FROM tbl2)) AS union1");
+    }
+    
+    @Test
+    public void testSetOperationWithParenthesisIssue1094_2() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM (((SELECT A FROM tbl)) UNION DISTINCT (SELECT B FROM tbl2)) AS union1");
+        assertEquals("SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT (SELECT B FROM tbl2)) AS union1", stmt.toString());
+    }
+    
+    @Test
+    public void testSetOperationWithParenthesisIssue1094_3() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM (((SELECT A FROM tbl)) UNION DISTINCT ((SELECT B FROM tbl2))) AS union1");
+        assertEquals("SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT ((SELECT B FROM tbl2))) AS union1", stmt.toString());
+    }
+    
+    @Test
+    public void testSetOperationWithParenthesisIssue1094_4() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM (((((SELECT A FROM tbl)))) UNION DISTINCT (((((((SELECT B FROM tbl2)))))))) AS union1");
+        assertEquals("SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT ((SELECT B FROM tbl2))) AS union1", stmt.toString());
+    }
+    
+    @Test
+    public void testSignedKeywordIssue1100() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT signed, unsigned FROM mytable");
+    }
+    
+    @Test
+    public void testSignedKeywordIssue995() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT leading FROM prd_reprint");
+    }
+
+    @Test
+    public void testSelectTuple() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT hyperloglog_distinct((1, 2)) FROM t");
+    }
+
+    @Test
+    public void testArrayDeclare() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ARRAY[1, f1], ARRAY[[1, 2], [3, f2 + 1]], ARRAY[]::text[] FROM t1");
+    }
+
+    @Test
+    public void testColonDelimiterIssue1134() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM stores_demo:informix.accounts");
+        assertEquals("SELECT * FROM stores_demo.informix.accounts", stmt.toString());
+    }
+    
+    @Test
+    public void testKeywordSkipIssue1136() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT skip");
+    }
+    
+    @Test
+    public void testKeywordAlgorithmIssue1137() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT algorithm FROM tablename");
+    }
+    
+    @Test
+    public void testKeywordAlgorithmIssue1138() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM in.tablename");
     }
 }
