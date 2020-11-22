@@ -4326,4 +4326,9 @@ public class SelectTest {
     public void testIssue1068() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT t2.c AS div");
     }
+    
+    @Test
+    public void testKeywordSequenceIssue1075() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a.sequence FROM all_procedures a");
+    }
 }
