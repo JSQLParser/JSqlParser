@@ -4330,5 +4330,13 @@ public class SelectTest {
     @Test
     public void selectWithSingleIn() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM dual WHERE a IN 1");
+    
+    @Test
+    public void testKeywordSequenceIssue1075() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a.sequence FROM all_procedures a");
+    }
+    
+    @Test
+    public void testKeywordSequenceIssue1074() throws JSQLParserException {
     }
 }

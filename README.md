@@ -81,6 +81,7 @@ Also I would like to know about needed examples or documentation stuff.
 * allow variable assignments in select statements in different positions
 * allow keywords as object names **of**, **exclude**
 * multi part **Table** name gets automatically resized if the last item is removed
+* first version of a validation framework for sql statements (thx to @gitmotte)
 
 ## Extensions of JSqlParser releases
 

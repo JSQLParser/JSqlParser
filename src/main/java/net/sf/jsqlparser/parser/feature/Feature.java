@@ -506,6 +506,12 @@ public enum Feature {
      */
     createSequence,
     /**
+     * SQL "CREATE SYNONYM" statement is allowed
+     *
+     * @see CreateSynonym
+     */
+    createSynonym,
+    /**
      * SQL "CREATE TRIGGER" statement is allowed
      */
     createTrigger,
