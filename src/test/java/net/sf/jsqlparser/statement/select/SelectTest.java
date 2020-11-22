@@ -4321,11 +4321,15 @@ public class SelectTest {
     public void testIssue1062_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE temperature.timestamp <= @until AND temperature.timestamp >= @from");
     }
-    
+
     @Test
     public void testIssue1068() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT t2.c AS div");
     }
+  
+    @Test
+    public void selectWithSingleIn() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM dual WHERE a IN 1");
     
     @Test
     public void testKeywordSequenceIssue1075() throws JSQLParserException {
@@ -4334,6 +4338,5 @@ public class SelectTest {
     
     @Test
     public void testKeywordSequenceIssue1074() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t_user WITH (NOLOCK)");
     }
 }

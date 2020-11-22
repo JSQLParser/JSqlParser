@@ -2735,9 +2735,10 @@ Expression InExpression() #InExpression :
     (
       // syntactic lookahead for a multi expression list, ie: ((a,b),(c,d))
       LOOKAHEAD(3) multiExpressionList = MultiInExpressions()
-      | rightExpression = Function()
+      | LOOKAHEAD(Function()) rightExpression = Function()
       | token=<S_CHAR_LITERAL> { rightExpression = new StringValue(token.image); }
       | "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() )")"
+      | rightExpression = SimpleExpression()
     )
     {
         result.setRightItemsList(rightItemsList);
