@@ -4330,6 +4330,7 @@ public class SelectTest {
     @Test
     public void selectWithSingleIn() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM dual WHERE a IN 1");
+    }
     
     @Test
     public void testKeywordSequenceIssue1075() throws JSQLParserException {
@@ -4338,5 +4339,6 @@ public class SelectTest {
     
     @Test
     public void testKeywordSequenceIssue1074() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t_user WITH (NOLOCK)");
     }
 }
