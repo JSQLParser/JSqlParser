@@ -4331,4 +4331,9 @@ public class SelectTest {
     public void testKeywordSequenceIssue1075() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a.sequence FROM all_procedures a");
     }
+    
+    @Test
+    public void testKeywordSequenceIssue1074() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t_user WITH (NOLOCK)");
+    }
 }
