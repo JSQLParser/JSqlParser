@@ -67,6 +67,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.0
 
+* updated JavaCC 7.0.10
 * support for **CREATE OR REPLACE** for create function statements
 * support for JDBCParameter for interval expressions
 * support for **xmlserialize(xmlagg(xmltext( <column> ) ORDER BY <list of columns>) as <column data type> )** expression
