@@ -4354,6 +4354,6 @@ public class SelectTest {
     
     @Test
     public void testExistsKeywordIssue1076_1() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT EXISTS (SELECT mycol FROM mytable)");
+        assertSqlCanBeParsedAndDeparsed("SELECT mycol, EXISTS (SELECT mycol FROM mytable) mycol2 FROM mytable");
     }
 }
