@@ -4341,4 +4341,19 @@ public class SelectTest {
     public void testKeywordSequenceIssue1074() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM t_user WITH (NOLOCK)");
     }
+    
+    @Test
+    public void testContionItemsSelectedIssue1077() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 > 0");
+    }
+      
+    @Test
+    public void testExistsKeywordIssue1076() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT EXISTS (4)");
+    }
+    
+    @Test
+    public void testExistsKeywordIssue1076_1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT EXISTS (SELECT mycol FROM mytable)");
+    }
 }
