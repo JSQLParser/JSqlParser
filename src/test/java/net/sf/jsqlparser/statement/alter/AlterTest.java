@@ -660,6 +660,12 @@ public class AlterTest {
         assertStatementCanBeDeparsedAs(parsed, statement, true);
         assertReferentialActionOnConstraint(parsed, Action.CASCADE, null);
     }
+    
+    @Test
+    public void testAlterTableDefaultValueTrueIssue926() throws JSQLParserException {
+        Alter parsed = (Alter) CCJSqlParserUtil.parse("ALTER TABLE my_table ADD some_column BOOLEAN DEFAULT FALSE");
+        assertStatementCanBeDeparsedAs(parsed, "ALTER TABLE my_table ADD COLUMN some_column BOOLEAN DEFAULT FALSE");
+    }
 
     private void assertReferentialActionOnConstraint(Alter parsed, Action onUpdate,
             Action onDelete) {

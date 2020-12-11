@@ -4393,21 +4393,21 @@ List<String> CreateParameter():
             tk=<K_EXCLUDE> { param.add(tk.image); }
             |
             tk=<K_WHERE> { param.add(tk.image); }
-			|
+            |
             tk=<K_UNSIGNED> { param.add(tk.image); }
             |
             tk=<K_TEMP> { param.add(tk.image); }
             |
             tk=<K_TEMPORARY> { param.add(tk.image); }
-			|
+            |
             tk=<K_PARTITION> { param.add(tk.image); }
-			|
+            |
             tk=<K_BY> { param.add(tk.image); }
-			|
+            |
             tk=<K_IN> { param.add(tk.image); }
-			|
+            |
             tk=<K_TYPE> { param.add(tk.image); }
-			|
+            |
             tk=<K_COMMENT> { param.add(tk.image); }
             |
             tk=<K_USING> { param.add(tk.image); }
@@ -4415,8 +4415,12 @@ List<String> CreateParameter():
             tk=<K_COLLATE> { param.add(tk.image); }
             |
             tk=<K_ASC> { param.add(tk.image); }
-	        |
+	    |
             tk=<K_DESC> { param.add(tk.image); }
+            |
+            tk=<K_TRUE> { param.add(tk.image); }
+            |
+            tk=<K_FALSE> { param.add(tk.image); }
             |
 	    tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
         )
