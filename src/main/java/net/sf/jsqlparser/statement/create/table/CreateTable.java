@@ -29,6 +29,7 @@ public class CreateTable implements Statement {
     private List<ColumnDefinition> columnDefinitions;
     private List<Index> indexes;
     private Select select;
+    private Table likeTable;
     private boolean selectParenthesis;
     private boolean ifNotExists = false;
     private RowMovement rowMovement;
@@ -106,6 +107,15 @@ public class CreateTable implements Statement {
         this.selectParenthesis = parenthesis;
     }
 
+    public Table getLikeTable() {
+        return likeTable;
+    }
+
+    public void setLikeTable(Table likeTable, boolean parenthesis) {
+        this.likeTable = likeTable;
+        this.selectParenthesis = parenthesis;
+    }
+
     public boolean isIfNotExists() {
         return ifNotExists;
     }
@@ -159,6 +169,9 @@ public class CreateTable implements Statement {
         }
         if (select != null) {
             sql += " AS " + (selectParenthesis ? "(" : "") + select.toString() + (selectParenthesis ? ")" : "");
+        }
+        if (likeTable != null) {
+            sql += " LIKE " + (selectParenthesis ? "(" : "") + likeTable.toString() + (selectParenthesis ? ")" : "");
         }
         return sql;
     }

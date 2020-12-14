@@ -16,7 +16,6 @@ import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class CreateIndexTest {
@@ -107,7 +106,6 @@ public class CreateIndexTest {
     }
 
     @Test
-    @Ignore
     public void testCreateIndexIssue633() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)");
     }

@@ -4321,4 +4321,39 @@ public class SelectTest {
     public void testIssue1062_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE temperature.timestamp <= @until AND temperature.timestamp >= @from");
     }
+
+    @Test
+    public void testIssue1068() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT t2.c AS div");
+    }
+  
+    @Test
+    public void selectWithSingleIn() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 FROM dual WHERE a IN 1");
+    }
+    
+    @Test
+    public void testKeywordSequenceIssue1075() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a.sequence FROM all_procedures a");
+    }
+    
+    @Test
+    public void testKeywordSequenceIssue1074() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t_user WITH (NOLOCK)");
+    }
+    
+    @Test
+    public void testContionItemsSelectedIssue1077() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 > 0");
+    }
+      
+    @Test
+    public void testExistsKeywordIssue1076() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT EXISTS (4)");
+    }
+    
+    @Test
+    public void testExistsKeywordIssue1076_1() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT mycol, EXISTS (SELECT mycol FROM mytable) mycol2 FROM mytable");
+    }
 }

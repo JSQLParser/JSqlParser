@@ -31,6 +31,7 @@ import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
+import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -308,6 +309,11 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     @Override
     public void visit(CreateFunctionalStatement createFunctionalStatement) {
         buffer.append(createFunctionalStatement.toString());
+    }
+
+    @Override
+    public void visit(CreateSynonym createSynonym) {
+        new CreateSynonymDeparser(buffer).deParse(createSynonym);
     }
 
     @Override

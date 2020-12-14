@@ -55,6 +55,13 @@
 		    <version>3.10</version>
 		    <scope>test</scope>
 		</dependency>
+		<dependency>
+		    <groupId>com.h2database</groupId>
+		    <artifactId>h2</artifactId>
+		    <version>1.4.200</version>
+		    <scope>test</scope>
+		</dependency>
+		
     </dependencies>
 
     <developers>
@@ -137,7 +144,7 @@
                     <dependency>
                         <groupId>net.java.dev.javacc</groupId>
                         <artifactId>javacc</artifactId>
-                        <version>7.0.4</version>
+                        <version>7.0.10</version>
                     </dependency>
                 </dependencies>
             </plugin>

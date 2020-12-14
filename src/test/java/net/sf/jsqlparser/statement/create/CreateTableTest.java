@@ -664,4 +664,16 @@ public class CreateTableTest {
         String sql = "CREATE TABLE test (startdate DATE) DISABLE ROW MOVEMENT AS SELECT 1 FROM dual";
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+
+    @Test
+    public void testCreateTableWithCommentIssue413() throws JSQLParserException {
+        String statement = "CREATE TABLE a LIKE b";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testCreateTableWithCommentIssue413_2() throws JSQLParserException {
+        String statement = "CREATE TABLE a LIKE (b)";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
 }
