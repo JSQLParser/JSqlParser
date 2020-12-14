@@ -55,7 +55,7 @@ public class CreateTable implements Statement {
     }
 
     /**
-     * A list of {@link ColumnDefinition}s of this table.
+     * @return a list of {@link ColumnDefinition}s of this table.
      */
     public List<ColumnDefinition> getColumnDefinitions() {
         return columnDefinitions;
@@ -66,7 +66,7 @@ public class CreateTable implements Statement {
     }
 
     /**
-     * A list of options (as simple strings) of this table definition, as ("TYPE", "=", "MYISAM")
+     * @return a list of options (as simple strings) of this table definition, as ("TYPE", "=", "MYISAM")
      */
     public List<String> getTableOptionsStrings() {
         return tableOptionsStrings;
@@ -85,7 +85,7 @@ public class CreateTable implements Statement {
     }
 
     /**
-     * A list of {@link Index}es (for example "PRIMARY KEY") of this table.<br>
+     * @return a list of {@link Index}es (for example "PRIMARY KEY") of this table.<br>
      * Indexes created with column definitions (as in mycol INT PRIMARY KEY) are not inserted into
      * this list.
      */

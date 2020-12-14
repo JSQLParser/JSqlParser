@@ -49,7 +49,7 @@ public final class CCJSqlParserUtil {
      * CCJSqlParserUtil.parse("select * from [mytable]", parser -> parser.withSquareBracketQuotation(true));
      * }
      * 
-     * @param sql
+     * @param sql - the statement to parse
      * @param consumer
      * @return
      * @throws JSQLParserException 
@@ -122,8 +122,8 @@ public final class CCJSqlParserUtil {
      * clause.
      *
      * @param condExpr
-     * @param allowPartialParse false: needs the whole string to be processed.
-     * @return
+     * @param allowPartialParse - if <code>false</code> the whole string needs to be processed.
+     * @return the parsed expression
      */
     public static Expression parseCondExpression(String condExpr, boolean allowPartialParse) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(condExpr));
