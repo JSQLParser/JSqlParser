@@ -4356,4 +4356,9 @@ public class SelectTest {
     public void testExistsKeywordIssue1076_1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT mycol, EXISTS (SELECT mycol FROM mytable) mycol2 FROM mytable");
     }
+    
+    @Test
+    public void testFormatKeywordIssue1078() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT FORMAT(date, 'yyyy-MM') AS year_month FROM mine_table");
+    }
 }

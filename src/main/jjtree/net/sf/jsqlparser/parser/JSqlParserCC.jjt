@@ -4919,6 +4919,7 @@ Grant Grant():
 	ArrayList<String> privileges = new ArrayList<String>();
 	List<String> users;
 	Token tk = null;
+        List<String> objName;
 }
 {
 	<K_GRANT>
@@ -4927,19 +4928,19 @@ Grant Grant():
             [readGrantTypes(privileges) (<K_COMMA> readGrantTypes(privileges))*]
             <K_ON>
                 (
-                    tk=<S_IDENTIFIER> { grant.setObjectName(tk.image); }
+                    objName=RelObjectNameList()   { grant.setObjectName(objName); }
                 )
+            )
+            |
+            (
+                tk=<S_IDENTIFIER> { grant.setRole(tk.image); }
+            )
         )
-        |
-        (
-            tk=<S_IDENTIFIER> { grant.setRole(tk.image); }
-        )
-    )
 	<K_TO> (users = UsersList() {grant.setUsers(users);})
 	{
-        if(privileges.size() > 0) {
-            grant.setPrivileges(privileges);
-        }
+            if(privileges.size() > 0) {
+                grant.setPrivileges(privileges);
+            }
 		return grant;
 	}
 }
