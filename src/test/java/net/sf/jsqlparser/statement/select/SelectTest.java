@@ -2757,6 +2757,16 @@ public class SelectTest {
     public void testSelectInnerWith() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (WITH actor AS (SELECT 'a' aid FROM DUAL) SELECT aid FROM actor)");
     }
+    
+    @Test
+    public void testSelectInnerWithAndUnionIssue1084() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("WITH actor AS (SELECT 'b' aid FROM DUAL) SELECT aid FROM actor UNION WITH actor2 AS (SELECT 'a' aid FROM DUAL) SELECT aid FROM actor2");
+    }
+    
+    @Test
+    public void testSelectInnerWithAndUnionIssue1084_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("WITH actor AS (SELECT 'b' aid FROM DUAL) SELECT aid FROM actor UNION SELECT aid FROM actor2");
+    }
 
     @Test
     public void testSelectWithinGroup() throws JSQLParserException {
@@ -4360,5 +4370,10 @@ public class SelectTest {
     @Test
     public void testFormatKeywordIssue1078() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT FORMAT(date, 'yyyy-MM') AS year_month FROM mine_table");
+    }
+    
+    @Test
+    public void testConditionalParametersForFunctions() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT myFunc(SELECT mycol FROM mytable)");
     }
 }
