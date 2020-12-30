@@ -4376,4 +4376,9 @@ public class SelectTest {
     public void testConditionalParametersForFunctions() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT myFunc(SELECT mycol FROM mytable)");
     }
+    
+    @Test
+    public void testCreateTableWithParameterDefaultFalseIssue1088() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT p.*, rhp.house_id FROM rel_house_person rhp INNER JOIN person p ON rhp.person_id = p.if WHERE rhp.house_id IN (SELECT house_id FROM rel_house_person WHERE person_id = :personId AND current_occupant = :current) AND rhp.current_occupant = :currentOccupant");
+    }
 }

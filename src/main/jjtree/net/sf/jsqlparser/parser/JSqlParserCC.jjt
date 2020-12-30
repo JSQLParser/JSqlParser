@@ -1394,7 +1394,7 @@ String RelObjectNameExt2():
   String result=null;
 }
 {
-    ( result=RelObjectNameExt() | tk=<K_FROM> | tk=<K_SELECT> )
+    ( result=RelObjectNameExt() | tk=<K_FROM> | tk=<K_SELECT> | tk=<K_CURRENT>)
     {
         if (tk!=null) result=tk.image;
         return result;
