@@ -22,8 +22,6 @@ import net.sf.jsqlparser.JSQLParserException;
  */
 public class NestedBracketsPerformanceTest {
 
-    private static final int ITERATIONS_20 = 20;
-
     @Test
     public void testIssue766() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('1','2'),'3'),'4'),'5'),'6'),'7'),'8'),'9'),'10'),'11'),'12'),'13'),'14'),'15'),'16'),'17'),'18'),'19'),'20'),'21'),col1 FROM tbl t1", true);
@@ -50,6 +48,18 @@ public class NestedBracketsPerformanceTest {
         String sql = "SELECT " + buildRecursiveBracketExpression("if(month(today()) = 3, sum(\"Table5\".\"Month 002\"), $1)", "0", 5) + " FROM mytbl";
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+    
+    @Test
+    public void testRecursiveBracketExpressionIssue1019() {
+        assertEquals("IF(1=1, 1, 2)", buildRecursiveBracketExpression("IF(1=1, $1, 2)", "1", 0));
+        assertEquals("IF(1=1, IF(1=1, 1, 2), 2)", buildRecursiveBracketExpression("IF(1=1, $1, 2)", "1", 1));
+        assertEquals("IF(1=1, IF(1=1, IF(1=1, 1, 2), 2), 2)", buildRecursiveBracketExpression("IF(1=1, $1, 2)", "1", 2));
+    }
+    
+    @Test
+    public void testRecursiveBracketExpressionIssue1019_2() throws JSQLParserException {
+        doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 10);
+    }
 
     /**
      * Try to avoid or border exceptionally big parsing time increments by adding more bracket constructs.
@@ -58,10 +68,14 @@ public class NestedBracketsPerformanceTest {
      */
     @Test
     public void testIncreaseOfParseTime() throws JSQLParserException {
+        doIncreaseOfParseTimeTesting("concat($1,'B')", "'A'", 20);
+    }
+    
+    private void doIncreaseOfParseTimeTesting(String template, String finalExpression, int maxDepth) throws JSQLParserException {
         long oldDurationTime = 1000;
         int countProblematic = 0;
-        for (int i = 0; i < ITERATIONS_20; i++) {
-            String sql = "SELECT " + buildRecursiveBracketExpression("concat($1,'B')", "'A'", i) + " FROM mytbl";
+        for (int i = 0; i < maxDepth; i++) {
+            String sql = "SELECT " + buildRecursiveBracketExpression(template, finalExpression, i) + " FROM mytbl";
             long startTime = System.currentTimeMillis();
             assertSqlCanBeParsedAndDeparsed(sql, true);
             long durationTime = System.currentTimeMillis() - startTime;
@@ -86,7 +100,7 @@ public class NestedBracketsPerformanceTest {
         assertEquals("concat(concat('A','B'),'B')", buildRecursiveBracketExpression("concat($1,'B')", "'A'", 1));
         assertEquals("concat(concat(concat('A','B'),'B'),'B')", buildRecursiveBracketExpression("concat($1,'B')", "'A'", 2));
     }
-
+    
     private String buildRecursiveBracketExpression(String template, String finalExpression, int depth) {
         if (depth == 0) {
             return template.replace("$1", finalExpression);
