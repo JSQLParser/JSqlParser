@@ -2555,13 +2555,12 @@ Expression OrExpression():
 {
     left=AndExpression() { result = left; }
     (
-        LOOKAHEAD(<K_OR>)
-            <K_OR>
-            right=AndExpression()
-            {
-                result = new OrExpression(left, right);
-                left = result;
-               }
+        <K_OR>
+        right=AndExpression()
+        {
+            result = new OrExpression(left, right);
+            left = result;
+        }
      )*
      {
          return result;
@@ -2577,7 +2576,7 @@ Expression AndExpression() :
 }
 {
     (
-    LOOKAHEAD(Condition())
+        LOOKAHEAD(Condition())
         left=Condition()
         |
         [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -2618,7 +2617,6 @@ Expression Condition():
     (
         LOOKAHEAD(RegularCondition()) result=RegularCondition()
         | result=SQLCondition()
-        //| result=SimpleExpression()
     )
 
     { return not?new NotExpression(result, exclamationMarkNot):result; }
@@ -3755,9 +3753,6 @@ Function InternalFunction(Function retval) :
     boolean ignoreNulls = false;
 }
 {
-    /*funcName=RelObjectNameExt()
-    [ "." tmp=RelObjectNameExt() { funcName+= "." + tmp; } ["." tmp=RelObjectNameExt() { funcName+= "." + tmp; }]]
-    */
     funcName = RelObjectNameList()
 
     "(" [ [ LOOKAHEAD(2)(<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }) ]
