@@ -1329,14 +1329,13 @@ String RelObjectNameWithoutValue() :
       | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
       | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_ENABLE>
-	  | tk=<K_UNSIGNED>
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TO> | tk=<K_TYPE> | tk=<K_ISNULL>
 	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
       | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIZE> | tk=<K_SEQUENCE> | tk=<K_SESSION>
       | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE> | tk=<K_CYCLE> | tk=<K_OF> | tk=<K_EXCLUDE>
     /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
-      | tk=<K_FORMAT> | tk=<K_DIV>
+      | tk=<K_FORMAT> | tk=<K_DIV> | tk=<K_UNSIGNED>
       )
 
     { return tk.image; }
@@ -1349,7 +1348,8 @@ String RelObjectName() :
 {    Token tk = null; String result = null; }
 {
     (result = RelObjectNameWithoutValue()
-		| tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON> | tk=<K_ORDER> | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES> )
+		| tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON> | tk=<K_ORDER> | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE> 
+                | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES> )
 
     {
 		if (tk!=null) result=tk.image;
@@ -4233,7 +4233,8 @@ ColDataType ColDataType():
 		| ( tk=<S_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_DATE_LITERAL> | tk=<K_XML> | tk=<K_INTERVAL>
 			| tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> | tk=<K_BINARY> | tk=<K_JSON> )
 				{ colDataType.setDataType(tk.image); }
-		| tk=<K_UNSIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
+		| tk=<K_UNSIGNED>  [LOOKAHEAD(2) tk2=<S_IDENTIFIER>] 
+                    { if (tk2!=null) colDataType.setDataType(tk.image + " " + tk2.image); else colDataType.setDataType(tk.image); } 
 		| LOOKAHEAD(2) tk=<K_SIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
 		| tk=<K_SIGNED> { colDataType.setDataType(tk.image);}
 	)

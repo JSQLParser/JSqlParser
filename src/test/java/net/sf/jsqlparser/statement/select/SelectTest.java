@@ -4378,4 +4378,9 @@ public class SelectTest {
         Statement stmt = CCJSqlParserUtil.parse("SELECT id, name FROM test OFFSET 20 LIMIT 10");
         assertEquals("SELECT id, name FROM test LIMIT 10 OFFSET 20", stmt.toString());
     }
+    
+    @Test
+    public void testKeywordUnsignedIssue961() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMN1, COLUMN2, CASE WHEN COLUMN1.DATA NOT IN ('1', '3') THEN CASE WHEN CAST(COLUMN2 AS UNSIGNED) IN ('1', '2', '3') THEN 'Q1' ELSE 'Q2' END END AS YEAR FROM TESTTABLE");
+    }
 }
