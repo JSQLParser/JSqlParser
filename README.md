@@ -67,6 +67,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.0
 
+* refactored grammar to get a huge speedup for parenthesis in **from** part like: `SELECT * FROM (((((( mytable ))))))`
+* allowed cast as **unsigned**
 * allowed keyword **current** as jdbc named parameter name
 * **Grant** allows now multipart names
 * updated JavaCC 7.0.10
