@@ -1935,6 +1935,7 @@ List<Table> IntoClause():
 FromItem FromItem():
 {
     FromItem fromItem = null;
+    FromItem fromItem2 = null;
     Pivot pivot = null;
     UnPivot unpivot = null;
     Alias alias = null;
@@ -1950,14 +1951,13 @@ FromItem FromItem():
                 (
                     "("
                         (
-                        LOOKAHEAD(SubJoin())
-                        fromItem=SubJoin()
-                        |
-                        LOOKAHEAD(3)
+                        LOOKAHEAD(3) fromItem2=FromItem()
+                          { fromItem = new ParenthesisFromItem(fromItem2); }
+                        [ fromItem = SubJoin(fromItem2) ]
+                        /* LOOKAHEAD(SubJoin())
+                        fromItem=SubJoin() */
+                        | 
                         fromItem=SubSelect()
-                        |
-                        fromItem=FromItem()
-                          { fromItem = new ParenthesisFromItem(fromItem); }
                         )
                     ")"
                     [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
@@ -2049,19 +2049,17 @@ LateralSubSelect LateralSubSelect():
     }
 }
 
-FromItem SubJoin():
+FromItem SubJoin(FromItem fromItem):
 {
-    FromItem fromItem = null;
     Join join = null;
     List<Join> joinList = null;
 }
 {
-    fromItem=FromItem()
-	joinList=SubJoinsList()
+    joinList=SubJoinsList()
     {
-		SubJoin subJoin = new SubJoin();
-		subJoin.setLeft(fromItem);
-		subJoin.setJoinList(joinList);
+        SubJoin subJoin = new SubJoin();
+        subJoin.setLeft(fromItem);
+        subJoin.setJoinList(joinList);
         return subJoin;
     }
 }
