@@ -9,16 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import java.io.*;
 import java.nio.charset.Charset;
-import java.util.*;
-import net.sf.jsqlparser.*;
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.expression.operators.arithmetic.*;
-import net.sf.jsqlparser.expression.operators.relational.*;
-import net.sf.jsqlparser.parser.*;
-import net.sf.jsqlparser.schema.*;
-import net.sf.jsqlparser.statement.*;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import org.apache.commons.io.IOUtils;
 
@@ -4380,5 +4371,11 @@ public class SelectTest {
     @Test
     public void testCreateTableWithParameterDefaultFalseIssue1088() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT p.*, rhp.house_id FROM rel_house_person rhp INNER JOIN person p ON rhp.person_id = p.if WHERE rhp.house_id IN (SELECT house_id FROM rel_house_person WHERE person_id = :personId AND current_occupant = :current) AND rhp.current_occupant = :currentOccupant");
+    }
+    
+    @Test
+    public void testMissingLimitKeywordIssue1006() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("SELECT id, name FROM test OFFSET 20 LIMIT 10");
+        assertEquals("SELECT id, name FROM test LIMIT 10 OFFSET 20", stmt.toString());
     }
 }
