@@ -4383,4 +4383,9 @@ public class SelectTest {
     public void testKeywordUnsignedIssue961() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT COLUMN1, COLUMN2, CASE WHEN COLUMN1.DATA NOT IN ('1', '3') THEN CASE WHEN CAST(COLUMN2 AS UNSIGNED) IN ('1', '2', '3') THEN 'Q1' ELSE 'Q2' END END AS YEAR FROM TESTTABLE");
     }
+    
+    @Test
+    public void testH2CaseWhenFunctionIssue1091() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CASEWHEN(ID = 1, 'A', 'B') FROM mytable");
+    }
 }

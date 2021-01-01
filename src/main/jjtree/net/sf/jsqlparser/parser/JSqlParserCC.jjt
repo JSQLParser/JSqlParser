@@ -144,6 +144,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CALL : "CALL">
 |   <K_CASCADE: "CASCADE">
 |   <K_CASE:"CASE">
+|   <K_CASEWHEN:"CASEWHEN">  /* H2 casewhen function */
 |   <K_CAST:"CAST">
 |   <K_CHARACTER:"CHARACTER">
 |   <K_CHANGE:"CHANGE">
@@ -1379,7 +1380,8 @@ String RelObjectNameExt():
 {
     ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
         | tk=<K_DOUBLE> | tk=<K_IF> | <K_OPTIMIZE> | tk=<K_LIMIT>
-        | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC> )
+        | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC> 
+        | tk=<K_CASEWHEN> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -3706,7 +3708,7 @@ Function FunctionWithCondParams() #Function: {
     Token token = null;
 }
 {
-    (token = <K_IF> | token = <K_IIF>) { funcName=token.image; }
+    (token = <K_IF> | token = <K_IIF> | token = <K_CASEWHEN> ) { funcName=token.image; }
 
     "("
         expressionList=ComplexExpressionList()
