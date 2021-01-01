@@ -22,6 +22,7 @@ Please provide feedback on:
 * API changes: extend visitor with return values (https://github.com/JSQLParser/JSqlParser/issues/901)
 
 ## News
+* Released version **4.0** of JSqlParser
 * Released version **3.2** of JSqlParser
 * Released version **3.1** of JSqlParser
 * Released version **3.0** of JSqlParser
@@ -29,17 +30,6 @@ Please provide feedback on:
   a parser flag (**CCJSqlParser.withSquareBracketQuotation**).
 * due to an API change the version will be 3.0
 * JSqlParser uses now Java 8 at the minimum
-* Released version **2.1** of JSqlParser
-* Released version **2.0** of JSqlParser
-* breaking **API** change: to support chained functions attribute type was changed to **Expression**
-* Released version **1.4** of JSqlParser
-* Released version **1.3** of JSqlParser
-* Changed behaviour of dotted multipart names for user variables, tables and columns to accept e.g. ORM class names. To achieve this some behaviour of name parsing had to be changed. Before this the parser would fail missing databasenames for SqlServer queries (server..schema.table). But this is allowed for the schema (server.database..table). Now the parser accepts missing inner names per se to avoid some very complicated parsing rules.
-* Released version **1.2** of JSqlParser
-* breaking **API** change: merge of *within group* and *over* (window expressions)
-* Released version **1.1** of JSqlParser. 
-* JSqlParser has now a build in checkstyle configuration to introduce source code conventions.
-* Released first major version **1.0** of JSqlParser. 
 
 More news can be found here: https://github.com/JSQLParser/JSqlParser/wiki/News.
 
@@ -65,28 +55,8 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 4.0
+## Extensions in the latest SNAPSHOT version 4.1
 
-* refactored grammar to get a huge speedup for parenthesis in **from** part like: `SELECT * FROM (((((( mytable ))))))`
-* allowed cast as **unsigned**
-* allowed keyword **current** as jdbc named parameter name
-* **Grant** allows now multipart names
-* updated JavaCC 7.0.10
-* support for **CREATE OR REPLACE** for create function statements
-* support for JDBCParameter for interval expressions
-* support for **xmlserialize(xmlagg(xmltext( <column> ) ORDER BY <list of columns>) as <column data type> )** expression
-* first try to support conditions as select items: **SELECT a < b**
-* support for **DROP SEQUENCE**
-* heavy updating of many class files to support fluent like class building and setting of attributes (thx to @gitmotte) 
-** update version to 4.0-SNAPSHOT due fluent PR
-* **ON UPDATE CASCADE** implemented
-* add generated sources to classpath to avoid maven eclipse problems
-* **COMMENT ON VIEW** implemented
-* allowed Jdbc named parameters within interval expressions
-* allow variable assignments in select statements in different positions
-* allow keywords as object names **of**, **exclude**
-* multi part **Table** name gets automatically resized if the last item is removed
-* first version of a validation framework for sql statements (thx to @gitmotte)
 
 ## Extensions of JSqlParser releases
 
