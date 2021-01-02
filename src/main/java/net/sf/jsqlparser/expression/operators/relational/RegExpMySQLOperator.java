@@ -17,12 +17,26 @@ public class RegExpMySQLOperator extends BinaryExpression {
 
     private RegExpMatchOperatorType operatorType;
     private boolean useRLike = false;
+    private boolean not = false;
 
     public RegExpMySQLOperator(RegExpMatchOperatorType operatorType) {
+        this(false, operatorType); 
+    }
+    
+    public RegExpMySQLOperator(boolean not, RegExpMatchOperatorType operatorType) {
         if (operatorType == null) {
             throw new NullPointerException();
         }
         this.operatorType = operatorType;
+        this.not = not;
+    }
+
+    public boolean isNot() {
+        return not;
+    }
+
+    public void setNot(boolean not) {
+        this.not = not;
     }
 
     public RegExpMatchOperatorType getOperatorType() {
@@ -45,7 +59,8 @@ public class RegExpMySQLOperator extends BinaryExpression {
 
     @Override
     public String getStringExpression() {
-        return (useRLike ? "RLIKE" : "REGEXP")
+        return (not?"NOT ":"") 
+                + (useRLike ? "RLIKE" : "REGEXP")
                 + (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
     }
 

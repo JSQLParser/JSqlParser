@@ -2509,6 +2509,16 @@ public class SelectTest {
         String stmt = "SELECT * FROM mytable WHERE first_name REGEXP '^Ste(v|ph)en$'";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+    
+    @Test
+    public void testNotRegexpMySQLIssue887() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE first_name NOT REGEXP '^Ste(v|ph)en$'");
+    }
+    
+    @Test
+    public void testNotRegexpMySQLIssue887_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE NOT first_name REGEXP '^Ste(v|ph)en$'");
+    }
 
     @Test
     public void testRegexpBinaryMySQL() throws JSQLParserException {
