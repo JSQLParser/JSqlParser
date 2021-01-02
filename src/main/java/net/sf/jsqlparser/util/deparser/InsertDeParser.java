@@ -41,6 +41,18 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
 
     @Override
     public void deParse(Insert insert) {
+        if (insert.getWithItemsList() != null && !insert.getWithItemsList().isEmpty()) {
+            buffer.append("WITH ");
+            for (Iterator<WithItem> iter = insert.getWithItemsList().iterator(); iter.hasNext();) {
+                WithItem withItem = iter.next();
+                withItem.accept(this.selectVisitor);
+                if (iter.hasNext()) {
+                    buffer.append(",");
+                }
+                buffer.append(" ");
+            }
+        }
+        
         buffer.append("INSERT ");
         if (insert.getModifierPriority() != null) {
             buffer.append(insert.getModifierPriority()).append(" ");
@@ -187,4 +199,6 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
     public void setSelectVisitor(SelectVisitor visitor) {
         selectVisitor = visitor;
     }
+    
+    
 }

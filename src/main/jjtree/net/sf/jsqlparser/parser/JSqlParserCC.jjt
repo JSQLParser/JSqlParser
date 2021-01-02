@@ -445,18 +445,26 @@ Statement Statement() #Statement:
 }
 
 Statement SingleStatement() :
-{ Statement stm = null;}
+{ 
+    Statement stm = null;
+    List<WithItem> with = null;
+}
 {
     try {
+        
+        //
+
         (
-        LOOKAHEAD(3)
-        stm = Select()
-        |
-        stm = Values()
+            (
+                [ with=WithList() {  } ]
+                (
+                    stm = Select( with )
+                    |
+                    stm = Insert( with )
+                )
+            )
         |
         stm = Update()
-        |
-        stm = Insert()
         |
         stm = Upsert()
         |
@@ -675,7 +683,7 @@ ExplainStatement Explain(): {
 } {
     <K_EXPLAIN>
     options=ExplainStatementOptions()
-    select = Select()
+    select = SelectWithWithItems( )
     {
        ExplainStatement es = new ExplainStatement(select);
        if(options != null && !options.isEmpty()) {
@@ -886,7 +894,7 @@ Update Update():
         "("
         (
             { update.setUseSelect(true); }
-            select = Select()
+            select = SelectWithWithItems( )
         )
         ")"
    )
@@ -987,7 +995,7 @@ List<SelectExpressionItem> ListExpressionItem():
    { return retval; }
 }
 
-Insert Insert():
+Insert Insert( List<WithItem> with ):
 {
     Insert insert = new Insert();
     Table table = null;
@@ -1013,8 +1021,7 @@ Insert Insert():
     String name = null;
     boolean useAs = false;
 }
-{
-    [ WithList() ]
+{    
     <K_INSERT>
     [(tk = <K_LOW_PRIORITY> | tk = <K_DELAYED> | tk = <K_HIGH_PRIORITY>)
     {if (tk!=null)
@@ -1044,11 +1051,11 @@ Insert Insert():
         (
             LOOKAHEAD(2) "(" { useSelectBrackets = true; }
                 { insert.setUseValues(false); }
-                select = Select()
+                select = SelectWithWithItems( )
             ")"
             |
             { insert.setUseValues(false); }
-            select = Select()
+            select = SelectWithWithItems( )
         )
 
         |
@@ -1096,7 +1103,8 @@ Insert Insert():
         if (!columns.isEmpty()) { 
             insert.setColumns(columns);
         }
-        return insert.withItemsList(itemsList)
+        return insert.withWithItemsList(with)
+              .withItemsList(itemsList)
               .withUseSelectBrackets(useSelectBrackets)
               .withSelect(select)
               .withTable(table)
@@ -1154,11 +1162,11 @@ Upsert Upsert():
         (
             LOOKAHEAD(2) "(" { useSelectBrackets = true; }
                 { upsert.setUseValues(false); }
-                select = Select()
+                select = SelectWithWithItems( )
             ")"
             |
             { upsert.setUseValues(false); }
-            select = Select()
+            select = SelectWithWithItems( )
         )
     )
 
@@ -1428,14 +1436,25 @@ Table TableWithAlias():
     { return table; }
 }
 
-Select Select():
+Select SelectWithWithItems( ):
 {
-    Select select = new Select();
-    SelectBody selectBody = null;
+    Select select;
     List<WithItem> with = null;
 }
 {
-    [ with=WithList() {  } ] selectBody = SelectBody()
+    [ with=WithList() {  } ] select = Select( with )
+    {
+        return select;
+    }
+}
+
+Select Select( List<WithItem> with ):
+{
+    Select select = new Select();
+    SelectBody selectBody = null;
+}
+{
+    selectBody = SelectBody()
     {
         return select.withWithItemsList(with).withSelectBody(selectBody);
     }
@@ -4200,8 +4219,8 @@ CreateTable CreateTable():
     // table properties , all these are optional
     [ rowMovement = RowMovement() { createTable.setRowMovement(rowMovement); }]
     [
-    <K_AS> ( LOOKAHEAD("(" Select() ")") "(" select = Select() { createTable.setSelect(select, true); } ")"
-             | select = Select() { createTable.setSelect(select, false); } )
+    <K_AS> ( LOOKAHEAD("(" SelectWithWithItems( ) ")") "(" select = SelectWithWithItems( ) { createTable.setSelect(select, true); } ")"
+             | select = SelectWithWithItems( ) { createTable.setSelect(select, false); } )
     ]
     [
     <K_LIKE> ( LOOKAHEAD("(" Table() ")") "(" likeTable=Table() { createTable.setLikeTable(likeTable, true); } ")"
@@ -4276,7 +4295,7 @@ CreateView CreateView():
     <K_VIEW> view=Table() { createView.setView(view); }
     [ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
     <K_AS>
-    select=Select() { createView.setSelect(select); }
+    select=SelectWithWithItems( ) { createView.setSelect(select); }
     [ <K_WITH> <K_READ> <K_ONLY> { createView.setWithReadOnly(true); } ]
     { return createView; }
 }
