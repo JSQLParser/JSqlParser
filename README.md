@@ -57,6 +57,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.1
 
+* added support for **NOT** in MySqls **REGEXP** clause
 * added support for **WITH mytble as ( .. ) INSERT INTO ...**
 * added support for H2 **casewhen** function with conditional parameters
 
