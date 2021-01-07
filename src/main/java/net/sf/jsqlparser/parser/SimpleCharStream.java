@@ -453,6 +453,7 @@ public class SimpleCharStream {
      * @param newCol
      */
     public void adjustBeginLineColumn(int newLine, int newCol) {
+        int nl = newLine;
         int start = tokenBegin;
         int len;
 
@@ -469,7 +470,7 @@ public class SimpleCharStream {
         int columnDiff = 0;
 
         while (i < len && bufline[j = start % bufsize] == bufline[k = ++start % bufsize]) {
-            bufline[j] = newLine;
+            bufline[j] = nl;
             nextColDiff = columnDiff + bufcolumn[k] - bufcolumn[j];
             bufcolumn[j] = newCol + columnDiff;
             columnDiff = nextColDiff;
@@ -477,14 +478,14 @@ public class SimpleCharStream {
         }
 
         if (i < len) {
-            bufline[j] = newLine++;
+            bufline[j] = nl++;
             bufcolumn[j] = newCol + columnDiff;
 
             while (i++ < len) {
                 if (bufline[j = start % bufsize] != bufline[++start % bufsize]) {
-                    bufline[j] = newLine++;
+                    bufline[j] = nl++;
                 } else {
-                    bufline[j] = newLine;
+                    bufline[j] = nl;
                 }
             }
         }
