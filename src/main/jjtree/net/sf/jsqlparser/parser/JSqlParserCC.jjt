@@ -3241,7 +3241,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     (
         <K_NULL> { retval = new NullValue(); }
 
-        | retval=CaseWhenExpression()
+        | LOOKAHEAD(3) retval=CaseWhenExpression()
 
         | retval = SimpleJdbcParameter()
 
