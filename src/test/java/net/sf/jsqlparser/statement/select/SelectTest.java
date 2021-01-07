@@ -4403,4 +4403,9 @@ public class SelectTest {
     public void testH2CaseWhenFunctionIssue1091() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CASEWHEN(ID = 1, 'A', 'B') FROM mytable");
     }
+    
+    @Test
+    public void testMultiPartTypesIssue992() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST('*' AS pg_catalog.text)");
+    }
 }
