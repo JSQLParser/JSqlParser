@@ -321,7 +321,7 @@ public class CreateTableTest {
         String statement = "CREATE TABLE abc.tabc (transaction_date TIMESTAMP WITHOUT TIME ZONE)";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new CreateTable().withTable(new Table(Arrays.asList("abc", "tabc"))).addColumnDefinitions(
-                        new ColumnDefinition("transaction_date", new ColDataType("TIMESTAMP WITHOUT TIME ZONE"))),
+                new ColumnDefinition("transaction_date", new ColDataType("TIMESTAMP WITHOUT TIME ZONE"))),
                 statement);
     }
 
@@ -499,7 +499,7 @@ public class CreateTableTest {
             if (line != null) {
                 if ((line.length() != 0)
                         && ((line.length() < 2) || (line.length() >= 2)
-                                && !(line.charAt(0) == '/' && line.charAt(1) == '/'))) {
+                        && !(line.charAt(0) == '/' && line.charAt(1) == '/'))) {
                     break;
                 }
             } else {
@@ -561,8 +561,8 @@ public class CreateTableTest {
         assertDeparse(new CreateTable().withTable(new Table().withName("foo")).withColumnDefinitions(Arrays.asList(
                 new ColumnDefinition().withColumnName("reason").withColDataType(
                         new ColDataType().withDataType("character varying")
-                        .addArgumentsStringList(Arrays.asList("255")))
-                .addColumnSpecs("DEFAULT 'Test' :: character varying", "NOT NULL"))),
+                                .addArgumentsStringList(Arrays.asList("255")))
+                        .addColumnSpecs("DEFAULT 'Test' :: character varying", "NOT NULL"))),
                 statement);
 
     }
@@ -676,4 +676,9 @@ public class CreateTableTest {
         String statement = "CREATE TABLE a LIKE (b)";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
+
+    @Test
+    public void testCreateTableWithParameterDefaultFalseIssue1089() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("create table ADDRESS_TYPE ( address_type CHAR(1) not null, at_name VARCHAR(250) not null, is_disabled BOOL not null default FALSE, constraint PK_ADDRESS_TYPE primary key (address_type) )", true);
+    }   
 }

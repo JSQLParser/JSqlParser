@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -21,7 +22,7 @@ public class Grant implements Statement {
 
     private String role;
     private List<String> privileges;
-    private String objectName;
+    private List<String> objectName = new ArrayList<>();
     private List<String> users;
 
     @Override
@@ -46,11 +47,23 @@ public class Grant implements Statement {
     }
 
     public String getObjectName() {
+        return objectName.size()==0?null:objectName.stream()
+                .map(part -> part==null?"":part)
+                .collect(joining("."));
+    }
+    
+    public List<String> getObjectNameParts() {
         return objectName;
     }
 
     public void setObjectName(String objectName) {
-        this.objectName = objectName;
+        this.objectName.clear();
+        this.objectName.add(objectName);
+    }
+    
+    public void setObjectName(List<String> objectName) {
+        this.objectName.clear();
+        this.objectName.addAll(objectName);
     }
 
     public List<String> getUsers() {
@@ -99,6 +112,11 @@ public class Grant implements Statement {
     }
 
     public Grant withObjectName(String objectName) {
+        this.setObjectName(objectName);
+        return this;
+    }
+    
+    public Grant withObjectName(List<String> objectName) {
         this.setObjectName(objectName);
         return this;
     }

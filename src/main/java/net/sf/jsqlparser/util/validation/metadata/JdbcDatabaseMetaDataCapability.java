@@ -172,7 +172,7 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
     /**
      * Split fqn by "." and validate expected path-elements
      *
-     * @param namedObject
+     * @param type
      * @param fqn
      * @param min
      * @param max
