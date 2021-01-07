@@ -3094,6 +3094,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testCaseKeyword() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM Case");
+    }
+
+    @Test
     public void testCastToSignedInteger() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST(contact_id AS SIGNED INTEGER) FROM contact WHERE contact_id = 20");
     }
