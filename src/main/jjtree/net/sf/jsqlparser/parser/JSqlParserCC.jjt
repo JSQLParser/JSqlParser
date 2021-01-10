@@ -1568,8 +1568,7 @@ PlainSelect PlainSelect() #PlainSelect:
     }
 }
 
-SelectBody SetOperationList() #SetOperationList:
-{
+SelectBody SetOperationList() #SetOperationList: {
     SetOperationList list = new SetOperationList();
     List<OrderByElement> orderByElements = null;
     Limit limit = null;
@@ -1579,30 +1578,26 @@ SelectBody SetOperationList() #SetOperationList:
     List<SelectBody> selects = new ArrayList<SelectBody>();
     List<SetOperation> operations = new ArrayList<SetOperation>();
     List<Boolean> brackets = new ArrayList<Boolean>();
-    boolean bracket;
+    boolean bracket = false;
 }
 {
+    (("(" select=SelectBody() ")" { bracket=true;} )
+                    | ( select=PlainSelect() | select=Values() ) { bracket=false;} ) {selects.add(select);brackets.add(bracket); }   
     (
-
-        (
-            (("(" select=SelectBody() ")" { bracket=true;} )
-                    | ( select=PlainSelect() | select=Values() ) { bracket=false;} ) {selects.add(select);brackets.add(bracket); }
-            (
-                ((<K_UNION> { UnionOp union = new UnionOp();linkAST(union,jjtThis);operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
-                | <K_INTERSECT> { operations.add(new IntersectOp()); }
-                | <K_MINUS> { operations.add(new MinusOp()); }
-                | <K_EXCEPT> { operations.add(new ExceptOp()); }
-                )
-
-                (("(" select=SelectBody() ")" { bracket=true;} ) | ( select=PlainSelect() | select=Values() ) { bracket=false;} ) {selects.add(select);brackets.add(bracket);}
-            )*
+        ((<K_UNION> { UnionOp union = new UnionOp();linkAST(union,jjtThis);operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
+        | <K_INTERSECT> { operations.add(new IntersectOp()); }
+        | <K_MINUS> { operations.add(new MinusOp()); }
+        | <K_EXCEPT> { operations.add(new ExceptOp()); }
         )
 
-        [orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
-        [LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {list.setLimit(limit);} ]
-        [LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);} ]
-        [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);} ]
-    )
+        (("(" select=SelectBody() ")" { bracket=true;} ) | ( select=PlainSelect() | select=Values() ) { bracket=false;} ) {selects.add(select);brackets.add(bracket);}
+    )*
+
+
+    [orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
+    [LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {list.setLimit(limit);} ]
+    [LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);} ]
+    [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);} ]
 
     {
         if (selects.size()==1 && selects.get(0) instanceof PlainSelect && orderByElements==null) {
@@ -1620,6 +1615,40 @@ SelectBody SetOperationList() #SetOperationList:
             list.setBracketsOpsAndSelects(brackets,selects,operations);
             return list;
         }
+    }
+}
+
+SelectBody SetOperationListWithoutIntialSelect(SelectBody _select, boolean _bracket) #SetOperationList:
+{
+    SetOperationList list = new SetOperationList();
+    List<OrderByElement> orderByElements = null;
+    Limit limit = null;
+    Offset offset = null;
+    Fetch fetch = null;
+    SelectBody select = _select;
+    List<SelectBody> selects = new ArrayList<SelectBody>();
+    List<SetOperation> operations = new ArrayList<SetOperation>();
+    List<Boolean> brackets = new ArrayList<Boolean>();
+    boolean bracket = _bracket;
+}
+{
+    {
+        selects.add(select);
+        brackets.add(bracket);
+    } 
+    ( LOOKAHEAD(2) 
+        ((<K_UNION> { UnionOp union = new UnionOp();linkAST(union,jjtThis);operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
+        | <K_INTERSECT> { operations.add(new IntersectOp()); }
+        | <K_MINUS> { operations.add(new MinusOp()); }
+        | <K_EXCEPT> { operations.add(new ExceptOp()); }
+        )
+
+        "(" select=SelectBody() ")" { bracket=true;}  {selects.add(select);brackets.add(bracket);}
+    )+
+
+    {
+        list.setBracketsOpsAndSelects(brackets,selects,operations);
+        return list;
     }
 }
 
@@ -1962,6 +1991,7 @@ FromItem FromItem():
     Alias alias = null;
     MySQLIndexHint indexHint = null;
     SQLServerHints sqlServerHints = null;
+    SelectBody selectBody;
 }
 {
     (
@@ -1982,6 +2012,13 @@ FromItem FromItem():
                         )
                     ")"
                     [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
+                    [ LOOKAHEAD(2) selectBody = SetOperationListWithoutIntialSelect(((SubSelect)fromItem).getSelectBody(), true) 
+                        {   
+                            if (!(selectBody instanceof PlainSelect)) {
+                                fromItem = new SubSelect().withSelectBody(selectBody); 
+                            }
+                        }
+                    ]
                 )
                 |
                 LOOKAHEAD(TableFunction())
