@@ -4408,4 +4408,27 @@ public class SelectTest {
     public void testMultiPartTypesIssue992() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST('*' AS pg_catalog.text)");
     }
+    
+    @Test
+    public void testSetOperationWithParenthesisIssue1094() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT (SELECT B FROM tbl2)) AS union1");
+    }
+    
+    @Test
+    public void testSetOperationWithParenthesisIssue1094_2() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM (((SELECT A FROM tbl)) UNION DISTINCT (SELECT B FROM tbl2)) AS union1");
+        assertEquals("SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT (SELECT B FROM tbl2)) AS union1", stmt.toString());
+    }
+    
+    @Test
+    public void testSetOperationWithParenthesisIssue1094_3() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM (((SELECT A FROM tbl)) UNION DISTINCT ((SELECT B FROM tbl2))) AS union1");
+        assertEquals("SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT ((SELECT B FROM tbl2))) AS union1", stmt.toString());
+    }
+    
+    @Test
+    public void testSetOperationWithParenthesisIssue1094_4() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM (((((SELECT A FROM tbl)))) UNION DISTINCT (((((((SELECT B FROM tbl2)))))))) AS union1");
+        assertEquals("SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT ((SELECT B FROM tbl2))) AS union1", stmt.toString());
+    }
 }
