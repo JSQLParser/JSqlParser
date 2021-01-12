@@ -2309,6 +2309,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testIntervalWithFunction() throws JSQLParserException {
+        String stmt = "SELECT DATE_ADD(start_date, INTERVAL COALESCE(duration, 21) MINUTE) AS end_datetime FROM appointment";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testInterval1() throws JSQLParserException {
         String stmt = "SELECT 5 + INTERVAL '3 days'";
         assertSqlCanBeParsedAndDeparsed(stmt);

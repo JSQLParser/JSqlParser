@@ -3457,7 +3457,7 @@ IntervalExpression IntervalExpression() : {
 {
 
 { interval = new IntervalExpression(); }
-    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | expr = Column() | expr = JdbcNamedParameter() | expr = SimpleJdbcParameter() )
+    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | LOOKAHEAD(SimpleJdbcParameter()) expr = SimpleJdbcParameter() | expr = JdbcNamedParameter() | LOOKAHEAD(Function()) expr = Function() | expr = Column())
     {
         if (expr != null) {
             if (signed) expr = new SignedExpression('-', expr);
