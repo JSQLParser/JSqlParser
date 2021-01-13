@@ -4431,4 +4431,9 @@ public class SelectTest {
         Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM (((((SELECT A FROM tbl)))) UNION DISTINCT (((((((SELECT B FROM tbl2)))))))) AS union1");
         assertEquals("SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT ((SELECT B FROM tbl2))) AS union1", stmt.toString());
     }
+    
+    @Test
+    public void testSignedKeywordIssue1100() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT signed, unsigned FROM mytable");
+    }
 }

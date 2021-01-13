@@ -1341,7 +1341,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TO> | tk=<K_TYPE> | tk=<K_ISNULL>
 	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
-      | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIZE> | tk=<K_SEQUENCE> | tk=<K_SESSION>
+      | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIGNED> | tk=<K_SIZE> | tk=<K_SEQUENCE> | tk=<K_SESSION>
       | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE> | tk=<K_CYCLE> | tk=<K_OF> | tk=<K_EXCLUDE>
     /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       | tk=<K_FORMAT> | tk=<K_DIV> | tk=<K_UNSIGNED> | tk=<K_CASE>
