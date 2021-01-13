@@ -1331,7 +1331,7 @@ String RelObjectNameWithoutValue() :
     (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE> | tk=<K_CHARACTER>
       | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_DISABLE> | tk=<K_DESC>
       | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING>
-      | tk=<K_LAST> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE>
+      | tk=<K_LAST> | tk=<K_LEADING> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE>
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_XML>
       | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>
       | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_PERCENT> | tk=<K_PRIOR>
@@ -3826,13 +3826,13 @@ Function InternalFunction(Function retval) :
         ( LOOKAHEAD(4)
             "*" { retval.setAllColumns(true); }
             |
-			namedExpressionList=NamedExpressionList1()
-			|
-			LOOKAHEAD(NamedExpressionListExprFirst()) namedExpressionList = NamedExpressionListExprFirst()
-			|
+            LOOKAHEAD(3) namedExpressionList=NamedExpressionList1()
+            |
+            LOOKAHEAD(NamedExpressionListExprFirst()) namedExpressionList = NamedExpressionListExprFirst()
+            |
             LOOKAHEAD(3) expressionList=SimpleExpressionList()
-			|
-			expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); }
+            |
+            expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); }
         )]
         [ <K_IGNORE> <K_NULLS> {retval.setIgnoreNulls(true); }]
 	")"

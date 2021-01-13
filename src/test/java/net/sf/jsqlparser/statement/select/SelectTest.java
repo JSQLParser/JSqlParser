@@ -4436,4 +4436,9 @@ public class SelectTest {
     public void testSignedKeywordIssue1100() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT signed, unsigned FROM mytable");
     }
+    
+    @Test
+    public void testSignedKeywordIssue995() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT leading FROM prd_reprint");
+    }
 }
