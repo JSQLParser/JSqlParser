@@ -15,6 +15,7 @@ import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayExpression;
+import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
@@ -873,6 +874,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(ArrayExpression array) {
         array.getObjExpression().accept(this);
         array.getIndexExpression().accept(this);
+    }
+
+    @Override
+    public void visit(ArrayConstructor array) {
+        for (Expression expression : array.getExpressions()) {
+            expression.accept(this);
+        }
     }
 
     @Override

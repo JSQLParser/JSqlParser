@@ -543,6 +543,13 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(ArrayConstructor aThis) {
+        for (Expression expression : aThis.getExpressions()) {
+            expression.accept(this);
+        }
+    }
+
+    @Override
     public void visit(VariableAssignment var) {
         var.getVariable().accept(this);
         var.getExpression().accept(this);
