@@ -4006,6 +4006,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testArrayRange() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT (arr[1:3])[1] FROM MYTABLE");
+    }
+
+    @Test
     public void testIssue842() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a.id lendId, "
                 + "a.lend_code                                            lendCode, "

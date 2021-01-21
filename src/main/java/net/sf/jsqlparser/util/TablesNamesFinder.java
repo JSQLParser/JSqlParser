@@ -872,7 +872,15 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(ArrayExpression array) {
         array.getObjExpression().accept(this);
-        array.getIndexExpression().accept(this);
+        if (array.getStartIndexExpression() != null){
+            array.getIndexExpression().accept(this);
+        }
+        if (array.getStartIndexExpression() != null) {
+            array.getStartIndexExpression().accept(this);
+        }
+        if (array.getStopIndexExpression() != null) {
+            array.getStopIndexExpression().accept(this);
+        }
     }
 
     @Override
