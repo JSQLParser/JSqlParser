@@ -158,10 +158,10 @@ public class CreateTable implements Statement {
                 sql += PlainSelect.getStringList(indexes);
             }
             sql += ")";
-            String options = PlainSelect.getStringList(tableOptionsStrings, false, false);
-            if (options != null && options.length() > 0) {
-                sql += " " + options;
-            }
+        }
+        String options = PlainSelect.getStringList(tableOptionsStrings, false, false);
+        if (options != null && options.length() > 0) {
+            sql += " " + options;
         }
 
         if (rowMovement != null) {
