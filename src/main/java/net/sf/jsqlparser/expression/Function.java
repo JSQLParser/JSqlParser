@@ -14,6 +14,8 @@ import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * A function as MAX,COUNT...
@@ -28,6 +30,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private boolean isEscaped = false;
     private Expression attribute;
     private String attributeName;
+    private List<OrderByElement> orderByElements;
     private KeepExpression keep = null;
     private boolean ignoreNulls = false;
 
@@ -157,12 +160,29 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
         if (parameters != null || namedParameters != null) {
             if (parameters != null) {
-                params = parameters.toString();
+                StringBuilder b = new StringBuilder();
+                b.append("(");
                 if (isDistinct()) {
-                    params = params.replaceFirst("\\(", "(DISTINCT ");
-                } else if (isAllColumns()) {
-                    params = params.replaceFirst("\\(", "(ALL ");
+                    b.append("DISTINCT ");
                 }
+                if (isAllColumns()) {
+                    b.append("ALL ");
+                }
+                b.append(PlainSelect.getStringList(parameters.getExpressions(), true, false));
+                if (orderByElements != null) {
+                    b.append(" ORDER BY ");
+                    boolean comma = false;
+                    for (OrderByElement orderByElement : orderByElements) {
+                        if (comma) {
+                            b.append(", ");
+                        } else {
+                            comma = true;
+                        }
+                        b.append(orderByElement);
+                    }
+                }
+                b.append(")");
+                params = b.toString();
             } else {
                 params = namedParameters.toString();
             }
@@ -172,7 +192,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
             params = "()";
         }
 
-        String ans = getName() + "" + params + "";
+        String ans = getName() + params;
 
         if (attribute != null) {
             ans += "." + attribute.toString();
@@ -229,6 +249,14 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     public Function withDistinct(boolean distinct) {
         this.setDistinct(distinct);
         return this;
+    }
+
+    public List<OrderByElement> getOrderByElements() {
+        return orderByElements;
+    }
+
+    public void setOrderByElements(List<OrderByElement> orderByElements) {
+        this.orderByElements = orderByElements;
     }
 
     public <E extends Expression> E getAttribute(Class<E> type) {

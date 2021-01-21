@@ -3817,6 +3817,7 @@ Function InternalFunction(Function retval) :
     Token tk1 = null;
     Token tk2 = null;
     Expression expr1 = null;
+    List<OrderByElement> orderByList;
     boolean ignoreNulls = false;
 }
 {
@@ -3830,9 +3831,10 @@ Function InternalFunction(Function retval) :
             |
             LOOKAHEAD(NamedExpressionListExprFirst()) namedExpressionList = NamedExpressionListExprFirst()
             |
-            LOOKAHEAD(3) expressionList=SimpleExpressionList()
+            LOOKAHEAD(3) (expressionList=SimpleExpressionList() [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
             expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); }
+
         )]
         [ <K_IGNORE> <K_NULLS> {retval.setIgnoreNulls(true); }]
 	")"

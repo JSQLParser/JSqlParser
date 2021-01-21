@@ -4441,4 +4441,9 @@ public class SelectTest {
     public void testSignedKeywordIssue995() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT leading FROM prd_reprint");
     }
+    @Test
+    public void testTest() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT array_agg(DISTINCT s ORDER BY b)[1] FROM t");
+    }
+
 }

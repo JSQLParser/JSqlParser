@@ -310,6 +310,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         validateOptionalItemsList(function.getParameters());
         validateOptionalExpression(function.getAttribute(), this);
         validateOptionalExpression(function.getKeep(), this);
+        validateOptionalOrderByElements(function.getOrderByElements());
     }
 
     @Override

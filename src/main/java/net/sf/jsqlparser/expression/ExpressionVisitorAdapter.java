@@ -54,6 +54,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         if (function.getKeep() != null) {
             function.getKeep().accept(this);
         }
+        if (function.getOrderByElements() != null) {
+            for (OrderByElement orderByElement : function.getOrderByElements()) {
+                orderByElement.getExpression().accept(this);
+            }
+        }
     }
 
     @Override
