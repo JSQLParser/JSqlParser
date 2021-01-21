@@ -16,6 +16,7 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
@@ -136,6 +137,11 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     @Override
     public void visit(SetStatement set) {
         getValidator(SetStatementValidator.class).validate(set);
+    }
+
+    @Override
+    public void visit(ResetStatement reset) {
+        getValidator(ResetStatementValidator.class).validate(reset);
     }
 
     @Override

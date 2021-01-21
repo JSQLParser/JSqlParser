@@ -69,6 +69,8 @@ public interface StatementVisitor {
 
     void visit(SetStatement set);
 
+    void visit(ResetStatement reset);
+
     void visit(ShowColumnsStatement set);
 
     void visit(ShowTablesStatement showTables);

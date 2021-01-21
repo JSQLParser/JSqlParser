@@ -293,7 +293,10 @@ public class StatementDeParserTest {
     public void shouldUseProvidedDeParserWhenDeParsingSetStatement() {
         String name = "name";
         Expression expression = mock(Expression.class);
-        SetStatement setStatement = new SetStatement(name, expression);
+        ArrayList<Expression> expressions = new ArrayList<>();
+        expressions.add(expression);
+
+        SetStatement setStatement = new SetStatement(name, expressions);
 
         statementDeParser.visit(setStatement);
 
