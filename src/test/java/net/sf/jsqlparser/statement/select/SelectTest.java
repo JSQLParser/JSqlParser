@@ -4444,6 +4444,6 @@ public class SelectTest {
 
     @Test
     public void testArrayDeclare() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT ARRAY[1, f1], ARRAY[[1, 2], [3, f2 + 1]] FROM t1");
+        assertSqlCanBeParsedAndDeparsed("SELECT ARRAY[1, f1], ARRAY[[1, 2], [3, f2 + 1]], ARRAY[]::text[] FROM t1");
     }
 }

@@ -129,7 +129,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_AND_OPERATOR:"&&">
 |   <K_ANY:"ANY">
 |   <K_APPLY:"APPLY">
-|   <K_ARRAYLITERAL: "ARRAY" >
+|   <K_ARRAY_LITERAL: "ARRAY" >
 |   <K_AS: "AS">
 |   <K_ASC:"ASC">
 |   <K_AUTHORIZATION:"AUTHORIZATION">
@@ -1346,7 +1346,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE> | tk=<K_CYCLE> | tk=<K_OF> | tk=<K_EXCLUDE>
     /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       | tk=<K_FORMAT> | tk=<K_DIV> | tk=<K_UNSIGNED> | tk=<K_CASE>
-      | tk=<K_ARRAYLITERAL>
+      | tk=<K_ARRAY_LITERAL>
       )
 
     { return tk.image; }
@@ -3329,7 +3329,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
 
-        | LOOKAHEAD(2) <K_ARRAYLITERAL> retval=ArrayConstructor(true)
+        | LOOKAHEAD(2) <K_ARRAY_LITERAL> retval=ArrayConstructor(true)
 
         | LOOKAHEAD(2) retval = NextValExpression()
 
@@ -3440,8 +3440,9 @@ ArrayConstructor ArrayConstructor(final boolean arrayKeyword) : {
     Expression exp = null;
 } {
     "["
-        (LOOKAHEAD(3) exp = SimpleExpression() | exp = ArrayConstructor(false))
-        { expList.add(exp); }
+        [ (LOOKAHEAD(3) exp = SimpleExpression() | exp = ArrayConstructor(false))
+          { expList.add(exp); }
+        ]
         ("," (exp = SimpleExpression() | exp = ArrayConstructor(false))
             { expList.add(exp); })*
     "]"
@@ -4504,6 +4505,8 @@ List<String> CreateParameter():
             tk=<K_TRUE> { param.add(tk.image); }
             |
             tk=<K_FALSE> { param.add(tk.image); }
+            |
+            (<K_ARRAY_LITERAL> exp=ArrayConstructor(true)) { param.add(exp.toString()); }
             |
 	    tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
         )
