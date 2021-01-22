@@ -3442,9 +3442,9 @@ ArrayConstructor ArrayConstructor(final boolean arrayKeyword) : {
     "["
         [ (LOOKAHEAD(3) exp = SimpleExpression() | exp = ArrayConstructor(false))
           { expList.add(exp); }
-        ]
         ("," (exp = SimpleExpression() | exp = ArrayConstructor(false))
             { expList.add(exp); })*
+        ]
     "]"
     { return array; }
 }
