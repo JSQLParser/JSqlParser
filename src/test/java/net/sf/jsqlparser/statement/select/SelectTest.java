@@ -4446,4 +4446,9 @@ public class SelectTest {
     public void testSignedKeywordIssue995() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT leading FROM prd_reprint");
     }
+
+    @Test
+    public void testSelectTuple() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT hyperloglog_distinct((1, 2)) FROM t");
+    }
 }
