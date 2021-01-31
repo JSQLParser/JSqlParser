@@ -3281,6 +3281,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     boolean exclamationMarkNot = false;
     boolean dateExpressionAllowed = true;
     Expression idxExpr;
+    ExpressionList list;
 }
 {
     [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -3341,7 +3342,14 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
 
-        | "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
+        | "(" list = SimpleExpressionList() ")"
+          {
+              if (list.getExpressions().size() == 1) {
+                  retval = new Parenthesis(list.getExpressions().get(0));
+              } else {
+                  retval = new RowConstructor().withExprList(list);
+              }
+          }
     )
 
     [
@@ -4137,7 +4145,7 @@ CreateTable CreateTable():
     <K_TABLE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
     table=Table()
-    [
+    [ LOOKAHEAD(2)
         ("("
         coldef = ColumnDefinition()
 
@@ -4261,9 +4269,10 @@ CreateTable CreateTable():
         )*
 
         ")"
-        (     parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
         )
     ]
+    ( parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
+
     // see https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2126725
     // table properties , all these are optional
     [ rowMovement = RowMovement() { createTable.setRowMovement(rowMovement); }]
@@ -4431,6 +4440,8 @@ List<String> CreateParameter():
             |
             tk=<K_COMMIT> { param.add(tk.image); }
             |
+            tk=<K_DROP> { param.add(tk.image); }
+            |
             tk=<K_ROWS> { param.add(tk.image); }
             |
             tk=<K_UNIQUE> { param.add(tk.image); }
@@ -4482,7 +4493,7 @@ List<String> CreateParameter():
             tk=<K_COLLATE> { param.add(tk.image); }
             |
             tk=<K_ASC> { param.add(tk.image); }
-	    |
+            |
             tk=<K_DESC> { param.add(tk.image); }
             |
             tk=<K_TRUE> { param.add(tk.image); }
@@ -4512,12 +4523,14 @@ String AList():
 {
     StringBuilder retval = new StringBuilder("(");
     Token tk = null;
-    Token tk2 = null;
+    String name = null;
 }
 {
      "("
 
-     ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { retval.append(tk.image); }
+     (
+       ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL>) { retval.append(tk.image); }
+         | (name=RelObjectNameWithoutValue()) { retval.append(name); })
        [("," {retval.append(",");} | "=" {retval.append("=");})] )*
 
     ")"
