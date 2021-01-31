@@ -3281,6 +3281,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     boolean exclamationMarkNot = false;
     boolean dateExpressionAllowed = true;
     Expression idxExpr;
+    ExpressionList list;
 }
 {
     [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -3341,7 +3342,14 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
 
-        | "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
+        | "(" list = SimpleExpressionList() ")"
+          {
+              if (list.getExpressions().size() == 1) {
+                  retval = new Parenthesis(list.getExpressions().get(0));
+              } else {
+                  retval = new RowConstructor().withExprList(list);
+              }
+          }
     )
 
     [
