@@ -687,4 +687,9 @@ public class CreateTableTest {
     public void testCreateTableWithParameterDefaultFalseIssue1089() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("create table ADDRESS_TYPE ( address_type CHAR(1) not null, at_name VARCHAR(250) not null, is_disabled BOOL not null default FALSE, constraint PK_ADDRESS_TYPE primary key (address_type) )", true);
     }   
+    @Test
+    public void testDefaultArray() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (f1 text[] DEFAULT ARRAY[] :: text[] NOT NULL, f2 int[] DEFAULT ARRAY[1, 2])");
+    }
+
 }

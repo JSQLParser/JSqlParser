@@ -158,6 +158,8 @@ public interface ExpressionVisitor {
 
     public void visit(ArrayExpression aThis);
 
+    public void visit(ArrayConstructor aThis);
+
     public void visit(VariableAssignment aThis);
 
     public void visit(XMLSerializeExpr aThis);
