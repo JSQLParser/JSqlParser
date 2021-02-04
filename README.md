@@ -57,6 +57,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.1
 
+* first support for tuples as simple expression **SELECT myfunc((f1, f2))**
+* support for array constructors **array[[1, 2], [id1, id2]]**
 * added support for **NOT** in MySqls **REGEXP** clause
 * added support for **WITH mytble as ( .. ) INSERT INTO ...**
 * added support for H2 **casewhen** function with conditional parameters
