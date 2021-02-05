@@ -142,6 +142,12 @@ public class CreateTableTest {
     }
 
     @Test
+    public void testCreateTableParams2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TEMPORARY TABLE t1 WITH (APPENDONLY=true,ORIENTATION=column,COMPRESSTYPE=zlib,OIDS=FALSE) ON COMMIT DROP AS SELECT column FROM t2");
+    }
+
+
+    @Test
     public void testCreateTableUniqueConstraint() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE Activities (_id INTEGER PRIMARY KEY AUTOINCREMENT,uuid VARCHAR(255),user_id INTEGER,sound_id INTEGER,sound_type INTEGER,comment_id INTEGER,type String,tags VARCHAR(255),created_at INTEGER,content_id INTEGER,sharing_note_text VARCHAR(255),sharing_note_created_at INTEGER,UNIQUE (created_at, type, content_id, sound_id, user_id))", true);
     }
@@ -681,4 +687,9 @@ public class CreateTableTest {
     public void testCreateTableWithParameterDefaultFalseIssue1089() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("create table ADDRESS_TYPE ( address_type CHAR(1) not null, at_name VARCHAR(250) not null, is_disabled BOOL not null default FALSE, constraint PK_ADDRESS_TYPE primary key (address_type) )", true);
     }   
+    @Test
+    public void testDefaultArray() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (f1 text[] DEFAULT ARRAY[] :: text[] NOT NULL, f2 int[] DEFAULT ARRAY[1, 2])");
+    }
+
 }

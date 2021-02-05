@@ -129,6 +129,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_AND_OPERATOR:"&&">
 |   <K_ANY:"ANY">
 |   <K_APPLY:"APPLY">
+|   <K_ARRAY_LITERAL: "ARRAY" >
 |   <K_AS: "AS">
 |   <K_ASC:"ASC">
 |   <K_AUTHORIZATION:"AUTHORIZATION">
@@ -1392,6 +1393,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE> | tk=<K_CYCLE> | tk=<K_OF> | tk=<K_EXCLUDE>
     /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       | tk=<K_FORMAT> | tk=<K_DIV> | tk=<K_UNSIGNED> | tk=<K_CASE> | tk=<K_LOCAL>
+      | tk=<K_ARRAY_LITERAL>
       )
 
     { return tk.image; }
@@ -2257,8 +2259,8 @@ KSQLJoinWindow JoinWindow():
     Token afterTimeUnitToken = null;
 }
 {
-    (beforeDurationToken=<S_LONG> beforeTimeUnitToken=<S_IDENTIFIER>
-        [ "," afterDurationToken=<S_LONG> afterTimeUnitToken=<S_IDENTIFIER> ]
+    (beforeDurationToken=<S_LONG> (beforeTimeUnitToken=<S_IDENTIFIER> | beforeTimeUnitToken=<K_DATE_LITERAL>)
+        [ "," afterDurationToken=<S_LONG> (afterTimeUnitToken=<S_IDENTIFIER> | afterTimeUnitToken=<K_DATE_LITERAL>) ]
     {
         if (afterDurationToken == null) {
             retval.setDuration(Long.parseLong(beforeDurationToken.image));
@@ -3316,6 +3318,21 @@ Expression BitwiseXor():
     { return result; }
 }
 
+Expression ArrayExpression(Expression obj): {
+    Expression idxExpr = null;
+    Expression startExpr = null;
+    Expression stopExpr = null;
+} {
+    "["
+        [LOOKAHEAD(3) idxExpr = SimpleExpression()]
+        [
+          (":" { startExpr=idxExpr; idxExpr=null; })
+          [stopExpr = SimpleExpression()]
+        ]
+    "]"
+    { return new ArrayExpression(obj, idxExpr, startExpr, stopExpr); }
+}
+
 Expression PrimaryExpression() #PrimaryExpression:
 {
     Expression retval = null;
@@ -3327,7 +3344,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     boolean not = false;
     boolean exclamationMarkNot = false;
     boolean dateExpressionAllowed = true;
-    Expression idxExpr;
+    ExpressionList list;
 }
 {
     [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -3374,6 +3391,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
 
+        | LOOKAHEAD(2) <K_ARRAY_LITERAL> retval=ArrayConstructor(true)
+
         | LOOKAHEAD(2) retval = NextValExpression()
 
         | retval=Column()
@@ -3388,7 +3407,14 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
 
-        | "(" retval=SimpleExpression() ")" {retval = new Parenthesis(retval); }
+        | "(" list = SimpleExpressionList() ")"
+          {
+              if (list.getExpressions().size() == 1) {
+                  retval = new Parenthesis(list.getExpressions().get(0));
+              } else {
+                  retval = new RowConstructor().withExprList(list);
+              }
+          }
     )
 
     [
@@ -3399,7 +3425,7 @@ Expression PrimaryExpression() #PrimaryExpression:
         LOOKAHEAD(2, { dateExpressionAllowed } ) retval = IntervalExpressionWithoutInterval(retval)
     ]
 
-    [ "[" idxExpr = SimpleExpression() "]" { retval = new ArrayExpression(retval, idxExpr); } ]
+    [ retval = ArrayExpression(retval) ]
 
     ( "::" type=ColDataType() {
         castExpr = new CastExpression();
@@ -3475,6 +3501,21 @@ DateTimeLiteralExpression DateTimeLiteralExpression() : {
     t=<K_DATETIMELITERAL>  { expr.setType(DateTimeLiteralExpression.DateTime.valueOf(t.image.toUpperCase())); }
 
     t=<S_CHAR_LITERAL> { expr.setValue(t.image); return expr; }
+}
+
+ArrayConstructor ArrayConstructor(final boolean arrayKeyword) : {
+    ArrayList<Expression> expList = new ArrayList();
+    ArrayConstructor array = new ArrayConstructor(expList, arrayKeyword);
+    Expression exp = null;
+} {
+    "["
+        [ (LOOKAHEAD(3) exp = SimpleExpression() | exp = ArrayConstructor(false))
+          { expList.add(exp); }
+        ("," (exp = SimpleExpression() | exp = ArrayConstructor(false))
+            { expList.add(exp); })*
+        ]
+    "]"
+    { return array; }
 }
 
 JsonExpression JsonExpression() : {
@@ -4182,7 +4223,7 @@ CreateTable CreateTable():
     <K_TABLE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
     table=Table()
-    [
+    [ LOOKAHEAD(2)
         ("("
         coldef = ColumnDefinition()
 
@@ -4306,9 +4347,10 @@ CreateTable CreateTable():
         )*
 
         ")"
-        (     parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
         )
     ]
+    ( parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
+
     // see https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2126725
     // table properties , all these are optional
     [ rowMovement = RowMovement() { createTable.setRowMovement(rowMovement); }]
@@ -4476,6 +4518,8 @@ List<String> CreateParameter():
             |
             tk=<K_COMMIT> { param.add(tk.image); }
             |
+            tk=<K_DROP> { param.add(tk.image); }
+            |
             tk=<K_ROWS> { param.add(tk.image); }
             |
             tk=<K_UNIQUE> { param.add(tk.image); }
@@ -4527,12 +4571,14 @@ List<String> CreateParameter():
             tk=<K_COLLATE> { param.add(tk.image); }
             |
             tk=<K_ASC> { param.add(tk.image); }
-	    |
+            |
             tk=<K_DESC> { param.add(tk.image); }
             |
             tk=<K_TRUE> { param.add(tk.image); }
             |
             tk=<K_FALSE> { param.add(tk.image); }
+            |
+            (<K_ARRAY_LITERAL> exp=ArrayConstructor(true)) { param.add(exp.toString()); }
             |
 	    tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
         )
@@ -4557,12 +4603,14 @@ String AList():
 {
     StringBuilder retval = new StringBuilder("(");
     Token tk = null;
-    Token tk2 = null;
+    String name = null;
 }
 {
      "("
 
-     ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { retval.append(tk.image); }
+     (
+       ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL>) { retval.append(tk.image); }
+         | (name=RelObjectNameWithoutValue()) { retval.append(name); })
        [("," {retval.append(",");} | "=" {retval.append("=");})] )*
 
     ")"
