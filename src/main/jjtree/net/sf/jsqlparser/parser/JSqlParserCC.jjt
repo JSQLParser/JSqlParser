@@ -2212,8 +2212,8 @@ KSQLJoinWindow JoinWindow():
     Token afterTimeUnitToken = null;
 }
 {
-    (beforeDurationToken=<S_LONG> beforeTimeUnitToken=<S_IDENTIFIER>
-        [ "," afterDurationToken=<S_LONG> afterTimeUnitToken=<S_IDENTIFIER> ]
+    (beforeDurationToken=<S_LONG> (beforeTimeUnitToken=<S_IDENTIFIER> | beforeTimeUnitToken=<K_DATE_LITERAL>)
+        [ "," afterDurationToken=<S_LONG> (afterTimeUnitToken=<S_IDENTIFIER> | afterTimeUnitToken=<K_DATE_LITERAL>) ]
     {
         if (afterDurationToken == null) {
             retval.setDuration(Long.parseLong(beforeDurationToken.image));
