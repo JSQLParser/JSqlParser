@@ -894,7 +894,18 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public void visit(ArrayExpression array) {
         array.getObjExpression().accept(this);
         buffer.append("[");
-        array.getIndexExpression().accept(this);
+        if (array.getIndexExpression() != null) {
+            array.getIndexExpression().accept(this);
+        } else {
+            if (array.getStartIndexExpression() != null) {
+                array.getStartIndexExpression().accept(this);
+            }
+            buffer.append(":");
+            if (array.getStopIndexExpression() != null) {
+                array.getStopIndexExpression().accept(this);
+            }
+        }
+
         buffer.append("]");
     }
 

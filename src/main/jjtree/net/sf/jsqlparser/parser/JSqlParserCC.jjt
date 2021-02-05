@@ -3271,6 +3271,21 @@ Expression BitwiseXor():
     { return result; }
 }
 
+Expression ArrayExpression(Expression obj): {
+    Expression idxExpr = null;
+    Expression startExpr = null;
+    Expression stopExpr = null;
+} {
+    "["
+        [LOOKAHEAD(3) idxExpr = SimpleExpression()]
+        [
+          (":" { startExpr=idxExpr; idxExpr=null; })
+          [stopExpr = SimpleExpression()]
+        ]
+    "]"
+    { return new ArrayExpression(obj, idxExpr, startExpr, stopExpr); }
+}
+
 Expression PrimaryExpression() #PrimaryExpression:
 {
     Expression retval = null;
@@ -3282,7 +3297,6 @@ Expression PrimaryExpression() #PrimaryExpression:
     boolean not = false;
     boolean exclamationMarkNot = false;
     boolean dateExpressionAllowed = true;
-    Expression idxExpr;
     ExpressionList list;
 }
 {
@@ -3364,7 +3378,7 @@ Expression PrimaryExpression() #PrimaryExpression:
         LOOKAHEAD(2, { dateExpressionAllowed } ) retval = IntervalExpressionWithoutInterval(retval)
     ]
 
-    [ "[" idxExpr = SimpleExpression() "]" { retval = new ArrayExpression(retval, idxExpr); } ]
+    [ retval = ArrayExpression(retval) ]
 
     ( "::" type=ColDataType() {
         castExpr = new CastExpression();
