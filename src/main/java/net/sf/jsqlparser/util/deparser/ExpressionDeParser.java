@@ -17,6 +17,7 @@ import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnalyticType;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayExpression;
+import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
@@ -911,7 +912,36 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public void visit(ArrayExpression array) {
         array.getObjExpression().accept(this);
         buffer.append("[");
-        array.getIndexExpression().accept(this);
+        if (array.getIndexExpression() != null) {
+            array.getIndexExpression().accept(this);
+        } else {
+            if (array.getStartIndexExpression() != null) {
+                array.getStartIndexExpression().accept(this);
+            }
+            buffer.append(":");
+            if (array.getStopIndexExpression() != null) {
+                array.getStopIndexExpression().accept(this);
+            }
+        }
+
+        buffer.append("]");
+    }
+
+    @Override
+    public void visit(ArrayConstructor aThis) {
+        if (aThis.isArrayKeyword()) {
+            buffer.append("ARRAY");
+        }
+        buffer.append("[");
+        boolean first = true;
+        for (Expression expression : aThis.getExpressions()) {
+            if (!first) {
+                buffer.append(", ");
+            } else {
+                first = false;
+            }
+            expression.accept(this);
+        }
         buffer.append("]");
     }
 

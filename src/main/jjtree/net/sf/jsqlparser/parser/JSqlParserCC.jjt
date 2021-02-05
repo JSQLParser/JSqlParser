@@ -129,6 +129,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_AND_OPERATOR:"&&">
 |   <K_ANY:"ANY">
 |   <K_APPLY:"APPLY">
+|   <K_ARRAY_LITERAL: "ARRAY" >
 |   <K_AS: "AS">
 |   <K_ASC:"ASC">
 |   <K_AUTHORIZATION:"AUTHORIZATION">
@@ -1345,6 +1346,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE> | tk=<K_CYCLE> | tk=<K_OF> | tk=<K_EXCLUDE>
     /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       | tk=<K_FORMAT> | tk=<K_DIV> | tk=<K_UNSIGNED> | tk=<K_CASE>
+      | tk=<K_ARRAY_LITERAL>
       )
 
     { return tk.image; }
@@ -2210,8 +2212,8 @@ KSQLJoinWindow JoinWindow():
     Token afterTimeUnitToken = null;
 }
 {
-    (beforeDurationToken=<S_LONG> beforeTimeUnitToken=<S_IDENTIFIER>
-        [ "," afterDurationToken=<S_LONG> afterTimeUnitToken=<S_IDENTIFIER> ]
+    (beforeDurationToken=<S_LONG> (beforeTimeUnitToken=<S_IDENTIFIER> | beforeTimeUnitToken=<K_DATE_LITERAL>)
+        [ "," afterDurationToken=<S_LONG> (afterTimeUnitToken=<S_IDENTIFIER> | afterTimeUnitToken=<K_DATE_LITERAL>) ]
     {
         if (afterDurationToken == null) {
             retval.setDuration(Long.parseLong(beforeDurationToken.image));
@@ -3269,6 +3271,21 @@ Expression BitwiseXor():
     { return result; }
 }
 
+Expression ArrayExpression(Expression obj): {
+    Expression idxExpr = null;
+    Expression startExpr = null;
+    Expression stopExpr = null;
+} {
+    "["
+        [LOOKAHEAD(3) idxExpr = SimpleExpression()]
+        [
+          (":" { startExpr=idxExpr; idxExpr=null; })
+          [stopExpr = SimpleExpression()]
+        ]
+    "]"
+    { return new ArrayExpression(obj, idxExpr, startExpr, stopExpr); }
+}
+
 Expression PrimaryExpression() #PrimaryExpression:
 {
     Expression retval = null;
@@ -3280,7 +3297,6 @@ Expression PrimaryExpression() #PrimaryExpression:
     boolean not = false;
     boolean exclamationMarkNot = false;
     boolean dateExpressionAllowed = true;
-    Expression idxExpr;
     ExpressionList list;
 }
 {
@@ -3328,6 +3344,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
 
+        | LOOKAHEAD(2) <K_ARRAY_LITERAL> retval=ArrayConstructor(true)
+
         | LOOKAHEAD(2) retval = NextValExpression()
 
         | retval=Column()
@@ -3360,7 +3378,7 @@ Expression PrimaryExpression() #PrimaryExpression:
         LOOKAHEAD(2, { dateExpressionAllowed } ) retval = IntervalExpressionWithoutInterval(retval)
     ]
 
-    [ "[" idxExpr = SimpleExpression() "]" { retval = new ArrayExpression(retval, idxExpr); } ]
+    [ retval = ArrayExpression(retval) ]
 
     ( "::" type=ColDataType() {
         castExpr = new CastExpression();
@@ -3436,6 +3454,21 @@ DateTimeLiteralExpression DateTimeLiteralExpression() : {
     t=<K_DATETIMELITERAL>  { expr.setType(DateTimeLiteralExpression.DateTime.valueOf(t.image.toUpperCase())); }
 
     t=<S_CHAR_LITERAL> { expr.setValue(t.image); return expr; }
+}
+
+ArrayConstructor ArrayConstructor(final boolean arrayKeyword) : {
+    ArrayList<Expression> expList = new ArrayList();
+    ArrayConstructor array = new ArrayConstructor(expList, arrayKeyword);
+    Expression exp = null;
+} {
+    "["
+        [ (LOOKAHEAD(3) exp = SimpleExpression() | exp = ArrayConstructor(false))
+          { expList.add(exp); }
+        ("," (exp = SimpleExpression() | exp = ArrayConstructor(false))
+            { expList.add(exp); })*
+        ]
+    "]"
+    { return array; }
 }
 
 JsonExpression JsonExpression() : {
@@ -4499,6 +4532,8 @@ List<String> CreateParameter():
             tk=<K_TRUE> { param.add(tk.image); }
             |
             tk=<K_FALSE> { param.add(tk.image); }
+            |
+            (<K_ARRAY_LITERAL> exp=ArrayConstructor(true)) { param.add(exp.toString()); }
             |
 	    tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
         )

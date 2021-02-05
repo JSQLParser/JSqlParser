@@ -4006,6 +4006,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testArrayRange() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT (arr[1:3])[1] FROM MYTABLE");
+    }
+
+    @Test
     public void testIssue842() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT a.id lendId, "
                 + "a.lend_code                                            lendCode, "
@@ -4445,6 +4450,11 @@ public class SelectTest {
     @Test
     public void testSelectTuple() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT hyperloglog_distinct((1, 2)) FROM t");
+    }
+
+    @Test
+    public void testArrayDeclare() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ARRAY[1, f1], ARRAY[[1, 2], [3, f2 + 1]], ARRAY[]::text[] FROM t1");
     }
 
     @Test
