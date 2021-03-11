@@ -2398,6 +2398,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testUnionWithBracketsAndOrderBy() throws JSQLParserException {
+        String stmt = "(SELECT a FROM tbl ORDER BY a) UNION DISTINCT (SELECT a FROM tbl ORDER BY a)";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testMultiValueNotInBinds() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE (a, b) NOT IN ((?, ?), (?, ?))";
         assertSqlCanBeParsedAndDeparsed(stmt);
