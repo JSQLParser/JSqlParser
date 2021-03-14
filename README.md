@@ -57,6 +57,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.1
 
+* support for functions in an interval expression
 * subArray support arr\[1:3\]
 * first support for tuples as simple expression **SELECT myfunc((f1, f2))**
 * support for array constructors **array[[1, 2], [id1, id2]]**
