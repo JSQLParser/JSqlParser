@@ -883,6 +883,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testUnionWithOrderByAndLimitAndNoBrackets() throws JSQLParserException {
+        String stmt = "SELECT id FROM table1 UNION SELECT id FROM table2 ORDER BY id ASC LIMIT 55";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testUnion() throws JSQLParserException {
         String statement = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
                 + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION " + "SELECT * FROM mytable2 LIMIT 3, 4";
