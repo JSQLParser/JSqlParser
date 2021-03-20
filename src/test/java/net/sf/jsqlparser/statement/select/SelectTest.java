@@ -4475,4 +4475,9 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT ARRAY[1, f1], ARRAY[[1, 2], [3, f2 + 1]], ARRAY[]::text[] FROM t1");
     }
 
+    @Test
+    public void testColonDelimiterIssue1134() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM stores_demo:informix.accounts");
+        assertEquals("SELECT * FROM stores_demo.informix.accounts", stmt.toString());
+    }
 }
