@@ -1302,7 +1302,7 @@ List<String> RelObjectNameList() : {
     List<String> data = new ArrayList<String>();
 } {
     token = RelObjectNameExt() { data.add(token); }
-    ( LOOKAHEAD (2) "." ("." { data.add(null); })* token = RelObjectNameExt2() { data.add(token); } ) *
+    ( LOOKAHEAD (2) ("." | ":") ("." { data.add(null); })* token = RelObjectNameExt2() { data.add(token); } ) *
 
     { return data; }
 }
