@@ -3867,7 +3867,7 @@ Function InternalFunction(Function retval) :
 {
     funcName = RelObjectNameList()
 
-    "(" [ [ LOOKAHEAD(2)(<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }) ]
+    "(" [ [ LOOKAHEAD(2)(<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); } | <K_UNIQUE> { retval.setUnique(true); }) ]
         ( LOOKAHEAD(4)
             "*" { retval.setAllColumns(true); }
             |

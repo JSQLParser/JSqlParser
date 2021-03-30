@@ -25,6 +25,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private NamedExpressionList namedParameters;
     private boolean allColumns = false;
     private boolean distinct = false;
+    private boolean unique = false;
     private boolean isEscaped = false;
     private Expression attribute;
     private String attributeName;
@@ -85,6 +86,19 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public void setDistinct(boolean b) {
         distinct = b;
+    }
+
+    /**
+     * true if the function is "unique"
+     *
+     * @return true if the function is "unique"
+     */
+    public boolean isUnique() {
+        return unique;
+    }
+
+    public void setUnique(boolean b) {
+        unique = b;
     }
 
     /**
@@ -162,6 +176,8 @@ public class Function extends ASTNodeAccessImpl implements Expression {
                     params = params.replaceFirst("\\(", "(DISTINCT ");
                 } else if (isAllColumns()) {
                     params = params.replaceFirst("\\(", "(ALL ");
+                } else if (isUnique()) {
+                    params = params.replaceFirst("\\(", "(UNIQUE ");
                 }
             } else {
                 params = namedParameters.toString();
@@ -228,6 +244,11 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public Function withDistinct(boolean distinct) {
         this.setDistinct(distinct);
+        return this;
+    }
+
+    public Function withUnique(boolean unique) {
+        this.setUnique(unique);
         return this;
     }
 

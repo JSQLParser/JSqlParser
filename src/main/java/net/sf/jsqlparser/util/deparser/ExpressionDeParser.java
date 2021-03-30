@@ -488,6 +488,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             } else if (function.isAllColumns()) {
                 useBracketsInExprList = false;
                 buffer.append("(ALL ");
+            } else if (function.isUnique()) {
+                useBracketsInExprList = false;
+                buffer.append("(UNIQUE ");
             }
             if (function.getNamedParameters() != null) {
                 visit(function.getNamedParameters());
@@ -496,7 +499,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 visit(function.getParameters());
             }
             useBracketsInExprList = oldUseBracketsInExprList;
-            if (function.isDistinct() || function.isAllColumns()) {
+            if (function.isDistinct() || function.isAllColumns() || function.isUnique()) {
                 buffer.append(")");
             }
         }
@@ -682,6 +685,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         buffer.append(name).append("(");
         if (aexpr.isDistinct()) {
             buffer.append("DISTINCT ");
+        }
+        if (aexpr.isUnique()) {
+            buffer.append("UNIQUE ");
         }
         if (expression != null) {
             expression.accept(this);
