@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -39,6 +40,7 @@ public class Update implements Statement {
     private Select select;
     private boolean useColumnsBrackets = true;
     private boolean useSelect = false;
+    private OracleHint oracleHint = null;
     private List<OrderByElement> orderByElements;
     private Limit limit;
     private boolean returningAllColumns = false;
@@ -63,6 +65,14 @@ public class Update implements Statement {
 
     public void setWhere(Expression expression) {
         where = expression;
+    }
+    
+    public OracleHint getOracleHint() {
+        return oracleHint;
+    }
+
+    public void setOracleHint(OracleHint oracleHint) {
+        this.oracleHint = oracleHint;
     }
 
     public List<Column> getColumns() {
@@ -160,7 +170,7 @@ public class Update implements Statement {
     public void setReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
         this.returningExpressionList = returningExpressionList;
     }
-
+    
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("UPDATE ");

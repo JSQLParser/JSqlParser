@@ -34,6 +34,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 
 public class InsertTest {
 
@@ -349,5 +350,12 @@ public class InsertTest {
     @Test
     public void testWithListIssue282() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("WITH myctl AS (SELECT a, b FROM mytable) INSERT INTO mytable SELECT a, b FROM myctl");
+    }
+    
+    @Test
+    public void testOracleHint() throws JSQLParserException {
+        assertOracleHintExists("INSERT /*+ SOMEHINT */ INTO mytable VALUES (1, 2, 3)", true, "SOMEHINT");
+       
+       //@todo: add a testcase supposed to not finding a misplaced hint
     }
 }

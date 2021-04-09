@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -27,6 +28,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Delete implements Statement {
 
     private Table table;
+    private OracleHint oracleHint = null;
     private List<Table> tables;
     private List<Join> joins;
     private Expression where;
@@ -60,6 +62,14 @@ public class Delete implements Statement {
 
     public void setWhere(Expression expression) {
         where = expression;
+    }
+    
+    public OracleHint getOracleHint() {
+        return oracleHint;
+    }
+
+    public void setOracleHint(OracleHint oracleHint) {
+        this.oracleHint = oracleHint;
     }
 
     public Limit getLimit() {

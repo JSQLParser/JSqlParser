@@ -21,6 +21,7 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
+import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import org.junit.Test;
 
 public class DeleteTest {
@@ -93,5 +94,14 @@ public class DeleteTest {
      @Test
     public void testDeleteMultiTableIssue878() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DELETE table1, table2 FROM table1, table2");
+    }
+    
+    @Test
+    public void testOracleHint() throws JSQLParserException {
+        String sql = "DELETE /*+ SOMEHINT */ FROM mytable WHERE mytable.col = 9";
+        
+        assertOracleHintExists(sql, true, "SOMEHINT");
+       
+       //@todo: add a testcase supposed to not finding a misplaced hint
     }
 }

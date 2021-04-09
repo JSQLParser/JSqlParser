@@ -879,7 +879,7 @@ Update Update():
     List<SelectExpressionItem> returning = null;
 }
 {
-    <K_UPDATE> table=TableWithAlias()
+   <K_UPDATE> { update.setOracleHint(getOracleHint()); } table=TableWithAlias()  
         startJoins=JoinsList()
 
     <K_SET>
@@ -1023,7 +1023,7 @@ Insert Insert( List<WithItem> with ):
     boolean useAs = false;
 }
 {    
-    <K_INSERT>
+    <K_INSERT> { insert.setOracleHint(getOracleHint()); }
     [(tk = <K_LOW_PRIORITY> | tk = <K_DELAYED> | tk = <K_HIGH_PRIORITY>)
     {if (tk!=null)
         modifierPriority = InsertModifierPriority.valueOf(tk.image.toUpperCase());
@@ -1209,7 +1209,7 @@ Delete Delete():
     List<OrderByElement> orderByElements;
 }
 {
-    <K_DELETE> [LOOKAHEAD(2) (table=TableWithAlias() { tables.add(table); }
+    <K_DELETE> { delete.setOracleHint(getOracleHint()); } [LOOKAHEAD(2) (table=TableWithAlias() { tables.add(table); }
           ("," table=TableWithAlias() { tables.add(table); } )*
     <K_FROM> | <K_FROM>)]
 
@@ -1235,7 +1235,7 @@ Statement Merge() : {
     MergeInsert insert;
 }
 {
-    <K_MERGE> <K_INTO> table=TableWithAlias() { merge.setTable(table); }
+    <K_MERGE> { merge.setOracleHint(getOracleHint()); } <K_INTO> table=TableWithAlias() { merge.setTable(table); }
     <K_USING>
         ( table=Table() { merge.setUsingTable(table); }
             | "(" select=SubSelect() { merge.setUsingSelect(select); } ")" )

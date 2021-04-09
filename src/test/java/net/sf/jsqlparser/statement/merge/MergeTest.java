@@ -176,4 +176,23 @@ public class MergeTest {
             //expected to fail
         }
     }
+    
+    @Test
+    public void testOracleHint() throws JSQLParserException {
+        String sql = "MERGE /*+ SOMEHINT */ INTO bonuses B\n"
+                + "USING (\n"
+                + "  SELECT employee_id, salary\n"
+                + "  FROM employee\n"
+                + "  WHERE dept_no =20) E\n"
+                + "ON (B.employee_id = E.employee_id)\n"
+                + "WHEN MATCHED THEN\n"
+                + "  UPDATE SET B.bonus = E.salary * 0.1\n"
+                + "WHEN NOT MATCHED THEN\n"
+                + "  INSERT (B.employee_id, B.bonus)\n"
+                + "  VALUES (E.employee_id, E.salary * 0.05)  ";
+        
+        assertOracleHintExists(sql, true, "SOMEHINT");
+       
+       //@todo: add a testcase supposed to not finding a misplaced hint
+    }
 }
