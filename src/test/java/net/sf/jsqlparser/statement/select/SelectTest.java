@@ -4490,4 +4490,9 @@ public class SelectTest {
     public void testKeywordAlgorithmIssue1137() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT algorithm FROM tablename");
     }
+    
+    @Test
+    public void testKeywordAlgorithmIssue1138() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM in.tablename");
+    }
 }
