@@ -4480,4 +4480,9 @@ public class SelectTest {
         Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM stores_demo:informix.accounts");
         assertEquals("SELECT * FROM stores_demo.informix.accounts", stmt.toString());
     }
+    
+    @Test
+    public void testKeywordSkipIssue1136() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT skip");
+    }
 }
