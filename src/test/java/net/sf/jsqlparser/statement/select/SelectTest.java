@@ -4485,4 +4485,9 @@ public class SelectTest {
     public void testKeywordSkipIssue1136() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT skip");
     }
+    
+    @Test
+    public void testKeywordAlgorithmIssue1137() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT algorithm FROM tablename");
+    }
 }
