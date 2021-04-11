@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.create;
 
 import java.io.StringReader;
+import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -119,4 +120,20 @@ public class CreateIndexTest {
     public void testFullIndexNameIssue936_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX \"TS\".\"IDX\" ON \"TEST\" (\"ID\") TABLESPACE \"TS\"");
     }
+
+  @Test
+  public void testCreateIndexTrailingOptions() throws JSQLParserException {
+    String statement =
+        "CREATE UNIQUE INDEX cfe.version_info_idx2\n"
+            + "    ON cfe.version_info ( major_version\n"
+            + "                            , minor_version\n"
+            + "                            , patch_level ) parallel compress nologging\n"
+            + ";";
+    CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
+    List<String> tailParameters = createIndex.getTailParameters();
+    assertEquals(3, tailParameters.size());
+    assertEquals(tailParameters.get(0), "parallel");
+    assertEquals(tailParameters.get(1), "compress");
+    assertEquals(tailParameters.get(2), "nologging");
+  }
 }

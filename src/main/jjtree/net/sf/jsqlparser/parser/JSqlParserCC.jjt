@@ -4026,7 +4026,7 @@ CreateIndex CreateIndex():
     Index index = null;
     //String name = null;
     List<String> parameter = new ArrayList<String>();
-    List<String> tailParameter = null;
+    List<String> tailParameters = new ArrayList<String>();
     List<String> name;
 }
 {
@@ -4047,13 +4047,15 @@ CreateIndex CreateIndex():
 
     colNames = ColumnNamesWithParamsList()
 
-    [ tailParameter = CreateParameter() {} ]
+    /* [ tailParameter = CreateParameter() {} ] */
+
+    ( parameter=CreateParameter() { tailParameters.addAll(parameter); } )*
 
     {
         index.setColumns(colNames);
         createIndex.setIndex(index);
         createIndex.setTable(table);
-        createIndex.setTailParameters(tailParameter);
+        createIndex.setTailParameters(tailParameters);
         return createIndex;
     }
 }
