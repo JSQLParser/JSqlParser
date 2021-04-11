@@ -57,6 +57,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.1
 
+* allow **in** as schema name
+* allow **skip**, **algorithm** as column name
 * support for functions in an interval expression
 * subArray support arr\[1:3\]
 * first support for tuples as simple expression **SELECT myfunc((f1, f2))**

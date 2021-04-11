@@ -1329,7 +1329,9 @@ Not all names should be allowed for aliases.
 String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
-    (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE> | tk=<K_CHARACTER>
+    (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> 
+      | tk=<K_ALGORITHM>
+      | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE> | tk=<K_CHARACTER>
       | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_DISABLE> | tk=<K_DESC>
       | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING>
       | tk=<K_LAST> | tk=<K_LEADING> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE>
@@ -1342,7 +1344,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TO> | tk=<K_TYPE> | tk=<K_ISNULL>
 	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
-      | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIGNED> | tk=<K_SIZE> | tk=<K_SEQUENCE> | tk=<K_SESSION>
+      | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIGNED> | tk=<K_SIZE> | tk=<K_SEQUENCE> | tk=<K_SESSION> | tk=<K_SKIP>
       | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE> | tk=<K_CYCLE> | tk=<K_OF> | tk=<K_EXCLUDE>
     /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       | tk=<K_FORMAT> | tk=<K_DIV> | tk=<K_UNSIGNED> | tk=<K_CASE>
@@ -1391,7 +1393,7 @@ String RelObjectNameExt():
     ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
         | tk=<K_DOUBLE> | tk=<K_IF> | <K_OPTIMIZE> | tk=<K_LIMIT>
         | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC> 
-        | tk=<K_CASEWHEN> )
+        | tk=<K_CASEWHEN> | tk=<K_IN> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -1503,9 +1505,9 @@ PlainSelect PlainSelect() #PlainSelect:
 
     { plainSelect.setOracleHint(getOracleHint()); }
 
-    [skip = Skip() { plainSelect.setSkip(skip);    } ]
+    [ LOOKAHEAD(2) skip = Skip() { plainSelect.setSkip(skip);    } ]
 
-    [LOOKAHEAD(2) first = First() { plainSelect.setFirst(first); } ]
+    [ LOOKAHEAD(2) first = First() { plainSelect.setFirst(first); } ]
 
     [ LOOKAHEAD(2)
         ( <K_ALL>
