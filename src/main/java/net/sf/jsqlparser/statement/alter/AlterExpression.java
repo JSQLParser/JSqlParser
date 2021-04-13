@@ -48,6 +48,8 @@ public class AlterExpression {
     private Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
 
     private List<String> fkColumns;
+    private String fkSourceSchema;
+
     private String fkSourceTable;
     private List<String> fkSourceColumns;
     private boolean uk;
@@ -56,6 +58,13 @@ public class AlterExpression {
     private List<ConstraintState> constraints;
     private List<String> parameters;
     private String commentText;
+    
+    public String getFkSourceSchema() {
+      return fkSourceSchema;
+    }
+    public void setFkSourceSchema(String fkSourceSchema) {
+      this.fkSourceSchema = fkSourceSchema;
+    }
 
     public String getCommentText() {
         return commentText;
@@ -405,11 +414,18 @@ public class AlterExpression {
             }
             b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null) {
-            b.append("FOREIGN KEY (").append(PlainSelect.getStringList(fkColumns)).append(") REFERENCES ")
-            .append(fkSourceTable).append(" (").append(
-                    PlainSelect.getStringList(fkSourceColumns))
-            .append(")");
-            referentialActions.forEach(b::append);
+              b.append("FOREIGN KEY (")
+                  .append(PlainSelect.getStringList(fkColumns))
+                  .append(") REFERENCES ")
+                  .append(
+                      fkSourceSchema != null && fkSourceSchema.trim().length() > 0
+                          ? fkSourceSchema + "."
+                          : "")
+                  .append(fkSourceTable)
+                  .append(" (")
+                  .append(PlainSelect.getStringList(fkSourceColumns))
+                  .append(")");
+              referentialActions.forEach(b::append);
         } else if (index != null) {
             b.append(index);
         }
@@ -488,6 +504,11 @@ public class AlterExpression {
 
     public AlterExpression withFkColumns(List<String> fkColumns) {
         this.setFkColumns(fkColumns);
+        return this;
+    }
+    
+    public AlterExpression withFkSourceSchema(String fkSourceSchema) {
+        this.setFkSourceTable(fkSourceSchema);
         return this;
     }
 

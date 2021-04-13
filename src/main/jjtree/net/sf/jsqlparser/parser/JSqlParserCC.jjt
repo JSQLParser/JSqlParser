@@ -4796,8 +4796,16 @@ AlterExpression AlterExpression():
             |
     //following two choices regarding foreign keys should be merged
             ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); columnNames = null; }
-                 <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
+                 /*
+                    <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
                         { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
+                 */
+                 <K_REFERENCES> fkTable=Table() [ columnNames=ColumnsNamesList() ]
+                    {
+                        alterExp.setFkSourceSchema(fkTable.getSchemaName());
+                        alterExp.setFkSourceTable(fkTable.getName());
+                        alterExp.setFkSourceColumns(columnNames); 
+                    }
                                 
                 [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
                         		  { alterExp.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
