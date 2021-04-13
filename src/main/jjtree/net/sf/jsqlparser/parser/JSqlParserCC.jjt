@@ -4779,7 +4779,7 @@ AlterExpression AlterExpression():
               [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
             )
                     |
-            LOOKAHEAD(3) ( (LOOKAHEAD(2) <K_COLUMN>)?
+            LOOKAHEAD(3) ( (LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); })?
                 (LOOKAHEAD(2) alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
                 |
                 alterExpressionColumnDropNotNull = AlterExpressionColumnDropNotNull() { alterExp.addColDropNotNull( alterExpressionColumnDropNotNull); })
@@ -4904,7 +4904,7 @@ AlterExpression AlterExpression():
           alterExp.setOperation(AlterOperation.CHANGE);
         }
         (
-          <K_COLUMN> { alterExp.setOptionalSpecifier("COLUMN"); } | {}
+          <K_COLUMN> { alterExp.hasColumn(true); alterExp.setOptionalSpecifier("COLUMN"); } | {}
         )
         (
           (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>)
@@ -4919,7 +4919,7 @@ AlterExpression AlterExpression():
               alterExp.setOperation(AlterOperation.DROP);
           }
            (
-               (  (LOOKAHEAD(2) <K_COLUMN>)?
+               (  (LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); })?
                   (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>)
                        {
                               alterExp.setColumnName(tk.image);
@@ -4955,7 +4955,7 @@ AlterExpression AlterExpression():
       |
       (<K_RENAME> {alterExp.setOperation(AlterOperation.RENAME);}
         (
-          <K_COLUMN>
+          <K_COLUMN> {alterExp.hasColumn(true);}
           (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setColOldName(tk.image);}
            (<K_TO>)
           (tk2=<S_IDENTIFIER>    | tk2=<S_QUOTED_IDENTIFIER>) { alterExp.setColumnName(tk2.image);}
