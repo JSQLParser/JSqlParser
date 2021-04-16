@@ -879,7 +879,7 @@ Update Update():
     List<SelectExpressionItem> returning = null;
 }
 {
-    <K_UPDATE> table=TableWithAlias()
+   <K_UPDATE> { update.setOracleHint(getOracleHint()); } table=TableWithAlias()  
         startJoins=JoinsList()
 
     <K_SET>
@@ -1023,7 +1023,7 @@ Insert Insert( List<WithItem> with ):
     boolean useAs = false;
 }
 {    
-    <K_INSERT>
+    <K_INSERT> { insert.setOracleHint(getOracleHint()); }
     [(tk = <K_LOW_PRIORITY> | tk = <K_DELAYED> | tk = <K_HIGH_PRIORITY>)
     {if (tk!=null)
         modifierPriority = InsertModifierPriority.valueOf(tk.image.toUpperCase());
@@ -1209,7 +1209,7 @@ Delete Delete():
     List<OrderByElement> orderByElements;
 }
 {
-    <K_DELETE> [LOOKAHEAD(2) (table=TableWithAlias() { tables.add(table); }
+    <K_DELETE> { delete.setOracleHint(getOracleHint()); } [LOOKAHEAD(2) (table=TableWithAlias() { tables.add(table); }
           ("," table=TableWithAlias() { tables.add(table); } )*
     <K_FROM> | <K_FROM>)]
 
@@ -1235,7 +1235,7 @@ Statement Merge() : {
     MergeInsert insert;
 }
 {
-    <K_MERGE> <K_INTO> table=TableWithAlias() { merge.setTable(table); }
+    <K_MERGE> { merge.setOracleHint(getOracleHint()); } <K_INTO> table=TableWithAlias() { merge.setTable(table); }
     <K_USING>
         ( table=Table() { merge.setUsingTable(table); }
             | "(" select=SubSelect() { merge.setUsingSelect(select); } ")" )
@@ -1287,14 +1287,18 @@ MergeInsert MergeInsertClause() : {
     List<Expression> expList = new ArrayList<Expression>();
     Column col;
     Expression exp;
+    Expression condition;
 }
 {
     <K_WHEN> <K_NOT> <K_MATCHED> <K_THEN>
         <K_INSERT> ["(" col=Column() { columns.add(col); } ("," col=Column() { columns.add(col); } )* ")"]  <K_VALUES>
            "(" exp=SimpleExpression() { expList.add(exp); } ("," exp=SimpleExpression() { expList.add(exp); } )* ")"
-    {
-        return mi.withColumns(columns).withValues(expList);
-    }
+
+        { mi.withColumns(columns).withValues(expList); }
+        
+        [ <K_WHERE> condition = Expression() { mi.setWhereCondition(condition); }]
+        
+        { return mi; }
 }
 
 List<String> RelObjectNameList() : {
@@ -4028,7 +4032,7 @@ CreateIndex CreateIndex():
     Index index = null;
     //String name = null;
     List<String> parameter = new ArrayList<String>();
-    List<String> tailParameter = null;
+    List<String> tailParameters = new ArrayList<String>();
     List<String> name;
 }
 {
@@ -4049,13 +4053,15 @@ CreateIndex CreateIndex():
 
     colNames = ColumnNamesWithParamsList()
 
-    [ tailParameter = CreateParameter() {} ]
+    /* [ tailParameter = CreateParameter() {} ] */
+
+    ( parameter=CreateParameter() { tailParameters.addAll(parameter); } )*
 
     {
         index.setColumns(colNames);
         createIndex.setIndex(index);
         createIndex.setTable(table);
-        createIndex.setTailParameters(tailParameter);
+        createIndex.setTailParameters(tailParameters);
         return createIndex;
     }
 }
@@ -4790,8 +4796,16 @@ AlterExpression AlterExpression():
             |
     //following two choices regarding foreign keys should be merged
             ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); columnNames = null; }
-                 <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
+                 /*
+                    <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
                         { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
+                 */
+                 <K_REFERENCES> fkTable=Table() [ columnNames=ColumnsNamesList() ]
+                    {
+                        alterExp.setFkSourceSchema(fkTable.getSchemaName());
+                        alterExp.setFkSourceTable(fkTable.getName());
+                        alterExp.setFkSourceColumns(columnNames); 
+                    }
                                 
                 [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
                         		  { alterExp.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }

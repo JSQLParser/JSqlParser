@@ -146,6 +146,20 @@ public class AlterTest {
     public void testAlterTableForgeignKey4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL");
     }
+    
+    @Test
+    public void testAlterTableForgeignWithFkSchema() throws JSQLParserException {
+      final String FK_SCHEMA_NAME = "my_schema";
+      final String FK_TABLE_NAME= "ra_user";
+      String sql = "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES " + FK_SCHEMA_NAME +"." + FK_TABLE_NAME + " (id) ON DELETE SET NULL";
+      assertSqlCanBeParsedAndDeparsed(sql);
+      
+      Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+      AlterExpression alterExpression = alter.getAlterExpressions().get(0);
+
+      assertEquals(alterExpression.getFkSourceSchema(), FK_SCHEMA_NAME);
+      assertEquals(alterExpression.getFkSourceTable(), FK_TABLE_NAME);
+    }
 
     @Test
     public void testAlterTableDropColumn() throws JSQLParserException {

@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -29,6 +30,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 public class Insert implements Statement {
 
     private Table table;
+    private OracleHint oracleHint = null;
     private List<Column> columns;
     private ItemsList itemsList;
     private boolean useValues = true;
@@ -60,6 +62,14 @@ public class Insert implements Statement {
 
     public void setTable(Table name) {
         table = name;
+    }
+    
+    public OracleHint getOracleHint() {
+        return oracleHint;
+    }
+
+    public void setOracleHint(OracleHint oracleHint) {
+        this.oracleHint = oracleHint;
     }
 
     public List<Column> getColumns() {

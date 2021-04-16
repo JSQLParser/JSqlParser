@@ -13,6 +13,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import static net.sf.jsqlparser.test.TestUtils.*;
+import org.assertj.core.api.Assertions;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 
@@ -151,9 +152,6 @@ public class MergeTest {
                 + "    )\n";
 
         Statement statement = CCJSqlParserUtil.parse(sql);
-
-        System.out.println(statement.toString());
-
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
 
@@ -176,4 +174,51 @@ public class MergeTest {
             //expected to fail
         }
     }
+    
+    @Test
+    public void testOracleHint() throws JSQLParserException {
+        String sql = "MERGE /*+ SOMEHINT */ INTO bonuses B\n"
+                + "USING (\n"
+                + "  SELECT employee_id, salary\n"
+                + "  FROM employee\n"
+                + "  WHERE dept_no =20) E\n"
+                + "ON (B.employee_id = E.employee_id)\n"
+                + "WHEN MATCHED THEN\n"
+                + "  UPDATE SET B.bonus = E.salary * 0.1\n"
+                + "WHEN NOT MATCHED THEN\n"
+                + "  INSERT (B.employee_id, B.bonus)\n"
+                + "  VALUES (E.employee_id, E.salary * 0.05)  ";
+        
+        assertOracleHintExists(sql, true, "SOMEHINT");
+       
+       //@todo: add a testcase supposed to not finding a misplaced hint
+    }
+
+  @Test
+  public void testInsertMergeWhere() throws JSQLParserException {
+    String sql =
+        "-- Both clauses present.\n"
+            + "MERGE INTO test1 a\n"
+            + "  USING all_objects b\n"
+            + "    ON (a.object_id = b.object_id)\n"
+            + "  WHEN MATCHED THEN\n"
+            + "    UPDATE SET a.status = b.status\n"
+            + "    WHERE  b.status != 'VALID'\n"
+            + "  WHEN NOT MATCHED THEN\n"
+            + "    INSERT (object_id, status)\n"
+            + "    VALUES (b.object_id, b.status)\n"
+            + "\n"
+            + "    WHERE  b.status != 'VALID'\n"
+            ;
+
+    Statement statement = CCJSqlParserUtil.parse(sql);
+    assertSqlCanBeParsedAndDeparsed(sql, true);
+    
+    Merge merge = (Merge) statement;
+    MergeInsert mergeInsert = merge.getMergeInsert();
+    Assertions.assertThat( mergeInsert.getWhereCondition() );
+    
+    MergeUpdate mergeUpdate = merge.getMergeUpdate();
+    Assertions.assertThat( mergeUpdate.getWhereCondition() );
+  }
 }
