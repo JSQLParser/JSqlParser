@@ -57,6 +57,7 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.1
 
+* support for parser modification within **parseExpression** and **parseCondExpression**
 ' support for table schema for foreign keys
 * support for Oracle hints on **insert, update and merge**
 * support for **merge insert where** clause
