@@ -1334,7 +1334,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> 
-      | tk=<K_ALGORITHM>
+      | tk=<K_ALGORITHM> 
       | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE> | tk=<K_CHARACTER>
       | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_DISABLE> | tk=<K_DESC>
       | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING>
