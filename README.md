@@ -57,6 +57,9 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.1
 
+' support for table schema for foreign keys
+* support for Oracle hints on **insert, update and merge**
+* support for **merge insert where** clause
 * allow **in** as schema name
 * allow **skip**, **algorithm** as column name
 * support for functions in an interval expression
