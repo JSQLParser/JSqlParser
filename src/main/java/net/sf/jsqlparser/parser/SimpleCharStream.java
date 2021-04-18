@@ -9,12 +9,13 @@
  */
 package net.sf.jsqlparser.parser;
 
+@SuppressWarnings({"PMD.MethodNamingConventions"})
 public class SimpleCharStream {
 
     /**
      * Whether parser is static.
      */
-    @SuppressWarnings({"checkstyle:constantname", "PMD.MethodNamingConventions"})
+    @SuppressWarnings("checkstyle:constantname")
     public static final boolean staticFlag = false;
     int bufsize;
     int available;
