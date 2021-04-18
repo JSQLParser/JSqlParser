@@ -4225,6 +4225,10 @@ CreateTable CreateTable():
                             index.withColumns(colNames).withIndexSpec(idxSpec);
                             indexes.add(index);
                         }
+                        // reset Token to null forcefullly
+                        {
+                             tk2=null;
+                         }
                 )
                 |
                 LOOKAHEAD(3) ( {tk=null;}
