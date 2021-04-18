@@ -14,7 +14,7 @@ public class SimpleCharStream {
     /**
      * Whether parser is static.
      */
-    @SuppressWarnings("checkstyle:constantname")
+    @SuppressWarnings({"checkstyle:constantname", "PMD.MethodNamingConventions"})
     public static final boolean staticFlag = false;
     int bufsize;
     int available;
