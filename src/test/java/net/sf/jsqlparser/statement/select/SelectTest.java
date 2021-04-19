@@ -883,6 +883,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testUnionWithOrderByAndLimitAndNoBrackets() throws JSQLParserException {
+        String stmt = "SELECT id FROM table1 UNION SELECT id FROM table2 ORDER BY id ASC LIMIT 55";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testUnion() throws JSQLParserException {
         String statement = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
                 + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION " + "SELECT * FROM mytable2 LIMIT 3, 4";
@@ -2309,6 +2315,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testIntervalWithFunction() throws JSQLParserException {
+        String stmt = "SELECT DATE_ADD(start_date, INTERVAL COALESCE(duration, 21) MINUTE) AS end_datetime FROM appointment";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testInterval1() throws JSQLParserException {
         String stmt = "SELECT 5 + INTERVAL '3 days'";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -2394,6 +2406,12 @@ public class SelectTest {
     @Test
     public void testMultiValueInBinds() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE (a, b) IN ((?, ?), (?, ?))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testUnionWithBracketsAndOrderBy() throws JSQLParserException {
+        String stmt = "(SELECT a FROM tbl ORDER BY a) UNION DISTINCT (SELECT a FROM tbl ORDER BY a)";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
@@ -4455,6 +4473,27 @@ public class SelectTest {
     @Test
     public void testArrayDeclare() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ARRAY[1, f1], ARRAY[[1, 2], [3, f2 + 1]], ARRAY[]::text[] FROM t1");
+    }
+
+    @Test
+    public void testColonDelimiterIssue1134() throws JSQLParserException {
+        Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM stores_demo:informix.accounts");
+        assertEquals("SELECT * FROM stores_demo.informix.accounts", stmt.toString());
+    }
+    
+    @Test
+    public void testKeywordSkipIssue1136() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT skip");
+    }
+    
+    @Test
+    public void testKeywordAlgorithmIssue1137() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT algorithm FROM tablename");
+    }
+    
+    @Test
+    public void testKeywordAlgorithmIssue1138() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM in.tablename");
     }
 
     @Test

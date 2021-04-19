@@ -216,4 +216,18 @@ public class CCJSqlParserUtilTest {
         Expression result = CCJSqlParserUtil.parseExpression("tab.col");
         assertEquals("tab.col", result.toString());
     }
+    
+    @Test
+    public void testParseExpressionWithBracketsIssue1159() throws Exception {
+        Expression result = CCJSqlParserUtil.parseExpression("[travel_data].[travel_id]", false, 
+                parser -> parser.withSquareBracketQuotation(true));
+        assertEquals("[travel_data].[travel_id]", result.toString());
+    }
+    
+    @Test
+    public void testParseExpressionWithBracketsIssue1159_2() throws Exception {
+        Expression result = CCJSqlParserUtil.parseCondExpression("[travel_data].[travel_id]", false, 
+                parser -> parser.withSquareBracketQuotation(true));
+        assertEquals("[travel_data].[travel_id]", result.toString());
+    }
 }
