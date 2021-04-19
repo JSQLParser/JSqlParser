@@ -54,7 +54,9 @@ under the License.
     <rule ref="category/java/codestyle.xml/UselessParentheses" />
     <rule ref="category/java/codestyle.xml/UselessQualifiedThis" />
     
+    <!-- for Codazy -->
     <rule ref="category/java/codestyle.xml/MethodNamingConventions" />
+    <rule ref="category/java/codestyle.xml/ClassNamingConventions" />
 
     <rule ref="category/java/design.xml/CollapsibleIfStatements" />
     <rule ref="category/java/design.xml/SimplifiedTernary" />
@@ -63,6 +65,7 @@ under the License.
     
     <!-- for Codazy -->
     <rule ref="category/java/design.xml/CyclomaticComplexity" />
+    <rule ref="category/java/design.xml/ExcessiveMethodLength" />
 
     <rule ref="category/java/errorprone.xml/AvoidBranchingStatementAsLastInLoop" />
     <rule ref="category/java/errorprone.xml/AvoidDecimalLiteralsInBigDecimalConstructor" />
