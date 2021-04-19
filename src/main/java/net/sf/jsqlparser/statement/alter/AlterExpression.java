@@ -27,6 +27,7 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class AlterExpression {
 
   private AlterOperation operation;
@@ -359,6 +360,7 @@ public class AlterExpression {
   }
 
   @Override
+  @SuppressWarnings({"PMD.CyclomaticComplexity"})
   public String toString() {
 
     StringBuilder b = new StringBuilder();

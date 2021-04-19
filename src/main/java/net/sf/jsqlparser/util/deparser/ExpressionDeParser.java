@@ -101,6 +101,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionDeParser extends AbstractDeParser<Expression>
         // FIXME maybe we should implement an ItemsListDeparser too?
         implements ExpressionVisitor, ItemsListVisitor {
@@ -469,6 +470,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void visit(Function function) {
         if (function.isEscaped()) {
             buffer.append("{fn ");
@@ -668,6 +670,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void visit(AnalyticExpression aexpr) {
         String name = aexpr.getName();
         Expression expression = aexpr.getExpression();

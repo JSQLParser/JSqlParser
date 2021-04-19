@@ -60,6 +60,7 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     protected boolean columnExists(Map<Named, Boolean> results, Named named) throws ValidationException {
         String[] names = splitAndValidateMinMax(COLUMN, named.getFqnLookup(), 1, 4);
         String columnName = names[names.length - 1];
@@ -121,6 +122,7 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
         return jdbcMetadataTables(named, TABLE);
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     protected boolean jdbcMetadataTables(Named named, String type) throws ValidationException {
         String[] names = splitAndValidateMinMax(type, named.getFqnLookup(), 1, 3);
 

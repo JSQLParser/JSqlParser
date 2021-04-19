@@ -21,6 +21,7 @@ import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     private Distinct distinct = null;
@@ -321,6 +322,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public String toString() {
         StringBuilder sql = new StringBuilder();
         if (useBrackets) {

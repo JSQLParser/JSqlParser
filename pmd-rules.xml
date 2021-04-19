@@ -60,7 +60,9 @@ under the License.
     <rule ref="category/java/design.xml/SimplifiedTernary" />
     <rule ref="category/java/design.xml/UselessOverridingMethod" />
     <rule ref="category/java/design.xml/AvoidThrowingNullPointerException" />
-
+    
+    <!-- for Codazy -->
+    <rule ref="category/java/design.xml/CyclomaticComplexity" />
 
     <rule ref="category/java/errorprone.xml/AvoidBranchingStatementAsLastInLoop" />
     <rule ref="category/java/errorprone.xml/AvoidDecimalLiteralsInBigDecimalConstructor" />

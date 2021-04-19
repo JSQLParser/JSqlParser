@@ -98,6 +98,7 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 /**
  * @author gitmotte
  */
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionValidator extends AbstractValidator<Expression> implements ExpressionVisitor {
 
 

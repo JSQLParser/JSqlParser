@@ -11,7 +11,7 @@ package net.sf.jsqlparser.parser;
 
 import java.io.IOException;
 
-@SuppressWarnings({"PMD.MethodNamingConventions"})
+@SuppressWarnings({"PMD.MethodNamingConventions", "PMD.CyclomaticComplexity"})
 public class SimpleCharStream {
 
     /**
