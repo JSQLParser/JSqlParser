@@ -3770,9 +3770,9 @@ Execute Execute(): {
     Expression expr;
 }
 {
-    (<K_EXEC> { execute.setExecType(Execute.EXEC_TYPE.EXEC); }
-        | <K_EXECUTE> { execute.setExecType(Execute.EXEC_TYPE.EXECUTE); }
-        | <K_CALL> { execute.setExecType(Execute.EXEC_TYPE.CALL); } )
+    (<K_EXEC> { execute.setExecType(Execute.ExecType.EXEC); }
+        | <K_EXECUTE> { execute.setExecType(Execute.ExecType.EXECUTE); }
+        | <K_CALL> { execute.setExecType(Execute.ExecType.CALL); } )
 
     funcName=RelObjectNameList() { execute.setName(funcName); }
 
