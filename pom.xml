@@ -105,7 +105,24 @@
             <!-- Custom local file system rule set -->
             <ruleset>${basedir}/pmd-rules.xml</ruleset>
           </rulesets>
+          <excludes>
+            <exclude>**/*Bean.java</exclude>
+            <exclude>**/generated/*.java</exclude>
+          </excludes>
+          <excludeRoots>
+            <excludeRoot>target/generated-sources</excludeRoot>
+            <excludeRoot>target/generated-test-sources</excludeRoot>
+          </excludeRoots>
         </configuration>
+        <executions>
+          <execution>
+            <id>pmd</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>process-sources</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
