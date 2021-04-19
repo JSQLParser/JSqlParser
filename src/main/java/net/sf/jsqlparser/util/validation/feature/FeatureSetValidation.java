@@ -19,7 +19,7 @@ import net.sf.jsqlparser.util.validation.ValidationException;
 
 public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
 
-    public static final String DEFAULT_NAME = "feature set";
+    String DEFAULT_NAME = "feature set";
 
     @Override
     default void validate(ValidationContext context, Consumer<ValidationException> errorConsumer) {
@@ -33,12 +33,12 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
      * @return all supported {@link Feature}'s
      */
     @Override
-    public Set<Feature> getFeatures();
+    Set<Feature> getFeatures();
 
     /**
      * @return the default message if not contained in the feature set
      */
-    public ValidationException getMessage(Feature feature);
+    ValidationException getMessage(Feature feature);
 
     @Override
     default String getName() {

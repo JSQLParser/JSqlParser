@@ -21,7 +21,7 @@ public enum NamesLookup implements UnaryOperator<String> {
 
     private Function<String, String> strategy;
 
-    private NamesLookup(UnaryOperator<String> strategy) {
+    NamesLookup(UnaryOperator<String> strategy) {
         this.strategy = strategy;
     }
 

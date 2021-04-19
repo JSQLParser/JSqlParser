@@ -96,7 +96,7 @@ public class Execute implements Statement {
         return this;
     }
 
-    public static enum EXEC_TYPE {
+    public enum EXEC_TYPE {
         EXECUTE,
         EXEC,
         CALL

@@ -146,7 +146,7 @@ public enum H2Version implements Version {
      * @param featuresSupported
      * @see #copy() to copy from previous version
      */
-    private H2Version(String versionString, Set<Feature> featuresSupported) {
+    H2Version(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
     }
 
@@ -156,7 +156,7 @@ public enum H2Version implements Version {
      * @param unsupported
      * @see #copy() to copy from previous version
      */
-    private H2Version(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
+    H2Version(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;
         this.features = featuresSupported;
         this.features.removeAll(unsupported);

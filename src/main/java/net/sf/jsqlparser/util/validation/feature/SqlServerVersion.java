@@ -144,7 +144,7 @@ public enum SqlServerVersion implements Version {
      * @param featuresSupported
      * @see #copy() to copy from previous version
      */
-    private SqlServerVersion(String versionString, Set<Feature> featuresSupported) {
+    SqlServerVersion(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
     }
 
@@ -154,7 +154,7 @@ public enum SqlServerVersion implements Version {
      * @param unsupported
      * @see #copy() to copy from previous version
      */
-    private SqlServerVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
+    SqlServerVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;
         this.features = featuresSupported;
         this.features.removeAll(unsupported);

@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.parser;
 
+import java.io.IOException;
+
 @SuppressWarnings({"PMD.MethodNamingConventions"})
 public class SimpleCharStream {
 
@@ -57,7 +59,7 @@ public class SimpleCharStream {
         return absoluteTokenBegin;
     }
 
-    protected void ExpandBuff(boolean wrapAround) {
+    protected void ExpandBuff(boolean wrapAround) throws IOException {
         char[] newbuffer = new char[bufsize + 2048];
         int newbufline[] = new int[bufsize + 2048];
         int newbufcolumn[] = new int[bufsize + 2048];
@@ -90,7 +92,7 @@ public class SimpleCharStream {
                 maxNextCharInd = bufpos -= tokenBegin;
             }
         } catch (Throwable t) {
-            throw new RuntimeException(t.getMessage());
+            throw new IOException("Errow expanding the buffer.", t);
         }
 
         bufsize += 2048;
@@ -98,7 +100,7 @@ public class SimpleCharStream {
         tokenBegin = 0;
     }
 
-    protected void FillBuff() throws java.io.IOException {
+    protected void FillBuff() throws IOException {
         if (!isStringProvider && maxNextCharInd == available) {
             if (available == bufsize) {
                 if (tokenBegin > 2048) {
@@ -123,19 +125,19 @@ public class SimpleCharStream {
             if (inputStream instanceof StringProvider) {
                 i = ((StringProvider) inputStream)._string.length();
                 if (maxNextCharInd == i) {
-                    throw new java.io.IOException();
+                    throw new IOException();
                 }
                 maxNextCharInd = i;
             } else {
                 if ((i = inputStream.read(buffer, maxNextCharInd, available - maxNextCharInd)) == -1) {
                     inputStream.close();
-                    throw new java.io.IOException();
+                    throw new IOException();
                 } else {
                     maxNextCharInd += i;
                 }
             }
             return;
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             --bufpos;
             backup(0);
             if (tokenBegin == -1) {
@@ -148,7 +150,7 @@ public class SimpleCharStream {
     /**
      * Start.
      */
-    public char BeginToken() throws java.io.IOException {
+    public char BeginToken() throws IOException {
         tokenBegin = -1;
         char c = readChar();
         tokenBegin = bufpos;
@@ -201,7 +203,7 @@ public class SimpleCharStream {
     /**
      * Read a character.
      */
-    public char readChar() throws java.io.IOException {
+    public char readChar() throws IOException {
         if (inBuf > 0) {
             --inBuf;
 

@@ -76,13 +76,12 @@ public class ReferentialAction {
             return false;
         }
         ReferentialAction other = (ReferentialAction) obj;
-        if (action != other.action) {
-            return false;
-        }
-        if (type != other.type) {
-            return false;
-        }
-        return true;
+//        if (action != other.action) {
+//            return false;
+//        }
+//        if (type != other.type) {
+//            return false;
+        return action==other.action && type == other.type;
     }
 
     public enum Type {
@@ -97,7 +96,7 @@ public class ReferentialAction {
         SET_DEFAULT("SET DEFAULT"),
         SET_NULL("SET NULL");
 
-        private Action(String action) {
+        Action(String action) {
             this.action = action;
         }
 
