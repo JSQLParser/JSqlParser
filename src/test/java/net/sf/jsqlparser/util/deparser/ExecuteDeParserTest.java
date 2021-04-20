@@ -22,7 +22,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.execute.Execute;
-import net.sf.jsqlparser.statement.execute.Execute.EXEC_TYPE;
+import net.sf.jsqlparser.statement.execute.Execute.ExecType;
 
 public class ExecuteDeParserTest {
 
@@ -49,7 +49,7 @@ public class ExecuteDeParserTest {
         expressions.add(new JdbcParameter());
 
         execute.withName(name)
-        .withExecType(EXEC_TYPE.EXECUTE).withParenthesis(true)
+        .withExecType(ExecType.EXECUTE).withParenthesis(true)
         .withExprList(new ExpressionList().withExpressions(expressions));
 
         executeDeParser.deParse(execute);

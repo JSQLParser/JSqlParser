@@ -717,7 +717,7 @@ public enum Feature {
     /**
      * a feature which can't configured within the parser
      */
-    private Feature() {
+    Feature() {
         this.value = null;
         this.configurable = false;
     }
@@ -727,7 +727,7 @@ public enum Feature {
      *
      * @param value
      */
-    private Feature(Object value) {
+    Feature(Object value) {
         this.value = value;
         this.configurable = true;
     }

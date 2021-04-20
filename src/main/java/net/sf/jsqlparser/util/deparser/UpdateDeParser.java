@@ -40,6 +40,7 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void deParse(Update update) {
         buffer.append("UPDATE ").append(update.getTable());
         if (update.getStartJoins() != null) {

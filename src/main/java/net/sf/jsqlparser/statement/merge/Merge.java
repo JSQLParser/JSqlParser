@@ -128,20 +128,16 @@ public class Merge implements Statement {
         b.append(onCondition);
         b.append(")");
 
-        if (insertFirst) {
-            if (mergeInsert != null) {
-                b.append(mergeInsert.toString());
-            }
+        if (insertFirst && mergeInsert != null) {
+          b.append(mergeInsert.toString());
         }
 
         if (mergeUpdate != null) {
             b.append(mergeUpdate.toString());
         }
 
-        if (!insertFirst) {
-            if (mergeInsert != null) {
-                b.append(mergeInsert.toString());
-            }
+        if (!insertFirst && mergeInsert != null) {
+          b.append(mergeInsert.toString());
         }
 
         return b.toString();

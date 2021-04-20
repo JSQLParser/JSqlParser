@@ -391,6 +391,7 @@ public class CNFConverter {
      * tree where all the same multi operators store in the same odd level of the tree or in the
      * same even level of the tree.
      */
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     private void gather() {
         Queue<Expression> queue = new LinkedList<Expression>();
         queue.offer(temp1);
@@ -526,6 +527,7 @@ public class CNFConverter {
      *
      * @param stack the stack stores a list of combined data.
      */
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     private void pushAnd(Stack<Mule> stack) {
         int level = 0;
         if (!stack.isEmpty()) {
