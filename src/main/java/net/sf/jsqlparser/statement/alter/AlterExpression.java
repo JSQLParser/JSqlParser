@@ -145,7 +145,7 @@ public class AlterExpression {
   }
   /**
    * @return
-   * @deprecated use {@link #getOnDeleteReferentialAction()}
+   * @deprecated use {@link #getReferentialAction(ReferentialAction.Type)}
    */
   @Deprecated
   public boolean isOnDeleteCascade() {
@@ -154,8 +154,8 @@ public class AlterExpression {
   }
 
   /**
-   * @return
-   * @deprecated use {@link #setOnDeleteReferentialAction(Action)
+   * @param onDeleteCascade
+   * @deprecated use {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
    */
   @Deprecated
   public void setOnDeleteCascade(boolean onDeleteCascade) {
@@ -164,7 +164,7 @@ public class AlterExpression {
 
   /**
    * @return
-   * @deprecated use {@link #getOnDeleteReferentialAction()}
+   * @deprecated use {@link #getReferentialAction(ReferentialAction.Type)}
    */
   @Deprecated
   public boolean isOnDeleteRestrict() {
@@ -173,8 +173,8 @@ public class AlterExpression {
   }
 
   /**
-   * @return
-   * @deprecated use {@link #setOnDeleteReferentialAction(Action)
+   * @param onDeleteRestrict
+   * @deprecated use {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
    */
   @Deprecated
   public void setOnDeleteRestrict(boolean onDeleteRestrict) {
@@ -183,7 +183,7 @@ public class AlterExpression {
 
   /**
    * @return
-   * @deprecated use {@link #getOnDeleteReferentialAction()}
+   * @deprecated use {@link #getReferentialAction(ReferentialAction.Type)}
    */
   @Deprecated
   public boolean isOnDeleteSetNull() {
@@ -192,8 +192,8 @@ public class AlterExpression {
   }
 
   /**
-   * @return
-   * @deprecated use {@link #setOnDeleteReferentialAction(Action)
+   * @param onDeleteSetNull
+   * @deprecated use {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
    */
   @Deprecated
   public void setOnDeleteSetNull(boolean onDeleteSetNull) {
