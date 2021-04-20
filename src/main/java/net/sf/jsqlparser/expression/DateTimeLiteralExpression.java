@@ -52,7 +52,7 @@ public class DateTimeLiteralExpression extends ASTNodeAccessImpl implements Expr
         return this;
     }
 
-    public static enum DateTime {
+    public enum DateTime {
         DATE, TIME, TIMESTAMP;
     }
 }

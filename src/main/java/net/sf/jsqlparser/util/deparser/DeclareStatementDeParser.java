@@ -23,6 +23,7 @@ public class DeclareStatementDeParser extends AbstractDeParser<DeclareStatement>
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void deParse(DeclareStatement declare) {
         buffer.append("DECLARE ");
 

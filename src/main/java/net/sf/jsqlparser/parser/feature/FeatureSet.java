@@ -16,7 +16,7 @@ import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 
 public interface FeatureSet {
 
-    public Set<Feature> getFeatures();
+    Set<Feature> getFeatures();
 
     /**
      * @return <code>true</code> if the feature is identical to one of the features

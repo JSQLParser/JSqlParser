@@ -53,7 +53,9 @@ public class MergeInsert {
         return " WHEN NOT MATCHED THEN INSERT "
                 + (columns.isEmpty() ? "" : PlainSelect.getStringList(columns, true, true))
                 + " VALUES " + PlainSelect.getStringList(values, true, true)
-                + (whereCondition != null ? (" WHERE " + whereCondition) : "");
+                + ( whereCondition != null 
+                        ? " WHERE " + whereCondition
+                        : "" );
     }
 
     public MergeInsert withColumns(List<Column> columns) {

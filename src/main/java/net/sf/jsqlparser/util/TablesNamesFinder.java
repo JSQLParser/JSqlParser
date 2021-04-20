@@ -107,6 +107,7 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
  *
  * Override extractTableName method to modify the extracted table names (e.g. without schema).
  */
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor, StatementVisitor {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";

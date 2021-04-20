@@ -68,8 +68,9 @@ public class ColumnDefinition {
     }
 
     public String toStringDataTypeAndSpec() {
-        return colDataType + ((columnSpecs != null && !columnSpecs.isEmpty())? " " + PlainSelect.
-                getStringList(columnSpecs, false, false) : "");
+        return colDataType + ( columnSpecs != null && !columnSpecs.isEmpty() 
+                                                        ? " " + PlainSelect.getStringList(columnSpecs, false, false) 
+                                                        : "" );
     }
 
     public ColumnDefinition withColumnName(String columnName) {
