@@ -483,13 +483,16 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append("()");
         } else {
             boolean oldUseBracketsInExprList = useBracketsInExprList;
-            useBracketsInExprList = true;
+            useBracketsInExprList = !function.isDistinct() &&
+                    !function.isAllColumns() &&
+                    function.getOrderByElements() == null;
+            if (!useBracketsInExprList) {
+                buffer.append("(");
+            }
             if (function.isDistinct()) {
-                useBracketsInExprList = false;
-                buffer.append("(DISTINCT ");
+                buffer.append("DISTINCT ");
             } else if (function.isAllColumns()) {
-                useBracketsInExprList = false;
-                buffer.append("(ALL ");
+                buffer.append("ALL ");
             }
             if (function.getNamedParameters() != null) {
                 visit(function.getNamedParameters());
@@ -497,10 +500,25 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             if (function.getParameters() != null) {
                 visit(function.getParameters());
             }
-            useBracketsInExprList = oldUseBracketsInExprList;
-            if (function.isDistinct() || function.isAllColumns()) {
+            if (function.getOrderByElements() != null) {
+                buffer.append(" ORDER BY ");
+                boolean comma = false;
+                orderByDeParser.setExpressionVisitor(this);
+                orderByDeParser.setBuffer(buffer);
+                for (OrderByElement orderByElement : function.getOrderByElements()) {
+                    if (comma) {
+                        buffer.append(", ");
+                    } else {
+                        comma = true;
+                    }
+                    orderByDeParser.deParseElement(orderByElement);
+                }
+            }
+            if (!useBracketsInExprList) {
                 buffer.append(")");
             }
+            useBracketsInExprList = oldUseBracketsInExprList;
+
         }
 
         if (function.getAttribute() != null) {
