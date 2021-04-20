@@ -4495,4 +4495,9 @@ public class SelectTest {
     public void testKeywordAlgorithmIssue1138() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM in.tablename");
     }
+
+    @Test
+    public void testFunctionOrderBy() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT array_agg(DISTINCT s ORDER BY b)[1] FROM t");
+    }
 }
