@@ -20,25 +20,25 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 /**
  * CASE/WHEN expression.
  *
- * Syntax:  <code><pre>
+ * Syntax:  <pre><code>
  * CASE
  * WHEN condition THEN expression
  * [WHEN condition THEN expression]...
  * [ELSE expression]
  * END
- * </pre></code>
+ * </code></pre>
  *
- * <br/>
- * or <br/>
- * <br/>
+ * <br>
+ * or <br>
+ * <br>
  *
- * <code><pre>
+ * <pre><code>
  * CASE expression
  * WHEN condition THEN expression
  * [WHEN condition THEN expression]...
  * [ELSE expression]
  * END
- * </pre></code>
+ * </code></pre>
  *
  */
 public class CaseExpression extends ASTNodeAccessImpl implements Expression {

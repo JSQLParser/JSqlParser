@@ -91,8 +91,8 @@ public class AlterExpression {
     }
 
     /**
-     * @param type
-     * @param action
+     * @param type - delete or update, see {@link Type}
+     * @param action - see {@link Action}
      */
     public void setReferentialAction(Type type, Action action) {
         setReferentialAction(type, action, true);
@@ -112,7 +112,7 @@ public class AlterExpression {
 
     /**
      * @param type
-     * @return
+     * @return the referential action for given type
      */
     public ReferentialAction getReferentialAction(Type type) {
         return referentialActions.stream().filter(ra -> type.equals(ra.getType())).findFirst().orElse(null);
@@ -131,8 +131,8 @@ public class AlterExpression {
         }
     }
     /**
-     * @return
-     * @deprecated use {@link #getOnDeleteReferentialAction()}
+     * @return <code>true</code>, if a referential action <code>ON DELETE CASCASE</code> was defined, <code>false</code> otherwise.
+     * @deprecated use {@link #getReferentialAction(Type)}
      */
     @Deprecated
     public boolean isOnDeleteCascade() {
@@ -141,8 +141,8 @@ public class AlterExpression {
     }
 
     /**
-     * @return
-     * @deprecated use {@link #setOnDeleteReferentialAction(Action)
+     * @param onDeleteCascade
+     * @deprecated use {@link #setReferentialAction(Type, Action)}
      */
     @Deprecated
     public void setOnDeleteCascade(boolean onDeleteCascade) {
@@ -150,8 +150,8 @@ public class AlterExpression {
     }
 
     /**
-     * @return
-     * @deprecated use {@link #getOnDeleteReferentialAction()}
+     * @return <code>true</code>, if a referential action <code>ON DELETE RESTRICT</code> was defined, <code>false</code> otherwise.
+     * @deprecated use {@link #getReferentialAction(Type)}
      */
     @Deprecated
     public boolean isOnDeleteRestrict() {
@@ -160,8 +160,8 @@ public class AlterExpression {
     }
 
     /**
-     * @return
-     * @deprecated use {@link #setOnDeleteReferentialAction(Action)
+     * @param onDeleteRestrict
+     * @deprecated use {@link #setReferentialAction(Type, Action)}
      */
     @Deprecated
     public void setOnDeleteRestrict(boolean onDeleteRestrict) {
@@ -170,7 +170,7 @@ public class AlterExpression {
 
     /**
      * @return
-     * @deprecated use {@link #getOnDeleteReferentialAction()}
+     * @deprecated use {@link #getReferentialAction(Type)}
      */
     @Deprecated
     public boolean isOnDeleteSetNull() {
@@ -179,8 +179,7 @@ public class AlterExpression {
     }
 
     /**
-     * @return
-     * @deprecated use {@link #setOnDeleteReferentialAction(Action)
+     * @deprecated use {@link #setReferentialAction(Type, Action)}
      */
     @Deprecated
     public void setOnDeleteSetNull(boolean onDeleteSetNull) {

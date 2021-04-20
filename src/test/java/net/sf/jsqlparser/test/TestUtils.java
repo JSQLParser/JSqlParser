@@ -82,7 +82,7 @@ public class TestUtils {
      * @param laxDeparsingCheck removes all linefeeds from the original and
      *                          removes all double spaces. The check is
      *                          caseinsensitive.
-     * @param consumer
+     * @param consumer - a parser-consumer for parser-configurations from outside
      * @return the parsed {@link Statement}
      * @throws JSQLParserException
      */
