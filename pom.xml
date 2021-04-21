@@ -254,7 +254,7 @@
             <id>attach-javadocs</id>
             <configuration>
               <additionalparam>${javadoc.opts}</additionalparam>
-              <doclint>none</doclint>
+              <excludePackageNames>net.sf.jsqlparser.parser</excludePackageNames> 
             </configuration>
             <goals>
               <goal>jar</goal>
@@ -327,11 +327,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1</version>
         <configuration>
           <useStandardDocletOptions>true</useStandardDocletOptions>
           <maxmemory>800m</maxmemory>
-          <doclint>none</doclint>
+          <doclint>all, -missing</doclint>
+          <excludePackageNames>net.sf.jsqlparser.parser</excludePackageNames>                          
         </configuration>
       </plugin>
       <plugin>
@@ -397,6 +398,8 @@
         </plugins>
       </build>
     </profile>
+    
+    <!--
     <profile>
       <id>doclint-java8-disable</id>
       <activation>
@@ -406,6 +409,7 @@
         <javadoc.opts>-Xdoclint:none</javadoc.opts>
       </properties>
     </profile>
+    -->
     <profile>
       <id>check.sources</id>
       <activation>

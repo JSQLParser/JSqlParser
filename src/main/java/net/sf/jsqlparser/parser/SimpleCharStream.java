@@ -149,6 +149,8 @@ public class SimpleCharStream {
 
     /**
      * Start.
+     * @return the character read
+     * @throws IOException
      */
     public char BeginToken() throws IOException {
         tokenBegin = -1;
@@ -202,6 +204,8 @@ public class SimpleCharStream {
 
     /**
      * Read a character.
+     * @return the character read
+     * @throws IOException
      */
     public char readChar() throws IOException {
         if (inBuf > 0) {
@@ -227,47 +231,49 @@ public class SimpleCharStream {
         return c;
     }
 
-    @Deprecated
+    
     /**
+     * @return the column
      * @deprecated @see #getEndColumn
      */
-
+    @Deprecated
     public int getColumn() {
         return bufcolumn[bufpos];
     }
 
-    @Deprecated
+    
     /**
+     * @return the line
      * @deprecated @see #getEndLine
      */
-
+    @Deprecated
     public int getLine() {
         return bufline[bufpos];
     }
 
     /**
-     * Get token end column number.
+     * @return get token end column number.
      */
     public int getEndColumn() {
         return bufcolumn[bufpos];
     }
 
     /**
-     * Get token end line number.
+     * @return get token end line number.
      */
     public int getEndLine() {
         return bufline[bufpos];
     }
 
     /**
-     * Get token beginning column number.
+     * @return get token beginning column number.
      */
     public int getBeginColumn() {
         return bufcolumn[tokenBegin];
     }
 
     /**
-     * Get token beginning line number.
+     * @return get token beginning line number.
      */
     public int getBeginLine() {
         return bufline[tokenBegin];
@@ -275,6 +281,7 @@ public class SimpleCharStream {
 
     /**
      * Backup a number of characters.
+     * @param amount
      */
     public void backup(int amount) {
 
@@ -286,7 +293,11 @@ public class SimpleCharStream {
     }
 
     /**
-     * Constructor.
+     * Constructor
+     * @param dstream
+     * @param startline
+     * @param startcolumn
+     * @param buffersize
      */
     public SimpleCharStream(Provider dstream, int startline,
             int startcolumn, int buffersize) {
@@ -309,7 +320,10 @@ public class SimpleCharStream {
     }
 
     /**
-     * Constructor.
+     * Constructor
+     * @param dstream
+     * @param startline
+     * @param startcolumn
      */
     public SimpleCharStream(Provider dstream, int startline,
             int startcolumn) {
@@ -317,7 +331,8 @@ public class SimpleCharStream {
     }
 
     /**
-     * Constructor.
+     * Constructor
+     * @param dstream
      */
     public SimpleCharStream(Provider dstream) {
         this(dstream, 1, 1, 4096);
@@ -325,6 +340,10 @@ public class SimpleCharStream {
 
     /**
      * Reinitialise.
+     * @param dstream
+     * @param startline
+     * @param startcolumn
+     * @param buffersize
      */
     public void ReInit(Provider dstream, int startline,
             int startcolumn, int buffersize) {
@@ -352,21 +371,25 @@ public class SimpleCharStream {
 
     /**
      * Reinitialise.
+     * @param dstream
+     * @param startline
+     * @param startcolumn
      */
     public void ReInit(Provider dstream, int startline,
             int startcolumn) {
         ReInit(dstream, startline, startcolumn, 4096);
     }
 
-    /**
-     * Reinitialise.
-     */
+   /**
+    * Reinitialise.
+    * @param dstream
+    */
     public void ReInit(Provider dstream) {
         ReInit(dstream, 1, 1, 4096);
     }
 
     /**
-     * Get token literal value.
+     * @return get token literal value.
      */
     public String GetImage() {
         if (isStringProvider) {
@@ -388,7 +411,8 @@ public class SimpleCharStream {
     }
 
     /**
-     * Get the suffix.
+     * @param len
+     * @return get the suffix.
      */
     public char[] GetSuffix(int len) {
 
@@ -426,9 +450,11 @@ public class SimpleCharStream {
 
     /**
      * Method to adjust line and column numbers for the start of a token.
+     * @param newLine
+     * @param newCol
      */
-    @SuppressWarnings("checkstyle:parameterassignment")
     public void adjustBeginLineColumn(int newLine, int newCol) {
+        int nl = newLine;
         int start = tokenBegin;
         int len;
 
@@ -445,7 +471,7 @@ public class SimpleCharStream {
         int columnDiff = 0;
 
         while (i < len && bufline[j = start % bufsize] == bufline[k = ++start % bufsize]) {
-            bufline[j] = newLine;
+            bufline[j] = nl;
             nextColDiff = columnDiff + bufcolumn[k] - bufcolumn[j];
             bufcolumn[j] = newCol + columnDiff;
             columnDiff = nextColDiff;
@@ -453,14 +479,14 @@ public class SimpleCharStream {
         }
 
         if (i < len) {
-            bufline[j] = newLine++;
+            bufline[j] = nl++;
             bufcolumn[j] = newCol + columnDiff;
 
             while (i++ < len) {
                 if (bufline[j = start % bufsize] != bufline[++start % bufsize]) {
-                    bufline[j] = newLine++;
+                    bufline[j] = nl++;
                 } else {
-                    bufline[j] = newLine;
+                    bufline[j] = nl;
                 }
             }
         }

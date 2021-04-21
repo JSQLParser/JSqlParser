@@ -71,7 +71,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
      * This is at the moment only necessary for AnalyticExpression initialization and not for normal
      * functions. Therefore there is no deparsing for it for normal functions.
      *
-     * @param ignoreNulls
      */
     public void setIgnoreNulls(boolean ignoreNulls) {
         this.ignoreNulls = ignoreNulls;
