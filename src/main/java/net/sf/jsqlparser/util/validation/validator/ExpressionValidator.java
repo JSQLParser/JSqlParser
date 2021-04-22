@@ -98,6 +98,7 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 /**
  * @author gitmotte
  */
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionValidator extends AbstractValidator<Expression> implements ExpressionVisitor {
 
 
@@ -311,6 +312,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         validateOptionalItemsList(function.getParameters());
         validateOptionalExpression(function.getAttribute(), this);
         validateOptionalExpression(function.getKeep(), this);
+        validateOptionalOrderByElements(function.getOrderByElements());
     }
 
     @Override

@@ -38,7 +38,8 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * Parses an sql statement while allowing via consumer to configure the used parser before.
+     * Parses an sql statement while allowing via consumer to configure the used
+     * parser before.
      *
      * For instance to activate SQLServer bracket quotation on could use:
      *
@@ -104,7 +105,15 @@ public final class CCJSqlParserUtil {
     }
 
     public static Expression parseExpression(String expression, boolean allowPartialParse) throws JSQLParserException {
+        return parseExpression(expression, allowPartialParse, p -> {
+        });
+    }
+
+    public static Expression parseExpression(String expression, boolean allowPartialParse, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         CCJSqlParser parser = newParser(expression);
+        if (consumer != null) {
+            consumer.accept(parser);
+        }
         try {
             Expression expr = parser.SimpleExpression();
             if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
@@ -119,8 +128,8 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * Parse an conditional expression. This is the expression after a where clause.
-     * Partial parsing is enabled.
+     * Parse an conditional expression. This is the expression after a where
+     * clause. Partial parsing is enabled.
      *
      * @param condExpr
      * @return the expression parsed
@@ -131,7 +140,8 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * Parse an conditional expression. This is the expression after a where clause.
+     * Parse an conditional expression. This is the expression after a where
+     * clause.
      *
      * @param condExpr
      * @param allowPartialParse false: needs the whole string to be processed.
@@ -139,7 +149,15 @@ public final class CCJSqlParserUtil {
      * @see #parseCondExpression(String)
      */
     public static Expression parseCondExpression(String condExpr, boolean allowPartialParse) throws JSQLParserException {
+        return parseCondExpression(condExpr, allowPartialParse, p -> {
+        });
+    }
+
+    public static Expression parseCondExpression(String condExpr, boolean allowPartialParse, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         CCJSqlParser parser = newParser(condExpr);
+        if (consumer != null) {
+            consumer.accept(parser);
+        }
         try {
             Expression expr = parser.Expression();
             if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {

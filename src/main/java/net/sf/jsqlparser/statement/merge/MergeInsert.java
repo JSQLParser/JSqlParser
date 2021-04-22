@@ -22,6 +22,7 @@ public class MergeInsert {
 
     private List<Column> columns = null;
     private List<Expression> values = null;
+    private Expression whereCondition;
 
     public List<Column> getColumns() {
         return columns;
@@ -38,12 +39,23 @@ public class MergeInsert {
     public void setValues(List<Expression> values) {
         this.values = values;
     }
+    
+    public Expression getWhereCondition() {
+        return whereCondition;
+    }
+
+    public void setWhereCondition(Expression whereCondition) {
+        this.whereCondition = whereCondition;
+    }
 
     @Override
     public String toString() {
         return " WHEN NOT MATCHED THEN INSERT "
                 + (columns.isEmpty() ? "" : PlainSelect.getStringList(columns, true, true))
-                + " VALUES " + PlainSelect.getStringList(values, true, true);
+                + " VALUES " + PlainSelect.getStringList(values, true, true)
+                + ( whereCondition != null 
+                        ? " WHERE " + whereCondition
+                        : "" );
     }
 
     public MergeInsert withColumns(List<Column> columns) {
@@ -78,5 +90,14 @@ public class MergeInsert {
         List<Expression> collection = Optional.ofNullable(getValues()).orElseGet(ArrayList::new);
         collection.addAll(values);
         return this.withValues(collection);
+    }
+    
+     public MergeInsert withWhereCondition(Expression whereCondition) {
+        this.setWhereCondition(whereCondition);
+        return this;
+    }
+     
+     public <E extends Expression> E getWhereCondition(Class<E> type) {
+        return type.cast(getWhereCondition());
     }
 }

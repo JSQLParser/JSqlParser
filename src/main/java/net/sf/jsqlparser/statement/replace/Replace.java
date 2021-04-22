@@ -104,7 +104,9 @@ public class Replace implements Statement {
             // each element from expressions match up with a column from columns.
             for (int i = 0, s = columns.size(); i < s; i++) {
                 sql.append(columns.get(i)).append("=").append(expressions.get(i));
-                sql.append((i < s - 1) ? ", " : "");
+                sql.append( i < s - 1 
+                                      ? ", " 
+                                      : "" );
             }
         } else if (columns != null) {
             // the REPLACE mytab (col1, col2) [...] case

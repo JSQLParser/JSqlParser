@@ -18,7 +18,7 @@ import net.sf.jsqlparser.util.validation.ValidationException;
 
 public interface DatabaseMetaDataValidation extends ValidationCapability {
 
-    public static final String NAME = "meta data";
+    String NAME = "meta data";
 
     /**
      * @param context
@@ -37,7 +37,7 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
         } catch (ValidationException ve) {
             errorConsumer.accept(ve);
         } catch (UnsupportedOperationException uoe) {
-            // should we log this on a trace level?
+            errorConsumer.accept(new ValidationException("This Operation " + named.toString() + "  is not supported yet.", uoe));
         } catch (Exception e) {
             errorConsumer.accept(getUnexpectedErrorMessage(named, e));
         }
@@ -55,7 +55,7 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
      * @throws UnsupportedOperationException - if testing of given
      *                                       {@link NamedObject} is not supported.
      */
-    public boolean exists(Named named);
+    boolean exists(Named named);
 
     /**
      * @param named

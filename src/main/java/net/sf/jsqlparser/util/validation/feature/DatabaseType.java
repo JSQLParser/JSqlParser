@@ -40,14 +40,14 @@ public enum DatabaseType implements FeatureSetValidation, Version {
     /**
      * @param versions - ordered ascending - the last version is the latest.
      */
-    private DatabaseType(Version... versions) {
+    DatabaseType(Version... versions) {
         this.versions = versions;
     }
 
     /**
      * @param versions - ordered ascending - the last version is the latest.
      */
-    private DatabaseType(String name, Version... versions) {
+    DatabaseType(String name, Version... versions) {
         this.name = name;
         this.versions = versions;
     }

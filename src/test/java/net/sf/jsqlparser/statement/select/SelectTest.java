@@ -4485,4 +4485,24 @@ public class SelectTest {
         Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM stores_demo:informix.accounts");
         assertEquals("SELECT * FROM stores_demo.informix.accounts", stmt.toString());
     }
+    
+    @Test
+    public void testKeywordSkipIssue1136() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT skip");
+    }
+    
+    @Test
+    public void testKeywordAlgorithmIssue1137() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT algorithm FROM tablename");
+    }
+    
+    @Test
+    public void testKeywordAlgorithmIssue1138() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM in.tablename");
+    }
+
+    @Test
+    public void testFunctionOrderBy() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT array_agg(DISTINCT s ORDER BY b)[1] FROM t");
+    }
 }

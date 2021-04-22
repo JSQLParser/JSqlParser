@@ -101,6 +101,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionDeParser extends AbstractDeParser<Expression>
         // FIXME maybe we should implement an ItemsListDeparser too?
         implements ExpressionVisitor, ItemsListVisitor {
@@ -469,6 +470,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void visit(Function function) {
         if (function.isEscaped()) {
             buffer.append("{fn ");
@@ -481,13 +483,16 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append("()");
         } else {
             boolean oldUseBracketsInExprList = useBracketsInExprList;
-            useBracketsInExprList = true;
+            useBracketsInExprList = !function.isDistinct() &&
+                    !function.isAllColumns() &&
+                    function.getOrderByElements() == null;
+            if (!useBracketsInExprList) {
+                buffer.append("(");
+            }
             if (function.isDistinct()) {
-                useBracketsInExprList = false;
-                buffer.append("(DISTINCT ");
+                buffer.append("DISTINCT ");
             } else if (function.isAllColumns()) {
-                useBracketsInExprList = false;
-                buffer.append("(ALL ");
+                buffer.append("ALL ");
             } else if (function.isUnique()) {
                 useBracketsInExprList = false;
                 buffer.append("(UNIQUE ");
@@ -498,10 +503,25 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             if (function.getParameters() != null) {
                 visit(function.getParameters());
             }
-            useBracketsInExprList = oldUseBracketsInExprList;
-            if (function.isDistinct() || function.isAllColumns() || function.isUnique()) {
+            if (function.getOrderByElements() != null) {
+                buffer.append(" ORDER BY ");
+                boolean comma = false;
+                orderByDeParser.setExpressionVisitor(this);
+                orderByDeParser.setBuffer(buffer);
+                for (OrderByElement orderByElement : function.getOrderByElements()) {
+                    if (comma) {
+                        buffer.append(", ");
+                    } else {
+                        comma = true;
+                    }
+                    orderByDeParser.deParseElement(orderByElement);
+                }
+            }
+            if (!useBracketsInExprList) {
                 buffer.append(")");
             }
+            useBracketsInExprList = oldUseBracketsInExprList;
+
         }
 
         if (function.getAttribute() != null) {
@@ -671,6 +691,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void visit(AnalyticExpression aexpr) {
         String name = aexpr.getName();
         Expression expression = aexpr.getExpression();
