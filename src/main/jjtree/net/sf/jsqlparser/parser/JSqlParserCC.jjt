@@ -3416,7 +3416,7 @@ NextValExpression NextValExpression() : {
 {
      tk=<K_NEXTVAL>  data = RelObjectNameList()
     {
-        return new NextValExpression(data, tk.image.toUpperCase());
+        return new NextValExpression(data, tk.image);
     }
 }
 

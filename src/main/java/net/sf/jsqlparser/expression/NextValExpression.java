@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class NextValExpression extends ASTNodeAccessImpl implements Expression {
-  public static final Pattern NEXT_VALUE_PATTERN = Pattern.compile("next\\s+value\\s+for", Pattern.CASE_INSENSITIVE);
+  public static final Pattern NEXT_VALUE_PATTERN = Pattern.compile("NEXT\\s+VALUE\\s+FOR", Pattern.CASE_INSENSITIVE);
   private final List<String> nameList;
   private boolean usingNextValueFor = false;
   
