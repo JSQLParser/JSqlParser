@@ -57,8 +57,10 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.1
 
+* support CTEs `WITH .. AS (..)` for `MERGE`, `UPDATE` and `DELETE`
+* support TSQL's `NEXT VALUE FOR` (but left `NEXTVAL FOR` intact)
 * support for parser modification within **parseExpression** and **parseCondExpression**
-' support for table schema for foreign keys
+* support for table schema for foreign keys
 * support for Oracle hints on **insert, update and merge**
 * support for **merge insert where** clause
 * allow **in** as schema name
