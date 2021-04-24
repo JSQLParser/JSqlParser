@@ -2326,9 +2326,15 @@ GroupByElement GroupByColumnReferences():
 }
 {
     <K_GROUP> <K_BY>
-    (
-        columnReference=SimpleExpression() {groupBy.addGroupByExpression(columnReference); }
-        ("," columnReference=SimpleExpression()  {groupBy.addGroupByExpression(columnReference); } )*
+    (     LOOKAHEAD(3) (
+              ("(") ( columnReference=SimpleExpression() {groupBy.addGroupByExpression(columnReference); }
+                        ("," columnReference=SimpleExpression()  {groupBy.addGroupByExpression(columnReference); } )*
+                      )*  (")") { groupBy.setUsingBrackets(true); }
+          )
+          |
+          ( columnReference=SimpleExpression() {groupBy.addGroupByExpression(columnReference); }
+            ("," columnReference=SimpleExpression()  {groupBy.addGroupByExpression(columnReference); } )*
+          )
     |
         <K_GROUPING> <K_SETS> "("
             ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }

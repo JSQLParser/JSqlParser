@@ -19,101 +19,128 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
 public class GroupByElement {
 
-    private List<Expression> groupByExpressions = new ArrayList<>();
-    private List groupingSets = new ArrayList();
+  private List<Expression> groupByExpressions = new ArrayList<>();
+  private List groupingSets = new ArrayList();
+  private boolean usingBrackets = false;
 
-    public void accept(GroupByVisitor groupByVisitor) {
-        groupByVisitor.visit(this);
-    }
+  public boolean isUsingBrackets() {
+    return usingBrackets;
+  }
 
-    public List<Expression> getGroupByExpressions() {
-        return groupByExpressions;
-    }
+  public void setUsingBrackets(boolean usingBrackets) {
+    this.usingBrackets = usingBrackets;
+  }
 
-    public void setGroupByExpressions(List<Expression> groupByExpressions) {
-        this.groupByExpressions = groupByExpressions;
-    }
+  public GroupByElement withUsingBrackets(boolean usingBrackets) {
+    this.usingBrackets = usingBrackets;
+    return this;
+  }
 
-    public void addGroupByExpression(Expression groupByExpression) {
-        groupByExpressions.add(groupByExpression);
-    }
+  public void accept(GroupByVisitor groupByVisitor) {
+    groupByVisitor.visit(this);
+  }
 
-    public List getGroupingSets() {
-        return groupingSets;
-    }
+  public List<Expression> getGroupByExpressions() {
+    return groupByExpressions;
+  }
 
-    public void setGroupingSets(List groupingSets) {
-        this.groupingSets = groupingSets;
-    }
+  public void setGroupByExpressions(List<Expression> groupByExpressions) {
+    this.groupByExpressions = groupByExpressions;
+  }
 
-    public void addGroupingSet(Expression expr) {
-        this.groupingSets.add(expr);
-    }
+  public void addGroupByExpression(Expression groupByExpression) {
+    groupByExpressions.add(groupByExpression);
+  }
 
-    public void addGroupingSet(ExpressionList list) {
-        this.groupingSets.add(list);
-    }
+  public List getGroupingSets() {
+    return groupingSets;
+  }
 
-    @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-        b.append("GROUP BY ");
+  public void setGroupingSets(List groupingSets) {
+    this.groupingSets = groupingSets;
+  }
 
-        if (groupByExpressions.size() > 0) {
-            b.append(PlainSelect.getStringList(groupByExpressions));
-        } else if (groupingSets.size() > 0) {
-            b.append("GROUPING SETS (");
-            boolean first = true;
-            for (Object o : groupingSets) {
-                if (first) {
-                    first = false;
-                } else {
-                    b.append(", ");
-                }
-                if (o instanceof Expression) {
-                    b.append(o.toString());
-                } else if (o instanceof ExpressionList) {
-                    ExpressionList list = (ExpressionList) o;
-                    b.append(list.getExpressions() == null ? "()" : list.toString());
-                }
-            }
-            b.append(")");
+  public void addGroupingSet(Expression expr) {
+    this.groupingSets.add(expr);
+  }
+
+  public void addGroupingSet(ExpressionList list) {
+    this.groupingSets.add(list);
+  }
+
+  @Override
+  @SuppressWarnings({"PMD.CyclomaticComplexity"})
+  public String toString() {
+    StringBuilder b = new StringBuilder();
+    b.append("GROUP BY ");
+
+    if (groupByExpressions.size() > 0) {
+      if (usingBrackets) {
+        b.append("( ");
+      }
+      b.append(PlainSelect.getStringList(groupByExpressions));
+      if (usingBrackets) {
+        b.append(" )");
+      }
+    } else if (groupingSets.size() > 0) {
+      b.append("GROUPING SETS (");
+      boolean first = true;
+      for (Object o : groupingSets) {
+        if (first) {
+          first = false;
+        } else {
+          b.append(", ");
         }
-
-        return b.toString();
+        if (o instanceof Expression) {
+          b.append(o.toString());
+        } else if (o instanceof ExpressionList) {
+          ExpressionList list = (ExpressionList) o;
+          b.append(list.getExpressions() == null ? "()" : list.toString());
+        }
+      }
+      b.append(")");
+    } else {
+      if (usingBrackets) {
+        b.append("()");
+      }
     }
 
-    public GroupByElement withGroupByExpressions(List<Expression> groupByExpressions) {
-        this.setGroupByExpressions(groupByExpressions);
-        return this;
-    }
+    return b.toString();
+  }
 
-    public GroupByElement withGroupingSets(List groupingSets) {
-        this.setGroupingSets(groupingSets);
-        return this;
-    }
+  public GroupByElement withGroupByExpressions(List<Expression> groupByExpressions) {
+    this.setGroupByExpressions(groupByExpressions);
+    return this;
+  }
 
-    public GroupByElement addGroupByExpressions(Expression... groupByExpressions) {
-        List<Expression> collection = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, groupByExpressions);
-        return this.withGroupByExpressions(collection);
-    }
+  public GroupByElement withGroupingSets(List groupingSets) {
+    this.setGroupingSets(groupingSets);
+    return this;
+  }
 
-    public GroupByElement addGroupByExpressions(Collection<? extends Expression> groupByExpressions) {
-        List<Expression> collection = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
-        collection.addAll(groupByExpressions);
-        return this.withGroupByExpressions(collection);
-    }
+  public GroupByElement addGroupByExpressions(Expression... groupByExpressions) {
+    List<Expression> collection =
+        Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
+    Collections.addAll(collection, groupByExpressions);
+    return this.withGroupByExpressions(collection);
+  }
 
-    public GroupByElement addGroupingSets(Object... groupingSets) {
-        List collection = Optional.ofNullable(getGroupingSets()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, groupingSets);
-        return this.withGroupingSets(collection);
-    }
+  public GroupByElement addGroupByExpressions(Collection<? extends Expression> groupByExpressions) {
+    List<Expression> collection =
+        Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
+    collection.addAll(groupByExpressions);
+    return this.withGroupByExpressions(collection);
+  }
 
-    public GroupByElement addGroupingSets(Collection<? extends Object> groupingSets) {
-        List collection = Optional.ofNullable(getGroupingSets()).orElseGet(ArrayList::new);
-        collection.addAll(groupingSets);
-        return this.withGroupingSets(collection);
-    }
+  public GroupByElement addGroupingSets(Object... groupingSets) {
+    List collection = Optional.ofNullable(getGroupingSets()).orElseGet(ArrayList::new);
+    Collections.addAll(collection, groupingSets);
+    return this.withGroupingSets(collection);
+  }
+
+  public GroupByElement addGroupingSets(Collection<? extends Object> groupingSets) {
+    List collection = Optional.ofNullable(getGroupingSets()).orElseGet(ArrayList::new);
+    collection.addAll(groupingSets);
+    return this.withGroupingSets(collection);
+  }
 }
