@@ -281,8 +281,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 columnsListCommaSeperated += ",";
             }
         }
-        buffer.append("MATCH (" + columnsListCommaSeperated + ") AGAINST (" + fullTextSearch.getAgainstValue()
-                + (fullTextSearch.getSearchModifier() != null ? " " + fullTextSearch.getSearchModifier() : "") + ")");
+        buffer.append("MATCH (").append(columnsListCommaSeperated).append(") AGAINST (").
+                append(fullTextSearch.getAgainstValue()).
+                append(fullTextSearch.getSearchModifier() != null ? " " + fullTextSearch.getSearchModifier() : "").append(")");
     }
 
     @Override
@@ -564,7 +565,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 buffer.append(" ");
             }
             String name = names.get(i);
-            if (!name.equals("")) {
+            if (!name.isEmpty()) {
                 buffer.append(name);
                 buffer.append(" ");
             }
@@ -898,7 +899,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(NextValExpression nextVal) {
-        buffer.append((nextVal.isUsingNextValueFor()  ? "NEXT VALUE FOR " : "NEXTVAL FOR ")).append(nextVal.getName());
+        buffer.append(nextVal.isUsingNextValueFor()  ? "NEXT VALUE FOR " : "NEXTVAL FOR ").append(nextVal.getName());
     }
 
     @Override
