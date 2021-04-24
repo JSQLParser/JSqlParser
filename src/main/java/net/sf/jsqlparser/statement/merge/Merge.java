@@ -138,7 +138,7 @@ public class Merge implements Statement {
   }
 
   @Override
-  @SuppressWarnings({"PMD.CyclomaticComplexity"})
+  @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
   public String toString() {
     StringBuilder b = new StringBuilder();
     if (withItemsList != null && !withItemsList.isEmpty()) {

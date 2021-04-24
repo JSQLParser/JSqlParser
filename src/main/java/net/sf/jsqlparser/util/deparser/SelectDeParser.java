@@ -70,7 +70,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
     public void visit(PlainSelect plainSelect) {
         if (plainSelect.isUseBrackets()) {
             buffer.append("(");
@@ -379,7 +379,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deparseJoin(Join join) {
         if (join.isSimple() && join.isOuter()) {
             buffer.append(", OUTER ");

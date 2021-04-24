@@ -278,7 +278,7 @@ public class Join extends ASTNodeAccessImpl {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         if (isSimple() && isOuter()) {
             return "OUTER " + rightItem;

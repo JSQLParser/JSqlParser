@@ -188,7 +188,7 @@ public class Update implements Statement {
     }
     
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder b = new StringBuilder();
         

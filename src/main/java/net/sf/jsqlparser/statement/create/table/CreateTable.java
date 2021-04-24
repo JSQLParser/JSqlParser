@@ -141,7 +141,7 @@ public class CreateTable implements Statement {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         String sql;
         String createOps = PlainSelect.getStringList(createOptionsStrings, false, false);

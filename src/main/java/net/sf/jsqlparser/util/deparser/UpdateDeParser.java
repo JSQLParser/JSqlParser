@@ -34,7 +34,7 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(Update update) {
          if (update.getWithItemsList() != null && !update.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");

@@ -154,7 +154,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         String params;
 
