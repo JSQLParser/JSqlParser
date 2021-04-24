@@ -9,24 +9,17 @@
  */
 package net.sf.jsqlparser.statement.delete;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import static java.util.stream.Collectors.joining;
+import java.util.*;
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.Limit;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.*;
 
 public class Delete implements Statement {
-
+    private List<WithItem> withItemsList;
     private Table table;
     private OracleHint oracleHint = null;
     private List<Table> tables;
@@ -34,6 +27,31 @@ public class Delete implements Statement {
     private Expression where;
     private Limit limit;
     private List<OrderByElement> orderByElements;
+    
+    public List<WithItem> getWithItemsList() {
+        return withItemsList;
+    }
+
+    public void setWithItemsList(List<WithItem> withItemsList) {
+        this.withItemsList = withItemsList;
+    }
+
+    public Delete withWithItemsList(List<WithItem> withItemsList) {
+        this.setWithItemsList(withItemsList);
+        return this;
+    }
+    
+     public Delete addWithItemsList(WithItem... withItemsList) {
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, withItemsList);
+        return this.withWithItemsList(collection);
+    }
+
+    public Delete addWithItemsList(Collection<? extends WithItem> withItemsList) {
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        collection.addAll(withItemsList);
+        return this.withWithItemsList(collection);
+    }
 
     public List<OrderByElement> getOrderByElements() {
         return orderByElements;
@@ -96,15 +114,29 @@ public class Delete implements Statement {
         this.joins = joins;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder("DELETE");
-
+  @Override
+  @SuppressWarnings({"PMD.CyclomaticComplexity"})
+  public String toString() {
+        StringBuilder b = new StringBuilder();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            b.append("WITH ");
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+                WithItem withItem = iter.next();
+                b.append(withItem);
+                if (iter.hasNext()) {
+                    b.append(",");
+                }
+                b.append(" ");
+            }
+        }
+        
+        b.append("DELETE");
+        
         if (tables != null && tables.size() > 0) {
             b.append(" ");
             b.append(tables.stream()
                     .map(t -> t.toString())
-                    .collect(joining(", ")));
+                    .collect( Collectors.joining(", ") ));
         }
 
         b.append(" FROM ");
