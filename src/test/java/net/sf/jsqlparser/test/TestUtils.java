@@ -98,8 +98,11 @@ public class TestUtils {
     }
 
     public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement, boolean laxDeparsingCheck) {
-        assertEquals(buildSqlString(statement, laxDeparsingCheck),
-                buildSqlString(parsed.toString(), laxDeparsingCheck));
+      String sqlStringFromStatement = buildSqlString(statement, laxDeparsingCheck);
+      String sqlStringFromDeparser = buildSqlString(parsed.toString(), laxDeparsingCheck);
+      
+        assertEquals(sqlStringFromStatement,
+               sqlStringFromDeparser);
 
         assertDeparse(parsed, statement, laxDeparsingCheck);
     }
@@ -253,8 +256,11 @@ public class TestUtils {
     public static void assertDeparse(Statement stmt, String statement, boolean laxDeparsingCheck) {
         StatementDeParser deParser = new StatementDeParser(new StringBuilder());
         stmt.accept(deParser);
-        assertEquals(buildSqlString(statement, laxDeparsingCheck),
-                buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
+        
+        String sqlStringFromStatement = buildSqlString(statement, laxDeparsingCheck);
+        String sqlStringFromDeparser = buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck);
+        
+        assertEquals(sqlStringFromStatement, sqlStringFromDeparser);
     }
 
     public static String buildSqlString(final String originalSql, boolean laxDeparsingCheck) {

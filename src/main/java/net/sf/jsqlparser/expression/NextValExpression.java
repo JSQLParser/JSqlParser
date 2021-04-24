@@ -10,38 +10,59 @@
 package net.sf.jsqlparser.expression;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class NextValExpression extends ASTNodeAccessImpl implements Expression {
-
-    private List<String> nameList;
-
-    public NextValExpression(List<String> nameList) {
-        this.nameList = nameList;
+  public static final Pattern NEXT_VALUE_PATTERN = Pattern.compile("next\\s+value\\s+for", Pattern.CASE_INSENSITIVE);
+  private final List<String> nameList;
+  private boolean usingNextValueFor = false;
+  
+  public NextValExpression(List<String> nameList, String image) {
+    this.nameList = nameList;
+    
+    // Test if we shall use NEXT VALUE FOR instead of NEXTVAL FOR
+    if (NEXT_VALUE_PATTERN.matcher(image).matches()) {
+      usingNextValueFor=true;
     }
+  }
 
-    public List<String> getNameList() {
-        return nameList;
-    }
+  public boolean isUsingNextValueFor() {
+    return usingNextValueFor;
+  }
 
-    public String getName() {
-        StringBuilder b = new StringBuilder();
-        for (String name : nameList) {
-            if (b.length() > 0) {
-                b.append(".");
-            }
-            b.append(name);
-        }
-        return b.toString();
-    }
+  public void setUsingNextValueFor(boolean usingNextValueFor) {
+    this.usingNextValueFor = usingNextValueFor;
+  }
 
-    @Override
-    public String toString() {
-        return "NEXTVAL FOR " + getName();
-    }
+  public NextValExpression withNextValueFor(boolean usingNextValueFor) {
+    setUsingNextValueFor(usingNextValueFor);
+    return this;
+  }
 
-    @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+
+  public List<String> getNameList() {
+    return nameList;
+  }
+
+  public String getName() {
+    StringBuilder b = new StringBuilder();
+    for (String name : nameList) {
+      if (b.length() > 0) {
+        b.append(".");
+      }
+      b.append(name);
     }
+    return b.toString();
+  }
+
+  @Override
+  public String toString() {
+    return (usingNextValueFor ? "NEXT VALUE FOR " : "NEXTVAL FOR ") + getName();
+  }
+
+  @Override
+  public void accept(ExpressionVisitor expressionVisitor) {
+    expressionVisitor.visit(this);
+  }
 }
