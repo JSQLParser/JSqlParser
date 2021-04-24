@@ -263,6 +263,7 @@ public class Join extends ASTNodeAccessImpl {
 
     /**
      * Return the "WITHIN" join window (if any)
+   * @return 
      */
     public KSQLJoinWindow getJoinWindow() {
         return joinWindow;
