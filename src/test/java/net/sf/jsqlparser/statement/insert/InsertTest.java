@@ -33,6 +33,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class InsertTest {
@@ -195,6 +196,18 @@ public class InsertTest {
 
         fail("should not work");
     }
+
+  @Test
+  @Ignore
+  public void testOracleInsertMultiRowValue() throws JSQLParserException {
+    String sqlStr =
+        "INSERT ALL\n"
+            + "  INTO suppliers (supplier_id, supplier_name) VALUES (1000, 'IBM')\n"
+            + "  INTO suppliers (supplier_id, supplier_name) VALUES (2000, 'Microsoft')\n"
+            + "  INTO suppliers (supplier_id, supplier_name) VALUES (3000, 'Google')\n"
+            + "SELECT * FROM dual;";
+    assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+  }
 
     @Test
     public void testSimpleInsert() throws JSQLParserException {
