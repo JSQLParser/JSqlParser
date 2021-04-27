@@ -4500,4 +4500,10 @@ public class SelectTest {
     public void testFunctionOrderBy() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT array_agg(DISTINCT s ORDER BY b)[1] FROM t");
     }
+
+    @Test
+    public void testSelectRowElement() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT (t.tup).id, (tup).name FROM t");
+    }
+
 }

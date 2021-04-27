@@ -510,6 +510,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(RowGetExpression rowGetExpression) {
+        rowGetExpression.getExpression().accept(this);
+    }
+
+    @Override
     public void visit(HexValue hexValue) {
 
     }

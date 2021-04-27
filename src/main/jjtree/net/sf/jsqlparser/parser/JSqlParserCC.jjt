@@ -3370,14 +3370,16 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
 
-        | "(" list = SimpleExpressionList() ")"
-          {
-              if (list.getExpressions().size() == 1) {
-                  retval = new Parenthesis(list.getExpressions().get(0));
-              } else {
-                  retval = new RowConstructor().withExprList(list);
+        | (   "(" list = SimpleExpressionList() ")"
+              {
+                  if (list.getExpressions().size() == 1) {
+                      retval = new Parenthesis(list.getExpressions().get(0));
+                  } else {
+                      retval = new RowConstructor().withExprList(list);
+                  }
               }
-          }
+              ["." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); }]
+           )
     )
 
     [

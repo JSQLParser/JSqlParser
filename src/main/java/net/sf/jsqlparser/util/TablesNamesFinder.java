@@ -43,6 +43,7 @@ import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RowConstructor;
+import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
@@ -743,6 +744,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         for (Expression expr : rowConstructor.getExprList().getExpressions()) {
             expr.accept(this);
         }
+    }
+
+    @Override
+    public void visit(RowGetExpression rowGetExpression) {
+        rowGetExpression.getExpression().accept(this);
     }
 
     @Override
