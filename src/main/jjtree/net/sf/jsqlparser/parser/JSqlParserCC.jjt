@@ -2797,10 +2797,9 @@ Expression InExpression() #InExpression :
     ExpressionList expressionList = null;
 }
 {
-    (
-        leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
-        [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
-    )
+    leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
+    [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
+
     [<K_NOT> { result.setNot(true); } ] <K_IN>
     (
       // syntactic lookahead for a multi expression list, ie: ((a,b),(c,d))
