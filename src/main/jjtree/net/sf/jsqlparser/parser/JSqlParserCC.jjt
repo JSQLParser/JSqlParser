@@ -2797,14 +2797,7 @@ Expression InExpression() #InExpression :
     ExpressionList expressionList = null;
 }
 {
-    ( LOOKAHEAD(3) "(" (
-            LOOKAHEAD(SimpleExpressionList()) leftItemsList = SimpleExpressionList() { result.setLeftItemsList(leftItemsList); }
-            |
-            leftExpression=SimpleExpression()
-            [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
-          )
-      ")"
-    |
+    (
         leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
         [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
     )

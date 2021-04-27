@@ -223,13 +223,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(InExpression inExpression) {
-        if (inExpression.getLeftExpression() == null) {
-            inExpression.getLeftItemsList().accept(this);
-        } else {
-            inExpression.getLeftExpression().accept(this);
-            if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
-                buffer.append("(+)");
-            }
+        inExpression.getLeftExpression().accept(this);
+        if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
+            buffer.append("(+)");
         }
         if (inExpression.isNot()) {
             buffer.append(" NOT");

@@ -16,7 +16,6 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class InExpression extends ASTNodeAccessImpl implements Expression, SupportsOldOracleJoinSyntax {
 
     private Expression leftExpression;
-    private ItemsList leftItemsList;
     private ItemsList rightItemsList;
     private boolean not = false;
     private Expression rightExpression;
@@ -80,14 +79,6 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         not = b;
     }
 
-    public ItemsList getLeftItemsList() {
-        return leftItemsList;
-    }
-
-    public void setLeftItemsList(ItemsList leftItemsList) {
-        this.leftItemsList = leftItemsList;
-    }
-
     public Expression getRightExpression() {
         return rightExpression;
     }
@@ -108,11 +99,7 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     @Override
     public String toString() {
         StringBuilder statementBuilder = new StringBuilder();
-        if (leftExpression == null) {
-            statementBuilder.append(leftItemsList);
-        } else {
-            statementBuilder.append(getLeftExpressionString());
-        }
+        statementBuilder.append(getLeftExpressionString());
 
         statementBuilder.append(" ");
         if (not) {
@@ -156,11 +143,6 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         this.multiExpressionList = multiExpressionList;
     }
 
-    public InExpression withLeftItemsList(ItemsList leftItemsList) {
-        this.setLeftItemsList(leftItemsList);
-        return this;
-    }
-
     public InExpression withRightExpression(Expression rightExpression) {
         this.setRightExpression(rightExpression);
         return this;
@@ -194,10 +176,6 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
 
     public <E extends Expression> E getLeftExpression(Class<E> type) {
         return type.cast(getLeftExpression());
-    }
-
-    public <E extends ItemsList> E getLeftItemsList(Class<E> type) {
-        return type.cast(getLeftItemsList());
     }
 
     public <E extends Expression> E getRightExpression(Class<E> type) {

@@ -272,8 +272,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(InExpression inExpression) {
         if (inExpression.getLeftExpression() != null) {
             inExpression.getLeftExpression().accept(this);
-        } else if (inExpression.getLeftItemsList() != null) {
-            inExpression.getLeftItemsList().accept(this);
         }
         if (inExpression.getRightExpression() != null) {
             inExpression.getRightExpression().accept(this);

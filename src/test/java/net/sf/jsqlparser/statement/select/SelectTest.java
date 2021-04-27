@@ -4503,7 +4503,7 @@ public class SelectTest {
 
     @Test
     public void testSelectRowElement() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT (t.tup).id, (tup).name FROM t");
+        assertSqlCanBeParsedAndDeparsed("SELECT (t.tup).id, (tup).name FROM t WHERE (t.tup).id IN (1, 2, 3)");
     }
 
 }
