@@ -493,6 +493,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 buffer.append("DISTINCT ");
             } else if (function.isAllColumns()) {
                 buffer.append("ALL ");
+            } else if (function.isUnique()) {
+                useBracketsInExprList = false;
+                buffer.append("(UNIQUE ");
             }
             if (function.getNamedParameters() != null) {
                 visit(function.getNamedParameters());
@@ -703,6 +706,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         buffer.append(name).append("(");
         if (aexpr.isDistinct()) {
             buffer.append("DISTINCT ");
+        }
+        if (aexpr.isUnique()) {
+            buffer.append("UNIQUE ");
         }
         if (expression != null) {
             expression.accept(this);
