@@ -124,7 +124,7 @@ public class SelectTest {
     assertSqlCanBeParsedAndDeparsed(
         statement, false, parser -> parser.withSquareBracketQuotation(true));
   }
-
+  
   @Test
   public void testMultiPartTableNameWithServerProblem() throws Exception {
     final String statement = "SELECT * FROM LINK_100.htsac.dbo.t_transfer_num a";
@@ -3052,6 +3052,12 @@ public class SelectTest {
   public void testSelectWithinGroup() throws JSQLParserException {
     assertSqlCanBeParsedAndDeparsed(
         "SELECT LISTAGG(col1, '##') WITHIN GROUP (ORDER BY col1) FROM table1");
+  }
+  
+  @Test
+  public void testSelectWithinGroup2() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "SELECT ARRAY_AGG(ID ORDER BY ID) OVER (ORDER BY ID)");
   }
 
   @Test
