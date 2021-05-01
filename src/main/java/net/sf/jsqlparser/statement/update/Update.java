@@ -172,6 +172,7 @@ public class Update implements Statement {
     }
     
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public String toString() {
         StringBuilder b = new StringBuilder("UPDATE ");
         b.append(table);

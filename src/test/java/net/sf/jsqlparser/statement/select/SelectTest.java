@@ -1591,6 +1591,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testCount3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT count(UNIQUE col) FROM mytable");
+    }
+
+    @Test
     public void testMysqlQuote() throws JSQLParserException {
         String statement = "SELECT `a.OWNERLASTNAME`, `OWNERFIRSTNAME` " + "FROM `ANTIQUEOWNERS` AS a, ANTIQUES AS b "
                 + "WHERE b.BUYERID = a.OWNERID AND b.ITEM = 'Chair'";
@@ -4495,10 +4500,15 @@ public class SelectTest {
     public void testKeywordAlgorithmIssue1138() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM in.tablename");
     }
+
+    @Test
+    public void testFunctionOrderBy() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT array_agg(DISTINCT s ORDER BY b)[1] FROM t");
+    }
     
     @Test
     public void testProblematicDeparsingIssue1183() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT ARRAY_AGG(NAME) FILTER (WHERE NAME IS NOT NULL)");
+        assertSqlCanBeParsedAndDeparsed("SELECT ARRAY_AGG(NAME ORDER BY ID) FILTER (WHERE NAME IS NOT NULL)");
     }
     
     @Test

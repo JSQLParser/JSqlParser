@@ -168,7 +168,7 @@ public enum OracleVersion implements Version {
      * @param featuresSupported
      * @see #copy() to copy from previous version
      */
-    private OracleVersion(String versionString, Set<Feature> featuresSupported) {
+    OracleVersion(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
     }
 
@@ -178,7 +178,7 @@ public enum OracleVersion implements Version {
      * @param unsupported
      * @see #copy() to copy from previous version
      */
-    private OracleVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
+    OracleVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;
         this.features = featuresSupported;
         this.features.removeAll(unsupported);

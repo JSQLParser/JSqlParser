@@ -34,6 +34,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private KeepExpression keep = null;
     private AnalyticType type = AnalyticType.OVER;
     private boolean distinct = false;
+    private boolean unique = false;
     private boolean ignoreNulls = false;
     private Expression filterExpression = null;
     private WindowElement windowElement = null;
@@ -45,6 +46,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         name = function.getName();
         allColumns = function.isAllColumns();
         distinct = function.isDistinct();
+        unique = function.isUnique();
 
         ExpressionList list = function.getParameters();
         if (list != null) {
@@ -157,6 +159,14 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.distinct = distinct;
     }
 
+    public boolean isUnique() {
+        return unique;
+    }
+
+    public void setUnique(boolean unique) {
+        this.unique = unique;
+    }
+
     public boolean isIgnoreNulls() {
         return ignoreNulls;
     }
@@ -166,6 +176,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public String toString() {
         StringBuilder b = new StringBuilder();
 
@@ -280,6 +291,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
 
     public AnalyticExpression withDistinct(boolean distinct) {
         this.setDistinct(distinct);
+        return this;
+    }
+
+    public AnalyticExpression withUnique(boolean unique) {
+        this.setUnique(unique);
         return this;
     }
 

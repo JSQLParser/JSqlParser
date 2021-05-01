@@ -17,37 +17,37 @@ public interface ModifyableFeatureSet extends FeatureSet {
      * @param featureSets
      * @return <code>this</code>
      */
-    public ModifyableFeatureSet add(FeatureSet... featureSets);
+    ModifyableFeatureSet add(FeatureSet... featureSets);
 
     /**
      * @param features
      * @return <code>this</code>
      */
-    public ModifyableFeatureSet add(Feature... features);
+    ModifyableFeatureSet add(Feature... features);
 
     /**
      * @param features
      * @return <code>this</code>
      */
-    public ModifyableFeatureSet add(Collection<Feature> features);
+    ModifyableFeatureSet add(Collection<Feature> features);
 
     /**
      * @param featureSets
      * @return <code>this</code>
      */
-    public ModifyableFeatureSet remove(FeatureSet... featureSets);
+    ModifyableFeatureSet remove(FeatureSet... featureSets);
 
     /**
      * @param features
      * @return <code>this</code>
      */
-    public ModifyableFeatureSet remove(Feature... features);
+    ModifyableFeatureSet remove(Feature... features);
 
     /**
      * @param features
      * @return <code>this</code>
      */
-    public ModifyableFeatureSet remove(Collection<Feature> features);
+    ModifyableFeatureSet remove(Collection<Feature> features);
 
     /**
      * makes the inner {@link Feature}-set unmodifiable
@@ -55,6 +55,6 @@ public interface ModifyableFeatureSet extends FeatureSet {
      * @return <code>this</code>
      * @see #copy()
      */
-    public FeatureSet unmodifyable();
+    FeatureSet unmodifyable();
 
 }

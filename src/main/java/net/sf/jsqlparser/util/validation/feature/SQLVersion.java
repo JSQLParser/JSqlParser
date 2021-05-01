@@ -56,7 +56,7 @@ public enum SQLVersion implements Version {
      * @param featuresSupported
      * @see #copy() to copy from previous version
      */
-    private SQLVersion(String versionString, Set<Feature> featuresSupported) {
+    SQLVersion(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
     }
 
@@ -66,7 +66,7 @@ public enum SQLVersion implements Version {
      * @param unsupported
      * @see #copy() to copy from previous version
      */
-    private SQLVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
+    SQLVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;
         this.features = featuresSupported;
         this.features.removeAll(unsupported);
