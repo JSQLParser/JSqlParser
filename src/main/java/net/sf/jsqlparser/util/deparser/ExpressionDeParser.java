@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 import java.util.List;
+import static java.util.stream.Collectors.joining;
 
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
@@ -691,7 +692,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength"})
     public void visit(AnalyticExpression aexpr) {
         String name = aexpr.getName();
         Expression expression = aexpr.getExpression();
@@ -726,6 +727,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (aexpr.isIgnoreNulls()) {
             buffer.append(" IGNORE NULLS");
         }
+        if (aexpr.getFuncOrderBy() != null) {
+            buffer.append(" ORDER BY ");
+            buffer.append( aexpr.getFuncOrderBy().stream().map(OrderByElement::toString).collect(joining(", ")));
+        }
+        
         buffer.append(") ");
         if (keep != null) {
             keep.accept(this);
