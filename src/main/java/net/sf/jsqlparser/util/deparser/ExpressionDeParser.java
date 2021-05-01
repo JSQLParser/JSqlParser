@@ -11,13 +11,13 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 import java.util.List;
-
+import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnalyticType;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
-import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.ArrayConstructor;
+import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
@@ -494,6 +494,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 buffer.append("DISTINCT ");
             } else if (function.isAllColumns()) {
                 buffer.append("ALL ");
+            } else if (function.isUnique()) {
+                useBracketsInExprList = false;
+                buffer.append("(UNIQUE ");
             }
             if (function.getNamedParameters() != null) {
                 visit(function.getNamedParameters());
@@ -689,7 +692,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.ExcessiveMethodLength"})
     public void visit(AnalyticExpression aexpr) {
         String name = aexpr.getName();
         Expression expression = aexpr.getExpression();
@@ -704,6 +707,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         buffer.append(name).append("(");
         if (aexpr.isDistinct()) {
             buffer.append("DISTINCT ");
+        }
+        if (aexpr.isUnique()) {
+            buffer.append("UNIQUE ");
         }
         if (expression != null) {
             expression.accept(this);
@@ -721,6 +727,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (aexpr.isIgnoreNulls()) {
             buffer.append(" IGNORE NULLS");
         }
+        if (aexpr.getFuncOrderBy() != null) {
+            buffer.append(" ORDER BY ");
+            buffer.append( aexpr.getFuncOrderBy().stream().map(OrderByElement::toString).collect(joining(", ")));
+        }
+        
         buffer.append(") ");
         if (keep != null) {
             keep.accept(this);
