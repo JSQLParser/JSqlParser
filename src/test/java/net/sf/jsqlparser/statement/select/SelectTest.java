@@ -4495,4 +4495,14 @@ public class SelectTest {
     public void testKeywordAlgorithmIssue1138() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM in.tablename");
     }
+    
+    @Test
+    public void testProblematicDeparsingIssue1183() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ARRAY_AGG(NAME) FILTER (WHERE NAME IS NOT NULL)");
+    }
+    
+    @Test
+    public void testProblematicDeparsingIssue1183_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ARRAY_AGG(ID ORDER BY ID) OVER (ORDER BY ID)");
+    }
 }
