@@ -374,4 +374,14 @@ public class InsertTest {
        
        //@todo: add a testcase supposed to not finding a misplaced hint
     }
+
+  @Test
+  public void testInsertTableArrays4() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "INSERT INTO sal_emp\n"
+            + "    VALUES ('Carol',\n"
+            + "    ARRAY[20000, 25000, 25000, 25000],\n"
+            + "    ARRAY[['breakfast', 'consulting'], ['meeting', 'lunch']])",
+        true);
+  }
 }
