@@ -113,6 +113,8 @@ public class DeleteTest {
         ""
             + "WITH a\n"
             + "     AS (SELECT 1 id_instrument_ref)\n"
+            + "     , b\n"
+            + "       AS (SELECT 1 id_instrument_ref)\n"
             + "DELETE FROM cfe.instrument_ref\n"
             + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
             + "                            FROM   a)";

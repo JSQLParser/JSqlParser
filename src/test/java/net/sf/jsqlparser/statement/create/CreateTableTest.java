@@ -277,6 +277,12 @@ public class CreateTableTest {
     assertSqlCanBeParsedAndDeparsed(
         "CREATE TABLE sal_emp (name text, pay_by_quarter integer[5], schedule text[3][2])");
   }
+  
+  @Test
+  public void testCreateTableArrays3() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "CREATE TABLE sal_emp (name text, pay_by_quarter integer ARRAY[5])");
+  }
 
   @Test
   public void testCreateTableColumnValues() throws JSQLParserException {

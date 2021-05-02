@@ -4832,7 +4832,7 @@ public class SelectTest {
   public void testFunctionOrderBy() throws JSQLParserException {
     assertSqlCanBeParsedAndDeparsed("SELECT array_agg(DISTINCT s ORDER BY b)[1] FROM t");
   }
-
+  
   @Test
   public void testProblematicDeparsingIssue1183() throws JSQLParserException {
     assertSqlCanBeParsedAndDeparsed(
@@ -4842,5 +4842,12 @@ public class SelectTest {
   @Test
   public void testProblematicDeparsingIssue1183_2() throws JSQLParserException {
     assertSqlCanBeParsedAndDeparsed("SELECT ARRAY_AGG(ID ORDER BY ID) OVER (ORDER BY ID)");
+  }
+
+  @Test
+  public void testGroupedByIssue1176() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "select id_instrument, count(*)\n" + "from cfe.instrument\n" + "group by (id_instrument)", true);
+    assertSqlCanBeParsedAndDeparsed("select count(*)\n" + "from cfe.instrument\n" + "group by ()", true);
   }
 }

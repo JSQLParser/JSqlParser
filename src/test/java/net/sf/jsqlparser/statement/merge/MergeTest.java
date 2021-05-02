@@ -232,6 +232,8 @@ public class MergeTest {
         ""
             + "WITH a\n"
             + "     AS (SELECT 1 id_instrument_ref)\n"
+            + "     , b\n"
+            + "       AS (SELECT 1 id_instrument_ref)\n"
             + "MERGE INTO cfe.instrument_ref b\n"
             + "using a\n"
             + "ON ( b.id_instrument_ref = a.id_instrument_ref )\n"

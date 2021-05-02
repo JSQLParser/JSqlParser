@@ -202,6 +202,8 @@ public class UpdateTest {
         ""
             + "WITH a\n"
             + "     AS (SELECT 1 id_instrument_ref)\n"
+            + "     , b\n"
+            + "       AS (SELECT 1 id_instrument_ref)\n"
             + "UPDATE cfe.instrument_ref\n"
             + "SET id_instrument=null\n"
             + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
