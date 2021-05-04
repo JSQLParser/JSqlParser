@@ -4515,4 +4515,9 @@ public class SelectTest {
     public void testProblematicDeparsingIssue1183_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ARRAY_AGG(ID ORDER BY ID) OVER (ORDER BY ID)");
     }
+    
+    @Test
+    public void testKeywordCostsIssue1185() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("WITH costs AS (SELECT * FROM MY_TABLE1 AS ALIAS_TABLE1) SELECT * FROM TESTSTMT");
+    }
 }

@@ -1336,7 +1336,7 @@ String RelObjectNameWithoutValue() :
     (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> 
       | tk=<K_ALGORITHM> 
       | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE> | tk=<K_CHARACTER>
-      | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_DISABLE> | tk=<K_DESC>
+      | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_COSTS> | tk=<K_DISABLE> | tk=<K_DESC>
       | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING>
       | tk=<K_LAST> | tk=<K_LEADING> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE>
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_XML>
