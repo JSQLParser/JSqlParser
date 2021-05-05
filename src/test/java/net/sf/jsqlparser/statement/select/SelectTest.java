@@ -4832,7 +4832,7 @@ public class SelectTest {
   public void testFunctionOrderBy() throws JSQLParserException {
     assertSqlCanBeParsedAndDeparsed("SELECT array_agg(DISTINCT s ORDER BY b)[1] FROM t");
   }
-  
+
   @Test
   public void testProblematicDeparsingIssue1183() throws JSQLParserException {
     assertSqlCanBeParsedAndDeparsed(
@@ -4847,7 +4847,42 @@ public class SelectTest {
   @Test
   public void testGroupedByIssue1176() throws JSQLParserException {
     assertSqlCanBeParsedAndDeparsed(
-        "select id_instrument, count(*)\n" + "from cfe.instrument\n" + "group by (id_instrument)", true);
-    assertSqlCanBeParsedAndDeparsed("select count(*)\n" + "from cfe.instrument\n" + "group by ()", true);
+        "select id_instrument, count(*)\n" + "from cfe.instrument\n" + "group by (id_instrument)",
+        true);
+    assertSqlCanBeParsedAndDeparsed(
+        "select count(*)\n" + "from cfe.instrument\n" + "group by ()", true);
+  }
+
+  @Test
+  public void testArrayDeclare() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "SELECT ARRAY[1, f1], ARRAY[[1, 2], [3, f2 + 1]], ARRAY[]::text[] FROM t1");
+  }
+
+  @Test
+  public void testColonDelimiterIssue1134() throws JSQLParserException {
+    Statement stmt = CCJSqlParserUtil.parse("SELECT * FROM stores_demo:informix.accounts");
+    assertEquals("SELECT * FROM stores_demo.informix.accounts", stmt.toString());
+  }
+
+  @Test
+  public void testKeywordSkipIssue1136() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed("SELECT skip");
+  }
+
+  @Test
+  public void testKeywordAlgorithmIssue1137() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed("SELECT algorithm FROM tablename");
+  }
+
+  @Test
+  public void testKeywordAlgorithmIssue1138() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed("SELECT * FROM in.tablename");
+  }
+
+  @Test
+  public void testKeywordCostsIssue1185() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "WITH costs AS (SELECT * FROM MY_TABLE1 AS ALIAS_TABLE1) SELECT * FROM TESTSTMT");
   }
 }
