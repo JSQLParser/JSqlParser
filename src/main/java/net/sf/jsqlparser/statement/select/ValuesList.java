@@ -19,6 +19,7 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 
+@SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class ValuesList implements FromItem {
 
   private Alias alias;

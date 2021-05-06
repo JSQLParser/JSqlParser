@@ -247,7 +247,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(DoubleValue doubleValue) {}
+  public void visit(DoubleValue doubleValue) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(EqualsTo equalsTo) {
@@ -289,7 +291,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(FullTextSearch fullTextSearch) {}
+  public void visit(FullTextSearch fullTextSearch) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(SignedExpression signedExpression) {
@@ -297,13 +301,19 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(IsNullExpression isNullExpression) {}
+  public void visit(IsNullExpression isNullExpression) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(IsBooleanExpression isBooleanExpression) {}
+  public void visit(IsBooleanExpression isBooleanExpression) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(JdbcParameter jdbcParameter) {}
+  public void visit(JdbcParameter jdbcParameter) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(LikeExpression likeExpression) {
@@ -316,7 +326,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(LongValue longValue) {}
+  public void visit(LongValue longValue) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(MinorThan minorThan) {
@@ -339,7 +351,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(NullValue nullValue) {}
+  public void visit(NullValue nullValue) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(OrExpression orExpression) {
@@ -352,7 +366,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(StringValue stringValue) {}
+  public void visit(StringValue stringValue) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(Subtraction subtraction) {
@@ -394,13 +410,19 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(DateValue dateValue) {}
+  public void visit(DateValue dateValue) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(TimestampValue timestampValue) {}
+  public void visit(TimestampValue timestampValue) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(TimeValue timeValue) {}
+  public void visit(TimeValue timeValue) {
+    // intentional (commented) empty methods.
+  }
 
   /*
    * (non-Javadoc)
@@ -491,7 +513,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(AnalyticExpression analytic) {}
+  public void visit(AnalyticExpression analytic) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(SetOperationList list) {
@@ -501,7 +525,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(ExtractExpression eexpr) {}
+  public void visit(ExtractExpression eexpr) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(LateralSubSelect lateralSubSelect) {
@@ -516,7 +542,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(ValuesList valuesList) {}
+  public void visit(ValuesList valuesList) {
+    // intentional (commented) empty methods.
+  }
 
   /**
    * Initializes table names collector. Important is the usage of Column instances to find table
@@ -533,10 +561,14 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(IntervalExpression iexpr) {}
+  public void visit(IntervalExpression iexpr) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(JdbcNamedParameter jdbcNamedParameter) {}
+  public void visit(JdbcNamedParameter jdbcNamedParameter) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(OracleHierarchicalExpression oexpr) {
@@ -560,16 +592,24 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(JsonExpression jsonExpr) {}
+  public void visit(JsonExpression jsonExpr) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(JsonOperator jsonExpr) {}
+  public void visit(JsonOperator jsonExpr) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(AllColumns allColumns) {}
+  public void visit(AllColumns allColumns) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(AllTableColumns allTableColumns) {}
+  public void visit(AllTableColumns allTableColumns) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(SelectExpressionItem item) {
@@ -577,16 +617,24 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(UserVariable var) {}
+  public void visit(UserVariable var) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(NumericBind bind) {}
+  public void visit(NumericBind bind) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(KeepExpression aexpr) {}
+  public void visit(KeepExpression aexpr) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(MySQLGroupConcat groupConcat) {}
+  public void visit(MySQLGroupConcat groupConcat) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(ValueListExpression valueList) {
@@ -727,7 +775,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(HexValue hexValue) {}
+  public void visit(HexValue hexValue) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(Merge merge) {
@@ -740,10 +790,14 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(OracleHint hint) {}
+  public void visit(OracleHint hint) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(TableFunction valuesList) {}
+  public void visit(TableFunction valuesList) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(AlterView alterView) {
@@ -751,13 +805,19 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(TimeKeyExpression timeKeyExpression) {}
+  public void visit(TimeKeyExpression timeKeyExpression) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(DateTimeLiteralExpression literal) {}
+  public void visit(DateTimeLiteralExpression literal) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(Commit commit) {}
+  public void visit(Commit commit) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(Upsert upsert) {
@@ -771,7 +831,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(UseStatement use) {}
+  public void visit(UseStatement use) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(ParenthesisFromItem parenthesis) {
@@ -816,7 +878,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(NextValExpression nextVal) {}
+  public void visit(NextValExpression nextVal) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(CollateExpression col) {
@@ -824,7 +888,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(ShowStatement aThis) {}
+  public void visit(ShowStatement aThis) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(SimilarToExpression expr) {
@@ -832,10 +898,14 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(DeclareStatement aThis) {}
+  public void visit(DeclareStatement aThis) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
-  public void visit(Grant grant) {}
+  public void visit(Grant grant) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(ArrayExpression array) {
@@ -887,7 +957,9 @@ public class TablesNamesFinder
   }
 
   @Override
-  public void visit(XMLSerializeExpr aThis) {}
+  public void visit(XMLSerializeExpr aThis) {
+    // intentional (commented) empty methods.
+  }
 
   @Override
   public void visit(CreateSynonym createSynonym) {

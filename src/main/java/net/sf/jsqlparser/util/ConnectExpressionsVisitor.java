@@ -21,6 +21,8 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
  *
  * @author tw
  */
+
+@SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public abstract class ConnectExpressionsVisitor implements SelectVisitor, SelectItemVisitor {
 
     private String alias = "expr";
