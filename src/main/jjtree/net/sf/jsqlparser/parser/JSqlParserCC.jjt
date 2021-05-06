@@ -1692,13 +1692,13 @@ WithItem WithItem() #WithItem:
     WithItem with = new WithItem();
     String name = null;
     List<SelectItem> selectItems = null;
-    SelectBody selectBody = null;
+    SubSelect select = null;
 }
 {
      [ <K_RECURSIVE> { with.setRecursive(true); } ] name=RelObjectName() { with.setName(name); }
      [ "(" selectItems=SelectItemsList() ")" { with.setWithItemList(selectItems); } ]
      <K_AS>
-     "(" selectBody = SelectBody() { with.setSelectBody(selectBody); } ")"
+     "(" select = SubSelect() { with.setSubSelect(select.withUseBrackets(false)); } ")"
      { return with; }
 }
 

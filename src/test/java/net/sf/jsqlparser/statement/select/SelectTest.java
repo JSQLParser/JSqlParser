@@ -4885,4 +4885,21 @@ public class SelectTest {
     assertSqlCanBeParsedAndDeparsed(
         "WITH costs AS (SELECT * FROM MY_TABLE1 AS ALIAS_TABLE1) SELECT * FROM TESTSTMT");
   }
+
+  @Test
+  public void testWithInsideWithIssue1186() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "WITH TESTSTMT1 AS ( WITH TESTSTMT2 AS (SELECT * FROM MY_TABLE2) SELECT col1, col2 FROM TESTSTMT2) SELECT * FROM TESTSTMT",
+        true);
+  }
+
+  @Test
+  @Ignore
+  public void testWithWithValueList1135() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "with sample_data(day, value) as (values (0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16))\n"
+            + "            \n"
+            + "           select day, value from sample_data",
+        true);
+  }
 }
