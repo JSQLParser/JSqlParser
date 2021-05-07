@@ -1693,12 +1693,34 @@ WithItem WithItem() #WithItem:
     String name = null;
     List<SelectItem> selectItems = null;
     SubSelect select = null;
+
+    ItemsList itemsList = null;
+    List<Expression> primaryExpList = new ArrayList<Expression>();
+    Expression exp = null;
+    MultiExpressionList multiExpr = null;
+
 }
 {
      [ <K_RECURSIVE> { with.setRecursive(true); } ] name=RelObjectName() { with.setName(name); }
      [ "(" selectItems=SelectItemsList() ")" { with.setWithItemList(selectItems); } ]
+
      <K_AS>
-     "(" select = SubSelect() { with.setSubSelect(select.withUseBrackets(false)); } ")"
+     ( LOOKAHEAD(<K_VALUES>) "(" <K_VALUES> exp=SimpleExpression() { primaryExpList.add(exp); }
+                                            ("," exp=SimpleExpression()  { primaryExpList.add(exp); } )*  { itemsList = new ExpressionList(primaryExpList); }
+                                            ("," "(" exp=SimpleExpression() {
+                                                if (multiExpr==null) {
+                                                    multiExpr=new MultiExpressionList();
+                                                    multiExpr.addExpressionList((ExpressionList)itemsList);
+                                                    itemsList = multiExpr;
+                                                }
+                                                primaryExpList = new ArrayList<Expression>();
+                                                primaryExpList.add(exp); }
+                                            ("," exp=SimpleExpression() { primaryExpList.add(exp); } )* { multiExpr.addExpressionList(primaryExpList); } )*
+                             ")"
+       |
+       "(" select = SubSelect() { with.setSubSelect(select.withUseBrackets(false)); with.setUseValues(false); } ")"
+     )
+     
      { return with; }
 }
 

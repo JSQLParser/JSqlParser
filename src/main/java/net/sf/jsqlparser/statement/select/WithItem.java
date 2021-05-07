@@ -14,13 +14,51 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 
 public class WithItem implements SelectBody {
 
   private String name;
   private List<SelectItem> withItemList;
+  private ItemsList itemsList;
+  private boolean useValues = true;
   private SubSelect subSelect;
   private boolean recursive;
+
+  /**
+   * Get the values (as VALUES (...) or SELECT)
+   *
+   * @return the values of the insert
+   */
+  public ItemsList getItemsList() {
+    return itemsList;
+  }
+
+  public void setItemsList(ItemsList list) {
+    itemsList = list;
+  }
+
+  public boolean isUseValues() {
+    return useValues;
+  }
+
+  public void setUseValues(boolean useValues) {
+    this.useValues = useValues;
+  }
+
+  public WithItem withItemsList(ItemsList itemsList) {
+    this.setItemsList(itemsList);
+    return this;
+  }
+
+  public <E extends ItemsList> E getItemsList(Class<E> type) {
+    return type.cast(getItemsList());
+  }
+
+  public WithItem withUseValues(boolean useValues) {
+    this.setUseValues(useValues);
+    return this;
+  }
 
   public String getName() {
     return name;
@@ -74,7 +112,7 @@ public class WithItem implements SelectBody {
   public void accept(SelectVisitor visitor) {
     visitor.visit(this);
   }
-  
+
   public WithItem withName(String name) {
     this.setName(name);
     return this;

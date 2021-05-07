@@ -4892,14 +4892,38 @@ public class SelectTest {
         "WITH TESTSTMT1 AS ( WITH TESTSTMT2 AS (SELECT * FROM MY_TABLE2) SELECT col1, col2 FROM TESTSTMT2) SELECT * FROM TESTSTMT",
         true);
   }
-
+  
+  @Test
+  public void testWithWithValueList1135_SimpleExpressionListWithBrackets() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "with sample_data(\"DAY\") as (values (0, 1, 2))\n" +
+"           select \"DAY\" from sample_data",
+        true);
+  }
+  
   @Test
   @Ignore
-  public void testWithWithValueList1135() throws JSQLParserException {
+  public void testWithWithValueList1135_SimpleExpressionsListWithoutBrackets() throws JSQLParserException {
     assertSqlCanBeParsedAndDeparsed(
-        "with sample_data(day, value) as (values (0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16))\n"
-            + "            \n"
-            + "           select day, value from sample_data",
+        "with sample_data(\"DAY\") as (values 0, 1, 2)\n" +
+"           select \"DAY\" from sample_data",
+        true);
+  }
+
+  @Test
+  public void testWithWithValueList1135_MultiExpressionsListWithBrackets() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "with sample_data(\"DAY\", \"VALUE\") as (values ((0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16)))\n" +
+"select \"DAY\", \"VALUE\" from sample_data",
+        true);
+  }
+  
+  @Test
+  @Ignore
+  public void testWithWithValueList1135_MultiExpressionsListWithoutBrackets() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "with sample_data(\"DAY\", \"VALUE\") as (values (0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16))\n" +
+"select \"DAY\", \"VALUE\" from sample_data",
         true);
   }
 }
