@@ -116,6 +116,7 @@ public class WithItem implements SelectBody {
   }
 
   @Override
+  @SuppressWarnings({"PMD.CyclomaticComplexity"})
   public String toString() {
     StringBuilder builder = new StringBuilder();
     builder.append(recursive ? "RECURSIVE " : "");
@@ -126,14 +127,21 @@ public class WithItem implements SelectBody {
 
     if (useValues) {
       builder.append("(VALUES ");
-      MultiExpressionList multiExpressionList = (MultiExpressionList) itemsList;
-      for (Iterator<ExpressionList> it = multiExpressionList.getExprList().iterator();
-          it.hasNext(); ) {
-        builder.append(
-            PlainSelect.getStringList(it.next().getExpressions(), true, useBracketsForValues));
-        if (it.hasNext()) {
-          builder.append(", ");
+
+      if (itemsList instanceof MultiExpressionList) {
+        MultiExpressionList multiExpressionList = (MultiExpressionList) itemsList;
+        for (Iterator<ExpressionList> it = multiExpressionList.getExprList().iterator();
+            it.hasNext(); ) {
+          builder.append(
+              PlainSelect.getStringList(it.next().getExpressions(), true, true));
+          if (it.hasNext()) {
+            builder.append(", ");
+          }
         }
+      } else if (itemsList instanceof ExpressionList) {
+        ExpressionList expressionList = (ExpressionList) itemsList;
+        builder.append(
+            PlainSelect.getStringList(expressionList.getExpressions(), true, useBracketsForValues));
       }
       builder.append(")");
     } else {
