@@ -3483,18 +3483,28 @@ ArrayConstructor ArrayConstructor(final boolean arrayKeyword) : {
 
 JsonExpression JsonExpression() : {
   JsonExpression result = new JsonExpression();
-  Column column;
+  Expression expr;
   Token token;
+  ColDataType type = null;
+  CastExpression castExpr = null;
 }
 {
-    column=Column() (
+    expr=Column()
+    ( "::" type=ColDataType() {
+            castExpr = new CastExpression();
+            castExpr.setUseCastKeyword(false);
+            castExpr.setLeftExpression(expr);
+            castExpr.setType(type);
+            expr=castExpr;
+    } )*
+    (
         "->" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->");} |
         "->>" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->>");} |
         "#>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>");} |
         "#>>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>>");}
     )+
     {
-        result.setColumn(column);
+        result.setExpression(expr);
         return result;
     }
 }

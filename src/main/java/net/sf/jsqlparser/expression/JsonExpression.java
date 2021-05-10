@@ -13,11 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.schema.Column;
 
 public class JsonExpression extends ASTNodeAccessImpl implements Expression {
 
-    private Column column;
+    private Expression expr;
 
     private List<String> idents = new ArrayList<String>();
     private List<String> operators = new ArrayList<String>();
@@ -27,12 +26,12 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
         expressionVisitor.visit(this);
     }
 
-    public Column getColumn() {
-        return column;
+    public Expression getExpression() {
+        return expr;
     }
 
-    public void setColumn(Column column) {
-        this.column = column;
+    public void setExpression(Expression expr) {
+        this.expr = expr;
     }
 
 //    public List<String> getIdents() {
@@ -46,7 +45,7 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
 //            operators.add("->");
 //        }
 //    }
-//    
+//
 //    public void addIdent(String ident) {
 //        addIdent(ident, "->");
 //    }
@@ -58,15 +57,15 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(column.toString());
+        b.append(expr.toString());
         for (int i = 0; i < idents.size(); i++) {
             b.append(operators.get(i)).append(idents.get(i));
         }
         return b.toString();
     }
 
-    public JsonExpression withColumn(Column column) {
-        this.setColumn(column);
+    public JsonExpression withExpression(Expression expr) {
+        this.setExpression(expr);
         return this;
     }
 }
