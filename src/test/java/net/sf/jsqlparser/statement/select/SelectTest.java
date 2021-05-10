@@ -4902,7 +4902,6 @@ public class SelectTest {
   }
   
   @Test
-  @Ignore
   public void testWithWithValueList1135_SimpleExpressionsListWithoutBrackets() throws JSQLParserException {
     assertSqlCanBeParsedAndDeparsed(
         "with sample_data(\"DAY\") as (values 0, 1, 2)\n" +
@@ -4919,7 +4918,6 @@ public class SelectTest {
   }
   
   @Test
-  @Ignore
   public void testWithWithValueList1135_MultiExpressionsListWithoutBrackets() throws JSQLParserException {
     assertSqlCanBeParsedAndDeparsed(
         "with sample_data(\"DAY\", \"VALUE\") as (values (0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16))\n" +

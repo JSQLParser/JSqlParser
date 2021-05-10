@@ -12,9 +12,12 @@ package net.sf.jsqlparser.statement.select;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 
 public class WithItem implements SelectBody {
 
@@ -22,6 +25,8 @@ public class WithItem implements SelectBody {
   private List<SelectItem> withItemList;
   private ItemsList itemsList;
   private boolean useValues = true;
+  private boolean useBracketsForValues = false;
+
   private SubSelect subSelect;
   private boolean recursive;
 
@@ -57,6 +62,19 @@ public class WithItem implements SelectBody {
 
   public WithItem withUseValues(boolean useValues) {
     this.setUseValues(useValues);
+    return this;
+  }
+
+  public boolean isUsingBracketsForValues() {
+    return useBracketsForValues;
+  }
+
+  public void setUseBracketsForValues(boolean useBracketsForValues) {
+    this.useBracketsForValues = useBracketsForValues;
+  }
+
+  public WithItem withUseBracketsForValues(boolean useBracketsForValues) {
+    this.setUseBracketsForValues(useBracketsForValues);
     return this;
   }
 
@@ -99,13 +117,32 @@ public class WithItem implements SelectBody {
 
   @Override
   public String toString() {
-    return (recursive ? "RECURSIVE " : "")
-        + name
-        + ((withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "")
-        + " AS "
-        + (subSelect.isUseBrackets() ? "" : "(")
-        + subSelect
-        + (subSelect.isUseBrackets() ? "" : ")");
+    StringBuilder builder = new StringBuilder();
+    builder.append(recursive ? "RECURSIVE " : "");
+    builder.append(name);
+    builder.append(
+        (withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "");
+    builder.append(" AS ");
+
+    if (useValues) {
+      builder.append("(VALUES ");
+      MultiExpressionList multiExpressionList = (MultiExpressionList) itemsList;
+      for (Iterator<ExpressionList> it = multiExpressionList.getExprList().iterator();
+          it.hasNext(); ) {
+        builder.append(
+            PlainSelect.getStringList(it.next().getExpressions(), true, useBracketsForValues));
+        if (it.hasNext()) {
+          builder.append(", ");
+        }
+      }
+      builder.append(")");
+    } else {
+      builder.append(subSelect.isUseBrackets() ? "" : "(");
+      builder.append(subSelect);
+
+      builder.append(subSelect.isUseBrackets() ? "" : ")");
+    }
+    return builder.toString();
   }
 
   @Override

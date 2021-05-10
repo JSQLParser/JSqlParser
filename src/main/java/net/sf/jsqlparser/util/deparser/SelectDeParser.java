@@ -13,11 +13,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -500,14 +504,32 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
       buffer.append(" ").append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
     }
 
-    SubSelect subSelect = withItem.getSubSelect();
     buffer.append(" AS ");
-    if (!subSelect.isUseBrackets()) {
-      buffer.append("(");
-    }
-    subSelect.accept(this);
-    if (!subSelect.isUseBrackets()) {
+
+    if (withItem.isUseValues()) {
+      ItemsList itemsList = withItem.getItemsList();
+      MultiExpressionList multiExpressionList = (MultiExpressionList) itemsList;
+      boolean useBracketsForValues = withItem.isUsingBracketsForValues();
+      buffer.append("(VALUES ");
+
+      for (Iterator<ExpressionList> it = multiExpressionList.getExprList().iterator();
+          it.hasNext(); ) {
+        List<Expression> expressions = it.next().getExpressions();
+        buffer.append(PlainSelect.getStringList(expressions, true, useBracketsForValues));
+        if (it.hasNext()) {
+          buffer.append(", ");
+        }
+      }
       buffer.append(")");
+    } else {
+      SubSelect subSelect = withItem.getSubSelect();
+      if (!subSelect.isUseBrackets()) {
+        buffer.append("(");
+      }
+      subSelect.accept(this);
+      if (!subSelect.isUseBrackets()) {
+        buffer.append(")");
+      }
     }
   }
 
