@@ -78,6 +78,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.operators.arithmetic.Subtraction(),
             new net.sf.jsqlparser.expression.operators.conditional.AndExpression(),
             new net.sf.jsqlparser.expression.operators.conditional.OrExpression(),
+            new net.sf.jsqlparser.expression.operators.conditional.XorExpression(),
             new net.sf.jsqlparser.expression.operators.relational.Between(),
             new net.sf.jsqlparser.expression.operators.relational.EqualsTo(),
             new net.sf.jsqlparser.expression.operators.relational.ExistsExpression(),
