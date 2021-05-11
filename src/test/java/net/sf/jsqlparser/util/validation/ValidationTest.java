@@ -88,6 +88,14 @@ public class ValidationTest extends ValidationTestAsserts {
 
         assertErrorsSize(errors, 0);
     }
+    @Test
+    public void testWithValidationOnlyParse2() throws JSQLParserException {
+
+        String stmt = "SELECT * FROM tab1, tab2 WHERE value XOR other_value";
+        List<ValidationError> errors = Validation.validate(Collections.emptyList(), stmt);
+
+        assertErrorsSize(errors, 0);
+    }
 
     @Test
     public void testWithValidationOnlyParseInvalid() throws JSQLParserException {

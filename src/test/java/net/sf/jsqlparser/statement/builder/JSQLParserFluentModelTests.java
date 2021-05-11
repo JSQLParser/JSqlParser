@@ -12,6 +12,8 @@ package net.sf.jsqlparser.statement.builder;
 import static net.sf.jsqlparser.test.TestUtils.*;
 
 import java.util.List;
+
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
@@ -38,14 +40,15 @@ public class JSQLParserFluentModelTests {
     @Test
     public void testParseAndBuild() throws JSQLParserException {
         String statement = "SELECT * FROM tab1 AS t1 " //
-                + "JOIN tab2 t2 ON t1.ref = t2.id WHERE (t1.col1 = ? OR t1.col2 = ?) AND t1.col3 IN ('A')";
+                + "JOIN tab2 t2 ON t1.ref = t2.id WHERE (t1.col1 = ? OR t1.col2 = ?) AND t1.col3 IN ('A') XOR t1.col4";
 
         Statement parsed = TestUtils.assertSqlCanBeParsedAndDeparsed(statement);
 
         Table t1 = new Table("tab1").withAlias(new Alias("t1").withUseAs(true));
         Table t2 = new Table("tab2").withAlias(new Alias("t2", false));
 
-        AndExpression where = new AndExpression().withLeftExpression(
+        XorExpression where =
+                new XorExpression().withLeftExpression(new AndExpression().withLeftExpression(
                 new Parenthesis(new OrExpression().withLeftExpression(
                         new EqualsTo()
                         .withLeftExpression(new Column(asList("t1", "col1")))
@@ -57,14 +60,15 @@ public class JSQLParserFluentModelTests {
                         )).withRightExpression(
                                 new InExpression()
                                 .withLeftExpression(new Column(asList("t1", "col3")))
-                                .withRightItemsList(new ExpressionList().addExpressions(new StringValue("A"))));
+                                .withRightItemsList(new ExpressionList().addExpressions(new StringValue("A")))))
+                .withRightExpression( new Column(asList("t1", "col4")) );
         Select select = new Select().withSelectBody(new PlainSelect().addSelectItems(new AllColumns()).withFromItem(t1)
                 .addJoins(new Join().withRightItem(t2)
                         .withOnExpression(
                                 new EqualsTo(new Column(asList("t1", "ref")), new Column(asList("t2", "id")))))
                 .withWhere(where));
 
-        ExpressionList list = select.getSelectBody(PlainSelect.class).getWhere(AndExpression.class)
+        ExpressionList list = select.getSelectBody(PlainSelect.class).getWhere(XorExpression.class).getLeftExpression(AndExpression.class)
                 .getRightExpression(InExpression.class).getRightItemsList(ExpressionList.class);
         List<Expression> elist = list.getExpressions();
         list.setExpressions(elist);
