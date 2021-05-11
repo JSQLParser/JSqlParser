@@ -33,7 +33,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 
 /**
- * 
  * @author tw
  */
 public class ExpressionVisitorAdapterTest {
@@ -121,9 +120,9 @@ public class ExpressionVisitorAdapterTest {
 
         assertEquals(2, exprList.size());
         assertTrue(exprList.get(0) instanceof Column);
-        assertEquals("foo",((Column)exprList.get(0)).getColumnName());
+        assertEquals("foo", ((Column) exprList.get(0)).getColumnName());
         assertTrue(exprList.get(1) instanceof Column);
-        assertEquals("bar",((Column)exprList.get(1)).getColumnName());
+        assertEquals("bar", ((Column) exprList.get(1)).getColumnName());
     }
 
     @Test
