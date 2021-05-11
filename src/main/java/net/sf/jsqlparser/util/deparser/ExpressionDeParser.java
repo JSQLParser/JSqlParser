@@ -71,6 +71,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
@@ -396,6 +397,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(OrExpression orExpression) {
         visitBinaryExpression(orExpression, " OR ");
+
+    }
+    @Override
+    public void visit(XorExpression xorExpression) {
+        visitBinaryExpression(xorExpression, " XOR ");
 
     }
 
