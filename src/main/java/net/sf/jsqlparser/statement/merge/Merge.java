@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.merge;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -19,6 +20,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 public class Merge implements Statement {
 
     private Table table;
+    private OracleHint oracleHint = null;
     private Table usingTable;
     private SubSelect usingSelect;
     private Alias usingAlias;
@@ -33,6 +35,14 @@ public class Merge implements Statement {
 
     public void setTable(Table name) {
         table = name;
+    }
+    
+    public OracleHint getOracleHint() {
+        return oracleHint;
+    }
+
+    public void setOracleHint(OracleHint oracleHint) {
+        this.oracleHint = oracleHint;
     }
 
     public Table getUsingTable() {
@@ -118,20 +128,16 @@ public class Merge implements Statement {
         b.append(onCondition);
         b.append(")");
 
-        if (insertFirst) {
-            if (mergeInsert != null) {
-                b.append(mergeInsert.toString());
-            }
+        if (insertFirst && mergeInsert != null) {
+          b.append(mergeInsert.toString());
         }
 
         if (mergeUpdate != null) {
             b.append(mergeUpdate.toString());
         }
 
-        if (!insertFirst) {
-            if (mergeInsert != null) {
-                b.append(mergeInsert.toString());
-            }
+        if (!insertFirst && mergeInsert != null) {
+          b.append(mergeInsert.toString());
         }
 
         return b.toString();

@@ -14,6 +14,8 @@ import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * A function as MAX,COUNT...
@@ -25,9 +27,11 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private NamedExpressionList namedParameters;
     private boolean allColumns = false;
     private boolean distinct = false;
+    private boolean unique = false;
     private boolean isEscaped = false;
     private Expression attribute;
     private String attributeName;
+    private List<OrderByElement> orderByElements;
     private KeepExpression keep = null;
     private boolean ignoreNulls = false;
 
@@ -68,7 +72,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
      * This is at the moment only necessary for AnalyticExpression initialization and not for normal
      * functions. Therefore there is no deparsing for it for normal functions.
      *
-     * @param ignoreNulls
      */
     public void setIgnoreNulls(boolean ignoreNulls) {
         this.ignoreNulls = ignoreNulls;
@@ -85,6 +88,19 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public void setDistinct(boolean b) {
         distinct = b;
+    }
+
+    /**
+     * true if the function is "unique"
+     *
+     * @return true if the function is "unique"
+     */
+    public boolean isUnique() {
+        return unique;
+    }
+
+    public void setUnique(boolean b) {
+        unique = b;
     }
 
     /**
@@ -152,17 +168,37 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public String toString() {
         String params;
 
         if (parameters != null || namedParameters != null) {
             if (parameters != null) {
-                params = parameters.toString();
+                StringBuilder b = new StringBuilder();
+                b.append("(");
                 if (isDistinct()) {
-                    params = params.replaceFirst("\\(", "(DISTINCT ");
-                } else if (isAllColumns()) {
-                    params = params.replaceFirst("\\(", "(ALL ");
+                    b.append("DISTINCT ");
+                } else if (isUnique()) {
+                    b.append("UNIQUE ");
                 }
+                if (isAllColumns()) {
+                    b.append("ALL ");
+                }
+                b.append(PlainSelect.getStringList(parameters.getExpressions(), true, false));
+                if (orderByElements != null) {
+                    b.append(" ORDER BY ");
+                    boolean comma = false;
+                    for (OrderByElement orderByElement : orderByElements) {
+                        if (comma) {
+                            b.append(", ");
+                        } else {
+                            comma = true;
+                        }
+                        b.append(orderByElement);
+                    }
+                }
+                b.append(")");
+                params = b.toString();
             } else {
                 params = namedParameters.toString();
             }
@@ -172,7 +208,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
             params = "()";
         }
 
-        String ans = getName() + "" + params + "";
+        String ans = getName() + params;
 
         if (attribute != null) {
             ans += "." + attribute.toString();
@@ -229,6 +265,19 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     public Function withDistinct(boolean distinct) {
         this.setDistinct(distinct);
         return this;
+    }
+
+    public Function withUnique(boolean unique) {
+        this.setUnique(unique);
+        return this;
+    }
+
+    public List<OrderByElement> getOrderByElements() {
+        return orderByElements;
+    }
+
+    public void setOrderByElements(List<OrderByElement> orderByElements) {
+        this.orderByElements = orderByElements;
     }
 
     public <E extends Expression> E getAttribute(Class<E> type) {

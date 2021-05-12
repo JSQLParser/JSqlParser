@@ -50,6 +50,7 @@ import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class SelectDeParser extends AbstractDeParser<PlainSelect>
         implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
@@ -69,6 +70,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength"})
     public void visit(PlainSelect plainSelect) {
         if (plainSelect.isUseBrackets()) {
             buffer.append("(");
@@ -377,6 +379,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void deparseJoin(Join join) {
         if (join.isSimple() && join.isOuter()) {
             buffer.append(", OUTER ");

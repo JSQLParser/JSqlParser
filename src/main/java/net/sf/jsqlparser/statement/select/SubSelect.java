@@ -102,6 +102,7 @@ public class SubSelect extends ASTNodeAccessImpl implements FromItem, Expression
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public String toString() {
         StringBuilder retval = new StringBuilder();
         if (useBrackets) {

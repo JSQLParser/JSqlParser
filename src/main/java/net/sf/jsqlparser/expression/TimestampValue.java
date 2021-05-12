@@ -12,11 +12,12 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.sql.Timestamp;
+import java.util.Objects;
 
 /**
  * A Timestamp in the form {ts 'yyyy-mm-dd hh:mm:ss.f . . .'}
  */
-public class TimestampValue extends ASTNodeAccessImpl implements Expression {
+public final class TimestampValue extends ASTNodeAccessImpl implements Expression {
 
     private Timestamp value;
     private String rawValue;
@@ -27,11 +28,12 @@ public class TimestampValue extends ASTNodeAccessImpl implements Expression {
     }
 
     public TimestampValue(String value) {
-        if (value == null) {
-            throw new java.lang.IllegalArgumentException("null string");
-        } else {
-            setRawValue(value);
-        }
+    //        if (value == null) {
+    //            throw new IllegalArgumentException("null string");
+    //        } else {
+    //            setRawValue(value);
+    //        }
+              setRawValue(Objects.requireNonNull(value, "The Timestamp string value must not be null."));
     }
 
     @Override

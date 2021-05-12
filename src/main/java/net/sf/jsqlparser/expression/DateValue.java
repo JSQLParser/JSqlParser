@@ -31,7 +31,7 @@ public class DateValue extends ASTNodeAccessImpl implements Expression {
     /**
      * A Date in the form {d 'yyyy-mm-dd'}
      *
-     * @param value
+     * @param value The text presentation of the Date to be parsed.
      */
     public DateValue(String value) {
         this(Date.valueOf(value.substring(1, value.length() - 1)));

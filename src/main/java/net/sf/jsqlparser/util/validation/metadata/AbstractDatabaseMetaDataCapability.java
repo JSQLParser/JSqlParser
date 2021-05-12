@@ -73,6 +73,7 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public final boolean exists(Named named) {
         Objects.requireNonNull(named);
 

@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 import java.util.List;
+import static java.util.stream.Collectors.joining;
 
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
@@ -101,6 +102,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionDeParser extends AbstractDeParser<Expression>
         // FIXME maybe we should implement an ItemsListDeparser too?
         implements ExpressionVisitor, ItemsListVisitor {
@@ -469,6 +471,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void visit(Function function) {
         if (function.isEscaped()) {
             buffer.append("{fn ");
@@ -481,13 +484,19 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append("()");
         } else {
             boolean oldUseBracketsInExprList = useBracketsInExprList;
-            useBracketsInExprList = true;
+            useBracketsInExprList = !function.isDistinct() &&
+                    !function.isAllColumns() &&
+                    function.getOrderByElements() == null;
+            if (!useBracketsInExprList) {
+                buffer.append("(");
+            }
             if (function.isDistinct()) {
-                useBracketsInExprList = false;
-                buffer.append("(DISTINCT ");
+                buffer.append("DISTINCT ");
             } else if (function.isAllColumns()) {
+                buffer.append("ALL ");
+            } else if (function.isUnique()) {
                 useBracketsInExprList = false;
-                buffer.append("(ALL ");
+                buffer.append("(UNIQUE ");
             }
             if (function.getNamedParameters() != null) {
                 visit(function.getNamedParameters());
@@ -495,10 +504,25 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             if (function.getParameters() != null) {
                 visit(function.getParameters());
             }
-            useBracketsInExprList = oldUseBracketsInExprList;
-            if (function.isDistinct() || function.isAllColumns()) {
+            if (function.getOrderByElements() != null) {
+                buffer.append(" ORDER BY ");
+                boolean comma = false;
+                orderByDeParser.setExpressionVisitor(this);
+                orderByDeParser.setBuffer(buffer);
+                for (OrderByElement orderByElement : function.getOrderByElements()) {
+                    if (comma) {
+                        buffer.append(", ");
+                    } else {
+                        comma = true;
+                    }
+                    orderByDeParser.deParseElement(orderByElement);
+                }
+            }
+            if (!useBracketsInExprList) {
                 buffer.append(")");
             }
+            useBracketsInExprList = oldUseBracketsInExprList;
+
         }
 
         if (function.getAttribute() != null) {
@@ -668,6 +692,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength"})
     public void visit(AnalyticExpression aexpr) {
         String name = aexpr.getName();
         Expression expression = aexpr.getExpression();
@@ -682,6 +707,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         buffer.append(name).append("(");
         if (aexpr.isDistinct()) {
             buffer.append("DISTINCT ");
+        }
+        if (aexpr.isUnique()) {
+            buffer.append("UNIQUE ");
         }
         if (expression != null) {
             expression.accept(this);
@@ -699,6 +727,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (aexpr.isIgnoreNulls()) {
             buffer.append(" IGNORE NULLS");
         }
+        if (aexpr.getFuncOrderBy() != null) {
+            buffer.append(" ORDER BY ");
+            buffer.append( aexpr.getFuncOrderBy().stream().map(OrderByElement::toString).collect(joining(", ")));
+        }
+        
         buffer.append(") ");
         if (keep != null) {
             keep.accept(this);

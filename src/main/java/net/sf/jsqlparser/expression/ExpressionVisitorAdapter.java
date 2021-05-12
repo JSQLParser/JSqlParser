@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.WithItem;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVisitor, PivotVisitor, SelectItemVisitor {
 
     private SelectVisitor selectVisitor;
@@ -53,6 +54,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         }
         if (function.getKeep() != null) {
             function.getKeep().accept(this);
+        }
+        if (function.getOrderByElements() != null) {
+            for (OrderByElement orderByElement : function.getOrderByElements()) {
+                orderByElement.getExpression().accept(this);
+            }
         }
     }
 
@@ -393,7 +399,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(JsonExpression jsonExpr) {
-        visit(jsonExpr.getColumn());
+        jsonExpr.getExpression().accept(this);
     }
 
     @Override

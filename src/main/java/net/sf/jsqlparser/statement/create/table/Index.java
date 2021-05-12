@@ -84,9 +84,10 @@ public class Index {
      * Please note that:
      *  Oracle - the type might be BITMAP, indicating a bitmap kind of index
      *  MySQL - the type might be FULLTEXT or SPATIAL
+     *  @param using
      */
-    public void setUsing(String string) {
-        using = string;
+    public void setUsing(String using) {
+        this.using = using;
     }
 
     public void setColumnsNames(List<String> list) {

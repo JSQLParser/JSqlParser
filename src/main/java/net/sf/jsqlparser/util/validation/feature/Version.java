@@ -17,7 +17,7 @@ public interface Version extends FeatureSetValidation {
     /**
      * @return the version string
      */
-    public String getVersionString();
+    String getVersionString();
 
     /**
      * @return <code>featureName + " not supported."</code>

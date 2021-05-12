@@ -1591,6 +1591,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testCount3() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT count(UNIQUE col) FROM mytable");
+    }
+
+    @Test
     public void testMysqlQuote() throws JSQLParserException {
         String statement = "SELECT `a.OWNERLASTNAME`, `OWNERFIRSTNAME` " + "FROM `ANTIQUEOWNERS` AS a, ANTIQUES AS b "
                 + "WHERE b.BUYERID = a.OWNERID AND b.ITEM = 'Chair'";
@@ -2716,6 +2721,11 @@ public class SelectTest {
             Select select = (Select) parserManager.parse(new StringReader(statement));
             assertStatementCanBeDeparsedAs(select, statement, true);
         }
+    }
+
+    @Test
+    public void testJsonExpressionWithCastExpression() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT id FROM tbl WHERE p.company::json->'info'->>'country' = 'test'");
     }
 
     @Test
@@ -4494,5 +4504,25 @@ public class SelectTest {
     @Test
     public void testKeywordAlgorithmIssue1138() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM in.tablename");
+    }
+
+    @Test
+    public void testFunctionOrderBy() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT array_agg(DISTINCT s ORDER BY b)[1] FROM t");
+    }
+    
+    @Test
+    public void testProblematicDeparsingIssue1183() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ARRAY_AGG(NAME ORDER BY ID) FILTER (WHERE NAME IS NOT NULL)");
+    }
+    
+    @Test
+    public void testProblematicDeparsingIssue1183_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT ARRAY_AGG(ID ORDER BY ID) OVER (ORDER BY ID)");
+    }
+    
+    @Test
+    public void testKeywordCostsIssue1185() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("WITH costs AS (SELECT * FROM MY_TABLE1 AS ALIAS_TABLE1) SELECT * FROM TESTSTMT");
     }
 }

@@ -132,7 +132,7 @@ public enum MySqlVersion implements Version {
      * @param featuresSupported
      * @see #copy() to copy from previous version
      */
-    private MySqlVersion(String versionString, Set<Feature> featuresSupported) {
+    MySqlVersion(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
     }
 
@@ -142,7 +142,7 @@ public enum MySqlVersion implements Version {
      * @param unsupported
      * @see #copy() to copy from previous version
      */
-    private MySqlVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
+    MySqlVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;
         this.features = featuresSupported;
         this.features.removeAll(unsupported);

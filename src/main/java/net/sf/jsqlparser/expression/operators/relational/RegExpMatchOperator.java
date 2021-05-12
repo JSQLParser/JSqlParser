@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import java.util.Objects;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
@@ -18,10 +19,7 @@ public class RegExpMatchOperator extends BinaryExpression {
     private RegExpMatchOperatorType operatorType;
 
     public RegExpMatchOperator(RegExpMatchOperatorType operatorType) {
-        if (operatorType == null) {
-            throw new NullPointerException();
-        }
-        this.operatorType = operatorType;
+        this.operatorType = Objects.requireNonNull(operatorType, "The provided RegExpMatchOperatorType must not be NULL.");
     }
 
     public RegExpMatchOperatorType getOperatorType() {

@@ -150,7 +150,7 @@ public enum MariaDbVersion implements Version {
      * @param featuresSupported
      * @see #copy() to copy from previous version
      */
-    private MariaDbVersion(String versionString, Set<Feature> featuresSupported) {
+    MariaDbVersion(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
     }
 
@@ -160,7 +160,7 @@ public enum MariaDbVersion implements Version {
      * @param unsupported
      * @see #copy() to copy from previous version
      */
-    private MariaDbVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
+    MariaDbVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;
         this.features = featuresSupported;
         this.features.removeAll(unsupported);

@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression;
 
 import java.util.List;
+import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -34,9 +35,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private KeepExpression keep = null;
     private AnalyticType type = AnalyticType.OVER;
     private boolean distinct = false;
+    private boolean unique = false;
     private boolean ignoreNulls = false;
     private Expression filterExpression = null;
     private WindowElement windowElement = null;
+    private List<OrderByElement> funcOrderBy = null;
 
     public AnalyticExpression() {
     }
@@ -45,6 +48,8 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         name = function.getName();
         allColumns = function.isAllColumns();
         distinct = function.isDistinct();
+        unique = function.isUnique();
+        funcOrderBy = function.getOrderByElements();
 
         ExpressionList list = function.getParameters();
         if (list != null) {
@@ -157,6 +162,14 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.distinct = distinct;
     }
 
+    public boolean isUnique() {
+        return unique;
+    }
+
+    public void setUnique(boolean unique) {
+        this.unique = unique;
+    }
+
     public boolean isIgnoreNulls() {
         return ignoreNulls;
     }
@@ -166,6 +179,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength"})
     public String toString() {
         StringBuilder b = new StringBuilder();
 
@@ -187,6 +201,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         if (isIgnoreNulls()) {
             b.append(" IGNORE NULLS");
         }
+        if (funcOrderBy!=null) {
+            b.append(" ORDER BY ");
+            b.append( funcOrderBy.stream().map(OrderByElement::toString).collect(joining(", ")));
+        }
+        
         b.append(") ");
         if (keep != null) {
             b.append(keep.toString()).append(" ");
@@ -283,6 +302,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         return this;
     }
 
+    public AnalyticExpression withUnique(boolean unique) {
+        this.setUnique(unique);
+        return this;
+    }
+
     public AnalyticExpression withIgnoreNulls(boolean ignoreNulls) {
         this.setIgnoreNulls(ignoreNulls);
         return this;
@@ -312,5 +336,13 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
 
     public <E extends Expression> E getFilterExpression(Class<E> type) {
         return type.cast(getFilterExpression());
+    }
+
+    public List<OrderByElement> getFuncOrderBy() {
+        return funcOrderBy;
+    }
+
+    public void setFuncOrderBy(List<OrderByElement> funcOrderBy) {
+        this.funcOrderBy = funcOrderBy;
     }
 }
