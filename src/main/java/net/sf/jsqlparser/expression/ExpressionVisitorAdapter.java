@@ -397,7 +397,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(JsonExpression jsonExpr) {
-        visit(jsonExpr.getColumn());
+        jsonExpr.getExpression().accept(this);
     }
 
     @Override

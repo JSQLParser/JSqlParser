@@ -455,7 +455,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(JsonExpression jsonExpr) {
-        validateOptionalExpression(jsonExpr.getColumn());
+        validateOptionalExpression(jsonExpr.getExpression());
     }
 
     @Override

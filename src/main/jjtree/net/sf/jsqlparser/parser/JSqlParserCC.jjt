@@ -1336,7 +1336,7 @@ String RelObjectNameWithoutValue() :
     (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> 
       | tk=<K_ALGORITHM> 
       | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE> | tk=<K_CHARACTER>
-      | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_DISABLE> | tk=<K_DESC>
+      | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_COSTS> | tk=<K_DISABLE> | tk=<K_DESC>
       | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING>
       | tk=<K_LAST> | tk=<K_LEADING> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE>
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_XML>
@@ -3477,18 +3477,28 @@ ArrayConstructor ArrayConstructor(final boolean arrayKeyword) : {
 
 JsonExpression JsonExpression() : {
   JsonExpression result = new JsonExpression();
-  Column column;
+  Expression expr;
   Token token;
+  ColDataType type = null;
+  CastExpression castExpr = null;
 }
 {
-    column=Column() (
+    expr=Column()
+    ( "::" type=ColDataType() {
+            castExpr = new CastExpression();
+            castExpr.setUseCastKeyword(false);
+            castExpr.setLeftExpression(expr);
+            castExpr.setType(type);
+            expr=castExpr;
+    } )*
+    (
         "->" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->");} |
         "->>" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->>");} |
         "#>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>");} |
         "#>>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>>");}
     )+
     {
-        result.setColumn(column);
+        result.setExpression(expr);
         return result;
     }
 }
@@ -3868,7 +3878,7 @@ Function InternalFunction(Function retval) :
 {
     funcName = RelObjectNameList()
 
-    "(" [ [ LOOKAHEAD(2)(<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); }) ]
+    "(" [ [ LOOKAHEAD(2)(<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); } | <K_UNIQUE> { retval.setUnique(true); }) ]
         ( LOOKAHEAD(4)
             "*" { retval.setAllColumns(true); }
             |
