@@ -576,4 +576,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             elm.getExpression().accept(this);
         }
     }
+
+    @Override
+    public void visit(TimezoneExpression expr) {
+        expr.getLeftExpression().accept(this);
+    }
 }

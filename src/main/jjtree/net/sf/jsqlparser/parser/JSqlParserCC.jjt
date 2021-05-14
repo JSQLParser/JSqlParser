@@ -131,6 +131,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_APPLY:"APPLY">
 |   <K_ARRAY_LITERAL: "ARRAY" >
 |   <K_AS: "AS">
+|   <K_AT: "AT">
 |   <K_ASC:"ASC">
 |   <K_AUTHORIZATION:"AUTHORIZATION">
 |   <K_BEGIN:"BEGIN">
@@ -3300,6 +3301,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 {
     Expression retval = null;
     CastExpression castExpr = null;
+    TimezoneExpression timezoneExpr = null;
     Token token = null;
     Token sign = null;
     String tmp = "";
@@ -3397,6 +3399,20 @@ Expression PrimaryExpression() #PrimaryExpression:
         castExpr.setType(type);
         retval=castExpr;
     } )*
+
+    ( <K_AT> <K_DATETIMELITERAL> <K_ZONE> token=<S_CHAR_LITERAL> {
+        if (timezoneExpr == null)
+            timezoneExpr = new TimezoneExpression();
+
+        timezoneExpr.addTimezoneExpression(token.image);
+    } )*
+
+    {
+        if (timezoneExpr != null && !timezoneExpr.getTimezoneExpressions().isEmpty()) {
+            timezoneExpr.setLeftExpression(retval);
+            retval=timezoneExpr;
+        }
+    }
 
     {
         if (sign != null) {

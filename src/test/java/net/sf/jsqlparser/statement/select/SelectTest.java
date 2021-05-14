@@ -883,6 +883,18 @@ public class SelectTest {
     }
 
     @Test
+    public void testTimezoneExpression() throws JSQLParserException {
+        String stmt = "SELECT creation_date AT TIME ZONE 'UTC'";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testTimezoneExpressionWithTwoTransformations() throws JSQLParserException {
+        String stmt = "SELECT DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney') AS another_date";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testUnionWithOrderByAndLimitAndNoBrackets() throws JSQLParserException {
         String stmt = "SELECT id FROM table1 UNION SELECT id FROM table2 ORDER BY id ASC LIMIT 55";
         assertSqlCanBeParsedAndDeparsed(stmt);
