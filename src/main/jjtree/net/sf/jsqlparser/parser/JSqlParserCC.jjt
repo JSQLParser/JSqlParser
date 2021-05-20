@@ -3890,7 +3890,9 @@ Function InternalFunction(Function retval) :
             |
             LOOKAHEAD(3) namedExpressionList=NamedExpressionList1()
             |
-            LOOKAHEAD(NamedExpressionListExprFirst()) namedExpressionList = NamedExpressionListExprFirst()
+            LOOKAHEAD(NamedExpressionListExprFirst(), { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
+            |
+            LOOKAHEAD(3, { getAsBoolean(Feature.allowComplexParsing) }) (expressionList=ComplexExpressionList() [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
             LOOKAHEAD(3) (expressionList=SimpleExpressionList() [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
