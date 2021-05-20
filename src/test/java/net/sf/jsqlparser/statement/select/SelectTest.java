@@ -4525,4 +4525,14 @@ public class SelectTest {
     public void testKeywordCostsIssue1185() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("WITH costs AS (SELECT * FROM MY_TABLE1 AS ALIAS_TABLE1) SELECT * FROM TESTSTMT");
     }
+    
+    @Test
+    public void testFunctionWithComplexParameters_Issue1190() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT to_char(a = '3') FROM dual", true);
+    }
+
+    @Test
+    public void testConditionsWithExtraBrackets_Issue1194() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT (col IS NULL) FROM tbl", true);
+    }
 }
