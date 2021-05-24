@@ -38,7 +38,73 @@ public class NestedBracketsPerformanceTest {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN ( CASE WHEN ( CASE WHEN ( CASE WHEN ( 1 ) THEN 0 END ) THEN 0 END ) THEN 0 END ) THEN 0 END FROM a", true);
     }
 
-    @Test(timeout = 100000)
+    @Test
+  public void testNestedCaseWhen_Issue1162_small() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed("CREATE VIEW VIEW_NAME1 AS\n" +
+                                    "SELECT CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE CASE WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT' ELSE '0' END END END END END END END END END END END END END END COLUMNALIAS\n" +
+                                    "FROM TABLE1", true);
+  }
+    
+  @Test
+  public void testNestedCaseWhen_Issue1162() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed("CREATE VIEW VIEW_NAME1 AS\n" +
+                                    "SELECT CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE\n" +
+                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
+                                    "ELSE (CASE WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT' ELSE '0' END) END) END) END) END) END) END) END) END) END) END) END) END) END COLUMNALIAS\n" +
+                                    "FROM TABLE1", true);
+  }
+
+    @Test(timeout = 200000)
     @Ignore
     public void testIssue496() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select isNull(charLen(TEST_ID,0)+ isNull(charLen(TEST_DVC,0)+ isNull(charLen(TEST_NO,0)+ isNull(charLen(ATEST_ID,0)+ isNull(charLen(TESTNO,0)+ isNull(charLen(TEST_CTNT,0)+ isNull(charLen(TEST_MESG_CTNT,0)+ isNull(charLen(TEST_DTM,0)+ isNull(charLen(TEST_DTT,0)+ isNull(charLen(TEST_ADTT,0)+ isNull(charLen(TEST_TCD,0)+ isNull(charLen(TEST_PD,0)+ isNull(charLen(TEST_VAL,0)+ isNull(charLen(TEST_YN,0)+ isNull(charLen(TEST_DTACM,0)+ isNull(charLen(TEST_MST,0) from test_info_m");
