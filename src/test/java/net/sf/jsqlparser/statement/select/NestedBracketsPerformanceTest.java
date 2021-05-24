@@ -39,7 +39,7 @@ public class NestedBracketsPerformanceTest {
     }
 
     @Test
-  public void testNestedCaseWhenWithoutBracketsIssue1162_small() throws JSQLParserException {
+  public void testNestedCaseWhenWithoutBracketsIssue1162() throws JSQLParserException {
     assertSqlCanBeParsedAndDeparsed("CREATE VIEW VIEW_NAME1 AS\n" +
                                     "SELECT CASE\n" +
                                     "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
