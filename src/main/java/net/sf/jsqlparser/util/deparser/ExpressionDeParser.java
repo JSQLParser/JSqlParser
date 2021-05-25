@@ -51,6 +51,7 @@ import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.TimezoneExpression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.VariableAssignment;
@@ -988,5 +989,14 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             }
         }
         buffer.append(") AS ").append(expr.getDataType()).append(")");
+    }
+
+    @Override
+    public void visit(TimezoneExpression var) {
+        var.getLeftExpression().accept(this);
+
+        for (String expr : var.getTimezoneExpressions()) {
+            buffer.append(" AT TIME ZONE " + expr);
+        }
     }
 }

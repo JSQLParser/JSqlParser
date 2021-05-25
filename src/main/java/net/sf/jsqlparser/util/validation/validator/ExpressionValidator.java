@@ -46,6 +46,7 @@ import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.TimezoneExpression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.VariableAssignment;
@@ -561,6 +562,11 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         if (a.getVariable() != null) {
             a.getVariable().accept(this);
         }
+    }
+
+    @Override
+    public void visit(TimezoneExpression a) {
+        validateOptionalExpression(a.getLeftExpression());
     }
 
     @Override

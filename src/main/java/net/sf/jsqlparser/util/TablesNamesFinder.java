@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -48,6 +49,7 @@ import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.TimezoneExpression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.VariableAssignment;
@@ -927,5 +929,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     private static <T> void throwUnsupported(T type){
         throw new UnsupportedOperationException(String.format("Finding tables from %s is not supported", type.getClass().getSimpleName()));
+    }
+
+    @Override
+    public void visit(TimezoneExpression aThis) {
+        aThis.getLeftExpression().accept(this);
     }
 }
