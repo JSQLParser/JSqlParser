@@ -847,16 +847,14 @@ ShowStatement Show(): {
 }
 
 ValuesStatement Values(): {
-    List<Expression> expList = new ArrayList<Expression>();
-    Expression exp;
+    ItemsList itemsList;
 } {
     <K_VALUES>
-    "("
-        exp=PrimaryExpression() { expList.add(exp); }
-                        ("," exp=PrimaryExpression()  { expList.add(exp); } )*
-    ")"
+
+    itemsList = SimpleExpressionList(false)
+
     {
-        return new ValuesStatement(expList);
+        return new ValuesStatement(itemsList);
     }
 }
 
@@ -1891,7 +1889,7 @@ ExpressionListItem ExpressionListItem():
 }
 {
     "("
-    expressionList=SimpleExpressionList() { expressionListItem = new ExpressionListItem(); expressionListItem.setExpressionList(expressionList); }
+    expressionList=SimpleExpressionList(true) { expressionListItem = new ExpressionListItem(); expressionListItem.setExpressionList(expressionList); }
     ")"
     [alias=Alias() { expressionListItem.setAlias(alias); }]
     { return expressionListItem; }
@@ -2330,11 +2328,11 @@ GroupByElement GroupByColumnReferences():
     |
         <K_GROUPING> <K_SETS> "("
             ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }
-                | LOOKAHEAD(3) "(" list = SimpleExpressionList() ")" { groupBy.addGroupingSet(list); }
+                | LOOKAHEAD(3) "(" list = SimpleExpressionList(true) ")" { groupBy.addGroupingSet(list); }
                 | expr = SimpleExpression() { groupBy.addGroupingSet(expr); } )
 
             ( "," ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }
-                | LOOKAHEAD(3) "(" list = SimpleExpressionList() ")" { groupBy.addGroupingSet(list); }
+                | LOOKAHEAD(3) "(" list = SimpleExpressionList(true) ")" { groupBy.addGroupingSet(list); }
                 | expr = SimpleExpression() { groupBy.addGroupingSet(expr); } ) )*
         ")"
     )
@@ -2798,7 +2796,7 @@ Expression InExpression() #InExpression :
 }
 {
     ( LOOKAHEAD(3) "(" (
-            LOOKAHEAD(SimpleExpressionList()) leftItemsList = SimpleExpressionList() { result.setLeftItemsList(leftItemsList); }
+            LOOKAHEAD(SimpleExpressionList(true)) leftItemsList = SimpleExpressionList(true) { result.setLeftItemsList(leftItemsList); }
             |
             leftExpression=SimpleExpression()
             [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
@@ -2814,7 +2812,7 @@ Expression InExpression() #InExpression :
       LOOKAHEAD(3) multiExpressionList = MultiInExpressions()
       | LOOKAHEAD(3) rightExpression = Function()
       | LOOKAHEAD(2) token=<S_CHAR_LITERAL> { rightExpression = new StringValue(token.image); }
-      | LOOKAHEAD(3) "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList() )")"
+      | LOOKAHEAD(3) "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList(true) )")"
       | rightExpression = SimpleExpression()
     )
     {
@@ -2833,7 +2831,7 @@ MultiExpressionList MultiInExpressions():
 }
 {
   "(" "("
-   expressionList=SimpleExpressionList() {
+   expressionList=SimpleExpressionList(true) {
        if(multiExpressionList == null) {
          multiExpressionList = new MultiExpressionList();
        }
@@ -2841,7 +2839,7 @@ MultiExpressionList MultiInExpressions():
    }
    // potentially additional expression lists
    ( LOOKAHEAD(3)
-     ")" "," "(" expressionList=SimpleExpressionList()
+     ")" "," "(" expressionList=SimpleExpressionList(true)
      {
        if(multiExpressionList == null) {
           multiExpressionList = new MultiExpressionList();
@@ -2962,9 +2960,9 @@ ExpressionList SQLExpressionList():
     }
 }
 
-ExpressionList SimpleExpressionList() #ExpressionList:
+ExpressionList SimpleExpressionList(boolean outerBrackets) #ExpressionList:
 {
-    ExpressionList retval = new ExpressionList();
+    ExpressionList retval = new ExpressionList().withBrackets(outerBrackets);
     List<Expression> expressions = new ArrayList<Expression>();
     Expression expr = null;
 }
@@ -3370,7 +3368,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
 
-        | "(" list = SimpleExpressionList() ")"
+        | "(" list = SimpleExpressionList(true) ")"
           {
               if (list.getExpressions().size() == 1) {
                   retval = new Parenthesis(list.getExpressions().get(0));
@@ -3737,7 +3735,7 @@ RowConstructor RowConstructor(): {
 } {
     [ <K_ROW> { rowConstructor.setName("ROW");} ]
     "("
-        list = SimpleExpressionList()
+        list = SimpleExpressionList(true)
     ")"
 
     {
@@ -3781,9 +3779,9 @@ Execute Execute(): {
                 ( "," expr = VariableExpression() { namedExprList.add(expr); })*
                 { expressionList = new ExpressionList(namedExprList); } )
         |
-        LOOKAHEAD(3) expressionList=SimpleExpressionList()
+        LOOKAHEAD(3) expressionList=SimpleExpressionList(true)
         |
-        ("(" expressionList=SimpleExpressionList() ")" { execute.setParenthesis(true); })
+        ("(" expressionList=SimpleExpressionList(true) ")" { execute.setParenthesis(true); })
     )?
 
     {
@@ -3882,7 +3880,7 @@ Function InternalFunction(Function retval) :
             |
             LOOKAHEAD(NamedExpressionListExprFirst()) namedExpressionList = NamedExpressionListExprFirst()
             |
-            LOOKAHEAD(3) (expressionList=SimpleExpressionList() [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
+            LOOKAHEAD(3) (expressionList=SimpleExpressionList(true) [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
             expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); }
 
@@ -3940,7 +3938,7 @@ MySQLGroupConcat MySQLGroupConcat():{
 {
     <K_GROUP_CONCAT> "("
        [<K_DISTINCT>  { retval.setDistinct(true); } ]
-       expressionList = SimpleExpressionList()
+       expressionList = SimpleExpressionList(true)
        [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
        [ <K_SEPARATOR> t=<S_CHAR_LITERAL> { retval.setSeparator(t.image); } ]
     ")"
