@@ -4540,4 +4540,9 @@ public class SelectTest {
     public void testKeywordCostsIssue1135_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("with sample_data(day, value) as (values (0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16)) select day, value from sample_data", true);
     }
+    
+    @Test
+    public void testKeywordSynonymIssue1211() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select businessDate as \"bd\", synonym as \"synonym\" from sc.tab", true);
+    }
 }
