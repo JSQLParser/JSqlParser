@@ -62,11 +62,21 @@ public class ValuesStatement implements Statement, SelectBody {
         return this;
     }
 
-    public ValuesStatement addExpressions(Expression... expressions) {
-        return this.withExpressions(new ExpressionList(expressions));
+    public ValuesStatement addExpressions(Expression... addExpressions) {
+        if (expressions != null && expressions instanceof ExpressionList) {
+            ((ExpressionList) expressions).addExpressions(addExpressions);
+            return this;
+        } else {
+            return this.withExpressions(new ExpressionList(addExpressions));
+        }
     }
 
-    public ValuesStatement addExpressions(Collection<? extends Expression> expressions) {
-        return this.withExpressions(new ExpressionList(new ArrayList<>(expressions)));
+    public ValuesStatement addExpressions(Collection<? extends Expression> addExpressions) {
+        if (expressions != null && expressions instanceof ExpressionList) {
+            ((ExpressionList) expressions).addExpressions(addExpressions);
+            return this;
+        } else {
+            return this.withExpressions(new ExpressionList(new ArrayList<>(addExpressions)));
+        }
     }
 }

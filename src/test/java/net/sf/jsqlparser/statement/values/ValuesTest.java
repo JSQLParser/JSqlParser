@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement.values;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SetOperationList;
@@ -26,9 +28,16 @@ public class ValuesTest {
     public void testDuplicateKey() throws JSQLParserException {
         String statement = "VALUES (1, 2, 'test')";
         Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
+
+        ExpressionList list = new ExpressionList(new LongValue(1))
+                .addExpressions(asList(new LongValue(2), new StringValue("test"))).withBrackets(true);
+
         Select created = new Select().withSelectBody(new SetOperationList()
-                .addBrackets(Boolean.FALSE).addSelects(new ValuesStatement().addExpressions(new LongValue(1))
-                        .addExpressions(asList(new LongValue(2), new StringValue("test")))));
+                .addBrackets(Boolean.FALSE).addSelects(
+                new ValuesStatement().withExpressions(
+                        new ExpressionList(
+                                new RowConstructor().withExprList(list))
+                                .withBrackets(false))));
 
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);

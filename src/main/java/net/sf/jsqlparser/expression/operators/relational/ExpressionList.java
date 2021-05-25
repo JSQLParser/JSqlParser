@@ -34,7 +34,7 @@ public class ExpressionList implements ItemsList {
     }
 
     public ExpressionList(Expression... expressions) {
-        this.expressions = Arrays.asList(expressions);
+        this.expressions = new ArrayList<>(Arrays.asList(expressions));
     }
 
     public List<Expression> getExpressions() {
@@ -55,7 +55,7 @@ public class ExpressionList implements ItemsList {
     public void setExpressions(List<Expression> expressions) {
         this.expressions = expressions;
     }
-    
+
     public ExpressionList withBrackets(boolean brackets) {
         this.withBrackets = brackets;
         return this;
