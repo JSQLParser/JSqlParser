@@ -1358,7 +1358,12 @@ public class SelectTest {
                 + // "WHEN (SELECT c FROM tab2 WHERE d = 2) = 3 THEN 'AAA' " +
                 "END) FROM tab1";
         assertSqlCanBeParsedAndDeparsed(statement);
+  }
 
+  @Test
+  public void testNestedCaseCondition() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN CASE WHEN 1 THEN 10 ELSE 20 END > 15 THEN 'BBB' END FROM tab1");
+    assertSqlCanBeParsedAndDeparsed("SELECT (CASE WHEN (CASE a WHEN 1 THEN 10 ELSE 20 END) > 15 THEN 'BBB' END) FROM tab1");
     }
 
     @Test
@@ -2721,6 +2726,11 @@ public class SelectTest {
             Select select = (Select) parserManager.parse(new StringReader(statement));
             assertStatementCanBeDeparsedAs(select, statement, true);
         }
+    }
+
+    @Test
+    public void testJsonExpressionWithCastExpression() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT id FROM tbl WHERE p.company::json->'info'->>'country' = 'test'");
     }
 
     @Test

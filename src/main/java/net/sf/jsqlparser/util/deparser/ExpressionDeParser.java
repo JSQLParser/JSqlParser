@@ -604,7 +604,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(CaseExpression caseExpression) {
-        buffer.append("CASE ");
+        buffer.append(caseExpression.isUsingBrackets() ? "(" : "").append("CASE ");
         Expression switchExp = caseExpression.getSwitchExpression();
         if (switchExp != null) {
             switchExp.accept(this);
@@ -622,7 +622,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(" ");
         }
 
-        buffer.append("END");
+        buffer.append("END").append(caseExpression.isUsingBrackets() ? ")" : "");
     }
 
     @Override

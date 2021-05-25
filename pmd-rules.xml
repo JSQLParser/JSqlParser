@@ -54,8 +54,17 @@ under the License.
     <rule ref="category/java/codestyle.xml/UselessParentheses" />
     <rule ref="category/java/codestyle.xml/UselessQualifiedThis" />
     
-    <!-- for Codazy -->
-    <rule ref="category/java/codestyle.xml/MethodNamingConventions" />
+		<!-- for Codazy -->
+		<rule ref="category/java/codestyle.xml/MethodNamingConventions">
+			<properties>
+				<property name="methodPattern" value="[a-z][a-zA-Z0-9]*" />
+				<property name="staticPattern" value="[a-z][a-zA-Z0-9]*" />
+				<property name="nativePattern" value="[a-z][a-zA-Z0-9]*" />
+				<property name="junit3TestPattern" value="test[A-Z0-9][a-zA-Z0-9]*" />
+				<property name="junit4TestPattern" value="[a-z][a-zA-Z0-9]*" />
+				<property name="junit5TestPattern" value="[a-z][a-zA-Z0-9]*" />
+			</properties>
+		</rule>	
     <rule ref="category/java/codestyle.xml/ClassNamingConventions" />
 
     <rule ref="category/java/design.xml/CollapsibleIfStatements" />
