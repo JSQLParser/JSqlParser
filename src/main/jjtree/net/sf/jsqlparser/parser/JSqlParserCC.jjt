@@ -1397,7 +1397,7 @@ String RelObjectNameExt():
 }
 {
     ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
-        | tk=<K_DOUBLE> | tk=<K_IF> | <K_OPTIMIZE> | tk=<K_LIMIT>
+        | tk=<K_DOUBLE> | tk=<K_IF> | tk=<K_IIF> | tk=<K_OPTIMIZE> | tk=<K_LIMIT>
         | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC> 
         | tk=<K_CASEWHEN> | tk=<K_IN> )
     {
@@ -3918,7 +3918,7 @@ Function InternalFunction(Function retval) :
         ( LOOKAHEAD(4)
             "*" { retval.setAllColumns(true); }
             |
-            LOOKAHEAD(3) namedExpressionList=NamedExpressionList1()
+            LOOKAHEAD(NamedExpressionList1()) namedExpressionList=NamedExpressionList1()
             |
             LOOKAHEAD(NamedExpressionListExprFirst(), { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
             |
