@@ -24,7 +24,7 @@ import net.sf.jsqlparser.statement.Statements;
  * @author toben
  */
 public final class CCJSqlParserUtil {
-    public final static int ALLOWED_NESTING_DEPTH = 7;
+    public final static int ALLOWED_NESTING_DEPTH = 10;
 
     private CCJSqlParserUtil() {
     }

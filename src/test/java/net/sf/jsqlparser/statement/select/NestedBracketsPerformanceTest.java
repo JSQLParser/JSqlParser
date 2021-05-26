@@ -23,7 +23,7 @@ import net.sf.jsqlparser.JSQLParserException;
  */
 public class NestedBracketsPerformanceTest {
 
-    @Test(timeout = 2000)
+    @Test
     public void testIssue766() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('1','2'),'3'),'4'),'5'),'6'),'7'),'8'),'9'),'10'),'11'),'12'),'13'),'14'),'15'),'16'),'17'),'18'),'19'),'20'),'21'),col1 FROM tbl t1", true);
     }
@@ -128,7 +128,7 @@ public class NestedBracketsPerformanceTest {
         doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 10);
     }
 
-    @Test(timeout = 2000)
+    @Test
     public void testIssue1013() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ((((((((((((((((tblA)))))))))))))))) FROM mytable");
     }
@@ -161,7 +161,7 @@ public class NestedBracketsPerformanceTest {
      *
      * @throws JSQLParserException
      */
-    @Test(timeout = 2000)
+    @Test
     public void testIncreaseOfParseTime() throws JSQLParserException {
         doIncreaseOfParseTimeTesting("concat($1,'B')", "'A'", 50);
     }

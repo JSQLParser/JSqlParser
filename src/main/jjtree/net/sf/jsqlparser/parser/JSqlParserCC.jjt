@@ -3336,7 +3336,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(JsonExpression()) retval=JsonExpression()
 
-        | LOOKAHEAD(FunctionWithCondParams()) retval = FunctionWithCondParams()
+        /* | LOOKAHEAD(FunctionWithCondParams()) retval = FunctionWithCondParams() */
 
         | LOOKAHEAD(FullTextSearch()) retval = FullTextSearch()
 
@@ -3859,7 +3859,7 @@ FullTextSearch FullTextSearch() : {
     }
 }
 
-Function FunctionWithCondParams() #Function: {
+/* Function FunctionWithCondParams() #Function: {
     Function retval = new Function();
     String funcName = null;
     ExpressionList expressionList = null;
@@ -3878,7 +3878,7 @@ Function FunctionWithCondParams() #Function: {
         linkAST(retval,jjtThis);
         return retval;
     }
-}
+} */
 
 
 Function Function() #Function:
