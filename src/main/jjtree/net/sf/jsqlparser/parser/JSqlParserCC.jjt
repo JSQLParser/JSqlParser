@@ -1347,7 +1347,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
       | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_ENABLE>
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TO> | tk=<K_TYPE> | tk=<K_ISNULL>
-	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
+	    | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
       | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIGNED> | tk=<K_SIZE> | tk=<K_SEQUENCE> | tk=<K_SESSION> | tk=<K_SKIP>
       | tk=<K_SYNONYM>
@@ -3373,6 +3373,14 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
 
+        | LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing)}) "(" list = ComplexExpressionList() ")"
+          {
+              if (list.getExpressions().size() == 1) {
+                  retval = new Parenthesis(list.getExpressions().get(0));
+              } else {
+                  retval = new RowConstructor().withExprList(list);
+              }
+          }
         | "(" list = SimpleExpressionList(true) ")"
           {
               if (list.getExpressions().size() == 1) {
@@ -3912,7 +3920,9 @@ Function InternalFunction(Function retval) :
             |
             LOOKAHEAD(3) namedExpressionList=NamedExpressionList1()
             |
-            LOOKAHEAD(NamedExpressionListExprFirst()) namedExpressionList = NamedExpressionListExprFirst()
+            LOOKAHEAD(NamedExpressionListExprFirst(), { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
+            |
+            LOOKAHEAD(3, { getAsBoolean(Feature.allowComplexParsing) }) (expressionList=ComplexExpressionList() [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
             LOOKAHEAD(3) (expressionList=SimpleExpressionList(true) [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |

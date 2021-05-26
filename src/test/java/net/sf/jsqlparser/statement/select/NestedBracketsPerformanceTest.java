@@ -23,17 +23,17 @@ import net.sf.jsqlparser.JSQLParserException;
  */
 public class NestedBracketsPerformanceTest {
 
-    @Test
+    @Test(timeout = 2000)
     public void testIssue766() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('1','2'),'3'),'4'),'5'),'6'),'7'),'8'),'9'),'10'),'11'),'12'),'13'),'14'),'15'),'16'),'17'),'18'),'19'),'20'),'21'),col1 FROM tbl t1", true);
     }
 
-    @Test
+    @Test(timeout = 2000)
     public void testIssue766_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT concat(concat(concat('1', '2'), '3'), '4'), col1 FROM tbl t1");
     }
 
-    @Test
+    @Test(timeout = 2000)
     public void testIssue235() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN ( CASE WHEN ( CASE WHEN ( CASE WHEN ( 1 ) THEN 0 END ) THEN 0 END ) THEN 0 END ) THEN 0 END FROM a", true);
     }
@@ -116,7 +116,7 @@ public class NestedBracketsPerformanceTest {
         assertSqlCanBeParsedAndDeparsed(sql);
     }
 
-    @Test
+    @Test(timeout = 2000)
     public void testRecursiveBracketExpressionIssue1019() {
         assertEquals("IF(1=1, 1, 2)", buildRecursiveBracketExpression("IF(1=1, $1, 2)", "1", 0));
         assertEquals("IF(1=1, IF(1=1, 1, 2), 2)", buildRecursiveBracketExpression("IF(1=1, $1, 2)", "1", 1));
@@ -128,12 +128,12 @@ public class NestedBracketsPerformanceTest {
         doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 10);
     }
 
-    @Test
+    @Test(timeout = 2000)
     public void testIssue1013() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ((((((((((((((((tblA)))))))))))))))) FROM mytable");
     }
 
-    @Test
+    @Test(timeout = 2000)
     public void testIssue1013_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM ((((((((((((((((tblA))))))))))))))))");
     }
@@ -143,7 +143,7 @@ public class NestedBracketsPerformanceTest {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (((tblA)))");
     }
 
-    @Test
+    @Test(timeout = 2000)
     public void testIssue1013_4() throws JSQLParserException {
         String s = "tblA";
         for (int i = 1; i < 100; i++) {
@@ -161,13 +161,13 @@ public class NestedBracketsPerformanceTest {
      *
      * @throws JSQLParserException
      */
-    @Test
+    @Test(timeout = 2000)
     public void testIncreaseOfParseTime() throws JSQLParserException {
-        doIncreaseOfParseTimeTesting("concat($1,'B')", "'A'", 20);
+        doIncreaseOfParseTimeTesting("concat($1,'B')", "'A'", 50);
     }
 
     private void doIncreaseOfParseTimeTesting(String template, String finalExpression, int maxDepth) throws JSQLParserException {
-        long oldDurationTime = 1000;
+        long oldDurationTime = 2000;
         int countProblematic = 0;
         for (int i = 0; i < maxDepth; i++) {
             String sql = "SELECT " + buildRecursiveBracketExpression(template, finalExpression, i) + " FROM mytbl";
@@ -202,4 +202,16 @@ public class NestedBracketsPerformanceTest {
         }
         return template.replace("$1", buildRecursiveBracketExpression(template, finalExpression, depth - 1));
     }
-}
+    
+    @Test(timeout = 2000)
+    public void testIssue1103() throws JSQLParserException {
+      assertSqlCanBeParsedAndDeparsed(
+          "SELECT\n" + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(\n"
+              + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(\n"
+              + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(\n"
+              + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(0\n" + ",0),0),0),0),0),0),0),0)\n"
+              + ",0),0),0),0),0),0),0),0)\n" + ",0),0),0),0),0),0),0),0)\n"
+              + ",0),0),0),0),0),0),0),0)",
+          true);
+    }
+  }

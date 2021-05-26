@@ -4544,12 +4544,21 @@ public class SelectTest {
     }
     
     @Test
-    public void testKeywordCostsIssue1135() throws JSQLParserException {
+    public void testFunctionWithComplexParameters_Issue1190() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT to_char(a = '3') FROM dual", true);
+    }
+
+    @Test
+    public void testConditionsWithExtraBrackets_Issue1194() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT (col IS NULL) FROM tbl", true);
+    }
+    
+    public void testWithValueListWithExtraBrackets1135() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("with sample_data(day, value) as (values ((0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16))) select day, value from sample_data", true);
     }
     
     @Test
-    public void testKeywordCostsIssue1135_2() throws JSQLParserException {
+    public void testWithValueListWithOutExtraBrackets1135() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("with sample_data(day, value) as (values (0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16)) select day, value from sample_data", true);
     }
     

@@ -710,6 +710,13 @@ public enum Feature {
      */
     allowSquareBracketQuotation(false),
 
+    // PERFORMANCE
+    
+    /**
+     * allows complex expression parameters or named parameters for functions
+     * will be switched off, when deep nesting of functions is detected
+     */
+     allowComplexParsing(true)
     ;
 
     private Object value;
