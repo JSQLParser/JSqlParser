@@ -163,4 +163,6 @@ public interface ExpressionVisitor {
     void visit(VariableAssignment aThis);
 
     void visit(XMLSerializeExpr aThis);
+
+    void visit(TimezoneExpression aThis);
 }

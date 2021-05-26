@@ -642,4 +642,14 @@ public class TablesNamesFinderTest {
         
         assertThat(tablesNamesFinder.getTableList(stmt)).containsExactly("biz_fund_info");
     }
+
+    @Test
+    public void testAtTimeZoneExpression() throws JSQLParserException {
+        String sql = "SELECT DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney') AS another_date FROM mytbl";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("mytbl"));
+    }
 }

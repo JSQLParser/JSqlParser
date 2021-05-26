@@ -18,6 +18,10 @@ import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -52,7 +56,7 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class SelectDeParser extends AbstractDeParser<PlainSelect>
-        implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
+        implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor, ItemsListVisitor {
 
     private ExpressionVisitor expressionVisitor;
 
@@ -517,7 +521,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public void visit(ValuesStatement values) {
-        new ValuesStatementDeParser(expressionVisitor, buffer).deParse(values);
+        new ValuesStatementDeParser(this, buffer).deParse(values);
     }
 
     private void deparseOptimizeFor(OptimizeFor optimizeFor) {
@@ -529,5 +533,20 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     @Override
     void deParse(PlainSelect statement) {
         statement.accept(this);
+    }
+
+    @Override
+    public void visit(ExpressionList expressionList) {
+        buffer.append(expressionList.toString());
+    }
+
+    @Override
+    public void visit(NamedExpressionList namedExpressionList) {
+        buffer.append(namedExpressionList.toString());
+    }
+
+    @Override
+    public void visit(MultiExpressionList multiExprList) {
+        buffer.append(multiExprList.toString());
     }
 }

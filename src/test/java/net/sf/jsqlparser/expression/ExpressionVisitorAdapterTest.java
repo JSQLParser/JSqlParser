@@ -208,4 +208,10 @@ public class ExpressionVisitorAdapterTest {
         expr.accept(adapter);
     }
 
+    @Test
+    public void testAtTimeZoneExpression() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseExpression("DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney')");
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        expr.accept(adapter);
+    }
 }

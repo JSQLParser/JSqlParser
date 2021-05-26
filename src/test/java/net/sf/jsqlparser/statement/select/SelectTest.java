@@ -883,6 +883,18 @@ public class SelectTest {
     }
 
     @Test
+    public void testTimezoneExpression() throws JSQLParserException {
+        String stmt = "SELECT creation_date AT TIME ZONE 'UTC'";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testTimezoneExpressionWithTwoTransformations() throws JSQLParserException {
+        String stmt = "SELECT DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney') AS another_date";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testUnionWithOrderByAndLimitAndNoBrackets() throws JSQLParserException {
         String stmt = "SELECT id FROM table1 UNION SELECT id FROM table2 ORDER BY id ASC LIMIT 55";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -1358,7 +1370,12 @@ public class SelectTest {
                 + // "WHEN (SELECT c FROM tab2 WHERE d = 2) = 3 THEN 'AAA' " +
                 "END) FROM tab1";
         assertSqlCanBeParsedAndDeparsed(statement);
+  }
 
+  @Test
+  public void testNestedCaseCondition() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN CASE WHEN 1 THEN 10 ELSE 20 END > 15 THEN 'BBB' END FROM tab1");
+    assertSqlCanBeParsedAndDeparsed("SELECT (CASE WHEN (CASE a WHEN 1 THEN 10 ELSE 20 END) > 15 THEN 'BBB' END) FROM tab1");
     }
 
     @Test
@@ -4534,5 +4551,19 @@ public class SelectTest {
     @Test
     public void testConditionsWithExtraBrackets_Issue1194() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT (col IS NULL) FROM tbl", true);
+    }
+    
+    public void testWithValueListWithExtraBrackets1135() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("with sample_data(day, value) as (values ((0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16))) select day, value from sample_data", true);
+    }
+    
+    @Test
+    public void testWithValueListWithOutExtraBrackets1135() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("with sample_data(day, value) as (values (0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16)) select day, value from sample_data", true);
+    }
+    
+    @Test
+    public void testKeywordSynonymIssue1211() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("select businessDate as \"bd\", synonym as \"synonym\" from sc.tab", true);
     }
 }
