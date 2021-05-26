@@ -251,6 +251,8 @@ public final class CCJSqlParserUtil {
                 }
                 level--;
                 break;
+              default:
+                // Codazy/PMD insists in a Default statement
           }
       }
       return maxlevel;
