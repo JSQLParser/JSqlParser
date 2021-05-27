@@ -31,6 +31,7 @@ public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(GroupByElement groupBy) {
         buffer.append("GROUP BY ");
         for (Iterator<Expression> iter = groupBy.getGroupByExpressions().iterator(); iter.hasNext();) {

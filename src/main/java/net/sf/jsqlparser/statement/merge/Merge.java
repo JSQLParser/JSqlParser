@@ -110,6 +110,7 @@ public class Merge implements Statement {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append("MERGE INTO ");
@@ -129,7 +130,7 @@ public class Merge implements Statement {
         b.append(")");
 
         if (insertFirst && mergeInsert != null) {
-          b.append(mergeInsert.toString());
+            b.append(mergeInsert.toString());
         }
 
         if (mergeUpdate != null) {
@@ -137,7 +138,7 @@ public class Merge implements Statement {
         }
 
         if (!insertFirst && mergeInsert != null) {
-          b.append(mergeInsert.toString());
+            b.append(mergeInsert.toString());
         }
 
         return b.toString();

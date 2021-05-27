@@ -55,6 +55,7 @@ public class GroupByElement {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append("GROUP BY ");

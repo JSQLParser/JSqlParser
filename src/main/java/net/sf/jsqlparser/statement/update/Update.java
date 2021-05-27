@@ -28,6 +28,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class Update implements Statement {
 
     private Table table;
@@ -172,7 +173,7 @@ public class Update implements Statement {
     }
     
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder b = new StringBuilder("UPDATE ");
         b.append(table);

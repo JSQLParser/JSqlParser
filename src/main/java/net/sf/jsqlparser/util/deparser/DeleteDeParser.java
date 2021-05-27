@@ -31,6 +31,7 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(Delete delete) {
         buffer.append("DELETE");
         if (delete.getTables() != null && !delete.getTables().isEmpty()) {
