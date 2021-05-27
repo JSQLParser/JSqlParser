@@ -115,4 +115,55 @@ public class JSQLParserFluentModelTests {
         assertDeparse(select, statement);
         assertEqualsObjectTree(parsed, select);
     }
+
+    @Test
+    public void testParseAndBuildForXORComplexCondition() throws JSQLParserException {
+        String statement = "SELECT * FROM tab1 AS t1 WHERE " +
+                "a AND b OR c XOR d";
+
+        Statement parsed = TestUtils.assertSqlCanBeParsedAndDeparsed(statement);
+
+        Table t1 = new Table("tab1").withAlias(new Alias("t1", true));
+
+        XorExpression where = new XorExpression()
+                .withLeftExpression(
+                        new OrExpression()
+                                .withLeftExpression(
+                                        new AndExpression()
+                                                .withLeftExpression(new Column("a"))
+                                                .withRightExpression(new Column("b"))
+                                )
+                                .withRightExpression(new Column("c")))
+                .withRightExpression(new Column("d")
+                );
+
+        Select select = new Select().withSelectBody(new PlainSelect().addSelectItems(new AllColumns()).withFromItem(t1)
+                .withWhere(where));
+
+        assertDeparse(select, statement);
+        assertEqualsObjectTree(select, parsed);
+    }
+
+    @Test
+    public void testParseAndBuildForXORs() throws JSQLParserException {
+        String statement = "SELECT * FROM tab1 AS t1 WHERE " +
+                "a XOR b XOR c";
+
+        Statement parsed = TestUtils.assertSqlCanBeParsedAndDeparsed(statement);
+
+        Table t1 = new Table("tab1").withAlias(new Alias("t1", true));
+
+        XorExpression where = new XorExpression()
+                .withLeftExpression(
+                        new XorExpression()
+                                .withLeftExpression(new Column("a"))
+                                .withRightExpression(new Column("b")))
+                .withRightExpression(new Column("c"));
+
+        Select select = new Select().withSelectBody(new PlainSelect().addSelectItems(new AllColumns()).withFromItem(t1)
+                .withWhere(where));
+
+        assertDeparse(select, statement);
+        assertEqualsObjectTree(select, parsed);
+    }
 }
