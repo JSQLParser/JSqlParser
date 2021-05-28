@@ -31,13 +31,20 @@ public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(GroupByElement groupBy) {
         buffer.append("GROUP BY ");
+        if (groupBy.isUsingBrackets()) {
+            buffer.append("( ");
+        }
         for (Iterator<Expression> iter = groupBy.getGroupByExpressions().iterator(); iter.hasNext();) {
             iter.next().accept(expressionVisitor);
             if (iter.hasNext()) {
                 buffer.append(", ");
             }
+        }
+        if (groupBy.isUsingBrackets()) {
+            buffer.append(" )");
         }
         if (!groupBy.getGroupingSets().isEmpty()) {
             buffer.append("GROUPING SETS (");

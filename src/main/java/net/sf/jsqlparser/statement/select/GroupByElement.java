@@ -21,6 +21,20 @@ public class GroupByElement {
 
     private List<Expression> groupByExpressions = new ArrayList<>();
     private List groupingSets = new ArrayList();
+    private boolean usingBrackets = false;
+
+    public boolean isUsingBrackets() {
+        return usingBrackets;
+    }
+
+    public void setUsingBrackets(boolean usingBrackets) {
+        this.usingBrackets = usingBrackets;
+    }
+
+    public GroupByElement withUsingBrackets(boolean usingBrackets) {
+        this.usingBrackets = usingBrackets;
+        return this;
+    }
 
     public void accept(GroupByVisitor groupByVisitor) {
         groupByVisitor.visit(this);
@@ -55,12 +69,19 @@ public class GroupByElement {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append("GROUP BY ");
 
         if (groupByExpressions.size() > 0) {
+            if (usingBrackets) {
+                b.append("( ");
+            }
             b.append(PlainSelect.getStringList(groupByExpressions));
+            if (usingBrackets) {
+                b.append(" )");
+            }
         } else if (groupingSets.size() > 0) {
             b.append("GROUPING SETS (");
             boolean first = true;
@@ -78,6 +99,10 @@ public class GroupByElement {
                 }
             }
             b.append(")");
+        } else {
+            if (usingBrackets) {
+                b.append("()");
+            }
         }
 
         return b.toString();
@@ -94,13 +119,15 @@ public class GroupByElement {
     }
 
     public GroupByElement addGroupByExpressions(Expression... groupByExpressions) {
-        List<Expression> collection = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
+        List<Expression> collection
+                = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, groupByExpressions);
         return this.withGroupByExpressions(collection);
     }
 
     public GroupByElement addGroupByExpressions(Collection<? extends Expression> groupByExpressions) {
-        List<Expression> collection = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
+        List<Expression> collection
+                = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
         collection.addAll(groupByExpressions);
         return this.withGroupByExpressions(collection);
     }

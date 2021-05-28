@@ -4571,4 +4571,13 @@ public class SelectTest {
     public void testKeywordSynonymIssue1211() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select businessDate as \"bd\", synonym as \"synonym\" from sc.tab", true);
     }
+
+    @Test
+    public void testGroupedByIssue1176() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "select id_instrument, count(*)\n" + "from cfe.instrument\n" + "group by (id_instrument)",
+                true);
+        assertSqlCanBeParsedAndDeparsed("select count(*)\n" + "from cfe.instrument\n" + "group by ()",
+                true);
+    }
 }
