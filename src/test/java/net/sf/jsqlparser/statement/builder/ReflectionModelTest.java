@@ -50,7 +50,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.MySQLGroupConcat(),
             new net.sf.jsqlparser.expression.MySQLIndexHint("action", "indexQualifier",
                     asList("idx_name", "idx_name_col")),
-            new net.sf.jsqlparser.expression.NextValExpression(asList("sequence")),
+            new net.sf.jsqlparser.expression.NextValExpression(asList("sequence" ), "NEXT VALUE"),
             new net.sf.jsqlparser.expression.NotExpression(),
             new net.sf.jsqlparser.expression.NullValue(), new net.sf.jsqlparser.expression.NumericBind(),
             new net.sf.jsqlparser.expression.OracleHierarchicalExpression(),
