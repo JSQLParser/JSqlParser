@@ -455,9 +455,6 @@ Statement SingleStatement() :
 }
 {
     try {
-        
-        //
-
         (
             (
                 [ with=WithList() {  } ]
@@ -465,22 +462,22 @@ Statement SingleStatement() :
                     stm = Select( with )
                     |
                     stm = Insert( with )
+                    |
+                    stm = Update( with )
+                    |
+                    stm = Delete( with )
+                    |
+                    stm = Merge( with)
                 )
             )
         |
-        stm = Update()
-        |
         stm = Upsert()
         |
-        stm = Delete()
-        |
-	LOOKAHEAD(3)
+        LOOKAHEAD(3)
         stm = Replace()
         |
         LOOKAHEAD(2)
         stm = AlterTable()
-        |
-        stm = Merge()
         |
         LOOKAHEAD(CreateFunctionStatement())
         stm = CreateFunctionStatement()
@@ -539,14 +536,13 @@ Statement SingleStatement() :
         |
         stm = Grant()
         )
-		{ return stm; }
+        { return stm; }
     } catch (ParseException e) {
         if (errorRecovery) {
             parseErrors.add(e);
             error_skipto(ST_SEMICOLON);
-			return null;
-        }
-        else
+            return null;
+        } else
             throw e;
     }
 }
@@ -861,7 +857,7 @@ ValuesStatement Values(): {
     }
 }
 
-Update Update():
+Update Update( List<WithItem> with ):
 {
     Update update = new Update();
     Table table = null;
@@ -916,7 +912,8 @@ Update Update():
        ]
 
    {
-        return update.withColumns(columns)
+        return update.withWithItemsList(with)
+              .withColumns(columns)
         	  .withExpressions(expList)
               .withTable(table)
               .withStartJoins(startJoins)
@@ -1199,7 +1196,7 @@ Upsert Upsert():
     }
 }
 
-Delete Delete():
+Delete Delete( List<WithItem> with ):
 {
     Delete delete = new Delete();
     Table table = null;
@@ -1222,11 +1219,12 @@ Delete Delete():
         if (joins != null && joins.size() > 0) {
             delete.setJoins(joins);
         }
-        return delete.withTables(tables).withTable(table);
+        return delete.withWithItemsList(with)
+              .withTables(tables).withTable(table);
     }
 }
 
-Statement Merge() : {
+Statement Merge( List<WithItem> with ) : {
     Merge merge = new Merge();
     Table table;
     SubSelect select;
@@ -1256,7 +1254,7 @@ Statement Merge() : {
 
     [ insert = MergeInsertClause() { merge.setMergeInsert(insert); } ]*/
 
-    { return merge; }
+    { return merge.withWithItemsList(with); }
 }
 
 MergeUpdate MergeUpdateClause() : {
