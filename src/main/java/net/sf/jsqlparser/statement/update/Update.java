@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.update;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
@@ -27,9 +28,12 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.WithItem;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class Update implements Statement {
 
+    private List<WithItem> withItemsList;
     private Table table;
     private Expression where;
     private List<Column> columns;
@@ -51,6 +55,31 @@ public class Update implements Statement {
         statementVisitor.visit(this);
     }
 
+    public List<WithItem> getWithItemsList() {
+        return withItemsList;
+    }
+
+    public void setWithItemsList(List<WithItem> withItemsList) {
+        this.withItemsList = withItemsList;
+    }
+
+    public Update withWithItemsList(List<WithItem> withItemsList) {
+        this.setWithItemsList(withItemsList);
+        return this;
+    }
+
+    public Update addWithItemsList(WithItem... withItemsList) {
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, withItemsList);
+        return this.withWithItemsList(collection);
+    }
+
+    public Update addWithItemsList(Collection<? extends WithItem> withItemsList) {
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        collection.addAll(withItemsList);
+        return this.withWithItemsList(collection);
+    }
+
     public Table getTable() {
         return table;
     }
@@ -66,7 +95,7 @@ public class Update implements Statement {
     public void setWhere(Expression expression) {
         where = expression;
     }
-    
+
     public OracleHint getOracleHint() {
         return oracleHint;
     }
@@ -170,21 +199,34 @@ public class Update implements Statement {
     public void setReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
         this.returningExpressionList = returningExpressionList;
     }
-    
+
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
-        StringBuilder b = new StringBuilder("UPDATE ");
+        StringBuilder b = new StringBuilder();
+
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            b.append("WITH ");
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+                WithItem withItem = iter.next();
+                b.append(withItem);
+                if (iter.hasNext()) {
+                    b.append(",");
+                }
+                b.append(" ");
+            }
+        }
+        b.append("UPDATE ");
         b.append(table);
         if (startJoins != null) {
-                for (Join join : startJoins) {
-                    if (join.isSimple()) {
-                        b.append(", ").append(join);
-                    } else {
-                        b.append(" ").append(join);
-                    }
+            for (Join join : startJoins) {
+                if (join.isSimple()) {
+                    b.append(", ").append(join);
+                } else {
+                    b.append(" ").append(join);
                 }
             }
+        }
         b.append(" SET ");
 
         if (!useSelect) {
