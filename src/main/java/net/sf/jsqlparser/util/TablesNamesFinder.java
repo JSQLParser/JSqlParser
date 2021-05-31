@@ -109,7 +109,7 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
  *
  * <p>Override extractTableName method to modify the extracted table names (e.g. without schema).
  */
-@SuppressWarnings({"PMD.CyclomaticComplexity"})
+@SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.UncommentedEmptyMethodBody"})
 public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor, StatementVisitor {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
@@ -244,7 +244,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(DoubleValue doubleValue) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -288,7 +288,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(FullTextSearch fullTextSearch) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -298,17 +298,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(IsNullExpression isNullExpression) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(IsBooleanExpression isBooleanExpression) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(JdbcParameter jdbcParameter) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -323,7 +323,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(LongValue longValue) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -348,7 +348,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(NullValue nullValue) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -363,7 +363,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(StringValue stringValue) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -407,17 +407,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(DateValue dateValue) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(TimestampValue timestampValue) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(TimeValue timeValue) {
-    // intentional (commented) empty methods.
+    
     }
 
     /*
@@ -510,7 +510,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(AnalyticExpression analytic) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -522,7 +522,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(ExtractExpression eexpr) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -539,7 +539,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(ValuesList valuesList) {
-    // intentional (commented) empty methods.
+    
     }
 
     /**
@@ -558,12 +558,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(IntervalExpression iexpr) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(JdbcNamedParameter jdbcNamedParameter) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -589,22 +589,22 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(JsonExpression jsonExpr) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(JsonOperator jsonExpr) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(AllColumns allColumns) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(AllTableColumns allTableColumns) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -614,23 +614,23 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(UserVariable var) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(NumericBind bind) {
 
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(KeepExpression aexpr) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(MySQLGroupConcat groupConcat) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -774,7 +774,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(HexValue hexValue) {
 
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -789,12 +789,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(OracleHint hint) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(TableFunction valuesList) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -804,19 +804,19 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(TimeKeyExpression timeKeyExpression) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(DateTimeLiteralExpression literal) {
 
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(Commit commit) {
 
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -832,7 +832,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(UseStatement use) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -877,7 +877,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(NextValExpression nextVal) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -887,7 +887,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(ShowStatement aThis) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -897,13 +897,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(DeclareStatement aThis) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
     public void visit(Grant grant) {
 
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
@@ -955,7 +955,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(XMLSerializeExpr aThis) {
-    // intentional (commented) empty methods.
+    
     }
 
     @Override
