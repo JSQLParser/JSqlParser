@@ -255,7 +255,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MOVEMENT: "MOVEMENT">
 |   <K_NATURAL:"NATURAL">
 |   <K_NEXT:"NEXT">
-|   <K_NEXTVAL:"NEXTVAL">
+|   <K_NEXTVAL: (  (("NEXTVAL")(" ")+("FOR"))  |  ( ("NEXT")(" ")+("VALUE") (" ")+("FOR") )  )>
 |   <K_NO:"NO">
 |   <K_NOCACHE:"NOCACHE">
 |   <K_NOCYCLE:"NOCYCLE">
@@ -3454,11 +3454,12 @@ Expression PrimaryExpression() #PrimaryExpression:
 
 NextValExpression NextValExpression() : {
     List<String> data = new ArrayList<String>();
+    Token token;
 }
 {
-    <K_NEXTVAL> <K_FOR> data = RelObjectNameList()
+     token=<K_NEXTVAL>  data = RelObjectNameList()
     {
-        return new NextValExpression(data);
+        return new NextValExpression(data, token.image);
     }
 }
 
