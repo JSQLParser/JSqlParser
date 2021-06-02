@@ -23,7 +23,7 @@ import net.sf.jsqlparser.JSQLParserException;
  */
 public class NestedBracketsPerformanceTest {
 
-    @Test
+    @Test(timeout = 2000)
     public void testIssue766() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('1','2'),'3'),'4'),'5'),'6'),'7'),'8'),'9'),'10'),'11'),'12'),'13'),'14'),'15'),'16'),'17'),'18'),'19'),'20'),'21'),col1 FROM tbl t1", true);
     }
@@ -38,71 +38,71 @@ public class NestedBracketsPerformanceTest {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN ( CASE WHEN ( CASE WHEN ( CASE WHEN ( 1 ) THEN 0 END ) THEN 0 END ) THEN 0 END ) THEN 0 END FROM a", true);
     }
 
-    @Test
-  public void testNestedCaseWhenWithoutBracketsIssue1162() throws JSQLParserException {
-    assertSqlCanBeParsedAndDeparsed("CREATE VIEW VIEW_NAME1 AS\n" +
-                                    "SELECT CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE CASE WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT' ELSE '0' END END END END END END END END END END END END END END COLUMNALIAS\n" +
-                                    "FROM TABLE1", true);
-  }
-    
-  @Test
-  public void testNestedCaseWhenWithBracketsIssue1162() throws JSQLParserException {
-    assertSqlCanBeParsedAndDeparsed("CREATE VIEW VIEW_NAME1 AS\n" +
-                                    "SELECT CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE\n" +
-                                    "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" +
-                                    "ELSE (CASE WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT' ELSE '0' END) END) END) END) END) END) END) END) END) END) END) END) END) END COLUMNALIAS\n" +
-                                    "FROM TABLE1", true);
-  }
+    @Test(timeout = 2000)
+    public void testNestedCaseWhenWithoutBracketsIssue1162() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE VIEW VIEW_NAME1 AS\n"
+                + "SELECT CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE CASE WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT' ELSE '0' END END END END END END END END END END END END END END COLUMNALIAS\n"
+                + "FROM TABLE1", true);
+    }
+
+    @Test(timeout = 2000)
+    public void testNestedCaseWhenWithBracketsIssue1162() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE VIEW VIEW_NAME1 AS\n"
+                + "SELECT CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE\n"
+                + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
+                + "ELSE (CASE WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT' ELSE '0' END) END) END) END) END) END) END) END) END) END) END) END) END) END COLUMNALIAS\n"
+                + "FROM TABLE1", true);
+    }
 
     @Test(timeout = 200000)
     @Ignore
@@ -128,7 +128,7 @@ public class NestedBracketsPerformanceTest {
         doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 10);
     }
 
-    @Test
+    @Test(timeout = 2000)
     public void testIssue1013() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ((((((((((((((((tblA)))))))))))))))) FROM mytable");
     }
@@ -156,12 +156,11 @@ public class NestedBracketsPerformanceTest {
     private static final Logger LOG = Logger.getLogger(NestedBracketsPerformanceTest.class.getName());
 
     /**
-     * Try to avoid or border exceptionally big parsing time increments by
-     * adding more bracket constructs.
+     * Try to avoid or border exceptionally big parsing time increments by adding more bracket constructs.
      *
      * @throws JSQLParserException
      */
-    @Test
+    //@Test(timeout = 6000)
     public void testIncreaseOfParseTime() throws JSQLParserException {
         doIncreaseOfParseTimeTesting("concat($1,'B')", "'A'", 50);
     }
@@ -202,16 +201,16 @@ public class NestedBracketsPerformanceTest {
         }
         return template.replace("$1", buildRecursiveBracketExpression(template, finalExpression, depth - 1));
     }
-    
+
     @Test(timeout = 2000)
     public void testIssue1103() throws JSQLParserException {
-      assertSqlCanBeParsedAndDeparsed(
-          "SELECT\n" + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(\n"
-              + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(\n"
-              + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(\n"
-              + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(0\n" + ",0),0),0),0),0),0),0),0)\n"
-              + ",0),0),0),0),0),0),0),0)\n" + ",0),0),0),0),0),0),0),0)\n"
-              + ",0),0),0),0),0),0),0),0)",
-          true);
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT\n" + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(\n"
+                + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(\n"
+                + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(\n"
+                + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(0\n" + ",0),0),0),0),0),0),0),0)\n"
+                + ",0),0),0),0),0),0),0),0)\n" + ",0),0),0),0),0),0),0),0)\n"
+                + ",0),0),0),0),0),0),0),0)",
+                true);
     }
-  }
+}

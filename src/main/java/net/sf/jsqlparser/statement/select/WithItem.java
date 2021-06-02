@@ -60,6 +60,7 @@ public class WithItem implements SelectBody {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public String toString() {
         return (recursive ? "RECURSIVE " : "") + name + ((withItemList != null) ? " " + PlainSelect.
                 getStringList(withItemList, true, true) : "")

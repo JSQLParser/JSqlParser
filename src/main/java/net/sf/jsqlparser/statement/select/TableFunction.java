@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Function;
 
+@SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class TableFunction extends FunctionItem implements FromItem {
 
     @Override

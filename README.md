@@ -63,7 +63,7 @@ Also I would like to know about needed examples or documentation stuff.
 ** API change FunctionWithCondParams production removed
 * API change in ValuesStatement: the expression list is now hold as a ItemList and not as a List<Expression>
 * support for parser modification within **parseExpression** and **parseCondExpression**
-' support for table schema for foreign keys
+* support for table schema for foreign keys
 * support for Oracle hints on **insert, update and merge**
 * support for **merge insert where** clause
 * allow **in** as schema name

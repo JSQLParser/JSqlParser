@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+@SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class PivotVisitorAdapter implements PivotVisitor {
 
     @Override
