@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2019 JSQLParser
+ * Copyright (C) 2004 - 2021 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -361,6 +361,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WITHIN:"WITHIN">
 |   <K_WITHOUT:"WITHOUT">
 |   <K_XML:"XML">
+|   <K_XOR:"XOR">
 |   <K_XMLSERIALIZE:"XMLSERIALIZE">
 |   <K_XMLAGG:"XMLAGG">
 |   <K_XMLTEXT:"XMLTEXT">
@@ -2621,9 +2622,28 @@ Expression Expression() #Expression :
     Expression retval = null;
 }
 {
-    retval=OrExpression()
+    retval=XorExpression()
 
     { return retval; }
+}
+
+Expression XorExpression():
+{
+    Expression left, right, result;
+}
+{
+    left=OrExpression() { result = left; }
+    (
+        <K_XOR>
+        right=OrExpression()
+        {
+            result = new XorExpression(left, right);
+            left = result;
+        }
+     )*
+     {
+         return result;
+     }
 }
 
 Expression OrExpression():
@@ -2658,7 +2678,7 @@ Expression AndExpression() :
         left=Condition()
         |
         [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
-        "(" left=OrExpression() ")" {left = new Parenthesis(left); if (not) { left = new NotExpression(left, exclamationMarkNot); not = false; } }
+        "(" left=XorExpression() ")" {left = new Parenthesis(left); if (not) { left = new NotExpression(left, exclamationMarkNot); not = false; } }
     )
     { result = left; }
 
@@ -2670,7 +2690,7 @@ Expression AndExpression() :
             right=Condition()
             |
             [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
-            "(" right=OrExpression() ")" {right = new Parenthesis(right); if (not) { right = new NotExpression(right, exclamationMarkNot); not = false; } }
+            "(" right=XorExpression() ")" {right = new Parenthesis(right); if (not) { right = new NotExpression(right, exclamationMarkNot); not = false; } }
         )
         {
             result = new AndExpression(left, right);
