@@ -322,7 +322,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity" , "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder sql = new StringBuilder();
         if (useBrackets) {

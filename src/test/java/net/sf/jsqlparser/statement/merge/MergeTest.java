@@ -221,4 +221,20 @@ public class MergeTest {
     MergeUpdate mergeUpdate = merge.getMergeUpdate();
     Assertions.assertThat( mergeUpdate.getWhereCondition() );
   }
+
+  @Test
+  public void testWith() throws JSQLParserException {
+    String statement =
+        ""
+            + "WITH a\n"
+            + "     AS (SELECT 1 id_instrument_ref)\n"
+            + "     , b\n"
+            + "       AS (SELECT 1 id_instrument_ref)\n"
+            + "MERGE INTO cfe.instrument_ref b\n"
+            + "using a\n"
+            + "ON ( b.id_instrument_ref = a.id_instrument_ref )\n"
+            + "WHEN matched THEN\n"
+            + "  UPDATE SET b.id_instrument = 'a' ";
+    assertSqlCanBeParsedAndDeparsed(statement, true);
+  }
 }

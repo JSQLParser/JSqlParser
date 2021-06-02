@@ -23,6 +23,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
+@SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsListVisitor {
 
     private ExpressionVisitor expressionVisitor;

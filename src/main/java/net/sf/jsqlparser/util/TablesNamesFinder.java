@@ -58,6 +58,7 @@ import net.sf.jsqlparser.expression.XMLSerializeExpr;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -107,9 +108,9 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 /**
  * Find all used tables within an select statement.
  *
- * Override extractTableName method to modify the extracted table names (e.g. without schema).
+ * <p>Override extractTableName method to modify the extracted table names (e.g. without schema).
  */
-@SuppressWarnings({"PMD.CyclomaticComplexity"})
+@SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.UncommentedEmptyMethodBody"})
 public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor, ItemsListVisitor, SelectItemVisitor, StatementVisitor {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
@@ -244,6 +245,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(DoubleValue doubleValue) {
+    
     }
 
     @Override
@@ -287,6 +289,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(FullTextSearch fullTextSearch) {
+    
     }
 
     @Override
@@ -296,14 +299,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(IsNullExpression isNullExpression) {
+    
     }
 
     @Override
     public void visit(IsBooleanExpression isBooleanExpression) {
+    
     }
 
     @Override
     public void visit(JdbcParameter jdbcParameter) {
+    
     }
 
     @Override
@@ -318,6 +324,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(LongValue longValue) {
+    
     }
 
     @Override
@@ -342,11 +349,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(NullValue nullValue) {
+    
     }
 
     @Override
     public void visit(OrExpression orExpression) {
         visitBinaryExpression(orExpression);
+    }
+
+    @Override
+    public void visit(XorExpression xorExpression) {
+        visitBinaryExpression(xorExpression);
     }
 
     @Override
@@ -356,6 +369,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(StringValue stringValue) {
+    
     }
 
     @Override
@@ -399,14 +413,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(DateValue dateValue) {
+    
     }
 
     @Override
     public void visit(TimestampValue timestampValue) {
+    
     }
 
     @Override
     public void visit(TimeValue timeValue) {
+    
     }
 
     /*
@@ -499,6 +516,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(AnalyticExpression analytic) {
+    
     }
 
     @Override
@@ -510,6 +528,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(ExtractExpression eexpr) {
+    
     }
 
     @Override
@@ -526,6 +545,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(ValuesList valuesList) {
+    
     }
 
     /**
@@ -544,10 +564,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(IntervalExpression iexpr) {
+    
     }
 
     @Override
     public void visit(JdbcNamedParameter jdbcNamedParameter) {
+    
     }
 
     @Override
@@ -573,18 +595,22 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(JsonExpression jsonExpr) {
+    
     }
 
     @Override
     public void visit(JsonOperator jsonExpr) {
+    
     }
 
     @Override
     public void visit(AllColumns allColumns) {
+    
     }
 
     @Override
     public void visit(AllTableColumns allTableColumns) {
+    
     }
 
     @Override
@@ -594,19 +620,23 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(UserVariable var) {
+    
     }
 
     @Override
     public void visit(NumericBind bind) {
 
+    
     }
 
     @Override
     public void visit(KeepExpression aexpr) {
+    
     }
 
     @Override
     public void visit(MySQLGroupConcat groupConcat) {
+    
     }
 
     @Override
@@ -750,6 +780,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(HexValue hexValue) {
 
+    
     }
 
     @Override
@@ -764,10 +795,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(OracleHint hint) {
+    
     }
 
     @Override
     public void visit(TableFunction valuesList) {
+    
     }
 
     @Override
@@ -777,16 +810,19 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(TimeKeyExpression timeKeyExpression) {
+    
     }
 
     @Override
     public void visit(DateTimeLiteralExpression literal) {
 
+    
     }
 
     @Override
     public void visit(Commit commit) {
 
+    
     }
 
     @Override
@@ -802,6 +838,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(UseStatement use) {
+    
     }
 
     @Override
@@ -846,6 +883,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(NextValExpression nextVal) {
+    
     }
 
     @Override
@@ -855,6 +893,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(ShowStatement aThis) {
+    
     }
 
     @Override
@@ -864,11 +903,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(DeclareStatement aThis) {
+    
     }
 
     @Override
     public void visit(Grant grant) {
 
+    
     }
 
     @Override
@@ -920,6 +961,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(XMLSerializeExpr aThis) {
+    
     }
 
     @Override

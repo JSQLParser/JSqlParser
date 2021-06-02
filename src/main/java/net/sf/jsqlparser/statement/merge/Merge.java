@@ -9,6 +9,12 @@
  */
 package net.sf.jsqlparser.statement.merge;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -16,9 +22,11 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 public class Merge implements Statement {
 
+    private List<WithItem> withItemsList;
     private Table table;
     private OracleHint oracleHint = null;
     private Table usingTable;
@@ -29,6 +37,31 @@ public class Merge implements Statement {
     private MergeUpdate mergeUpdate;
     private boolean insertFirst = false;
 
+    public List<WithItem> getWithItemsList() {
+        return withItemsList;
+    }
+
+    public void setWithItemsList(List<WithItem> withItemsList) {
+        this.withItemsList = withItemsList;
+    }
+
+    public Merge withWithItemsList(List<WithItem> withItemsList) {
+        this.setWithItemsList(withItemsList);
+        return this;
+    }
+
+    public Merge addWithItemsList(WithItem... withItemsList) {
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, withItemsList);
+        return this.withWithItemsList(collection);
+    }
+
+    public Merge addWithItemsList(Collection<? extends WithItem> withItemsList) {
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        collection.addAll(withItemsList);
+        return this.withWithItemsList(collection);
+    }
+
     public Table getTable() {
         return table;
     }
@@ -36,7 +69,7 @@ public class Merge implements Statement {
     public void setTable(Table name) {
         table = name;
     }
-    
+
     public OracleHint getOracleHint() {
         return oracleHint;
     }
@@ -110,8 +143,20 @@ public class Merge implements Statement {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder b = new StringBuilder();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            b.append("WITH ");
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+                WithItem withItem = iter.next();
+                b.append(withItem);
+                if (iter.hasNext()) {
+                    b.append(",");
+                }
+                b.append(" ");
+            }
+        }
         b.append("MERGE INTO ");
         b.append(table);
         b.append(" USING ");
@@ -129,7 +174,7 @@ public class Merge implements Statement {
         b.append(")");
 
         if (insertFirst && mergeInsert != null) {
-          b.append(mergeInsert.toString());
+            b.append(mergeInsert.toString());
         }
 
         if (mergeUpdate != null) {
@@ -137,7 +182,7 @@ public class Merge implements Statement {
         }
 
         if (!insertFirst && mergeInsert != null) {
-          b.append(mergeInsert.toString());
+            b.append(mergeInsert.toString());
         }
 
         return b.toString();
