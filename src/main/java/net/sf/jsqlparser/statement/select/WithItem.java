@@ -12,12 +12,10 @@ package net.sf.jsqlparser.statement.select;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 
 public class WithItem implements SelectBody {
 
@@ -54,10 +52,6 @@ public class WithItem implements SelectBody {
     public WithItem withItemsList(ItemsList itemsList) {
         this.setItemsList(itemsList);
         return this;
-    }
-
-    public <E extends ItemsList> E getItemsList(Class<E> type) {
-        return type.cast(getItemsList());
     }
 
     public WithItem withUseValues(boolean useValues) {
@@ -127,22 +121,9 @@ public class WithItem implements SelectBody {
 
         if (useValues) {
             builder.append("(VALUES ");
-
-            if (itemsList instanceof MultiExpressionList) {
-                MultiExpressionList multiExpressionList = (MultiExpressionList) itemsList;
-                for (Iterator<ExpressionList> it = multiExpressionList.getExprList().iterator();
-                        it.hasNext();) {
-                    builder.append(
-                            PlainSelect.getStringList(it.next().getExpressions(), true, true));
-                    if (it.hasNext()) {
-                        builder.append(", ");
-                    }
-                }
-            } else if (itemsList instanceof ExpressionList) {
-                ExpressionList expressionList = (ExpressionList) itemsList;
-                builder.append(
-                        PlainSelect.getStringList(expressionList.getExpressions(), true, useBracketsForValues));
-            }
+            ExpressionList expressionList = (ExpressionList) itemsList;
+            builder.append(
+                    PlainSelect.getStringList(expressionList.getExpressions(), true, useBracketsForValues));
             builder.append(")");
         } else {
             builder.append(subSelect.isUseBrackets() ? "" : "(");
@@ -188,9 +169,5 @@ public class WithItem implements SelectBody {
         List<SelectItem> collection = Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
         collection.addAll(withItemList);
         return this.withWithItemList(collection);
-    }
-
-    public <E extends SubSelect> E getSubSelect(Class<E> type) {
-        return type.cast(getSubSelect());
     }
 }
