@@ -57,7 +57,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.1
 
-* support for **with** (ctl) for **delete**, **update** and **merge**
+* support for nested `WITH` CTEs
+* support for **with** (cte) for **delete**, **update** and **merge**
 * introduce a max depth to allow parsing complex expression lists without performance loss (thx to @manticore-projects)
 * allow all functions to have complex expressions as parameters (thx to @manticore-projects)
 * API change FunctionWithCondParams production removed
