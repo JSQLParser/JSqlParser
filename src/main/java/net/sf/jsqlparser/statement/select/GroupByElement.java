@@ -18,24 +18,51 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
 public class GroupByElement {
-
-    private List<Expression> groupByExpressions = new ArrayList<>();
+    // ExpressionList has 'usingBrackets = true' and so we need to switch it off explicitly
+    private ExpressionList groupByExpressions = new ExpressionList().withUsingBrackets(false);
     private List groupingSets = new ArrayList();
+
+    public boolean isUsingBrackets() {
+        return groupByExpressions.isUsingBrackets();
+    }
+
+    public void setUsingBrackets(boolean usingBrackets) {
+        this.groupByExpressions.setUsingBrackets(usingBrackets);
+    }
+
+    public GroupByElement withUsingBrackets(boolean usingBrackets) {
+        this.groupByExpressions.setUsingBrackets(usingBrackets);
+        return this;
+    }
 
     public void accept(GroupByVisitor groupByVisitor) {
         groupByVisitor.visit(this);
     }
-
-    public List<Expression> getGroupByExpressions() {
+    
+    public ExpressionList getGroupByExpressionList() {
         return groupByExpressions;
     }
-
-    public void setGroupByExpressions(List<Expression> groupByExpressions) {
-        this.groupByExpressions = groupByExpressions;
+    
+    public void setGroupByExpressionList(ExpressionList groupByExpressions) {
+        this.groupByExpressions=groupByExpressions;
+    }
+    
+    @Deprecated
+    public List<Expression> getGroupByExpressions() {
+        return groupByExpressions.getExpressions();
     }
 
+    @Deprecated
+    public void setGroupByExpressions(List<Expression> groupByExpressions) {
+        this.groupByExpressions.setExpressions(groupByExpressions);
+    }
+
+    @Deprecated
     public void addGroupByExpression(Expression groupByExpression) {
-        groupByExpressions.add(groupByExpression);
+        if (groupByExpressions.getExpressions()==null) {
+            groupByExpressions.setExpressions(new ArrayList());
+        }
+        groupByExpressions.getExpressions().add(groupByExpression);
     }
 
     public List getGroupingSets() {
@@ -60,8 +87,14 @@ public class GroupByElement {
         StringBuilder b = new StringBuilder();
         b.append("GROUP BY ");
 
-        if (groupByExpressions.size() > 0) {
-            b.append(PlainSelect.getStringList(groupByExpressions));
+        if (groupByExpressions.getExpressions()!=null && groupByExpressions.getExpressions().size() > 0) {
+            if (groupByExpressions.isUsingBrackets()) {
+                b.append("( ");
+            }
+            b.append(PlainSelect.getStringList(groupByExpressions.getExpressions()));
+            if (groupByExpressions.isUsingBrackets()) {
+                b.append(" )");
+            }
         } else if (groupingSets.size() > 0) {
             b.append("GROUPING SETS (");
             boolean first = true;
@@ -79,6 +112,10 @@ public class GroupByElement {
                 }
             }
             b.append(")");
+        } else {
+            if (groupByExpressions.isUsingBrackets()) {
+                b.append("()");
+            }
         }
 
         return b.toString();
@@ -95,13 +132,15 @@ public class GroupByElement {
     }
 
     public GroupByElement addGroupByExpressions(Expression... groupByExpressions) {
-        List<Expression> collection = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
+        List<Expression> collection
+                = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, groupByExpressions);
         return this.withGroupByExpressions(collection);
     }
 
     public GroupByElement addGroupByExpressions(Collection<? extends Expression> groupByExpressions) {
-        List<Expression> collection = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
+        List<Expression> collection
+                = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
         collection.addAll(groupByExpressions);
         return this.withGroupByExpressions(collection);
     }
