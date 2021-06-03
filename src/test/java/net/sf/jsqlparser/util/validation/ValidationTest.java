@@ -88,6 +88,19 @@ public class ValidationTest extends ValidationTestAsserts {
 
         assertErrorsSize(errors, 0);
     }
+    @Test
+    public void testWithValidationOnlyParse2() throws JSQLParserException {
+
+        String sql = "SELECT * FROM tab1, tab2 WHERE value XOR other_value";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        StatementValidator validator = new StatementValidator();
+        validator.setContext(new ValidationContext()
+                .setCapabilities(Arrays.asList(DatabaseType.SQLSERVER, DatabaseType.MYSQL)));
+        stmt.accept(validator);
+        Map<ValidationCapability, Set<ValidationException>> unsupportedErrors = validator
+                .getValidationErrors(DatabaseType.SQLSERVER);
+        assertErrorsSize(unsupportedErrors, 0);
+    }
 
     @Test
     public void testWithValidationOnlyParseInvalid() throws JSQLParserException {

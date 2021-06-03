@@ -198,6 +198,18 @@ public class InsertTest {
     }
 
     @Test
+    @Ignore
+    public void testOracleInsertMultiRowValue() throws JSQLParserException {
+        String sqlStr
+                = "INSERT ALL\n"
+                + "  INTO suppliers (supplier_id, supplier_name) VALUES (1000, 'IBM')\n"
+                + "  INTO suppliers (supplier_id, supplier_name) VALUES (2000, 'Microsoft')\n"
+                + "  INTO suppliers (supplier_id, supplier_name) VALUES (3000, 'Google')\n"
+                + "SELECT * FROM dual;";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
     public void testSimpleInsert() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO example (num, name, address, tel) VALUES (1, 'name', 'test ', '1234-1234')");
     }
@@ -333,6 +345,11 @@ public class InsertTest {
     }
 
     @Test
+    public void testNextValueFor() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO tracker (monitor_id, user_id, module_name, item_id, item_summary, team_id, date_modified, action, visible, id) VALUES (?, ?, ?, ?, ?, ?, to_date(?, 'YYYY-MM-DD HH24:MI:SS'), ?, ?, NEXT VALUE FOR TRACKER_ID_SEQ)");
+    }
+
+    @Test
     public void testNextValIssue773() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO tableA (ID, c1, c2) SELECT hibernate_sequence.nextval, c1, c2 FROM tableB");
     }
@@ -357,5 +374,15 @@ public class InsertTest {
         assertOracleHintExists("INSERT /*+ SOMEHINT */ INTO mytable VALUES (1, 2, 3)", true, "SOMEHINT");
        
        //@todo: add a testcase supposed to not finding a misplaced hint
+    }
+
+  @Test
+  public void testInsertTableArrays4() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "INSERT INTO sal_emp\n"
+            + "    VALUES ('Carol',\n"
+            + "    ARRAY[20000, 25000, 25000, 25000],\n"
+            + "    ARRAY[['breakfast', 'consulting'], ['meeting', 'lunch']])",
+        true);
     }
 }

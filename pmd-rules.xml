@@ -110,5 +110,7 @@ under the License.
 
     <rule ref="category/java/performance.xml/BigIntegerInstantiation" />
     <rule ref="category/java/performance.xml/BooleanInstantiation" />
-
+    
+    <!-- for Codazy -->
+    <rule ref="category/java/documentation.xml/UncommentedEmptyMethodBody" />
 </ruleset>

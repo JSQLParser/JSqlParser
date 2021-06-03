@@ -103,5 +103,20 @@ public class DeleteTest {
         assertOracleHintExists(sql, true, "SOMEHINT");
        
        //@todo: add a testcase supposed to not finding a misplaced hint
+  }
+
+  @Test
+  public void testWith() throws JSQLParserException {
+    String statement =
+        ""
+            + "WITH a\n"
+            + "     AS (SELECT 1 id_instrument_ref)\n"
+            + "     , b\n"
+            + "       AS (SELECT 1 id_instrument_ref)\n"
+            + "DELETE FROM cfe.instrument_ref\n"
+            + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
+            + "                            FROM   a)";
+
+    assertSqlCanBeParsedAndDeparsed(statement, true);
     }
 }

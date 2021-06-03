@@ -72,6 +72,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
@@ -399,6 +400,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         visitBinaryExpression(orExpression, " OR ");
 
     }
+    @Override
+    public void visit(XorExpression xorExpression) {
+        visitBinaryExpression(xorExpression, " XOR ");
+
+    }
 
     @Override
     public void visit(Parenthesis parenthesis) {
@@ -472,7 +478,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void visit(Function function) {
         if (function.isEscaped()) {
             buffer.append("{fn ");
@@ -911,7 +917,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(NextValExpression nextVal) {
-        buffer.append("NEXTVAL FOR ").append(nextVal.getName());
+        buffer.append(nextVal.isUsingNextValueFor()  ? "NEXT VALUE FOR " : "NEXTVAL FOR ").append(nextVal.getName());
     }
 
     @Override

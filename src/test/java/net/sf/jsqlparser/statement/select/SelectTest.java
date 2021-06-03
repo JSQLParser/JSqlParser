@@ -2567,6 +2567,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testXorCondition() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE field = value XOR other_value");
+    }
+
+
+    @Test
     public void testRlike() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE first_name RLIKE '^Ste(v|ph)en$'");
     }
