@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
+import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
@@ -37,10 +38,13 @@ public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
         if (groupBy.isUsingBrackets()) {
             buffer.append("( ");
         }
-        for (Iterator<Expression> iter = groupBy.getGroupByExpressions().iterator(); iter.hasNext();) {
-            iter.next().accept(expressionVisitor);
-            if (iter.hasNext()) {
-                buffer.append(", ");
+        List<Expression> expressions = groupBy.getGroupByExpressionList().getExpressions();
+        if (expressions != null) {
+            for (Iterator<Expression> iter = expressions.iterator(); iter.hasNext();) {
+                iter.next().accept(expressionVisitor);
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
             }
         }
         if (groupBy.isUsingBrackets()) {

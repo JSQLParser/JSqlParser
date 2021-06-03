@@ -18,38 +18,51 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
 public class GroupByElement {
-
-    private List<Expression> groupByExpressions = new ArrayList<>();
+    // ExpressionList has 'usingBrackets = true' and so we need to switch it off explicitly
+    private ExpressionList groupByExpressions = new ExpressionList().withUsingBrackets(false);
     private List groupingSets = new ArrayList();
-    private boolean usingBrackets = false;
 
     public boolean isUsingBrackets() {
-        return usingBrackets;
+        return groupByExpressions.isUsingBrackets();
     }
 
     public void setUsingBrackets(boolean usingBrackets) {
-        this.usingBrackets = usingBrackets;
+        this.groupByExpressions.setUsingBrackets(usingBrackets);
     }
 
     public GroupByElement withUsingBrackets(boolean usingBrackets) {
-        this.usingBrackets = usingBrackets;
+        this.groupByExpressions.setUsingBrackets(usingBrackets);
         return this;
     }
 
     public void accept(GroupByVisitor groupByVisitor) {
         groupByVisitor.visit(this);
     }
-
-    public List<Expression> getGroupByExpressions() {
+    
+    public ExpressionList getGroupByExpressionList() {
         return groupByExpressions;
     }
-
-    public void setGroupByExpressions(List<Expression> groupByExpressions) {
-        this.groupByExpressions = groupByExpressions;
+    
+    public void setGroupByExpressionList(ExpressionList groupByExpressions) {
+        this.groupByExpressions=groupByExpressions;
+    }
+    
+    @Deprecated
+    public List<Expression> getGroupByExpressions() {
+        return groupByExpressions.getExpressions();
     }
 
+    @Deprecated
+    public void setGroupByExpressions(List<Expression> groupByExpressions) {
+        this.groupByExpressions.setExpressions(groupByExpressions);
+    }
+
+    @Deprecated
     public void addGroupByExpression(Expression groupByExpression) {
-        groupByExpressions.add(groupByExpression);
+        if (groupByExpressions.getExpressions()==null) {
+            groupByExpressions.setExpressions(new ArrayList());
+        }
+        groupByExpressions.getExpressions().add(groupByExpression);
     }
 
     public List getGroupingSets() {
@@ -74,12 +87,12 @@ public class GroupByElement {
         StringBuilder b = new StringBuilder();
         b.append("GROUP BY ");
 
-        if (groupByExpressions.size() > 0) {
-            if (usingBrackets) {
+        if (groupByExpressions.getExpressions()!=null && groupByExpressions.getExpressions().size() > 0) {
+            if (groupByExpressions.isUsingBrackets()) {
                 b.append("( ");
             }
-            b.append(PlainSelect.getStringList(groupByExpressions));
-            if (usingBrackets) {
+            b.append(PlainSelect.getStringList(groupByExpressions.getExpressions()));
+            if (groupByExpressions.isUsingBrackets()) {
                 b.append(" )");
             }
         } else if (groupingSets.size() > 0) {
@@ -100,7 +113,7 @@ public class GroupByElement {
             }
             b.append(")");
         } else {
-            if (usingBrackets) {
+            if (groupByExpressions.isUsingBrackets()) {
                 b.append("()");
             }
         }

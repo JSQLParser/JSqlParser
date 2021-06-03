@@ -4586,4 +4586,13 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("select count(*)\n" + "from cfe.instrument\n" + "group by ()",
                 true);
     }
+    
+    @Test
+    public void testGroupedByWithExtraBracketsIssue1210() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "select a,b,c from table group by rollup(a,b,c)",
+                true);
+        assertSqlCanBeParsedAndDeparsed("select a,b,c from table group by rollup((a,b,c))",
+                true);
+    }
 }

@@ -24,7 +24,20 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class ExpressionList implements ItemsList {
 
     private List<Expression> expressions;
-    private boolean withBrackets = true;
+    private boolean usingBrackets = true;
+
+    public boolean isUsingBrackets() {
+        return usingBrackets;
+    }
+
+    public void setUsingBrackets(boolean usingBrackets) {
+        this.usingBrackets = usingBrackets;
+    }
+    
+    public ExpressionList withUsingBrackets(boolean usingBrackets) {
+        setUsingBrackets(usingBrackets);
+        return this;
+    }
 
     public ExpressionList() {
     }
@@ -56,9 +69,9 @@ public class ExpressionList implements ItemsList {
         this.expressions = expressions;
     }
 
+    @Deprecated
     public ExpressionList withBrackets(boolean brackets) {
-        this.withBrackets = brackets;
-        return this;
+        return withUsingBrackets(brackets);
     }
 
     @Override
@@ -68,7 +81,7 @@ public class ExpressionList implements ItemsList {
 
     @Override
     public String toString() {
-        return PlainSelect.getStringList(expressions, true, withBrackets);
+        return PlainSelect.getStringList(expressions, true, usingBrackets);
     }
 
     public ExpressionList addExpressions(Collection<? extends Expression> expressions) {

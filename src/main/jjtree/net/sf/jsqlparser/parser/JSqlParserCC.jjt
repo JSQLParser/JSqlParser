@@ -2325,14 +2325,14 @@ GroupByElement GroupByColumnReferences():
 }
 {
     <K_GROUP> <K_BY>
-    (     LOOKAHEAD(3) (
-              ("(") ( columnReference=SimpleExpression() {groupBy.addGroupByExpression(columnReference); }
-        ("," columnReference=SimpleExpression()  {groupBy.addGroupByExpression(columnReference); } )*
-                      )*  (")") { groupBy.setUsingBrackets(true); }
+    (     LOOKAHEAD(2) (
+              "(" ")" { groupBy.withUsingBrackets(true); }
+          )
+          | LOOKAHEAD(3) (
+              "(" list = SimpleExpressionList(true)  ")" { groupBy.setGroupByExpressionList(list); }
           )
           |
-          ( columnReference=SimpleExpression() {groupBy.addGroupByExpression(columnReference); }
-            ("," columnReference=SimpleExpression()  {groupBy.addGroupByExpression(columnReference); } )*
+          ( list = SimpleExpressionList(false) { groupBy.setGroupByExpressionList(list); }
           )
     |
         <K_GROUPING> <K_SETS> "("
