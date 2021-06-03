@@ -4594,5 +4594,14 @@ public class SelectTest {
                 true);
         assertSqlCanBeParsedAndDeparsed("select a,b,c from table group by rollup((a,b,c))",
                 true);
+        
+        
+    }
+    
+    @Test
+    public void testGroupedByWithExtraBracketsIssue1168() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "select sum(a) as amount, b, c from TEST_TABLE group by rollup ((a,b),c)",
+                true);
     }
 }
