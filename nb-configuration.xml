@@ -20,6 +20,7 @@
         <com-junichi11-netbeans-changelf.use-global>false</com-junichi11-netbeans-changelf.use-global>
         <org-netbeans-modules-javascript2-requirejs.enabled>true</org-netbeans-modules-javascript2-requirejs.enabled>
         <netbeans.hint.jdkPlatform>JDK_1.8</netbeans.hint.jdkPlatform>
+        <org-netbeans-modules-editor-indent.text.xml.CodeStyle.project.expand-tabs>false</org-netbeans-modules-editor-indent.text.xml.CodeStyle.project.expand-tabs>
         <org-netbeans-modules-editor-indent.CodeStyle.project.text-line-wrap>none</org-netbeans-modules-editor-indent.CodeStyle.project.text-line-wrap>
         <org-netbeans-modules-editor-indent.CodeStyle.project.indent-shift-width>4</org-netbeans-modules-editor-indent.CodeStyle.project.indent-shift-width>
         <org-netbeans-modules-editor-indent.CodeStyle.project.spaces-per-tab>4</org-netbeans-modules-editor-indent.CodeStyle.project.spaces-per-tab>
@@ -27,16 +28,5 @@
         <org-netbeans-modules-editor-indent.CodeStyle.project.text-limit-width>120</org-netbeans-modules-editor-indent.CodeStyle.project.text-limit-width>
         <org-netbeans-modules-editor-indent.CodeStyle.project.expand-tabs>true</org-netbeans-modules-editor-indent.CodeStyle.project.expand-tabs>
         <org-netbeans-modules-editor-indent.CodeStyle.usedProfile>project</org-netbeans-modules-editor-indent.CodeStyle.usedProfile>
-        <de-funfried-netbeans-plugins-externalcodeformatter.enableIndentationSettings>true</de-funfried-netbeans-plugins-externalcodeformatter.enableIndentationSettings>
-        <de-funfried-netbeans-plugins-externalcodeformatter.overrideTabSizeValue>4</de-funfried-netbeans-plugins-externalcodeformatter.overrideTabSizeValue>
-        <de-funfried-netbeans-plugins-externalcodeformatter.enabledFormatter_2e_JSON>netbeans-formatter</de-funfried-netbeans-plugins-externalcodeformatter.enabledFormatter_2e_JSON>
-        <de-funfried-netbeans-plugins-externalcodeformatter.enabledFormatter_2e_JAVASCRIPT>netbeans-formatter</de-funfried-netbeans-plugins-externalcodeformatter.enabledFormatter_2e_JAVASCRIPT>
-        <de-funfried-netbeans-plugins-externalcodeformatter.enabledFormatter_2e_XML>netbeans-formatter</de-funfried-netbeans-plugins-externalcodeformatter.enabledFormatter_2e_XML>
-        <de-funfried-netbeans-plugins-externalcodeformatter.enabledFormatter_2e_SQL>netbeans-formatter</de-funfried-netbeans-plugins-externalcodeformatter.enabledFormatter_2e_SQL>
-        <de-funfried-netbeans-plugins-externalcodeformatter.overrideTabSize>false</de-funfried-netbeans-plugins-externalcodeformatter.overrideTabSize>
-        <de-funfried-netbeans-plugins-externalcodeformatter.enabledFormatter_2e_JAVA>netbeans-formatter</de-funfried-netbeans-plugins-externalcodeformatter.enabledFormatter_2e_JAVA>
-        <de-funfried-netbeans-plugins-externalcodeformatter.showNotifications>false</de-funfried-netbeans-plugins-externalcodeformatter.showNotifications>
-        <de-funfried-netbeans-plugins-externalcodeformatter.useProjectSettings>true</de-funfried-netbeans-plugins-externalcodeformatter.useProjectSettings>
-        <org-netbeans-modules-editor-indent.text.x-java.CodeStyle.project.enable-indent>true</org-netbeans-modules-editor-indent.text.x-java.CodeStyle.project.enable-indent>
     </properties>
 </project-shared-configuration>

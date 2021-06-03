@@ -4580,13 +4580,6 @@ public class SelectTest {
     }
 
     @Test
-    public void testWithWithValueList1135_SimpleExpressionListWithBrackets()
-            throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("with sample_data(\"DAY\") as (values (0, 1, 2))\n"
-                + "           select \"DAY\" from sample_data", true);
-    }
-
-    @Test
     public void testKeywordSynonymIssue1211() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select businessDate as \"bd\", synonym as \"synonym\" from sc.tab", true);
     }
