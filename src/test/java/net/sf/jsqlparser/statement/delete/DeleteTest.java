@@ -20,6 +20,7 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import org.junit.Test;
@@ -118,5 +119,17 @@ public class DeleteTest {
             + "                            FROM   a)";
 
     assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
+
+    @Test
+    public void testNoFrom() throws JSQLParserException {
+        String sql = "DELETE A WHERE Z=1";
+        CCJSqlParserUtil.parse(sql);
+    }
+
+    @Test
+    public void testNoFromWithSchema() throws JSQLParserException {
+        String sql = "DELETE A.B WHERE Z=1";
+        CCJSqlParserUtil.parse(sql);
     }
 }
