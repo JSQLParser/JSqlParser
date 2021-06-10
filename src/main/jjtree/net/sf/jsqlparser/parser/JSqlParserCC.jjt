@@ -2782,7 +2782,7 @@ Expression RegularCondition() #RegularCondition:
     ( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; }
       | rightExpression=ComparisonItem() )
 
-    [ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
+    [ LOOKAHEAD(2) "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
 
     {
          BinaryExpression regCond = (BinaryExpression) result;
@@ -3399,26 +3399,30 @@ Expression PrimaryExpression() #PrimaryExpression:
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
         | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
-        | (LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing)}) "(" list = ComplexExpressionList() ")"
-              {
-                  if (list.getExpressions().size() == 1) {
-                      retval = new Parenthesis(list.getExpressions().get(0));
-                  } else {
-                      retval = new RowConstructor().withExprList(list);
+        | (
+            (
+                (LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing)}) "(" list = ComplexExpressionList() ")"
+                  {
+                      if (list.getExpressions().size() == 1) {
+                          retval = new Parenthesis(list.getExpressions().get(0));
+                      } else {
+                          retval = new RowConstructor().withExprList(list);
+                      }
                   }
-              }
-              ["." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); }]
-          )
-        | ("(" list = SimpleExpressionList(true) ")"
-              {
-                  if (list.getExpressions().size() == 1) {
-                      retval = new Parenthesis(list.getExpressions().get(0));
-                  } else {
-                      retval = new RowConstructor().withExprList(list);
-                  }
-              }
-              ["." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); }]
+                )
+
+                | ("(" list = SimpleExpressionList(true) ")"
+                      {
+                          if (list.getExpressions().size() == 1) {
+                              retval = new Parenthesis(list.getExpressions().get(0));
+                          } else {
+                              retval = new RowConstructor().withExprList(list);
+                          }
+                      }
+               )
            )
+           ["." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); }]
+        )
     )
 
     [
