@@ -173,4 +173,20 @@ public class UpdateTest {
        //@todo: add a testcase supposed to not finding a misplaced hint
        // assertOracleHintExists("UPDATE  mytable /*+ SOMEHINT */ set col1='as', col2=?, col3=565 Where o >= 3", true, "SOMEHINT");
     }
+
+  @Test
+  public void testWith() throws JSQLParserException {
+    String statement =
+        ""
+            + "WITH a\n"
+            + "     AS (SELECT 1 id_instrument_ref)\n"
+            + "     , b\n"
+            + "       AS (SELECT 1 id_instrument_ref)\n"
+            + "UPDATE cfe.instrument_ref\n"
+            + "SET id_instrument=null\n"
+            + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
+            + "                            FROM   a)";
+  
+    assertSqlCanBeParsedAndDeparsed(statement, true);
+  }
 }

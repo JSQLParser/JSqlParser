@@ -42,6 +42,7 @@ public class Select implements Statement {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder retval = new StringBuilder();
         if (withItemsList != null && !withItemsList.isEmpty()) {

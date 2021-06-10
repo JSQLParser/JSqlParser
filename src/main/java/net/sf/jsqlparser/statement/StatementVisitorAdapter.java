@@ -33,6 +33,7 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
+@SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override

@@ -32,7 +32,7 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(CreateTable createTable) {
         buffer.append("CREATE ");
         if (createTable.isUnlogged()) {

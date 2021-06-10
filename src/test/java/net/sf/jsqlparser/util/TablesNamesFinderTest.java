@@ -165,6 +165,18 @@ public class TablesNamesFinderTest {
     }
 
     @Test
+    public void testGetTableListWithXor() throws Exception {
+        String sql = "SELECT * FROM MY_TABLE1 WHERE true XOR false";
+        net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
+
+        Select selectStatement = (Select) statement;
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(selectStatement);
+        assertEquals(1, tableList.size());
+        assertEquals("MY_TABLE1", tableList.get(0));
+    }
+
+    @Test
     public void testGetTableListWithStmt() throws Exception {
         String sql = "WITH TESTSTMT as (SELECT * FROM MY_TABLE1 as ALIAS_TABLE1) SELECT * FROM TESTSTMT";
         net.sf.jsqlparser.statement.Statement statement = pm.parse(new StringReader(sql));
@@ -641,5 +653,15 @@ public class TablesNamesFinderTest {
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();    
         
         assertThat(tablesNamesFinder.getTableList(stmt)).containsExactly("biz_fund_info");
+    }
+
+    @Test
+    public void testAtTimeZoneExpression() throws JSQLParserException {
+        String sql = "SELECT DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney') AS another_date FROM mytbl";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("mytbl"));
     }
 }

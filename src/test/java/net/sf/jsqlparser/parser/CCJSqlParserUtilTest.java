@@ -230,4 +230,41 @@ public class CCJSqlParserUtilTest {
                 parser -> parser.withSquareBracketQuotation(true));
         assertEquals("[travel_data].[travel_id]", result.toString());
     }
+    @Test
+    public void testNestingDepth() throws Exception {
+      assertEquals(2,
+          CCJSqlParserUtil.getNestingDepth("SELECT concat(concat('A','B'),'B') FROM mytbl"));
+      assertEquals(20, CCJSqlParserUtil.getNestingDepth(
+          "concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('A','B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B') FROM mytbl"));
+      assertEquals(4, CCJSqlParserUtil.getNestingDepth("" 
+          + "-- MERGE 1\n"
+          + "MERGE INTO cfe.impairment imp\n" + "    USING ( WITH x AS (\n"
+          + "                    SELECT  a.id_instrument\n"
+          + "                            , a.id_currency\n"
+          + "                            , a.id_instrument_type\n"
+          + "                            , b.id_portfolio\n"
+          + "                            , c.attribute_value product_code\n"
+          + "                            , t.valid_date\n" + "                            , t.ccf\n"
+          + "                    FROM cfe.instrument a\n"
+          + "                        INNER JOIN cfe.impairment b\n"
+          + "                            ON a.id_instrument = b.id_instrument\n"
+          + "                        LEFT JOIN cfe.instrument_attribute c\n"
+          + "                            ON a.id_instrument = c.id_instrument\n"
+          + "                                AND c.id_attribute = 'product'\n"
+          + "                        INNER JOIN cfe.ext_ccf t\n"
+          + "                            ON ( a.id_currency LIKE t.id_currency )\n"
+          + "                                AND ( a.id_instrument_type LIKE t.id_instrument_type )\n"
+          + "                                AND ( b.id_portfolio LIKE t.id_portfolio\n"
+          + "                                        OR ( b.id_portfolio IS NULL\n"
+          + "                                                AND t.id_portfolio = '%' ) )\n"
+          + "                                AND ( c.attribute_value LIKE t.product_code\n"
+          + "                                        OR ( c.attribute_value IS NULL\n"
+          + "                                                AND t.product_code = '%' ) ) )\n"
+          + "SELECT /*+ PARALLEL */ *\n" + "            FROM x x1\n"
+          + "            WHERE x1.valid_date = ( SELECT max\n"
+          + "                                    FROM x\n"
+          + "                                    WHERE id_instrument = x1.id_instrument ) ) s\n"
+          + "        ON ( imp.id_instrument = s.id_instrument )\n" + "WHEN MATCHED THEN\n"
+          + "    UPDATE SET  imp.ccf = s.ccf\n" + ";"));
+    }
 }

@@ -40,7 +40,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
     public void deParse(Insert insert) {
         if (insert.getWithItemsList() != null && !insert.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");

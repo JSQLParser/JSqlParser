@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.delete;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import static java.util.stream.Collectors.joining;
@@ -24,9 +25,11 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 public class Delete implements Statement {
 
+    private List<WithItem> withItemsList;
     private Table table;
     private OracleHint oracleHint = null;
     private List<Table> tables;
@@ -34,6 +37,30 @@ public class Delete implements Statement {
     private Expression where;
     private Limit limit;
     private List<OrderByElement> orderByElements;
+    public List<WithItem> getWithItemsList() {
+        return withItemsList;
+    }
+
+    public void setWithItemsList(List<WithItem> withItemsList) {
+        this.withItemsList = withItemsList;
+    }
+
+    public Delete withWithItemsList(List<WithItem> withItemsList) {
+        this.setWithItemsList(withItemsList);
+        return this;
+    }
+    
+     public Delete addWithItemsList(WithItem... withItemsList) {
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, withItemsList);
+        return this.withWithItemsList(collection);
+    }
+
+    public Delete addWithItemsList(Collection<? extends WithItem> withItemsList) {
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        collection.addAll(withItemsList);
+        return this.withWithItemsList(collection);
+    }
 
     public List<OrderByElement> getOrderByElements() {
         return orderByElements;
@@ -97,8 +124,22 @@ public class Delete implements Statement {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
-        StringBuilder b = new StringBuilder("DELETE");
+        StringBuilder b = new StringBuilder();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            b.append("WITH ");
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+                WithItem withItem = iter.next();
+                b.append(withItem);
+                if (iter.hasNext()) {
+                    b.append(",");
+                }
+                b.append(" ");
+            }
+        }
+        
+        b.append("DELETE");
 
         if (tables != null && tables.size() > 0) {
             b.append(" ");
