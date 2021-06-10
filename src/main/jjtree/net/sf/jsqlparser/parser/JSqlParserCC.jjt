@@ -1691,13 +1691,24 @@ WithItem WithItem() #WithItem:
     WithItem with = new WithItem();
     String name = null;
     List<SelectItem> selectItems = null;
-    SelectBody selectBody = null;
+    SubSelect select = null;
+
+    ExpressionList simpleExpressionList;
 }
 {
      [ <K_RECURSIVE> { with.setRecursive(true); } ] name=RelObjectName() { with.setName(name); }
      [ "(" selectItems=SelectItemsList() ")" { with.setWithItemList(selectItems); } ]
      <K_AS>
-     "(" selectBody = SelectBody() { with.setSelectBody(selectBody); } ")"
+    // if the next block looks alike an ExpressionList without Brackets, then parse as List
+    ( LOOKAHEAD( "(" <K_VALUES> SimpleExpressionList(true) ")" ) 
+        "(" <K_VALUES>
+            simpleExpressionList = SimpleExpressionList(true) { with.withUseBracketsForValues(false).setItemsList(simpleExpressionList); }
+        ")"
+
+    // Otherwise parse it as a SubSelect
+        | "(" select = SubSelect() { with.setSubSelect(select.withUseBrackets(false)); with.setUseValues(false); } ")"
+            
+    )
      { return with; }
 }
 

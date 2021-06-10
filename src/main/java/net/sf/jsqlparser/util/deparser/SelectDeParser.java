@@ -19,6 +19,7 @@ import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
@@ -240,7 +241,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public void visit(SubSelect subSelect) {
-        buffer.append("(");
+        buffer.append(subSelect.isUseBrackets() ? "(" : "");
         if (subSelect.getWithItemsList() != null && !subSelect.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.hasNext();) {
@@ -253,7 +254,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             }
         }
         subSelect.getSelectBody().accept(this);
-        buffer.append(")");
+        buffer.append(subSelect.isUseBrackets() ? ")" : "");
         Alias alias = subSelect.getAlias();
         if (alias != null) {
             buffer.append(alias.toString());
@@ -484,9 +485,27 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (withItem.getWithItemList() != null) {
             buffer.append(" ").append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
         }
-        buffer.append(" AS (");
-        withItem.getSelectBody().accept(this);
-        buffer.append(")");
+        buffer.append(" AS ");
+
+        if (withItem.isUseValues()) {
+            ItemsList itemsList = withItem.getItemsList();
+            boolean useBracketsForValues = withItem.isUsingBracketsForValues();
+            buffer.append("(VALUES ");
+
+            ExpressionList expressionList = (ExpressionList) itemsList;
+            buffer.append(
+                    PlainSelect.getStringList(expressionList.getExpressions(), true, useBracketsForValues));
+            buffer.append(")");
+        } else {
+            SubSelect subSelect = withItem.getSubSelect();
+            if (!subSelect.isUseBrackets()) {
+                buffer.append("(");
+            }
+            subSelect.accept((FromItemVisitor) this);
+            if (!subSelect.isUseBrackets()) {
+                buffer.append(")");
+            }
+        }
     }
 
     @Override
