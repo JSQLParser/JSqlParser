@@ -1206,11 +1206,12 @@ Delete Delete( List<WithItem> with ):
     Expression where = null;
     Limit limit = null;
     List<OrderByElement> orderByElements;
+    boolean hasFrom = false;
 }
 {
     <K_DELETE> { delete.setOracleHint(getOracleHint()); } [LOOKAHEAD(4) (table=TableWithAlias() { tables.add(table); }
           ("," table=TableWithAlias() { tables.add(table); } )*
-    <K_FROM> | <K_FROM>)]
+    <K_FROM> | <K_FROM>) { hasFrom = true; }]
 
     [ LOOKAHEAD(3) table=TableWithAlias()  joins=JoinsList() ]
     [where=WhereClause() { delete.setWhere(where); } ]
@@ -1221,7 +1222,7 @@ Delete Delete( List<WithItem> with ):
             delete.setJoins(joins);
         }
         return delete.withWithItemsList(with)
-              .withTables(tables).withTable(table);
+              .withTables(tables).withTable(table).withHasFrom(hasFrom);
     }
 }
 
