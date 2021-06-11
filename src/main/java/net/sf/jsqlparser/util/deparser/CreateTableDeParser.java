@@ -49,6 +49,15 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
         }
         buffer.append(createTable.getTable().getFullyQualifiedName());
 
+        if (createTable.getColumns() != null && !createTable.getColumns().isEmpty()) {
+            buffer.append(" (");
+            Iterator<String> columnIterator = createTable.getColumns().iterator();
+            buffer.append(columnIterator.next());
+            while (columnIterator.hasNext()) {
+                buffer.append(", ").append(columnIterator.next());
+            }
+            buffer.append(")");
+        }
         if (createTable.getColumnDefinitions() != null) {
             buffer.append(" (");
             for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {

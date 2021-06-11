@@ -821,4 +821,16 @@ public class CreateTableTest {
     assertSqlCanBeParsedAndDeparsed(
         "CREATE TABLE t (f1 text[] DEFAULT ARRAY[] :: text[] NOT NULL, f2 int[] DEFAULT ARRAY[1, 2])");
   }
+
+  @Test
+  public void testCreateTemporaryTableAsSelect() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+            "CREATE TEMPORARY TABLE T1 (C1, C2) AS SELECT C3, C4 FROM T2");
+  }
+
+  @Test
+  public void testCreateTempTableAsSelect() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+            "CREATE TEMP TABLE T1 (C1, C2) AS SELECT C3, C4 FROM T2");
+  }
 }
