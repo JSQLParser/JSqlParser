@@ -9,7 +9,9 @@
  */
 package net.sf.jsqlparser.statement.delete;
 
-import static net.sf.jsqlparser.test.TestUtils.*;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static org.junit.Assert.assertEquals;
 
 import java.io.StringReader;
