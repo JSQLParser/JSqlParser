@@ -4271,137 +4271,139 @@ CreateTable CreateTable():
     <K_TABLE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
     table=Table()
-    [ ( LOOKAHEAD(3) "(" tableColumn=RelObjectName() { columns.add(tableColumn); } ("," tableColumn=RelObjectName() { columns.add(tableColumn); } )* ")" |
-    LOOKAHEAD(2)
-        ("("
-        coldef = ColumnDefinition()
+    [ LOOKAHEAD(2) ( 
+        LOOKAHEAD(3) 
+            ("(" tableColumn=RelObjectName() { columns.add(tableColumn); } ("," tableColumn=RelObjectName() { columns.add(tableColumn); } )* ")")
+        |
+            ("("
+            coldef = ColumnDefinition()
 
-        { columnDefinitions.add(coldef); }
-
-        (
-            ","
+            { columnDefinitions.add(coldef); }
 
             (
-                LOOKAHEAD(3) (
-                    tk=<K_INDEX>
-                        sk3=RelObjectName()
-                        /* colNames=ColumnsNamesList() */
-                        colNames = ColumnNamesWithParamsList()
-                        {
-                            index = new Index().withType(tk.image).withName(sk3).withColumns(colNames);
-                            indexes.add(index);
-                        }
-                )
-                |
-                LOOKAHEAD(3) (
-                    {
-                        index = new NamedConstraint();
-                    }
-                    [<K_CONSTRAINT> sk3=RelObjectName() {index.setName(sk3);} ]
+                ","
 
-                    (tk=<K_PRIMARY> tk2=<K_KEY> {index.setType(tk.image + " " + tk2.image);}
-                     | tk=<K_UNIQUE> [ tk2=<K_KEY> ] {index.setType(tk.image + (tk2!=null?" " + tk2.image:""));}
-                     )
-                        /* colNames=ColumnsNamesList() */
-                        colNames = ColumnNamesWithParamsList()
-                        ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
-                        {
-                            index.withColumns(colNames).withIndexSpec(idxSpec);
-                            indexes.add(index);
-                        }
-                        // reset Token to null forcefullly
-                        {
-                             tk2=null;
-                         }
-                )
-                |
-                LOOKAHEAD(3) ( {tk=null;}
-                     [ tk=<K_UNIQUE> ] [ tk3=<K_FULLTEXT> ] tk2=<K_KEY>
-                        sk3=RelObjectName()
-                        /* colNames=ColumnsNamesList() */
-                        colNames = ColumnNamesWithParamsList()
-                        ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
-                        {
-                            index = new Index()
-                            .withType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + tk2.image)
-                            .withName(sk3)
-                            .withColumns(colNames)
-                            .withIndexSpec(idxSpec);
-                            indexes.add(index);
-                        }
-                )
-                |
-                LOOKAHEAD(3)(
-                    {
-                        fkIndex = new ForeignKeyIndex();
-                    }
-                    [<K_CONSTRAINT> sk3=RelObjectName() {fkIndex.setName(sk3);} ]
-                    tk=<K_FOREIGN> tk2=<K_KEY>
-                        /* colNames=ColumnsNamesList() */
-                        colNames = ColumnNamesWithParamsList()
-                        {
-                            fkIndex.withType(tk.image + " " + tk2.image).withColumns(colNames);
-                        }
-                        <K_REFERENCES> fkTable=Table() colNames2=ColumnsNamesList()
-                        {
-                            fkIndex.setTable(fkTable);
-                            fkIndex.setReferencedColumnNames(colNames2);
-                            indexes.add(fkIndex);
-                        }
-                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                        		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
-                                  )]
-                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                        		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
-                           		  )]
-                )
-                |
-                 LOOKAHEAD(3)(
-                    [<K_CONSTRAINT>  sk3 = RelObjectName()]
-                    {Expression exp = null;}
-                    <K_CHECK>  ("(" exp = Expression() ")")* {
-                       checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
-                       indexes.add(checkCs);
-                       }
-                )
-                |
-                    LOOKAHEAD(2) tk=<K_EXCLUDE> {excludeC = new ExcludeConstraint(); Expression exp = null;}
-                    (tk2=<K_WHERE>
-                        ("(" exp = Expression() ")")* {excludeC.setExpression(exp);})
-                    {
-                        indexes.add(excludeC);
-                    }
-                |
                 (
+                    LOOKAHEAD(3) (
+                        tk=<K_INDEX>
+                            sk3=RelObjectName()
+                            /* colNames=ColumnsNamesList() */
+                            colNames = ColumnNamesWithParamsList()
+                            {
+                                index = new Index().withType(tk.image).withName(sk3).withColumns(colNames);
+                                indexes.add(index);
+                            }
+                    )
+                    |
+                    LOOKAHEAD(3) (
+                        {
+                            index = new NamedConstraint();
+                        }
+                        [<K_CONSTRAINT> sk3=RelObjectName() {index.setName(sk3);} ]
 
-                    coldef = ColumnDefinition()
+                        (tk=<K_PRIMARY> tk2=<K_KEY> {index.setType(tk.image + " " + tk2.image);}
+                         | tk=<K_UNIQUE> [ tk2=<K_KEY> ] {index.setType(tk.image + (tk2!=null?" " + tk2.image:""));}
+                         )
+                            /* colNames=ColumnsNamesList() */
+                            colNames = ColumnNamesWithParamsList()
+                            ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
+                            {
+                                index.withColumns(colNames).withIndexSpec(idxSpec);
+                                indexes.add(index);
+                            }
+                            // reset Token to null forcefullly
+                            {
+                                 tk2=null;
+                             }
+                    )
+                    |
+                    LOOKAHEAD(3) ( {tk=null;}
+                         [ tk=<K_UNIQUE> ] [ tk3=<K_FULLTEXT> ] tk2=<K_KEY>
+                            sk3=RelObjectName()
+                            /* colNames=ColumnsNamesList() */
+                            colNames = ColumnNamesWithParamsList()
+                            ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
+                            {
+                                index = new Index()
+                                .withType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + tk2.image)
+                                .withName(sk3)
+                                .withColumns(colNames)
+                                .withIndexSpec(idxSpec);
+                                indexes.add(index);
+                            }
+                    )
+                    |
+                    LOOKAHEAD(3)(
+                        {
+                            fkIndex = new ForeignKeyIndex();
+                        }
+                        [<K_CONSTRAINT> sk3=RelObjectName() {fkIndex.setName(sk3);} ]
+                        tk=<K_FOREIGN> tk2=<K_KEY>
+                            /* colNames=ColumnsNamesList() */
+                            colNames = ColumnNamesWithParamsList()
+                            {
+                                fkIndex.withType(tk.image + " " + tk2.image).withColumns(colNames);
+                            }
+                            <K_REFERENCES> fkTable=Table() colNames2=ColumnsNamesList()
+                            {
+                                fkIndex.setTable(fkTable);
+                                fkIndex.setReferencedColumnNames(colNames2);
+                                indexes.add(fkIndex);
+                            }
+                    [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                                      { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                                      )]
+                    [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                                      { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                                      )]
+                    )
+                    |
+                     LOOKAHEAD(3)(
+                        [<K_CONSTRAINT>  sk3 = RelObjectName()]
+                        {Expression exp = null;}
+                        <K_CHECK>  ("(" exp = Expression() ")")* {
+                           checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
+                           indexes.add(checkCs);
+                           }
+                    )
+                    |
+                        LOOKAHEAD(2) tk=<K_EXCLUDE> {excludeC = new ExcludeConstraint(); Expression exp = null;}
+                        (tk2=<K_WHERE>
+                            ("(" exp = Expression() ")")* {excludeC.setExpression(exp);})
+                        {
+                            indexes.add(excludeC);
+                        }
+                    |
+                    (
 
-                    /*
-                    columnName=RelObjectName()
+                        coldef = ColumnDefinition()
 
-                    colDataType = ColDataType()
-                    {
-                        columnSpecs = new ArrayList<String>();
-                    }
+                        /*
+                        columnName=RelObjectName()
 
-                    (     parameter=CreateParameter() { columnSpecs.addAll(parameter); }     )*
+                        colDataType = ColDataType()
+                        {
+                            columnSpecs = new ArrayList<String>();
+                        }
 
-                    {
-                        coldef = new ColumnDefinition();
-                        coldef.setColumnName(columnName);
-                        coldef.setColDataType(colDataType);
-                        if (columnSpecs.size() > 0)
-                            coldef.setColumnSpecs(columnSpecs);
-                        columnDefinitions.add(coldef);
-                    } */
-                    { columnDefinitions.add(coldef); }
+                        (     parameter=CreateParameter() { columnSpecs.addAll(parameter); }     )*
+
+                        {
+                            coldef = new ColumnDefinition();
+                            coldef.setColumnName(columnName);
+                            coldef.setColDataType(colDataType);
+                            if (columnSpecs.size() > 0)
+                                coldef.setColumnSpecs(columnSpecs);
+                            columnDefinitions.add(coldef);
+                        } */
+                        { columnDefinitions.add(coldef); }
+                    )
                 )
-            )
-        )*
+            )*
 
-        ")"
-        )
-      )
+            ")"
+            )
+          )
     ]
     ( parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
 
