@@ -10,7 +10,7 @@
 package net.sf.jsqlparser.statement.delete;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-
+import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static org.junit.Assert.assertEquals;
 
 import java.io.StringReader;
@@ -21,7 +21,7 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
-import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
+
 import org.junit.Test;
 
 public class DeleteTest {
@@ -118,5 +118,17 @@ public class DeleteTest {
             + "                            FROM   a)";
 
     assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
+
+    @Test
+    public void testNoFrom() throws JSQLParserException {
+        String statement = "DELETE A WHERE Z = 1";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testNoFromWithSchema() throws JSQLParserException {
+        String statement = "DELETE A.B WHERE Z = 1";
+        assertSqlCanBeParsedAndDeparsed(statement);
     }
 }

@@ -37,6 +37,7 @@ public class Delete implements Statement {
     private Expression where;
     private Limit limit;
     private List<OrderByElement> orderByElements;
+    private boolean hasFrom = true;
     public List<WithItem> getWithItemsList() {
         return withItemsList;
     }
@@ -123,6 +124,14 @@ public class Delete implements Statement {
         this.joins = joins;
     }
 
+    public boolean isHasFrom() {
+        return this.hasFrom;
+    }
+
+    public void setHasFrom(boolean hasFrom) {
+        this.hasFrom = hasFrom;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
@@ -148,8 +157,10 @@ public class Delete implements Statement {
                     .collect(joining(", ")));
         }
 
-        b.append(" FROM ");
-        b.append(table);
+        if (hasFrom) {
+            b.append(" FROM");
+        }
+        b.append(" ").append(table);
 
         if (joins != null) {
             for (Join join : joins) {
@@ -202,6 +213,11 @@ public class Delete implements Statement {
 
     public Delete withWhere(Expression where) {
         this.setWhere(where);
+        return this;
+    }
+
+    public Delete withHasFrom(boolean hasFrom) {
+        this.setHasFrom(hasFrom);
         return this;
     }
 
