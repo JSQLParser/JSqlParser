@@ -648,6 +648,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(Delete delete) {
         visit(delete.getTable());
 
+        if (delete.getUsingList() != null) {
+            for (Table using : delete.getUsingList()) {
+                visit(using);
+            }
+        }
+
         if (delete.getJoins() != null) {
             for (Join join : delete.getJoins()) {
                 join.getRightItem().accept(this);

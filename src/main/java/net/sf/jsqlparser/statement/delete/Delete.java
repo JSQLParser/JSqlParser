@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+
 import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -33,6 +34,7 @@ public class Delete implements Statement {
     private Table table;
     private OracleHint oracleHint = null;
     private List<Table> tables;
+    private List<Table> usingList;
     private List<Join> joins;
     private Expression where;
     private Limit limit;
@@ -116,6 +118,14 @@ public class Delete implements Statement {
         this.tables = tables;
     }
 
+    public List<Table> getUsingList() {
+        return usingList;
+    }
+
+    public void setUsingList(List<Table> usingList) {
+        this.usingList = usingList;
+    }
+
     public List<Join> getJoins() {
         return joins;
     }
@@ -162,6 +172,13 @@ public class Delete implements Statement {
         }
         b.append(" ").append(table);
 
+        if (usingList != null && usingList.size()>0) {
+            b.append(" USING ");
+            b.append(usingList.stream()
+                    .map(Table::toString)
+                    .collect(joining(", ")));
+        }
+
         if (joins != null) {
             for (Join join : joins) {
                 if (join.isSimple()) {
@@ -188,6 +205,11 @@ public class Delete implements Statement {
 
     public Delete withTables(List<Table> tables) {
         this.setTables(tables);
+        return this;
+    }
+
+    public Delete withUsingList(List<Table> usingList) {
+        this.setUsingList(usingList);
         return this;
     }
 
@@ -231,6 +253,18 @@ public class Delete implements Statement {
         List<Table> collection = Optional.ofNullable(getTables()).orElseGet(ArrayList::new);
         collection.addAll(tables);
         return this.withTables(collection);
+    }
+
+    public Delete addUsingList(Table... usingList) {
+        List<Table> collection = Optional.ofNullable(getUsingList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, usingList);
+        return this.withUsingList(collection);
+    }
+
+    public Delete addUsingList(Collection<? extends Table> usingList) {
+        List<Table> collection = Optional.ofNullable(getUsingList()).orElseGet(ArrayList::new);
+        collection.addAll(usingList);
+        return this.withUsingList(collection);
     }
 
     public Delete addJoins(Join... joins) {

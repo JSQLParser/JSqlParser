@@ -131,4 +131,10 @@ public class DeleteTest {
         String statement = "DELETE A.B WHERE Z = 1";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
+
+    @Test
+    public void testUsing() throws JSQLParserException {
+        String statement = "DELETE A USING B.C D WHERE D.Z = 1";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
 }

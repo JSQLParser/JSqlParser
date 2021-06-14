@@ -37,6 +37,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -664,4 +665,17 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("mytbl"));
     }
+
+
+    @Test
+    public void testUsing() throws JSQLParserException {
+        String sql = "DELETE A USING B.C D WHERE D.Z = 1";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(2, tableList.size());
+        assertTrue(tableList.contains("A"));
+        assertTrue(tableList.contains("B.C"));
+    }
+
 }
