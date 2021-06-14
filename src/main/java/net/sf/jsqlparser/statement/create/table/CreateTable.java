@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -27,6 +28,7 @@ public class CreateTable implements Statement {
     private List<String> createOptionsStrings;
     private List<String> tableOptionsStrings;
     private List<ColumnDefinition> columnDefinitions;
+    private List<String> columns;
     private List<Index> indexes;
     private Select select;
     private Table likeTable;
@@ -64,6 +66,14 @@ public class CreateTable implements Statement {
 
     public void setColumnDefinitions(List<ColumnDefinition> list) {
         columnDefinitions = list;
+    }
+
+    public List<String> getColumns() {
+        return this.columns;
+    }
+
+    public void setColumns(List<String> columns) {
+        this.columns =columns;
     }
 
     /**
@@ -150,6 +160,10 @@ public class CreateTable implements Statement {
                 + (!"".equals(createOps) ? createOps + " " : "")
                 + "TABLE " + (ifNotExists ? "IF NOT EXISTS " : "") + table;
 
+        if (columns != null && !columns.isEmpty()) {
+            sql += " ";
+            sql += PlainSelect.getStringList(columns, true, true);
+        }
         if (columnDefinitions != null && !columnDefinitions.isEmpty()) {
             sql += " (";
 
@@ -217,6 +231,11 @@ public class CreateTable implements Statement {
         return this;
     }
 
+    public CreateTable withColumns(List<String> columns) {
+        this.setColumns(columns);
+        return this;
+    }
+
     public CreateTable withIndexes(List<Index> indexes) {
         this.setIndexes(indexes);
         return this;
@@ -244,6 +263,18 @@ public class CreateTable implements Statement {
         List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
         collection.addAll(columnDefinitions);
         return this.withColumnDefinitions(collection);
+    }
+
+    public CreateTable addColumns(String... columns) {
+        List<String> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columns);
+        return this.withColumns(collection);
+    }
+
+    public CreateTable addColumns(Collection<String> columns) {
+        List<String> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        collection.addAll(columns);
+        return this.withColumns(collection);
     }
 
     public CreateTable addIndexes(Index... indexes) {

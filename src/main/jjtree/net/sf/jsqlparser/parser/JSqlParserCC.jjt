@@ -4253,6 +4253,8 @@ CreateTable CreateTable():
     ExcludeConstraint excludeC = null;
     RowMovement rowMovement = null;
     ReferentialAction.Action action = null;
+    String tableColumn = null;
+    List<String> columns = new ArrayList<String>();
 }
 {
     <K_CREATE>
@@ -4268,7 +4270,8 @@ CreateTable CreateTable():
     <K_TABLE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
     table=Table()
-    [ LOOKAHEAD(2)
+    [ ( LOOKAHEAD(3) "(" tableColumn=RelObjectName() { columns.add(tableColumn); } ("," tableColumn=RelObjectName() { columns.add(tableColumn); } )* ")" |
+    LOOKAHEAD(2)
         ("("
         coldef = ColumnDefinition()
 
@@ -4397,6 +4400,7 @@ CreateTable CreateTable():
 
         ")"
         )
+      )
     ]
     ( parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
 
@@ -4421,6 +4425,8 @@ CreateTable CreateTable():
             createTable.setTableOptionsStrings(tableOptions);
         if (columnDefinitions.size() > 0)
             createTable.setColumnDefinitions(columnDefinitions);
+        if (columns.size() > 0)
+            createTable.setColumns(columns);
         return createTable;
     }
 }
