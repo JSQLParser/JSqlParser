@@ -145,6 +145,8 @@ public interface ExpressionVisitor {
 
     void visit(RowConstructor rowConstructor);
 
+    void visit(RowGetExpression rowGetExpression);
+
     void visit(OracleHint hint);
 
     void visit(TimeKeyExpression timeKeyExpression);

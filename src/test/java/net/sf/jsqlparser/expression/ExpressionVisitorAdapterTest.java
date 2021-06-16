@@ -20,7 +20,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import net.sf.jsqlparser.JSQLParserException;
@@ -68,14 +67,12 @@ public class ExpressionVisitorAdapterTest {
             public void visit(InExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
-                exprList.add(expr.getLeftItemsList());
                 exprList.add(expr.getRightItemsList());
             }
         });
 
         assertTrue(exprList.get(0) instanceof Expression);
-        assertNull(exprList.get(1));
-        assertTrue(exprList.get(2) instanceof ItemsList);
+        assertTrue(exprList.get(1) instanceof ItemsList);
     }
 
     @Test
@@ -91,14 +88,12 @@ public class ExpressionVisitorAdapterTest {
             public void visit(InExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
-                exprList.add(expr.getLeftItemsList());
                 exprList.add(expr.getRightItemsList());
             }
         });
 
-        assertNull(exprList.get(0));
+        assertTrue(exprList.get(0) instanceof RowConstructor);
         assertTrue(exprList.get(1) instanceof ItemsList);
-        assertTrue(exprList.get(2) instanceof ItemsList);
     }
 
     @Test

@@ -4610,4 +4610,10 @@ public class SelectTest {
                 "select sum(a) as amount, b, c from TEST_TABLE group by rollup ((a,b),c)",
                 true);
     }
+
+    @Test
+    public void testSelectRowElement() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT (t.tup).id, (tup).name FROM t WHERE (t.tup).id IN (1, 2, 3)");
+    }
+
 }

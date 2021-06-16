@@ -179,8 +179,6 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(InExpression expr) {
         if (expr.getLeftExpression() != null) {
             expr.getLeftExpression().accept(this);
-        } else if (expr.getLeftItemsList() != null) {
-            expr.getLeftItemsList().accept(this);
         }
         if (expr.getRightExpression() != null) {
             expr.getRightExpression().accept(this);
@@ -513,6 +511,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         for (Expression expr : rowConstructor.getExprList().getExpressions()) {
             expr.accept(this);
         }
+    }
+
+    @Override
+    public void visit(RowGetExpression rowGetExpression) {
+        rowGetExpression.getExpression().accept(this);
     }
 
     @Override

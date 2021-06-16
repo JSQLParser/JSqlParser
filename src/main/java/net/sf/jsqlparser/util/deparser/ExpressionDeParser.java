@@ -46,6 +46,7 @@ import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RowConstructor;
+import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
@@ -225,13 +226,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(InExpression inExpression) {
-        if (inExpression.getLeftExpression() == null) {
-            inExpression.getLeftItemsList().accept(this);
-        } else {
-            inExpression.getLeftExpression().accept(this);
-            if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
-                buffer.append("(+)");
-            }
+        inExpression.getLeftExpression().accept(this);
+        if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
+            buffer.append("(+)");
         }
         if (inExpression.isNot()) {
             buffer.append(" NOT");
@@ -898,6 +895,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             expr.accept(this);
         }
         buffer.append(")");
+    }
+
+    @Override
+    public void visit(RowGetExpression rowGetExpression) {
+        rowGetExpression.getExpression().accept(this);
+        buffer.append(".").append(rowGetExpression.getColumnName());
     }
 
     @Override

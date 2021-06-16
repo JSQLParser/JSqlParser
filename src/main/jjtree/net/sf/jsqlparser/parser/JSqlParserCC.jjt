@@ -2783,7 +2783,7 @@ Expression RegularCondition() #RegularCondition:
     ( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; }
       | rightExpression=ComparisonItem() )
 
-    [ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
+    [ LOOKAHEAD(2) "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
 
     {
          BinaryExpression regCond = (BinaryExpression) result;
@@ -2835,17 +2835,9 @@ Expression InExpression() #InExpression :
     ExpressionList expressionList = null;
 }
 {
-    ( LOOKAHEAD(3) "(" (
-            LOOKAHEAD(SimpleExpressionList(true)) leftItemsList = SimpleExpressionList(true) { result.setLeftItemsList(leftItemsList); }
-            |
-            leftExpression=SimpleExpression()
-            [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
-          )
-      ")"
-    |
         leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
         [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
-    )
+
     [<K_NOT> { result.setNot(true); } ] <K_IN>
     (
       // syntactic lookahead for a multi expression list, ie: ((a,b),(c,d))
@@ -3408,23 +3400,30 @@ Expression PrimaryExpression() #PrimaryExpression:
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
         | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
+        | (
+            (
+                (LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing)}) "(" list = ComplexExpressionList() ")"
+                  {
+                      if (list.getExpressions().size() == 1) {
+                          retval = new Parenthesis(list.getExpressions().get(0));
+                      } else {
+                          retval = new RowConstructor().withExprList(list);
+                      }
+                  }
+                )
 
-        | LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing)}) "(" list = ComplexExpressionList() ")"
-          {
-              if (list.getExpressions().size() == 1) {
-                  retval = new Parenthesis(list.getExpressions().get(0));
-              } else {
-                  retval = new RowConstructor().withExprList(list);
-              }
-          }
-        | "(" list = SimpleExpressionList(true) ")"
-          {
-              if (list.getExpressions().size() == 1) {
-                  retval = new Parenthesis(list.getExpressions().get(0));
-              } else {
-                  retval = new RowConstructor().withExprList(list);
-              }
-          }
+                | ("(" list = SimpleExpressionList(true) ")"
+                      {
+                          if (list.getExpressions().size() == 1) {
+                              retval = new Parenthesis(list.getExpressions().get(0));
+                          } else {
+                              retval = new RowConstructor().withExprList(list);
+                          }
+                      }
+               )
+           )
+           ["." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); }]
+        )
     )
 
     [
