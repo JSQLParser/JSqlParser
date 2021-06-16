@@ -1202,6 +1202,8 @@ Delete Delete( List<WithItem> with ):
     Delete delete = new Delete();
     Table table = null;
     List<Table> tables = new ArrayList<Table>();
+    Table usingTable = null;
+    List<Table> usingList = new ArrayList<Table>();
     List<Join> joins = null;
     Expression where = null;
     Limit limit = null;
@@ -1214,6 +1216,8 @@ Delete Delete( List<WithItem> with ):
     <K_FROM> | <K_FROM>) { hasFrom = true; }]
 
     [ LOOKAHEAD(3) table=TableWithAlias()  joins=JoinsList() ]
+    [ <K_USING> usingTable=TableWithAlias() { usingList.add(usingTable); }
+          ("," usingTable=TableWithAlias() { usingList.add(usingTable); } )*]
     [where=WhereClause() { delete.setWhere(where); } ]
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]
@@ -1222,7 +1226,7 @@ Delete Delete( List<WithItem> with ):
             delete.setJoins(joins);
         }
         return delete.withWithItemsList(with)
-              .withTables(tables).withTable(table).withHasFrom(hasFrom);
+              .withTables(tables).withTable(table).withHasFrom(hasFrom).withUsingList(usingList);
     }
 }
 
