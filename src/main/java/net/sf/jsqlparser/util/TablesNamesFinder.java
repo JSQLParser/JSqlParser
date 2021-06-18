@@ -12,7 +12,6 @@ package net.sf.jsqlparser.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayExpression;
@@ -458,11 +457,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (whenClause.getThenExpression() != null) {
             whenClause.getThenExpression().accept(this);
         }
-    }
-
-    @Override
-    public void visit(AllComparisonExpression allComparisonExpression) {
-        allComparisonExpression.getSubSelect().getSelectBody().accept(this);
     }
 
     @Override

@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayConstructor;
@@ -358,11 +357,6 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     public void visit(WhenClause whenClause) {
         whenClause.getWhenExpression().accept(this);
         whenClause.getThenExpression().accept(this);
-    }
-
-    @Override
-    public void visit(AllComparisonExpression allComparisonExpression) {
-        allComparisonExpression.getSubSelect().accept(this);
     }
 
     @Override
