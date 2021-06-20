@@ -75,6 +75,7 @@ under the License.
     <!-- for Codazy -->
     <rule ref="category/java/design.xml/CyclomaticComplexity" />
     <rule ref="category/java/design.xml/ExcessiveMethodLength" />
+    <rule ref="category/java/bestpractices.xml/SwitchStmtsShouldHaveDefault" />
 
     <rule ref="category/java/errorprone.xml/AvoidBranchingStatementAsLastInLoop" />
     <rule ref="category/java/errorprone.xml/AvoidDecimalLiteralsInBigDecimalConstructor" />

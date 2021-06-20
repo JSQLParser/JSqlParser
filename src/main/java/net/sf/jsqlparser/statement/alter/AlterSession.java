@@ -153,6 +153,8 @@ public class AlterSession implements Statement  {
                 builder.append("SET");
                 appendParamaters(builder, parameters);
                 break;
+            default:
+                // not going to happen
                 
         }
         return builder.toString();
