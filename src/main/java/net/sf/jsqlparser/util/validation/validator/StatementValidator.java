@@ -24,6 +24,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
@@ -252,6 +253,11 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     @Override
     public void visit(CreateSynonym createSynonym) {
         getValidator(CreateSynonymValidator.class).validate(createSynonym);
+    }
+
+    @Override
+    public void visit(AlterSession alterSession) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }
