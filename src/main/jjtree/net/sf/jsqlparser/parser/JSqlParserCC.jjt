@@ -390,11 +390,6 @@ TOKEN : /* Date/Time with time zones */
     <DT_ZONE: <K_DATETIMELITERAL> (<WHITESPACE>)* ("(" <S_LONG> ")")? (<WHITESPACE>)* (<K_WITH> | <K_WITHOUT>) (<WHITESPACE>)+ "TIME" (<WHITESPACE>)+ <K_ZONE>>
 }
 
-TOKEN :
-{
-    <TIME_ZONE: "TIME" (<WHITESPACE>)+ <K_ZONE>>
-}
-
 TOKEN : /* Numeric Constants */
 {
    < S_DOUBLE: ((<S_LONG>)? "." <S_LONG> ( ["e","E"] (["+", "-"])? <S_LONG>)?
@@ -677,8 +672,8 @@ SetStatement Set(): {
     (
 
         [LOOKAHEAD(3) (tk = <K_LOCAL> | tk = <K_SESSION>) {effectParameter = tk.image; } ]
-        (
-          <TIME_ZONE> { name = "Time Zone"; useEqual=false; }
+        ( LOOKAHEAD(2)
+          <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
         | (name = RelObjectNameExt() ["=" { useEqual=true; } ])
         )
     )
@@ -691,8 +686,8 @@ SetStatement Set(): {
         ","
         (LOOKAHEAD(3)
             (
-              (
-                  <TIME_ZONE> { name = "Time Zone"; useEqual=false; }
+              ( LOOKAHEAD(2)
+                  <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
                 | (name = RelObjectNameExt() ["=" { useEqual=true; } ])
               )
               exp=SimpleExpression()
@@ -711,7 +706,7 @@ ResetStatement Reset(): {
     Token all;
 }
 {
-    <K_RESET> ( name = RelObjectNameExt() | all = <K_ALL> {name = all.image; } | <TIME_ZONE> {name = "Time Zone"; } )
+    <K_RESET> ( LOOKAHEAD(2) <K_DATETIMELITERAL> <K_ZONE> {name = "Time Zone"; } | name = RelObjectNameExt() | all = <K_ALL> {name = all.image; } )
     { reset = new ResetStatement(name); }
     { return reset; }
 }
