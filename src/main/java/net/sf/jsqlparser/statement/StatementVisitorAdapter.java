@@ -190,4 +190,12 @@ public class StatementVisitorAdapter implements StatementVisitor {
     @Override
     public void visit(CreateSynonym createSynonym) {
     }
+
+    @Override
+    public void visit(SavepointStatement savepointStatement) {
+    }
+
+    @Override
+    public void visit(RollbackStatement rollbackStatement) {
+    }
 }

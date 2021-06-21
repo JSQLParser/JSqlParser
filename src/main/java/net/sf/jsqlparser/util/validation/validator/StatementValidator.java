@@ -16,6 +16,8 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.RollbackStatement;
+import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
@@ -252,6 +254,16 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     @Override
     public void visit(CreateSynonym createSynonym) {
         getValidator(CreateSynonymValidator.class).validate(createSynonym);
+    }
+
+    @Override
+    public void visit(SavepointStatement savepointStatement) {
+        //@todo: write something usefull here
+    }
+
+    @Override
+    public void visit(RollbackStatement rollbackStatement) {
+        //@todo: write something usefull here
     }
 
 }

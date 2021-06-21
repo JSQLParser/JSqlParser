@@ -987,4 +987,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(TimezoneExpression aThis) {
         aThis.getLeftExpression().accept(this);
     }
+
+    @Override
+    public void visit(SavepointStatement savepointStatement) {
+    }
+
+    @Override
+    public void visit(RollbackStatement rollbackStatement) {
+    }
 }

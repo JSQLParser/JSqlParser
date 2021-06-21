@@ -34,6 +34,10 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public interface StatementVisitor {
+    
+    void visit(SavepointStatement savepointStatement);
+    
+    void visit(RollbackStatement rollbackStatement);
 
     void visit(Comment comment);
 
