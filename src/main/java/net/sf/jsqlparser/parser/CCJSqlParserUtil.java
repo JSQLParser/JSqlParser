@@ -24,6 +24,7 @@ import net.sf.jsqlparser.statement.Statements;
  * @author toben
  */
 public final class CCJSqlParserUtil {
+    public final static int ALLOWED_NESTING_DEPTH = 10;
 
     private CCJSqlParserUtil() {
     }
@@ -38,7 +39,8 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * Parses an sql statement while allowing via consumer to configure the used parser before.
+     * Parses an sql statement while allowing via consumer to configure the used
+     * parser before.
      *
      * For instance to activate SQLServer bracket quotation on could use:
      *
@@ -52,7 +54,9 @@ public final class CCJSqlParserUtil {
      * @throws JSQLParserException
      */
     public static Statement parse(String sql, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
-        CCJSqlParser parser = newParser(sql);
+        boolean allowComplexParsing = getNestingDepth(sql)<=ALLOWED_NESTING_DEPTH;
+        
+        CCJSqlParser parser = newParser(sql).withAllowComplexParsing(allowComplexParsing);
         if (consumer != null) {
             consumer.accept(parser);
         }
@@ -104,7 +108,17 @@ public final class CCJSqlParserUtil {
     }
 
     public static Expression parseExpression(String expression, boolean allowPartialParse) throws JSQLParserException {
-        CCJSqlParser parser = newParser(expression);
+        return parseExpression(expression, allowPartialParse, p -> {
+        });
+    }
+
+    public static Expression parseExpression(String expression, boolean allowPartialParse, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+        boolean allowComplexParsing = getNestingDepth(expression)<=ALLOWED_NESTING_DEPTH;
+        
+        CCJSqlParser parser = newParser(expression).withAllowComplexParsing(allowComplexParsing);
+        if (consumer != null) {
+            consumer.accept(parser);
+        }
         try {
             Expression expr = parser.SimpleExpression();
             if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
@@ -119,8 +133,8 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * Parse an conditional expression. This is the expression after a where clause.
-     * Partial parsing is enabled.
+     * Parse an conditional expression. This is the expression after a where
+     * clause. Partial parsing is enabled.
      *
      * @param condExpr
      * @return the expression parsed
@@ -131,7 +145,8 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * Parse an conditional expression. This is the expression after a where clause.
+     * Parse an conditional expression. This is the expression after a where
+     * clause.
      *
      * @param condExpr
      * @param allowPartialParse false: needs the whole string to be processed.
@@ -139,7 +154,17 @@ public final class CCJSqlParserUtil {
      * @see #parseCondExpression(String)
      */
     public static Expression parseCondExpression(String condExpr, boolean allowPartialParse) throws JSQLParserException {
-        CCJSqlParser parser = newParser(condExpr);
+        return parseCondExpression(condExpr, allowPartialParse, p -> {
+        });
+    }
+
+    public static Expression parseCondExpression(String condExpr, boolean allowPartialParse, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+        boolean allowComplexParsing = getNestingDepth(condExpr)<=ALLOWED_NESTING_DEPTH;
+        
+        CCJSqlParser parser = newParser(condExpr).withAllowComplexParsing(allowComplexParsing);
+        if (consumer != null) {
+            consumer.accept(parser);
+        }
         try {
             Expression expr = parser.Expression();
             if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
@@ -172,7 +197,9 @@ public final class CCJSqlParserUtil {
      * @return the statements parsed
      */
     public static Statements parseStatements(String sqls) throws JSQLParserException {
-        CCJSqlParser parser = newParser(sqls);
+        boolean allowComplexParsing = getNestingDepth(sqls)<=ALLOWED_NESTING_DEPTH;
+        
+        CCJSqlParser parser = newParser(sqls).withAllowComplexParsing(allowComplexParsing);
         return parseStatements(parser);
     }
 
@@ -206,6 +233,29 @@ public final class CCJSqlParserUtil {
         } catch (Exception ex) {
             throw new JSQLParserException(ex);
         }
+    }
+    
+    public static int getNestingDepth(String sql) {
+      int maxlevel=0;  
+      int level=0;
+      
+      char[] chars = sql.toCharArray();
+      for (char c:chars) {
+          switch(c) {
+              case '(':
+                level++;
+                break;
+              case ')':
+                if (maxlevel<level) {
+                    maxlevel = level;
+                }
+                level--;
+                break;
+              default:
+                // Codazy/PMD insists in a Default statement
+          }
+      }
+      return maxlevel;
     }
 
 }

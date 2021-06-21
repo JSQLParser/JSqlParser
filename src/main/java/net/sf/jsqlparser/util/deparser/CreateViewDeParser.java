@@ -35,6 +35,7 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(CreateView createView) {
         buffer.append("CREATE ");
         if (createView.isOrReplace()) {

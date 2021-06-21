@@ -146,6 +146,20 @@ public class AlterTest {
     public void testAlterTableForgeignKey4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL");
     }
+    
+    @Test
+    public void testAlterTableForgeignWithFkSchema() throws JSQLParserException {
+      final String FK_SCHEMA_NAME = "my_schema";
+      final String FK_TABLE_NAME= "ra_user";
+      String sql = "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES " + FK_SCHEMA_NAME +"." + FK_TABLE_NAME + " (id) ON DELETE SET NULL";
+      assertSqlCanBeParsedAndDeparsed(sql);
+      
+      Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+      AlterExpression alterExpression = alter.getAlterExpressions().get(0);
+
+      assertEquals(alterExpression.getFkSourceSchema(), FK_SCHEMA_NAME);
+      assertEquals(alterExpression.getFkSourceTable(), FK_TABLE_NAME);
+    }
 
     @Test
     public void testAlterTableDropColumn() throws JSQLParserException {
@@ -250,8 +264,8 @@ public class AlterTest {
     public void testAlterTableAddColumn5() throws JSQLParserException {
         Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable ADD col1 timestamp (3)");
 
-        // COLUMN keyword appears in deparsed statement
-        assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE mytable ADD COLUMN col1 timestamp (3)");
+        // COLUMN keyword DOES NOT appear in deparsed statement
+        assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE mytable ADD col1 timestamp (3)");
 
         Alter alter = (Alter) stmt;
         List<AlterExpression> alterExps = alter.getAlterExpressions();
@@ -259,6 +273,8 @@ public class AlterTest {
         List<ColumnDataType> col1DataTypes = col1Exp.getColDataTypeList();
         assertEquals("col1", col1DataTypes.get(0).getColumnName());
         assertEquals("timestamp (3)", col1DataTypes.get(0).getColDataType().toString());
+
+        assertEquals(col1Exp.hasColumn(), false);
     }
 
     @Test
@@ -271,6 +287,8 @@ public class AlterTest {
         AlterExpression col1Exp = alterExps.get(0);
         assertEquals("not", col1Exp.getColDataTypeList().get(0).getColumnSpecs().get(0));
         assertEquals("null", col1Exp.getColDataTypeList().get(0).getColumnSpecs().get(1));
+        
+        assertEquals(col1Exp.hasColumn(), true);
     }
 
     @Test
@@ -280,19 +298,29 @@ public class AlterTest {
 
     @Test
     public void testAlterTableModifyColumn2() throws JSQLParserException {
-        Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable modify col1 timestamp (6)");
+        Alter alter = (Alter) CCJSqlParserUtil.parse("ALTER TABLE mytable modify col1 timestamp (6)");
+        AlterExpression alterExpression = alter.getAlterExpressions().get(0);
 
-        // COLUMN keyword appears in deparsed statement, modify becomes all caps
-        assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE mytable MODIFY COLUMN col1 timestamp (6)");
+        // COLUMN keyword DOES NOT appear in deparsed statement, modify becomes all caps
+        assertStatementCanBeDeparsedAs(alter, "ALTER TABLE mytable MODIFY col1 timestamp (6)");
 
-        assertEquals(AlterOperation.MODIFY, ((Alter) stmt).getAlterExpressions().get(0).
-                getOperation());
+        assertEquals(AlterOperation.MODIFY,  alterExpression.getOperation());
+        
+        assertEquals(alterExpression.hasColumn(), false);
     }
 
     @Test
     public void testAlterTableAlterColumn() throws JSQLParserException {
         // http://www.postgresqltutorial.com/postgresql-change-column-type/
-        assertSqlCanBeParsedAndDeparsed("ALTER TABLE table_name ALTER COLUMN column_name_1 TYPE TIMESTAMP, ALTER COLUMN column_name_2 TYPE BOOLEAN");
+        String sql = "ALTER TABLE table_name ALTER COLUMN column_name_1 TYPE TIMESTAMP, ALTER COLUMN column_name_2 TYPE BOOLEAN";
+        assertSqlCanBeParsedAndDeparsed(sql);
+        
+        Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+        AlterExpression alterExpression = alter.getAlterExpressions().get(0);
+        
+        assertEquals(AlterOperation.ALTER,  alterExpression.getOperation());
+        
+        assertEquals(alterExpression.hasColumn(), true);
     }
 
     @Test
@@ -355,8 +383,8 @@ public class AlterTest {
     public void testDropColumnRestrictIssue551() throws JSQLParserException {
         Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE table1 DROP NewColumn");
 
-        // COLUMN keyword appears in deparsed statement, drop becomes all caps
-        assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE table1 DROP COLUMN NewColumn");
+        // COLUMN keyword DOES NOT appear in deparsed statement, drop becomes all caps
+        assertStatementCanBeDeparsedAs(stmt, "ALTER TABLE table1 DROP NewColumn");
 
     }
 
@@ -664,7 +692,9 @@ public class AlterTest {
     @Test
     public void testAlterTableDefaultValueTrueIssue926() throws JSQLParserException {
         Alter parsed = (Alter) CCJSqlParserUtil.parse("ALTER TABLE my_table ADD some_column BOOLEAN DEFAULT FALSE");
-        assertStatementCanBeDeparsedAs(parsed, "ALTER TABLE my_table ADD COLUMN some_column BOOLEAN DEFAULT FALSE");
+        
+        // There shall be no COLUMN where there is no COLUMN
+        assertStatementCanBeDeparsedAs(parsed, "ALTER TABLE my_table ADD some_column BOOLEAN DEFAULT FALSE");
     }
 
     private void assertReferentialActionOnConstraint(Alter parsed, Action onUpdate,

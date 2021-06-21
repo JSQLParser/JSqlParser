@@ -165,4 +165,28 @@ public class UpdateTest {
     public void testUpdateVariableAssignment() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE transaction_id SET latest_id_wallet = (@cur_id_wallet := latest_id_wallet) + 1");
     }
+    
+    @Test
+    public void testOracleHint() throws JSQLParserException {
+        assertOracleHintExists("UPDATE /*+ SOMEHINT */ mytable set col1='as', col2=?, col3=565 Where o >= 3", true, "SOMEHINT");
+       
+       //@todo: add a testcase supposed to not finding a misplaced hint
+       // assertOracleHintExists("UPDATE  mytable /*+ SOMEHINT */ set col1='as', col2=?, col3=565 Where o >= 3", true, "SOMEHINT");
+    }
+
+  @Test
+  public void testWith() throws JSQLParserException {
+    String statement =
+        ""
+            + "WITH a\n"
+            + "     AS (SELECT 1 id_instrument_ref)\n"
+            + "     , b\n"
+            + "       AS (SELECT 1 id_instrument_ref)\n"
+            + "UPDATE cfe.instrument_ref\n"
+            + "SET id_instrument=null\n"
+            + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
+            + "                            FROM   a)";
+  
+    assertSqlCanBeParsedAndDeparsed(statement, true);
+  }
 }

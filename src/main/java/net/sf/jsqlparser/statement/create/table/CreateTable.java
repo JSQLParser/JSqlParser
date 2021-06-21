@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -27,6 +28,7 @@ public class CreateTable implements Statement {
     private List<String> createOptionsStrings;
     private List<String> tableOptionsStrings;
     private List<ColumnDefinition> columnDefinitions;
+    private List<String> columns;
     private List<Index> indexes;
     private Select select;
     private Table likeTable;
@@ -56,7 +58,7 @@ public class CreateTable implements Statement {
     }
 
     /**
-     * A list of {@link ColumnDefinition}s of this table.
+     * @return a list of {@link ColumnDefinition}s of this table.
      */
     public List<ColumnDefinition> getColumnDefinitions() {
         return columnDefinitions;
@@ -66,8 +68,16 @@ public class CreateTable implements Statement {
         columnDefinitions = list;
     }
 
+    public List<String> getColumns() {
+        return this.columns;
+    }
+
+    public void setColumns(List<String> columns) {
+        this.columns =columns;
+    }
+
     /**
-     * A list of options (as simple strings) of this table definition, as ("TYPE", "=", "MYISAM")
+     * @return a list of options (as simple strings) of this table definition, as ("TYPE", "=", "MYISAM")
      */
     public List<String> getTableOptionsStrings() {
         return tableOptionsStrings;
@@ -86,7 +96,7 @@ public class CreateTable implements Statement {
     }
 
     /**
-     * A list of {@link Index}es (for example "PRIMARY KEY") of this table.<br>
+     * @return a list of {@link Index}es (for example "PRIMARY KEY") of this table.<br>
      * Indexes created with column definitions (as in mycol INT PRIMARY KEY) are not inserted into
      * this list.
      */
@@ -141,6 +151,7 @@ public class CreateTable implements Statement {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         String sql;
         String createOps = PlainSelect.getStringList(createOptionsStrings, false, false);
@@ -149,6 +160,10 @@ public class CreateTable implements Statement {
                 + (!"".equals(createOps) ? createOps + " " : "")
                 + "TABLE " + (ifNotExists ? "IF NOT EXISTS " : "") + table;
 
+        if (columns != null && !columns.isEmpty()) {
+            sql += " ";
+            sql += PlainSelect.getStringList(columns, true, true);
+        }
         if (columnDefinitions != null && !columnDefinitions.isEmpty()) {
             sql += " (";
 
@@ -216,6 +231,11 @@ public class CreateTable implements Statement {
         return this;
     }
 
+    public CreateTable withColumns(List<String> columns) {
+        this.setColumns(columns);
+        return this;
+    }
+
     public CreateTable withIndexes(List<Index> indexes) {
         this.setIndexes(indexes);
         return this;
@@ -243,6 +263,18 @@ public class CreateTable implements Statement {
         List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
         collection.addAll(columnDefinitions);
         return this.withColumnDefinitions(collection);
+    }
+
+    public CreateTable addColumns(String... columns) {
+        List<String> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columns);
+        return this.withColumns(collection);
+    }
+
+    public CreateTable addColumns(Collection<String> columns) {
+        List<String> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        collection.addAll(columns);
+        return this.withColumns(collection);
     }
 
     public CreateTable addIndexes(Index... indexes) {

@@ -12,6 +12,7 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -29,6 +30,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.WithItem;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.UncommentedEmptyMethodBody"})
 public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVisitor, PivotVisitor, SelectItemVisitor {
 
     private SelectVisitor selectVisitor;
@@ -53,6 +55,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         }
         if (function.getKeep() != null) {
             function.getKeep().accept(this);
+        }
+        if (function.getOrderByElements() != null) {
+            for (OrderByElement orderByElement : function.getOrderByElements()) {
+                orderByElement.getExpression().accept(this);
+            }
         }
     }
 
@@ -142,6 +149,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(XorExpression expr) {
+        visitBinaryExpression(expr);
+    }
+
+    @Override
     public void visit(Between expr) {
         expr.getLeftExpression().accept(this);
         expr.getBetweenExpressionStart().accept(this);
@@ -167,8 +179,6 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(InExpression expr) {
         if (expr.getLeftExpression() != null) {
             expr.getLeftExpression().accept(this);
-        } else if (expr.getLeftItemsList() != null) {
-            expr.getLeftItemsList().accept(this);
         }
         if (expr.getRightExpression() != null) {
             expr.getRightExpression().accept(this);
@@ -393,7 +403,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(JsonExpression jsonExpr) {
-        visit(jsonExpr.getColumn());
+        jsonExpr.getExpression().accept(this);
     }
 
     @Override
@@ -504,6 +514,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(RowGetExpression rowGetExpression) {
+        rowGetExpression.getExpression().accept(this);
+    }
+
+    @Override
     public void visit(HexValue hexValue) {
 
     }
@@ -569,5 +584,10 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         for (OrderByElement elm : expr.getOrderByElements()) {
             elm.getExpression().accept(this);
         }
+    }
+
+    @Override
+    public void visit(TimezoneExpression expr) {
+        expr.getLeftExpression().accept(this);
     }
 }

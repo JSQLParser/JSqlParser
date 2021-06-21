@@ -287,7 +287,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
         if (isNotEmpty(withItem.getWithItemList())) {
             withItem.getWithItemList().forEach(wi -> wi.accept(this));
         }
-        withItem.getSelectBody().accept(this);
+        withItem.getSubSelect().accept(this);
     }
 
     @Override

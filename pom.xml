@@ -6,7 +6,7 @@
     <name>JSQLParser library</name> 
     <inceptionYear>2004</inceptionYear>
     <organization>
-        <name>JSQLParser</name>
+        <name>JSQLParser</name> 
     </organization>
     <packaging>bundle</packaging>
     <url>https://github.com/JSQLParser/JSqlParser</url>
@@ -50,17 +50,17 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-		    <groupId>org.apache.commons</groupId>
-		    <artifactId>commons-lang3</artifactId>
-		    <version>3.10</version>
-		    <scope>test</scope>
-		</dependency>
-		<dependency>
-		    <groupId>com.h2database</groupId>
-		    <artifactId>h2</artifactId>
-		    <version>1.4.200</version>
-		    <scope>test</scope>
-		</dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.10</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.200</version>
+            <scope>test</scope>
+        </dependency>
 		
     </dependencies>
 
@@ -96,6 +96,35 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.14.0</version>
+                <configuration>
+                    <rulesets>
+                        <!-- Custom local file system rule set -->
+                        <ruleset>${basedir}/pmd-rules.xml</ruleset>
+                    </rulesets>
+                    <excludes>
+                        <exclude>**/*Bean.java</exclude>
+                        <exclude>**/generated/*.java</exclude>
+                    </excludes>
+                    <excludeRoots>
+                        <excludeRoot>target/generated-sources</excludeRoot>
+                        <excludeRoot>target/generated-test-sources</excludeRoot>
+                    </excludeRoots>
+                    <printFailingErrors>true</printFailingErrors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>pmd</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -226,7 +255,7 @@
                         <id>attach-javadocs</id>
                         <configuration>
                             <additionalparam>${javadoc.opts}</additionalparam>
-                            <doclint>none</doclint>
+                            <excludePackageNames>net.sf.jsqlparser.parser</excludePackageNames> 
                         </configuration>
                         <goals>
                             <goal>jar</goal>
@@ -299,11 +328,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.1.1</version>
                 <configuration>
                     <useStandardDocletOptions>true</useStandardDocletOptions>
                     <maxmemory>800m</maxmemory>
-                    <doclint>none</doclint>
+                    <doclint>all, -missing</doclint>
+                    <excludePackageNames>net.sf.jsqlparser.parser</excludePackageNames>                          
                 </configuration>
             </plugin>
             <plugin>
@@ -334,6 +364,13 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>javacc-maven-plugin</artifactId>
                 <version>2.6</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <configLocation>config/sun_checks.xml</configLocation>
+                </configuration>
             </plugin>
         </plugins>
     </reporting>
@@ -369,15 +406,18 @@
                 </plugins>
             </build>
         </profile>
+    
+        <!--
         <profile>
-            <id>doclint-java8-disable</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <properties>
-                <javadoc.opts>-Xdoclint:none</javadoc.opts>
-            </properties>
+          <id>doclint-java8-disable</id>
+          <activation>
+            <jdk>[1.8,)</jdk>
+          </activation>
+          <properties>
+            <javadoc.opts>-Xdoclint:none</javadoc.opts>
+          </properties>
         </profile>
+        -->
         <profile>
             <id>check.sources</id>
             <activation>

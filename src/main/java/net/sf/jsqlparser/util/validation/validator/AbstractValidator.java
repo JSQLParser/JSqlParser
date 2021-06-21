@@ -201,7 +201,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      *
      * @param feature
      * @param namedObject
-     * @param fqn
+     * @param fqn - fully qualified name of named object
      */
     protected void validateFeatureAndName(Feature feature, NamedObject namedObject, String fqn) {
         validateFeatureAndNameWithAlias(feature, namedObject, fqn, null);
@@ -218,7 +218,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      *
      * @param feature
      * @param namedObject
-     * @param fqn
+     * @param fqn - fully qualified name of named object
      * @param alias
      */
     protected void validateFeatureAndNameWithAlias(Feature feature, NamedObject namedObject, String fqn, String alias) {
@@ -233,7 +233,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      * with {@link #validateName(ValidationCapability, NamedObject, String)}
      *
      * @param namedObject
-     * @param fqn
+     * @param fqn - fully qualified name of named object
      */
     protected void validateName(NamedObject namedObject, String fqn) {
         validateNameWithAlias(namedObject, fqn, null);
@@ -244,7 +244,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      * with {@link #validateName(ValidationCapability, NamedObject, String)}
      *
      * @param namedObject
-     * @param fqn
+     * @param fqn - fully qualified name of named object
      * @param alias
      */
     protected void validateNameWithAlias(NamedObject namedObject, String fqn, String alias) {
@@ -310,7 +310,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      *
      * @param capability
      * @param namedObject
-     * @param fqn
+     * @param fqn - fully qualified name of named object
      * @param alias
      */
     protected void validateNameWithAlias(ValidationCapability capability, NamedObject namedObject, String fqn, String alias) {
@@ -320,7 +320,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     /**
      * @param capability
      * @param namedObject
-     * @param fqn
+     * @param fqn - fully qualified name of named object
      */
     protected void validateName(ValidationCapability capability, NamedObject namedObject, String fqn) {
         validateNameWithAlias(capability, namedObject, fqn, null, true);
@@ -332,7 +332,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
      *
      * @param capability
      * @param namedObject
-     * @param fqn
+     * @param fqn - fully qualified name of named object
      * @param alias
      * @param exists      - <code>true</code>, check for existence,
      *                    <code>false</code>, check for non-existence
@@ -352,7 +352,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     /**
      * @param capability
      * @param namedObject
-     * @param fqn
+     * @param fqn - fully qualified name of named object
      * @param exists
      * @param parents
      */

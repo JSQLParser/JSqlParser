@@ -110,7 +110,9 @@ public class ExplainStatement implements Statement {
         }
 
         public String formatOption() {
-            return type.name() + (value != null ? (" " + value) : "");
+            return type.name() + ( value != null 
+                                                        ? " " + value 
+                                                        : "" );
         }
 
         public Option withValue(String value) {

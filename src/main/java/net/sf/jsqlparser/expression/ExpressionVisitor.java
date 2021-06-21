@@ -12,15 +12,16 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 public interface ExpressionVisitor {
 
-    public void visit(BitwiseRightShift aThis);
+    void visit(BitwiseRightShift aThis);
 
-    public void visit(BitwiseLeftShift aThis);
+    void visit(BitwiseLeftShift aThis);
 
     void visit(NullValue nullValue);
 
@@ -61,6 +62,8 @@ public interface ExpressionVisitor {
     void visit(AndExpression andExpression);
 
     void visit(OrExpression orExpression);
+
+    void visit(XorExpression orExpression);
 
     void visit(Between between);
 
@@ -142,25 +145,29 @@ public interface ExpressionVisitor {
 
     void visit(RowConstructor rowConstructor);
 
+    void visit(RowGetExpression rowGetExpression);
+
     void visit(OracleHint hint);
 
     void visit(TimeKeyExpression timeKeyExpression);
 
     void visit(DateTimeLiteralExpression literal);
 
-    public void visit(NotExpression aThis);
+    void visit(NotExpression aThis);
 
-    public void visit(NextValExpression aThis);
+    void visit(NextValExpression aThis);
 
-    public void visit(CollateExpression aThis);
+    void visit(CollateExpression aThis);
 
-    public void visit(SimilarToExpression aThis);
+    void visit(SimilarToExpression aThis);
 
-    public void visit(ArrayExpression aThis);
+    void visit(ArrayExpression aThis);
 
-    public void visit(ArrayConstructor aThis);
+    void visit(ArrayConstructor aThis);
 
-    public void visit(VariableAssignment aThis);
+    void visit(VariableAssignment aThis);
 
-    public void visit(XMLSerializeExpr aThis);
+    void visit(XMLSerializeExpr aThis);
+
+    void visit(TimezoneExpression aThis);
 }

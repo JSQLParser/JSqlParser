@@ -159,7 +159,7 @@ public enum PostgresqlVersion implements Version {
      * @param featuresSupported
      * @see #copy() to copy from previous version
      */
-    private PostgresqlVersion(String versionString, Set<Feature> featuresSupported) {
+    PostgresqlVersion(String versionString, Set<Feature> featuresSupported) {
         this(versionString, featuresSupported, Collections.emptySet());
     }
 
@@ -169,7 +169,7 @@ public enum PostgresqlVersion implements Version {
      * @param unsupported
      * @see #copy() to copy from previous version
      */
-    private PostgresqlVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
+    PostgresqlVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
         this.versionString = versionString;
         this.features = featuresSupported;
         this.features.removeAll(unsupported);

@@ -35,6 +35,7 @@ import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -96,8 +97,8 @@ public class StatementDeParserTest {
         List<WithItem> withItemsList = new ArrayList<WithItem>();
         WithItem withItem1 = spy(new WithItem());
         WithItem withItem2 = spy(new WithItem());
-        SelectBody withItem1SelectBody = mock(SelectBody.class);
-        SelectBody withItem2SelectBody = mock(SelectBody.class);
+        SubSelect withItem1SubSelect = mock(SubSelect.class);
+        SubSelect withItem2SubSelect = mock(SubSelect.class);
         SelectBody selectBody = mock(SelectBody.class);
 
         insert.setSelect(select);
@@ -114,8 +115,8 @@ public class StatementDeParserTest {
         select.setSelectBody(selectBody);
         withItemsList.add(withItem1);
         withItemsList.add(withItem2);
-        withItem1.setSelectBody(withItem1SelectBody);
-        withItem2.setSelectBody(withItem2SelectBody);
+        withItem1.setSubSelect(withItem1SubSelect);
+        withItem2.setSubSelect(withItem2SubSelect);
 
         statementDeParser.visit(insert);
         
@@ -332,8 +333,8 @@ public class StatementDeParserTest {
         List<WithItem> withItemsList = new ArrayList<WithItem>();
         WithItem withItem1 = spy(new WithItem());
         WithItem withItem2 = spy(new WithItem());
-        SelectBody withItem1SelectBody = mock(SelectBody.class);
-        SelectBody withItem2SelectBody = mock(SelectBody.class);
+        SubSelect withItem1SubSelect = mock(SubSelect.class);
+        SubSelect withItem2SubSelect = mock(SubSelect.class);
         SelectBody selectBody = mock(SelectBody.class);
 
         upsert.setSelect(select);
@@ -350,8 +351,8 @@ public class StatementDeParserTest {
         select.setSelectBody(selectBody);
         withItemsList.add(withItem1);
         withItemsList.add(withItem2);
-        withItem1.setSelectBody(withItem1SelectBody);
-        withItem2.setSelectBody(withItem2SelectBody);
+        withItem1.setSubSelect(withItem1SubSelect);
+        withItem2.setSubSelect(withItem2SubSelect);
 
         statementDeParser.visit(upsert);
 

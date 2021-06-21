@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
+@SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class SelectVisitorAdapter implements SelectVisitor {
 
     @Override

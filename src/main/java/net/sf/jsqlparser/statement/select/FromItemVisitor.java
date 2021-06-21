@@ -25,5 +25,5 @@ public interface FromItemVisitor {
 
     void visit(TableFunction tableFunction);
 
-    public void visit(ParenthesisFromItem aThis);
+    void visit(ParenthesisFromItem aThis);
 }

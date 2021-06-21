@@ -113,6 +113,7 @@ public class Upsert implements Statement {
     }
     
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public String toString() {
         StringBuilder sb = new StringBuilder();
         

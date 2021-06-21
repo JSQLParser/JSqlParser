@@ -42,7 +42,7 @@ public interface Validator<S> {
     /**
      * @return the {@link ValidationCapability}'s requested mapped to a set of error-messages
      */
-    public Map<ValidationCapability, Set<ValidationException>> getValidationErrors();
+    Map<ValidationCapability, Set<ValidationException>> getValidationErrors();
 
     /**
      * @param capabilities
@@ -87,7 +87,7 @@ public interface Validator<S> {
     /**
      * @param ctx
      */
-    public void setContext(ValidationContext ctx);
+    void setContext(ValidationContext ctx);
 
     /**
      * validates given statement.
@@ -97,6 +97,6 @@ public interface Validator<S> {
      * @see #getValidationErrors(Collection)
      * @see #getValidationErrors(ValidationCapability...)
      */
-    public abstract void validate(S statement);
+    void validate(S statement);
 
 }

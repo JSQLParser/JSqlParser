@@ -25,6 +25,9 @@ public abstract class AbstractJSqlParser<P> {
         return withFeature(Feature.allowSquareBracketQuotation, allowSquareBracketQuotation);
     }
 
+    public P withAllowComplexParsing(boolean allowComplexParsing) {
+      return withFeature(Feature.allowComplexParsing, allowComplexParsing);
+    }
     public P withFeature(Feature f, boolean enabled) {
         getConfiguration().setValue(f, enabled);
         return me();

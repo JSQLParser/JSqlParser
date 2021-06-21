@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -26,9 +27,11 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class Insert implements Statement {
 
     private Table table;
+    private OracleHint oracleHint = null;
     private List<Column> columns;
     private ItemsList itemsList;
     private boolean useValues = true;
@@ -60,6 +63,14 @@ public class Insert implements Statement {
 
     public void setTable(Table name) {
         table = name;
+    }
+    
+    public OracleHint getOracleHint() {
+        return oracleHint;
+    }
+
+    public void setOracleHint(OracleHint oracleHint) {
+        this.oracleHint = oracleHint;
     }
 
     public List<Column> getColumns() {
@@ -196,6 +207,7 @@ public class Insert implements Statement {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder sql = new StringBuilder();
         if (withItemsList != null && !withItemsList.isEmpty()) {

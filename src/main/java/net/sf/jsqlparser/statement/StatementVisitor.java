@@ -89,11 +89,11 @@ public interface StatementVisitor {
 
     void visit(DescribeStatement describe);
 
-    public void visit(ExplainStatement aThis);
+    void visit(ExplainStatement aThis);
 
-    public void visit(ShowStatement aThis);
+    void visit(ShowStatement aThis);
 
-    public void visit(DeclareStatement aThis);
+    void visit(DeclareStatement aThis);
 
     void visit(Grant grant);
 

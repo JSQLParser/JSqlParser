@@ -263,6 +263,7 @@ public class Join extends ASTNodeAccessImpl {
 
     /**
      * Return the "WITHIN" join window (if any)
+     * @return 
      */
     public KSQLJoinWindow getJoinWindow() {
         return joinWindow;
@@ -278,6 +279,7 @@ public class Join extends ASTNodeAccessImpl {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         if (isSimple() && isOuter()) {
             return "OUTER " + rightItem;

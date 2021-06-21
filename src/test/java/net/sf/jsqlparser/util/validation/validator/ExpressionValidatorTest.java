@@ -199,5 +199,9 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
                 EXPRESSIONS);
     }
 
-
+    @Test
+    public void testAtTimeZoneExpression() throws JSQLParserException {
+        validateNoErrors("SELECT DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney') AS another_date FROM mytbl", 1,
+                EXPRESSIONS);
+    }
 }

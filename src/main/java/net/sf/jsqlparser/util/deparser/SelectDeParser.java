@@ -18,6 +18,11 @@ import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
+import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -50,8 +55,9 @@ import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class SelectDeParser extends AbstractDeParser<PlainSelect>
-        implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
+        implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor, ItemsListVisitor {
 
     private ExpressionVisitor expressionVisitor;
 
@@ -69,6 +75,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
     public void visit(PlainSelect plainSelect) {
         if (plainSelect.isUseBrackets()) {
             buffer.append("(");
@@ -234,7 +241,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public void visit(SubSelect subSelect) {
-        buffer.append("(");
+        buffer.append(subSelect.isUseBrackets() ? "(" : "");
         if (subSelect.getWithItemsList() != null && !subSelect.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.hasNext();) {
@@ -247,7 +254,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             }
         }
         subSelect.getSelectBody().accept(this);
-        buffer.append(")");
+        buffer.append(subSelect.isUseBrackets() ? ")" : "");
         Alias alias = subSelect.getAlias();
         if (alias != null) {
             buffer.append(alias.toString());
@@ -377,6 +384,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void deparseJoin(Join join) {
         if (join.isSimple() && join.isOuter()) {
             buffer.append(", OUTER ");
@@ -477,9 +485,27 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (withItem.getWithItemList() != null) {
             buffer.append(" ").append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
         }
-        buffer.append(" AS (");
-        withItem.getSelectBody().accept(this);
-        buffer.append(")");
+        buffer.append(" AS ");
+
+        if (withItem.isUseValues()) {
+            ItemsList itemsList = withItem.getItemsList();
+            boolean useBracketsForValues = withItem.isUsingBracketsForValues();
+            buffer.append("(VALUES ");
+
+            ExpressionList expressionList = (ExpressionList) itemsList;
+            buffer.append(
+                    PlainSelect.getStringList(expressionList.getExpressions(), true, useBracketsForValues));
+            buffer.append(")");
+        } else {
+            SubSelect subSelect = withItem.getSubSelect();
+            if (!subSelect.isUseBrackets()) {
+                buffer.append("(");
+            }
+            subSelect.accept((FromItemVisitor) this);
+            if (!subSelect.isUseBrackets()) {
+                buffer.append(")");
+            }
+        }
     }
 
     @Override
@@ -514,7 +540,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public void visit(ValuesStatement values) {
-        new ValuesStatementDeParser(expressionVisitor, buffer).deParse(values);
+        new ValuesStatementDeParser(this, buffer).deParse(values);
     }
 
     private void deparseOptimizeFor(OptimizeFor optimizeFor) {
@@ -526,5 +552,20 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     @Override
     void deParse(PlainSelect statement) {
         statement.accept(this);
+    }
+
+    @Override
+    public void visit(ExpressionList expressionList) {
+        buffer.append(expressionList.toString());
+    }
+
+    @Override
+    public void visit(NamedExpressionList namedExpressionList) {
+        buffer.append(namedExpressionList.toString());
+    }
+
+    @Override
+    public void visit(MultiExpressionList multiExprList) {
+        buffer.append(multiExprList.toString());
     }
 }

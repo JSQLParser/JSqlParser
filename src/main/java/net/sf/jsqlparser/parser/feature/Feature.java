@@ -34,6 +34,7 @@ import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.procedure.CreateProcedure;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
+import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -713,6 +714,13 @@ public enum Feature {
      */
     allowSquareBracketQuotation(false),
 
+    // PERFORMANCE
+    
+    /**
+     * allows complex expression parameters or named parameters for functions
+     * will be switched off, when deep nesting of functions is detected
+     */
+     allowComplexParsing(true)
     ;
 
     private Object value;
@@ -721,7 +729,7 @@ public enum Feature {
     /**
      * a feature which can't configured within the parser
      */
-    private Feature() {
+    Feature() {
         this.value = null;
         this.configurable = false;
     }
@@ -731,7 +739,7 @@ public enum Feature {
      *
      * @param value
      */
-    private Feature(Object value) {
+    Feature(Object value) {
         this.value = value;
         this.configurable = true;
     }

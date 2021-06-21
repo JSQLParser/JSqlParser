@@ -11,6 +11,8 @@ package net.sf.jsqlparser.expression;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -18,7 +20,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import net.sf.jsqlparser.JSQLParserException;
@@ -31,7 +32,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 
 /**
- * 
  * @author tw
  */
 public class ExpressionVisitorAdapterTest {
@@ -67,14 +67,12 @@ public class ExpressionVisitorAdapterTest {
             public void visit(InExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
-                exprList.add(expr.getLeftItemsList());
                 exprList.add(expr.getRightItemsList());
             }
         });
 
         assertTrue(exprList.get(0) instanceof Expression);
-        assertNull(exprList.get(1));
-        assertTrue(exprList.get(2) instanceof ItemsList);
+        assertTrue(exprList.get(1) instanceof ItemsList);
     }
 
     @Test
@@ -90,14 +88,36 @@ public class ExpressionVisitorAdapterTest {
             public void visit(InExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
-                exprList.add(expr.getLeftItemsList());
                 exprList.add(expr.getRightItemsList());
             }
         });
 
-        assertNull(exprList.get(0));
+        assertTrue(exprList.get(0) instanceof RowConstructor);
         assertTrue(exprList.get(1) instanceof ItemsList);
-        assertTrue(exprList.get(2) instanceof ItemsList);
+    }
+
+    @Test
+    public void testXorExpression() throws JSQLParserException {
+        final List<Expression> exprList = new ArrayList<>();
+        Select select = (Select) CCJSqlParserUtil.
+                parse("SELECT * FROM table WHERE foo XOR bar");
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        Expression where = plainSelect.getWhere();
+        where.accept(new ExpressionVisitorAdapter() {
+
+            @Override
+            public void visit(XorExpression expr) {
+                super.visit(expr);
+                exprList.add(expr.getLeftExpression());
+                exprList.add(expr.getRightExpression());
+            }
+        });
+
+        assertEquals(2, exprList.size());
+        assertTrue(exprList.get(0) instanceof Column);
+        assertEquals("foo", ((Column) exprList.get(0)).getColumnName());
+        assertTrue(exprList.get(1) instanceof Column);
+        assertEquals("bar", ((Column) exprList.get(1)).getColumnName());
     }
 
     @Test
@@ -208,4 +228,10 @@ public class ExpressionVisitorAdapterTest {
         expr.accept(adapter);
     }
 
+    @Test
+    public void testAtTimeZoneExpression() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseExpression("DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney')");
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        expr.accept(adapter);
+    }
 }

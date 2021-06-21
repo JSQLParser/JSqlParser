@@ -21,6 +21,7 @@ import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     private Distinct distinct = null;
@@ -321,6 +322,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity" , "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder sql = new StringBuilder();
         if (useBrackets) {
@@ -492,7 +494,6 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
      */
     public static String getStringList(List<?> list, boolean useComma, boolean useBrackets) {
         StringBuilder ans = new StringBuilder();
-        //        String ans = "";
         String comma = ",";
         if (!useComma) {
             comma = "";
@@ -500,17 +501,16 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         if (list != null) {
             if (useBrackets) {
                 ans.append("(");
-                //                ans += "(";
             }
 
             for (int i = 0; i < list.size(); i++) {
-                ans.append(list.get(i)).append((i < list.size() - 1) ? comma + " " : "");
-                //                ans += "" + list.get(i) + ((i < list.size() - 1) ? comma + " " : "");
+                ans.append(list.get(i)).append( i < list.size() - 1 
+                                                                            ? comma + " " 
+                                                                            : "" );
             }
 
             if (useBrackets) {
                 ans.append(")");
-                //                ans += ")";
             }
         }
 
