@@ -4615,5 +4615,10 @@ public class SelectTest {
     public void testSelectRowElement() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT (t.tup).id, (tup).name FROM t WHERE (t.tup).id IN (1, 2, 3)");
     }
+    
+    @Test
+    public void testMissinBracketsNestedInIssue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COUNT(DISTINCT CASE WHEN room IN (11167, 12074, 4484, 4483, 6314, 11168, 10336, 16445, 13176, 13177, 13178) THEN uid END) AS uidCount from tableName", true);
+    }
 
 }

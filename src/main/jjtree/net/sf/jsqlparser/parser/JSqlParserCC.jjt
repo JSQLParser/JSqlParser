@@ -3962,11 +3962,11 @@ Function InternalFunction(Function retval) :
             |
             LOOKAHEAD(NamedExpressionListExprFirst(), { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
             |
-            LOOKAHEAD(3, { getAsBoolean(Feature.allowComplexParsing) }) (expressionList=ComplexExpressionList() [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
+            LOOKAHEAD(3, { getAsBoolean(Feature.allowComplexParsing) }) (expressionList=ComplexExpressionList() {expressionList.setUsingBrackets(false);} [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
-            LOOKAHEAD(3) (expressionList=SimpleExpressionList(true) [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
+            LOOKAHEAD(3) (expressionList=SimpleExpressionList(false) [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
-            expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); }
+            expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr).withUsingBrackets(false); }
 
         )]
         [ <K_IGNORE> <K_NULLS> {retval.setIgnoreNulls(true); }]
