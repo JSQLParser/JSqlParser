@@ -285,6 +285,8 @@ public class Join extends ASTNodeAccessImpl {
             return "OUTER " + rightItem;
         } else if (isSimple()) {
             return "" + rightItem;
+        } else if (isCross()) {
+            return "CROSS JOIN " + rightItem;
         } else {
             String type = "";
 
@@ -296,8 +298,6 @@ public class Join extends ASTNodeAccessImpl {
                 type += "FULL ";
             } else if (isLeft()) {
                 type += "LEFT ";
-            } else if (isCross()) {
-                type += "CROSS ";
             }
 
             if (isOuter()) {
