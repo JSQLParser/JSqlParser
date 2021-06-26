@@ -12,21 +12,23 @@ package net.sf.jsqlparser.statement;
 import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public final class SetStatement implements Statement {
 
+    private String effectParameter;
     private final List<NameExpr> values = new ArrayList<>();
 
     public SetStatement() {
         // empty constructor
     }
 
-    public SetStatement(String name, Expression expression) {
-        add(name, expression, true);
+    public SetStatement(String name, List<Expression> value) {
+        add(name, value, true);
     }
 
-    public void add(String name, Expression expression, boolean useEqual) {
-        values.add(new NameExpr(name, expression, useEqual));
+    public void add(String name, List<Expression> value, boolean useEqual) {
+        values.add(new NameExpr(name, value, useEqual));
     }
 
     public void remove(int idx) {
@@ -80,33 +82,39 @@ public final class SetStatement implements Statement {
         values.get(idx).name = name;
     }
 
-    public Expression getExpression(int idx) {
-        return values.get(idx).expression;
+    public List<Expression> getExpressions(int idx) {
+        return values.get(idx).expressions;
     }
 
-    public Expression getExpression() {
-        return getExpression(0);
+    public List<Expression> getExpressions() {
+        return getExpressions(0);
     }
 
-    public void setExpression(int idx, Expression expression) {
-        values.get(idx).expression = expression;
+    public void setExpressions(int idx, List<Expression> expressions) {
+        values.get(idx).expressions = expressions;
     }
 
-    public void setExpression(Expression expression) {
-        setExpression(0, expression);
+    public void setExpressions(List<Expression> expressions) {
+        setExpressions(0, expressions);
     }
 
     private String toString(NameExpr ne) {
-        return ne.name + (ne.useEqual ? " = " : " ") + ne.expression.toString();
+        return ne.name + (ne.useEqual ? " = " : " ") +
+                PlainSelect.getStringList(ne.expressions, true, false);
     }
 
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("SET ");
-
+        if (effectParameter != null) {
+            b.append(effectParameter).append(" ");
+        }
+        boolean addComma = false;
         for (NameExpr ne : values) {
-            if (b.length() != 4) {
+            if (addComma) {
                 b.append(", ");
+            } else {
+                addComma = true;
             }
             b.append(toString(ne));
         }
@@ -119,20 +127,28 @@ public final class SetStatement implements Statement {
         statementVisitor.visit(this);
     }
 
-    public <E extends Expression> E getExpression(Class<E> type) {
-        return type.cast(getExpression());
-    }
-
     static class NameExpr {
 
         private String name;
-        private Expression expression;
+        private List<Expression> expressions;
         private boolean useEqual;
 
-        public NameExpr(String name, Expression expr, boolean useEqual) {
+        public NameExpr(String name, List<Expression> expressions, boolean useEqual) {
             this.name = name;
-            this.expression = expr;
+            this.expressions = expressions;
             this.useEqual = useEqual;
         }
+    }
+
+    public String getEffectParameter() {
+        return effectParameter;
+    }
+
+    public void setEffectParameter(String effectParameter) {
+        this.effectParameter = effectParameter;
+    }
+    public SetStatement withEffectParameter(String effectParameter) {
+        this.effectParameter = effectParameter;
+        return this;
     }
 }

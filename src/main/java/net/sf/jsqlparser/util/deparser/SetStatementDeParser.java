@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.SetStatement;
+
+import java.util.List;
 
 public class SetStatementDeParser extends AbstractDeParser<SetStatement> {
 
@@ -24,7 +27,9 @@ public class SetStatementDeParser extends AbstractDeParser<SetStatement> {
     @Override
     public void deParse(SetStatement set) {
         buffer.append("SET ");
-
+        if (set.getEffectParameter() != null) {
+            buffer.append(set.getEffectParameter()).append(" ");
+        }
         for (int i = 0; i < set.getCount(); i++) {
             if (i > 0) {
                 buffer.append(", ");
@@ -34,7 +39,13 @@ public class SetStatementDeParser extends AbstractDeParser<SetStatement> {
                 buffer.append(" =");
             }
             buffer.append(" ");
-            set.getExpression(i).accept(expressionVisitor);
+            List<Expression> expressions = set.getExpressions(i);
+            for (int j = 0; j < expressions.size(); j++) {
+                if (j > 0) {
+                    buffer.append(", ");
+                }
+                expressions.get(j).accept(expressionVisitor);
+            }
         }
 
     }
