@@ -4431,7 +4431,7 @@ CreateTable CreateTable():
             )
           )
     ]
-    ( parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
+    ( LOOKAHEAD(2) parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
 
     // see https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2126725
     // table properties , all these are optional
