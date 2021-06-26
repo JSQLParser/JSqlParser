@@ -18,6 +18,7 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
@@ -53,9 +54,9 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public class StatementDeParser extends AbstractDeParser<Statement> implements StatementVisitor {
 
-    private ExpressionDeParser expressionDeParser;
+    private final ExpressionDeParser expressionDeParser;
 
-    private SelectDeParser selectDeParser;
+    private final SelectDeParser selectDeParser;
 
     public StatementDeParser(StringBuilder buffer) {
         this(new ExpressionDeParser(), new SelectDeParser(), buffer);
@@ -197,6 +198,16 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         SetStatementDeParser setStatementDeparser = new SetStatementDeParser(expressionDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         setStatementDeparser.deParse(set);
+    }
+
+    @Override
+    public void visit(ResetStatement reset) {
+        selectDeParser.setBuffer(buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
+        ResetStatementDeParser setStatementDeparser = new ResetStatementDeParser(expressionDeParser, buffer);
+        selectDeParser.setExpressionVisitor(expressionDeParser);
+        setStatementDeparser.deParse(reset);
     }
 
     @Override

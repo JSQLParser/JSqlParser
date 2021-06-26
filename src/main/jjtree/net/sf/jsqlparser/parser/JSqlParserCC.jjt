@@ -249,6 +249,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_LEFT:"LEFT">
 |   <K_LIKE:"LIKE">
 |   <K_LIMIT:"LIMIT">
+|   <K_LOCAL:"LOCAL">
 |   <K_LINK:"LINK">
 |   <K_LOW_PRIORITY : "LOW_PRIORITY">
 |   <K_MATCH: "MATCH">
@@ -329,6 +330,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SEPARATOR:"SEPARATOR">
 |   <K_SESSION:"SESSION">
 |   <K_SET:"SET">
+|   <K_RESET:"RESET">
 |   <K_SETS:"SETS">
 |   <K_SHOW : "SHOW">
 |   <K_SIBLINGS:"SIBLINGS">
@@ -537,6 +539,8 @@ Statement SingleStatement() :
         |
         stm = Set()
         |
+        stm = Reset()
+        |
         LOOKAHEAD(ShowColumns())
         stm = ShowColumns()
         |
@@ -657,7 +661,7 @@ DeclareStatement Declare(): {
                 {
                     stmt.withUserVariable(userVariable)
                       .withDeclareType(DeclareType.AS)
-                      .withTypeName(typeName); 
+                      .withTypeName(typeName);
                 }
         |
             (colDataType = ColDataType() ["=" defaultExpr = Expression()]
@@ -678,17 +682,55 @@ DeclareStatement Declare(): {
 
 SetStatement Set(): {
     String name;
-    Expression value;
+    ArrayList<Expression> expList;
     boolean useEqual = false;
     SetStatement set;
+    Expression exp = null;
+    Token tk = null;
+    String effectParameter = null;
 }
 {
-    <K_SET> name = RelObjectNameExt() ["=" { useEqual=true; } ] value=SimpleExpression()
-    { set = new SetStatement(name,value).withUseEqual(useEqual); }
-    ( { useEqual=false; } "," name = RelObjectNameExt() ["=" { useEqual=true; } ] value=SimpleExpression()
-        { set.add(name, value, useEqual); } )*
+    <K_SET>
+    (
 
+        [LOOKAHEAD(3) (tk = <K_LOCAL> | tk = <K_SESSION>) {effectParameter = tk.image; } ]
+        ( LOOKAHEAD(2)
+          <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
+        | (name = RelObjectNameExt() ["=" { useEqual=true; } ])
+        )
+    )
+    exp=SimpleExpression()
+    {expList = new ArrayList<Expression>(); expList.add(exp); }
+
+    { set = new SetStatement(name,expList).withUseEqual(useEqual).withEffectParameter(effectParameter); }
+    (
+        { useEqual=false; }
+        ","
+        (LOOKAHEAD(3)
+            (
+              ( LOOKAHEAD(2)
+                  <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
+                | (name = RelObjectNameExt() ["=" { useEqual=true; } ])
+              )
+              exp=SimpleExpression()
+              {expList = new ArrayList<Expression>();
+                expList.add(exp);
+                set.add(name, expList, useEqual);}
+            )
+            | exp=SimpleExpression() { expList.add(exp); }
+         ))*
     { return set; }
+}
+
+ResetStatement Reset(): {
+    String name;
+    ResetStatement reset;
+    Token all;
+}
+{
+    <K_RESET> ( LOOKAHEAD(2) <K_DATETIMELITERAL> <K_ZONE> {name = "Time Zone"; } | name = RelObjectNameExt() | all = <K_ALL> {name = all.image; } )
+    { reset = new ResetStatement(name); }
+    { return reset; }
 }
 
 DescribeStatement Describe(): {
@@ -1379,7 +1421,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_SYNONYM>
       | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE> | tk=<K_CYCLE> | tk=<K_OF> | tk=<K_EXCLUDE>
     /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
-      | tk=<K_FORMAT> | tk=<K_DIV> | tk=<K_UNSIGNED> | tk=<K_CASE>
+      | tk=<K_FORMAT> | tk=<K_DIV> | tk=<K_UNSIGNED> | tk=<K_CASE> | tk=<K_LOCAL>
       | tk=<K_ARRAY_LITERAL>
 
       /* Keywords for ALTER SESSION */
