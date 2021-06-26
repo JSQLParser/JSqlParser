@@ -4191,8 +4191,6 @@ CreateSchema CreateSchema():
         (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setAuthorization(tk.image); }
     ]
 
-    /* [ <K_DEFAULT> <K_CHARACTER> <K_SET> tk=<S_QUOTED_IDENTIFIER> | <S_IDENTIFIER> {} ] */
-
     [schemaPath=PathSpecification() { schema.setSchemaPath(schemaPath); }]
 
     (
@@ -4574,6 +4572,8 @@ List<String> CreateParameter():
                tk=<S_DOUBLE> { retval += tk.image; }
               )
               { param.add(retval); }
+            |
+            tk=<K_AS> { param.add(tk.image); }
             |
             tk=<K_ON> { param.add(tk.image); }
             |
