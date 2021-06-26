@@ -122,6 +122,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
     <K_ACTION: "ACTION">
 |   <K_ADD:"ADD">
 |   <K_ADVANCE:"ADVANCE">
+|   <K_ADVISE:"ADVISE">
 |   <K_AGAINST:"AGAINST">
 |   <K_ALGORITHM: "ALGORITHM">
 |   <K_ALL:"ALL">
@@ -154,6 +155,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CHANGE:"CHANGE">
 |   <K_CHECK:"CHECK">
 |   <K_CHAR:"CHAR">
+|   <K_CLOSE:"CLOSE">
 |   <K_COLLATE:"COLLATE">
 |   <K_COLUMN:"COLUMN">
 |   <K_COLUMNS:"COLUMNS">
@@ -167,6 +169,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CROSS:"CROSS">
 |   <K_CURRENT: "CURRENT">
 |   <K_CYCLE:"CYCLE">
+|   <K_DATABASE:"DATABASE">
 |   <K_DECLARE: "DECLARE">
 |   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
 |   <K_DATE_LITERAL : ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" ) >
@@ -179,6 +182,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DISABLE : "DISABLE">
 |   <K_DISTINCT:"DISTINCT">
 |   <K_DIV:"DIV">
+|   <K_DDL:"DDL">
+|   <K_DML:"DML">
 |   <K_DO:"DO">
 |   <K_DOUBLE : "DOUBLE">
 |   <K_DROP:"DROP">
@@ -213,6 +218,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_GROUP:"GROUP">
 |   <K_GROUPING:"GROUPING">
 |   <K_GROUP_CONCAT:"GROUP_CONCAT">
+|   <K_GUARD:"GUARD">
 |   <K_HAVING:"HAVING">
 |   <K_HIGH_PRIORITY : "HIGH_PRIORITY">
 |   <K_HOPPING:"HOPPING">
@@ -244,6 +250,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_LIKE:"LIKE">
 |   <K_LIMIT:"LIMIT">
 |   <K_LOCAL:"LOCAL">
+|   <K_LINK:"LINK">
 |   <K_LOW_PRIORITY : "LOW_PRIORITY">
 |   <K_MATCH: "MATCH">
 |   <K_MATCHED: "MATCHED">
@@ -254,6 +261,12 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MINVALUE:"MINVALUE">
 |   <K_MODIFY: "MODIFY">
 |   <K_MOVEMENT: "MOVEMENT">
+
+/* @todo:
+   this collides with SELECT 'yelp'::name ...
+|   <K_NAME:"NAME">
+*/
+
 |   <K_NATURAL:"NATURAL">
 |   <K_NEXT:"NEXT">
 |   <K_NEXTVAL: (  (("NEXTVAL")(" ")+("FOR"))  |  ( ("NEXT")(" ")+("VALUE") (" ")+("FOR") )  )>
@@ -266,6 +279,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_NOMINVALUE:"NOMINVALUE">
 |   <K_NOORDER:"NOORDER">
 |   <K_NOT:"NOT">
+|   <K_NOTHING:"NOTHING">
 |   <K_NOVALIDATE : "NOVALIDATE">
 |   <K_NULL:"NULL">
 |   <K_NULLS: "NULLS">
@@ -281,6 +295,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_OUTER:"OUTER">
 |   <K_OVER:"OVER">
 |   <K_OPTIMIZE: "OPTIMIZE" >
+|   <K_PARALLEL:"PARALLEL">
 |   <K_PARTITION:"PARTITION">
 |   <K_PATH:"PATH">
 |   <K_PERCENT:"PERCENT">
@@ -292,6 +307,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PRIOR:"PRIOR">
 |   <K_PROCEDURE:"PROCEDURE">
 |   <K_PUBLIC:"PUBLIC">
+|   <K_QUERY:"QUERY">
 |   <K_RANGE: "RANGE">
 |   <K_READ: "READ" >
 |   <K_RECURSIVE:"RECURSIVE">
@@ -300,9 +316,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_RLIKE: "RLIKE">
 |   <K_RENAME:"RENAME">
 |   <K_REPLACE:"REPLACE">
+|   <K_RESUMABLE: "RESUMABLE">
 |   <K_RESTRICT: "RESTRICT">
 |   <K_RETURNING: "RETURNING">
 |   <K_RIGHT:"RIGHT">
+|   <K_ROLLBACK:"ROLLBACK">
 |   <K_ROW: "ROW">
 |   <K_ROWS: "ROWS">
 |   <K_SCHEMA: "SCHEMA">
@@ -329,6 +347,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TEMP:"TEMP">
 |   <K_TEMPORARY:"TEMPORARY">
 |   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
+|   <K_TIMEOUT:"TIMEOUT">
 |   <K_TO:"TO">
 |   <K_TOP:"TOP">
 |   <K_TRAILING:"TRAILING">
@@ -481,6 +500,9 @@ Statement SingleStatement() :
         |
         LOOKAHEAD(2)
         stm = AlterTable()
+        |
+        LOOKAHEAD(2)
+        stm = AlterSession()
         |
         LOOKAHEAD(CreateFunctionStatement())
         stm = CreateFunctionStatement()
@@ -1393,7 +1415,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
       | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_ENABLE>
       | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TO> | tk=<K_TYPE> | tk=<K_ISNULL>
-	    | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
+	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
       | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
       | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIGNED> | tk=<K_SIZE> | tk=<K_SEQUENCE> | tk=<K_SESSION> | tk=<K_SKIP>
       | tk=<K_SYNONYM>
@@ -1401,6 +1423,9 @@ String RelObjectNameWithoutValue() :
     /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       | tk=<K_FORMAT> | tk=<K_DIV> | tk=<K_UNSIGNED> | tk=<K_CASE> | tk=<K_LOCAL>
       | tk=<K_ARRAY_LITERAL>
+
+      /* Keywords for ALTER SESSION */
+      /* | tk=<K_NAME> */ | tk=<K_TIMEOUT> | tk=<K_PARALLEL>
       )
 
     { return tk.image; }
@@ -4233,8 +4258,6 @@ CreateSchema CreateSchema():
         (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setAuthorization(tk.image); }
     ]
 
-    /* [ <K_DEFAULT> <K_CHARACTER> <K_SET> tk=<S_QUOTED_IDENTIFIER> | <S_IDENTIFIER> {} ] */
-
     [schemaPath=PathSpecification() { schema.setSchemaPath(schemaPath); }]
 
     (
@@ -4617,6 +4640,8 @@ List<String> CreateParameter():
               )
               { param.add(retval); }
             |
+            tk=<K_AS> { param.add(tk.image); }
+            |
             tk=<K_ON> { param.add(tk.image); }
             |
             tk=<K_COMMIT> { param.add(tk.image); }
@@ -4680,6 +4705,8 @@ List<String> CreateParameter():
             tk=<K_TRUE> { param.add(tk.image); }
             |
             tk=<K_FALSE> { param.add(tk.image); }
+            |
+            tk=<K_PARALLEL> { param.add(tk.image); }
             |
             (<K_ARRAY_LITERAL> exp=ArrayConstructor(true)) { param.add(exp.toString()); }
             |
@@ -5126,6 +5153,73 @@ Alter AlterTable():
 
     {
         return alter;
+    }
+}
+
+AlterSession AlterSession():
+{
+    AlterSessionOperation operation = null;
+    List<String> parameters = new ArrayList<String>();
+    Token token;
+}
+{
+    <K_ALTER> <K_SESSION> (
+        ( 
+           <K_ADVISE>   ( <K_COMMIT> { operation = AlterSessionOperation.ADVISE_COMMIT; }
+                        | <K_ROLLBACK> { operation = AlterSessionOperation.ADVISE_ROLLBACK; }
+                        | <K_NOTHING> { operation = AlterSessionOperation.ADVISE_NOTHING; }
+                        )
+        )
+        |
+        ( 
+            <K_CLOSE> <K_DATABASE> <K_LINK> { operation = AlterSessionOperation.CLOSE_DATABASE_LINK; }
+        )
+        |   
+        (   
+            <K_ENABLE>  ( <K_COMMIT> <K_IN> <K_PROCEDURE> { operation = AlterSessionOperation.ENABLE_COMMIT_IN_PROCEDURE; }
+                        | <K_GUARD> { operation = AlterSessionOperation.ENABLE_GUARD; }
+                        | <K_PARALLEL> ( <K_DML> { operation = AlterSessionOperation.ENABLE_PARALLEL_DML; }
+                                       | <K_DDL> { operation = AlterSessionOperation.ENABLE_PARALLEL_DDL; }
+                                       | <K_QUERY> { operation = AlterSessionOperation.ENABLE_PARALLEL_QUERY; }
+                                       )
+                        | <K_RESUMABLE> { operation = AlterSessionOperation.ENABLE_RESUMABLE; }
+                        )
+        )
+        |
+        (   
+            <K_DISABLE> ( <K_COMMIT> <K_IN> <K_PROCEDURE> { operation = AlterSessionOperation.DISABLE_COMMIT_IN_PROCEDURE; }
+                        | <K_GUARD> { operation = AlterSessionOperation.DISABLE_GUARD; }
+                        | <K_PARALLEL> ( <K_DML> { operation = AlterSessionOperation.DISABLE_PARALLEL_DML; }
+                                        | <K_DDL> { operation = AlterSessionOperation.DISABLE_PARALLEL_DDL; }
+                                        | <K_QUERY> { operation = AlterSessionOperation.DISABLE_PARALLEL_QUERY; }
+                                        )
+                        | <K_RESUMABLE> { operation = AlterSessionOperation.DISABLE_RESUMABLE; }
+                        )
+        )
+        |
+        (   
+            <K_FORCE> <K_PARALLEL> ( <K_DML> { operation = AlterSessionOperation.FORCE_PARALLEL_DML; }
+                                   | <K_DDL> { operation = AlterSessionOperation.FORCE_PARALLEL_DDL; }
+                                   | <K_QUERY> { operation = AlterSessionOperation.FORCE_PARALLEL_QUERY; }
+                                   )
+        )
+        |
+        (   
+            <K_SET> { operation = AlterSessionOperation.SET; }
+        )
+    )
+
+    (   ( token = <S_CHAR_LITERAL> 
+            | token = <S_IDENTIFIER>
+            | token = "="
+            | token = <S_LONG>
+            | token = <K_PARALLEL>
+            ) { parameters.add( token.image ); }
+    )*
+
+
+    {
+        return new AlterSession(operation, parameters);
     }
 }
 
