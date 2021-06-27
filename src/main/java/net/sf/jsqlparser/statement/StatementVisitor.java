@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -73,6 +74,8 @@ public interface StatementVisitor {
 
     void visit(SetStatement set);
 
+    void visit(ResetStatement reset);
+
     void visit(ShowColumnsStatement set);
 
     void visit(ShowTablesStatement showTables);
@@ -106,4 +109,6 @@ public interface StatementVisitor {
     void visit(CreateFunctionalStatement createFunctionalStatement);
 
     void visit(CreateSynonym createSynonym);
+
+    void visit(AlterSession alterSession);
 }

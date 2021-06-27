@@ -18,6 +18,7 @@ import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
+import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
@@ -26,6 +27,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
@@ -138,6 +140,11 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     @Override
     public void visit(SetStatement set) {
         getValidator(SetStatementValidator.class).validate(set);
+    }
+
+    @Override
+    public void visit(ResetStatement reset) {
+        getValidator(ResetStatementValidator.class).validate(reset);
     }
 
     @Override
@@ -263,6 +270,10 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(RollbackStatement rollbackStatement) {
+        //@todo: write something usefull here
+    }
+    
+    public void visit(AlterSession alterSession) {
         //@todo: write something usefull here
     }
 
