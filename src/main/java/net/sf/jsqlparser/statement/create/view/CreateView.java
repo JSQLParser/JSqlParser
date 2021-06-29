@@ -116,6 +116,8 @@ public class CreateView implements Statement {
             case NO_FORCE:
                 sql.append("NO FORCE ");
                 break;
+            default:
+                // nothing
         }
 
         if (temp != TemporaryOption.NONE) {

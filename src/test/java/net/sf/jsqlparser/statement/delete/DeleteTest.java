@@ -10,7 +10,7 @@
 package net.sf.jsqlparser.statement.delete;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-
+import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static org.junit.Assert.assertEquals;
 
 import java.io.StringReader;
@@ -21,7 +21,7 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
-import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
+
 import org.junit.Test;
 
 public class DeleteTest {
@@ -103,5 +103,38 @@ public class DeleteTest {
         assertOracleHintExists(sql, true, "SOMEHINT");
        
        //@todo: add a testcase supposed to not finding a misplaced hint
+  }
+
+  @Test
+  public void testWith() throws JSQLParserException {
+    String statement =
+        ""
+            + "WITH a\n"
+            + "     AS (SELECT 1 id_instrument_ref)\n"
+            + "     , b\n"
+            + "       AS (SELECT 1 id_instrument_ref)\n"
+            + "DELETE FROM cfe.instrument_ref\n"
+            + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
+            + "                            FROM   a)";
+
+    assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
+
+    @Test
+    public void testNoFrom() throws JSQLParserException {
+        String statement = "DELETE A WHERE Z = 1";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testNoFromWithSchema() throws JSQLParserException {
+        String statement = "DELETE A.B WHERE Z = 1";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testUsing() throws JSQLParserException {
+        String statement = "DELETE A USING B.C D WHERE D.Z = 1";
+        assertSqlCanBeParsedAndDeparsed(statement);
     }
 }

@@ -144,6 +144,8 @@ public enum PostgresqlVersion implements Version {
                     Feature.grant,
                     // https://www.postgresql.org/docs/current/sql-set.html
                     Feature.set,
+                    // https://www.postgresql.org/docs/current/sql-reset.html
+                    Feature.reset,
                     // https://www.postgresql.org/docs/current/sql-commit.html
                     Feature.commit
                     )),

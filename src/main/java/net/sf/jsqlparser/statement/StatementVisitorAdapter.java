@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -33,6 +34,7 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
+@SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
@@ -122,6 +124,11 @@ public class StatementVisitorAdapter implements StatementVisitor {
     }
 
     @Override
+    public void visit(ResetStatement reset) {
+
+    }
+
+    @Override
     public void visit(Merge merge) {
 
     }
@@ -188,5 +195,10 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(CreateSynonym createSynonym) {
+    }
+
+    @Override
+    public void visit(AlterSession alterSession) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -46,11 +46,13 @@ import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RowConstructor;
+import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.TimezoneExpression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.VariableAssignment;
@@ -71,6 +73,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
@@ -223,13 +226,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(InExpression inExpression) {
-        if (inExpression.getLeftExpression() == null) {
-            inExpression.getLeftItemsList().accept(this);
-        } else {
-            inExpression.getLeftExpression().accept(this);
-            if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
-                buffer.append("(+)");
-            }
+        inExpression.getLeftExpression().accept(this);
+        if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
+            buffer.append("(+)");
         }
         if (inExpression.isNot()) {
             buffer.append(" NOT");
@@ -398,6 +397,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         visitBinaryExpression(orExpression, " OR ");
 
     }
+    @Override
+    public void visit(XorExpression xorExpression) {
+        visitBinaryExpression(xorExpression, " XOR ");
+
+    }
 
     @Override
     public void visit(Parenthesis parenthesis) {
@@ -471,7 +475,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void visit(Function function) {
         if (function.isEscaped()) {
             buffer.append("{fn ");
@@ -604,7 +608,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(CaseExpression caseExpression) {
-        buffer.append("CASE ");
+        buffer.append(caseExpression.isUsingBrackets() ? "(" : "").append("CASE ");
         Expression switchExp = caseExpression.getSwitchExpression();
         if (switchExp != null) {
             switchExp.accept(this);
@@ -622,7 +626,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(" ");
         }
 
-        buffer.append("END");
+        buffer.append("END").append(caseExpression.isUsingBrackets() ? ")" : "");
     }
 
     @Override
@@ -894,6 +898,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public void visit(RowGetExpression rowGetExpression) {
+        rowGetExpression.getExpression().accept(this);
+        buffer.append(".").append(rowGetExpression.getColumnName());
+    }
+
+    @Override
     public void visit(OracleHint hint) {
         buffer.append(hint.toString());
     }
@@ -910,7 +920,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(NextValExpression nextVal) {
-        buffer.append("NEXTVAL FOR ").append(nextVal.getName());
+        buffer.append(nextVal.isUsingNextValueFor()  ? "NEXT VALUE FOR " : "NEXTVAL FOR ").append(nextVal.getName());
     }
 
     @Override
@@ -988,5 +998,14 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             }
         }
         buffer.append(") AS ").append(expr.getDataType()).append(")");
+    }
+
+    @Override
+    public void visit(TimezoneExpression var) {
+        var.getLeftExpression().accept(this);
+
+        for (String expr : var.getTimezoneExpressions()) {
+            buffer.append(" AT TIME ZONE " + expr);
+        }
     }
 }

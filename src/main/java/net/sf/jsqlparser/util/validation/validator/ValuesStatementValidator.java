@@ -20,6 +20,6 @@ public class ValuesStatementValidator extends AbstractValidator<ValuesStatement>
     @Override
     public void validate(ValuesStatement values) {
         validateFeature(Feature.values);
-        validateOptionalExpressions(values.getExpressions());
+        validateOptionalItemsList(values.getExpressions());
     }
 }

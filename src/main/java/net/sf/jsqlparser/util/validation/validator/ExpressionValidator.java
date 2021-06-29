@@ -41,11 +41,13 @@ import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RowConstructor;
+import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.TimezoneExpression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.VariableAssignment;
@@ -68,6 +70,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
@@ -271,6 +274,12 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     @Override
     public void visit(OrExpression orExpression) {
         visitBinaryExpression(orExpression, " OR ");
+
+    }
+
+    @Override
+    public void visit(XorExpression xorExpression) {
+        visitBinaryExpression(xorExpression, " XOR ");
 
     }
 
@@ -500,6 +509,11 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     }
 
     @Override
+    public void visit(RowGetExpression rowGetExpression) {
+        rowGetExpression.getExpression().accept(this);
+    }
+
+    @Override
     public void visit(OracleHint hint) {
         // nothing to validate
     }
@@ -561,6 +575,11 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         if (a.getVariable() != null) {
             a.getVariable().accept(this);
         }
+    }
+
+    @Override
+    public void visit(TimezoneExpression a) {
+        validateOptionalExpression(a.getLeftExpression());
     }
 
     @Override

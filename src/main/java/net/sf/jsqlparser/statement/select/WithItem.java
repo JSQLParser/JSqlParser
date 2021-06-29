@@ -14,13 +14,63 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 
 public class WithItem implements SelectBody {
 
     private String name;
     private List<SelectItem> withItemList;
-    private SelectBody selectBody;
+    private ItemsList itemsList;
+    private boolean useValues = true;
+    private boolean useBracketsForValues = false;
+
+    private SubSelect subSelect;
     private boolean recursive;
+
+    /**
+     * Get the values (as VALUES (...) or SELECT)
+     *
+     * @return the values of the insert
+     */
+    public ItemsList getItemsList() {
+        return itemsList;
+    }
+
+    public void setItemsList(ItemsList list) {
+        itemsList = list;
+    }
+
+    public boolean isUseValues() {
+        return useValues;
+    }
+
+    public void setUseValues(boolean useValues) {
+        this.useValues = useValues;
+    }
+
+    public WithItem withItemsList(ItemsList itemsList) {
+        this.setItemsList(itemsList);
+        return this;
+    }
+
+    public WithItem withUseValues(boolean useValues) {
+        this.setUseValues(useValues);
+        return this;
+    }
+
+    public boolean isUsingBracketsForValues() {
+        return useBracketsForValues;
+    }
+
+    public void setUseBracketsForValues(boolean useBracketsForValues) {
+        this.useBracketsForValues = useBracketsForValues;
+    }
+
+    public WithItem withUseBracketsForValues(boolean useBracketsForValues) {
+        this.setUseBracketsForValues(useBracketsForValues);
+        return this;
+    }
 
     public String getName() {
         return name;
@@ -38,12 +88,12 @@ public class WithItem implements SelectBody {
         this.recursive = recursive;
     }
 
-    public SelectBody getSelectBody() {
-        return selectBody;
+    public SubSelect getSubSelect() {
+        return subSelect.withUseBrackets(false);
     }
 
-    public void setSelectBody(SelectBody selectBody) {
-        this.selectBody = selectBody;
+    public void setSubSelect(SubSelect subSelect) {
+        this.subSelect = subSelect.withUseBrackets(false);
     }
 
     /**
@@ -60,10 +110,28 @@ public class WithItem implements SelectBody {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public String toString() {
-        return (recursive ? "RECURSIVE " : "") + name + ((withItemList != null) ? " " + PlainSelect.
-                getStringList(withItemList, true, true) : "")
-                + " AS (" + selectBody + ")";
+        StringBuilder builder = new StringBuilder();
+        builder.append(recursive ? "RECURSIVE " : "");
+        builder.append(name);
+        builder.append(
+                (withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "");
+        builder.append(" AS ");
+
+        if (useValues) {
+            builder.append("(VALUES ");
+            ExpressionList expressionList = (ExpressionList) itemsList;
+            builder.append(
+                    PlainSelect.getStringList(expressionList.getExpressions(), true, useBracketsForValues));
+            builder.append(")");
+        } else {
+            builder.append(subSelect.isUseBrackets() ? "" : "(");
+            builder.append(subSelect);
+
+            builder.append(subSelect.isUseBrackets() ? "" : ")");
+        }
+        return builder.toString();
     }
 
     @Override
@@ -81,8 +149,8 @@ public class WithItem implements SelectBody {
         return this;
     }
 
-    public WithItem withSelectBody(SelectBody selectBody) {
-        this.setSelectBody(selectBody);
+    public WithItem withSubSelect(SubSelect subSelect) {
+        this.setSubSelect(subSelect);
         return this;
     }
 
@@ -101,9 +169,5 @@ public class WithItem implements SelectBody {
         List<SelectItem> collection = Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
         collection.addAll(withItemList);
         return this.withWithItemList(collection);
-    }
-
-    public <E extends SelectBody> E getSelectBody(Class<E> type) {
-        return type.cast(getSelectBody());
     }
 }
