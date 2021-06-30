@@ -734,7 +734,7 @@ ResetStatement Reset(): {
     Token all;
 }
 {
-    <K_RESET> ( LOOKAHEAD(2) <K_DATETIMELITERAL> <K_ZONE> {name = "Time Zone"; } | name = RelObjectNameExt() | all = <K_ALL> {name = all.image; } )
+    <K_RESET> ( LOOKAHEAD(2) <K_DATETIMELITERAL> <K_ZONE> {name = "Time Zone"; } | name = RelObjectName() | all = <K_ALL> {name = all.image; } )
     { reset = new ResetStatement(name); }
     { return reset; }
 }
@@ -1473,7 +1473,7 @@ String RelObjectNameExt():
   String result=null;
 }
 {
-    ( result=RelObjectName() | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
+    ( result=RelObjectName() | tk=<K_ALL> | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
         | tk=<K_DOUBLE> | tk=<K_IF> | tk=<K_IIF> | tk=<K_OPTIMIZE> | tk=<K_LIMIT>
         | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC> 
         | tk=<K_CASEWHEN> | tk=<K_IN> )
@@ -3194,7 +3194,7 @@ Expression ComparisonItem() :
 }
 {
   (
-    retval=AllComparisonExpression()
+    LOOKAHEAD(3) retval=AllComparisonExpression()
     | LOOKAHEAD(3) retval=AnyComparisonExpression()
     | LOOKAHEAD(ValueListExpression()) retval=ValueListExpression()
     | LOOKAHEAD(3) retval=SimpleExpression()
@@ -4531,7 +4531,7 @@ ColDataType ColDataType():
 		| tk=<K_SIGNED> { colDataType.setDataType(tk.image);}
     )
 
-    [LOOKAHEAD(2) "(" {tk2 =null;} ( (tk=<S_LONG> [ tk2=<K_BYTE> | tk2=<K_CHAR> ] | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> | tk=<K_CHAR> )
+    [LOOKAHEAD(2) "(" {tk2 =null;} ( ( ( tk=<S_LONG> [ LOOKAHEAD(2) (tk2=<K_BYTE> | tk2=<K_CHAR>) ] ) | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> | tk=<K_CHAR> )
 		{ argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:"")); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
     [( "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
     [LOOKAHEAD(2) <K_CHARACTER> <K_SET> tk=<S_IDENTIFIER> { colDataType.setCharacterSet(tk.image); } ]
