@@ -57,6 +57,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.1
 
+* RESET statement [](https://www.postgresql.org/docs/current/sql-reset.html)
+* SET LOCAL|SESSION  [](https://www.postgresql.org/docs/current/sql-set.html)
 * support for nested `WITH` CTEs
 * support for **with** (cte) for **delete**, **update** and **merge**
 * introduce a max depth to allow parsing complex expression lists without performance loss (thx to @manticore-projects)
