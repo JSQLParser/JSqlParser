@@ -323,6 +323,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ROLLBACK:"ROLLBACK">
 |   <K_ROW: "ROW">
 |   <K_ROWS: "ROWS">
+|   <K_SAVEPOINT: "SAVEPOINT">
 |   <K_SCHEMA: "SCHEMA">
 |   <K_SELECT: ("SELECT" | "SEL")>
 |   <K_SEMI : "SEMI">
@@ -381,6 +382,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WITH:"WITH">
 |   <K_WITHIN:"WITHIN">
 |   <K_WITHOUT:"WITHOUT">
+|   <K_WORK:"WORK">
 |   <K_XML:"XML">
 |   <K_XOR:"XOR">
 |   <K_XMLSERIALIZE:"XMLSERIALIZE">
@@ -550,6 +552,10 @@ Statement SingleStatement() :
         stm = Show()
         |
         stm = Use()
+        |
+        stm = SavepointStatement()
+        |
+        stm = RollbackStatement()
         |
         stm = Commit()
         |
@@ -4029,11 +4035,11 @@ Function InternalFunction(Function retval) :
             |
             LOOKAHEAD(NamedExpressionListExprFirst(), { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
             |
-            LOOKAHEAD(3, { getAsBoolean(Feature.allowComplexParsing) }) (expressionList=ComplexExpressionList() [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
+            LOOKAHEAD(3, { getAsBoolean(Feature.allowComplexParsing) }) (expressionList=ComplexExpressionList() {expressionList.setUsingBrackets(false);} [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
-            LOOKAHEAD(3) (expressionList=SimpleExpressionList(true) [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
+            LOOKAHEAD(3) (expressionList=SimpleExpressionList(false) [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
-            expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr); }
+            expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr).withUsingBrackets(false); }
 
         )]
         [ <K_IGNORE> <K_NULLS> {retval.setIgnoreNulls(true); }]
@@ -5235,6 +5241,42 @@ Wait Wait():
 
     {
         return wait;
+    }
+}
+
+SavepointStatement SavepointStatement():
+{
+  SavepointStatement savepointStatement;
+}
+{
+  <K_SAVEPOINT> token=<S_IDENTIFIER> { savepointStatement = new SavepointStatement(token.image); }
+  {
+    return savepointStatement;
+  }
+}
+
+RollbackStatement RollbackStatement():
+{
+    RollbackStatement rollbackStatement;
+    boolean usingWorkKeyword=false;
+    boolean usingSavepointKeyword=false;
+    String savepointName=null;
+    String forceDistributedTransactionIdentifier=null;
+}
+{
+    <K_ROLLBACK> { rollbackStatement = new RollbackStatement(); }
+    [ <K_WORK> { rollbackStatement.setUsingWorkKeyword(true); } ]
+    [   (
+            <K_TO> [ <K_SAVEPOINT> { rollbackStatement.setUsingSavepointKeyword(true); }]  
+                token=<S_IDENTIFIER> { rollbackStatement.setSavepointName(token.image); }
+        )
+        |
+        (
+            <K_FORCE> token=<S_CHAR_LITERAL> { rollbackStatement.setForceDistributedTransactionIdentifier(token.image); }
+        ) ]
+    
+    {
+        return rollbackStatement;
     }
 }
 

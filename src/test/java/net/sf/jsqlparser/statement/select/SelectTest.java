@@ -4625,4 +4625,8 @@ public class SelectTest {
 //    public void testSelectCastProblemIssue1248_2() throws JSQLParserException {
 //        assertSqlCanBeParsedAndDeparsed("SELECT CAST(t1.sign2 AS Nullable(decimal(30, 10)))");
 //    }
+    public void testMissinBracketsNestedInIssue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COUNT(DISTINCT CASE WHEN room IN (11167, 12074, 4484, 4483, 6314, 11168, 10336, 16445, 13176, 13177, 13178) THEN uid END) AS uidCount from tableName", true);
+    }
+
 }

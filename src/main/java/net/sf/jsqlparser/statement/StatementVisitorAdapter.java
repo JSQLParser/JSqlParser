@@ -198,7 +198,16 @@ public class StatementVisitorAdapter implements StatementVisitor {
     }
 
     @Override
+    public void visit(SavepointStatement savepointStatement) {
+        //@todo: do something usefull here
+    }
+
+    @Override
+    public void visit(RollbackStatement rollbackStatement) {
+        //@todo: do something usefull here
+    }
+    @Override
     public void visit(AlterSession alterSession) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+       //@todo: do something usefull here
     }
 }

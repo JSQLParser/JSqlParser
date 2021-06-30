@@ -112,7 +112,6 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     private static final String NOT = "NOT ";
     private SelectVisitor selectVisitor;
-    private boolean useBracketsInExprList = true;
     private OrderByDeParser orderByDeParser = new OrderByDeParser();
 
     public ExpressionDeParser() {
@@ -487,20 +486,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         } else if (function.getParameters() == null && function.getNamedParameters() == null) {
             buffer.append("()");
         } else {
-            boolean oldUseBracketsInExprList = useBracketsInExprList;
-            useBracketsInExprList = !function.isDistinct() &&
-                    !function.isAllColumns() &&
-                    function.getOrderByElements() == null;
-            if (!useBracketsInExprList) {
-                buffer.append("(");
-            }
+            buffer.append("(");
             if (function.isDistinct()) {
                 buffer.append("DISTINCT ");
             } else if (function.isAllColumns()) {
                 buffer.append("ALL ");
             } else if (function.isUnique()) {
-                useBracketsInExprList = false;
-                buffer.append("(UNIQUE ");
+                buffer.append("UNIQUE ");
             }
             if (function.getNamedParameters() != null) {
                 visit(function.getNamedParameters());
@@ -522,11 +514,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                     orderByDeParser.deParseElement(orderByElement);
                 }
             }
-            if (!useBracketsInExprList) {
-                buffer.append(")");
-            }
-            useBracketsInExprList = oldUseBracketsInExprList;
-
+            buffer.append(")");
         }
 
         if (function.getAttribute() != null) {
@@ -545,7 +533,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(ExpressionList expressionList) {
-        if (useBracketsInExprList) {
+        if (expressionList.isUsingBrackets()) {
             buffer.append("(");
         }
         for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
@@ -555,16 +543,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 buffer.append(", ");
             }
         }
-        if (useBracketsInExprList) {
+        if (expressionList.isUsingBrackets()) {
             buffer.append(")");
         }
     }
 
     @Override
     public void visit(NamedExpressionList namedExpressionList) {
-        if (useBracketsInExprList) {
-            buffer.append("(");
-        }
         List<String> names = namedExpressionList.getNames();
         List<Expression> expressions = namedExpressionList.getExpressions();
         for (int i = 0; i < names.size(); i++) {
@@ -577,9 +562,6 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 buffer.append(" ");
             }
             expressions.get(i).accept(this);
-        }
-        if (useBracketsInExprList) {
-            buffer.append(")");
         }
     }
 

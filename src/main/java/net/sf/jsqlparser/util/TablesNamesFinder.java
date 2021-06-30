@@ -995,6 +995,16 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
+    public void visit(SavepointStatement savepointStatement) {
+    }
+
+    @Override
+    public void visit(RollbackStatement rollbackStatement) {
+        
+    }
+    
+    @Override
     public void visit(AlterSession alterSession) {
+        
     }
 }
