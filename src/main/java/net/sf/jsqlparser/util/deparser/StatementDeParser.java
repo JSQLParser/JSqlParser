@@ -18,6 +18,8 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.RollbackStatement;
+import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
@@ -216,6 +218,16 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         buffer.append(merge.toString());
     }
 
+    @Override
+    public void visit(SavepointStatement savepointStatement) {
+        buffer.append(savepointStatement.toString());
+    }
+    
+    @Override
+    public void visit(RollbackStatement rollbackStatement) {
+        buffer.append(rollbackStatement.toString());
+    }
+    
     @Override
     public void visit(Commit commit) {
         buffer.append(commit.toString());
