@@ -22,10 +22,8 @@ Please provide feedback on:
 * API changes: extend visitor with return values (https://github.com/JSQLParser/JSqlParser/issues/901)
 
 ## News
+* Released version **4.1** of JSqlParser
 * Released version **4.0** of JSqlParser
-* Released version **3.2** of JSqlParser
-* Released version **3.1** of JSqlParser
-* Released version **3.0** of JSqlParser
 * The array parsing is the default behaviour. Square bracket quotation has to be enabled using 
   a parser flag (**CCJSqlParser.withSquareBracketQuotation**).
 * due to an API change the version will be 3.0
@@ -55,29 +53,7 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 4.1
-
-* RESET statement [](https://www.postgresql.org/docs/current/sql-reset.html)
-* SET LOCAL|SESSION  [](https://www.postgresql.org/docs/current/sql-set.html)
-* support for nested `WITH` CTEs
-* support for **with** (cte) for **delete**, **update** and **merge**
-* introduce a max depth to allow parsing complex expression lists without performance loss (thx to @manticore-projects)
-* allow all functions to have complex expressions as parameters (thx to @manticore-projects)
-* API change FunctionWithCondParams production removed
-* API change in ValuesStatement: the expression list is now hold as a ItemList and not as a List<Expression>
-* support for parser modification within **parseExpression** and **parseCondExpression**
-* support for table schema for foreign keys
-* support for Oracle hints on **insert, update and merge**
-* support for **merge insert where** clause
-* allow **in** as schema name
-* allow **skip**, **algorithm** as column name
-* support for functions in an interval expression
-* subArray support arr\[1:3\]
-* first support for tuples as simple expression **SELECT myfunc((f1, f2))**
-* support for array constructors **array[[1, 2], [id1, id2]]**
-* added support for **NOT** in MySqls **REGEXP** clause
-* added support for **WITH mytble as ( .. ) INSERT INTO ...**
-* added support for H2 **casewhen** function with conditional parameters
+## Extensions in the latest SNAPSHOT version 4.2
 
 ## Extensions of JSqlParser releases
 
