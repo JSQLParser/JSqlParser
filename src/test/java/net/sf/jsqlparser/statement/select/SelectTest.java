@@ -4615,5 +4615,14 @@ public class SelectTest {
     public void testSelectRowElement() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT (t.tup).id, (tup).name FROM t WHERE (t.tup).id IN (1, 2, 3)");
     }
-
+    
+    @Test
+    public void testSelectCastProblemIssue1248() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST(t1.sign2 AS Nullable (char))");
+    }
+    
+//    @Test
+//    public void testSelectCastProblemIssue1248_2() throws JSQLParserException {
+//        assertSqlCanBeParsedAndDeparsed("SELECT CAST(t1.sign2 AS Nullable(decimal(30, 10)))");
+//    }
 }
