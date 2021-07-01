@@ -22,6 +22,7 @@ import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.UseStatement;
@@ -603,7 +604,10 @@ public enum Feature {
      * @see SetStatement
      */
     set,
-
+    /**
+     * @see ResetStatement
+    */
+    reset,
     /**
      * @see Pivot
      */

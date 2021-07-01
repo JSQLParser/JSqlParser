@@ -18,6 +18,9 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.RollbackStatement;
+import net.sf.jsqlparser.statement.SavepointStatement;
+import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
@@ -26,6 +29,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -52,9 +56,9 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public class StatementDeParser extends AbstractDeParser<Statement> implements StatementVisitor {
 
-    private ExpressionDeParser expressionDeParser;
+    private final ExpressionDeParser expressionDeParser;
 
-    private SelectDeParser selectDeParser;
+    private final SelectDeParser selectDeParser;
 
     public StatementDeParser(StringBuilder buffer) {
         this(new ExpressionDeParser(), new SelectDeParser(), buffer);
@@ -199,11 +203,31 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     }
 
     @Override
+    public void visit(ResetStatement reset) {
+        selectDeParser.setBuffer(buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
+        ResetStatementDeParser setStatementDeparser = new ResetStatementDeParser(expressionDeParser, buffer);
+        selectDeParser.setExpressionVisitor(expressionDeParser);
+        setStatementDeparser.deParse(reset);
+    }
+
+    @Override
     public void visit(Merge merge) {
         // TODO implementation of a deparser
         buffer.append(merge.toString());
     }
 
+    @Override
+    public void visit(SavepointStatement savepointStatement) {
+        buffer.append(savepointStatement.toString());
+    }
+    
+    @Override
+    public void visit(RollbackStatement rollbackStatement) {
+        buffer.append(rollbackStatement.toString());
+    }
+    
     @Override
     public void visit(Commit commit) {
         buffer.append(commit.toString());
@@ -319,5 +343,10 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     @Override
     void deParse(Statement statement) {
         statement.accept(this);
+    }
+
+    @Override
+    public void visit(AlterSession alterSession) {
+        new AlterSessionDeParser(buffer).deParse(alterSession);
     }
 }

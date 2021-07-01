@@ -25,7 +25,7 @@ public class SetStatementValidator extends AbstractValidator<SetStatement> {
             validateFeature(c, Feature.set);
         }
         for (int i = 0; i < set.getCount(); i++) {
-            validateOptionalExpression(set.getExpression(i));
+            validateOptionalExpressions(set.getExpressions(i));
         }
     }
 

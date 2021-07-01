@@ -50,6 +50,8 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
             break;
         case NONE:
             break;
+        default:
+            // nothing
         }
         if (createView.getTemporary() != TemporaryOption.NONE) {
             buffer.append(createView.getTemporary().name()).append(" ");

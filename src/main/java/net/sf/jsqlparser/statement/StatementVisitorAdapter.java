@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -123,6 +124,11 @@ public class StatementVisitorAdapter implements StatementVisitor {
     }
 
     @Override
+    public void visit(ResetStatement reset) {
+
+    }
+
+    @Override
     public void visit(Merge merge) {
 
     }
@@ -189,5 +195,19 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(CreateSynonym createSynonym) {
+    }
+
+    @Override
+    public void visit(SavepointStatement savepointStatement) {
+        //@todo: do something usefull here
+    }
+
+    @Override
+    public void visit(RollbackStatement rollbackStatement) {
+        //@todo: do something usefull here
+    }
+    @Override
+    public void visit(AlterSession alterSession) {
+       //@todo: do something usefull here
     }
 }
