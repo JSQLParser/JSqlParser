@@ -427,7 +427,7 @@ TOKEN : /* Numeric Constants */
 
 SPECIAL_TOKEN:
 {
-   < LINE_COMMENT: "--"(~["\r","\n"])*>
+   < LINE_COMMENT: ("--" | "//") (~["\r","\n"])*>
 |  < MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
 }
 

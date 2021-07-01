@@ -267,4 +267,10 @@ public class CCJSqlParserUtilTest {
           + "        ON ( imp.id_instrument = s.id_instrument )\n" + "WHEN MATCHED THEN\n"
           + "    UPDATE SET  imp.ccf = s.ccf\n" + ";"));
     }
+    
+    @Test
+    public void testParseStatementIssue1250() throws Exception {
+        Statement result = CCJSqlParserUtil.parse("Select test.* from (Select * from sch.PERSON_TABLE // root test\n) as test");
+        assertEquals("SELECT test.* FROM (SELECT * FROM sch.PERSON_TABLE) AS test", result.toString());
+    }
 }
