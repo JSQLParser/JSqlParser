@@ -4641,6 +4641,8 @@ public class SelectTest {
     
     @Test
     public void testDB2SpecialRegisterDateTimeIssue1249() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT_TIME", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT TIME", true);
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT_TIMESTAMP", true);
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT TIMESTAMP", true);
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT_DATE", true);

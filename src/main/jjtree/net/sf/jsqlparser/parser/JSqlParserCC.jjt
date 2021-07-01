@@ -348,9 +348,9 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TEMP:"TEMP">
 |   <K_TEMPORARY:"TEMPORARY">
 |   <K_TIME_KEY_EXPR : ( 
-                         ("CURRENT" ("_" | (" ")?) "TIMESTAMP") 
-                         | ("CURRENT" ("_" | (" ")?) "TIME")
-                         | ("CURRENT" ("_" | (" ")?) "DATE")
+                         ("CURRENT" ( "_" | (" ")+ ) "TIMESTAMP") 
+                         | ("CURRENT" ( "_" | (" ")+ ) "TIME")
+                         | ("CURRENT" ( "_" | (" ")+ ) "DATE")
                        ) ( "()" )?>
 |   <K_TIMEOUT:"TIMEOUT">
 |   <K_TO:"TO">
