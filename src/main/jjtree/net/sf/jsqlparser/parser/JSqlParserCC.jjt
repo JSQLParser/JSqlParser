@@ -347,7 +347,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_THEN:"THEN">
 |   <K_TEMP:"TEMP">
 |   <K_TEMPORARY:"TEMPORARY">
-|   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
+|   <K_TIME_KEY_EXPR : ( 
+                         ("CURRENT" ("_" | (" ")?) "TIMESTAMP") 
+                         | ("CURRENT" ("_" | (" ")?) "TIME")
+                         | ("CURRENT" ("_" | (" ")?) "DATE")
+                       ) ( "()" )?>
 |   <K_TIMEOUT:"TIMEOUT">
 |   <K_TO:"TO">
 |   <K_TOP:"TOP">

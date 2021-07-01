@@ -4638,4 +4638,12 @@ public class SelectTest {
     public void testSelectAllOperatorIssue1140_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM table t0 WHERE t0.id != all(?::uuid[])");
     }
+    
+    @Test
+    public void testDB2SpecialRegisterDateTimeIssue1249() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT_TIMESTAMP", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT TIMESTAMP", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT_DATE", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT DATE", true);
+    }
 }
