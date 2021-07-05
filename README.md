@@ -10,7 +10,7 @@
 [![Total Alerts](https://img.shields.io/lgtm/alerts/g/JSQLParser/JSqlParser.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/JSQLParser/JSqlParser/alerts)
 
 Look here for more information and examples: https://github.com/JSQLParser/JSqlParser/wiki.
-
+ 
 ## License
 
 JSqlParser is dual licensed under **LGPL V2.1** or **Apache Software License, Version 2.0**.
