@@ -170,7 +170,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
         expressionOrderBy.setOrderByElements(orderByElements);
     }
     
-    public FilterOverImpl withExpressionOrderByElements(List<OrderByElement> orderByElements) {
+    public JsonAggregateFunction withExpressionOrderByElements(List<OrderByElement> orderByElements) {
         this.setExpressionOrderByElements(orderByElements);
         return this;
     }
