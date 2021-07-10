@@ -34,6 +34,7 @@ import net.sf.jsqlparser.expression.HexValue;
 import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -989,5 +990,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         for (String expr : var.getTimezoneExpressions()) {
             buffer.append(" AT TIME ZONE " + expr);
         }
+    }
+
+    @Override
+    public void visit(JsonAggregateFunction expression) {
+        expression.append(buffer);
     }
 }

@@ -29,6 +29,7 @@ import net.sf.jsqlparser.expression.HexValue;
 import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -585,6 +586,11 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     @Override
     public void visit(XMLSerializeExpr xml) {
         // TODO this feature seams very close to a jsqlparser-user usecase
+    }
+
+    @Override
+    public void visit(JsonAggregateFunction expression) {
+        expression.accept(this);
     }
 
 }

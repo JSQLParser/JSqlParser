@@ -32,6 +32,7 @@ import net.sf.jsqlparser.expression.HexValue;
 import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -1007,4 +1008,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(AlterSession alterSession) {
         
     }
+
+    @Override
+    public void visit(JsonAggregateFunction expression) {
+       expression.accept(this);
+     }
 }

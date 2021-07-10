@@ -590,4 +590,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(TimezoneExpression expr) {
         expr.getLeftExpression().accept(this);
     }
+
+    @Override
+    public void visit(JsonAggregateFunction expression) {
+        expression.accept(this);
+    }
 }

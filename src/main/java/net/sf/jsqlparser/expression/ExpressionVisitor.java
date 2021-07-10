@@ -170,4 +170,6 @@ public interface ExpressionVisitor {
     void visit(XMLSerializeExpr aThis);
 
     void visit(TimezoneExpression aThis);
+
+    void visit(JsonAggregateFunction aThis);
 }
