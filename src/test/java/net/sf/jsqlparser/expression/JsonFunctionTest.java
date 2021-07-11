@@ -10,6 +10,8 @@
 
 package net.sf.jsqlparser.expression;
 
+import java.util.Objects;
+import junit.framework.Assert;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.Test;
@@ -48,6 +50,44 @@ public class JsonFunctionTest {
         "SELECT JSON_OBJECTAGG( KEY foo VALUE bar NULL ON NULL WITH UNIQUE KEYS ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name ) FROM dual ",
         true);
   }
+  
+  @Test
+  public void testObjectBuilder() throws JSQLParserException {
+      JsonFunction f = new JsonFunction();
+      f.setType(JsonFunctionType.OBJECT);
+      
+      JsonKeyValuePair keyValuePair1 = new JsonKeyValuePair("foo", "bar", false, false);
+      keyValuePair1.setUsingKeyKeyword(true);
+      keyValuePair1.setUsingValueKeyword(true);
+      f.add(keyValuePair1.withUsingFormatJson(true));
+      
+      JsonKeyValuePair keyValuePair2 = new JsonKeyValuePair("foo", "bar", false, false).withUsingKeyKeyword(true).withUsingValueKeyword(true).withUsingFormatJson(false);
+      
+      // this should work because we compare based on KEY only
+      Assert.assertEquals(keyValuePair1, keyValuePair2);
+      
+       // this must fail because all the properties are considered
+      Assert.assertFalse(Objects.equals(keyValuePair1.toString(), keyValuePair2.toString()));
+      
+      f.add(keyValuePair2);
+    }
+  
+  @Test
+  public void testArrayBuilder() throws JSQLParserException {
+      JsonFunction f = new JsonFunction();
+      f.setType(JsonFunctionType.ARRAY);
+      
+      JsonFunctionExpression expression1 = new JsonFunctionExpression(new NullValue());
+      expression1.setUsingFormatJson(true);
+      
+      JsonFunctionExpression expression2 = new JsonFunctionExpression(new NullValue()).withUsingFormatJson(
+          true);
+      
+      Assert.assertTrue(Objects.equals(expression1.toString(), expression2.toString()));
+      
+      f.add(expression1);
+      f.add(expression2);
+    }
 
   @Test
   public void testArrayAgg() throws JSQLParserException {

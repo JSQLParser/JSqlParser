@@ -105,8 +105,6 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  */
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionValidator extends AbstractValidator<Expression> implements ExpressionVisitor {
-
-
     @Override
     public void visit(Addition addition) {
         visitBinaryExpression(addition, " + ");
@@ -591,12 +589,12 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(JsonAggregateFunction expression) {
-        expression.accept(this);
+        // no idea what this is good for
     }
 
     @Override
     public void visit(JsonFunction expression) {
-       expression.accept(this);
+        // no idea what this is good for
     }
 
 }

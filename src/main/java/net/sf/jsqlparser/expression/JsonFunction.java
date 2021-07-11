@@ -21,11 +21,17 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class JsonFunction extends ASTNodeAccessImpl implements Expression {
   private JsonFunctionType functionType;
   private final ArrayList<JsonKeyValuePair> keyValuePairs = new ArrayList<>();
-
-  private ArrayList<JsonFunctionExpression> expressions = new ArrayList<>();
-
+  private final ArrayList<JsonFunctionExpression> expressions = new ArrayList<>();
   private JsonAggregateOnNullType onNullType;
   private JsonAggregateUniqueKeysType uniqueKeysType;
+
+  public ArrayList<JsonKeyValuePair> getKeyValuePairs() {
+    return keyValuePairs;
+  }
+
+  public ArrayList<JsonFunctionExpression> getExpressions() {
+    return expressions;
+  }
 
   public JsonKeyValuePair getKeyValuePair(int i) {
     return keyValuePairs.get(i);

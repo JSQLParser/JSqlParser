@@ -43,12 +43,11 @@ public class JsonFunctionExpression {
     }
     
     public StringBuilder append(StringBuilder builder) {
-        return builder.append(expression.toString()).append(usingFormatJson ? " FORMAT JSON" : "");
+        return builder.append(getExpression()).append(isUsingFormatJson() ? " FORMAT JSON" : "");
     }
 
     @Override
     public String toString() {
         return append(new StringBuilder()).toString();
     }
-    
 }
