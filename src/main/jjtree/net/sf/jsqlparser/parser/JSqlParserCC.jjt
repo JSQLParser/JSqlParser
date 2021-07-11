@@ -3723,8 +3723,13 @@ JsonFunction JsonFunction() : {
           ( 
             <K_JSON_ARRAY> { result.setType( JsonFunctionType.ARRAY ); } 
             "(" 
-                (   LOOKAHEAD(2)
+                (   
+                    LOOKAHEAD(2) ( 
+                        <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
+                    )
+                    |
                     expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
+                    
                     [ LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); } ]
                     (   
                         ","
@@ -3734,13 +3739,7 @@ JsonFunction JsonFunction() : {
                 )*
 
                 [ 
-                    ( 
-                        <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
-                    )
-                    |
-                    ( 
-                        <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
-                    )
+                  <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
                 ]
 
             ")"
