@@ -66,8 +66,15 @@ public class JsonFunctionTest {
       // this should work because we compare based on KEY only
       Assert.assertEquals(keyValuePair1, keyValuePair2);
       
-       // this must fail because all the properties are considered
+      // this must fail because all the properties are considered
       Assert.assertFalse(Objects.equals(keyValuePair1.toString(), keyValuePair2.toString()));
+      
+      JsonKeyValuePair keyValuePair3 = new JsonKeyValuePair("foo", "bar", false, false).withUsingKeyKeyword(false).withUsingValueKeyword(false).withUsingFormatJson(false);
+      Assert.assertNotNull(keyValuePair3 );
+      Assert.assertEquals(keyValuePair3, keyValuePair3);
+      Assert.assertFalse(Objects.equals( keyValuePair3, f));
+      
+      Assert.assertTrue(keyValuePair3.hashCode()!=0);
       
       f.add(keyValuePair2);
     }

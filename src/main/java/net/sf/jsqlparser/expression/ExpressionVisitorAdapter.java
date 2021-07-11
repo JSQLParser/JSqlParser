@@ -593,11 +593,21 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(JsonAggregateFunction expression) {
-        expression.accept(this);
+        Expression expr = expression.getExpression();
+        if (expr!=null) {
+            expr.accept(this);
+        }
+        
+        expr = expression.getFilterExpression();
+        if (expr!=null) {
+            expr.accept(this);
+        }
     }
 
     @Override
     public void visit(JsonFunction expression) {
-        expression.accept(this);
+        for (JsonFunctionExpression expr: expression.getExpressions()) {
+            expr.getExpression().accept(this);
+        }
     }
 }
