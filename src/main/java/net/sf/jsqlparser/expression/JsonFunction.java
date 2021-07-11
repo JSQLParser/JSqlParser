@@ -182,27 +182,23 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
   public StringBuilder appendArray(StringBuilder builder) {
     builder.append("JSON_ARRAY( ");
     int i = 0;
-
+    int n = expressions.size();
+    
     // @fixme: this is a workaround for NULL ON NULL parsed as expressions
-    if (expressions.size() == 3 && (expressions.get(0).toString().equalsIgnoreCase("null")
-        || expressions.get(0).toString().equalsIgnoreCase("absent")
-            && expressions.get(1).toString().equalsIgnoreCase("on")
-            && expressions.get(2).toString().equalsIgnoreCase("null"))) {
-      for (JsonFunctionExpression expr : expressions) {
-        if (i > 0) {
-          builder.append(" ");
-        }
-        expr.append(builder);
-        i++;
+    // json_array(null on null)
+    // json_array(null null on null)
+    // json_array(null, null null on null)
+    boolean noSeparatorsForNullOnNull =
+        n >= 3 && expressions.get(n - 3).toString().equalsIgnoreCase("null")
+            && expressions.get(n - 2).toString().equalsIgnoreCase("on")
+            && expressions.get(n - 1).toString().equalsIgnoreCase("null");
+
+    for (JsonFunctionExpression expr : expressions) {
+      if (i > 0) {
+        builder.append(noSeparatorsForNullOnNull && i >= n - 3 ? " " : ", ");
       }
-    } else {
-      for (JsonFunctionExpression expr : expressions) {
-        if (i > 0) {
-          builder.append(", ");
-        }
-        expr.append(builder);
-        i++;
-      }
+      expr.append(builder);
+      i++;
     }
 
     if (onNullType != null) {

@@ -104,13 +104,14 @@ public class JsonFunctionTest {
         "SELECT JSON_ARRAY( (SELECT * from dual) ) FROM dual ", true);
     TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT JSON_ARRAY( 1, 2, 3 ) FROM dual ", true);
     TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT JSON_ARRAY( \"v0\" ) FROM dual ", true);
-    TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_array(null on null) FROM dual ", true);
+  }
+  
+  @Test
+  public void testArrayWithNullExpressions() throws JSQLParserException {
     TestUtils.assertExpressionCanBeParsedAndDeparsed("JSON_ARRAY( 1, 2, 3 )", true);
-    
     TestUtils.assertExpressionCanBeParsedAndDeparsed("json_array(null on null)", true);
-    
-    TestUtils.assertExpressionCanBeParsedAndDeparsed("json_array(absent on null)", true);
-    
+    TestUtils.assertExpressionCanBeParsedAndDeparsed("json_array(null null on null)", true);
+    TestUtils.assertExpressionCanBeParsedAndDeparsed("json_array(null, null null on null)", true);
     TestUtils.assertExpressionCanBeParsedAndDeparsed("json_array()", true);
   }
 
