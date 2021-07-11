@@ -15,10 +15,6 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 /**
- * Analytic function. The name of the function is variable but the parameters following the special
- * analytic function path. e.g. row_number() over (order by test). Additional there can be an
- * expression for an analytical aggregate like sum(col) or the "all collumns" wildcard like
- * count(*).
  *
  * @author tw
  */
@@ -98,7 +94,7 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
         return this;
     }
     
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.MissingBreakInSwitch"})
     public StringBuilder append(StringBuilder builder) {
         if (filterExpression != null) {
             builder.append("FILTER (WHERE ");
