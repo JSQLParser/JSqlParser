@@ -595,4 +595,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(JsonAggregateFunction expression) {
         expression.accept(this);
     }
+
+    @Override
+    public void visit(JsonFunction expression) {
+        expression.accept(this);
+    }
 }

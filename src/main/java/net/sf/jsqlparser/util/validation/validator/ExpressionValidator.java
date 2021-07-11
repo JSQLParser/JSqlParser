@@ -31,6 +31,7 @@ import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
+import net.sf.jsqlparser.expression.JsonFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
@@ -591,6 +592,11 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     @Override
     public void visit(JsonAggregateFunction expression) {
         expression.accept(this);
+    }
+
+    @Override
+    public void visit(JsonFunction expression) {
+       expression.accept(this);
     }
 
 }
