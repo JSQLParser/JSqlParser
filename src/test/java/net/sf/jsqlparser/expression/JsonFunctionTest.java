@@ -169,5 +169,25 @@ public class JsonFunctionTest {
         + "      json_array(null on null)\n" + "    )\n" + "    from (\n"
         + "      select 2 \"v0\"\n" + "      union\n" + "      select 4 \"ID\"\n" + "    ) \"t\"\n"
         + "  ) as text)", true);
+    
+    TestUtils.assertExpressionCanBeParsedAndDeparsed("listagg( json_object(key 'v0' value \"v0\"), ',' )", true);
+    
+    TestUtils.assertSqlCanBeParsedAndDeparsed("select (\n" +
+        "  select coalesce(\n" +
+        "    cast(('[' || listagg(\n" +
+        "      json_object(key 'v0' value \"v0\"),\n" +
+        "      ','\n" +
+        "    ) || ']') as varchar(32672)),\n" +
+        "    json_array()\n" +
+        "  )\n" +
+        "  from (\n" +
+        "    select cast(null as timestamp) \"v0\"\n" +
+        "    from SYSIBM.DUAL\n" +
+        "    union all\n" +
+        "    select timestamp '2000-03-15 10:15:00.0' \"a\"\n" +
+        "    from SYSIBM.DUAL\n" +
+        "  ) \"t\"\n" +
+        ")\n" +
+        "from SYSIBM.DUAL", true);
   }
 }

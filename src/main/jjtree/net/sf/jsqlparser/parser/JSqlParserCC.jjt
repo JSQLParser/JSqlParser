@@ -3680,10 +3680,9 @@ JsonFunction JsonFunction() : {
             (
                 // --- First Element
                 [ "KEY" { usingKeyKeyword = true; } ]
-                keyToken = <S_IDENTIFIER>
+                ( keyToken = <DT_ZONE> | keyToken = <S_DOUBLE> | keyToken = <S_LONG> | keyToken = <S_HEX> | keyToken = <S_CHAR_LITERAL> | keyToken = <S_IDENTIFIER> | keyToken = <S_QUOTED_IDENTIFIER> )
                 ( ":" | "VALUE" { usingValueKeyword = true; } ) 
-                // token = <DT_ZONE> | <S_DOUBLE> | <S_LONG> | <S_HEX> | <S_CHAR_LITERAL> { result.setValue( token.image ); }
-                valueToken = <S_IDENTIFIER> { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
+                ( valueToken = <S_IDENTIFIER> | valueToken = <S_QUOTED_IDENTIFIER> ) { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
 
                 [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
 
@@ -3772,10 +3771,9 @@ JsonAggregateFunction JsonAggregateFunction() : {
           ( <K_JSON_OBJECTAGG> 
             "(" { result.setType( JsonFunctionType.OBJECT ); } 
             [ "KEY" { result.setUsingKeyKeyword( true ); } ]
-            token = <S_IDENTIFIER> { result.setKey( token.image ); }
+            ( token = <DT_ZONE> | token = <S_DOUBLE> | token = <S_LONG> | token = <S_HEX> | token = <S_CHAR_LITERAL> | token = <S_IDENTIFIER> | token = <S_QUOTED_IDENTIFIER> ) { result.setKey( token.image ); }
             ( ":" | "VALUE" {result.setUsingValueKeyword( true ); } ) 
-            // token = <DT_ZONE> | <S_DOUBLE> | <S_LONG> | <S_HEX> | <S_CHAR_LITERAL> { result.setValue( token.image ); }
-            token = <S_IDENTIFIER> { result.setValue( token.image ); }
+            ( token = <S_IDENTIFIER> | token = <S_QUOTED_IDENTIFIER> ) { result.setValue( token.image ); }
 
             [ <K_FORMAT> <K_JSON> { result.setUsingFormatJson( true ); } ]
 
