@@ -103,7 +103,7 @@
                 <configuration>
                     <rulesets>
                         <!-- Custom local file system rule set -->
-                        <ruleset>${basedir}/pmd-rules.xml</ruleset>
+                        <ruleset>${basedir}/ruleset.xml</ruleset>
                     </rulesets>
                     <excludes>
                         <exclude>**/*Bean.java</exclude>
