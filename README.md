@@ -55,6 +55,9 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.2
 
+* API change: merge ALL and ANY expressions class
+* allow `CURRENT DATE`in addition to `CURRENT_DATE` (without underbar)
+
 ## Extensions of JSqlParser releases
 
 * [Release Notes](https://github.com/JSQLParser/JSqlParser/releases)
