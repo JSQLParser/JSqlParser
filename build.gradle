@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id "ca.coglinc2.javacc" version "3.0.0"
+}
+
+repositories {
+	gradlePluginPortal()
+    mavenLocal()
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2/')
+    }
+}
+
+dependencies {
+    testImplementation 'commons-io:commons-io:2.6'
+    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'org.mockito:mockito-core:2.28.2'
+    testImplementation 'org.assertj:assertj-core:3.16.1'
+    testImplementation 'org.apache.commons:commons-lang3:3.10'
+    testImplementation 'com.h2database:h2:1.4.200'
+}
+
+group = 'com.github.jsqlparser'
+version = '4.2-SNAPSHOT'
+description = 'JSQLParser library'
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+compileJavacc {
+	//inputDirectory = file('src/main/jjtree')
+    //outputDirectory = file(project.buildDir.absolutePath + '/generated/javacc')
+    arguments = [grammar_encoding: 'UTF-8', static: 'false', java_template_type: 'modern']
+}
+
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
