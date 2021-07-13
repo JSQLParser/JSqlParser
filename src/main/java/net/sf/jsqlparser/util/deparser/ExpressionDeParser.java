@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import static java.util.stream.Collectors.joining;
 
-import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnalyticType;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -103,6 +102,7 @@ import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSy
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
@@ -623,15 +623,18 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public void visit(AllComparisonExpression allComparisonExpression) {
-        buffer.append("ALL ");
-        allComparisonExpression.getSubSelect().accept((ExpressionVisitor) this);
-    }
-
-    @Override
     public void visit(AnyComparisonExpression anyComparisonExpression) {
-        buffer.append(anyComparisonExpression.getAnyType().name()).append(" ");
-        anyComparisonExpression.getSubSelect().accept((ExpressionVisitor) this);
+        buffer.append(anyComparisonExpression.getAnyType().name()).append(" ( ");
+        SubSelect subSelect = anyComparisonExpression.getSubSelect();
+        if (subSelect!=null) {
+            subSelect.accept((ExpressionVisitor) this);
+        } else {
+            ExpressionList expressionList = (ExpressionList) anyComparisonExpression.getItemsList();
+            buffer.append("VALUES ");
+            buffer.append(
+                    PlainSelect.getStringList(expressionList.getExpressions(), true, anyComparisonExpression.isUsingBracketsForValues()));
+        }
+        buffer.append(" ) ");     
     }
 
     @Override

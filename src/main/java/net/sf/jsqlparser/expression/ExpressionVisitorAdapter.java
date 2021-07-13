@@ -269,12 +269,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(ExistsExpression expr) {
         expr.getRightExpression().accept(this);
     }
-
-    @Override
-    public void visit(AllComparisonExpression expr) {
-
-    }
-
+   
     @Override
     public void visit(AnyComparisonExpression expr) {
 

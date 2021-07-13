@@ -99,8 +99,6 @@ public interface ExpressionVisitor {
 
     void visit(ExistsExpression existsExpression);
 
-    void visit(AllComparisonExpression allComparisonExpression);
-
     void visit(AnyComparisonExpression anyComparisonExpression);
 
     void visit(Concat concat);

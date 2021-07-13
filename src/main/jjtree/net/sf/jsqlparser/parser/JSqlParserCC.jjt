@@ -353,7 +353,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_THEN:"THEN">
 |   <K_TEMP:"TEMP">
 |   <K_TEMPORARY:"TEMPORARY">
-|   <K_TIME_KEY_EXPR : ( "CURRENT_TIMESTAMP" | "CURRENT_TIME" | "CURRENT_DATE" ) ( "()" )?>
+|   <K_TIME_KEY_EXPR : ( 
+                         ("CURRENT" ( "_" | (" ")+ ) "TIMESTAMP") 
+                         | ("CURRENT" ( "_" | (" ")+ ) "TIME")
+                         | ("CURRENT" ( "_" | (" ")+ ) "DATE")
+                       ) ( "()" )?>
 |   <K_TIMEOUT:"TIMEOUT">
 |   <K_TO:"TO">
 |   <K_TOP:"TOP">
@@ -1421,7 +1425,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FIRST> | tk=<K_FOLLOWING> | tk=<K_JSON>
       | tk=<K_LAST> | tk=<K_LEADING> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE>
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_XML>
-      | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY> | tk=<K_ANY>
+      | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY>
       | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_PERCENT> | tk=<K_PRIOR>
       | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
       | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
@@ -1479,7 +1483,7 @@ String RelObjectNameExt():
   String result=null;
 }
 {
-    ( result=RelObjectName() | tk=<K_ALL> | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
+    ( result=RelObjectName() | tk=<K_ALL> | tk=<K_ANY>  | tk=<K_SOME> | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
         | tk=<K_DOUBLE> | tk=<K_IF> | tk=<K_IIF> | tk=<K_OPTIMIZE> | tk=<K_LIMIT>
         | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC> 
         | tk=<K_CASEWHEN> | tk=<K_IN> )
@@ -3200,8 +3204,7 @@ Expression ComparisonItem() :
 }
 {
   (
-    LOOKAHEAD(3) retval=AllComparisonExpression()
-    | LOOKAHEAD(3) retval=AnyComparisonExpression()
+    LOOKAHEAD(3) retval=AnyComparisonExpression()
     | LOOKAHEAD(ValueListExpression()) retval=ValueListExpression()
     | LOOKAHEAD(3) retval=SimpleExpression()
     | retval=RowConstructor()
@@ -3212,29 +3215,28 @@ Expression ComparisonItem() :
    }
 }
 
-Expression AllComparisonExpression() :
-{
-    AllComparisonExpression retval = null;
-    SubSelect subselect = null;
-}
-{
- <K_ALL> "(" subselect=SubSelect() ")" { retval = new AllComparisonExpression(subselect); }
-   {
-      return retval;
-   }
-}
-
 Expression AnyComparisonExpression() :
 {
-    AnyComparisonExpression retval = null;
+    AnyComparisonExpression anyComparisonExpr = null;
     AnyType anyType;
-    SubSelect subselect = null;
+    SubSelect subSelect;
+    ItemsList simpleExpressionList;
 }
 {
- (<K_ANY> { anyType = AnyType.ANY; } | <K_SOME> { anyType = AnyType.SOME; } )
- "(" subselect=SubSelect() ")" { retval = new AnyComparisonExpression(anyType, subselect); }
+ (<K_ANY> { anyType = AnyType.ANY; } | <K_SOME> { anyType = AnyType.SOME; } | <K_ALL> { anyType = AnyType.ALL; } )
+
+    // if the next block looks alike an ExpressionList without Brackets, then parse as List
+    ( LOOKAHEAD( "(" <K_VALUES> SimpleExpressionList(false) ")" ) 
+        "(" <K_VALUES>
+            simpleExpressionList = SimpleExpressionList(false) { anyComparisonExpr=new AnyComparisonExpression(anyType, simpleExpressionList).withUseBracketsForValues(false); }
+        ")"
+
+    // Otherwise parse it as a SubSelect
+        | "(" subSelect = SubSelect() { anyComparisonExpr=new AnyComparisonExpression(anyType, subSelect.withUseBrackets(false)).withUseBracketsForValues(false); } ")"
+            
+    )
    {
-      return retval;
+      return anyComparisonExpr;
    }
 }
 
