@@ -2787,16 +2787,17 @@ public class SelectTest {
     @Test
     public void testSelectJoin2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM pg_constraint WHERE pg_attribute.attnum = ANY(pg_constraint.conkey)");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM pg_constraint WHERE pg_attribute.attnum = ALL(pg_constraint.conkey)");
     }
 
     @Test
     public void testAnyConditionSubSelect() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT e1.empno, e1.sal FROM emp e1 WHERE e1.sal > ANY (SELECT e2.sal FROM emp e2 WHERE e2.deptno = 10)");
+        assertSqlCanBeParsedAndDeparsed("SELECT e1.empno, e1.sal FROM emp e1 WHERE e1.sal > ANY (SELECT e2.sal FROM emp e2 WHERE e2.deptno = 10)", true);
     }
 
     @Test
     public void testAllConditionSubSelect() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT e1.empno, e1.sal FROM emp e1 WHERE e1.sal > ALL (SELECT e2.sal FROM emp e2 WHERE e2.deptno = 10)");
+        assertSqlCanBeParsedAndDeparsed("SELECT e1.empno, e1.sal FROM emp e1 WHERE e1.sal > ALL (SELECT e2.sal FROM emp e2 WHERE e2.deptno = 10)", true);
     }
 
     @Test
@@ -4630,6 +4631,16 @@ public class SelectTest {
     }
 
     @Test
+    public void testAnyComparisionExpressionValuesList1232() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "select * from foo where id != ALL(VALUES 1,2,3)",
+                true);
+        
+        assertSqlCanBeParsedAndDeparsed(
+                "select * from foo where id != ALL(?::uid[])",
+                true);
+    }
+
     public void testSelectAllOperatorIssue1140() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM table t0 WHERE t0.id != all(5)");
     }
