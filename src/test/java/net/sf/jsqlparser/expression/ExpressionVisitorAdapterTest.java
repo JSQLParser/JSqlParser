@@ -234,4 +234,26 @@ public class ExpressionVisitorAdapterTest {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         expr.accept(adapter);
     }
+    
+    @Test
+    public void testJsonFunction() throws JSQLParserException {
+         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        CCJSqlParserUtil
+          .parseExpression("JSON_OBJECT( KEY foo VALUE bar, KEY foo VALUE bar)")
+          .accept(adapter);
+        CCJSqlParserUtil
+          .parseExpression("JSON_ARRAY( (SELECT * from dual) )")
+          .accept(adapter);
+    }
+    
+    @Test
+    public void testJsonAggregateFunction() throws JSQLParserException {
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        CCJSqlParserUtil
+          .parseExpression("JSON_OBJECTAGG( KEY foo VALUE bar NULL ON NULL WITH UNIQUE KEYS ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name )")
+          .accept(adapter);
+        CCJSqlParserUtil
+          .parseExpression("JSON_ARRAYAGG( a FORMAT JSON ABSENT ON NULL ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name )")
+          .accept(adapter);
+    }
 }

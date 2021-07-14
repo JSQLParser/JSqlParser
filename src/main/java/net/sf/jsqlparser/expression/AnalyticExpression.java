@@ -179,7 +179,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.MissingBreakInSwitch"})
     public String toString() {
         StringBuilder b = new StringBuilder();
 

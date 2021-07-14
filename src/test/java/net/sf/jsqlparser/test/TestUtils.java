@@ -283,6 +283,12 @@ public class TestUtils {
 
         assertEquals(expression, stringBuilder.toString());
     }
+    
+    public static void assertExpressionCanBeParsedAndDeparsed(String expressionStr, boolean laxDeparsingCheck) throws JSQLParserException {
+        Expression expression = CCJSqlParserUtil.parseExpression(expressionStr);
+        assertEquals(buildSqlString(expressionStr, laxDeparsingCheck),
+                buildSqlString(expression.toString(), laxDeparsingCheck));
+    }
 
   public static void assertOracleHintExists(String sql, boolean assertDeparser, String... hints)
       throws JSQLParserException {

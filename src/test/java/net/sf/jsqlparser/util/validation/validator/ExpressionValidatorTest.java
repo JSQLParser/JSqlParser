@@ -204,4 +204,28 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
         validateNoErrors("SELECT DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney') AS another_date FROM mytbl", 1,
                 EXPRESSIONS);
     }
+    
+    @Test
+    public void testJsonFunctionExpression() throws JSQLParserException {
+        validateNoErrors("SELECT json_array(null on null) FROM mytbl", 1,
+                EXPRESSIONS);
+        validateNoErrors("SELECT json_array(null null on null) FROM mytbl", 1,
+                EXPRESSIONS);
+        validateNoErrors("SELECT json_array(null, null null on null) FROM mytbl", 1,
+                EXPRESSIONS);
+        
+        validateNoErrors("SELECT json_object(null on null) FROM mytbl", 1,
+                EXPRESSIONS);
+        
+        validateNoErrors("SELECT json_object() FROM mytbl", 1,
+                EXPRESSIONS);
+    }
+    
+    @Test
+    public void testJsonAggregartFunctionExpression() throws JSQLParserException {
+        validateNoErrors("SELECT JSON_ARRAYAGG( a FORMAT JSON ABSENT ON NULL ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name ) FROM mytbl", 1,
+                EXPRESSIONS);
+        validateNoErrors("SELECT JSON_OBJECT( KEY foo VALUE bar FORMAT JSON, foo:bar, foo:bar ABSENT ON NULL) FROM mytbl", 1,
+                EXPRESSIONS);
+    }
 }
