@@ -5,6 +5,9 @@ plugins {
     id 'jacoco'
     id "com.github.spotbugs" version "4.7.2"
     id 'pmd'
+    
+    // download the RR tools which have no Maven Repository
+    id "de.undercouch.download" version "4.1.2"
 }
 
 group = 'com.github.jsqlparser'
@@ -107,6 +110,53 @@ pmd {
         ]
     }
 }
+
+task renderRR() {
+    doLast {
+        // these WAR files have been provided as a courtisy by Gunther Rademacher 
+        // and belong to the RR - Railroad Diagram Generator Project
+        // https://github.com/GuntherRademacher/rr
+        //
+        // Hosting at manticore-projects.com is temporary until a better solution is found
+        // Please do not use these files without Gunther's permission
+        download {
+            src 'http://manticore-projects.com/download/convert.war'
+            dest "$buildDir/rr/convert.war"
+            overwrite false
+        }
+        
+        download {
+            src 'http://manticore-projects.com/download/rr.war'
+            dest "$buildDir/rr/rr.war"
+            overwrite false
+        }
+        
+        javaexec { 
+          standardOutput = new FileOutputStream("${buildDir}/rr/JSqlParserCC.ebnf")
+          main="-jar";
+          args = [
+              "$buildDir/rr/convert.war",
+              "$buildDir/generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj"
+            ]
+        }
+        
+        javaexec {
+          main="-jar";
+          args = [
+              "$buildDir/rr/rr.war",
+              "-noepsilon",
+              "-color:#4D88FF",
+              "-offset:0",
+              "-width:800",
+              //"-png",
+              //"-out:${buildDir}/rr/JSqlParserCC.zip",
+              "-out:${buildDir}/rr/JSqlParserCC.html",
+              "${buildDir}/rr/JSqlParserCC.ebnf"
+            ]
+        } 
+    }
+}
+  
 
 publishing {
     publications {
