@@ -2,7 +2,15 @@ plugins {
     id 'java'
     id 'maven-publish'
     id "ca.coglinc2.javacc" version "3.0.0"
+    id 'jacoco'
+    id "com.github.spotbugs" version "4.7.2"
+    id 'pmd'
 }
+
+group = 'com.github.jsqlparser'
+version = '4.2-SNAPSHOT'
+description = 'JSQLParser library'
+java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
 	gradlePluginPortal()
@@ -19,23 +27,85 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.16.1'
     testImplementation 'org.apache.commons:commons-lang3:3.10'
     testImplementation 'com.h2database:h2:1.4.200'
+    
+    // for JaCoCo Reports
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    
 }
-
-group = 'com.github.jsqlparser'
-version = '4.2-SNAPSHOT'
-description = 'JSQLParser library'
-java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 compileJavacc {
-	//inputDirectory = file('src/main/jjtree')
-    //outputDirectory = file(project.buildDir.absolutePath + '/generated/javacc')
     arguments = [grammar_encoding: 'UTF-8', static: 'false', java_template_type: 'modern']
 }
-
 
 java {
     withSourcesJar()
     withJavadocJar()
+}
+
+jacoco {
+    toolVersion = "0.8.7"
+}
+
+test {
+    finalizedBy jacocoTestReport // report is always generated after tests run
+    finalizedBy jacocoTestCoverageVerification
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.842
+            }
+        }
+    }
+}
+
+spotbugsMain {
+    reports {
+        html {
+            enabled = true
+            destination = file("build/reports/spotbugs/main/spotbugs.html")
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
+}
+
+spotbugs {
+    // fail only on P1 and without the net.sf.jsqlparser.parser.*
+    excludeFilter = file("spotBugsExcludeFilter.xml")
+    
+    // do not run over the test, although we should do that eventually
+     spotbugsTest.enabled = false
+}
+
+pmd {
+    consoleOutput = false
+    toolVersion = "6.36.0"
+    
+    sourceSets = [sourceSets.main]
+    
+    // clear the ruleset in order to use configured rules only, although we should apply the Prio 1 rules eventually
+    ruleSets = []
+    rulesMinimumPriority = 1
+    
+    ruleSetFiles = files("ruleset.xml")
+    
+    pmdMain {
+        excludes = [
+                "build/generated/*"
+        ]
+    }
 }
 
 publishing {
