@@ -4659,4 +4659,9 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT_DATE", true);
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT DATE", true);
     }
+    
+    @Test
+    public void testKeywordFilterIssue1255() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT col1 AS filter FROM table");
+    }
 }
