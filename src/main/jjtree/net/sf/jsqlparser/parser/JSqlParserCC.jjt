@@ -119,7 +119,8 @@ SKIP:
 
 TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 {
-    <K_ACTION: "ACTION">
+    <K_ABSENT: "ABSENT">
+|   <K_ACTION: "ACTION">
 |   <K_ADD:"ADD">
 |   <K_ADVANCE:"ADVANCE">
 |   <K_ADVISE:"ADVISE">
@@ -240,8 +241,13 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ISNULL:"ISNULL">
 |   <K_JOIN:"JOIN">
 |   <K_JSON:"JSON">
+|   <K_JSON_OBJECT: "JSON_OBJECT">
+|   <K_JSON_OBJECTAGG: "JSON_OBJECTAGG">
+|   <K_JSON_ARRAY: "JSON_ARRAY">
+|   <K_JSON_ARRAYAGG: "JSON_ARRAYAGG">
 |   <K_KEEP:"KEEP">
 |   <K_KEY:"KEY">
+|   <K_KEYS:"KEYS">
 |   <K_FN:"FN">
 |   <K_LAST: "LAST">
 |   <K_LATERAL:"LATERAL">
@@ -3443,11 +3449,15 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(JsonExpression()) retval=JsonExpression()
 
+        | LOOKAHEAD(JsonFunction()) retval = JsonFunction()
+
+        | LOOKAHEAD(JsonAggregateFunction()) retval = JsonAggregateFunction()
+
         /* | LOOKAHEAD(FunctionWithCondParams()) retval = FunctionWithCondParams() */
 
         | LOOKAHEAD(FullTextSearch()) retval = FullTextSearch()
 
-        | LOOKAHEAD(Function()) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression((Function)retval) ]
+        | LOOKAHEAD(Function()) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
 
         | LOOKAHEAD(2) retval = IntervalExpression() { dateExpressionAllowed = false; }
 
@@ -3645,6 +3655,194 @@ JsonExpression JsonExpression() : {
     )+
     {
         result.setExpression(expr);
+        return result;
+    }
+}
+
+JsonFunction JsonFunction() : {
+    JsonFunction result = new JsonFunction();
+    boolean usingKeyKeyword = false;
+    boolean usingValueKeyword = false;
+    Token keyToken;
+    Token valueToken;
+    JsonKeyValuePair keyValuePair;
+
+    Expression expression;
+    JsonFunctionExpression functionExpression;
+  
+}
+{
+    (
+        ( 
+          ( <K_JSON_OBJECT> 
+            "(" { result.setType( JsonFunctionType.OBJECT ); } 
+            
+            (
+                // --- First Element
+                [ "KEY" { usingKeyKeyword = true; } ]
+                ( keyToken = <DT_ZONE> | keyToken = <S_DOUBLE> | keyToken = <S_LONG> | keyToken = <S_HEX> | keyToken = <S_CHAR_LITERAL> | keyToken = <S_IDENTIFIER> | keyToken = <S_QUOTED_IDENTIFIER> )
+                ( ":" | "VALUE" { usingValueKeyword = true; } ) 
+                ( valueToken = <S_IDENTIFIER> | valueToken = <S_QUOTED_IDENTIFIER> ) { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
+
+                [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
+
+                // --- Next Elements
+                (   ","  { usingKeyKeyword = false; usingValueKeyword = false;  }
+                    [ "KEY" { usingKeyKeyword = true; } ]
+                    keyToken = <S_IDENTIFIER> 
+                    ( ":" | "VALUE" { usingValueKeyword = true; } ) 
+                    // token = <DT_ZONE> | <S_DOUBLE> | <S_LONG> | <S_HEX> | <S_CHAR_LITERAL> { result.setValue( token.image ); }
+                    valueToken = <S_IDENTIFIER> { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
+
+                    [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
+                )*
+            )*
+
+            [ 
+              ( 
+                  <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
+              )
+              |
+              ( 
+                  <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
+              )
+            ]
+
+            [
+              (
+                  <K_WITH> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITH ); }
+              )
+              |
+              (
+                  <K_WITHOUT> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITHOUT ); }
+              )
+            ]
+
+            ")"
+          )
+          |
+          ( 
+            <K_JSON_ARRAY> { result.setType( JsonFunctionType.ARRAY ); } 
+            "(" 
+                (   
+                    LOOKAHEAD(2) ( 
+                        <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
+                    )
+                    |
+                    expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
+                    
+                    [ LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); } ]
+                    (   
+                        ","
+                        expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
+                        [ LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); } ]
+                    )*
+                )*
+
+                [ 
+                  <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
+                ]
+
+            ")"
+          )
+        )
+    )
+
+    {
+        return result;
+    }
+}
+
+JsonAggregateFunction JsonAggregateFunction() : {
+    JsonAggregateFunction result = new JsonAggregateFunction();
+    Token token;
+    Expression expression;
+    List<OrderByElement> expressionOrderByList = null;
+  
+    Expression filter;
+    ExpressionList expressionList = null;
+    List<OrderByElement> olist = null;
+    WindowElement windowElement = null;
+    boolean partitionByBrackets = false;
+}
+{
+    (
+        ( 
+          ( <K_JSON_OBJECTAGG> 
+            "(" { result.setType( JsonFunctionType.OBJECT ); } 
+            [ "KEY" { result.setUsingKeyKeyword( true ); } ]
+            ( token = <DT_ZONE> | token = <S_DOUBLE> | token = <S_LONG> | token = <S_HEX> | token = <S_CHAR_LITERAL> | token = <S_IDENTIFIER> | token = <S_QUOTED_IDENTIFIER> ) { result.setKey( token.image ); }
+            ( ":" | "VALUE" {result.setUsingValueKeyword( true ); } ) 
+            ( token = <S_IDENTIFIER> | token = <S_QUOTED_IDENTIFIER> ) { result.setValue( token.image ); }
+
+            [ <K_FORMAT> <K_JSON> { result.setUsingFormatJson( true ); } ]
+
+            [ 
+              LOOKAHEAD(2) ( 
+                  <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
+              )
+              |
+              ( 
+                  <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
+              )
+            ]
+
+            [
+              (
+                  <K_WITH> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITH ); }
+              )
+              |
+              (
+                  <K_WITHOUT> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITHOUT ); }
+              )
+            ]
+            ")"
+          )
+          |
+          ( 
+            <K_JSON_ARRAYAGG>
+            "(" { result.setType( JsonFunctionType.ARRAY ); } 
+            expression=Expression() { result.setExpression( expression ); }
+            [ <K_FORMAT> <K_JSON> { result.setUsingFormatJson( true ); } ]
+            [ expressionOrderByList = OrderByElements() { result.setExpressionOrderByElements( expressionOrderByList ); } ]
+
+            [ 
+              LOOKAHEAD(2) ( 
+                  <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
+              )
+              |
+              ( 
+                  <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
+              )
+            ]
+
+            ")"
+          )
+        )
+
+        // -- Filter
+        [ <K_FILTER> "(" <K_WHERE> { result.setAnalyticType(AnalyticType.FILTER_ONLY); } filter = Expression() { result.setFilterExpression( filter ); } ")"  ]
+
+        // -- OVER
+        [   LOOKAHEAD(2)
+            <K_OVER> {result.setAnalyticType(AnalyticType.OVER);}
+            "("
+            [<K_PARTITION> <K_BY>
+                (LOOKAHEAD(ComplexExpressionList()) expressionList=ComplexExpressionList()
+                | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+            ]
+            [olist=OrderByElements() ]
+            [windowElement = WindowElement() ]
+            {
+                result.setPartitionExpressionList(expressionList, partitionByBrackets);
+                result.setOrderByElements(olist);
+                result.setWindowElement(windowElement);
+            }
+            ")"
+        ]
+    )
+
+    {
         return result;
     }
 }

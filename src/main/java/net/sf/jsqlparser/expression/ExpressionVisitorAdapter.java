@@ -585,4 +585,24 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(TimezoneExpression expr) {
         expr.getLeftExpression().accept(this);
     }
+
+    @Override
+    public void visit(JsonAggregateFunction expression) {
+        Expression expr = expression.getExpression();
+        if (expr!=null) {
+            expr.accept(this);
+        }
+        
+        expr = expression.getFilterExpression();
+        if (expr!=null) {
+            expr.accept(this);
+        }
+    }
+
+    @Override
+    public void visit(JsonFunction expression) {
+        for (JsonFunctionExpression expr: expression.getExpressions()) {
+            expr.getExpression().accept(this);
+        }
+    }
 }
