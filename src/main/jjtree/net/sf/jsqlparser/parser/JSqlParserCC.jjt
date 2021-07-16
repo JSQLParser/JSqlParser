@@ -3821,7 +3821,7 @@ JsonAggregateFunction JsonAggregateFunction() : {
         )
 
         // -- Filter
-        [ <K_FILTER> "(" <K_WHERE> { result.setAnalyticType(AnalyticType.FILTER_ONLY); } filter = Expression() { result.setFilterExpression( filter ); } ")"  ]
+        [ LOOKAHEAD(2) <K_FILTER> "(" <K_WHERE> { result.setAnalyticType(AnalyticType.FILTER_ONLY); } filter = Expression() { result.setFilterExpression( filter ); } ")"  ]
 
         // -- OVER
         [   LOOKAHEAD(2)
