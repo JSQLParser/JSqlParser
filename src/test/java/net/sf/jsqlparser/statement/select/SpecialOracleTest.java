@@ -39,8 +39,13 @@ import org.junit.Test;
  * @author toben
  */
 public class SpecialOracleTest {
-
-    private static final File SQLS_DIR = new File("build/resources/test/net/sf/jsqlparser/statement/oracle-tests");
+    
+    //@todo: this is a workaround for Maven vs. Gradle
+    //we will want to remove that after concluding the Gradle migration
+    private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/statement/select/oracle-tests").isDirectory()
+        ? new File("target/test-classes/net/sf/jsqlparser/statement/select/oracle-tests")
+        : new File("build/resources/test/net/sf/jsqlparser/statement/select/oracle-tests");
+    
     private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
 
     private final List<String> successes = Arrays.asList("aggregate01.sql",

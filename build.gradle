@@ -113,7 +113,7 @@ pmd {
 
 task renderRR() {
     doLast {
-        // these WAR files have been provided as a courtisy by Gunther Rademacher 
+        // these WAR files have been provided as a courtesy by Gunther Rademacher 
         // and belong to the RR - Railroad Diagram Generator Project
         // https://github.com/GuntherRademacher/rr
         //
@@ -150,7 +150,7 @@ task renderRR() {
               "-width:800",
               //"-png",
               //"-out:${buildDir}/rr/JSqlParserCC.zip",
-              "-out:${buildDir}/rr/JSqlParserCC.html",
+              "-out:${buildDir}/rr/JSqlParserCC.xhtml",
               "${buildDir}/rr/JSqlParserCC.ebnf"
             ]
         } 
