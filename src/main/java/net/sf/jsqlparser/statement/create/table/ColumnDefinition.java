@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
@@ -98,5 +99,9 @@ public class ColumnDefinition {
         List<String> collection = Optional.ofNullable(getColumnSpecs()).orElseGet(ArrayList::new);
         collection.addAll(columnSpecs);
         return this.withColumnSpecs(collection);
+    }
+
+    public void accept(ExpressionVisitorAdapter aThis) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

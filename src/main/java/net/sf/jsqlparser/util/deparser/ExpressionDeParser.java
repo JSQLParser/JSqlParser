@@ -101,6 +101,7 @@ import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -668,7 +669,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append("CAST(");
             cast.getLeftExpression().accept(this);
             buffer.append(" AS ");
-            buffer.append(cast.getType());
+            buffer.append( cast.getRowConstructor()!=null ? cast.getRowConstructor() : cast.getType() );
             buffer.append(")");
         } else {
             cast.getLeftExpression().accept(this);
@@ -872,14 +873,25 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(rowConstructor.getName());
         }
         buffer.append("(");
-        boolean first = true;
-        for (Expression expr : rowConstructor.getExprList().getExpressions()) {
-            if (first) {
-                first = false;
-            } else {
-                buffer.append(", ");
+        
+        if (rowConstructor.getColumnDefinitions().size()>0) {
+            buffer.append("(");
+            int i = 0;
+            for (ColumnDefinition columnDefinition:rowConstructor.getColumnDefinitions()) {
+                buffer.append(i>0 ? ", " : "").append(columnDefinition.toString());
+                i++;
             }
-            expr.accept(this);
+            buffer.append(")");
+        } else {
+            boolean first = true;
+            for (Expression expr : rowConstructor.getExprList().getExpressions()) {
+                if (first) {
+                    first = false;
+                } else {
+                    buffer.append(", ");
+                }
+                expr.accept(this);
+            }
         }
         buffer.append(")");
     }

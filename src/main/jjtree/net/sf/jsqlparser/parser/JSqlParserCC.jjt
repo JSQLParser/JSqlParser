@@ -3086,7 +3086,8 @@ ExpressionList SimpleExpressionList(boolean outerBrackets) #ExpressionList:
     Expression expr = null;
 }
 {
-    expr=SimpleExpression() { expressions.add(expr); } ("," expr=SimpleExpression() { expressions.add(expr); })*
+    expr=SimpleExpression() { expressions.add(expr); } 
+    ( LOOKAHEAD(2) "," expr=SimpleExpression() { expressions.add(expr); } )*
     {
         retval.setExpressions(expressions);
         return retval;
@@ -3468,6 +3469,8 @@ Expression PrimaryExpression() #PrimaryExpression:
         | token=<S_HEX>  { retval = new HexValue(token.image); }
 
         | LOOKAHEAD(2) retval=CastExpression()
+
+        //| LOOKAHEAD(2) retval=RowConstructor()
 
         // support timestamp expressions
         | (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
@@ -4013,15 +4016,23 @@ CastExpression CastExpression():
 {
     CastExpression retval = new CastExpression();
     ColDataType type = null;
+    RowConstructor rowConstructor = null;
     Expression expression = null;
     boolean    useCastKeyword;
 }
 {
-    <K_CAST> "(" expression=SimpleExpression() <K_AS> type=ColDataType() ")" { retval.setUseCastKeyword(true); }
+    <K_CAST> 
+    "(" 
+    expression=SimpleExpression() 
+    <K_AS> { retval.setUseCastKeyword(true); } 
+    ( 
+        LOOKAHEAD(3) rowConstructor = RowConstructor() { retval.setRowConstructor(rowConstructor); } 
+        | type=ColDataType() { retval.setType(type); } 
+    )
+    ")" 
 
     {
         retval.setLeftExpression(expression);
-        retval.setType(type);
         return retval;
     }
 }
@@ -4085,16 +4096,20 @@ WhenClause WhenThenSearchCondition():
 }*/
 
 RowConstructor RowConstructor(): {
-    ExpressionList list = null;
     RowConstructor rowConstructor = new RowConstructor();
+    ColumnDefinition columnDefinition = null;
 } {
     [ <K_ROW> { rowConstructor.setName("ROW");} ]
     "("
-        list = SimpleExpressionList(true)
-    ")"
+     columnDefinition = ColumnDefinition() { rowConstructor.addColumnDefinition(columnDefinition); }
+     (
+         "," 
+         columnDefinition = ColumnDefinition() { rowConstructor.addColumnDefinition(columnDefinition); }
+     )*  
+     ")"
+            
 
     {
-        rowConstructor.setExprList(list);
         return rowConstructor;
     }
 }
@@ -4434,7 +4449,7 @@ ColumnDefinition ColumnDefinition(): {
 
     colDataType = ColDataType()
 
-    ( parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
+    ( LOOKAHEAD(2) parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
 
     {
         coldef = new ColumnDefinition();
