@@ -613,7 +613,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         }
     }
 
-    public void visit(ColumnDefinition aThis) {
-       
-    }
+    public void visit(ColumnDefinition columnDefinition) {
+       columnDefinition.accept(this);
+     }
 }
