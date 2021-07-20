@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.JdbcNamedParameter;
+import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
@@ -24,7 +26,7 @@ import net.sf.jsqlparser.schema.Column;
 public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
 
     private List<Column> _matchColumns;
-    private StringValue _againstValue;
+    private Expression _againstValue;
     private String _searchModifier;
 
     public FullTextSearch() {
@@ -42,8 +44,16 @@ public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
     public void setAgainstValue(StringValue val) {
         this._againstValue = val;
     }
+    
+    public void setAgainstValue(JdbcNamedParameter val) {
+        this._againstValue = val;
+    }
+    
+    public void setAgainstValue(JdbcParameter val) {
+        this._againstValue = val;
+    }
 
-    public StringValue getAgainstValue() {
+    public Expression getAgainstValue() {
         return this._againstValue;
     }
 
