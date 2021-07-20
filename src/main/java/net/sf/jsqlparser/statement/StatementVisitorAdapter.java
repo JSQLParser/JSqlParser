@@ -210,4 +210,12 @@ public class StatementVisitorAdapter implements StatementVisitor {
     public void visit(AlterSession alterSession) {
        //@todo: do something usefull here
     }
+
+    @Override
+    public void visit(IfElseStatement ifElseStatement) {
+        ifElseStatement.getIfStatement().accept(this);
+        if (ifElseStatement.getElseStatement()!=null) {
+            ifElseStatement.getElseStatement().accept(this);
+          }
+    }
 }

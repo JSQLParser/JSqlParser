@@ -1024,4 +1024,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
             expr.getExpression().accept(this);
         }
     }
+
+    @Override
+    public void visit(IfElseStatement ifElseStatement) {
+        ifElseStatement.getIfStatement().accept(this);
+        if (ifElseStatement.getElseStatement()!=null) {
+            ifElseStatement.getElseStatement().accept(this);
+          }
+    }
 }
