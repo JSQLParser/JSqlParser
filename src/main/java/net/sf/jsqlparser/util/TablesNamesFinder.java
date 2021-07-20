@@ -717,7 +717,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Drop drop) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        visit(drop.getName());
     }
 
     @Override

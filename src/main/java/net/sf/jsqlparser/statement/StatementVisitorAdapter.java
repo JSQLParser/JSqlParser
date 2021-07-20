@@ -213,9 +213,6 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(IfElseStatement ifElseStatement) {
-        ifElseStatement.getIfStatement().accept(this);
-        if (ifElseStatement.getElseStatement()!=null) {
-            ifElseStatement.getElseStatement().accept(this);
-          }
+        
     }
 }

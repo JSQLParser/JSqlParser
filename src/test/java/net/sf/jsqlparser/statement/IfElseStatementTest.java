@@ -9,10 +9,18 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.util.Arrays;
+import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.test.TestUtils;
+import net.sf.jsqlparser.util.TablesNamesFinder;
+import net.sf.jsqlparser.util.validation.Validation;
+import net.sf.jsqlparser.util.validation.ValidationError;
+import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
+import net.sf.jsqlparser.util.validation.feature.DatabaseType;
+import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -67,8 +75,27 @@ public class IfElseStatementTest {
 
     Assert.assertEquals(ifElseStatement.isUsingSemicolonForIfStatement(),
         ifElseStatement.isUsingSemicolonForElseStatement());
-    Assert.assertEquals(ifElseStatement.getIfStatement().toString(), ifElseStatement.getElseStatement().toString());
-    
+    Assert.assertEquals(ifElseStatement.getIfStatement().toString(),
+        ifElseStatement.getElseStatement().toString());
+
     Assert.assertNotNull(ifElseStatement.getCondition());
+  }
+
+  @Test
+  public void testValidation() throws JSQLParserException {
+    String sqlStr = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1;";
+    List<ValidationError> errors =
+        Validation.validate(Arrays.asList(DatabaseType.SQLSERVER, FeaturesAllowed.DROP), sqlStr);
+    ValidationTestAsserts.assertErrorsSize(errors, 0);
+  }
+
+  @Test
+  public void testTableNames() throws JSQLParserException {
+    String sql = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1;";
+    Statement stmt = CCJSqlParserUtil.parse(sql);
+    TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+    List<String> tableList = tablesNamesFinder.getTableList(stmt);
+    Assert.assertEquals(1, tableList.size());
+    Assert.assertTrue(tableList.contains("tOrigin1"));
   }
 }

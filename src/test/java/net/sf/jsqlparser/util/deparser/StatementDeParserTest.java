@@ -27,8 +27,10 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.replace.Replace;
@@ -362,5 +364,16 @@ public class StatementDeParserTest {
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
+    
+    @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+    public void shouldUseProvidedDeparsersWhenDeParsingIfThenStatement() {
+        Expression condition = mock(Expression.class);
+        Drop ifStatement = mock(Drop.class);
+        
+        IfElseStatement ifElseStatement = new IfElseStatement(condition, ifStatement);
+
+        statementDeParser.deParse(ifElseStatement);
+      }
     
 }
