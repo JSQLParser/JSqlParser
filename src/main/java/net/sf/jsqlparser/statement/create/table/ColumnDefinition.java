@@ -101,7 +101,7 @@ public class ColumnDefinition {
         return this.withColumnSpecs(collection);
     }
 
-    public void accept(ExpressionVisitorAdapter aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public void accept(ExpressionVisitorAdapter expressionVisitor) {
+       expressionVisitor.visit(this);
+     }
 }

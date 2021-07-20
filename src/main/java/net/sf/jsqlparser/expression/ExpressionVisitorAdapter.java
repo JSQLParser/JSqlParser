@@ -504,8 +504,14 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(RowConstructor rowConstructor) {
-        for (ColumnDefinition columnDefinition : rowConstructor.getColumnDefinitions()) {
-            columnDefinition.accept(this);
+        if (rowConstructor.getColumnDefinitions().isEmpty()) {
+            for (Expression expression: rowConstructor.getExprList().getExpressions()) {
+                expression.accept(this);
+              }
+        } else {
+            for (ColumnDefinition columnDefinition : rowConstructor.getColumnDefinitions()) {
+                columnDefinition.accept(this);
+            }
         }
     }
 
@@ -605,5 +611,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         for (JsonFunctionExpression expr: expression.getExpressions()) {
             expr.getExpression().accept(this);
         }
+    }
+
+    public void visit(ColumnDefinition aThis) {
+       
     }
 }

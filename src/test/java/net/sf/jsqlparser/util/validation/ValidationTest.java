@@ -146,6 +146,14 @@ public class ValidationTest extends ValidationTestAsserts {
         assertEquals("UPDATE + SELECT + feature set",
                 FeaturesAllowed.UPDATE.copy().add(new FeaturesAllowed(Feature.commit)).getName());
     }
+    
+    @Test
+    public void testRowConstructorValidation() throws JSQLParserException {
+        String stmt = "SELECT CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))";
+        List<ValidationError> errors = Validation.validate(
+                Arrays.asList(DatabaseType.ANSI_SQL, FeaturesAllowed.SELECT), stmt);
+        assertErrorsSize(errors, 0);
+    }
 
 
 }
