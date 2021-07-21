@@ -31,3 +31,5 @@ from
 ALL_IND_EXPRESSIONS ie  
 where ind.index_name = ie.index_name(+)
 and ind.index_owner = ie.index_owner(+)
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

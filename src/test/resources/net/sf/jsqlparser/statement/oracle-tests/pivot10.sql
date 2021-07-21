@@ -26,3 +26,5 @@
  )
  )
  where d_t = 'p'
+
+--@FAILURE: Encountered unexpected token: "pivot" "PIVOT" recorded first on Jul 21, 2021 9:47:13 AM

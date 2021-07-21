@@ -13,3 +13,5 @@
   (seq_emp.nextval, 'morgan')
   returning rowid
   into r
+
+--@FAILURE: Encountered unexpected token: "into" "INTO" recorded first on Jul 21, 2021 9:47:13 AM

@@ -11,3 +11,5 @@ select varchar2_ntt('a','b','c')
                multiset except
                   varchar2_ntt('b','c','d') as multiset_except
      from   dual
+
+--@FAILURE: Encountered unexpected token: "except" "EXCEPT" recorded first on Jul 21, 2021 9:47:13 AM

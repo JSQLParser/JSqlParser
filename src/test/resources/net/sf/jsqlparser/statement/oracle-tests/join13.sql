@@ -12,3 +12,5 @@ select * from t1,
        	t2 left outer join t3 using(dummy)
 	))))
 	
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:52:56 AM

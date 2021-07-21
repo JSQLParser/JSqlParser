@@ -9,3 +9,5 @@
 ---
 delete from table_name
 where current of cursor_name
+
+--@FAILURE: Encountered unexpected token: "of" "OF" recorded first on Jul 21, 2021 9:47:13 AM

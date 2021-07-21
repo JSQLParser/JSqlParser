@@ -11,3 +11,5 @@ update table_name
 set row = array_of_records(i)
 where 1=1
       
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

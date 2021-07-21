@@ -16,3 +16,5 @@ select :b3 as l_snap_id , :b2 as p_dbid , :b1 as p_instance_number , nvl(pid, -9
  where program != 'pseudo'
  group by grouping sets ( (pid, serial#), () )
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

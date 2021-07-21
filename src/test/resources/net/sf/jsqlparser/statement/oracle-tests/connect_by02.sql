@@ -13,3 +13,5 @@ employee_id, manager_id, job_id
     start with job_id = 'ad_pres' 
     connect by prior employee_id = manager_id and level <= 2
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

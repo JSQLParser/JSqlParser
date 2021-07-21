@@ -14,3 +14,5 @@ select cust_gender, count(*) as cnt, round(avg(age)) as avg_age
    group by cust_gender
    order by cust_gender
 	    
+
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on Jul 21, 2021 9:47:13 AM

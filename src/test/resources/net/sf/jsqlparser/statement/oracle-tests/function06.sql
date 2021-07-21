@@ -8,3 +8,5 @@
 -- #L%
 ---
 call dbms_scheduler.auto_purge (  )
+
+--@FAILURE: Encountered unexpected token: ")" ")" recorded first on Jul 21, 2021 9:47:13 AM

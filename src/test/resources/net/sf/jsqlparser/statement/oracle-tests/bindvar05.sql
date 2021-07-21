@@ -21,3 +21,5 @@ and subobject_name is null
 and object_id not in ( select purge_object from recyclebin )
 and upper(object_name) in upper(:name)
  
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

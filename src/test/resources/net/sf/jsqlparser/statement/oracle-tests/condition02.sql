@@ -15,3 +15,5 @@ select *
  and to_yminterval('01-00') < sysdate
  and to_yminterval('01-00') + x < sysdate
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:12 AM

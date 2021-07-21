@@ -14,3 +14,5 @@ select lpad(' ',2*(level-1)) || last_name org_chart,
     connect by prior employee_id = manager_id
 
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

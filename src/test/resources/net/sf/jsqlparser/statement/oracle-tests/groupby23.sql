@@ -22,3 +22,5 @@ having (grouping(channel_desc)=1 and grouping(calendar_month_desc)= 1
   and grouping(country_iso_code)=1) or (grouping(channel_desc)=1 
   and grouping (calendar_month_desc)= 1) or (grouping(country_iso_code)=1
   and grouping(calendar_month_desc)= 1)
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

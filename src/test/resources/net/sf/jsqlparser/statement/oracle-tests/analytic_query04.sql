@@ -12,3 +12,5 @@ select deptno
 	, hiredate
 	, listagg(ename, ',') within group (order by hiredate) over (partition by deptno) as employees
 from emp
+
+--@FAILURE: Encountered unexpected token: "by" "BY" recorded first on Jul 21, 2021 9:47:12 AM

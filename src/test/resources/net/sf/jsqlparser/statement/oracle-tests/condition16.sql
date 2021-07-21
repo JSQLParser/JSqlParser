@@ -10,3 +10,5 @@
 select * from persons p
        where value(p) is of type(only employee_t)
        
+
+--@FAILURE: Encountered unexpected token: "is" "IS" recorded first on Jul 21, 2021 9:47:13 AM

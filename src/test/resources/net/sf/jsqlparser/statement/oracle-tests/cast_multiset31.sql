@@ -21,3 +21,5 @@ select e.deptno
             e.deptno
      order  by
             e.deptno
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:12 AM

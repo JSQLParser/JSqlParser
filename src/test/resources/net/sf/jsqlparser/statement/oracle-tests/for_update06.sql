@@ -10,3 +10,5 @@
 select employee_id from (select employee_id+1 as employee_id from employees)
    for update of employee_id skip locked
 
+
+--@FAILURE: Encountered unexpected token: "skip" "SKIP" recorded first on Jul 21, 2021 9:47:13 AM

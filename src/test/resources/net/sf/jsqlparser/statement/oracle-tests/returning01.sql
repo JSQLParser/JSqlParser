@@ -12,3 +12,5 @@ set ename = lower(ename)
 where job = :jobs(i)
 returning empno
 bulk collect into :empnos
+
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on Jul 21, 2021 9:47:12 AM

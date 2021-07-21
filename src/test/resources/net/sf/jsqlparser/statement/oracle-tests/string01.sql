@@ -21,3 +21,5 @@ select
 , n'nchar literal'
 from dual
 
+
+--@FAILURE: Encountered unexpected token: "%" "%" recorded first on Jul 21, 2021 9:47:12 AM

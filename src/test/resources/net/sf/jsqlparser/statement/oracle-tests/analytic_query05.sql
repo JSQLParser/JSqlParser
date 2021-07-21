@@ -24,3 +24,5 @@
  , percentile_cont(0.99) within group (order by obs_value asc) over (partition by metric_id, bsln_guid, timegroup) as pctile_99
  from timegrouped_rawdata d
 
+
+--@FAILURE: Encountered unexpected token: "by" "BY" recorded first on Jul 21, 2021 9:47:13 AM

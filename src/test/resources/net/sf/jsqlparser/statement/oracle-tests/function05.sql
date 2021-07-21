@@ -10,3 +10,5 @@
 select count(*)
   from employees
   where lnnvl(commission_pct >= .2)
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

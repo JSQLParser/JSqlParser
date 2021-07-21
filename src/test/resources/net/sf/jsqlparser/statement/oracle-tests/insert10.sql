@@ -12,3 +12,5 @@ insert into (
   from emp)
   values
   (1, 'morgan', 'dba', '1', 40)
+
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on Jul 21, 2021 9:47:13 AM

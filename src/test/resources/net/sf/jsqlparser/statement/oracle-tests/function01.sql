@@ -8,3 +8,5 @@
 -- #L%
 ---
 select decode(decode(decode( (select count(1) from dual), a, 1, 0), 0, 1), 1, 0) from dual
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

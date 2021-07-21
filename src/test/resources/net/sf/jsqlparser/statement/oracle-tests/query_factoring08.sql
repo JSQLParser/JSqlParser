@@ -17,3 +17,5 @@ from
 join	x2 on (x1.a1 = x2.a2)
 join	t4 on (x1.a1 = t4.a4)
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

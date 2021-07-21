@@ -15,3 +15,5 @@ explain plan
         where department_id =  
            (select department_id from departments
                where location_id = 1700)
+
+--@FAILURE: Encountered unexpected token: "plan" <S_IDENTIFIER> recorded first on Jul 21, 2021 9:47:13 AM

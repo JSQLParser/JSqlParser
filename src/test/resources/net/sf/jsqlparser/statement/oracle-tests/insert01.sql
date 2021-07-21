@@ -13,3 +13,5 @@ insert
   when mod( object_id, 2 ) = 0 then
     into t2 ( x, y ) values ( s.nextval, created )
 select object_id, created from all_objects
+
+--@FAILURE: Encountered unexpected token: "when" "WHEN" recorded first on Jul 21, 2021 9:47:13 AM

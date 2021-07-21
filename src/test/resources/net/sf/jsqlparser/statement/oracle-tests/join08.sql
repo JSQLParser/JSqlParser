@@ -15,3 +15,5 @@ inner join (select * from dual) tt2 using(dummy)
 inner join (select * from dual) using(dummy)
 inner join (select * from dual) d on(d.dummy=t1.dummy)
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

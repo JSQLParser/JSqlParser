@@ -21,3 +21,5 @@ and t2.code(+) = 'sh'
 and t1.sid(+)=t2.sid
 and ( ( t1.scode like 'mmm'  and t2.scode like 'xax' ) )
 
+
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on Jul 21, 2021 9:47:13 AM

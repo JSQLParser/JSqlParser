@@ -11,3 +11,5 @@ select *
 from   (select product_code, quantity
         from   pivot_test)
 pivot  (sum(quantity) as sum_quantity for product_code in ('a' as a, 'b' as b, 'c' as c))
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

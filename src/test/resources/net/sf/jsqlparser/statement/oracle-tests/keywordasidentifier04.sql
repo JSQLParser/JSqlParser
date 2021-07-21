@@ -13,3 +13,5 @@ union all
 (select null keep, null keep_until
 from v$backup_piece bp)
 
+
+--@FAILURE: Encountered unexpected token: "." "." recorded first on Jul 21, 2021 9:47:13 AM

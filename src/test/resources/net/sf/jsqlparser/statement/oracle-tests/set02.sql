@@ -9,3 +9,5 @@
 ---
 select nt.column_value as distinct_element
      from   table(set(varchar2_ntt('a','b','c','c'))) nt
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

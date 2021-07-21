@@ -15,3 +15,5 @@ begin
                  returning empno
                  bulk collect into :empnos;
 end;
+
+--@FAILURE: Encountered unexpected token: "begin" "BEGIN" recorded first on Jul 21, 2021 9:47:13 AM

@@ -19,3 +19,5 @@ model unique single reference
   rules        ( m_1[any] = 10 )
 order by
   group_2
+
+--@FAILURE: Encountered unexpected token: "unique" "UNIQUE" recorded first on Jul 21, 2021 9:47:13 AM

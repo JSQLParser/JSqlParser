@@ -8,3 +8,5 @@
 -- #L%
 ---
 select d1.*, d2.* from dual d1 cross join dual d2
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:12 AM

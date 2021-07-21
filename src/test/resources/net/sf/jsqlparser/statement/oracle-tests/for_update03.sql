@@ -11,3 +11,5 @@ select employee_id from (select employee_id+1 as employee_id from employees)
    for update of employee_id
 
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

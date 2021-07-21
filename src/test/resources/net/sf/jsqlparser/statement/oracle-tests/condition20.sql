@@ -11,3 +11,5 @@ select * from employees
   where (salary, salary) >=
   some ( select 1, 2 from dual )
   order by employee_id
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

@@ -11,3 +11,5 @@ select
 	cast(collect(cattr(aname, op, to_char(val), support, confidence)) as cattrs) cl_attrs
 from a
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

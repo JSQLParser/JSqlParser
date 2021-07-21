@@ -23,3 +23,5 @@ model
   )
 order by
   key
+
+--@FAILURE: Encountered unexpected token: "dimension" <S_IDENTIFIER> recorded first on Jul 21, 2021 9:47:13 AM

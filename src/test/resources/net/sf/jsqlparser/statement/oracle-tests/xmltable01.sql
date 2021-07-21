@@ -15,3 +15,5 @@ from warehouses,
    "water" varchar2(6) path '/warehouse/wateraccess',
    "rail" varchar2(6) path '/warehouse/railaccess')
 warehouse2
+
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on Jul 21, 2021 9:47:13 AM

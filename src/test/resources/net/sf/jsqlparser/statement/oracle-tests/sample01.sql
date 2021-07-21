@@ -11,3 +11,5 @@ select * from
 (
 select 1 as c1 from "sys"."obj$" sample block (14.285714 , 1) seed (1) "o"
 ) samplesub
+
+--@FAILURE: Encountered unexpected token: "block" <S_IDENTIFIER> recorded first on Jul 21, 2021 9:47:13 AM

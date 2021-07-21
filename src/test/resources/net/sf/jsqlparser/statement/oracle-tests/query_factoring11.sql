@@ -16,3 +16,5 @@ select batch_id, max(sent) sent, max(received) received
 from col_generator
 group by batch_id
 order by 1
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

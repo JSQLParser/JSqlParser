@@ -11,3 +11,5 @@ select cast(
                powermultiset(
                   varchar2_ntt('a','b','c')) as varchar2_ntts) as pwrmltset
      from   dual
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

@@ -13,3 +13,5 @@ select nt
            select varchar2_ntt('a','b','c','c') as nt
            from dual
           )
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

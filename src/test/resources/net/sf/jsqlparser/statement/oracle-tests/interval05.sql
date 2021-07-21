@@ -9,3 +9,5 @@
 ---
 -- see metalink note 1056382.1
 select 'yes' from dual where (sysdate-5,sysdate) overlaps (sysdate-2,sysdate-1)
+
+--@FAILURE: Encountered unexpected token: "overlaps" <S_IDENTIFIER> recorded first on Jul 21, 2021 9:47:12 AM

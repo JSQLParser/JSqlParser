@@ -9,3 +9,5 @@
 ---
 select * from dual,( dual left outer join tt2 using(dummy) )
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:12 AM

@@ -11,3 +11,5 @@ select * from dual t1, ( dual t2 join dual t3 using(dummy)) left outer join dual
 			
 			
 			
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

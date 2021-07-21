@@ -8,3 +8,5 @@
 -- #L%
 ---
 select trim(both ' ' from '  a  ') from dual where trim(:a) is not null
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

@@ -16,3 +16,5 @@ from   dimension_tab
 group by grouping sets(fact_1_id, cube (fact_1_id, fact_2_id))
 having group_id() = 0
 order by fact_1_id, fact_2_id
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

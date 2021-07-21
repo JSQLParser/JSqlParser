@@ -8,3 +8,5 @@
 -- #L%
 ---
 select timestamp, avg, cume_dist from nulls
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

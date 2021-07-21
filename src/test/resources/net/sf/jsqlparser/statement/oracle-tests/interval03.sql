@@ -24,3 +24,5 @@ select
 ,interval '30.12345' second(2,4)
 ,interval :a day
 from dual
+
+--@FAILURE: Encountered unexpected token: "second" <K_DATE_LITERAL> recorded first on Jul 21, 2021 9:47:13 AM

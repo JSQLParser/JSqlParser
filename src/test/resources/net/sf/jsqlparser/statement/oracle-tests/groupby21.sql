@@ -17,3 +17,5 @@ where sales.time_id=times.time_id and sales.cust_id=customers.cust_id and
   ('direct sales', 'internet') and times.calendar_month_desc in
   ('2000-09', '2000-10') and countries.country_iso_code in ('gb', 'us')
 group by cube(channel_desc, calendar_month_desc, countries.country_iso_code)
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

@@ -8,3 +8,5 @@
 -- #L%
 ---
 select value(p$) from "XDB"."XDB$SCHEMA"                 as of snapshot(:2) p$ where SYS_NC_OID$ = :1
+
+--@FAILURE: Encountered unexpected token: "snapshot" <S_IDENTIFIER> recorded first on Jul 21, 2021 9:47:12 AM

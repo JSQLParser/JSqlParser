@@ -14,3 +14,5 @@ inner join ca c
 on c.id = s.id
 on a.va = s.va
 
+
+--@FAILURE: Encountered unexpected token: "on" "ON" recorded first on Jul 21, 2021 9:47:13 AM

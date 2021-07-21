@@ -18,3 +18,5 @@ model
   dimension by ( key )
   measures     ( ( select dummy from dual ) as dummy )
   rules        ( )
+
+--@FAILURE: Encountered unexpected token: "model" <S_IDENTIFIER> recorded first on Jul 21, 2021 9:47:12 AM

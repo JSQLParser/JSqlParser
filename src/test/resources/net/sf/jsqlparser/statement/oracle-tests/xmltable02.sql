@@ -9,3 +9,5 @@
 ---
 select xmlelement("other_attrs", xmlelement("parsing_user_id", parsing_user_id)).getClobVal() other
 from f
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

@@ -15,3 +15,5 @@ model
   rules iterate(9) (
     dt[ iteration_number+1 ] = dt[ iteration_number ]+1
   )
+
+--@FAILURE: Encountered unexpected token: "dimension" <S_IDENTIFIER> recorded first on Jul 21, 2021 9:47:12 AM

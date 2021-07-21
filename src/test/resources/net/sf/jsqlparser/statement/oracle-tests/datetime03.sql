@@ -10,3 +10,5 @@
 select
 timestamp '2009-10-29 01:30:00' at time zone 'us/pacific'from dual
 
+
+--@FAILURE: select timestamp '2009-10-29 01:30:00' at time zone 'us/pacific' from dual recorded first on Jul 21, 2021 9:47:13 AM

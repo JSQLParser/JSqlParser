@@ -17,3 +17,5 @@ dimension by (0 dim)
       iterate (1000) until (str_new[0] = previous (str_new[0]))
       (str_new [0] =
             regexp_replace (str_new[0], '(^|;)([^;]+;)(.*?;)?\2+', '\1\2\3'));
+
+--@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Jul 21, 2021 9:47:13 AM

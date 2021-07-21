@@ -10,3 +10,5 @@
 select * from x
 group by grouping sets
 ( (a),1 )
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

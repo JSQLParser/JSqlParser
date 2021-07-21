@@ -12,3 +12,5 @@ from sku su
 where (nvl(su.up,'n')='n' and su.ttype=:b0)
 for update of su.up
 order by su.d
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Jul 21, 2021 9:47:13 AM

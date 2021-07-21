@@ -25,3 +25,5 @@ s['standard mouse', 2002] = s['standard mouse', 2001]
 order by country, prod, year
 
 
+
+--@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Jul 21, 2021 9:47:13 AM

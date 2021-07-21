@@ -241,6 +241,8 @@ public class SpecialOracleTest {
         int count = 0;
         int success = 0;
         File[] sqlTestFiles = SQLS_DIR.listFiles();
+        
+        boolean foundUnexpectedFailures = false;
 
         for (File file : sqlTestFiles) {
             if (file.isFile()) {
@@ -262,16 +264,19 @@ public class SpecialOracleTest {
                         
                     if (sql.contains("@SUCCESSFULLY_PARSED_AND_DEPARSED") || EXPECTED_SUCCESSES.contains(file.getName())) {
                         LOG.log(Level.SEVERE, "UNEXPECTED PARSING FAILURE: {0}\n\t" + message, file.getName());
+                        foundUnexpectedFailures = true;
                     } else {
                         LOG.log(Level.FINE, "EXPECTED PARSING FAILURE: {0}", file.getName());
                     }
                     
                     recordFailureOnSourceFile(file, message);
                 } catch (Exception ex) {
-                    LOG.log(Level.SEVERE, "UNEXPECTED EXCEPTION: {0}", ex.toString());
+                    LOG.log(Level.SEVERE, "UNEXPECTED EXCEPTION: {0}\n\t" + ex.getMessage(), file.getName());
+                    foundUnexpectedFailures = true;
                 } catch (ComparisonFailure ex) {
                     if (sql.contains("@SUCCESSFULLY_PARSED_AND_DEPARSED") || EXPECTED_SUCCESSES.contains(file.getName())) {
                         LOG.log(Level.SEVERE, "UNEXPECTED DE-PARSING FAILURE: {0}\n" + ex.toString(), file.getName());
+                        foundUnexpectedFailures = true;
                     } else {
                         LOG.log(Level.FINE, "EXPECTED DE-PARSING FAILURE: {0}", file.getName());
                     }
@@ -282,7 +287,9 @@ public class SpecialOracleTest {
 
         LOG.log(Level.INFO, "tested {0} files. got {1} correct parse results, expected {2}", new Object[]{count, success, EXPECTED_SUCCESSES.size()});
         Assert.assertTrue(success >= EXPECTED_SUCCESSES.size());
-    }
+        
+        Assert.assertFalse("Found Testcases failing unexpectedly.", foundUnexpectedFailures);
+      }
     
     @Test
     //@Ignore

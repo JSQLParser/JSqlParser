@@ -22,3 +22,5 @@ select country,prod,year,s
     )
   order by country, prod, year
 
+
+--@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Jul 21, 2021 9:47:13 AM

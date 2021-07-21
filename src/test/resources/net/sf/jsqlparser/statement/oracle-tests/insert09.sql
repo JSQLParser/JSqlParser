@@ -12,3 +12,5 @@ select deptno, dname, loc
 from dept
 where deptno < 30 with check option)
 values (99, 'travel', 'seattle')
+
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on Jul 21, 2021 9:47:13 AM
