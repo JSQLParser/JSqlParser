@@ -10,21 +10,24 @@
 package net.sf.jsqlparser.statement.select;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.assertTrue;
-
 import org.assertj.core.api.Assertions;
+
+import org.junit.Assert;
 import org.junit.ComparisonFailure;
 import org.junit.Test;
 
@@ -41,15 +44,19 @@ import org.junit.Test;
 public class SpecialOracleTest {
 
     private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/statement/oracle-tests");
+    private static final File SQL_SOURCE_DIR = new File("src/test/resources/net/sf/jsqlparser/statement/oracle-tests");
+    
     private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
 
-    private final List<String> successes = Arrays.asList("aggregate01.sql",
+    private final List<String> EXPECTED_SUCCESSES = Arrays.asList(
+            "aggregate01.sql",
             "analytic_query06.sql",
             "analytic_query08.sql",
             "analytic_query09.sql",
             "analytic_query10.sql",
             "bindvar01.sql",
             "bindvar02.sql",
+            "bindvar05.sql",
             "case_when01.sql",
             "case_when02.sql",
             "case_when03.sql",
@@ -67,10 +74,16 @@ public class SpecialOracleTest {
             "cast_multiset12.sql",
             "cast_multiset16.sql",
             "cast_multiset17.sql",
+            "cast_multiset18.sql",
+            "cast_multiset19.sql",
             "cast_multiset20.sql",
             "cast_multiset21.sql",
+            "cast_multiset22.sql",
             "cast_multiset23.sql",
+            "cast_multiset24.sql",
             "cast_multiset25.sql",
+            "cast_multiset26.sql",
+            "cast_multiset27.sql",
             "cast_multiset28.sql",
             "cast_multiset29.sql",
             "cast_multiset30.sql",
@@ -90,16 +103,19 @@ public class SpecialOracleTest {
             "condition04.sql",
             "condition05.sql",
             "condition07.sql",
+            "condition08.sql",
             "condition09.sql",
             "condition10.sql",
             "condition12.sql",
             "condition14.sql",
+            "condition19.sql",
             "condition20.sql",
             "connect_by02.sql",
             "connect_by03.sql",
             "connect_by04.sql",
             "connect_by05.sql",
             "connect_by07.sql",
+            "datetime01.sql",
             "datetime02.sql",
             "datetime04.sql",
             "datetime05.sql",
@@ -108,7 +124,11 @@ public class SpecialOracleTest {
             "for_update01.sql",
             "for_update02.sql",
             "for_update03.sql",
+            "function04.sql",
+            "function05.sql",
+            "for_update04.sql",
             "for_update05.sql",
+            "for_update08.sql",
             "function01.sql",
             "function02.sql",
             "groupby01.sql",
@@ -124,11 +144,15 @@ public class SpecialOracleTest {
             "groupby12.sql",
             "groupby13.sql",
             "groupby14.sql",
+            "groupby15.sql",
+            "groupby16.sql",
+            "groupby17.sql",
             "groupby19.sql",
             "groupby20.sql",
             "groupby21.sql",
             "groupby22.sql",
             "groupby23.sql",
+            "insert02.sql",
             "interval02.sql",
             "interval04.sql",
             "join01.sql",
@@ -142,6 +166,7 @@ public class SpecialOracleTest {
             "join10.sql",
             "join11.sql",
             "join12.sql",
+            "join13.sql",
             "join14.sql",
             "join15.sql",
             "join16.sql",
@@ -158,6 +183,8 @@ public class SpecialOracleTest {
             "lexer04.sql",
             "lexer05.sql",
             "like01.sql",
+            "merge01.sql",
+            "merge02.sql",
             "order_by01.sql",
             "order_by02.sql",
             "order_by03.sql",
@@ -187,6 +214,8 @@ public class SpecialOracleTest {
             "set02.sql",
             "simple02.sql",
             "simple03.sql",
+            "simple04.sql",
+            "simple05.sql",
             "simple06.sql",
             "simple07.sql",
             "simple08.sql",
@@ -216,35 +245,94 @@ public class SpecialOracleTest {
         for (File file : sqlTestFiles) {
             if (file.isFile()) {
                 count++;
-                LOG.log(Level.INFO, "testing {0}", file.getName());
                 String sql = FileUtils.readFileToString(file, Charset.forName("UTF-8"));
                 boolean parsed = false;
                 try {
                     assertSqlCanBeParsedAndDeparsed(sql, true);
                     success++;
                     parsed = true;
-                    LOG.info("   -> SUCCESS");
+                    
+                    recordSuccessOnSourceFile(file);
                 } catch (JSQLParserException ex) {
-                    ex.printStackTrace();
-                    //LOG.log(Level.SEVERE, null, ex);
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
+                    String message = ex.getMessage();
+                    int pos = message.indexOf("\n");
+                    if (pos > 0) {
+                      message = message.substring(0, pos);
+                    }
+                        
+                    if (sql.contains("@SUCCESSFULLY_PARSED_AND_DEPARSED") || EXPECTED_SUCCESSES.contains(file.getName())) {
+                        LOG.log(Level.SEVERE, "UNEXPECTED PARSING FAILURE: {0}\n\t" + message, file.getName());
+                    } else {
+                        LOG.log(Level.FINE, "EXPECTED PARSING FAILURE: {0}", file.getName());
+                    }
+                    
+                    recordFailureOnSourceFile(file, message);
                 } catch (Exception ex) {
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
+                    LOG.log(Level.SEVERE, "UNEXPECTED EXCEPTION: {0}", ex.toString());
                 } catch (ComparisonFailure ex) {
-                    LOG.log(Level.INFO, "   -> PROBLEM {0}", ex.toString());
-                }
-
-                if (!parsed && successes.contains(file.getName())) {
-                    LOG.log(Level.WARNING, "   -> regression on file {0}", file.getName());
-                } else if (parsed && !successes.contains(file.getName())) {
-                    LOG.log(Level.WARNING, "   -> not logged success on file {0}", file.getName());
+                    if (sql.contains("@SUCCESSFULLY_PARSED_AND_DEPARSED") || EXPECTED_SUCCESSES.contains(file.getName())) {
+                        LOG.log(Level.SEVERE, "UNEXPECTED DE-PARSING FAILURE: {0}\n" + ex.toString(), file.getName());
+                    } else {
+                        LOG.log(Level.FINE, "EXPECTED DE-PARSING FAILURE: {0}", file.getName());
+                    }
+                    recordFailureOnSourceFile(file, ex.getActual());
                 }
             }
         }
 
-        LOG.
-                log(Level.INFO, "tested {0} files. got {1} correct parse results", new Object[]{count, success});
-        assertTrue(success >= 176);
+        LOG.log(Level.INFO, "tested {0} files. got {1} correct parse results, expected {2}", new Object[]{count, success, EXPECTED_SUCCESSES.size()});
+        Assert.assertTrue(success >= EXPECTED_SUCCESSES.size());
+    }
+    
+    @Test
+    //@Ignore
+    public void debugSpecificSql() throws IOException, JSQLParserException {
+        File[] sqlTestFiles = SQLS_DIR.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return "pivot04.sql".equals(name);
+            }
+        });
+
+        for (File file : sqlTestFiles) {
+            if (file.isFile()) {
+                String sql = FileUtils.readFileToString(file, Charset.forName("UTF-8"));
+                assertSqlCanBeParsedAndDeparsed(sql, true);
+            }
+        }
+    }
+
+    public void recordSuccessOnSourceFile(File file) throws IOException {
+        File sourceFile = new File(SQL_SOURCE_DIR, file.getName());
+        String sourceSql = FileUtils.readFileToString(sourceFile, Charset.forName("UTF-8"));
+        if (!sourceSql.contains("@SUCCESSFULLY_PARSED_AND_DEPARSED")) {
+            LOG.log(Level.INFO, "NEW SUCCESS: {0}", file.getName());
+            if (sourceFile.exists() && sourceFile.canWrite()) {
+                try (FileWriter writer = new FileWriter(sourceFile, true)) {
+                    writer.append("\n--@SUCCESSFULLY_PARSED_AND_DEPARSED first on ")
+                      .append(DateFormat.getDateTimeInstance().format(new Date()));
+                }
+            }
+        } else {
+            if (EXPECTED_SUCCESSES.contains(file.getName())) {
+                LOG.log(Level.FINE, "EXPECTED SUCCESS: {0}", file.getName());
+            } else {
+                LOG.log(Level.WARNING, "UNRECORDED SUCCESS: {0}, please add to the EXPECTED_SUCCESSES List in SpecialOracleTest.java", file.getName());
+            }
+        }
+    }
+    
+    public void recordFailureOnSourceFile(File file, String message) throws IOException {
+        File sourceFile = new File(SQL_SOURCE_DIR, file.getName());
+        String sourceSql = FileUtils.readFileToString(sourceFile, Charset.forName("UTF-8"));
+        if (!sourceSql.contains("@FAILURE: " + message)) {
+            if (sourceFile.exists() && sourceFile.canWrite()) {
+                try (FileWriter writer = new FileWriter(sourceFile, true)) {
+                    writer.append("\n--@FAILURE: " + message + " recorded first on ")
+                      .append(DateFormat.getDateTimeInstance().format(new Date()));
+                }
+            }
+        } 
     }
 
     @Test
@@ -253,15 +341,20 @@ public class SpecialOracleTest {
 
         List<String> regressionFiles = new LinkedList<>();
         for (File file : sqlTestFiles) {
-            LOG.log(Level.INFO, "testing {0}", file.getName());
             String sql = FileUtils.readFileToString(file, Charset.forName("UTF-8"));
             try {
                 CCJSqlParserUtil.parse(sql);
-
-                LOG.info("   -> SUCCESS");
+                LOG.log(Level.FINE, "EXPECTED SUCCESS: {0}", file.getName());
             } catch (JSQLParserException ex) {
                 regressionFiles.add(file.getName());
-                LOG.log(Level.SEVERE, null, ex);
+                
+                String message = ex.getMessage();
+                int pos = message.indexOf("\n");
+                if (pos > 0) {
+                  message = message.substring(0, pos);
+                }
+                        
+                LOG.log(Level.SEVERE, "UNEXPECTED PARSING FAILURE: {0}\n\t" + message, file.getName());
             }
         }
 
@@ -271,8 +364,7 @@ public class SpecialOracleTest {
     @Test
     public void testOperatorsWithSpaces() throws Exception {
         String sql;
-        Statement statement;
-
+        
         // First, the regular way (normal for most databases).
         sql = "SELECT\n"
                 + "    Something\n"
@@ -283,10 +375,6 @@ public class SpecialOracleTest {
                 + "    AND Somefield <= Somevalue\n"
                 + "    AND Somefield <> Somevalue\n"
                 + "    AND Somefield != Somevalue\n";
-
-        statement = CCJSqlParserUtil.parse(sql);
-
-        System.out.println(statement.toString());
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
 
@@ -301,10 +389,6 @@ public class SpecialOracleTest {
                 + "    AND Somefield < > Somevalue\n";
 
         // Note, we do not (currently) test the "!=" with spaces in between -- Postgresql deals with this as two operators, "factorial" and "equals".
-        statement = CCJSqlParserUtil.parse(sql);
-
-        System.out.println(statement.toString());
-
         assertSqlCanBeParsedAndDeparsed(sql, true);
 
         // And then with multiple whitespace
@@ -316,10 +400,6 @@ public class SpecialOracleTest {
                 + "    Somefield > \t = Somevalue\n"
                 + "    AND Somefield <   = Somevalue\n"
                 + "    AND Somefield <\t\t> Somevalue\n";
-
-        statement = CCJSqlParserUtil.parse(sql);
-
-        System.out.println(statement.toString());
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
