@@ -198,6 +198,7 @@ public class SpecialOracleTest {
             "pivot05.sql",
             "pivot06.sql",
             "pivot07.sql",
+            "pivot07_Parenthesis.sql",
             "pivot08.sql",
             "pivot09.sql",
             "pivot11.sql",

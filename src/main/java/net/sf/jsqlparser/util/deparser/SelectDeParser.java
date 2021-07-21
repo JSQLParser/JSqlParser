@@ -533,9 +533,17 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     public void visit(ParenthesisFromItem parenthesis) {
         buffer.append("(");
         parenthesis.getFromItem().accept(this);
+        
+        //@todo: investigate, why the Pivot is handled already
+        // while the UnPivot is NOT handled.
+        // Something here is wrong and the code below is just a work around
+        
+        /* handled already somehow somewhere, see Special Oracle Test "pivot07_Parenthesis.sql"
         if (parenthesis.getFromItem().getPivot()!=null) {
             parenthesis.getFromItem().getPivot().accept(this);
         }
+        */
+        
         if (parenthesis.getFromItem().getUnPivot()!=null) {
             parenthesis.getFromItem().getUnPivot().accept(this);
         }
