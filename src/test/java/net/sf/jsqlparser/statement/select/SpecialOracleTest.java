@@ -249,16 +249,13 @@ public class SpecialOracleTest {
             if (file.isFile()) {
                 count++;
                 String sql = FileUtils.readFileToString(file, Charset.forName("UTF-8"));
-                boolean parsed = false;
                 try {
                     assertSqlCanBeParsedAndDeparsed(sql, true);
                     success++;
-                    parsed = true;
-                    
                     recordSuccessOnSourceFile(file);
                 } catch (JSQLParserException ex) {
                     String message = ex.getMessage();
-                    int pos = message.indexOf("\n");
+                    int pos = message.indexOf('\n');
                     if (pos > 0) {
                       message = message.substring(0, pos);
                     }
@@ -333,12 +330,11 @@ public class SpecialOracleTest {
     public void recordFailureOnSourceFile(File file, String message) throws IOException {
         File sourceFile = new File(SQL_SOURCE_DIR, file.getName());
         String sourceSql = FileUtils.readFileToString(sourceFile, Charset.forName("UTF-8"));
-        if (!sourceSql.contains("@FAILURE: " + message)) {
-            if (sourceFile.exists() && sourceFile.canWrite()) {
-                try (FileWriter writer = new FileWriter(sourceFile, true)) {
-                    writer.append("\n--@FAILURE: " + message + " recorded first on ")
-                      .append(DateFormat.getDateTimeInstance().format(new Date()));
-                }
+        if (!sourceSql.contains("@FAILURE: " + message)
+             && sourceFile.canWrite() ) {
+            try (FileWriter writer = new FileWriter(sourceFile, true)) {
+                writer.append("\n--@FAILURE: " + message + " recorded first on ")
+                  .append(DateFormat.getDateTimeInstance().format(new Date()));
             }
         } 
     }
@@ -357,7 +353,7 @@ public class SpecialOracleTest {
                 regressionFiles.add(file.getName());
                 
                 String message = ex.getMessage();
-                int pos = message.indexOf("\n");
+                int pos = message.indexOf('\n');
                 if (pos > 0) {
                   message = message.substring(0, pos);
                 }
