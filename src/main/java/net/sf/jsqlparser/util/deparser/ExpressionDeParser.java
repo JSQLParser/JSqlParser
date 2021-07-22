@@ -22,6 +22,7 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
+import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -1004,5 +1005,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(JsonFunction expression) {
          expression.append(buffer);
+    }
+    
+    @Override
+    public void visit(ConnectByRootOperator connectByRootOperator) {
+        buffer.append("CONNECT_BY_ROOT ");
+        connectByRootOperator.getColumn().accept(this);
     }
 }

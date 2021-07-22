@@ -4664,4 +4664,29 @@ public class SelectTest {
     public void testKeywordFilterIssue1255() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT col1 AS filter FROM table");
     }
+    
+    @Test
+    public void testConnectByRootIssue1255() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+            "SELECT last_name \"Employee\", CONNECT_BY_ROOT last_name \"Manager\",\n" +
+            "   LEVEL-1 \"Pathlen\", SYS_CONNECT_BY_PATH(last_name, '/') \"Path\"\n" +
+            "   FROM employees\n" +
+            "   WHERE LEVEL > 1 and department_id = 110\n" +
+            "   CONNECT BY PRIOR employee_id = manager_id", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+            "SELECT name, SUM(salary) \"Total_Salary\" FROM (\n" +
+            "   SELECT CONNECT_BY_ROOT last_name as name, Salary\n" +
+            "      FROM employees\n" +
+            "      WHERE department_id = 110\n" +
+            "      CONNECT BY PRIOR employee_id = manager_id)\n" +
+            "      GROUP BY name", true);
+        
+        assertSqlCanBeParsedAndDeparsed(
+            "SELECT CONNECT_BY_ROOT last_name as name"
+          + ", salary "
+          + "FROM employees "
+          + "WHERE department_id = 110 "
+          + "CONNECT BY PRIOR employee_id = manager_id", true);
+    }
 }
