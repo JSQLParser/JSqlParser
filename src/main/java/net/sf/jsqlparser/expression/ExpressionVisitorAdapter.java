@@ -605,4 +605,9 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             expr.getExpression().accept(this);
         }
     }
+
+    @Override
+    public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
+        oracleNamedFunctionParameter.getExpression().accept(this);
+    }
 }

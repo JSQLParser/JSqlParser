@@ -297,6 +297,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ONLY:"ONLY">
 |   <K_OPEN:"OPEN">
 |   <K_OR:"OR">
+|   <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT: "=>">
 |   <K_ORDER:"ORDER">
 |   <K_OUTER:"OUTER">
 |   <K_OVER:"OVER">
@@ -3100,7 +3101,17 @@ ExpressionList ComplexExpressionList() #ExpressionList:
     Expression expr = null;
 }
 {
-    expr=Expression() { expressions.add(expr); } ("," expr=Expression() { expressions.add(expr); })*
+    (   
+        LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
+        | expr=Expression() 
+    ) { expressions.add(expr); }
+    (
+        "," 
+        (   
+            LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
+            | expr=Expression() 
+        ) { expressions.add(expr); }
+    )*
     {
         retval.setExpressions(expressions);
         return retval;
@@ -3577,6 +3588,19 @@ JdbcNamedParameter JdbcNamedParameter() : {
     ":" (name=RelObjectNameExt2() { parameter.setName(name); })
     {
         return parameter;
+    }
+}
+
+OracleNamedFunctionParameter OracleNamedFunctionParameter() : {
+    String name;
+    Expression expression;
+}
+{
+    name=RelObjectNameExt2()
+    <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT>
+    expression=Expression() 
+    {
+        return new OracleNamedFunctionParameter(name, expression);
     }
 }
 
