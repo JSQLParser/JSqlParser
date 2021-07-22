@@ -256,4 +256,12 @@ public class ExpressionVisitorAdapterTest {
           .parseExpression("JSON_ARRAYAGG( a FORMAT JSON ABSENT ON NULL ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name )")
           .accept(adapter);
     }
+    
+    @Test
+    public void testConnectedByRootExpression() throws JSQLParserException {
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        CCJSqlParserUtil
+          .parseExpression("CONNECT_BY_ROOT last_name as name")
+          .accept(adapter);
+    }
 }

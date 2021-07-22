@@ -698,5 +698,19 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("dual"));
         assertTrue(tableList.contains("mytbl"));
     }
-
+    
+    @Test
+    public void testConnectedByRootOperator() throws JSQLParserException {
+        String sql = "SELECT CONNECT_BY_ROOT last_name as name"
+          + ", salary "
+          + "FROM employees "
+          + "WHERE department_id = 110 "
+          + "CONNECT BY PRIOR employee_id = manager_id";
+        
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("employees"));
+    }
 }
