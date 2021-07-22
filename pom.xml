@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.2-SNAPSHOT</version>
     <name>JSQLParser library</name> 
     <inceptionYear>2004</inceptionYear>
     <organization>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.6</version>
+            <version>2.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -103,7 +103,7 @@
                 <configuration>
                     <rulesets>
                         <!-- Custom local file system rule set -->
-                        <ruleset>${basedir}/pmd-rules.xml</ruleset>
+                        <ruleset>${basedir}/ruleset.xml</ruleset>
                     </rulesets>
                     <excludes>
                         <exclude>**/*Bean.java</exclude>
@@ -168,6 +168,16 @@
                             <goal>jjtree-javacc</goal>
                         </goals>
                     </execution>
+                    
+                    <!-- execute JJTree explicitely in order to generate the *.jj file needed for JJDoc -->
+                    <execution>
+                        <id>jjtree</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>jjtree</goal>
+                        </goals>
+                    </execution>
+                    
                 </executions>
                 <dependencies>
                     <dependency>
@@ -289,7 +299,6 @@
                 <version>2.7</version>
                 <configuration>
                     <format>xml</format>
-                    <maxmem>256m</maxmem>
                     <instrumentation>
                         <excludes>
                             <exclude>net/sf/jsqlparser/parser/*.class</exclude>
@@ -312,6 +321,25 @@
                     <trimStackTrace>false</trimStackTrace>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.7</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     
@@ -332,8 +360,15 @@
                 <configuration>
                     <useStandardDocletOptions>true</useStandardDocletOptions>
                     <maxmemory>800m</maxmemory>
-                    <doclint>all, -missing</doclint>
-                    <excludePackageNames>net.sf.jsqlparser.parser</excludePackageNames>                          
+                    <doclint>none</doclint>
+                    
+                    <!-- Doclint does not work on the Test Sources
+                    <doclint>all,-missing</doclint>
+                    <excludePackageNames>net.sf.jsqlparser.parser</excludePackageNames>
+                    <sourceFileExcludes>
+                        <sourceFileExclude>src/test/**</sourceFileExclude>
+                    </sourceFileExcludes>
+                    -->
                 </configuration>
             </plugin>
             <plugin>
@@ -346,30 +381,91 @@
                 <artifactId>maven-jxr-plugin</artifactId>
                 <version>3.0.0</version>
             </plugin>
+            
+            <!-- Cobertura is broken with Java 1.8 and there is not fix
+            please refer to https://github.com/cobertura/cobertura/issues/248
+            
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
                 <version>2.7</version>
                 <configuration>
                     <aggregate>true</aggregate>
-                    <outputDirectory>%{project.reporting.outputDirectory}/cobertura</outputDirectory>
+                    <outputDirectory>${project.reporting.outputDirectory}/cobertura</outputDirectory>
                 </configuration>
             </plugin>
+            -->
+            
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
                 <version>3.0.5</version>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>javacc-maven-plugin</artifactId>
-                <version>2.6</version>
-            </plugin>
+            
+            <!-- Obsolete or Unused
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <configuration>
                     <configLocation>config/sun_checks.xml</configLocation>
+                </configuration>
+            </plugin>
+            -->
+            
+            <!-- JJDoc report generating the BNF documentation -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>javacc-maven-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <!-- 
+                    /**
+                    * A flag to specify the output format for the generated documentation. If set to <code>true</code>, JJDoc will
+                    * generate a plain text description of the BNF. Some formatting is done via tab characters, but the intention is to
+                    * leave it as plain as possible. Specifying <code>false</code> causes JJDoc to generate a hyperlinked HTML document
+                    * unless the parameter {@link #bnf} has been set to <code>true</code>. Default value is <code>false</code>.
+                    * 
+                    * @parameter expression="${text}"
+                    */
+                    -->
+                    <text>false</text>
+                    
+                    <!--
+                    /**
+                    * A flag whether to generate a plain text document with the unformatted BNF. Note that setting this option to
+                    * <code>true</code> is only effective if the parameter {@link #text} is <code>false</code>. Default value is
+                    * <code>false</code>.
+                    * 
+                    * @parameter expression="${bnf}"
+                    * @since 2.6
+                    */
+                    -->
+                    <bnf>false</bnf>
+                    
+                    <!--
+                    /**
+                    * This option controls the structure of the generated HTML output. If set to <code>true</code>, a single HTML
+                    * table for the entire BNF is generated. Setting it to <code>false</code> will produce one table for every
+                    * production in the grammar.
+                    * 
+                    * @parameter expression="${oneTable}" default-value=true
+                    */
+                    -->
+                    <oneTable>false</oneTable>
+                    
+                    <!--
+                    /**
+                    * The hypertext reference to an optional CSS file for the generated HTML documents. If specified, this CSS file
+                    * will be included via a <code>&lt;link&gt;</code> element in the HTML documents. Otherwise, the default style will
+                    * be used.
+                    * 
+                    * @parameter expression="${cssHref}"
+                    * @since 2.5
+                    */            
+                    -->
+                    <!-- <cssHref></cssHref> -->
+                    
+                    <outputDirectory>${project.reporting.outputDirectory}</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>

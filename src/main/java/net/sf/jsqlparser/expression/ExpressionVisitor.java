@@ -99,8 +99,6 @@ public interface ExpressionVisitor {
 
     void visit(ExistsExpression existsExpression);
 
-    void visit(AllComparisonExpression allComparisonExpression);
-
     void visit(AnyComparisonExpression anyComparisonExpression);
 
     void visit(Concat concat);
@@ -170,4 +168,8 @@ public interface ExpressionVisitor {
     void visit(XMLSerializeExpr aThis);
 
     void visit(TimezoneExpression aThis);
+
+    void visit(JsonAggregateFunction aThis);
+
+    void visit(JsonFunction aThis);
 }

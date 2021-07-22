@@ -269,12 +269,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(ExistsExpression expr) {
         expr.getRightExpression().accept(this);
     }
-
-    @Override
-    public void visit(AllComparisonExpression expr) {
-
-    }
-
+   
     @Override
     public void visit(AnyComparisonExpression expr) {
 
@@ -589,5 +584,25 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     @Override
     public void visit(TimezoneExpression expr) {
         expr.getLeftExpression().accept(this);
+    }
+
+    @Override
+    public void visit(JsonAggregateFunction expression) {
+        Expression expr = expression.getExpression();
+        if (expr!=null) {
+            expr.accept(this);
+        }
+        
+        expr = expression.getFilterExpression();
+        if (expr!=null) {
+            expr.accept(this);
+        }
+    }
+
+    @Override
+    public void visit(JsonFunction expression) {
+        for (JsonFunctionExpression expr: expression.getExpressions()) {
+            expr.getExpression().accept(this);
+        }
     }
 }

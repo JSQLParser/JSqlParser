@@ -34,9 +34,10 @@ public class ReflectionModelTest {
 
     private static final List<Object> MODEL_OBJECTS = asList(new net.sf.jsqlparser.expression.Alias("a"),
             new net.sf.jsqlparser.expression.Alias.AliasColumn("a", new ColDataType("varchar")),
-            new net.sf.jsqlparser.expression.AllComparisonExpression(new SubSelect()),
             new net.sf.jsqlparser.expression.AnalyticExpression(),
             new net.sf.jsqlparser.expression.AnyComparisonExpression(AnyType.ANY, new SubSelect()),
+            new net.sf.jsqlparser.expression.AnyComparisonExpression(AnyType.ALL, new SubSelect()),
+             new net.sf.jsqlparser.expression.AnyComparisonExpression(AnyType.SOME, new SubSelect()),
             new net.sf.jsqlparser.expression.ArrayExpression(),
             new net.sf.jsqlparser.expression.CaseExpression(), new net.sf.jsqlparser.expression.CastExpression(),
             new net.sf.jsqlparser.expression.CollateExpression(),

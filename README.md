@@ -1,6 +1,6 @@
 # JSqlParser
 
-[![Build Status](https://travis-ci.org/JSQLParser/JSqlParser.svg?branch=master)](https://travis-ci.org/JSQLParser/JSqlParser)   [![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master)
+[![Build Status](https://travis-ci.com/JSQLParser/JSqlParser.svg?branch=master)](https://travis-ci.com/JSQLParser/JSqlParser)   [![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6f9a2d7eb98f45969749e101322634a1)](https://www.codacy.com/gh/JSQLParser/JSqlParser/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=JSQLParser/JSqlParser&amp;utm_campaign=Badge_Grade)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser/badge.svg)](http://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser)
 [![Javadocs](https://www.javadoc.io/badge/com.github.jsqlparser/jsqlparser.svg)](https://www.javadoc.io/doc/com.github.jsqlparser/jsqlparser)
@@ -10,7 +10,7 @@
 [![Total Alerts](https://img.shields.io/lgtm/alerts/g/JSQLParser/JSqlParser.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/JSQLParser/JSqlParser/alerts)
 
 Look here for more information and examples: https://github.com/JSQLParser/JSqlParser/wiki.
-
+ 
 ## License
 
 JSqlParser is dual licensed under **LGPL V2.1** or **Apache Software License, Version 2.0**.
@@ -22,10 +22,8 @@ Please provide feedback on:
 * API changes: extend visitor with return values (https://github.com/JSQLParser/JSqlParser/issues/901)
 
 ## News
+* Released version **4.1** of JSqlParser
 * Released version **4.0** of JSqlParser
-* Released version **3.2** of JSqlParser
-* Released version **3.1** of JSqlParser
-* Released version **3.0** of JSqlParser
 * The array parsing is the default behaviour. Square bracket quotation has to be enabled using 
   a parser flag (**CCJSqlParser.withSquareBracketQuotation**).
 * due to an API change the version will be 3.0
@@ -55,27 +53,10 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 4.1
+## Extensions in the latest SNAPSHOT version 4.2
 
-* support for nested `WITH` CTEs
-* support for **with** (cte) for **delete**, **update** and **merge**
-* introduce a max depth to allow parsing complex expression lists without performance loss (thx to @manticore-projects)
-* allow all functions to have complex expressions as parameters (thx to @manticore-projects)
-* API change FunctionWithCondParams production removed
-* API change in ValuesStatement: the expression list is now hold as a ItemList and not as a List<Expression>
-* support for parser modification within **parseExpression** and **parseCondExpression**
-* support for table schema for foreign keys
-* support for Oracle hints on **insert, update and merge**
-* support for **merge insert where** clause
-* allow **in** as schema name
-* allow **skip**, **algorithm** as column name
-* support for functions in an interval expression
-* subArray support arr\[1:3\]
-* first support for tuples as simple expression **SELECT myfunc((f1, f2))**
-* support for array constructors **array[[1, 2], [id1, id2]]**
-* added support for **NOT** in MySqls **REGEXP** clause
-* added support for **WITH mytble as ( .. ) INSERT INTO ...**
-* added support for H2 **casewhen** function with conditional parameters
+* API change: merge ALL and ANY expressions class
+* allow `CURRENT DATE`in addition to `CURRENT_DATE` (without underbar)
 
 ## Extensions of JSqlParser releases
 

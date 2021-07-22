@@ -12,7 +12,6 @@ package net.sf.jsqlparser.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayExpression;
@@ -32,7 +31,10 @@ import net.sf.jsqlparser.expression.HexValue;
 import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
+import net.sf.jsqlparser.expression.JsonFunction;
+import net.sf.jsqlparser.expression.JsonFunctionExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
@@ -459,11 +461,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (whenClause.getThenExpression() != null) {
             whenClause.getThenExpression().accept(this);
         }
-    }
-
-    @Override
-    public void visit(AllComparisonExpression allComparisonExpression) {
-        allComparisonExpression.getSubSelect().getSelectBody().accept(this);
     }
 
     @Override
@@ -995,6 +992,36 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
+    public void visit(SavepointStatement savepointStatement) {
+    }
+
+    @Override
+    public void visit(RollbackStatement rollbackStatement) {
+        
+    }
+    
+    @Override
     public void visit(AlterSession alterSession) {
+        
+    }
+
+    @Override
+    public void visit(JsonAggregateFunction expression) {
+        Expression expr = expression.getExpression();
+        if (expr!=null) {
+            expr.accept(this);
+        }
+        
+        expr = expression.getFilterExpression();
+        if (expr!=null) {
+            expr.accept(this);
+        }
+     }
+
+    @Override
+    public void visit(JsonFunction expression) {
+        for (JsonFunctionExpression expr: expression.getExpressions()) {
+            expr.getExpression().accept(this);
+        }
     }
 }

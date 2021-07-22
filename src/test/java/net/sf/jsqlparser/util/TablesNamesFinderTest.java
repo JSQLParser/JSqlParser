@@ -677,5 +677,26 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("A"));
         assertTrue(tableList.contains("B.C"));
     }
+    
+    @Test
+    public void testJsonFunction() throws JSQLParserException {
+        String sql = "SELECT JSON_ARRAY(  1, 2, 3 ) FROM mytbl";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("mytbl"));
+    }
+    
+    @Test
+    public void testJsonAggregateFunction() throws JSQLParserException {
+        String sql = "SELECT JSON_ARRAYAGG( (SELECT * from dual) FORMAT JSON) FROM mytbl";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(2, tableList.size());
+        assertTrue(tableList.contains("dual"));
+        assertTrue(tableList.contains("mytbl"));
+    }
 
 }

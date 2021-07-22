@@ -2787,16 +2787,17 @@ public class SelectTest {
     @Test
     public void testSelectJoin2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM pg_constraint WHERE pg_attribute.attnum = ANY(pg_constraint.conkey)");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM pg_constraint WHERE pg_attribute.attnum = ALL(pg_constraint.conkey)");
     }
 
     @Test
     public void testAnyConditionSubSelect() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT e1.empno, e1.sal FROM emp e1 WHERE e1.sal > ANY (SELECT e2.sal FROM emp e2 WHERE e2.deptno = 10)");
+        assertSqlCanBeParsedAndDeparsed("SELECT e1.empno, e1.sal FROM emp e1 WHERE e1.sal > ANY (SELECT e2.sal FROM emp e2 WHERE e2.deptno = 10)", true);
     }
 
     @Test
     public void testAllConditionSubSelect() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT e1.empno, e1.sal FROM emp e1 WHERE e1.sal > ALL (SELECT e2.sal FROM emp e2 WHERE e2.deptno = 10)");
+        assertSqlCanBeParsedAndDeparsed("SELECT e1.empno, e1.sal FROM emp e1 WHERE e1.sal > ALL (SELECT e2.sal FROM emp e2 WHERE e2.deptno = 10)", true);
     }
 
     @Test
@@ -4615,5 +4616,52 @@ public class SelectTest {
     public void testSelectRowElement() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT (t.tup).id, (tup).name FROM t WHERE (t.tup).id IN (1, 2, 3)");
     }
+    
+    @Test
+    public void testSelectCastProblemIssue1248() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST(t1.sign2 AS Nullable (char))");
+    }
+    
+//    @Test
+//    public void testSelectCastProblemIssue1248_2() throws JSQLParserException {
+//        assertSqlCanBeParsedAndDeparsed("SELECT CAST(t1.sign2 AS Nullable(decimal(30, 10)))");
+//    }
+    public void testMissinBracketsNestedInIssue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COUNT(DISTINCT CASE WHEN room IN (11167, 12074, 4484, 4483, 6314, 11168, 10336, 16445, 13176, 13177, 13178) THEN uid END) AS uidCount from tableName", true);
+    }
 
+    @Test
+    public void testAnyComparisionExpressionValuesList1232() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "select * from foo where id != ALL(VALUES 1,2,3)",
+                true);
+        
+        assertSqlCanBeParsedAndDeparsed(
+                "select * from foo where id != ALL(?::uid[])",
+                true);
+    }
+
+    public void testSelectAllOperatorIssue1140() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM table t0 WHERE t0.id != all(5)");
+    }
+    
+    @Test
+    public void testSelectAllOperatorIssue1140_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM table t0 WHERE t0.id != all(?::uuid[])");
+    }
+    
+    @Test
+    public void testDB2SpecialRegisterDateTimeIssue1249() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT_TIME", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT TIME", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT_TIMESTAMP", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT TIMESTAMP", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT_DATE", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT DATE", true);
+    }
+    
+    @Test
+    public void testKeywordFilterIssue1255() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT col1 AS filter FROM table");
+    }
 }
