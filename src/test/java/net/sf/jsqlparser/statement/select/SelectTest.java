@@ -4664,4 +4664,20 @@ public class SelectTest {
     public void testKeywordFilterIssue1255() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT col1 AS filter FROM table");
     }
+    
+    @Test
+    public void testCollisionWithSpecialStringFunctionsIssue1284() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+          "SELECT test( a in (1) AND 2=2) ", true);
+        
+        assertSqlCanBeParsedAndDeparsed(
+            "select\n" +
+            "sum(if(column1 in('value1', 'value2'), 1, 0)) as tcp_logs,\n" +
+            "sum(if(column1 in ('value1', 'value2') and column2 = 'value3', 1, 0)) as base_tcp_logs\n" +
+            "from\n" +
+            "table1\n" +
+            "where\n" +
+            "recv_time >= toDateTime('2021-07-20 00:00:00')\n" +
+            "and recv_time < toDateTime('2021-07-21 00:00:00')", true);
+    }
 }
