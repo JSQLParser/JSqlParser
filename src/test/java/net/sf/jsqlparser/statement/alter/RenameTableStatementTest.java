@@ -13,6 +13,7 @@ package net.sf.jsqlparser.statement.alter;
 import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.test.TestUtils;
@@ -90,4 +91,21 @@ public class RenameTableStatementTest {
 
     ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
   }
+  
+  @Test
+  public void testObjectAccess() {
+      Table oldTable = new Table("oldTableName");
+      Table newTable = new Table("newTableName");
+      
+      RenameTableStatement renameTableStatement = new RenameTableStatement(oldTable, newTable);
+      renameTableStatement.withUsingTableKeyword(true).setUsingTableKeyword(false);
+      renameTableStatement.withUsingIfExistsKeyword(true).setUsingIfExistsKeyword(false);
+      renameTableStatement.withWaitDirective("NOWAIT").setWaitDirective("WAIT 20");
+      
+      Assert.assertFalse(renameTableStatement.isTableNamesEmpty());
+      Assert.assertTrue(renameTableStatement.getTableNamesSize()>0);
+      Assert.assertFalse(renameTableStatement.isUsingTableKeyword());
+      Assert.assertFalse(renameTableStatement.isUsingIfExistsKeyword());
+      Assert.assertEquals("WAIT 20", renameTableStatement.getWaitDirective());
+    }
 }
