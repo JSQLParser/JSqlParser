@@ -551,6 +551,8 @@ Statement SingleStatement() :
         |
         stm = Set()
         |
+        stm = RenameTableStatement()
+        |
         stm = Reset()
         |
         LOOKAHEAD(ShowColumns())
@@ -747,6 +749,21 @@ ResetStatement Reset(): {
     <K_RESET> ( LOOKAHEAD(2) <K_DATETIMELITERAL> <K_ZONE> {name = "Time Zone"; } | name = RelObjectName() | all = <K_ALL> {name = all.image; } )
     { reset = new ResetStatement(name); }
     { return reset; }
+}
+
+RenameTableStatement RenameTableStatement(): {
+    Table oldName;
+    Table newName;
+}
+{
+    <K_RENAME>
+    oldName = Table()
+    <K_TO>
+    newName = Table()
+
+    { 
+        return new RenameTableStatement(oldName, newName); 
+    }
 }
 
 DescribeStatement Describe(): {

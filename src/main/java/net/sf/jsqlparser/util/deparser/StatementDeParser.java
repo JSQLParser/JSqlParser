@@ -30,6 +30,7 @@ import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -348,5 +349,10 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     @Override
     public void visit(AlterSession alterSession) {
         new AlterSessionDeParser(buffer).deParse(alterSession);
+    }
+
+    @Override
+    public void visit(RenameTableStatement renameTableStatement) {
+        renameTableStatement.appendTo(buffer);
     }
 }

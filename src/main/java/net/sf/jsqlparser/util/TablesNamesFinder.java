@@ -68,6 +68,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -1023,5 +1024,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         for (JsonFunctionExpression expr: expression.getExpressions()) {
             expr.getExpression().accept(this);
         }
+    }
+
+    @Override
+    public void visit(RenameTableStatement renameTableStatement) {
+        renameTableStatement.getOldName().accept(this);
+        renameTableStatement.getNewName().accept(this);
     }
 }

@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -209,5 +210,10 @@ public class StatementVisitorAdapter implements StatementVisitor {
     @Override
     public void visit(AlterSession alterSession) {
        //@todo: do something usefull here
+    }
+
+    @Override
+    public void visit(RenameTableStatement renameTableStatement) {
+        //@todo: do something usefull here
     }
 }
