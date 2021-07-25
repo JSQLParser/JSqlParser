@@ -10,7 +10,7 @@
 
 package net.sf.jsqlparser.statement.alter;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -25,7 +25,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * @see  <a href="https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_9019.htm">Rename</a>
  */
 public class RenameTableStatement implements Statement {
-    private final HashMap<Table, Table> tableNames = new HashMap<>();
+    private final LinkedHashMap<Table, Table> tableNames = new LinkedHashMap<>();
     
     private boolean usingTableKeyword = false;
     private boolean usingIfExistsKeyword = false;
