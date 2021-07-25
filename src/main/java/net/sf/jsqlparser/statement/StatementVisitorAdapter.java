@@ -210,4 +210,9 @@ public class StatementVisitorAdapter implements StatementVisitor {
     public void visit(AlterSession alterSession) {
        //@todo: do something usefull here
     }
+
+    @Override
+    public void visit(PurgeStatement purgeStatement) {
+        //@todo: do something usefull here
+    }
 }
