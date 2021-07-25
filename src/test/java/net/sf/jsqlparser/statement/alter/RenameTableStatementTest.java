@@ -51,7 +51,15 @@ public class RenameTableStatementTest {
   @Test
   public void testStatement() throws JSQLParserException {
     String sqlStr = "RENAME oldTableName TO newTableName";
-
+    TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    
+    sqlStr = "RENAME TABLE old_table TO backup_table, new_table TO old_table";
+    TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    
+    sqlStr = "RENAME TABLE IF EXISTS old_table WAIT 20 TO backup_table, new_table TO old_table";
+    TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    
+    sqlStr = "RENAME TABLE IF EXISTS old_table NOWAIT TO backup_table, new_table TO old_table";
     TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
   }
 

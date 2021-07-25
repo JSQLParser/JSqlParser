@@ -752,17 +752,43 @@ ResetStatement Reset(): {
 }
 
 RenameTableStatement RenameTableStatement(): {
+    RenameTableStatement renameTableStatement;
     Table oldName;
     Table newName;
+    boolean usingTableKeyword=false;
+    boolean usesIfExistsKeyword=false;
+    String waitDirective = "";
+    Token token;
 }
 {
-    <K_RENAME>
+    <K_RENAME> 
+    [ LOOKAHEAD(2) <K_TABLE> { usingTableKeyword = true; } ]
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { usesIfExistsKeyword = true; } ]
     oldName = Table()
+    [ ( 
+        <K_WAIT> token=<S_LONG> { waitDirective = "WAIT " + token.image; }
+        |
+        <K_NOWAIT>  { waitDirective = "NOWAIT"; }
+       ) ]
     <K_TO>
     newName = Table()
 
     { 
-        return new RenameTableStatement(oldName, newName); 
+        renameTableStatement = new RenameTableStatement(oldName, newName, usingTableKeyword, usesIfExistsKeyword, waitDirective); 
+    }
+
+    (
+        ","
+        oldName = Table()
+        <K_TO>
+        newName = Table()
+        {
+            renameTableStatement.addTableNames(oldName, newName);
+        }
+    )*
+
+    { 
+        return renameTableStatement;
     }
 }
 

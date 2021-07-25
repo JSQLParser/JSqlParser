@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -1028,7 +1029,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(RenameTableStatement renameTableStatement) {
-        renameTableStatement.getOldName().accept(this);
-        renameTableStatement.getNewName().accept(this);
+        for (Map.Entry<Table, Table> e : renameTableStatement.getTableNames()) {
+            e.getKey().accept(this);
+            e.getValue().accept(this);
+          }
     }
 }
