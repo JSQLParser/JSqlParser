@@ -267,21 +267,26 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(SavepointStatement savepointStatement) {
+        //TODO: not yet implemented
     }
 
     @Override
     public void visit(RollbackStatement rollbackStatement) {
+        //TODO: not yet implemented
     }
     
     @Override
     public void visit(AlterSession alterSession) {
+        //TODO: not yet implemented
     }
 
     @Override
     public void visit(RenameTableStatement renameTableStatement) {
+        //TODO: not yet implemented
     }
 
     @Override
     public void visit(PurgeStatement purgeStatement) {
+        //TODO: not yet implemented
     }
 }
