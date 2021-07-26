@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -68,6 +69,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -1025,6 +1027,14 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         }
     }
 
+    @Override
+    public void visit(RenameTableStatement renameTableStatement) {
+        for (Map.Entry<Table, Table> e : renameTableStatement.getTableNames()) {
+            e.getKey().accept(this);
+            e.getValue().accept(this);
+          }
+    }
+  
     @Override
     public void visit(PurgeStatement purgeStatement) {
         if (purgeStatement.getPurgeObjectType()== PurgeObjectType.TABLE) {

@@ -555,6 +555,8 @@ Statement SingleStatement() :
         |
         stm = Set()
         |
+        stm = RenameTableStatement()
+        |
         stm = Reset()
         |
         LOOKAHEAD(ShowColumns())
@@ -753,6 +755,47 @@ ResetStatement Reset(): {
     <K_RESET> ( LOOKAHEAD(2) <K_DATETIMELITERAL> <K_ZONE> {name = "Time Zone"; } | name = RelObjectName() | all = <K_ALL> {name = all.image; } )
     { reset = new ResetStatement(name); }
     { return reset; }
+}
+
+RenameTableStatement RenameTableStatement(): {
+    RenameTableStatement renameTableStatement;
+    Table oldName;
+    Table newName;
+    boolean usingTableKeyword=false;
+    boolean usesIfExistsKeyword=false;
+    String waitDirective = "";
+    Token token;
+}
+{
+    <K_RENAME> 
+    [ LOOKAHEAD(2) <K_TABLE> { usingTableKeyword = true; } ]
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { usesIfExistsKeyword = true; } ]
+    oldName = Table()
+    [ ( 
+        <K_WAIT> token=<S_LONG> { waitDirective = "WAIT " + token.image; }
+        |
+        <K_NOWAIT>  { waitDirective = "NOWAIT"; }
+       ) ]
+    <K_TO>
+    newName = Table()
+
+    { 
+        renameTableStatement = new RenameTableStatement(oldName, newName, usingTableKeyword, usesIfExistsKeyword, waitDirective); 
+    }
+
+    (
+        ","
+        oldName = Table()
+        <K_TO>
+        newName = Table()
+        {
+            renameTableStatement.addTableNames(oldName, newName);
+        }
+    )*
+
+    { 
+        return renameTableStatement;
+    }
 }
 
 PurgeStatement PurgeStatement(): {

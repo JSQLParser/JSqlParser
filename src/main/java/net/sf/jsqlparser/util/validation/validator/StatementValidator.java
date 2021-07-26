@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
@@ -266,21 +267,21 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(SavepointStatement savepointStatement) {
-        //@todo: write something usefull here
     }
 
     @Override
     public void visit(RollbackStatement rollbackStatement) {
-        //@todo: write something usefull here
     }
     
+    @Override
     public void visit(AlterSession alterSession) {
-        //@todo: write something usefull here
+    }
+
+    @Override
+    public void visit(RenameTableStatement renameTableStatement) {
     }
 
     @Override
     public void visit(PurgeStatement purgeStatement) {
-        //@todo: write something usefull here
     }
-
 }
