@@ -4666,6 +4666,17 @@ public class SelectTest {
     }
     
     @Test
+    public void testUnionLimitOrderByIssue1268() throws JSQLParserException {
+        String sqlStr = "(SELECT __time FROM traffic_protocol_stat_log LIMIT 1) UNION ALL (SELECT __time FROM traffic_protocol_stat_log ORDER BY __time LIMIT 1)";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+    
+    @Test
+    public void testCastToRowConstructorIssue1267() throws JSQLParserException {
+        String sqlStr = "SELECT CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR)) AS datapoints";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+  
     public void testCollisionWithSpecialStringFunctionsIssue1284() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
           "SELECT test( a in (1) AND 2=2) ", true);

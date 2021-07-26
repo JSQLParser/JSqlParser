@@ -16,7 +16,22 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
     private ColDataType type;
+    private RowConstructor rowConstructor;
     private boolean useCastKeyword = true;
+    
+    public RowConstructor getRowConstructor() {
+        return rowConstructor;
+    }
+    
+    public void setRowConstructor(RowConstructor rowConstructor) {
+        this.rowConstructor = rowConstructor;
+        this.type = null;
+    }
+    
+    public CastExpression withRowConstructor(RowConstructor rowConstructor) {
+        setRowConstructor(rowConstructor);
+        return this;
+    }
 
     public ColDataType getType() {
         return type;
@@ -24,6 +39,7 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
 
     public void setType(ColDataType type) {
         this.type = type;
+        this.rowConstructor = null;
     }
 
     public Expression getLeftExpression() {
@@ -50,7 +66,9 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         if (useCastKeyword) {
-            return "CAST(" + leftExpression + " AS " + type.toString() + ")";
+            return rowConstructor!=null
+              ? "CAST(" + leftExpression + " AS " + rowConstructor.toString() + ")"
+              : "CAST(" + leftExpression + " AS " + type.toString() + ")";
         } else {
             return leftExpression + "::" + type.toString();
         }
