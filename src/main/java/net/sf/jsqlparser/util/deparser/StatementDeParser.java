@@ -18,6 +18,7 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.PurgeStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
@@ -354,5 +355,10 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     @Override
     public void visit(RenameTableStatement renameTableStatement) {
         renameTableStatement.appendTo(buffer);
+    }
+
+    @Override
+    public void visit(PurgeStatement purgeStatement) {
+        purgeStatement.appendTo(buffer);
     }
 }

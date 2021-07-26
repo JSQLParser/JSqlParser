@@ -214,6 +214,8 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(RenameTableStatement renameTableStatement) {
-        //@todo: do something usefull here
+    }
+
+    public void visit(PurgeStatement purgeStatement) {
     }
 }

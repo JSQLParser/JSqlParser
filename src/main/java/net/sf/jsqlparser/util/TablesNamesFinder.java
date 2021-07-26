@@ -1034,4 +1034,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
             e.getValue().accept(this);
           }
     }
+  
+    @Override
+    public void visit(PurgeStatement purgeStatement) {
+        if (purgeStatement.getPurgeObjectType()== PurgeObjectType.TABLE) {
+            ((Table) purgeStatement.getObject()).accept(this);
+        }
+    }
 }
