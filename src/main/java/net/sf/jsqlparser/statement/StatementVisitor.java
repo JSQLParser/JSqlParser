@@ -111,4 +111,6 @@ public interface StatementVisitor {
     void visit(CreateSynonym createSynonym);
 
     void visit(AlterSession alterSession);
+
+    void visit(PurgeStatement purgeStatement);
 }
