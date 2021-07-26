@@ -4247,22 +4247,31 @@ FullTextSearch FullTextSearch() : {
     Column col;
     Token searchModifier;
     Token againstValue;
+    JdbcParameter jdbcParameter;
+    JdbcNamedParameter jdbcNamedParameter;
     FullTextSearch fs = new FullTextSearch();
     List<Column> matchedColumns = new ArrayList<Column>();
     List<Expression> expList = new ArrayList<Expression>();
 }
 {
     <K_MATCH> "(" col=Column() { matchedColumns.add(col); } ("," col=Column() { matchedColumns.add(col); } )* ")" <K_AGAINST>
-    "(" againstValue=<S_CHAR_LITERAL> { fs.setAgainstValue(new StringValue(againstValue.image)); }
-        [
-            (
-                searchModifier="IN NATURAL LANGUAGE MODE"
-                | searchModifier="IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION"
-                | searchModifier="IN BOOLEAN MODE"
-                | searchModifier="WITH QUERY EXPANSION"
-            )
-            { fs.setSearchModifier(searchModifier.image); }
-        ]
+    "(" 
+    ( 
+      againstValue=<S_CHAR_LITERAL> { fs.setAgainstValue(new StringValue(againstValue.image)); } 
+      |  
+      jdbcParameter=SimpleJdbcParameter() { fs.setAgainstValue(  jdbcParameter ); }
+      |  
+      jdbcNamedParameter=SimpleJdbcNamedParameter() { fs.setAgainstValue(  jdbcNamedParameter ); }
+    )
+    [
+        (
+            searchModifier="IN NATURAL LANGUAGE MODE"
+            | searchModifier="IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION"
+            | searchModifier="IN BOOLEAN MODE"
+            | searchModifier="WITH QUERY EXPANSION"
+        )
+        { fs.setSearchModifier(searchModifier.image); }
+    ]
     ")"
     {
         fs.setMatchColumns(matchedColumns);
