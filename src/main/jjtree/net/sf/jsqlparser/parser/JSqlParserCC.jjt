@@ -3169,7 +3169,8 @@ ExpressionList SimpleExpressionList(boolean outerBrackets) #ExpressionList:
     Expression expr = null;
 }
 {
-    expr=SimpleExpression() { expressions.add(expr); } ("," expr=SimpleExpression() { expressions.add(expr); })*
+    expr=SimpleExpression() { expressions.add(expr); } 
+    ( LOOKAHEAD(2) "," expr=SimpleExpression() { expressions.add(expr); } )*
     {
         retval.setExpressions(expressions);
         return retval;
@@ -3551,6 +3552,8 @@ Expression PrimaryExpression() #PrimaryExpression:
         | token=<S_HEX>  { retval = new HexValue(token.image); }
 
         | LOOKAHEAD(2) retval=CastExpression()
+
+        //| LOOKAHEAD(2) retval=RowConstructor()
 
         // support timestamp expressions
         | (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
@@ -4096,15 +4099,23 @@ CastExpression CastExpression():
 {
     CastExpression retval = new CastExpression();
     ColDataType type = null;
+    RowConstructor rowConstructor = null;
     Expression expression = null;
     boolean    useCastKeyword;
 }
 {
-    <K_CAST> "(" expression=SimpleExpression() <K_AS> type=ColDataType() ")" { retval.setUseCastKeyword(true); }
+    <K_CAST> 
+    "(" 
+    expression=SimpleExpression() 
+    <K_AS> { retval.setUseCastKeyword(true); } 
+    ( 
+        LOOKAHEAD(3) rowConstructor = RowConstructor() { retval.setRowConstructor(rowConstructor); } 
+        | type=ColDataType() { retval.setType(type); } 
+    )
+    ")" 
 
     {
         retval.setLeftExpression(expression);
-        retval.setType(type);
         return retval;
     }
 }
@@ -4168,16 +4179,20 @@ WhenClause WhenThenSearchCondition():
 }*/
 
 RowConstructor RowConstructor(): {
-    ExpressionList list = null;
     RowConstructor rowConstructor = new RowConstructor();
+    ColumnDefinition columnDefinition = null;
 } {
     [ <K_ROW> { rowConstructor.setName("ROW");} ]
     "("
-        list = SimpleExpressionList(true)
-    ")"
+     columnDefinition = ColumnDefinition() { rowConstructor.addColumnDefinition(columnDefinition); }
+     (
+         "," 
+         columnDefinition = ColumnDefinition() { rowConstructor.addColumnDefinition(columnDefinition); }
+     )*  
+     ")"
+            
 
     {
-        rowConstructor.setExprList(list);
         return rowConstructor;
     }
 }
@@ -4232,22 +4247,31 @@ FullTextSearch FullTextSearch() : {
     Column col;
     Token searchModifier;
     Token againstValue;
+    JdbcParameter jdbcParameter;
+    JdbcNamedParameter jdbcNamedParameter;
     FullTextSearch fs = new FullTextSearch();
     List<Column> matchedColumns = new ArrayList<Column>();
     List<Expression> expList = new ArrayList<Expression>();
 }
 {
     <K_MATCH> "(" col=Column() { matchedColumns.add(col); } ("," col=Column() { matchedColumns.add(col); } )* ")" <K_AGAINST>
-    "(" againstValue=<S_CHAR_LITERAL> { fs.setAgainstValue(new StringValue(againstValue.image)); }
-        [
-            (
-                searchModifier="IN NATURAL LANGUAGE MODE"
-                | searchModifier="IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION"
-                | searchModifier="IN BOOLEAN MODE"
-                | searchModifier="WITH QUERY EXPANSION"
-            )
-            { fs.setSearchModifier(searchModifier.image); }
-        ]
+    "(" 
+    ( 
+      againstValue=<S_CHAR_LITERAL> { fs.setAgainstValue(new StringValue(againstValue.image)); } 
+      |  
+      jdbcParameter=SimpleJdbcParameter() { fs.setAgainstValue(  jdbcParameter ); }
+      |  
+      jdbcNamedParameter=SimpleJdbcNamedParameter() { fs.setAgainstValue(  jdbcNamedParameter ); }
+    )
+    [
+        (
+            searchModifier="IN NATURAL LANGUAGE MODE"
+            | searchModifier="IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION"
+            | searchModifier="IN BOOLEAN MODE"
+            | searchModifier="WITH QUERY EXPANSION"
+        )
+        { fs.setSearchModifier(searchModifier.image); }
+    ]
     ")"
     {
         fs.setMatchColumns(matchedColumns);
@@ -4541,7 +4565,7 @@ ColumnDefinition ColumnDefinition(): {
 
     colDataType = ColDataType()
 
-    ( parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
+    ( LOOKAHEAD(2) parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
 
     {
         coldef = new ColumnDefinition();
