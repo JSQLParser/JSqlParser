@@ -96,6 +96,7 @@ import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
@@ -500,7 +501,13 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(RowConstructor rowConstructor) {
-        validateOptionalExpressionList(rowConstructor.getExprList());
+        if (rowConstructor.getColumnDefinitions().isEmpty()) {
+            validateOptionalExpressionList(rowConstructor.getExprList());
+        } else {
+            for (ColumnDefinition columnDefinition: rowConstructor.getColumnDefinitions()) {
+                validateName(NamedObject.column, columnDefinition.getColumnName());
+            }
+        }
     }
 
     @Override

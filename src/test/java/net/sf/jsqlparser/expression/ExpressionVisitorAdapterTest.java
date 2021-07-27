@@ -264,4 +264,12 @@ public class ExpressionVisitorAdapterTest {
           .parseExpression("CONNECT_BY_ROOT last_name as name")
           .accept(adapter);
     }
+    
+    @Test
+    public void testRowConstructor() throws JSQLParserException {
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        CCJSqlParserUtil
+          .parseExpression("CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))")
+          .accept(adapter);
+    }
 }

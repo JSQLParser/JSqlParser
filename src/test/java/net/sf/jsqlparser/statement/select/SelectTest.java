@@ -4689,4 +4689,30 @@ public class SelectTest {
           + "WHERE department_id = 110 "
           + "CONNECT BY PRIOR employee_id = manager_id", true);
     }
+    
+    public void testUnionLimitOrderByIssue1268() throws JSQLParserException {
+        String sqlStr = "(SELECT __time FROM traffic_protocol_stat_log LIMIT 1) UNION ALL (SELECT __time FROM traffic_protocol_stat_log ORDER BY __time LIMIT 1)";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+    
+    @Test
+    public void testCastToRowConstructorIssue1267() throws JSQLParserException {
+        String sqlStr = "SELECT CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR)) AS datapoints";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+  
+    public void testCollisionWithSpecialStringFunctionsIssue1284() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+          "SELECT test( a in (1) AND 2=2) ", true);
+        
+        assertSqlCanBeParsedAndDeparsed(
+            "select\n" +
+            "sum(if(column1 in('value1', 'value2'), 1, 0)) as tcp_logs,\n" +
+            "sum(if(column1 in ('value1', 'value2') and column2 = 'value3', 1, 0)) as base_tcp_logs\n" +
+            "from\n" +
+            "table1\n" +
+            "where\n" +
+            "recv_time >= toDateTime('2021-07-20 00:00:00')\n" +
+            "and recv_time < toDateTime('2021-07-21 00:00:00')", true);
+    }
 }
