@@ -120,7 +120,7 @@ public final class CCJSqlParserUtil {
             consumer.accept(parser);
         }
         try {
-            Expression expr = parser.SimpleExpression();
+            Expression expr = parser.Expression();
             if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
                 throw new JSQLParserException("could only parse partial expression " + expr.toString());
             }

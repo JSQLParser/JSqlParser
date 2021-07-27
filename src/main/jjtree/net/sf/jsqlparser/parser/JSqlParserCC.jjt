@@ -174,6 +174,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DECLARE: "DECLARE">
 |   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
 |   <K_DATE_LITERAL : ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" ) >
+|   <K_DBA_RECYCLEBIN: "DBA_RECYCLEBIN">
 |   <K_DEFAULT : "DEFAULT">
 |   <K_DEFERRABLE : "DEFERRABLE">
 |   <K_DELAYED : "DELAYED">
@@ -314,9 +315,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PRIOR:"PRIOR">
 |   <K_PROCEDURE:"PROCEDURE">
 |   <K_PUBLIC:"PUBLIC">
+|   <K_PURGE:"PURGE">
 |   <K_QUERY:"QUERY">
 |   <K_RANGE: "RANGE">
 |   <K_READ: "READ" >
+|   <K_RECYCLEBIN: "RECYCLEBIN">
 |   <K_RECURSIVE:"RECURSIVE">
 |   <K_REFERENCES:"REFERENCES">
 |   <K_REGEXP: "REGEXP">
@@ -374,11 +377,13 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_UNPIVOT:"UNPIVOT">
 |   <K_UPDATE:"UPDATE">
 |   <K_UPSERT:"UPSERT">
-|   <K_USE : "USE">
+|   <K_USE:"USE">
+|   <K_USER:"USER">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
 |   <K_SQL_NO_CACHE: "SQL_NO_CACHE">
 |   <K_USING:"USING">
 |   <K_SIGNED:"SIGNED">
+|   <K_STRING_FUNCTION_NAME: ("SUBSTR" | "SUBSTRING" | "TRIM" | "POSITION" | "OVERLAY")>
 |   <K_UNSIGNED:"UNSIGNED">
 |   <K_VALIDATE : "VALIDATE">
 |   <K_VALUE:"VALUE">
@@ -552,6 +557,8 @@ Statement SingleStatement() :
         |
         stm = Set()
         |
+        stm = RenameTableStatement()
+        |
         stm = Reset()
         |
         LOOKAHEAD(ShowColumns())
@@ -579,6 +586,8 @@ Statement SingleStatement() :
         stm = Declare()
         |
         stm = Grant()
+        |
+        stm = PurgeStatement()
         )
         { return stm; }
     } catch (ParseException e) {
@@ -748,6 +757,78 @@ ResetStatement Reset(): {
     <K_RESET> ( LOOKAHEAD(2) <K_DATETIMELITERAL> <K_ZONE> {name = "Time Zone"; } | name = RelObjectName() | all = <K_ALL> {name = all.image; } )
     { reset = new ResetStatement(name); }
     { return reset; }
+}
+
+RenameTableStatement RenameTableStatement(): {
+    RenameTableStatement renameTableStatement;
+    Table oldName;
+    Table newName;
+    boolean usingTableKeyword=false;
+    boolean usesIfExistsKeyword=false;
+    String waitDirective = "";
+    Token token;
+}
+{
+    <K_RENAME> 
+    [ LOOKAHEAD(2) <K_TABLE> { usingTableKeyword = true; } ]
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { usesIfExistsKeyword = true; } ]
+    oldName = Table()
+    [ ( 
+        <K_WAIT> token=<S_LONG> { waitDirective = "WAIT " + token.image; }
+        |
+        <K_NOWAIT>  { waitDirective = "NOWAIT"; }
+       ) ]
+    <K_TO>
+    newName = Table()
+
+    { 
+        renameTableStatement = new RenameTableStatement(oldName, newName, usingTableKeyword, usesIfExistsKeyword, waitDirective); 
+    }
+
+    (
+        ","
+        oldName = Table()
+        <K_TO>
+        newName = Table()
+        {
+            renameTableStatement.addTableNames(oldName, newName);
+        }
+    )*
+
+    { 
+        return renameTableStatement;
+    }
+}
+
+PurgeStatement PurgeStatement(): {
+    PurgeStatement purgeStatement = null;
+    Table table;
+    Index index;
+    Token tableSpaceToken;
+    Token userToken = null;
+}
+{
+    <K_PURGE> 
+    (
+        <K_TABLE> table=Table() { purgeStatement = new PurgeStatement(table); }
+        | 
+        <K_INDEX> index=Index() { purgeStatement = new PurgeStatement(index); }
+        |
+        <K_RECYCLEBIN> { purgeStatement = new PurgeStatement(PurgeObjectType.RECYCLEBIN); }
+        |
+        <K_DBA_RECYCLEBIN> { purgeStatement = new PurgeStatement(PurgeObjectType.DBA_RECYCLEBIN); }
+        |
+        <K_TABLESPACE> tableSpaceToken=<S_IDENTIFIER> [ <K_USER> userToken=<S_IDENTIFIER> ] { 
+            purgeStatement = new PurgeStatement(
+                PurgeObjectType.TABLESPACE
+                , tableSpaceToken.image
+                , userToken!=null ? userToken.image : null); 
+            }
+    )
+
+    {
+        return purgeStatement;
+    }
 }
 
 DescribeStatement Describe(): {
@@ -1440,6 +1521,8 @@ String RelObjectNameWithoutValue() :
     /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
       | tk=<K_FORMAT> | tk=<K_DIV> | tk=<K_UNSIGNED> | tk=<K_CASE> | tk=<K_LOCAL>
       | tk=<K_ARRAY_LITERAL>
+      | tk=<K_STRING_FUNCTION_NAME>
+      | tk=<K_USER>
 
       /* Keywords for ALTER SESSION */
       /* | tk=<K_NAME> */ | tk=<K_TIMEOUT> | tk=<K_PARALLEL>
@@ -1456,7 +1539,7 @@ String RelObjectName() :
 {
     (result = RelObjectNameWithoutValue()
 		| tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON> | tk=<K_ORDER> | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE> 
-                | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES> )
+        | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES>  )
 
     {
 		if (tk!=null) result=tk.image;
@@ -1486,7 +1569,7 @@ String RelObjectNameExt():
 {
     ( result=RelObjectName() | tk=<K_ALL> | tk=<K_ANY>  | tk=<K_SOME> | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
         | tk=<K_DOUBLE> | tk=<K_IF> | tk=<K_IIF> | tk=<K_OPTIMIZE> | tk=<K_LIMIT>
-        | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC> 
+        | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC>  
         | tk=<K_CASEWHEN> | tk=<K_IN> )
     {
         if (tk!=null) result=tk.image;
@@ -3087,7 +3170,8 @@ ExpressionList SimpleExpressionList(boolean outerBrackets) #ExpressionList:
     Expression expr = null;
 }
 {
-    expr=SimpleExpression() { expressions.add(expr); } ("," expr=SimpleExpression() { expressions.add(expr); })*
+    expr=SimpleExpression() { expressions.add(expr); } 
+    ( LOOKAHEAD(2) "," expr=SimpleExpression() { expressions.add(expr); } )*
     {
         retval.setExpressions(expressions);
         return retval;
@@ -3479,6 +3563,8 @@ Expression PrimaryExpression() #PrimaryExpression:
         | token=<S_HEX>  { retval = new HexValue(token.image); }
 
         | LOOKAHEAD(2) retval=CastExpression()
+
+        //| LOOKAHEAD(2) retval=RowConstructor()
 
         // support timestamp expressions
         | (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
@@ -4037,15 +4123,23 @@ CastExpression CastExpression():
 {
     CastExpression retval = new CastExpression();
     ColDataType type = null;
+    RowConstructor rowConstructor = null;
     Expression expression = null;
     boolean    useCastKeyword;
 }
 {
-    <K_CAST> "(" expression=SimpleExpression() <K_AS> type=ColDataType() ")" { retval.setUseCastKeyword(true); }
+    <K_CAST> 
+    "(" 
+    expression=SimpleExpression() 
+    <K_AS> { retval.setUseCastKeyword(true); } 
+    ( 
+        LOOKAHEAD(3) rowConstructor = RowConstructor() { retval.setRowConstructor(rowConstructor); } 
+        | type=ColDataType() { retval.setType(type); } 
+    )
+    ")" 
 
     {
         retval.setLeftExpression(expression);
-        retval.setType(type);
         return retval;
     }
 }
@@ -4109,16 +4203,20 @@ WhenClause WhenThenSearchCondition():
 }*/
 
 RowConstructor RowConstructor(): {
-    ExpressionList list = null;
     RowConstructor rowConstructor = new RowConstructor();
+    ColumnDefinition columnDefinition = null;
 } {
     [ <K_ROW> { rowConstructor.setName("ROW");} ]
     "("
-        list = SimpleExpressionList(true)
-    ")"
+     columnDefinition = ColumnDefinition() { rowConstructor.addColumnDefinition(columnDefinition); }
+     (
+         "," 
+         columnDefinition = ColumnDefinition() { rowConstructor.addColumnDefinition(columnDefinition); }
+     )*  
+     ")"
+            
 
     {
-        rowConstructor.setExprList(list);
         return rowConstructor;
     }
 }
@@ -4173,22 +4271,31 @@ FullTextSearch FullTextSearch() : {
     Column col;
     Token searchModifier;
     Token againstValue;
+    JdbcParameter jdbcParameter;
+    JdbcNamedParameter jdbcNamedParameter;
     FullTextSearch fs = new FullTextSearch();
     List<Column> matchedColumns = new ArrayList<Column>();
     List<Expression> expList = new ArrayList<Expression>();
 }
 {
     <K_MATCH> "(" col=Column() { matchedColumns.add(col); } ("," col=Column() { matchedColumns.add(col); } )* ")" <K_AGAINST>
-    "(" againstValue=<S_CHAR_LITERAL> { fs.setAgainstValue(new StringValue(againstValue.image)); }
-        [
-            (
-                searchModifier="IN NATURAL LANGUAGE MODE"
-                | searchModifier="IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION"
-                | searchModifier="IN BOOLEAN MODE"
-                | searchModifier="WITH QUERY EXPANSION"
-            )
-            { fs.setSearchModifier(searchModifier.image); }
-        ]
+    "(" 
+    ( 
+      againstValue=<S_CHAR_LITERAL> { fs.setAgainstValue(new StringValue(againstValue.image)); } 
+      |  
+      jdbcParameter=SimpleJdbcParameter() { fs.setAgainstValue(  jdbcParameter ); }
+      |  
+      jdbcNamedParameter=SimpleJdbcNamedParameter() { fs.setAgainstValue(  jdbcNamedParameter ); }
+    )
+    [
+        (
+            searchModifier="IN NATURAL LANGUAGE MODE"
+            | searchModifier="IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION"
+            | searchModifier="IN BOOLEAN MODE"
+            | searchModifier="WITH QUERY EXPANSION"
+        )
+        { fs.setSearchModifier(searchModifier.image); }
+    ]
     ")"
     {
         fs.setMatchColumns(matchedColumns);
@@ -4225,11 +4332,39 @@ Function Function() #Function:
 {
     (
         "{" <K_FN> { retval.setEscaped(true); }  InternalFunction(retval) "}"
+        | LOOKAHEAD(3) retval = SpecialStringFunctionWithNamedParameters()
         | InternalFunction(retval)
     )
     {
         linkAST(retval,jjtThis);
         return retval;
+    }
+}
+
+Function SpecialStringFunctionWithNamedParameters() :
+{
+    Token funcName;
+    NamedExpressionList namedExpressionList = null;
+    ExpressionList expressionList = null;
+    List<OrderByElement> orderByList;
+}
+{
+        funcName = <K_STRING_FUNCTION_NAME> 
+
+        "(" 
+        (
+            LOOKAHEAD(NamedExpressionList1()) namedExpressionList=NamedExpressionList1()
+            |
+            LOOKAHEAD(NamedExpressionListExprFirst(), { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
+            |
+            LOOKAHEAD(3, { getAsBoolean(Feature.allowComplexParsing) }) expressionList=ComplexExpressionList() {expressionList.setUsingBrackets(false);}
+            |
+            LOOKAHEAD(3) expressionList=SimpleExpressionList(false) 
+        )
+        ")"
+
+    {
+        return new Function().withName(funcName.image).withNamedParameters(namedExpressionList).withParameters(expressionList);
     }
 }
 
@@ -4255,10 +4390,6 @@ Function InternalFunction(Function retval) :
         ( LOOKAHEAD(4)
             "*" { retval.setAllColumns(true); }
             |
-            LOOKAHEAD(NamedExpressionList1()) namedExpressionList=NamedExpressionList1()
-            |
-            LOOKAHEAD(NamedExpressionListExprFirst(), { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
-            |
             LOOKAHEAD(3, { getAsBoolean(Feature.allowComplexParsing) }) (expressionList=ComplexExpressionList() {expressionList.setUsingBrackets(false);} [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
             LOOKAHEAD(3) (expressionList=SimpleExpressionList(false) [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
@@ -4267,7 +4398,7 @@ Function InternalFunction(Function retval) :
 
         )]
         [ <K_IGNORE> <K_NULLS> {retval.setIgnoreNulls(true); }]
-	")"
+        ")"
 
     [ "." (
             LOOKAHEAD(2) expr1=Function() { retval.setAttribute(expr1); }
@@ -4279,7 +4410,6 @@ Function InternalFunction(Function retval) :
 
     {
         retval.setParameters(expressionList);
-        retval.setNamedParameters(namedExpressionList);
         retval.setName(funcName);
         retval.setKeep(keep);
         return retval;
@@ -4403,6 +4533,13 @@ List<Index.ColumnParams> ColumnNamesWithParamsList() : {
     { return colNames; }
 }
 
+Index Index(): {
+    List<String> name;
+} 
+{
+    name= RelObjectNameList() { return new Index().withName(name).withType(""); }
+}
+
 CreateIndex CreateIndex():
 {
     CreateIndex createIndex = new CreateIndex();
@@ -4420,13 +4557,7 @@ CreateIndex CreateIndex():
     <K_CREATE>
     [ parameter=CreateParameter() ]
 
-    <K_INDEX> name= RelObjectNameList()
-
-    {
-        index = new Index();
-        index.setName(name);
-        index.setType(parameter.isEmpty()?null:parameter.get(0));
-    }
+    <K_INDEX> index = Index() { index.setType(parameter.isEmpty()?null:parameter.get(0)); }
 
     <K_ON> table=Table()
 
@@ -4458,7 +4589,7 @@ ColumnDefinition ColumnDefinition(): {
 
     colDataType = ColDataType()
 
-    ( parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
+    ( LOOKAHEAD(2) parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
 
     {
         coldef = new ColumnDefinition();
