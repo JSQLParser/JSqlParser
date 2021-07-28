@@ -5258,6 +5258,9 @@ AlterExpression AlterExpression():
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
     ReferentialAction.Action action = null;
+
+    // for captureRest()
+    List<String> tokens = new LinkedList<String>();
 }
 {
 
@@ -5467,6 +5470,22 @@ AlterExpression AlterExpression():
       (<K_COMMENT> {alterExp.setOperation(AlterOperation.COMMENT);}
           tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }
       )
+      |
+      tokens = captureRest() { 
+                    alterExp.setOperation(AlterOperation.UNSPECIFIC);
+                    StringBuilder optionalSpecifier = new StringBuilder();
+                    int i=0;
+
+                    for (String s: tokens) 
+                        if (!s.equals(";")) {
+                            if (i>0)
+                                optionalSpecifier.append( " " );
+                            optionalSpecifier.append( s );
+                            i++;
+                        }
+
+                    alterExp.setOptionalSpecifier( optionalSpecifier.toString() );
+                }
     )
 
     {
