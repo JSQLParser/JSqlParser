@@ -70,6 +70,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -1046,5 +1047,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (purgeStatement.getPurgeObjectType()== PurgeObjectType.TABLE) {
             ((Table) purgeStatement.getObject()).accept(this);
         }
+    }
+
+    @Override
+    public void visit(AlterSystemStatement alterSystemStatement) {
+        // no tables involved in this statement
     }
 }
