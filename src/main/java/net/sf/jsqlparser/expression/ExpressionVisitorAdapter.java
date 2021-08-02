@@ -613,6 +613,10 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         }
     }
 
+    @Override
+    public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
+        oracleNamedFunctionParameter.getExpression().accept(this);
+    }
     public void visit(ColumnDefinition columnDefinition) {
        columnDefinition.accept(this);
      }
