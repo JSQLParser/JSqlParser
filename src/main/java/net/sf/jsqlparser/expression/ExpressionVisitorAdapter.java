@@ -617,6 +617,12 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(ConnectByRootOperator connectByRootOperator) {
         connectByRootOperator.getColumn().accept(this);
     }
+    
+    @Override
+    public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
+        oracleNamedFunctionParameter.getExpression().accept(this);
+    }
+    
     public void visit(ColumnDefinition columnDefinition) {
        columnDefinition.accept(this);
      }

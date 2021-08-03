@@ -174,4 +174,5 @@ public interface ExpressionVisitor {
     void visit(JsonFunction aThis);
 
     void visit(ConnectByRootOperator aThis);
+    void visit(OracleNamedFunctionParameter aThis);
 }

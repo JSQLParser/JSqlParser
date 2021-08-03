@@ -46,6 +46,7 @@ import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
@@ -1023,5 +1024,14 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public void visit(ConnectByRootOperator connectByRootOperator) {
         buffer.append("CONNECT_BY_ROOT ");
         connectByRootOperator.getColumn().accept(this);
+    }
+
+    @Override
+    public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
+        buffer
+          .append(oracleNamedFunctionParameter.getName())
+          .append(" => ");
+        
+        oracleNamedFunctionParameter.getExpression().accept(this);
     }
 }
