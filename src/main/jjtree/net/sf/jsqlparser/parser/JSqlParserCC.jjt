@@ -121,6 +121,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 {
     <K_ABSENT: "ABSENT">
 |   <K_ACTION: "ACTION">
+|   <K_ACTIVE: "ACTIVE">
 |   <K_ADD:"ADD">
 |   <K_ADVANCE:"ADVANCE">
 |   <K_ADVISE:"ADVISE">
@@ -133,6 +134,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_AND_OPERATOR:"&&">
 |   <K_ANY:"ANY">
 |   <K_APPLY:"APPLY">
+|   <K_ARCHIVE: "ARCHIVE">
 |   <K_ARRAY_LITERAL: "ARRAY" >
 |   <K_AS: "AS">
 |   <K_AT: "AT">
@@ -155,6 +157,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CHARACTER:"CHARACTER">
 |   <K_CHANGE:"CHANGE">
 |   <K_CHECK:"CHECK">
+|   <K_CHECKPOINT:"CHECKPOINT">
 |   <K_CHAR:"CHAR">
 |   <K_CLOSE:"CLOSE">
 |   <K_COLLATE:"COLLATE">
@@ -182,6 +185,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DESC:"DESC">
 |   <K_DESCRIBE:"DESCRIBE">
 |   <K_DISABLE : "DISABLE">
+|   <K_DISCONNECT:"DISCONNECT">
 |   <K_DISTINCT:"DISTINCT">
 |   <K_DIV:"DIV">
 |   <K_DDL:"DDL">
@@ -189,6 +193,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DO:"DO">
 |   <K_DOUBLE : "DOUBLE">
 |   <K_DROP:"DROP">
+|   <K_DUMP:"DUMP">
 |   <K_DUPLICATE: "DUPLICATE">
 |   <K_ELSE:"ELSE">
 |   <K_ENABLE : "ENABLE">
@@ -206,6 +211,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_FILTER: "FILTER">
 |   <K_FIRST: "FIRST">
 |   <K_FALSE: "FALSE">
+|   <K_FLUSH: "FLUSH">
 |   <K_FOLLOWING: "FOLLOWING">
 |   <K_FOR:"FOR">
 |   <K_FORCE : "FORCE">
@@ -223,6 +229,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_GUARD:"GUARD">
 |   <K_HAVING:"HAVING">
 |   <K_HIGH_PRIORITY : "HIGH_PRIORITY">
+|   <K_HISTORY : "HISTORY">
 |   <K_HOPPING:"HOPPING">
 |   <K_IF:"IF">
 |   <K_IIF:"IIF">
@@ -258,6 +265,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_LIMIT:"LIMIT">
 |   <K_LOCAL:"LOCAL">
 |   <K_LINK:"LINK">
+|   <K_LOG:"LOG">
 |   <K_LOW_PRIORITY : "LOW_PRIORITY">
 |   <K_MATCH: "MATCH">
 |   <K_MATCHED: "MATCHED">
@@ -298,6 +306,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ONLY:"ONLY">
 |   <K_OPEN:"OPEN">
 |   <K_OR:"OR">
+|   <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT: "=>">
 |   <K_ORDER:"ORDER">
 |   <K_OUTER:"OUTER">
 |   <K_OVER:"OVER">
@@ -316,6 +325,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PUBLIC:"PUBLIC">
 |   <K_PURGE:"PURGE">
 |   <K_QUERY:"QUERY">
+|   <K_QUIESCE: "QUIESCE">
 |   <K_RANGE: "RANGE">
 |   <K_READ: "READ" >
 |   <K_RECYCLEBIN: "RECYCLEBIN">
@@ -323,10 +333,13 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_REFERENCES:"REFERENCES">
 |   <K_REGEXP: "REGEXP">
 |   <K_RLIKE: "RLIKE">
+|   <K_REGISTER: "REGISTER">
 |   <K_RENAME:"RENAME">
 |   <K_REPLACE:"REPLACE">
 |   <K_RESUMABLE: "RESUMABLE">
+|   <K_RESUME: "RESUME">
 |   <K_RESTRICT: "RESTRICT">
+|   <K_RESTRICTED: "RESTRICTED">
 |   <K_RETURNING: "RETURNING">
 |   <K_RIGHT:"RIGHT">
 |   <K_ROLLBACK:"ROLLBACK">
@@ -343,13 +356,17 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_RESET:"RESET">
 |   <K_SETS:"SETS">
 |   <K_SHOW : "SHOW">
+|   <K_SHUTDOWN : "SHUTDOWN">
 |   <K_SIBLINGS:"SIBLINGS">
 |   <K_SIMILAR:"SIMILAR">
 |   <K_SIZE:"SIZE">
 |   <K_SKIP: "SKIP">
 |   <K_SOME:"SOME">
 |   <K_START:"START">
+|   <K_SUSPEND:"SUSPEND">
+|   <K_SWITCH: "SWITCH">
 |   <K_SYNONYM:"SYNONYM">
+|   <K_SYSTEM:"SYSTEM">
 |   <K_TABLE:"TABLE">
 |   <K_TABLES:"TABLES">
 |   <K_TABLESPACE : "TABLESPACE">
@@ -376,6 +393,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_UNPIVOT:"UNPIVOT">
 |   <K_UPDATE:"UPDATE">
 |   <K_UPSERT:"UPSERT">
+|   <K_UNQIESCE:"UNQIESCE">
 |   <K_USE:"USE">
 |   <K_USER:"USER">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
@@ -587,6 +605,8 @@ Statement SingleStatement() :
         stm = Grant()
         |
         stm = PurgeStatement()
+        |
+        stm = AlterSystemStatement()
         )
         { return stm; }
     } catch (ParseException e) {
@@ -1528,6 +1548,10 @@ String RelObjectNameWithoutValue() :
       /* | tk=<K_NAME> */ | tk=<K_TIMEOUT> | tk=<K_PARALLEL>
 
       | tk=<K_LINK>
+      /* Keywords for ALTER SYSTEM */
+      | tk=<K_LOG> | tk=<K_DUMP> | tk=<K_FLUSH> | tk=<K_ACTIVE> | tk=<K_RESUME> | tk=<K_SWITCH> | tk=<K_SUSPEND>
+      | tk=<K_ARCHIVE> | tk=<K_QUIESCE> | tk=<K_HISTORY> | tk=<K_SHUTDOWN> | tk=<K_REGISTER> | tk=<K_UNQIESCE>
+      | tk=<K_RESTRICTED> | tk=<K_CHECKPOINT> | tk=<K_DISCONNECT>
       )
 
     { return tk.image; }
@@ -3190,7 +3214,17 @@ ExpressionList ComplexExpressionList() #ExpressionList:
     Expression expr = null;
 }
 {
-    expr=Expression() { expressions.add(expr); } ("," expr=Expression() { expressions.add(expr); })*
+    (   
+        LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
+        | expr=Expression() 
+    ) { expressions.add(expr); }
+    (
+        "," 
+        (   
+            LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
+            | expr=Expression() 
+        ) { expressions.add(expr); }
+    )*
     {
         retval.setExpressions(expressions);
         return retval;
@@ -3669,6 +3703,19 @@ JdbcNamedParameter JdbcNamedParameter() : {
     ":" (name=RelObjectNameExt2() { parameter.setName(name); })
     {
         return parameter;
+    }
+}
+
+OracleNamedFunctionParameter OracleNamedFunctionParameter() : {
+    String name;
+    Expression expression;
+}
+{
+    name=RelObjectNameExt2()
+    <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT>
+    expression=Expression() 
+    {
+        return new OracleNamedFunctionParameter(name, expression);
     }
 }
 
@@ -5264,6 +5311,9 @@ AlterExpression AlterExpression():
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
     ReferentialAction.Action action = null;
+
+    // for captureRest()
+    List<String> tokens = new LinkedList<String>();
 }
 {
 
@@ -5473,6 +5523,22 @@ AlterExpression AlterExpression():
       (<K_COMMENT> {alterExp.setOperation(AlterOperation.COMMENT);}
           tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }
       )
+      |
+      tokens = captureRest() { 
+                    alterExp.setOperation(AlterOperation.UNSPECIFIC);
+                    StringBuilder optionalSpecifier = new StringBuilder();
+                    int i=0;
+
+                    for (String s: tokens) 
+                        if (!s.equals(";")) {
+                            if (i>0)
+                                optionalSpecifier.append( " " );
+                            optionalSpecifier.append( s );
+                            i++;
+                        }
+
+                    alterExp.setOptionalSpecifier( optionalSpecifier.toString() );
+                }
     )
 
     {
@@ -5563,6 +5629,98 @@ AlterSession AlterSession():
 
     {
         return new AlterSession(operation, parameters);
+    }
+}
+
+AlterSystemStatement AlterSystemStatement():
+{
+    AlterSystemOperation operation = null;
+    List<String> parameters = new LinkedList<String>();
+}
+{
+    <K_ALTER> <K_SYSTEM> (
+        ( 
+           "ARCHIVE" "LOG" { operation = AlterSystemOperation.ARCHIVE_LOG; }
+        )
+        |
+        ( 
+            "CHECKPOINT" { operation = AlterSystemOperation.CHECKPOINT; }
+        )
+        |
+        ( 
+            "DUMP" "ACTIVE" "SESSION" "HISTORY" { operation = AlterSystemOperation.DUMP_ACTIVE_SESSION_HISTORY; }
+        )
+        |   
+        (   
+            <K_ENABLE>  ( 
+                            "DISTRIBUTED RECOVERY" { operation = AlterSystemOperation.ENABLE_DISTRIBUTED_RECOVERY; }
+                            | "RESTRICTED SESSION" { operation = AlterSystemOperation.ENABLE_DISTRIBUTED_RECOVERY; }
+                        )
+        )
+        |
+        (   
+            <K_DISABLE> ( 
+                            "DISTRIBUTED RECOVERY" { operation = AlterSystemOperation.DISABLE_DISTRIBUTED_RECOVERY; }
+                            | "RESTRICTED SESSION" { operation = AlterSystemOperation.DISABLE_RESTRICTED_SESSION; }
+                        )
+        )
+        |
+        ( 
+            "FLUSH" { operation = AlterSystemOperation.FLUSH; }
+        )
+        |
+        ( 
+            "DISCONNECT" "SESSION" { operation = AlterSystemOperation.DISCONNECT_SESSION; }
+        )
+        |
+        ( 
+            "DISCONNECT SESSION" { operation = AlterSystemOperation.DISCONNECT_SESSION; }
+        )
+        |
+        ( 
+            "KILL SESSION" { operation = AlterSystemOperation.KILL_SESSION; }
+        )
+        |
+        ( 
+            "SWITCH" { operation = AlterSystemOperation.SWITCH; }
+        )
+        |
+        ( 
+            "SUSPEND" { operation = AlterSystemOperation.SUSPEND; }
+        )
+        |
+        ( 
+            "RESUME" { operation = AlterSystemOperation.RESUME; }
+        )
+        |
+        ( 
+            "QUIESCE" "RESTRICTED" { operation = AlterSystemOperation.QUIESCE; }
+        )
+        |
+        ( 
+            "UNQUIESCE" { operation = AlterSystemOperation.UNQUIESCE; }
+        )
+        |
+        ( 
+            "SHUTDOWN" { operation = AlterSystemOperation.SHUTDOWN; }
+        )
+        |
+        ( 
+            "REGISTER" { operation = AlterSystemOperation.REGISTER; }
+        )
+        |
+        ( 
+            "SET" { operation = AlterSystemOperation.SET; }
+        )
+        |
+        ( 
+            "RESET" { operation = AlterSystemOperation.RESET; }
+        )
+    )
+    parameters = captureRest()
+
+    {
+        return new AlterSystemStatement(operation, parameters);
     }
 }
 

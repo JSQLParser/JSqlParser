@@ -38,7 +38,7 @@ public class PurgeStatementTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed("PURGE TABLESPACE my_table_space USER cfe", true);
     }
     
-      /**
+   /**
    * This test will trigger the method {@link StatementVisitorAdaptor#visit() Visit Method} in the
    * StatementVisitorAdaptor needed for the Code Coverage.
    * 
