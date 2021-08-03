@@ -172,4 +172,6 @@ public interface ExpressionVisitor {
     void visit(JsonAggregateFunction aThis);
 
     void visit(JsonFunction aThis);
+
+    void visit(OracleNamedFunctionParameter aThis);
 }

@@ -45,6 +45,7 @@ import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
@@ -1016,5 +1017,14 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(JsonFunction expression) {
          expression.append(buffer);
+    }
+
+    @Override
+    public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
+        buffer
+          .append(oracleNamedFunctionParameter.getName())
+          .append(" => ");
+        
+        oracleNamedFunctionParameter.getExpression().accept(this);
     }
 }

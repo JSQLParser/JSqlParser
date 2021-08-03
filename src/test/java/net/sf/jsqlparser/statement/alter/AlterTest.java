@@ -747,5 +747,17 @@ public class AlterTest {
             assertNull(alterExpression.getReferentialAction(Type.UPDATE));
         }
     }
+    
+    @Test
+    public void testRowFormatKeywordIssue1033() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE basic_test_case "
+            + "ADD COLUMN display_name varchar(512) NOT NULL DEFAULT '' AFTER name"
+            + ", ADD KEY test_case_status (test_case_status)"
+            + ", add KEY display_name (display_name), ROW_FORMAT=DYNAMIC", true);
+        
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE t1 MOVE TABLESPACE users", true);
+        
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test_tab MOVE PARTITION test_tab_q2 COMPRESS", true);
+    }
 
 }

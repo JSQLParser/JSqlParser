@@ -41,7 +41,7 @@ public class LongValue extends ASTNodeAccessImpl implements Expression {
     }
 
     public long getValue() {
-        return Long.valueOf(stringValue);
+        return Long.parseLong(stringValue);
     }
 
     public BigInteger getBigIntegerValue() {

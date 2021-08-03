@@ -45,6 +45,7 @@ import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
@@ -69,6 +70,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -1035,6 +1037,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
           }
     }
     
+    public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
+        oracleNamedFunctionParameter.getExpression().accept(this);
+    }
+    
     @Override
     public void visit(RenameTableStatement renameTableStatement) {
         for (Map.Entry<Table, Table> e : renameTableStatement.getTableNames()) {
@@ -1048,5 +1054,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (purgeStatement.getPurgeObjectType()== PurgeObjectType.TABLE) {
             ((Table) purgeStatement.getObject()).accept(this);
         }
+    }
+
+    @Override
+    public void visit(AlterSystemStatement alterSystemStatement) {
+        // no tables involved in this statement
     }
 }

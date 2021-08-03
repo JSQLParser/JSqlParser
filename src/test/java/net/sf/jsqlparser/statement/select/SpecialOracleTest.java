@@ -34,13 +34,18 @@ import org.junit.Test;
  * As a matter of fact there are a lot of files that can still not processed. Here a step by step
  * improvement is the way to go.
  *
- * The test ensures, that the successfull parsed file count does not decrease.
+ * The test ensures, that the successful parsed file count does not decrease.
  *
  * @author toben
  */
 public class SpecialOracleTest {
-
-    private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/statement/oracle-tests");
+    
+    //@todo: this is a workaround for Maven vs. Gradle
+    //we will want to remove that after concluding the Gradle migration
+    private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/statement/select/oracle-tests").isDirectory()
+        ? new File("target/test-classes/net/sf/jsqlparser/statement/select/oracle-tests")
+        : new File("build/resources/test/net/sf/jsqlparser/statement/select/oracle-tests");
+    
     private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
 
     private final List<String> successes = Arrays.asList("aggregate01.sql",
