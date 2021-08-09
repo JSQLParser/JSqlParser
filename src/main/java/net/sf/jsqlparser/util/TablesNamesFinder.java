@@ -722,7 +722,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Drop drop) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        visit(drop.getName());
     }
 
     @Override
@@ -1033,6 +1033,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(ConnectByRootOperator connectByRootOperator) {
         connectByRootOperator.getColumn().accept(this);
+    }
+  
+    public void visit(IfElseStatement ifElseStatement) {
+        ifElseStatement.getIfStatement().accept(this);
+        if (ifElseStatement.getElseStatement()!=null) {
+            ifElseStatement.getElseStatement().accept(this);
+          }
     }
     
     public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {

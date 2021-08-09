@@ -486,12 +486,30 @@ TOKEN:
 }
 
 Statement Statement() #Statement:
-{ Statement stm = null; }
+{   
+    IfElseStatement ifElseStatement = null;
+    Statement stm = null;
+    Statement stm2 = null;
+    Expression condition;
+}
 {
     try {
-        stm = SingleStatement()
-        [<ST_SEMICOLON>]
-        <EOF>
+        (
+            <K_IF> condition=Condition() 
+            stm = SingleStatement() {  ifElseStatement = new IfElseStatement(condition, stm); }
+            [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
+            [ LOOKAHEAD(2) 
+                <K_ELSE> stm2 = SingleStatement() {  ifElseStatement.setElseStatement(stm2);  } 
+                [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForElseStatement(true); }]
+            ]
+            <EOF>
+        )
+        |
+        (
+            stm = SingleStatement()
+            [ <ST_SEMICOLON> ]
+            <EOF>
+        )
     } catch (ParseException e) {
         if (errorRecovery) {
             parseErrors.add(e);
@@ -502,7 +520,7 @@ Statement Statement() #Statement:
     }
 
 	{
-		return stm;
+		return ifElseStatement!=null ? ifElseStatement : stm;
 	}
 }
 
@@ -653,13 +671,61 @@ Block Block() #Block : {
 Statements Statements() #Statements : {
     Statements stmts = new Statements();
     List<Statement> list = new ArrayList<Statement>();
-    Statement stm;
+    
+    IfElseStatement ifElseStatement = null;
+    Statement stm = null;
+    Statement stm2 = null;
+    Expression condition;
 }
 {
     (<ST_SEMICOLON>)*
     try {
-       (stm = SingleStatement() | stm = Block()) { list.add(stm); }
-       ( <ST_SEMICOLON> [(stm = SingleStatement() | stm = Block()) { list.add(stm); }] )*
+        (
+            (
+                 <K_IF> condition=Condition() 
+                 stm = SingleStatement() {  ifElseStatement = new IfElseStatement(condition, stm); }
+                 [ LOOKAHEAD(2) 
+                     [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
+                     <K_ELSE> stm2 = SingleStatement() {  ifElseStatement.setElseStatement(stm2);  } 
+                 ]
+
+                 { list.add( ifElseStatement ); }
+            )
+            |
+            (
+                 stm = SingleStatement() 
+                 | stm = Block()
+
+                 [ LOOKAHEAD(2)  <ST_SEMICOLON> ]
+            ) { list.add(stm); }
+        )
+
+
+        ( 
+            <ST_SEMICOLON> { if (stm2!=null) 
+                                ifElseStatement.setUsingSemicolonForElseStatement(true); 
+                             else if (ifElseStatement!=null) 
+                                ifElseStatement.setUsingSemicolonForIfStatement(true); } 
+            [
+                (
+                    <K_IF> condition=Condition() 
+                    stm = SingleStatement() {  ifElseStatement = new IfElseStatement(condition, stm); }
+                    [ LOOKAHEAD(2) 
+                        [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
+                        <K_ELSE> stm2 = SingleStatement() {  ifElseStatement.setElseStatement(stm2);  } 
+                    ]
+
+                    { list.add( ifElseStatement ); }
+               )
+               |
+               (
+                    stm = SingleStatement() 
+                    | stm = Block()
+
+                    [ LOOKAHEAD(2)  <ST_SEMICOLON> ]
+               ) { list.add(stm); }
+            ] 
+        )*
         <EOF>
     } catch (ParseException e) {
         if (errorRecovery) {

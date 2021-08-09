@@ -214,11 +214,21 @@ public class StatementVisitorAdapter implements StatementVisitor {
     }
 
     @Override
+    public void visit(IfElseStatement ifElseStatement) {
+        ifElseStatement.getIfStatement().accept(this);
+        if (ifElseStatement.getElseStatement()!=null) {
+            ifElseStatement.getElseStatement().accept(this);
+          }
+      }
+        
+    @Override
     public void visit(RenameTableStatement renameTableStatement) {
+        //@todo: do something usefull here
     }
 
     @Override
     public void visit(PurgeStatement purgeStatement) {
+        //@todo: do something usefull here
     }
 
     @Override
