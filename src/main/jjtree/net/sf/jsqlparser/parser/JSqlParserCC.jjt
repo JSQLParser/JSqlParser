@@ -167,6 +167,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_COMMIT:"COMMIT">
 |   <K_COMMENT:"COMMENT">
 |   <K_CONNECT:"CONNECT">
+|   <K_CONNECT_BY_ROOT: "CONNECT_BY_ROOT"> 
 |   <K_CONSTRAINT:"CONSTRAINT">
 |   <K_COSTS: "COSTS">
 |   <K_CREATE:"CREATE">
@@ -3665,6 +3666,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2) retval = NextValExpression()
 
+        | retval=ConnectByRootOperator()
+
         | retval=Column()
 
         | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
@@ -3742,6 +3745,16 @@ Expression PrimaryExpression() #PrimaryExpression:
             retval = new NotExpression(retval, exclamationMarkNot);
         }
         return retval;
+    }
+}
+
+ConnectByRootOperator ConnectByRootOperator() #ConnectByRootOperator: {
+    Column column;
+}
+{
+    <K_CONNECT_BY_ROOT> column = Column()
+    {
+      return new ConnectByRootOperator(column);
     }
 }
 

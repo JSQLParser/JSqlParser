@@ -257,7 +257,15 @@ public class ExpressionVisitorAdapterTest {
           .accept(adapter);
     }
     
-     @Test
+    @Test
+    public void testConnectedByRootExpression() throws JSQLParserException {
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        CCJSqlParserUtil
+          .parseExpression("CONNECT_BY_ROOT last_name as name")
+          .accept(adapter);
+    }
+    
+    @Test
     public void testRowConstructor() throws JSQLParserException {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         CCJSqlParserUtil
