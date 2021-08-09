@@ -114,6 +114,7 @@ public interface StatementVisitor {
 
     void visit(AlterSession alterSession);
 
+    void visit(IfElseStatement aThis);
     void visit(RenameTableStatement renameTableStatement);
 
     void visit(PurgeStatement purgeStatement);

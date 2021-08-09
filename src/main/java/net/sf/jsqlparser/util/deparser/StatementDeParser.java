@@ -18,6 +18,7 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.PurgeStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
@@ -353,6 +354,11 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         new AlterSessionDeParser(buffer).deParse(alterSession);
     }
 
+    @Override
+    public void visit(IfElseStatement ifElseStatement) {
+       ifElseStatement.appendTo(buffer);
+    }
+    
     @Override
     public void visit(RenameTableStatement renameTableStatement) {
         renameTableStatement.appendTo(buffer);
