@@ -15,3 +15,5 @@ where tt='500'
   having sum(nu) > 0
 group by tn, ui, (tt || tc)
 order by 1
+
+--@FAILURE: Encountered unexpected token: "group" "GROUP" recorded first on Aug 3, 2021, 7:20:08 AM

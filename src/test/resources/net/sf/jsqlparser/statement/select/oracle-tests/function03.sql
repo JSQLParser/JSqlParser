@@ -11,3 +11,5 @@ select trim(both from con.ke)
 from dual
 
 
+
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM

@@ -22,3 +22,5 @@ else
   into leftover (empno,ename,job,mgr,sal,deptno)
   values (empno,ename,job,mgr,sal,deptno)
 select * from emp
+
+--@FAILURE: Encountered unexpected token: "when" "WHEN" recorded first on Aug 3, 2021, 7:20:08 AM

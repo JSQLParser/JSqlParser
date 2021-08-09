@@ -1609,10 +1609,12 @@ String RelObjectNameWithoutValue() :
       | tk=<K_ARRAY_LITERAL>
       | tk=<K_STRING_FUNCTION_NAME>
       | tk=<K_USER>
+      | tk=<K_RECYCLEBIN> | tk=<K_DBA_RECYCLEBIN>
 
       /* Keywords for ALTER SESSION */
       /* | tk=<K_NAME> */ | tk=<K_TIMEOUT> | tk=<K_PARALLEL>
 
+      | tk=<K_LINK>
       /* Keywords for ALTER SYSTEM */
       | tk=<K_LOG> | tk=<K_DUMP> | tk=<K_FLUSH> | tk=<K_ACTIVE> | tk=<K_RESUME> | tk=<K_SWITCH> | tk=<K_SUSPEND>
       | tk=<K_ARCHIVE> | tk=<K_QUIESCE> | tk=<K_HISTORY> | tk=<K_SHUTDOWN> | tk=<K_REGISTER> | tk=<K_UNQIESCE>
@@ -1660,8 +1662,8 @@ String RelObjectNameExt():
 {
     ( result=RelObjectName() | tk=<K_ALL> | tk=<K_ANY>  | tk=<K_SOME> | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
         | tk=<K_DOUBLE> | tk=<K_IF> | tk=<K_IIF> | tk=<K_OPTIMIZE> | tk=<K_LIMIT>
-        | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC>  
-        | tk=<K_CASEWHEN> | tk=<K_IN> )
+        | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC> 
+        | tk=<K_CASEWHEN> | tk=<K_IN> | tk=<K_GROUPING> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -1676,7 +1678,7 @@ String RelObjectNameExt2():
   String result=null;
 }
 {
-    ( result=RelObjectNameExt() | tk=<K_FROM> | tk=<K_SELECT> | tk=<K_CURRENT>)
+    ( result=RelObjectNameExt() | tk=<K_FROM> | tk=<K_SELECT> | tk=<K_CURRENT> )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -2602,22 +2604,25 @@ GroupByElement GroupByColumnReferences():
     (     LOOKAHEAD(2) (
               "(" ")" { groupBy.withUsingBrackets(true); }
           )
+          |
+          LOOKAHEAD(2) ( 
+            <K_GROUPING> <K_SETS> "("
+                ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }
+                    | LOOKAHEAD(3) "(" list = SimpleExpressionList(true) ")" { groupBy.addGroupingSet(list); }
+                    | expr = SimpleExpression() { groupBy.addGroupingSet(expr); } )
+
+                ( "," ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }
+                    | LOOKAHEAD(3) "(" list = SimpleExpressionList(true) ")" { groupBy.addGroupingSet(list); }
+                    | expr = SimpleExpression() { groupBy.addGroupingSet(expr); } ) )*
+            ")"
+          )
           | LOOKAHEAD(3) (
               "(" list = SimpleExpressionList(true)  ")" { groupBy.setGroupByExpressionList(list); }
           )
           |
-          ( list = SimpleExpressionList(false) { groupBy.setGroupByExpressionList(list); }
+          LOOKAHEAD(2) (  
+            list = SimpleExpressionList(false) { groupBy.setGroupByExpressionList(list); }
           )
-    |
-        <K_GROUPING> <K_SETS> "("
-            ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }
-                | LOOKAHEAD(3) "(" list = SimpleExpressionList(true) ")" { groupBy.addGroupingSet(list); }
-                | expr = SimpleExpression() { groupBy.addGroupingSet(expr); } )
-
-            ( "," ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }
-                | LOOKAHEAD(3) "(" list = SimpleExpressionList(true) ")" { groupBy.addGroupingSet(list); }
-                | expr = SimpleExpression() { groupBy.addGroupingSet(expr); } ) )*
-        ")"
     )
     {
         return groupBy;

@@ -37,3 +37,5 @@ select spf.*, nvl(a, ddr_a) as a, b, d,
                 increment numtodsinterval(1,'DAY')] = nvl(p[cv(dt)], tech_p[cv(dt)-1])
   )
 
+
+--@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Aug 3, 2021, 7:20:07 AM

@@ -23,3 +23,5 @@ select t1.department_id, t2.*
     )
 ) t2
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

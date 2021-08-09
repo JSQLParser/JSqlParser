@@ -15,3 +15,5 @@ select times.time_id, product, quantity from inventory
    order by  2,1
 
 
+
+--@FAILURE: Encountered unexpected token: "by" "BY" recorded first on Aug 3, 2021, 7:20:08 AM

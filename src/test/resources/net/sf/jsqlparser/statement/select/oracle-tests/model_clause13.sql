@@ -29,3 +29,5 @@ level2[any] = case when org_level[cv()] = 2 then ename [cv()] end,
 level3[any] = case when org_level[cv()] = 3 then ename [cv()] end,
 level4[any] = case when org_level[cv()] = 4 then ename [cv()] end
 )))
+
+--@FAILURE: Encountered unexpected token: "return" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM

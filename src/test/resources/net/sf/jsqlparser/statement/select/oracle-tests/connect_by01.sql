@@ -27,3 +27,5 @@ from o
 connect by nocycle obj=prior link
 start with obj='a'
 
+
+--@FAILURE: Encountered unexpected token: "root" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM

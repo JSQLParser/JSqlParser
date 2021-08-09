@@ -13,3 +13,5 @@ from   (select product_code, quantity
 pivot xml (sum(quantity) as sum_quantity for product_code in (select distinct product_code
                                                                 from   pivot_test
                                                                 where  id < 10))
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

@@ -11,3 +11,5 @@
 union all
 (select distinct job_id from hr.job_history)
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

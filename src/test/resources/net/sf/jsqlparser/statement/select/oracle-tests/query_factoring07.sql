@@ -85,3 +85,5 @@ select
 		)
 	)
 )
+
+--@FAILURE: Encountered unexpected token: "by" "BY" recorded first on Aug 3, 2021, 7:20:08 AM

@@ -13,3 +13,5 @@
   (seq_emp.nextval, 'morgan')
   returning empno
   into x
+
+--@FAILURE: Encountered unexpected token: "into" "INTO" recorded first on Aug 3, 2021, 7:20:08 AM

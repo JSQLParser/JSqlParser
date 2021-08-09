@@ -12,3 +12,5 @@ select * from dual t1,
 			left outer join dual t4 using(dummy) 
 			left outer join dual t5 using(dummy) 
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

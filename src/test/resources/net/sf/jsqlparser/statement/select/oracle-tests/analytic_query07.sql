@@ -46,3 +46,5 @@
 	table(t.cl_attrs) c) b
 	where a.cluster_id = b.id
 	order by prob desc, cl_id asc, conf desc, attr asc, val asc
+
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM

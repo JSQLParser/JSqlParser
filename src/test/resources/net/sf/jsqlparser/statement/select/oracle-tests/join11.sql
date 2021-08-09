@@ -8,3 +8,5 @@
 -- #L%
 ---
 select * from t1, ( t2 left outer join t3 using(dummy) )
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

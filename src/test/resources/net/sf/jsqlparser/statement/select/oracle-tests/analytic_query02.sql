@@ -18,3 +18,5 @@ select time_id, product
    order by  2,1
 
 
+
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:07 AM

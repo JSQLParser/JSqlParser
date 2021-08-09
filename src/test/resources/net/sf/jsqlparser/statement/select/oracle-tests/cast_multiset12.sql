@@ -13,3 +13,5 @@ update customers_demo cd
                     from customers c
                     where c.customer_id =
                           cd.customer_id) as cust_address_tab_typ)
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

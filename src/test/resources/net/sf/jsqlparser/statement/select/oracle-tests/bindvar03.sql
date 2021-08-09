@@ -25,3 +25,5 @@ from
 	group by sp.bo#, sp.pmoptype, sp.scn, sp.flags
 )
 where scn > :2
+
+--@FAILURE: Encountered unexpected token: "group" "GROUP" recorded first on Aug 3, 2021, 7:20:08 AM

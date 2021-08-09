@@ -20,3 +20,5 @@ BEGIN
       END LOOP inner_loop;
   END LOOP outer_loop;
 END;
+
+--@FAILURE: Encountered unexpected token: "BEGIN" "BEGIN" recorded first on Aug 3, 2021, 7:20:07 AM

@@ -28,3 +28,5 @@ select
    )
    order by name, dt
 
+
+--@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Aug 3, 2021, 7:20:08 AM

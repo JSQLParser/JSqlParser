@@ -12,3 +12,5 @@ from   (select customer_id, product_code, quantity
         from   pivot_test)
 pivot  (sum(quantity) as sum_quantity for product_code in ('a' as a, 'b' as b, 'c' as c))
 order by customer_id
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

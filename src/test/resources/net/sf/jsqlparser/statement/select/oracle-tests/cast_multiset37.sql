@@ -17,3 +17,5 @@ select owner
      group  by
             owner
      ,      object_type
+
+--@FAILURE: Encountered unexpected token: "varchar2_ntt" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM

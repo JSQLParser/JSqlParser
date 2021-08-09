@@ -25,3 +25,5 @@ select
       and a.constraint_type = 'r'
  group by c.constraint_name, rollup (c.column_name)
 	  
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

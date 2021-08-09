@@ -20,3 +20,5 @@ where sales.time_id=times.time_id
   and countries.country_iso_code in ('gb', 'us')
 group by 
   rollup(channels.channel_desc, calendar_month_desc, countries.country_iso_code)
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

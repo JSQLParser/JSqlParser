@@ -34,3 +34,5 @@ and a.b is a set
 union
 select a from dual
 
+
+--@FAILURE: Encountered unexpected token: "is" "IS" recorded first on Aug 3, 2021, 7:20:08 AM

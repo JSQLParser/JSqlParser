@@ -10,3 +10,5 @@
 select
 case when row_number() over (partition by bo# order by staleness, osize, obj#) = 1 then 32 else 0 end + 64 aflags
 from f
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

@@ -8,3 +8,5 @@
 -- #L%
 ---
 select * from table (cast (f_int_date_varchar2() as table_int_date_varchar2))
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

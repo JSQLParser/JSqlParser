@@ -16,3 +16,5 @@ where sales.time_id=times.time_id and sales.cust_id=customers.cust_id and
   and customers.country_id=countries.country_id
   and countries.country_iso_code in ('us','fr')
 group by cube(channels.channel_desc, countries.country_iso_code)
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

@@ -11,3 +11,5 @@ select *
      from   table( varchar2_ntt('a','b','c')
                       multiset union distinct
                          varchar2_ntt('b','c','d') )
+
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM

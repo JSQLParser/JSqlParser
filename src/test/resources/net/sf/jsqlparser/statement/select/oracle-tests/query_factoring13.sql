@@ -21,3 +21,5 @@ cycle hire_date set is_cycle to 'y' default 'n'
 select lpad(' ',2*reportlevel)||emp_last emp_name, eid, mgr_id, hire_date, job_id, is_cycle
 from dup_hiredate
 order by order1
+
+--@FAILURE: Encountered unexpected token: "search" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM

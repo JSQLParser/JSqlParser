@@ -12,3 +12,5 @@ select cast(
                   distinct empsal_ot(ename, sal)
                   ) as empsal_ntt) as empsals
      from   emp
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

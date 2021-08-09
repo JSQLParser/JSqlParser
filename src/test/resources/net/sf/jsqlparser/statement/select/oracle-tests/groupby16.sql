@@ -14,3 +14,5 @@ select fact_1_id,
 from   dimension_tab
 group by grouping sets(fact_1_id, fact_2_id)
 order by fact_1_id, fact_2_id
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

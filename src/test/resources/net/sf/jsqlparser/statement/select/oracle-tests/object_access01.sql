@@ -25,3 +25,5 @@ table
 	)
 ) t
 
+
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:07 AM

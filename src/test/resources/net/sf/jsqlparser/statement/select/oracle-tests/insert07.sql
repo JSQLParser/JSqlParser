@@ -19,3 +19,5 @@ when customer_id > 'pzzz' then
   values (customer_id, program_id, delivered_date)
 select program_id, delivered_date, customer_id, order_date
 from airplanes
+
+--@FAILURE: Encountered unexpected token: "when" "WHEN" recorded first on Aug 3, 2021, 7:20:08 AM

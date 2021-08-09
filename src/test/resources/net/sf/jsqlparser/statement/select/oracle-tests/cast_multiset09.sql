@@ -9,3 +9,5 @@
 ---
 update customers_demo
 set cust_address_ntab = cust_address_ntab multiset union cust_address_ntab
+
+--@FAILURE: Encountered unexpected token: "multiset" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM

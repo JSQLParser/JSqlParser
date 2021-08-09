@@ -16,3 +16,5 @@ merge into bonuses d
      values (s.employee_id, s.salary)
      where (s.salary <= 8000)
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

@@ -22,3 +22,5 @@ group by grouping sets
     country_id
   )
 order by prod_category, prod_subcategory, country_id, cust_city
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

@@ -31,3 +31,5 @@ select 25
 , .5DM
 from dual
 
+
+--@FAILURE: Encountered unexpected token: "d" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM

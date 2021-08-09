@@ -14,3 +14,5 @@ select last_name "Employee", connect_by_root last_name "Manager",
    connect by prior employee_id = manager_id
    order by "Employee", "Manager", "Pathlen", "Path"
    
+
+--@FAILURE: Encountered unexpected token: "\"Manager\"" <S_QUOTED_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM

@@ -12,3 +12,5 @@ select last_name, department_name
    where employees.department_id = departments.department_id
 
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

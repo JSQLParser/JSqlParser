@@ -23,3 +23,5 @@ select
 	or
 	(select count(*) from la.sa where bl.id like sa.id) > 0
   )
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

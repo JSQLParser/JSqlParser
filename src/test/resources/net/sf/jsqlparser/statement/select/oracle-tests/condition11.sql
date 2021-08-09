@@ -14,3 +14,5 @@ where
 and nvl(X.cid, '^') = nvl(Y.clientid (+), '^') 
 and 0 = Lib.SKU(X.sid, nvl(Z.cid, '^')) 
 
+
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM

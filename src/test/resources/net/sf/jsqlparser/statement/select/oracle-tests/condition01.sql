@@ -14,3 +14,5 @@ select department_id, last_name, salary
  where x.department_id = department_id) 
  order by department_id
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

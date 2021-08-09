@@ -11,3 +11,5 @@ select customer_id, cust_address_ntab
 multiset intersect all cust_address2_ntab multiset_intersect
 from customers_demo
 order by customer_id
+
+--@FAILURE: Encountered unexpected token: "intersect" "INTERSECT" recorded first on Aug 3, 2021, 7:20:08 AM

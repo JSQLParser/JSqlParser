@@ -16,3 +16,5 @@ select owner
      group  by
             owner
      ,      object_type
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM

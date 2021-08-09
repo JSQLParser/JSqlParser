@@ -40,3 +40,5 @@ select root,lev,obj,link,path,cycle,
     end is_leaf
  from t
 
+
+--@FAILURE: Encountered unexpected token: "search" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM

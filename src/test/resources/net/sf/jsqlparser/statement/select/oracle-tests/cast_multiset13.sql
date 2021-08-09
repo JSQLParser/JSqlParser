@@ -10,3 +10,5 @@
 select customer_id, cust_address_ntab
 multiset except distinct cust_address2_ntab multiset_except
 from customers_demo
+
+--@FAILURE: Encountered unexpected token: "except" "EXCEPT" recorded first on Aug 3, 2021, 7:20:08 AM

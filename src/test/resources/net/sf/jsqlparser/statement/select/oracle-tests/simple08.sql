@@ -9,3 +9,5 @@
 ---
 select a, b, c, d, e, 1, 2, f(a,b,c,1+1) from dual
 
+
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
