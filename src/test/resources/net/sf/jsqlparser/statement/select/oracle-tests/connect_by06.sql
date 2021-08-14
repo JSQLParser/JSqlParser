@@ -15,4 +15,4 @@ select last_name "Employee", connect_by_root last_name "Manager",
    order by "Employee", "Manager", "Pathlen", "Path"
    
 
---@FAILURE: Encountered unexpected token: "\"Manager\"" <S_QUOTED_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 14, 2021 9:00:57 PM

@@ -2474,13 +2474,19 @@ Join JoinerExpression() #JoinerExpression:
 
 
     [
-    LOOKAHEAD(2) ([ <K_WITHIN> "(" joinWindow = JoinWindow() ")" {join.setJoinWindow(joinWindow);}]
-                    ( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); })
-        |
-        ( <K_USING> "(" tableColumn=Column() { columns = new ArrayList<Column>(); columns.add(tableColumn); }
-                ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"
-          { join.setUsingColumns(columns); }   ))
-      ]
+        LOOKAHEAD(2) (
+                        [ <K_WITHIN> "(" joinWindow = JoinWindow() ")" {join.setJoinWindow(joinWindow);} ]
+                        ( <K_ON> onExpression=Expression()  { join.addOnExpression(onExpression); }
+                          ( LOOKAHEAD(2)  <K_ON> onExpression=Expression()  { join.addOnExpression(onExpression); } )*
+                        )
+                        |
+                        (
+                            <K_USING> "(" tableColumn=Column() { columns = new ArrayList<Column>(); columns.add(tableColumn); }
+                            ( "," tableColumn=Column() { columns.add(tableColumn); } ) *
+                            ")" { join.setUsingColumns(columns); }
+                        )
+                    )
+    ]
   {
       linkAST(join,jjtThis);
       join.setRightItem(right);

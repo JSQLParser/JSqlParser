@@ -12,12 +12,7 @@ package net.sf.jsqlparser.util.deparser;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
-import net.sf.jsqlparser.expression.MySQLIndexHint;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.expression.SQLServerHints;
+import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
@@ -429,11 +424,11 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             buffer.append(" WITHIN ");
             buffer.append(join.getJoinWindow().toString());
         }
-        if (join.getOnExpression() != null) {
+        for (Expression onExpression : join.getOnExpressions()) {
             buffer.append(" ON ");
-            join.getOnExpression().accept(expressionVisitor);
+            onExpression.accept(expressionVisitor);
         }
-        if (join.getUsingColumns() != null) {
+        if (join.getUsingColumns().size()>0) {
             buffer.append(" USING (");
             for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator.hasNext();) {
                 Column column = iterator.next();
