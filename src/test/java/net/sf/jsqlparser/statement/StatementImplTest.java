@@ -14,8 +14,6 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class StatementImplTest {
     @Test
     public void testObject() throws JSQLParserException {
