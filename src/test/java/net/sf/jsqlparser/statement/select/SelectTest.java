@@ -4738,4 +4738,10 @@ public class SelectTest {
                         "WHERE\n" +
                         "tbl1.column1 = 123", true);
     }
+
+    @Test
+    public void testSimpleJoinOnExpressionIssue1229() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "select t1.column1,t1.column2,t2.field1,t2.field2 from T_DT_ytb_01 t1 , T_DT_ytb_02 t2 on t1.column1 = t2.field1", true);
+ }
 }

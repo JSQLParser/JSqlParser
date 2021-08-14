@@ -328,14 +328,16 @@ public class Join extends ASTNodeAccessImpl {
             } else {
                 builder.append("JOIN ");
             }
-
+            
             builder.append(rightItem).append((joinWindow != null) ? " WITHIN " + joinWindow : "");
-            for (Expression onExpression: onExpressions) {
-                builder.append(" ON ").append(onExpression);
-            }
-            if (usingColumns.size()>0) {
-                builder.append(PlainSelect.getFormatedList(usingColumns, "USING", true, true));
-            }
+        }
+        
+        
+        for (Expression onExpression: onExpressions) {
+            builder.append(" ON ").append(onExpression);
+        }
+        if (usingColumns.size()>0) {
+            builder.append(PlainSelect.getFormatedList(usingColumns, "USING", true, true));
         }
 
         return builder;
