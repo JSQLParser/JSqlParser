@@ -44,6 +44,9 @@ compileJavacc {
 java {
     withSourcesJar()
     withJavadocJar()
+
+    spotbugs
+    pmd
 }
 
 jacoco {
@@ -113,8 +116,9 @@ spotbugs {
 pmd {
     consoleOutput = false
     toolVersion = "6.36.0"
-    
-    sourceSets = [sourceSets.main]
+
+    // run only over the main sources for now, but not over the tests
+    sourceSets = [sourceSets.main /*, sourceSets.test */]
     
     // clear the ruleset in order to use configured rules only, although we should apply the Prio 1 rules eventually
     ruleSets = []
