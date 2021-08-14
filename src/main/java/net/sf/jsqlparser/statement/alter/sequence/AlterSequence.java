@@ -10,13 +10,14 @@
 package net.sf.jsqlparser.statement.alter.sequence;
 
 import net.sf.jsqlparser.schema.Sequence;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**
  * An {@code ALTER SEQUENCE} statement
  */
-public class AlterSequence implements Statement {
+public class AlterSequence extends DDLStatement {
 
     public Sequence sequence;
 
@@ -33,15 +34,14 @@ public class AlterSequence implements Statement {
         statementVisitor.visit(this);
     }
 
-    @Override
-    public String toString() {
-        String sql;
-        sql = "ALTER SEQUENCE " + sequence;
-        return sql;
-    }
-
     public AlterSequence withSequence(Sequence sequence) {
         this.setSequence(sequence);
         return this;
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("ALTER SEQUENCE ").append(sequence);
+        return builder;
     }
 }

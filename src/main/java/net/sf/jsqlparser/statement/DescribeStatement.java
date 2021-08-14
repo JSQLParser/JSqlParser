@@ -11,12 +11,12 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.schema.Table;
 
-public class DescribeStatement implements Statement {
+public class DescribeStatement extends DDLStatement {
 
     private Table table;
 
     public DescribeStatement() {
-        // empty constructor
+        table = null;
     }
 
     public DescribeStatement(Table table) {
@@ -32,11 +32,6 @@ public class DescribeStatement implements Statement {
     }
 
     @Override
-    public String toString() {
-        return "DESCRIBE " + table.getFullyQualifiedName();
-    }
-
-    @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
@@ -44,5 +39,11 @@ public class DescribeStatement implements Statement {
     public DescribeStatement withTable(Table table) {
         this.setTable(table);
         return this;
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("DESCRIBE ").append(table.getFullyQualifiedName());
+        return builder;
     }
 }

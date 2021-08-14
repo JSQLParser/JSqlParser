@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -115,10 +116,12 @@ public class SpecialOracleTest {
             "condition14.sql",
             "condition19.sql",
             "condition20.sql",
+            "connect_by01.sql",
             "connect_by02.sql",
             "connect_by03.sql",
             "connect_by04.sql",
             "connect_by05.sql",
+            "connect_by06.sql",
             "connect_by07.sql",
             "datetime01.sql",
             "datetime02.sql",
@@ -250,10 +253,12 @@ public class SpecialOracleTest {
         
         boolean foundUnexpectedFailures = false;
 
+        assert sqlTestFiles != null;
+
         for (File file : sqlTestFiles) {
             if (file.isFile()) {
                 count++;
-                String sql = FileUtils.readFileToString(file, Charset.forName("UTF-8"));
+                String sql = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
                 try {
                     assertSqlCanBeParsedAndDeparsed(sql, true);
                     success++;
@@ -278,7 +283,7 @@ public class SpecialOracleTest {
                     foundUnexpectedFailures = true;
                 } catch (ComparisonFailure ex) {
                     if (sql.contains("@SUCCESSFULLY_PARSED_AND_DEPARSED") || EXPECTED_SUCCESSES.contains(file.getName())) {
-                        LOG.log(Level.SEVERE, "UNEXPECTED DE-PARSING FAILURE: {0}\n" + ex.toString(), file.getName());
+                        LOG.log(Level.SEVERE, "UNEXPECTED DE-PARSING FAILURE: {0}\n" + ex, file.getName());
                         foundUnexpectedFailures = true;
                     } else {
                         LOG.log(Level.FINE, "EXPECTED DE-PARSING FAILURE: {0}", file.getName());
@@ -304,9 +309,11 @@ public class SpecialOracleTest {
             }
         });
 
+        assert sqlTestFiles != null;
+
         for (File file : sqlTestFiles) {
             if (file.isFile()) {
-                String sql = FileUtils.readFileToString(file, Charset.forName("UTF-8"));
+                String sql = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
                 assertSqlCanBeParsedAndDeparsed(sql, true);
             }
         }
@@ -314,7 +321,7 @@ public class SpecialOracleTest {
 
     public void recordSuccessOnSourceFile(File file) throws IOException {
         File sourceFile = new File(SQL_SOURCE_DIR, file.getName());
-        String sourceSql = FileUtils.readFileToString(sourceFile, Charset.forName("UTF-8"));
+        String sourceSql = FileUtils.readFileToString(sourceFile, StandardCharsets.UTF_8);
         if (!sourceSql.contains("@SUCCESSFULLY_PARSED_AND_DEPARSED")) {
             LOG.log(Level.INFO, "NEW SUCCESS: {0}", file.getName());
             if (sourceFile.exists() && sourceFile.canWrite()) {
@@ -334,11 +341,11 @@ public class SpecialOracleTest {
     
     public void recordFailureOnSourceFile(File file, String message) throws IOException {
         File sourceFile = new File(SQL_SOURCE_DIR, file.getName());
-        String sourceSql = FileUtils.readFileToString(sourceFile, Charset.forName("UTF-8"));
+        String sourceSql = FileUtils.readFileToString(sourceFile, StandardCharsets.UTF_8);
         if (!sourceSql.contains("@FAILURE: " + message)
              && sourceFile.canWrite() ) {
             try (FileWriter writer = new FileWriter(sourceFile, true)) {
-                writer.append("\n--@FAILURE: " + message + " recorded first on ")
+                writer.append("\n--@FAILURE: ").append(message).append(" recorded first on ")
                   .append(DateFormat.getDateTimeInstance().format(new Date()));
             }
         } 
@@ -349,8 +356,9 @@ public class SpecialOracleTest {
         File[] sqlTestFiles = new File(SQLS_DIR, "only-parse-test").listFiles();
 
         List<String> regressionFiles = new LinkedList<>();
+        assert sqlTestFiles != null;
         for (File file : sqlTestFiles) {
-            String sql = FileUtils.readFileToString(file, Charset.forName("UTF-8"));
+            String sql = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
             try {
                 CCJSqlParserUtil.parse(sql);
                 LOG.log(Level.FINE, "EXPECTED SUCCESS: {0}", file.getName());

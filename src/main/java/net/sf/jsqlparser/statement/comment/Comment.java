@@ -12,10 +12,12 @@ package net.sf.jsqlparser.statement.comment;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.UnparsedStatement;
 
-public class Comment implements Statement {
+public class Comment extends DDLStatement {
 
     private Table table;
     private Column column;
@@ -60,17 +62,17 @@ public class Comment implements Statement {
     }
 
     @Override
-    public String toString() {
-        String sql = "COMMENT ON ";
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("COMMENT ON ");
         if (table != null) {
-            sql += "TABLE " + table + " ";
+            builder.append("TABLE ").append(table).append(" ");
         } else if (column != null) {
-            sql += "COLUMN " + column + " ";
+            builder.append("COLUMN ").append(column).append(" ");
         } else if (view != null) {
-            sql += "VIEW " + view + " ";
+            builder.append("VIEW ").append(view).append(" ");
         }
-        sql += "IS " + comment;
-        return sql;
+        builder.append("IS ").append(comment);
+        return builder;
     }
 
     public Comment withTable(Table table) {

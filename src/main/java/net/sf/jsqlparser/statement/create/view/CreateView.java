@@ -15,12 +15,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
-public class CreateView implements Statement {
+public class CreateView extends DDLStatement {
 
     private Table view;
     private Select select;
@@ -103,42 +104,6 @@ public class CreateView implements Statement {
         this.withReadOnly = withReadOnly;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sql = new StringBuilder("CREATE ");
-        if (isOrReplace()) {
-            sql.append("OR REPLACE ");
-        }
-        switch (force) {
-            case FORCE:
-                sql.append("FORCE ");
-                break;
-            case NO_FORCE:
-                sql.append("NO FORCE ");
-                break;
-            default:
-                // nothing
-        }
-
-        if (temp != TemporaryOption.NONE) {
-            sql.append(temp.name()).append(" ");
-        }
-
-        if (isMaterialized()) {
-            sql.append("MATERIALIZED ");
-        }
-        sql.append("VIEW ");
-        sql.append(view);
-        if (columnNames != null) {
-            sql.append(PlainSelect.getStringList(columnNames, true, true));
-        }
-        sql.append(" AS ").append(select);
-        if (isWithReadOnly()) {
-            sql.append(" WITH READ ONLY");
-        }
-        return sql.toString();
-    }
-
     public CreateView withView(Table view) {
         this.setView(view);
         return this;
@@ -184,5 +149,41 @@ public class CreateView implements Statement {
         List<String> collection = Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
         collection.addAll(columnNames);
         return this.withColumnNames(collection);
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder .append("CREATE ");
+        if (isOrReplace()) {
+            builder.append("OR REPLACE ");
+        }
+        switch (force) {
+            case FORCE:
+                builder.append("FORCE ");
+                break;
+            case NO_FORCE:
+                builder.append("NO FORCE ");
+                break;
+            default:
+                // nothing
+        }
+
+        if (temp != TemporaryOption.NONE) {
+            builder.append(temp.name()).append(" ");
+        }
+
+        if (isMaterialized()) {
+            builder.append("MATERIALIZED ");
+        }
+        builder.append("VIEW ");
+        builder.append(view);
+        if (columnNames != null) {
+            builder.append(PlainSelect.getStringList(columnNames, true, true));
+        }
+        builder.append(" AS ").append(select);
+        if (isWithReadOnly()) {
+            builder.append(" WITH READ ONLY");
+        }
+        return builder;
     }
 }

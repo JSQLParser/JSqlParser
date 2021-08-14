@@ -19,12 +19,13 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DMLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
-public class Merge implements Statement {
+public class Merge extends DMLStatement {
 
     private List<WithItem> withItemsList;
     private Table table;
@@ -144,48 +145,46 @@ public class Merge implements Statement {
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-    public String toString() {
-        StringBuilder b = new StringBuilder();
+    public StringBuilder appendTo(StringBuilder builder) {
         if (withItemsList != null && !withItemsList.isEmpty()) {
-            b.append("WITH ");
+            builder.append("WITH ");
             for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
-                b.append(withItem);
+                builder.append(withItem);
                 if (iter.hasNext()) {
-                    b.append(",");
+                    builder.append(",");
                 }
-                b.append(" ");
+                builder.append(" ");
             }
         }
-        b.append("MERGE INTO ");
-        b.append(table);
-        b.append(" USING ");
+        builder.append("MERGE INTO ");
+        builder.append(table);
+        builder.append(" USING ");
         if (usingTable != null) {
-            b.append(usingTable.toString());
+            builder.append(usingTable);
         } else if (usingSelect != null) {
-            b.append("(").append(usingSelect.toString()).append(")");
+            builder.append("(").append(usingSelect).append(")");
         }
 
         if (usingAlias != null) {
-            b.append(usingAlias.toString());
+            builder.append(usingAlias);
         }
-        b.append(" ON (");
-        b.append(onCondition);
-        b.append(")");
+        builder.append(" ON (");
+        builder.append(onCondition);
+        builder.append(")");
 
         if (insertFirst && mergeInsert != null) {
-            b.append(mergeInsert.toString());
+            builder.append(mergeInsert);
         }
 
         if (mergeUpdate != null) {
-            b.append(mergeUpdate.toString());
+            builder.append(mergeUpdate);
         }
 
         if (!insertFirst && mergeInsert != null) {
-            b.append(mergeInsert.toString());
+            builder.append(mergeInsert);
         }
-
-        return b.toString();
+        return builder;
     }
 
     public Merge withUsingTable(Table usingTable) {

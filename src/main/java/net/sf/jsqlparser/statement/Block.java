@@ -9,7 +9,7 @@
  */
 package net.sf.jsqlparser.statement;
 
-public class Block implements Statement {
+public class Block extends StatementImpl {
 
     private Statements statements;
 
@@ -27,8 +27,19 @@ public class Block implements Statement {
     }
 
     @Override
-    public String toString() {
-        return "BEGIN\n" + (statements != null ? statements.toString() : "") + "END";
+    public boolean isBlock() {
+        return true;
+    }
+
+    @Override
+    public StatementType getStatementType() {
+        return StatementType.BLOCK;
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("BEGIN\n").append(statements != null ? statements.toString() : "").append("END");
+        return builder;
     }
 
     public Block withStatements(Statements statements) {

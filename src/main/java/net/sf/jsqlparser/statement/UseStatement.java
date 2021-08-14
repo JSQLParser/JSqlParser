@@ -9,7 +9,7 @@
  */
 package net.sf.jsqlparser.statement;
 
-public class UseStatement implements Statement {
+public class UseStatement extends DDLStatement {
 
     private String name;
 
@@ -30,11 +30,6 @@ public class UseStatement implements Statement {
     }
 
     @Override
-    public String toString() {
-        return "USE " + name;
-    }
-
-    @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
@@ -42,5 +37,11 @@ public class UseStatement implements Statement {
     public UseStatement withName(String name) {
         this.setName(name);
         return this;
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("USE ").append(name);
+        return builder;
     }
 }

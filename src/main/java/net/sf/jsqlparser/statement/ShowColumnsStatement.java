@@ -9,7 +9,7 @@
  */
 package net.sf.jsqlparser.statement;
 
-public class ShowColumnsStatement implements Statement {
+public class ShowColumnsStatement extends DDLStatement {
 
     private String tableName;
 
@@ -30,11 +30,6 @@ public class ShowColumnsStatement implements Statement {
     }
 
     @Override
-    public String toString() {
-        return "SHOW COLUMNS FROM " + tableName;
-    }
-
-    @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
@@ -42,5 +37,11 @@ public class ShowColumnsStatement implements Statement {
     public ShowColumnsStatement withTableName(String tableName) {
         this.setTableName(tableName);
         return this;
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("SHOW COLUMNS FROM ").append(tableName);
+        return builder;
     }
 }

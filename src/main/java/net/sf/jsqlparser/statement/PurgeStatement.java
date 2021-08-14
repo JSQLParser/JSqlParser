@@ -20,7 +20,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
  * @see  <a href="https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_9018.htm">Purge</a>
  */
 
-public class PurgeStatement implements Statement {
+public class PurgeStatement extends DDLStatement {
     private final PurgeObjectType purgeObjectType;
     private final Object object;
     private String userName;
@@ -78,11 +78,6 @@ public class PurgeStatement implements Statement {
                 break;
         }
         return builder;
-    }
-
-    @Override
-    public String toString() {
-        return appendTo(new StringBuilder()).toString();
     }
 
     public String getUserName() {

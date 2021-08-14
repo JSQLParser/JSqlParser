@@ -15,10 +15,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import static java.util.stream.Collectors.joining;
+
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class Grant implements Statement {
+public class Grant extends DDLStatement {
 
     private String role;
     private List<String> privileges;
@@ -74,33 +76,6 @@ public class Grant implements Statement {
         this.users = users;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder buffer = new StringBuilder();
-
-        buffer.append("GRANT ");
-        if (role != null) {
-            buffer.append(role);
-        } else {
-            for (int i = 0; i < getPrivileges().size(); i++) {
-                if (i != 0) {
-                    buffer.append(", ");
-                }
-                buffer.append(privileges.get(i));
-            }
-            buffer.append(" ON ");
-            buffer.append(getObjectName());
-        }
-        buffer.append(" TO ");
-        for (int i = 0; i < getUsers().size(); i++) {
-            if (i != 0) {
-                buffer.append(", ");
-            }
-            buffer.append(users.get(i));
-        }
-        return buffer.toString();
-    }
-
     public Grant withRole(String role) {
         this.setRole(role);
         return this;
@@ -148,5 +123,30 @@ public class Grant implements Statement {
         List<String> collection = Optional.ofNullable(getUsers()).orElseGet(ArrayList::new);
         collection.addAll(users);
         return this.withUsers(collection);
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("GRANT ");
+        if (role != null) {
+            builder.append(role);
+        } else {
+            for (int i = 0; i < getPrivileges().size(); i++) {
+                if (i != 0) {
+                    builder.append(", ");
+                }
+                builder.append(privileges.get(i));
+            }
+            builder.append(" ON ");
+            builder.append(getObjectName());
+        }
+        builder.append(" TO ");
+        for (int i = 0; i < getUsers().size(); i++) {
+            if (i != 0) {
+                builder.append(", ");
+            }
+            builder.append(users.get(i));
+        }
+        return builder;
     }
 }

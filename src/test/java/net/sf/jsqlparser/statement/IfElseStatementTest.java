@@ -50,6 +50,11 @@ public class IfElseStatementTest {
 
     Statements result = CCJSqlParserUtil.parseStatements(sqlStr);
     Assert.assertEquals(sqlStr, result.toString());
+
+    for (Statement statement: result.getStatements()) {
+      Assert.assertTrue(statement.isBlock());
+      Assert.assertEquals(Statement.StatementType.BLOCK, statement.getStatementType());
+    }
   }
 
   @Test
@@ -82,7 +87,7 @@ public class IfElseStatementTest {
   }
 
   @Test
-  public void testValidation() throws JSQLParserException {
+  public void testValidation() {
     String sqlStr = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1;";
     List<ValidationError> errors =
         Validation.validate(Arrays.asList(DatabaseType.SQLSERVER, FeaturesAllowed.DROP), sqlStr);

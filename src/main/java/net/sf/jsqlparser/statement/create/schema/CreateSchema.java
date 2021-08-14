@@ -14,10 +14,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class CreateSchema implements Statement {
+public class CreateSchema extends DDLStatement {
 
     private String authorization;
     private String schemaName;
@@ -109,17 +111,6 @@ public class CreateSchema implements Statement {
         this.schemaPath = schemaPath;
     }
 
-    public String toString() {
-        String sql = "CREATE SCHEMA";
-        if (schemaName != null) {
-            sql += " " + schemaName;
-        }
-        if (authorization != null) {
-            sql += " AUTHORIZATION " + authorization;
-        }
-        return sql;
-    }
-
     public CreateSchema withAuthorization(String authorization) {
         this.setAuthorization(authorization);
         return this;
@@ -145,5 +136,17 @@ public class CreateSchema implements Statement {
         List<String> collection = Optional.ofNullable(getSchemaPath()).orElseGet(ArrayList::new);
         collection.addAll(schemaPath);
         return this.withSchemaPath(collection);
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+       builder.append("CREATE SCHEMA");
+        if (schemaName != null) {
+            builder.append(" ").append(schemaName);
+        }
+        if (authorization != null) {
+            builder.append(" AUTHORIZATION ").append(authorization);
+        }
+        return builder;
     }
 }

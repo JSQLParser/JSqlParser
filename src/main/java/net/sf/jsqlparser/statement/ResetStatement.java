@@ -10,18 +10,19 @@
 package net.sf.jsqlparser.statement;
 
 
-public final class ResetStatement implements Statement {
+public final class ResetStatement extends DDLStatement {
 
-    private String name = "";
+    private String name;
 
     public ResetStatement() {
-        // empty constructor
+        name = "";
     }
 
     public ResetStatement(String name) {
-        add(name);
+        this.name = name;
     }
 
+    @Deprecated
     public void add(String name) {
         this.name = name;
     }
@@ -35,9 +36,9 @@ public final class ResetStatement implements Statement {
     }
 
     @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder("RESET ").append(name);
-        return b.toString();
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("RESET ").append(name);
+        return builder;
     }
 
     @Override

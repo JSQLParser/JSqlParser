@@ -9,14 +9,15 @@
  */
 package net.sf.jsqlparser.statement;
 
-public class Commit implements Statement {
+public class Commit extends DMLStatement {
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
-    
+
     @Override
-    public String toString() {
-        return "COMMIT";
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("COMMIT");
+        return builder;
     }
 }

@@ -16,7 +16,7 @@ import net.sf.jsqlparser.statement.create.table.*;
 import java.util.*;
 import static java.util.stream.Collectors.joining;
 
-public class CreateIndex implements Statement {
+public class CreateIndex extends DDLStatement {
 
     private Table table;
     private Index index;
@@ -51,47 +51,6 @@ public class CreateIndex implements Statement {
         this.tailParameters = tailParameters;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder buffer = new StringBuilder();
-
-        buffer.append("CREATE ");
-
-        if (index.getType() != null) {
-            buffer.append(index.getType());
-            buffer.append(" ");
-        }
-
-        buffer.append("INDEX ");
-        buffer.append(index.getName());
-        buffer.append(" ON ");
-        buffer.append(table.getFullyQualifiedName());
-
-        if (index.getUsing() != null) {
-            buffer.append(" USING ");
-            buffer.append(index.getUsing());
-        }
-
-        if (index.getColumnsNames() != null) {
-            buffer.append(" (");
-
-            buffer.append(
-                    index.getColumns().stream()
-                            .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : "")).collect(joining(", "))
-            );
-
-            buffer.append(")");
-
-            if (tailParameters != null) {
-                for (String param : tailParameters) {
-                    buffer.append(" ").append(param);
-                }
-            }
-        }
-
-        return buffer.toString();
-    }
-
     public CreateIndex withTable(Table table) {
         this.setTable(table);
         return this;
@@ -105,5 +64,43 @@ public class CreateIndex implements Statement {
     public CreateIndex withTailParameters(List<String> tailParameters) {
         this.setTailParameters(tailParameters);
         return this;
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("CREATE ");
+
+        if (index.getType() != null) {
+            builder.append(index.getType());
+            builder.append(" ");
+        }
+
+        builder.append("INDEX ");
+        builder.append(index.getName());
+        builder.append(" ON ");
+        builder.append(table.getFullyQualifiedName());
+
+        if (index.getUsing() != null) {
+            builder.append(" USING ");
+            builder.append(index.getUsing());
+        }
+
+        if (index.getColumnsNames() != null) {
+            builder.append(" (");
+
+            builder.append(
+                    index.getColumns().stream()
+                            .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : "")).collect(joining(", "))
+            );
+
+            builder.append(")");
+
+            if (tailParameters != null) {
+                for (String param : tailParameters) {
+                    builder.append(" ").append(param);
+                }
+            }
+        }
+        return builder;
     }
 }

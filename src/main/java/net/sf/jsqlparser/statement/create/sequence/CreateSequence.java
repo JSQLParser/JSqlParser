@@ -10,13 +10,14 @@
 package net.sf.jsqlparser.statement.create.sequence;
 
 import net.sf.jsqlparser.schema.Sequence;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**
  * A {@code CREATE SEQUENCE} statement
  */
-public class CreateSequence implements Statement {
+public class CreateSequence extends DDLStatement {
 
     public Sequence sequence;
 
@@ -33,15 +34,14 @@ public class CreateSequence implements Statement {
         statementVisitor.visit(this);
     }
 
-    @Override
-    public String toString() {
-        String sql;
-        sql = "CREATE SEQUENCE " + sequence;
-        return sql;
-    }
-
     public CreateSequence withSequence(Sequence sequence) {
         this.setSequence(sequence);
         return this;
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("CREATE SEQUENCE ").append(sequence);
+        return builder;
     }
 }

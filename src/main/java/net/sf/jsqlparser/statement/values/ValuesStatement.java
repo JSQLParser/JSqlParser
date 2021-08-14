@@ -14,12 +14,13 @@ import java.util.Collection;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
+import net.sf.jsqlparser.statement.QueryStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 
-public class ValuesStatement implements Statement, SelectBody {
+public class ValuesStatement extends QueryStatement implements SelectBody {
 
     private ItemsList expressions;
 
@@ -45,11 +46,10 @@ public class ValuesStatement implements Statement, SelectBody {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sql = new StringBuilder();
-        sql.append("VALUES ");
-        sql.append(expressions.toString());
-        return sql.toString();
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("VALUES ");
+        builder.append(expressions.toString());
+        return builder;
     }
 
     @Override

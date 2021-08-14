@@ -20,6 +20,7 @@ import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DMLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -28,7 +29,7 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
-public class Insert implements Statement {
+public class Insert extends DMLStatement {
 
     private Table table;
     private OracleHint oracleHint = null;
@@ -208,82 +209,80 @@ public class Insert implements Statement {
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-    public String toString() {
-        StringBuilder sql = new StringBuilder();
+    public StringBuilder appendTo(StringBuilder builder) {
         if (withItemsList != null && !withItemsList.isEmpty()) {
-            sql.append("WITH ");
+            builder.append("WITH ");
             for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
-                sql.append(withItem);
+                builder.append(withItem);
                 if (iter.hasNext()) {
-                    sql.append(",");
+                    builder.append(",");
                 }
-                sql.append(" ");
+                builder.append(" ");
             }
         }
-        sql.append("INSERT ");
+        builder.append("INSERT ");
         if (modifierPriority != null) {
-            sql.append(modifierPriority.name()).append(" ");
+            builder.append(modifierPriority.name()).append(" ");
         }
         if (modifierIgnore) {
-            sql.append("IGNORE ");
+            builder.append("IGNORE ");
         }
-        sql.append("INTO ");
-        sql.append(table).append(" ");
+        builder.append("INTO ");
+        builder.append(table).append(" ");
         if (columns != null) {
-            sql.append(PlainSelect.getStringList(columns, true, true)).append(" ");
+            builder.append(PlainSelect.getStringList(columns, true, true)).append(" ");
         }
 
         if (useValues) {
-            sql.append("VALUES ");
+            builder.append("VALUES ");
         }
 
         if (itemsList != null) {
-            sql.append(itemsList);
+            builder.append(itemsList);
         } else {
             if (useSelectBrackets) {
-                sql.append("(");
+                builder.append("(");
             }
             if (select != null) {
-                sql.append(select);
+                builder.append(select);
             }
             if (useSelectBrackets) {
-                sql.append(")");
+                builder.append(")");
             }
         }
-        
+
         if (useSet) {
-            sql.append("SET ");
+            builder.append("SET ");
             for (int i = 0; i < getSetColumns().size(); i++) {
                 if (i != 0) {
-                    sql.append(", ");
+                    builder.append(", ");
                 }
-                sql.append(setColumns.get(i)).append(" = ");
-                sql.append(setExpressionList.get(i));
+                builder.append(setColumns.get(i)).append(" = ");
+                builder.append(setExpressionList.get(i));
             }
         }
 
         if (useDuplicate) {
-            sql.append(" ON DUPLICATE KEY UPDATE ");
+            builder.append(" ON DUPLICATE KEY UPDATE ");
             for (int i = 0; i < getDuplicateUpdateColumns().size(); i++) {
                 if (i != 0) {
-                    sql.append(", ");
+                    builder.append(", ");
                 }
-                sql.append(duplicateUpdateColumns.get(i)).append(" = ");
-                sql.append(duplicateUpdateExpressionList.get(i));
+                builder.append(duplicateUpdateColumns.get(i)).append(" = ");
+                builder.append(duplicateUpdateExpressionList.get(i));
             }
         }
 
         if (isReturningAllColumns()) {
-            sql.append(" RETURNING *");
+            builder.append(" RETURNING *");
         } else if (getReturningExpressionList() != null) {
-            sql.append(" RETURNING ").append(PlainSelect.
+            builder.append(" RETURNING ").append(PlainSelect.
                     getStringList(getReturningExpressionList(), true, false));
         }
-
-        return sql.toString();
+        return builder;
     }
-    
+
     public Insert withWithItemsList(List<WithItem> withList) {
         this.withItemsList = withList;
         return this;

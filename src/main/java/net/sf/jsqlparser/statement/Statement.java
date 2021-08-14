@@ -12,5 +12,14 @@ package net.sf.jsqlparser.statement;
 import net.sf.jsqlparser.Model;
 
 public interface Statement extends Model {
+    enum StatementType { QUERY, DML, DDL, BLOCK, UNPARSED }
+
+    boolean isQuery();
+    boolean isDML();
+    boolean isDDL();
+    boolean isBlock();
+    boolean isUnparsed();
+    StatementType getStatementType();
+
     void accept(StatementVisitor statementVisitor);
 }

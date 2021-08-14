@@ -27,9 +27,9 @@ package net.sf.jsqlparser.statement;
 
 /**
  *
- * @author are
+ * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
-public class RollbackStatement implements Statement {
+public class RollbackStatement extends DMLStatement {
     private boolean usingWorkKeyword=false;
     private boolean usingSavepointKeyword=false;
     private String savepointName=null;
@@ -88,25 +88,21 @@ public class RollbackStatement implements Statement {
     }
 
     @Override
-    public String toString() {
-        return "ROLLBACK " 
-          + ( usingWorkKeyword 
-                ? "WORK "
-                : "" )
-          + (savepointName!=null && savepointName.trim().length()!=0
-                ? "TO " + (usingSavepointKeyword
-                               ? "SAVEPOINT "
-                               : "") + savepointName
-                : forceDistributedTransactionIdentifier!=null && forceDistributedTransactionIdentifier.trim().length()!=0
-                       ? "FORCE " + forceDistributedTransactionIdentifier
-                        : ""
-                        
-                );
-    }
-
-    @Override
     public void accept(StatementVisitor statementVisitor) {
          statementVisitor.visit(this);
     }
 
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("ROLLBACK ").append(usingWorkKeyword
+                ? "WORK "
+                : "").append(savepointName != null && savepointName.trim().length() != 0
+                ? "TO " + (usingSavepointKeyword
+                ? "SAVEPOINT "
+                : "") + savepointName
+                : forceDistributedTransactionIdentifier != null && forceDistributedTransactionIdentifier.trim().length() != 0
+                ? "FORCE " + forceDistributedTransactionIdentifier
+                : "");
+        return builder;
+    }
 }

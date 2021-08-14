@@ -11,6 +11,8 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.List;
 import java.util.Objects;
+
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -20,7 +22,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * @see  <a href="https://docs.oracle.com/cd/B12037_01/server.101/b10759/statements_2013.htm">ALTER SESSION</a>
  */
 
-public class AlterSystemStatement implements Statement {
+public class AlterSystemStatement extends DDLStatement {
     private final AlterSystemOperation operation;
     private final List<String> parameters;
 
@@ -52,11 +54,6 @@ public class AlterSystemStatement implements Statement {
         builder.append("ALTER SYSTEM ").append(operation);
         appendParameters(builder, parameters);
         return builder;
-    }
-    
-    @Override
-    public String toString() {
-        return appendTo(new StringBuilder()).toString();
     }
 
 }

@@ -62,15 +62,33 @@ jacocoTestReport {
         csv.required = false
         html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
     }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "**/*Adapter.class",
+                    "**/SimpleCharStream.class",
+            ])
+        }))
+    }
 }
 
 jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.840
+                minimum = 0.845
             }
         }
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "**/*Adapter.class",
+                    "**/SimpleCharStream.class",
+            ])
+        }))
     }
 }
 
@@ -133,7 +151,7 @@ task renderRR() {
         
         javaexec { 
           standardOutput = new FileOutputStream("${buildDir}/rr/JSqlParserCC.ebnf")
-          main="-jar";
+          main="-jar"
           args = [
               "$buildDir/rr/convert.war",
               "$buildDir/generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj"
@@ -141,7 +159,7 @@ task renderRR() {
         }
         
         javaexec {
-          main="-jar";
+          main="-jar"
           args = [
               "$buildDir/rr/rr.war",
               "-noepsilon",

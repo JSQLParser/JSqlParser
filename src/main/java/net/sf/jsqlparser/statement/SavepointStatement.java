@@ -16,7 +16,7 @@ import java.util.Objects;
  *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
-public class SavepointStatement implements Statement {
+public class SavepointStatement extends DMLStatement {
     private String savepointName;
 
     public String getSavepointName() {
@@ -32,12 +32,13 @@ public class SavepointStatement implements Statement {
     }
 
     @Override
-    public String toString() {
-        return "SAVEPOINT " + savepointName;
+    public void accept(StatementVisitor statementVisitor) {
+         statementVisitor.visit(this);
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-         statementVisitor.visit(this);
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("SAVEPOINT ").append(savepointName);
+        return builder;
     }
 }

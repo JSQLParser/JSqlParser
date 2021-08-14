@@ -15,10 +15,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.QueryStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class Select implements Statement {
+public class Select extends QueryStatement {
 
     private SelectBody selectBody;
     private List<WithItem> withItemsList;
@@ -42,22 +42,20 @@ public class Select implements Statement {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-    public String toString() {
-        StringBuilder retval = new StringBuilder();
+    public StringBuilder appendTo(StringBuilder builder) {
         if (withItemsList != null && !withItemsList.isEmpty()) {
-            retval.append("WITH ");
+            builder.append("WITH ");
             for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
-                retval.append(withItem);
+                builder.append(withItem);
                 if (iter.hasNext()) {
-                    retval.append(",");
+                    builder.append(",");
                 }
-                retval.append(" ");
+                builder.append(" ");
             }
         }
-        retval.append(selectBody);
-        return retval.toString();
+        builder.append(selectBody);
+        return builder;
     }
 
     public List<WithItem> getWithItemsList() {

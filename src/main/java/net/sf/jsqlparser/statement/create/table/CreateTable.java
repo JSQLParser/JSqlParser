@@ -16,12 +16,13 @@ import java.util.List;
 import java.util.Optional;
 
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
-public class CreateTable implements Statement {
+public class CreateTable extends DDLStatement {
 
     private Table table;
     private boolean unlogged = false;
@@ -150,47 +151,6 @@ public class CreateTable implements Statement {
         this.rowMovement = rowMovement;
     }
 
-    @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-    public String toString() {
-        String sql;
-        String createOps = PlainSelect.getStringList(createOptionsStrings, false, false);
-
-        sql = "CREATE " + (unlogged ? "UNLOGGED " : "")
-                + (!"".equals(createOps) ? createOps + " " : "")
-                + "TABLE " + (ifNotExists ? "IF NOT EXISTS " : "") + table;
-
-        if (columns != null && !columns.isEmpty()) {
-            sql += " ";
-            sql += PlainSelect.getStringList(columns, true, true);
-        }
-        if (columnDefinitions != null && !columnDefinitions.isEmpty()) {
-            sql += " (";
-
-            sql += PlainSelect.getStringList(columnDefinitions, true, false);
-            if (indexes != null && !indexes.isEmpty()) {
-                sql += ", ";
-                sql += PlainSelect.getStringList(indexes);
-            }
-            sql += ")";
-        }
-        String options = PlainSelect.getStringList(tableOptionsStrings, false, false);
-        if (options != null && options.length() > 0) {
-            sql += " " + options;
-        }
-
-        if (rowMovement != null) {
-            sql += " " + rowMovement.getMode().toString() + " ROW MOVEMENT";
-        }
-        if (select != null) {
-            sql += " AS " + (selectParenthesis ? "(" : "") + select.toString() + (selectParenthesis ? ")" : "");
-        }
-        if (likeTable != null) {
-            sql += " LIKE " + (selectParenthesis ? "(" : "") + likeTable.toString() + (selectParenthesis ? ")" : "");
-        }
-        return sql;
-    }
-
     public CreateTable withTable(Table table) {
         this.setTable(table);
         return this;
@@ -287,5 +247,50 @@ public class CreateTable implements Statement {
         List<Index> collection = Optional.ofNullable(getIndexes()).orElseGet(ArrayList::new);
         collection.addAll(indexes);
         return this.withIndexes(collection);
+    }
+
+    @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    public StringBuilder appendTo(StringBuilder builder) {
+        String sql;
+        String createOps = PlainSelect.getStringList(createOptionsStrings, false, false);
+
+        builder.append("CREATE ")
+                .append(unlogged ? "UNLOGGED " : "")
+                .append(!"".equals(createOps) ? createOps + " " : "")
+                .append("TABLE ")
+                .append(ifNotExists ? "IF NOT EXISTS " : "")
+                .append(table);
+
+        if (columns != null && !columns.isEmpty()) {
+            builder.append(" ");
+            builder.append(PlainSelect.getStringList(columns, true, true));
+        }
+        if (columnDefinitions != null && !columnDefinitions.isEmpty()) {
+            builder.append(" (");
+
+            builder.append(PlainSelect.getStringList(columnDefinitions, true, false));
+            if (indexes != null && !indexes.isEmpty()) {
+                builder.append(", ");
+                builder.append(PlainSelect.getStringList(indexes));
+            }
+            builder.append(")");
+        }
+        String options = PlainSelect.getStringList(tableOptionsStrings, false, false);
+        if (options.length() > 0) {
+            builder.append(" ").append(options);
+        }
+
+        if (rowMovement != null) {
+            builder.append(" ").append(rowMovement.getMode().toString()).append(" ROW MOVEMENT");
+        }
+        if (select != null) {
+            builder.append(" AS ").append(selectParenthesis ? "(" : "").append(select).append(selectParenthesis ? ")" : "");
+        }
+        if (likeTable != null) {
+            builder.append(" LIKE ").append(selectParenthesis ? "(" : "").append(likeTable).append(selectParenthesis ? ")" : "");
+        }
+
+        return builder;
     }
 }

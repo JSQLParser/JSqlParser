@@ -18,7 +18,7 @@ import java.util.Optional;
 /**
  * A base for the declaration of function like statements
  */
-public abstract class CreateFunctionalStatement implements Statement {
+public abstract class CreateFunctionalStatement extends DDLStatement {
 
     private String kind;
     private boolean orReplace = false;
@@ -89,11 +89,9 @@ public abstract class CreateFunctionalStatement implements Statement {
         statementVisitor.visit(this);
     }
 
-    @Override
-    public String toString() {
-        return "CREATE " 
-                + (orReplace?"OR REPLACE ":"")
-                + kind + " " + formatDeclaration();
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("CREATE ").append(orReplace ? "OR REPLACE " : "").append(kind).append(" ").append(formatDeclaration());
+        return builder;
     }
 
     public CreateFunctionalStatement withFunctionDeclarationParts(List<String> functionDeclarationParts) {

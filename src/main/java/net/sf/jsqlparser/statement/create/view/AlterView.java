@@ -15,12 +15,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectBody;
 
-public class AlterView implements Statement {
+public class AlterView extends DDLStatement {
 
     private Table view;
     private SelectBody selectBody;
@@ -64,23 +65,6 @@ public class AlterView implements Statement {
         this.useReplace = useReplace;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sql;
-        if (useReplace) {
-            sql = new StringBuilder("REPLACE ");
-        } else {
-            sql = new StringBuilder("ALTER ");
-        }
-        sql.append("VIEW ");
-        sql.append(view);
-        if (columnNames != null) {
-            sql.append(PlainSelect.getStringList(columnNames, true, true));
-        }
-        sql.append(" AS ").append(selectBody);
-        return sql.toString();
-    }
-
     public AlterView withView(Table view) {
         this.setView(view);
         return this;
@@ -115,5 +99,21 @@ public class AlterView implements Statement {
 
     public <E extends SelectBody> E getSelectBody(Class<E> type) {
         return type.cast(getSelectBody());
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        if (useReplace) {
+            builder = new StringBuilder("REPLACE ");
+        } else {
+            builder = new StringBuilder("ALTER ");
+        }
+        builder.append("VIEW ");
+        builder.append(view);
+        if (columnNames != null) {
+            builder.append(PlainSelect.getStringList(columnNames, true, true));
+        }
+        builder.append(" AS ").append(selectBody);
+        return builder;
     }
 }

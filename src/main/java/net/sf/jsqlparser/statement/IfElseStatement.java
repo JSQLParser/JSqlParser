@@ -17,7 +17,7 @@ import net.sf.jsqlparser.expression.Expression;
  *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
-public class IfElseStatement implements Statement {
+public class IfElseStatement extends StatementImpl {
   private final Expression condition;
   private final Statement ifStatement;
   private Statement elseStatement;
@@ -63,6 +63,16 @@ public class IfElseStatement implements Statement {
     return usingSemicolonForIfStatement;
   }
 
+  @Override
+  public boolean isBlock() {
+    return true;
+  }
+
+  @Override
+  public StatementType getStatementType() {
+    return StatementType.BLOCK;
+  }
+
   public StringBuilder appendTo(StringBuilder builder) {
     builder.append("IF ").append(condition).append(" ").append(ifStatement)
         .append(usingSemicolonForIfStatement ? ";" : "");
@@ -72,11 +82,6 @@ public class IfElseStatement implements Statement {
           .append(usingSemicolonForElseStatement ? ";" : "");
     }
     return builder;
-  }
-
-  @Override
-  public String toString() {
-    return appendTo(new StringBuilder()).toString();
   }
 
   @Override

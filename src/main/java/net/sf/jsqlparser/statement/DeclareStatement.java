@@ -19,7 +19,7 @@ import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 
-public final class DeclareStatement implements Statement {
+public final class DeclareStatement extends StatementImpl {
 
     private UserVariable userVariable = null;
     private DeclareType declareType = DeclareType.TYPE;
@@ -46,6 +46,8 @@ public final class DeclareStatement implements Statement {
     public DeclareType getType() {
         return getDeclareType();
     }
+
+
 
     /**
      * @return the {@link DeclareType}
@@ -116,39 +118,50 @@ public final class DeclareStatement implements Statement {
     }
 
     @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder("DECLARE ");
+    public boolean isBlock() {
+        return true;
+    }
+
+    @Override
+    public StatementType getStatementType() {
+        return StatementType.BLOCK;
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("DECLARE ");
         if (declareType == DeclareType.AS) {
-            b.append(userVariable.toString());
-            b.append(" AS ").append(typeName);
+            builder.append(userVariable.toString());
+            builder.append(" AS ").append(typeName);
         } else {
             if (declareType == DeclareType.TABLE) {
-                b.append(userVariable.toString());
-                b.append(" TABLE (");
+                builder.append(userVariable.toString());
+                builder.append(" TABLE (");
                 for (int i = 0; i < columnDefinitions.size(); i++) {
                     if (i > 0) {
-                        b.append(", ");
+                        builder.append(", ");
                     }
-                    b.append(columnDefinitions.get(i).toString());
+                    builder.append(columnDefinitions.get(i).toString());
                 }
-                b.append(")");
+                builder.append(")");
             } else {
                 for (int i = 0; i < typeDefExprList.size(); i++) {
                     if (i > 0) {
-                        b.append(", ");
+                        builder.append(", ");
                     }
                     final TypeDefExpr type = typeDefExprList.get(i);
                     if (type.userVariable != null) {
-                        b.append(type.userVariable.toString()).append(" ");
+                        builder.append(type.userVariable).append(" ");
                     }
-                    b.append(type.colDataType.toString());
+                    builder.append(type.colDataType.toString());
                     if (type.defaultExpr != null) {
-                        b.append(" = ").append(type.defaultExpr.toString());
+                        builder.append(" = ").append(type.defaultExpr);
                     }
                 }
             }
         }
-        return b.toString();
+
+        return builder;
     }
 
     @Override

@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.show;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -19,7 +20,7 @@ import java.util.EnumSet;
  * A {@code SHOW TABLES} statement
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/show-tables.html">MySQL show tables</a>
  */
-public class ShowTablesStatement implements Statement {
+public class ShowTablesStatement extends DDLStatement {
 
     private EnumSet<Modifiers> modifiers;
     private SelectionMode selectionMode;
@@ -68,8 +69,12 @@ public class ShowTablesStatement implements Statement {
     }
 
     @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
         builder.append("SHOW");
 
         if (modifiers.contains(Modifiers.EXTENDED)) {
@@ -92,13 +97,7 @@ public class ShowTablesStatement implements Statement {
         if (whereCondition != null) {
             builder.append(" ").append("WHERE").append(" ").append(whereCondition);
         }
-
-        return builder.toString();
-    }
-
-    @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+        return builder;
     }
 
     public enum SelectionMode {

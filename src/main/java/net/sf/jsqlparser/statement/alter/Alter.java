@@ -16,10 +16,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class Alter implements Statement {
+public class Alter extends DDLStatement {
 
     private Table table;
     private boolean useOnly = false;
@@ -44,7 +45,7 @@ public class Alter implements Statement {
 
     public void addAlterExpression(AlterExpression alterExpression) {
         if (alterExpressions == null) {
-            alterExpressions = new ArrayList<AlterExpression>();
+            alterExpressions = new ArrayList<>();
         }
         alterExpressions.add(alterExpression);
     }
@@ -60,31 +61,6 @@ public class Alter implements Statement {
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-
-        StringBuilder b = new StringBuilder();
-        b.append("ALTER TABLE ");
-        if (useOnly) {
-            b.append("ONLY ");
-        }
-        b.append(table.getFullyQualifiedName()).append(" ");
-
-        Iterator<AlterExpression> altIter = alterExpressions.iterator();
-
-        while (altIter.hasNext()) {
-            b.append(altIter.next().toString());
-
-            // Need to append whitespace after each ADD or DROP statement
-            // but not the last one
-            if (altIter.hasNext()) {
-                b.append(", ");
-            }
-        }
-
-        return b.toString();
     }
 
     public Alter withTable(Table table) {
@@ -112,5 +88,27 @@ public class Alter implements Statement {
         List<AlterExpression> collection = Optional.ofNullable(getAlterExpressions()).orElseGet(ArrayList::new);
         collection.addAll(alterExpressions);
         return this.withAlterExpressions(collection);
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("ALTER TABLE ");
+        if (useOnly) {
+            builder.append("ONLY ");
+        }
+        builder.append(table.getFullyQualifiedName()).append(" ");
+
+        Iterator<AlterExpression> altIter = alterExpressions.iterator();
+
+        while (altIter.hasNext()) {
+            builder.append(altIter.next().toString());
+
+            // Need to append whitespace after each ADD or DROP statement
+            // but not the last one
+            if (altIter.hasNext()) {
+                builder.append(", ");
+            }
+        }
+        return builder;
     }
 }

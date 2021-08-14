@@ -20,4 +20,5 @@
 *.yml~
 /nbproject/
 
+/gradle
 /.gradle

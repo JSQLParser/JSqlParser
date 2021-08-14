@@ -14,7 +14,7 @@ import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-public final class SetStatement implements Statement {
+public final class SetStatement extends DDLStatement {
 
     private String effectParameter;
     private final List<NameExpr> values = new ArrayList<>();
@@ -104,22 +104,21 @@ public final class SetStatement implements Statement {
     }
 
     @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder("SET ");
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("SET ");
         if (effectParameter != null) {
-            b.append(effectParameter).append(" ");
+            builder.append(effectParameter).append(" ");
         }
         boolean addComma = false;
         for (NameExpr ne : values) {
             if (addComma) {
-                b.append(", ");
+                builder.append(", ");
             } else {
                 addComma = true;
             }
-            b.append(toString(ne));
+            builder.append(toString(ne));
         }
-
-        return b.toString();
+        return builder;
     }
 
     @Override

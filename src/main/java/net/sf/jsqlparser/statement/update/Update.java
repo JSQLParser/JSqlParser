@@ -19,6 +19,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DMLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -31,7 +32,7 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
-public class Update implements Statement {
+public class Update extends DMLStatement {
 
     private List<WithItem> withItemsList;
     private Table table;
@@ -202,90 +203,88 @@ public class Update implements Statement {
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-
+    public StringBuilder appendTo(StringBuilder builder) {
         if (withItemsList != null && !withItemsList.isEmpty()) {
-            b.append("WITH ");
+            builder.append("WITH ");
             for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
-                b.append(withItem);
+                builder.append(withItem);
                 if (iter.hasNext()) {
-                    b.append(",");
+                    builder.append(",");
                 }
-                b.append(" ");
+                builder.append(" ");
             }
         }
-        b.append("UPDATE ");
-        b.append(table);
+        builder.append("UPDATE ");
+        builder.append(table);
         if (startJoins != null) {
             for (Join join : startJoins) {
                 if (join.isSimple()) {
-                    b.append(", ").append(join);
+                    builder.append(", ").append(join);
                 } else {
-                    b.append(" ").append(join);
+                    builder.append(" ").append(join);
                 }
             }
         }
-        b.append(" SET ");
+        builder.append(" SET ");
 
         if (!useSelect) {
             for (int i = 0; i < getColumns().size(); i++) {
                 if (i != 0) {
-                    b.append(", ");
+                    builder.append(", ");
                 }
-                b.append(columns.get(i)).append(" = ");
-                b.append(expressions.get(i));
+                builder.append(columns.get(i)).append(" = ");
+                builder.append(expressions.get(i));
             }
         } else {
             if (useColumnsBrackets) {
-                b.append("(");
+                builder.append("(");
             }
             for (int i = 0; i < getColumns().size(); i++) {
                 if (i != 0) {
-                    b.append(", ");
+                    builder.append(", ");
                 }
-                b.append(columns.get(i));
+                builder.append(columns.get(i));
             }
             if (useColumnsBrackets) {
-                b.append(")");
+                builder.append(")");
             }
-            b.append(" = ");
-            b.append("(").append(select).append(")");
+            builder.append(" = ");
+            builder.append("(").append(select).append(")");
         }
 
         if (fromItem != null) {
-            b.append(" FROM ").append(fromItem);
+            builder.append(" FROM ").append(fromItem);
             if (joins != null) {
                 for (Join join : joins) {
                     if (join.isSimple()) {
-                        b.append(", ").append(join);
+                        builder.append(", ").append(join);
                     } else {
-                        b.append(" ").append(join);
+                        builder.append(" ").append(join);
                     }
                 }
             }
         }
 
         if (where != null) {
-            b.append(" WHERE ");
-            b.append(where);
+            builder.append(" WHERE ");
+            builder.append(where);
         }
         if (orderByElements != null) {
-            b.append(PlainSelect.orderByToString(orderByElements));
+            builder.append(PlainSelect.orderByToString(orderByElements));
         }
         if (limit != null) {
-            b.append(limit);
+            builder.append(limit);
         }
 
         if (isReturningAllColumns()) {
-            b.append(" RETURNING *");
+            builder.append(" RETURNING *");
         } else if (getReturningExpressionList() != null) {
-            b.append(" RETURNING ").append(PlainSelect.
+            builder.append(" RETURNING ").append(PlainSelect.
                     getStringList(getReturningExpressionList(), true, false));
         }
 
-        return b.toString();
+        return builder;
     }
 
     public Update withTable(Table table) {

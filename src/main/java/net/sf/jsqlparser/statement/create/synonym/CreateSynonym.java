@@ -10,13 +10,14 @@
 package net.sf.jsqlparser.statement.create.synonym;
 
 import net.sf.jsqlparser.schema.Synonym;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CreateSynonym implements Statement {
+public class CreateSynonym extends DDLStatement {
 
     private boolean orReplace;
     private boolean publicSynonym;
@@ -71,24 +72,25 @@ public class CreateSynonym implements Statement {
         statementVisitor.visit(this);
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.append("CREATE ");
-        if (orReplace) {
-            sqlBuilder.append("OR REPLACE ");
-        }
-        if (publicSynonym) {
-            sqlBuilder.append("PUBLIC ");
-        }
-        sqlBuilder.append("SYNONYM " + synonym);
-        sqlBuilder.append(' ');
-        sqlBuilder.append("FOR " + getFor());
-        return sqlBuilder.toString();
-    }
-
     public CreateSynonym withSynonym(Synonym synonym) {
         this.setSynonym(synonym);
         return this;
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+
+        builder.append("CREATE ");
+        if (orReplace) {
+            builder.append("OR REPLACE ");
+        }
+        if (publicSynonym) {
+            builder.append("PUBLIC ");
+        }
+        builder.append("SYNONYM ").append(synonym);
+        builder.append(' ');
+        builder.append("FOR ").append(getFor());
+
+        return builder;
     }
 }

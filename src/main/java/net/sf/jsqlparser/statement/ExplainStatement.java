@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 /**
  * An {@code EXPLAIN} statement
  */
-public class ExplainStatement implements Statement {
+public class ExplainStatement extends DDLStatement {
 
     private Select select;
     private LinkedHashMap<OptionType, Option> options;
@@ -63,21 +63,21 @@ public class ExplainStatement implements Statement {
     }
 
     @Override
-    public String toString() {
-        StringBuilder statementBuilder = new StringBuilder("EXPLAIN");
-        if (options != null) {
-            statementBuilder.append(" ");
-            statementBuilder.append(options.values().stream().map(Option::formatOption).collect(Collectors.joining(" ")));
-        }
-
-        statementBuilder.append(" ");
-        statementBuilder.append(select.toString());
-        return statementBuilder.toString();
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("EXPLAIN");
+        if (options != null) {
+            builder.append(" ");
+            builder.append(options.values().stream().map(Option::formatOption).collect(Collectors.joining(" ")));
+        }
+
+        builder.append(" ");
+        select.appendTo(builder);
+        return builder;
     }
 
     public enum OptionType {

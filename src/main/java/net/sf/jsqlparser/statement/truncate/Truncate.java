@@ -10,10 +10,11 @@
 package net.sf.jsqlparser.statement.truncate;
 
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-public class Truncate implements Statement {
+public class Truncate extends DDLStatement {
 
     private Table table;
     boolean cascade;  // to support TRUNCATE TABLE ... CASCADE
@@ -39,14 +40,6 @@ public class Truncate implements Statement {
         cascade = c;
     }
 
-    @Override
-    public String toString() {
-        if (cascade) {
-            return "TRUNCATE TABLE " + table + " CASCADE";
-        }
-        return "TRUNCATE TABLE " + table;
-    }
-
     public Truncate withTable(Table table) {
         this.setTable(table);
         return this;
@@ -55,5 +48,14 @@ public class Truncate implements Statement {
     public Truncate withCascade(boolean cascade) {
         this.setCascade(cascade);
         return this;
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("TRUNCATE TABLE ").append(table);
+        if (cascade) {
+            builder.append(" CASCADE");
+        }
+        return builder;
     }
 }

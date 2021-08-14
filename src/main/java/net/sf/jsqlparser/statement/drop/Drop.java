@@ -15,11 +15,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-public class Drop implements Statement {
+public class Drop extends DDLStatement {
 
     private String type;
     private Table name;
@@ -63,18 +64,6 @@ public class Drop implements Statement {
         this.ifExists = ifExists;
     }
 
-    @Override
-    public String toString() {
-        String sql = "DROP " + type + " "
-                + (ifExists ? "IF EXISTS " : "") + name.toString();
-
-        if (parameters != null && !parameters.isEmpty()) {
-            sql += " " + PlainSelect.getStringList(parameters);
-        }
-
-        return sql;
-    }
-
     public Drop withIfExists(boolean ifExists) {
         this.setIfExists(ifExists);
         return this;
@@ -105,5 +94,15 @@ public class Drop implements Statement {
         List<String> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
         collection.addAll(parameters);
         return this.withParameters(collection);
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("DROP ").append(type).append(" ").append(ifExists ? "IF EXISTS " : "").append(name.toString());
+
+        if (parameters != null && !parameters.isEmpty()) {
+            builder.append(" ").append(PlainSelect.getStringList(parameters));
+        }
+        return builder;
     }
 }

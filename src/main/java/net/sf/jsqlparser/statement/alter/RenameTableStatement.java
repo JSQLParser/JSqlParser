@@ -16,15 +16,15 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**
  *
- * @author are
+ * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  * @see  <a href="https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_9019.htm">Rename</a>
  */
-public class RenameTableStatement implements Statement {
+public class RenameTableStatement extends DDLStatement {
     private final LinkedHashMap<Table, Table> tableNames = new LinkedHashMap<>();
     
     private boolean usingTableKeyword = false;
@@ -113,7 +113,8 @@ public class RenameTableStatement implements Statement {
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
       }
-    
+
+    @Override
     public StringBuilder appendTo(StringBuilder builder) {
         int i=0;
         for (Entry<Table, Table> e : tableNames.entrySet()) {
@@ -137,10 +138,5 @@ public class RenameTableStatement implements Statement {
             i++;
         }
         return builder;
-    }
-
-    @Override
-    public String toString() {
-        return appendTo(new StringBuilder()).toString();
     }
 }

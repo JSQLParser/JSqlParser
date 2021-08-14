@@ -11,11 +11,12 @@ package net.sf.jsqlparser.statement.execute;
 
 import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.statement.DDLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-public class Execute implements Statement {
+public class Execute extends DDLStatement {
 
     private ExecType execType = ExecType.EXECUTE;
     private String name;
@@ -69,13 +70,6 @@ public class Execute implements Statement {
         statementVisitor.visit(this);
     }
 
-    @Override
-    public String toString() {
-        return execType.name() + " " + name
-                + (exprList != null && exprList.getExpressions() != null ? " "
-                + PlainSelect.getStringList(exprList.getExpressions(), true, parenthesis) : "");
-    }
-
     public Execute withExecType(ExecType execType) {
         this.setExecType(execType);
         return this;
@@ -94,6 +88,13 @@ public class Execute implements Statement {
     public Execute withParenthesis(boolean parenthesis) {
         this.setParenthesis(parenthesis);
         return this;
+    }
+
+    @Override
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append(execType.name()).append(" ").append(name).append(exprList != null && exprList.getExpressions() != null ? " "
+                + PlainSelect.getStringList(exprList.getExpressions(), true, parenthesis) : "");
+        return builder;
     }
 
     public enum ExecType {

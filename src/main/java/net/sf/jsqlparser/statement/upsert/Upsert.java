@@ -18,12 +18,13 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DMLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
-public class Upsert implements Statement {
+public class Upsert extends DMLStatement {
 
     private Table table;
     private List<Column> columns;
@@ -111,47 +112,45 @@ public class Upsert implements Statement {
     public List<Expression> getDuplicateUpdateExpressionList() {
         return duplicateUpdateExpressionList;
     }
-    
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        
-        sb.append("UPSERT INTO ");
-        sb.append(table).append(" ");
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("UPSERT INTO ");
+        builder.append(table).append(" ");
         if (columns != null) {
-            sb.append(PlainSelect.getStringList(columns, true, true)).append(" ");
+            builder.append(PlainSelect.getStringList(columns, true, true)).append(" ");
         }
         if (useValues) {
-            sb.append("VALUES ");
+            builder.append("VALUES ");
         }
-        
+
         if (itemsList != null) {
-            sb.append(itemsList);
+            builder.append(itemsList);
         } else {
             if (useSelectBrackets) {
-                sb.append("(");
+                builder.append("(");
             }
             if (select != null) {
-                sb.append(select);
+                builder.append(select);
             }
             if (useSelectBrackets) {
-                sb.append(")");
+                builder.append(")");
             }
         }
 
         if (useDuplicate) {
-            sb.append(" ON DUPLICATE KEY UPDATE ");
+            builder.append(" ON DUPLICATE KEY UPDATE ");
             for (int i = 0; i < getDuplicateUpdateColumns().size(); i++) {
                 if (i != 0) {
-                    sb.append(", ");
+                    builder.append(", ");
                 }
-                sb.append(duplicateUpdateColumns.get(i)).append(" = ");
-                sb.append(duplicateUpdateExpressionList.get(i));
+                builder.append(duplicateUpdateColumns.get(i)).append(" = ");
+                builder.append(duplicateUpdateExpressionList.get(i));
             }
         }
-        
-        return sb.toString();
+
+        return builder;
     }
 
     public Upsert withUseValues(boolean useValues) {

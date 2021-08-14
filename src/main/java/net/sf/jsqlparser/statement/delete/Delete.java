@@ -20,6 +20,7 @@ import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.DMLStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.Join;
@@ -28,7 +29,7 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
-public class Delete implements Statement {
+public class Delete extends DMLStatement {
 
     private List<WithItem> withItemsList;
     private Table table;
@@ -144,37 +145,36 @@ public class Delete implements Statement {
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-    public String toString() {
-        StringBuilder b = new StringBuilder();
+    public StringBuilder appendTo(StringBuilder builder) {
         if (withItemsList != null && !withItemsList.isEmpty()) {
-            b.append("WITH ");
+            builder.append("WITH ");
             for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
-                b.append(withItem);
+                builder.append(withItem);
                 if (iter.hasNext()) {
-                    b.append(",");
+                    builder.append(",");
                 }
-                b.append(" ");
+                builder.append(" ");
             }
         }
-        
-        b.append("DELETE");
+
+        builder.append("DELETE");
 
         if (tables != null && tables.size() > 0) {
-            b.append(" ");
-            b.append(tables.stream()
-                    .map(t -> t.toString())
+            builder.append(" ");
+            builder.append(tables.stream()
+                    .map(Table::toString)
                     .collect(joining(", ")));
         }
 
         if (hasFrom) {
-            b.append(" FROM");
+            builder.append(" FROM");
         }
-        b.append(" ").append(table);
+        builder.append(" ").append(table);
 
         if (usingList != null && usingList.size()>0) {
-            b.append(" USING ");
-            b.append(usingList.stream()
+            builder.append(" USING ");
+            builder.append(usingList.stream()
                     .map(Table::toString)
                     .collect(joining(", ")));
         }
@@ -182,25 +182,25 @@ public class Delete implements Statement {
         if (joins != null) {
             for (Join join : joins) {
                 if (join.isSimple()) {
-                    b.append(", ").append(join);
+                    builder.append(", ").append(join);
                 } else {
-                    b.append(" ").append(join);
+                    builder.append(" ").append(join);
                 }
             }
         }
 
         if (where != null) {
-            b.append(" WHERE ").append(where);
+            builder.append(" WHERE ").append(where);
         }
 
         if (orderByElements != null) {
-            b.append(PlainSelect.orderByToString(orderByElements));
+            builder.append(PlainSelect.orderByToString(orderByElements));
         }
 
         if (limit != null) {
-            b.append(limit);
+            builder.append(limit);
         }
-        return b.toString();
+        return builder;
     }
 
     public Delete withTables(List<Table> tables) {
