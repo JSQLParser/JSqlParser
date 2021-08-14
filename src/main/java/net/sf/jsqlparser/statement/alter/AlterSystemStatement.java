@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Objects;
 
 import net.sf.jsqlparser.statement.DDLStatement;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**

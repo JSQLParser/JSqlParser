@@ -11,7 +11,6 @@ package net.sf.jsqlparser.statement.alter.sequence;
 
 import net.sf.jsqlparser.schema.Sequence;
 import net.sf.jsqlparser.statement.DDLStatement;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**

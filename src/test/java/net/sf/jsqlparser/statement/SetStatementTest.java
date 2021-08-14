@@ -12,13 +12,11 @@ package net.sf.jsqlparser.statement;
 import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.Set;
 
 /**
  *

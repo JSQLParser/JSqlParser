@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.statement;
 
-import net.sf.jsqlparser.parser.JSqlParser;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;

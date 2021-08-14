@@ -21,7 +21,6 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;

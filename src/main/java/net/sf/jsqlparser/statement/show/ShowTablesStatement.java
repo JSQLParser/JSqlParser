@@ -11,7 +11,6 @@ package net.sf.jsqlparser.statement.show;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.DDLStatement;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 import java.util.EnumSet;

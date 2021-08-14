@@ -11,7 +11,6 @@ package net.sf.jsqlparser.statement.create.synonym;
 
 import net.sf.jsqlparser.schema.Synonym;
 import net.sf.jsqlparser.statement.DDLStatement;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 import java.util.ArrayList;

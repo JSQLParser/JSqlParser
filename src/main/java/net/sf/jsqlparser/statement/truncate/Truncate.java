@@ -11,7 +11,6 @@ package net.sf.jsqlparser.statement.truncate;
 
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.DDLStatement;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 public class Truncate extends DDLStatement {

@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.DDLStatement;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectBody;
@@ -104,9 +103,9 @@ public class AlterView extends DDLStatement {
     @Override
     public StringBuilder appendTo(StringBuilder builder) {
         if (useReplace) {
-            builder = new StringBuilder("REPLACE ");
+            builder.append("REPLACE ");
         } else {
-            builder = new StringBuilder("ALTER ");
+            builder.append("ALTER ");
         }
         builder.append("VIEW ");
         builder.append(view);

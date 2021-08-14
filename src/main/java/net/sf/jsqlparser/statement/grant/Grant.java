@@ -17,7 +17,6 @@ import java.util.Optional;
 import static java.util.stream.Collectors.joining;
 
 import net.sf.jsqlparser.statement.DDLStatement;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 public class Grant extends DDLStatement {
