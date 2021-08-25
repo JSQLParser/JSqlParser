@@ -4701,6 +4701,7 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
   
+    @Test
     public void testCollisionWithSpecialStringFunctionsIssue1284() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
           "SELECT test( a in (1) AND 2=2) ", true);
@@ -4714,5 +4715,44 @@ public class SelectTest {
             "where\n" +
             "recv_time >= toDateTime('2021-07-20 00:00:00')\n" +
             "and recv_time < toDateTime('2021-07-21 00:00:00')", true);
+    }
+    
+    @Test
+    public void testNestedCaseComplexExpressionIssue1306() throws JSQLParserException {
+        // with extra brackets
+        assertSqlCanBeParsedAndDeparsed(
+            "SELECT CASE\n" +
+            "WHEN 'USD' = 'USD'\n" +
+            "THEN 0\n" +
+            "ELSE CASE\n" +
+            "WHEN 'USD' = 'EURO'\n" +
+            "THEN ( CASE\n" +
+            "WHEN 'A' = 'B'\n" +
+            "THEN 0\n" +
+            "ELSE 1\n" +
+            "END * 100 )\n" +
+            "ELSE 2\n" +
+            "END\n" +
+            "END AS \"column1\"\n" +
+            "FROM test_schema.table_name\n" +
+            "", true);
+        
+        // without brackets
+        assertSqlCanBeParsedAndDeparsed(
+            "SELECT CASE\n" +
+            "WHEN 'USD' = 'USD'\n" +
+            "THEN 0\n" +
+            "ELSE CASE\n" +
+            "WHEN 'USD' = 'EURO'\n" +
+            "THEN CASE\n" +
+            "WHEN 'A' = 'B'\n" +
+            "THEN 0\n" +
+            "ELSE 1\n" +
+            "END * 100 \n" +
+            "ELSE 2\n" +
+            "END\n" +
+            "END AS \"column1\"\n" +
+            "FROM test_schema.table_name\n" +
+            "", true);
     }
 }
