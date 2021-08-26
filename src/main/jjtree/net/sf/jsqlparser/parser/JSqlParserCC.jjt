@@ -2616,12 +2616,9 @@ GroupByElement GroupByColumnReferences():
                     | expr = SimpleExpression() { groupBy.addGroupingSet(expr); } ) )*
             ")"
           )
-          | LOOKAHEAD(3) (
-              "(" list = SimpleExpressionList(true)  ")" { groupBy.setGroupByExpressionList(list); }
-          )
           |
           LOOKAHEAD(2) (  
-            list = SimpleExpressionList(false) { groupBy.setGroupByExpressionList(list); }
+            list = ComplexExpressionList() { groupBy.setGroupByExpressionList(list.withUsingBrackets(false)); }
           )
     )
     {
