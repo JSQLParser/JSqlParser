@@ -196,8 +196,6 @@ public class StatementDeParserTest {
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingUpdateNotUsingSelect() {
         Update update = new Update();
-        List<Column> columns = new ArrayList<Column>();
-        List<Expression> expressions = new ArrayList<Expression>();
         Expression where = mock(Expression.class);
         List<OrderByElement> orderByElements = new ArrayList<OrderByElement>();
         Column column1 = new Column();

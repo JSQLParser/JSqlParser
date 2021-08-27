@@ -11,17 +11,13 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.OrderByVisitor;
-import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
@@ -29,7 +25,6 @@ import net.sf.jsqlparser.statement.update.UpdateSet;
 public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByVisitor {
 
     private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
-    private SelectVisitor selectVisitor = new SelectVisitorAdapter();
 
     public UpdateDeParser() {
         super(new StringBuilder());
@@ -38,11 +33,10 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
     public UpdateDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
-        this.selectVisitor = selectVisitor;
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.ExcessiveMethodLength"})
     public void deParse(Update update) {
          if (update.getWithItemsList() != null && !update.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");

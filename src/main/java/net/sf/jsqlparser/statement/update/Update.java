@@ -29,11 +29,6 @@ public class Update implements Statement {
     private List<WithItem> withItemsList;
     private Table table;
     private Expression where;
-
-    public ArrayList<UpdateSet> getUpdateSets() {
-        return updateSets;
-    }
-
     private final ArrayList<UpdateSet> updateSets = new ArrayList<>();
     private FromItem fromItem;
     private List<Join> joins;
@@ -43,6 +38,10 @@ public class Update implements Statement {
     private Limit limit;
     private boolean returningAllColumns = false;
     private List<SelectExpressionItem> returningExpressionList = null;
+
+    public ArrayList<UpdateSet> getUpdateSets() {
+        return updateSets;
+    }
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -233,7 +232,7 @@ public class Update implements Statement {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.ExcessiveMethodLength"})
     public String toString() {
         StringBuilder b = new StringBuilder();
 
