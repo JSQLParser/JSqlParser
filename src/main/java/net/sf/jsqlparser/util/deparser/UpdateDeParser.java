@@ -24,6 +24,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 
 public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByVisitor {
 
@@ -66,39 +67,70 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         }
         buffer.append(" SET ");
 
-        if (!update.isUseSelect()) {
-            for (int i = 0; i < update.getColumns().size(); i++) {
-                Column column = update.getColumns().get(i);
-                column.accept(expressionVisitor);
-
-                buffer.append(" = ");
-
-                Expression expression = update.getExpressions().get(i);
-                expression.accept(expressionVisitor);
-                if (i < update.getColumns().size() - 1) {
-                    buffer.append(", ");
-                }
+        int j=0;
+        for (UpdateSet updateSet:update.getUpdateSets()) {
+            if (j > 0) {
+                buffer.append(", ");
             }
-        } else {
-            if (update.isUseColumnsBrackets()) {
+
+            if (updateSet.isUsingBrackets()) {
                 buffer.append("(");
             }
-            for (int i = 0; i < update.getColumns().size(); i++) {
-                if (i != 0) {
+            for (int i = 0; i < updateSet.getColumns().size(); i++) {
+                if (i > 0) {
                     buffer.append(", ");
                 }
-                Column column = update.getColumns().get(i);
-                column.accept(expressionVisitor);
+                updateSet.getColumns().get(i).accept(expressionVisitor);
             }
-            if (update.isUseColumnsBrackets()) {
+            if (updateSet.isUsingBrackets()) {
                 buffer.append(")");
             }
+
             buffer.append(" = ");
-            buffer.append("(");
-            Select select = update.getSelect();
-            select.getSelectBody().accept(selectVisitor);
-            buffer.append(")");
+
+            for (int i = 0; i < updateSet.getExpressions().size(); i++) {
+                if (i > 0) {
+                    buffer.append(", ");
+                }
+                updateSet.getExpressions().get(i).accept(expressionVisitor);
+            }
+
+            j++;
         }
+
+//        if (!update.isUseSelect()) {
+//            for (int i = 0; i < update.getColumns().size(); i++) {
+//                Column column = update.getColumns().get(i);
+//                column.accept(expressionVisitor);
+//
+//                buffer.append(" = ");
+//
+//                Expression expression = update.getExpressions().get(i);
+//                expression.accept(expressionVisitor);
+//                if (i < update.getColumns().size() - 1) {
+//                    buffer.append(", ");
+//                }
+//            }
+//        } else {
+//            if (update.isUseColumnsBrackets()) {
+//                buffer.append("(");
+//            }
+//            for (int i = 0; i < update.getColumns().size(); i++) {
+//                if (i != 0) {
+//                    buffer.append(", ");
+//                }
+//                Column column = update.getColumns().get(i);
+//                column.accept(expressionVisitor);
+//            }
+//            if (update.isUseColumnsBrackets()) {
+//                buffer.append(")");
+//            }
+//            buffer.append(" = ");
+//            buffer.append("(");
+//            Select select = update.getSelect();
+//            select.getSelectBody().accept(selectVisitor);
+//            buffer.append(")");
+//        }
 
         if (update.getFromItem() != null) {
             buffer.append(" FROM ").append(update.getFromItem());

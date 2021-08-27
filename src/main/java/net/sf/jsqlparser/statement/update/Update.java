@@ -21,14 +21,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.Limit;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.select.*;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class Update implements Statement {
@@ -36,14 +29,15 @@ public class Update implements Statement {
     private List<WithItem> withItemsList;
     private Table table;
     private Expression where;
-    private List<Column> columns;
-    private List<Expression> expressions;
+
+    public ArrayList<UpdateSet> getUpdateSets() {
+        return updateSets;
+    }
+
+    private final ArrayList<UpdateSet> updateSets = new ArrayList<>();
     private FromItem fromItem;
     private List<Join> joins;
     private List<Join> startJoins;
-    private Select select;
-    private boolean useColumnsBrackets = true;
-    private boolean useSelect = false;
     private OracleHint oracleHint = null;
     private List<OrderByElement> orderByElements;
     private Limit limit;
@@ -104,20 +98,34 @@ public class Update implements Statement {
         this.oracleHint = oracleHint;
     }
 
+    public void addUpdateSet(Column column, Expression expression) {
+        updateSets.add(new UpdateSet(column, expression));
+    }
+
+    public void addUpdateSet(UpdateSet updateSet) {
+        updateSets.add(updateSet);
+    }
+
+    @Deprecated
     public List<Column> getColumns() {
-        return columns;
+        return updateSets.get(0).columns;
     }
 
+    @Deprecated
     public List<Expression> getExpressions() {
-        return expressions;
+        return updateSets.get(0).expressions;
     }
 
+    @Deprecated
     public void setColumns(List<Column> list) {
-        columns = list;
+        updateSets.get(0).columns.clear();
+        updateSets.get(0).columns.addAll(list);
     }
 
+    @Deprecated
     public void setExpressions(List<Expression> list) {
-        expressions = list;
+        updateSets.get(0).expressions.clear();
+        updateSets.get(0).expressions.addAll(list);
     }
 
     public FromItem getFromItem() {
@@ -144,28 +152,49 @@ public class Update implements Statement {
         this.startJoins = startJoins;
     }
 
+    @Deprecated
     public Select getSelect() {
+        Select select = null;
+        if (updateSets.get(0).expressions.get(0) instanceof SubSelect) {
+            SubSelect subSelect = (SubSelect) updateSets.get(0).expressions.get(0);
+            select = new Select().withWithItemsList(subSelect.getWithItemsList()).withSelectBody(subSelect.getSelectBody());
+        }
+
         return select;
     }
 
+    @Deprecated
     public void setSelect(Select select) {
-        this.select = select;
+        if (select!=null) {
+            SubSelect subSelect = new SubSelect().withSelectBody(select.getSelectBody());
+            if (select.getWithItemsList() != null && select.getWithItemsList().size() > 0)
+                subSelect.setWithItemsList(select.getWithItemsList());
+
+            if (updateSets.get(0).expressions.isEmpty()) {
+                updateSets.get(0).expressions.add(subSelect);
+            } else {
+                updateSets.get(0).expressions.set(0, subSelect);
+            }
+        }
     }
 
+    @Deprecated
     public boolean isUseColumnsBrackets() {
-        return useColumnsBrackets;
+        return updateSets.get(0).usingBrackets;
     }
 
+    @Deprecated
     public void setUseColumnsBrackets(boolean useColumnsBrackets) {
-        this.useColumnsBrackets = useColumnsBrackets;
+        updateSets.get(0).usingBrackets = useColumnsBrackets;
     }
 
+    @Deprecated
     public boolean isUseSelect() {
-        return useSelect;
+        return (updateSets.get(0).expressions.get(0) instanceof SubSelect);
     }
 
+    @Deprecated
     public void setUseSelect(boolean useSelect) {
-        this.useSelect = useSelect;
     }
 
     public void setOrderByElements(List<OrderByElement> orderByElements) {
@@ -229,30 +258,63 @@ public class Update implements Statement {
         }
         b.append(" SET ");
 
-        if (!useSelect) {
-            for (int i = 0; i < getColumns().size(); i++) {
-                if (i != 0) {
-                    b.append(", ");
-                }
-                b.append(columns.get(i)).append(" = ");
-                b.append(expressions.get(i));
+        int j=0;
+        for (UpdateSet updateSet:updateSets) {
+            if (j > 0) {
+                b.append(", ");
             }
-        } else {
-            if (useColumnsBrackets) {
+
+            if (updateSet.usingBrackets) {
                 b.append("(");
             }
-            for (int i = 0; i < getColumns().size(); i++) {
-                if (i != 0) {
+
+            for (int i = 0; i < updateSet.columns.size(); i++) {
+                if (i > 0) {
                     b.append(", ");
                 }
-                b.append(columns.get(i));
+                b.append(updateSet.columns.get(i));
             }
-            if (useColumnsBrackets) {
+
+            if (updateSet.usingBrackets) {
                 b.append(")");
             }
+
             b.append(" = ");
-            b.append("(").append(select).append(")");
+
+            for (int i = 0; i < updateSet.expressions.size(); i++) {
+                if (i > 0) {
+                    b.append(", ");
+                }
+                b.append(updateSet.expressions.get(i));
+            }
+
+            j++;
         }
+
+//        if (!useSelect) {
+//            for (int i = 0; i < getColumns().size(); i++) {
+//                if (i != 0) {
+//                    b.append(", ");
+//                }
+//                b.append(columns.get(i)).append(" = ");
+//                b.append(expressions.get(i));
+//            }
+//        } else {
+//            if (useColumnsBrackets) {
+//                b.append("(");
+//            }
+//            for (int i = 0; i < getColumns().size(); i++) {
+//                if (i != 0) {
+//                    b.append(", ");
+//                }
+//                b.append(columns.get(i));
+//            }
+//            if (useColumnsBrackets) {
+//                b.append(")");
+//            }
+//            b.append(" = ");
+//            b.append("(").append(select).append(")");
+//        }
 
         if (fromItem != null) {
             b.append(" FROM ").append(fromItem);
