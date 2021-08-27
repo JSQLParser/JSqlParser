@@ -16,3 +16,4 @@ select last_name "Employee", connect_by_root last_name "Manager",
    
 
 --@FAILURE: Encountered unexpected token: "\"Manager\"" <S_QUOTED_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 27, 2021 4:24:51 PM

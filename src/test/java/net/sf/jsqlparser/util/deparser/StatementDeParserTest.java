@@ -16,6 +16,7 @@ import static org.mockito.Mockito.spy;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.jsqlparser.statement.update.UpdateSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -208,14 +209,12 @@ public class StatementDeParserTest {
         Expression orderByElement1Expression = mock(Expression.class);
         Expression orderByElement2Expression = mock(Expression.class);
 
-        update.setColumns(columns);
-        update.setExpressions(expressions);
         update.setWhere(where);
         update.setOrderByElements(orderByElements);
-        columns.add(column1);
-        columns.add(column2);
-        expressions.add(expression1);
-        expressions.add(expression2);
+
+        update.addUpdateSet(column1, expression1);
+        update.addUpdateSet(column2, expression2);
+
         orderByElements.add(orderByElement1);
         orderByElements.add(orderByElement2);
         orderByElement1.setExpression(orderByElement1Expression);
@@ -237,7 +236,6 @@ public class StatementDeParserTest {
     public void shouldUseProvidedDeParsersWhenDeParsingUpdateUsingSelect() {
         Update update = new Update();
         List<Column> columns = new ArrayList<Column>();
-        Select select = new Select();
         Expression where = mock(Expression.class);
         List<OrderByElement> orderByElements = new ArrayList<OrderByElement>();
         Column column1 = new Column();
@@ -248,14 +246,19 @@ public class StatementDeParserTest {
         Expression orderByElement1Expression = mock(Expression.class);
         Expression orderByElement2Expression = mock(Expression.class);
 
-        update.setUseSelect(true);
-        update.setColumns(columns);
-        update.setSelect(select);
         update.setWhere(where);
         update.setOrderByElements(orderByElements);
-        columns.add(column1);
-        columns.add(column2);
-        select.setSelectBody(selectBody);
+
+        SubSelect subSelect = new SubSelect().withSelectBody(selectBody);
+        ExpressionList expressionList = new ExpressionList().addExpressions(subSelect);
+
+        UpdateSet updateSet=new UpdateSet();
+        updateSet.add(column1);
+        updateSet.add(column2);
+        updateSet.add(expressionList);
+
+        update.addUpdateSet(updateSet);
+
         orderByElements.add(orderByElement1);
         orderByElements.add(orderByElement2);
         orderByElement1.setExpression(orderByElement1Expression);
@@ -265,7 +268,7 @@ public class StatementDeParserTest {
 
         then(expressionDeParser).should().visit(column1);
         then(expressionDeParser).should().visit(column2);
-        then(selectBody).should().accept(selectDeParser);
+        then(expressionDeParser).should().visit(subSelect);
         then(where).should().accept(expressionDeParser);
         then(orderByElement1Expression).should().accept(expressionDeParser);
         then(orderByElement2Expression).should().accept(expressionDeParser);

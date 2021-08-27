@@ -118,6 +118,9 @@ public class Update implements Statement {
 
     @Deprecated
     public void setColumns(List<Column> list) {
+        if (updateSets.isEmpty()) {
+            updateSets.add(new UpdateSet());
+        }
         updateSets.get(0).columns.clear();
         updateSets.get(0).columns.addAll(list);
     }
