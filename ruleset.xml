@@ -38,7 +38,7 @@ under the License.
     <!-- this little fellow will complain about PACKAGE based imports -->
     <!--<rule ref="category/java/bestpractices.xml/UnusedImports" /> -->
     
-    <rule ref="category/java/bestpractices.xml/UnusedFormalParameter" />
+    <!-- <rule ref="category/java/bestpractices.xml/UnusedFormalParameter" /> -->
     <rule ref="category/java/bestpractices.xml/UnusedLocalVariable" />
     <rule ref="category/java/bestpractices.xml/UnusedPrivateField" />
     <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod" />
