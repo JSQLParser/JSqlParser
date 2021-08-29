@@ -98,9 +98,10 @@ pmd {
     
     sourceSets = [sourceSets.main]
     
-    // clear the ruleset in order to use configured rules only, although we should apply the Prio 1 rules eventually
+    // clear the ruleset in order to use configured rules only
     ruleSets = []
-    rulesMinimumPriority = 1
+    
+    //rulesMinimumPriority = 1
     
     ruleSetFiles = files("ruleset.xml")
     

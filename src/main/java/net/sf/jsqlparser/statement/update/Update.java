@@ -167,10 +167,11 @@ public class Update implements Statement {
 
     @Deprecated
     public void setSelect(Select select) {
-        if (select!=null) {
+        if (select != null) {
             SubSelect subSelect = new SubSelect().withSelectBody(select.getSelectBody());
-            if (select.getWithItemsList() != null && select.getWithItemsList().size() > 0)
+            if (select.getWithItemsList() != null && select.getWithItemsList().size() > 0) {
                 subSelect.setWithItemsList(select.getWithItemsList());
+            }
 
             if (updateSets.get(0).expressions.isEmpty()) {
                 updateSets.get(0).expressions.add(subSelect);
@@ -192,11 +193,12 @@ public class Update implements Statement {
 
     @Deprecated
     public boolean isUseSelect() {
-        return (updateSets.get(0).expressions.get(0) instanceof SubSelect);
+        return updateSets.get(0).expressions.get(0) instanceof SubSelect;
     }
 
     @Deprecated
     public void setUseSelect(boolean useSelect) {
+        //todo
     }
 
     public void setOrderByElements(List<OrderByElement> orderByElements) {
@@ -260,8 +262,8 @@ public class Update implements Statement {
         }
         b.append(" SET ");
 
-        int j=0;
-        for (UpdateSet updateSet:updateSets) {
+        int j = 0;
+        for (UpdateSet updateSet : updateSets) {
             if (j > 0) {
                 b.append(", ");
             }
@@ -317,7 +319,6 @@ public class Update implements Statement {
 //            b.append(" = ");
 //            b.append("(").append(select).append(")");
 //        }
-
         if (fromItem != null) {
             b.append(" FROM ").append(fromItem);
             if (joins != null) {
