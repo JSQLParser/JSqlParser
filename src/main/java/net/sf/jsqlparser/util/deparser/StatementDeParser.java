@@ -169,7 +169,7 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         selectDeParser.setBuffer(buffer);
         expressionDeParser.setSelectVisitor(selectDeParser);
         expressionDeParser.setBuffer(buffer);
-        UpdateDeParser updateDeParser = new UpdateDeParser(expressionDeParser, selectDeParser, buffer);
+        UpdateDeParser updateDeParser = new UpdateDeParser(expressionDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         updateDeParser.deParse(update);
 
