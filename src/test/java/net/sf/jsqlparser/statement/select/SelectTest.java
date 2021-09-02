@@ -4701,6 +4701,7 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
   
+    @Test
     public void testCollisionWithSpecialStringFunctionsIssue1284() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
           "SELECT test( a in (1) AND 2=2) ", true);
@@ -4744,4 +4745,64 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(
                 "select t1.column1,t1.column2,t2.field1,t2.field2 from T_DT_ytb_01 t1 , T_DT_ytb_02 t2 on t1.column1 = t2.field1", true);
  }
+
+    @Test
+    public void testNestedCaseComplexExpressionIssue1306() throws JSQLParserException {
+        // with extra brackets
+        assertSqlCanBeParsedAndDeparsed(
+            "SELECT CASE\n" +
+            "WHEN 'USD' = 'USD'\n" +
+            "THEN 0\n" +
+            "ELSE CASE\n" +
+            "WHEN 'USD' = 'EURO'\n" +
+            "THEN ( CASE\n" +
+            "WHEN 'A' = 'B'\n" +
+            "THEN 0\n" +
+            "ELSE 1\n" +
+            "END * 100 )\n" +
+            "ELSE 2\n" +
+            "END\n" +
+            "END AS \"column1\"\n" +
+            "FROM test_schema.table_name\n" +
+            "", true);
+
+        // without brackets
+        assertSqlCanBeParsedAndDeparsed(
+            "SELECT CASE\n" +
+            "WHEN 'USD' = 'USD'\n" +
+            "THEN 0\n" +
+            "ELSE CASE\n" +
+            "WHEN 'USD' = 'EURO'\n" +
+            "THEN CASE\n" +
+            "WHEN 'A' = 'B'\n" +
+            "THEN 0\n" +
+            "ELSE 1\n" +
+            "END * 100 \n" +
+            "ELSE 2\n" +
+            "END\n" +
+            "END AS \"column1\"\n" +
+            "FROM test_schema.table_name\n" +
+            "", true);
+    }
+
+    @Test
+    public void testGroupByComplexExpressionIssue1308() throws JSQLParserException {
+        // without extra brackets
+        assertSqlCanBeParsedAndDeparsed(
+                "select * \n" +
+                        "from dual \n" +
+                        "group by case when 1=1 then 'X' else 'Y' end, column1", true);
+
+        // with extra  brackets for List
+        assertSqlCanBeParsedAndDeparsed(
+                "select * \n" +
+                        "from dual \n" +
+                        "group by (case when 1=1 then 'X' else 'Y' end, column1)", true);
+
+        // with extra brackets for Expression
+        assertSqlCanBeParsedAndDeparsed(
+                "select * \n" +
+                        "from dual \n" +
+                        "group by (case when 1=1 then 'X' else 'Y' end), column1", true);
+    }
 }

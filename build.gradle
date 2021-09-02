@@ -5,6 +5,7 @@ plugins {
     id 'jacoco'
     id "com.github.spotbugs" version "4.7.2"
     id 'pmd'
+    id 'checkstyle'
     
     // download the RR tools which have no Maven Repository
     id "de.undercouch.download" version "4.1.2"
@@ -44,6 +45,10 @@ compileJavacc {
 java {
     withSourcesJar()
     withJavadocJar()
+
+    spotbugs
+    pmd
+
 }
 
 jacoco {
@@ -98,9 +103,10 @@ pmd {
     
     sourceSets = [sourceSets.main]
     
-    // clear the ruleset in order to use configured rules only, although we should apply the Prio 1 rules eventually
+    // clear the ruleset in order to use configured rules only
     ruleSets = []
-    rulesMinimumPriority = 1
+    
+    //rulesMinimumPriority = 1
     
     ruleSetFiles = files("ruleset.xml")
     
@@ -108,6 +114,19 @@ pmd {
         excludes = [
                 "build/generated/*"
         ]
+    }
+}
+
+checkstyle {
+    toolVersion "8.45.1"
+    sourceSets = [sourceSets.main, sourceSets.test]
+    configFile =rootProject.file('config/checkstyle/checkstyle.xml')
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = false
+        html.required = true
     }
 }
 

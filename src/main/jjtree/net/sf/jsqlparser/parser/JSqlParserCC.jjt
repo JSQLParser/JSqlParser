@@ -1111,14 +1111,14 @@ Update Update( List<WithItem> with ):
     Update update = new Update();
     Table table = null;
     List<Join> startJoins = null;
-    Expression where = null;
+
+    UpdateSet updateSet = null;
     Column tableColumn = null;
-    List<Expression> expList = new ArrayList<Expression>();
-    List<Column> columns = new ArrayList<Column>();
-    Expression value = null;
+    Expression valueExpression = null;
+    ExpressionList expressionList;
+    Expression where = null;
     FromItem fromItem = null;
     List<Join> joins = null;
-    Select select = null;
     Limit limit = null;
     List<OrderByElement> orderByElements;
     boolean useColumnsBrackets = false;
@@ -1130,21 +1130,34 @@ Update Update( List<WithItem> with ):
 
     <K_SET>
     (
-    LOOKAHEAD(3) tableColumn=Column() "=" value=SimpleExpression() { columns.add(tableColumn); expList.add(value); }
-        ("," tableColumn=Column() "=" value=SimpleExpression() { columns.add(tableColumn); expList.add(value); } )*
-
-    |
-
-    ( "(" { useColumnsBrackets = true; } tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"
-    | tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* )
-     "="
-        "("
-        (
-            { update.setUseSelect(true); }
-            select = SelectWithWithItems( )
+         LOOKAHEAD(3) (
+            tableColumn=Column() "=" valueExpression=SimpleExpression() { update.addUpdateSet(tableColumn, valueExpression); }
+            ("," tableColumn=Column() "=" valueExpression=SimpleExpression() { update.addUpdateSet(tableColumn, valueExpression); } )*
         )
-        ")"
-   )
+        |
+        (
+            { updateSet = new UpdateSet(); update.addUpdateSet(updateSet); }
+
+            [ "(" { updateSet.setUsingBrackets(true); } ]
+            tableColumn=Column() { updateSet.add(tableColumn); }
+            ("," tableColumn=Column() { updateSet.add(tableColumn); } )*
+            [ ")" ]
+
+            "="
+
+            expressionList = ComplexExpressionList() { updateSet.add(expressionList); }
+            (
+                ","
+                tableColumn=Column() { updateSet = new UpdateSet(tableColumn); update.addUpdateSet(updateSet); }
+                ("," tableColumn=Column() { updateSet.add(tableColumn); } )*
+
+                "="
+                "("
+                expressionList = ComplexExpressionList() { updateSet.add(expressionList); }
+                ")"
+            ) *
+        )
+    )
 
    [ <K_FROM>
       fromItem=FromItem()
@@ -1162,14 +1175,10 @@ Update Update( List<WithItem> with ):
 
    {
         return update.withWithItemsList(with)
-              .withColumns(columns)
-        	  .withExpressions(expList)
               .withTable(table)
               .withStartJoins(startJoins)
               .withFromItem(fromItem)
               .withJoins(joins)
-              .withSelect(select)
-              .withUseColumnsBrackets(useColumnsBrackets)
               .withReturningExpressionList(returning);
    }
 }
@@ -2622,12 +2631,9 @@ GroupByElement GroupByColumnReferences():
                     | expr = SimpleExpression() { groupBy.addGroupingSet(expr); } ) )*
             ")"
           )
-          | LOOKAHEAD(3) (
-              "(" list = SimpleExpressionList(true)  ")" { groupBy.setGroupByExpressionList(list); }
-          )
           |
           LOOKAHEAD(2) (  
-            list = SimpleExpressionList(false) { groupBy.setGroupByExpressionList(list); }
+            list = ComplexExpressionList() { groupBy.setGroupByExpressionList(list.withUsingBrackets(false)); }
           )
     )
     {
@@ -3291,13 +3297,15 @@ ExpressionList ComplexExpressionList() #ExpressionList:
         LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
         | expr=Expression() 
     ) { expressions.add(expr); }
+
     (
-        "," 
-        (   
+        LOOKAHEAD(2) ","
+        (
             LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
             | expr=Expression() 
         ) { expressions.add(expr); }
     )*
+
     {
         retval.setExpressions(expressions);
         return retval;
@@ -4270,7 +4278,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
     <K_CASE> { caseCounter++; }
     [ switchExp=Condition() ]
     ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
-    [<K_ELSE> (LOOKAHEAD( ["("] CaseWhenExpression() [")"] ) ["("] elseExp=CaseWhenExpression() [")" { ((CaseExpression) elseExp).setUsingBrackets(true); } ] 
+    [<K_ELSE> (LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] elseExp=CaseWhenExpression() [")" { ((CaseExpression) elseExp).setUsingBrackets(true); } ] 
               | elseExp=Condition()
               )
     ]
@@ -4291,8 +4299,10 @@ WhenClause WhenThenSearchCondition():
 }
 {
     <K_WHEN> whenExp=Expression()
-    <K_THEN> (LOOKAHEAD( ["("] CaseWhenExpression() [")"] ) ["("] thenExp=CaseWhenExpression() [")" { ((CaseExpression) thenExp).setUsingBrackets(true); }]
-              | thenExp=Expression()
+    <K_THEN> (
+                LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] thenExp=CaseWhenExpression() [")" { ((CaseExpression) thenExp).setUsingBrackets(true); }]
+                | 
+                thenExp=Expression()
               )
     {
        whenThen.setWhenExpression(whenExp);
