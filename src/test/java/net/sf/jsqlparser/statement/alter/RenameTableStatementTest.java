@@ -89,7 +89,7 @@ public class RenameTableStatementTest {
   public void testValidator() throws JSQLParserException {
     String sqlStr = "RENAME oldTableName TO newTableName";
 
-    ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
+    ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
   }
   
   @Test

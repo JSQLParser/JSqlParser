@@ -294,8 +294,11 @@ public class Join extends ASTNodeAccessImpl {
         this.joinWindow = joinWindow;
     }
 
+    @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-    public StringBuilder appendTo(StringBuilder builder) {
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
         if (isSimple() && isOuter()) {
             builder.append("OUTER ").append(rightItem);
         } else if (isSimple()) {
@@ -328,11 +331,10 @@ public class Join extends ASTNodeAccessImpl {
             } else {
                 builder.append("JOIN ");
             }
-            
+
             builder.append(rightItem).append((joinWindow != null) ? " WITHIN " + joinWindow : "");
         }
-        
-        
+
         for (Expression onExpression: onExpressions) {
             builder.append(" ON ").append(onExpression);
         }
@@ -340,12 +342,7 @@ public class Join extends ASTNodeAccessImpl {
             builder.append(PlainSelect.getFormatedList(usingColumns, "USING", true, true));
         }
 
-        return builder;
-    }
-
-    @Override
-    public String toString() {
-        return appendTo(new StringBuilder()).toString();
+        return builder.toString();
     }
 
     public Join addUsingColumns(Column... usingColumns) {
