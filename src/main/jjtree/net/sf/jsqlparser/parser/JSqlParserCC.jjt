@@ -1641,7 +1641,7 @@ String RelObjectName() :
 {
     (result = RelObjectNameWithoutValue()
 		| tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON> | tk=<K_ORDER> | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE> 
-        | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES>  )
+        | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES> )
 
     {
 		if (tk!=null) result=tk.image;
@@ -1653,7 +1653,7 @@ String RelObjectNameWithoutStart() :
 {    Token tk = null; String result = null; }
 {
     (result = RelObjectNameWithoutValue() | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES>
-        | tk=<K_INTERVAL>)
+        | tk=<K_INTERVAL> )
 
     {
 		if (tk!=null) result=tk.image;
@@ -1672,7 +1672,7 @@ String RelObjectNameExt():
     ( result=RelObjectName() | tk=<K_ALL> | tk=<K_ANY>  | tk=<K_SOME> | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
         | tk=<K_DOUBLE> | tk=<K_IF> | tk=<K_IIF> | tk=<K_OPTIMIZE> | tk=<K_LIMIT>
         | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC> 
-        | tk=<K_CASEWHEN> | tk=<K_IN> | tk=<K_GROUPING> )
+        | tk=<K_CASEWHEN> | tk=<K_IN> | tk=<K_GROUPING>  )
     {
         if (tk!=null) result=tk.image;
         return result;
@@ -2483,13 +2483,19 @@ Join JoinerExpression() #JoinerExpression:
 
 
     [
-    LOOKAHEAD(2) ([ <K_WITHIN> "(" joinWindow = JoinWindow() ")" {join.setJoinWindow(joinWindow);}]
-                    ( <K_ON> onExpression=Expression()  { join.setOnExpression(onExpression); })
-        |
-        ( <K_USING> "(" tableColumn=Column() { columns = new ArrayList<Column>(); columns.add(tableColumn); }
-                ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"
-          { join.setUsingColumns(columns); }   ))
-      ]
+        LOOKAHEAD(2) (
+                        [ <K_WITHIN> "(" joinWindow = JoinWindow() ")" {join.setJoinWindow(joinWindow);} ]
+                        ( <K_ON> onExpression=Expression()  { join.addOnExpression(onExpression); }
+                          ( LOOKAHEAD(2)  <K_ON> onExpression=Expression()  { join.addOnExpression(onExpression); } )*
+                        )
+                        |
+                        (
+                            <K_USING> "(" tableColumn=Column() { columns = new ArrayList<Column>(); columns.add(tableColumn); }
+                            ( "," tableColumn=Column() { columns.add(tableColumn); } ) *
+                            ")" { join.setUsingColumns(columns); }
+                        )
+                    )
+    ]
   {
       linkAST(join,jjtThis);
       join.setRightItem(right);
@@ -5786,7 +5792,7 @@ AlterSystemStatement AlterSystemStatement():
             "QUIESCE" "RESTRICTED" { operation = AlterSystemOperation.QUIESCE; }
         )
         |
-        ( 
+        (
             "UNQUIESCE" { operation = AlterSystemOperation.UNQUIESCE; }
         )
         |

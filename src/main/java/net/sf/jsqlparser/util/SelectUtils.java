@@ -83,7 +83,7 @@ public final class SelectUtils {
      */
     public static Join addJoin(Select select, final Table table, final Expression onExpression) {
         if (select.getSelectBody() instanceof PlainSelect) {
-            Join join = new Join().withRightItem(table).withOnExpression(onExpression);
+            Join join = new Join().withRightItem(table).addOnExpression(onExpression);
             select.getSelectBody(PlainSelect.class).addJoins(join);
             return join;
         } else {
