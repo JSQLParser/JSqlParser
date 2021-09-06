@@ -2084,29 +2084,25 @@ MySQLIndexHint MySQLIndexHint():
 	List<String> indexNameList = new ArrayList<String>();
 }
 {
-	(actionToken = <K_USE>
+	(
+	actionToken = <K_USE>
 	| actionToken = <K_SHOW>
 	| actionToken = <K_IGNORE>
-	| actionToken = <K_FORCE> )
-	(indexToken = <K_INDEX>
-	| indexToken = <K_KEY>)
+	| actionToken = <K_FORCE>
+	)
+
+	(
+	indexToken = <K_INDEX>
+	| indexToken = <K_KEY>
+	)
+
 	"("
-	indexName = Identifier() { indexNameList.add(indexName); }
-	("," indexName= Identifier() { indexNameList.add(indexName); })*
+	indexName = RelObjectNameWithoutValue() { indexNameList.add(indexName); }
+	("," indexName= RelObjectNameWithoutValue() { indexNameList.add(indexName); })*
 	")"
 	{
 		return new MySQLIndexHint(actionToken.image, indexToken.image, indexNameList);
 	}
-}
-
-String Identifier():
-{
-	Token tk = null;
-}
-{
-	(tk=<S_IDENTIFIER>
-    | tk=<S_QUOTED_IDENTIFIER>)
-    { return tk.image; }
 }
 
  FunctionItem FunctionItem():
