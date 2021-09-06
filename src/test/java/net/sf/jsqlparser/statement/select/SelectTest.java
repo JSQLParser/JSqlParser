@@ -4805,4 +4805,11 @@ public class SelectTest {
                         "from dual \n" +
                         "group by (case when 1=1 then 'X' else 'Y' end), column1", true);
     }
+
+    @Test
+    public void testReservedKeywordsMSSQLUseIndexIssue1325() throws JSQLParserException {
+        // without extra brackets
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT col FROM table USE INDEX(primary)", true);
+    }
 }
