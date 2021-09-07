@@ -993,6 +993,11 @@ public class SelectTest {
             //expected to fail
         }
     }
+    
+    @Test
+    public void testDistinctWithFollowingBrackets() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT DISTINCT (phone), name FROM admin_user");
+    }
 
     @Test
     public void testFrom() throws JSQLParserException {
