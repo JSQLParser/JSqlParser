@@ -435,6 +435,12 @@ public class CreateTableTest {
   }
 
   @Test
+  public void testCreateUnionIssue() throws JSQLParserException {
+    assertSqlCanBeParsedAndDeparsed(
+        "CREATE TABLE temp.abc AS (SELECT c FROM t1) UNION (SELECT c FROM t2)");
+  }
+
+  @Test
   public void testTimestampWithTimezone() throws JSQLParserException {
     assertSqlCanBeParsedAndDeparsed(
         "CREATE TABLE country_region ("
