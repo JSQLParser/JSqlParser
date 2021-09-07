@@ -54,9 +54,25 @@ To help JSqlParser's development you are encouraged to provide
 Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.2
-
+* API change: Support `SELECT ...` without a `FROM` clause, making `SELECT 1, 2` and `SELECT *` parsable statements (before those failed)
+* API change: Support complex `UPDATE` sets (using multiple `SubQuery` or `ValueList` or Single Values, in combination)
+* Support nested `CASE` expressions with complex expression arguments
+* API change: Support `JOIN` with multiple trailing `ON` Expressions (`JOIN ... JOIN ... ON ... ON ...`)
+* Support Oracle Hierarchical `CONNECT_BY_ROOT` Operator
+* Support Transact-SQL `IF ... ELSE ...` Statement Control Flows.
+* Allow optional parameters for the  `ALTER TABLE ...` statement (e.g. `ALTER TABLE ... MOVE TABLESPACE ...`)
+* Support Oracle `ALTER SYSTEM ...` statement
+* Support Oracle Named Function Parameters`Func( param1 => arg1, ...`
+* Add Gradle build
+* Allow `JdbcParameter` or `JdbcNamedParameter` for MySQL FullTextSearch
+* Allow `Cast` into `Row` Constructor  
+* Support Oracle `RENAME ... TO ...` statement
+* Support Oracle `PURGE` statement
+* Support JSON functions `JSON_OBJECT()`, `JSON_ARRAY()`, `JSON_OBJECTAGG()`, `JSON_ARRAYAGG()`
 * API change: merge ALL and ANY expressions class
-* allow `CURRENT DATE`in addition to `CURRENT_DATE` (without underbar)
+* Allow DB2 compliant `CURRENT DATE`in addition to `CURRENT_DATE` (without underscore)
+
+Additionally, we have fixed many errors and improved the code quality and the test coverage.
 
 ## Extensions of JSqlParser releases
 
@@ -67,16 +83,22 @@ Also I would like to know about needed examples or documentation stuff.
 ## Building from the sources
 
 As the project is a Maven project, building is rather simple by running:
+```shell
+mvn package
+```
 
-	mvn package
+Since 4.2, alternatively Gradle can be used
+```shell
+gradle build
+```
     
 The project requires the following to build:
-- Maven 
+- Maven (or Gradle)
 - JDK 8 or later. The jar will target JDK 8, but the version of the maven-compiler-plugin that JsqlParser uses requires JDK 8+
 
-This will produce the jsqlparser-VERSION.jar file in the target/ directory.
+This will produce the jsqlparser-VERSION.jar file in the `target/` directory (`build/libs/jsqlparser-VERSION.jar` in case of Gradle).
 
-**To build this project without using Maven, one has to build the parser by JavaCC using the CLI options it provides.**
+**To build this project without using Maven or Gradle, one has to build the parser by JavaCC using the CLI options it provides.**
 
 ## Debugging through problems
 
@@ -124,7 +146,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>4.0</version>
+	<version>4.1</version>
 </dependency>
 ```
 

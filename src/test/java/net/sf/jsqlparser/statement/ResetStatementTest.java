@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -23,6 +24,16 @@ public class ResetStatementTest {
     @Test
     public void tesResetAll() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("RESET ALL");
+    }
+
+    @Test
+    public void testObject() {
+        ResetStatement resetStatement=new ResetStatement();
+        Assert.assertNotNull(resetStatement.getName());
+
+        resetStatement.add("something");
+        resetStatement.setName("somethingElse");
+        Assert.assertEquals("somethingElse", resetStatement.getName());
     }
 
 }

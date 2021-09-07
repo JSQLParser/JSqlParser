@@ -20,6 +20,9 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class UpdateTest {
@@ -191,44 +194,58 @@ public class UpdateTest {
 
     @Test
     public void testUpdateSetsIssue1316() throws JSQLParserException {
-        String statement =
+        String sqlStr =
                 "update test\n" +
                         "set (a, b) = (select '1', '2')";
-        assertSqlCanBeParsedAndDeparsed(statement, true);
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        statement =
+        sqlStr =
+                "update test\n" +
+                        "set a = '1'" +
+                        "    , b = '2'";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr =
                 "update test\n" +
                         "set (a, b) = ('1', '2')";
-        assertSqlCanBeParsedAndDeparsed(statement, true);
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        statement =
+        sqlStr =
                 "update test\n" +
-                        "set (a, b) = values ('1', '2')";
-        assertSqlCanBeParsedAndDeparsed(statement, true);
+                        "set (a, b) = (values ('1', '2'))";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        statement =
+        sqlStr =
                 "update test\n" +
                         "set (a, b) = (1, (select 2))";
-        assertSqlCanBeParsedAndDeparsed(statement, true);
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        statement =
-                "UPDATE\n" +
-                        "prpjpaymentbill b\n" +
-                        "SET\n" +
-                        "(\n" +
-                        "b.packagecode,\n" +
-                        "b.packageremark,\n" +
-                        "b.agentcode\n" +
-                        ") =\n" +
-                        "(SELECT\n" +
-                        "p.payrefreason,\n" +
-                        "p.classcode,\n" +
-                        "p.riskcode\n" +
-                        "FROM\n" +
-                        "prpjcommbill p where p.policertiid='SDDH200937010330006366' ),\n" +
-                        "b.payrefnotype = '05',\n" +
-                        "b.packageunit = '4101170402'\n" +
-                        "where b.payrefno='B370202091026000005' ";
-        assertSqlCanBeParsedAndDeparsed(statement, true);
+        sqlStr =
+                "UPDATE prpjpaymentbill b\n" +
+                "SET (   b.packagecode\n" +
+                "        , b.packageremark\n" +
+                "        , b.agentcode ) =   (   SELECT  p.payrefreason\n" +
+                "                                        , p.classcode\n" +
+                "                                        , p.riskcode\n" +
+                "                                FROM prpjcommbill p\n" +
+                "                                WHERE p.policertiid = 'SDDH200937010330006366' ) -- this is supposed to be UpdateSet 1\n" +
+                "     , b.payrefnotype = '05' -- this is supposed to be UpdateSet 2\n" +
+                "     , b.packageunit = '4101170402' -- this is supposed to be UpdateSet 3\n" +
+                "WHERE b.payrefno = 'B370202091026000005'";
+
+
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Update update = (Update) CCJSqlParserUtil.parse(sqlStr);
+        Assert.assertEquals(3, update.getUpdateSets().size());
+
+        Assert.assertEquals(3, update.getUpdateSets().get(0).getColumns().size());
+        Assert.assertEquals(1, update.getUpdateSets().get(0).getExpressions().size());
+
+        Assert.assertEquals(1, update.getUpdateSets().get(1).getColumns().size());
+        Assert.assertEquals(1, update.getUpdateSets().get(1).getExpressions().size());
+
+        Assert.assertEquals(1, update.getUpdateSets().get(2).getColumns().size());
+        Assert.assertEquals(1, update.getUpdateSets().get(2).getExpressions().size());
     }
 }

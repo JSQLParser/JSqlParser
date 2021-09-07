@@ -16,6 +16,7 @@ import static org.mockito.Mockito.spy;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +32,6 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.delete.Delete;
-import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.replace.Replace;
@@ -368,12 +368,9 @@ public class StatementDeParserTest {
     
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-    public void shouldUseProvidedDeparsersWhenDeParsingIfThenStatement() {
-        Expression condition = mock(Expression.class);
-        Drop ifStatement = mock(Drop.class);
-        
-        IfElseStatement ifElseStatement = new IfElseStatement(condition, ifStatement);
-
+    public void shouldUseProvidedDeparsersWhenDeParsingIfThenStatement() throws JSQLParserException {
+        String sqlStr = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1";
+        IfElseStatement ifElseStatement  = (IfElseStatement) CCJSqlParserUtil.parse(sqlStr);
         statementDeParser.deParse(ifElseStatement);
       }
     

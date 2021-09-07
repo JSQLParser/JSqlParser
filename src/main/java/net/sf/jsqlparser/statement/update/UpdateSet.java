@@ -17,7 +17,8 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class UpdateSet {
-    protected boolean usingBrackets = false;
+    protected boolean usingBracketsForColumns = false;
+    protected boolean usingBracketsForValues = false;
     protected ArrayList<Column> columns = new ArrayList<>();
     protected ArrayList<Expression> expressions = new ArrayList<>();
 
@@ -34,12 +35,20 @@ public class UpdateSet {
         this.expressions.add(expression);
     }
 
-    public boolean isUsingBrackets() {
-        return usingBrackets;
+    public boolean isUsingBracketsForValues() {
+        return usingBracketsForValues;
     }
 
-    public void setUsingBrackets(boolean usingBrackets) {
-        this.usingBrackets = usingBrackets;
+    public void setUsingBracketsForValues(boolean usingBracketsForValues) {
+        this.usingBracketsForValues = usingBracketsForValues;
+    }
+
+    public boolean isUsingBracketsForColumns() {
+        return usingBracketsForColumns;
+    }
+
+    public void setUsingBracketsForColumns(boolean usingBracketsForColumns) {
+        this.usingBracketsForColumns = usingBracketsForColumns;
     }
 
     public ArrayList<Column> getColumns() {
@@ -61,13 +70,18 @@ public class UpdateSet {
     public void add(Column column, Expression expression) {
         columns.add(column);
         expressions.add(expression);
-    };
+    }
 
     public void add(Column column) {
         columns.add(column);
-    };
+    }
+
+    public void add(Expression expression) {
+        expressions.add(expression);
+    }
 
     public void add(ExpressionList expressionList) {
         expressions.addAll(expressionList.getExpressions());
-    };
+    }
+
 }

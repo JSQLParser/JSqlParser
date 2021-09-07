@@ -5,3 +5,9 @@ jdk:
   
 after_success:
   - mvn clean cobertura:cobertura coveralls:report
+
+cache:
+  directories:
+    - $HOME/.m2
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
