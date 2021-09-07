@@ -993,10 +993,16 @@ public class SelectTest {
             //expected to fail
         }
     }
-    
+
     @Test
     public void testDistinctWithFollowingBrackets() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT DISTINCT (phone), name FROM admin_user");
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed("SELECT DISTINCT (phone), name FROM admin_user");
+        PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+        assertThat(selectBody.getDistinct())
+                .isNotNull()
+                .hasFieldOrPropertyWithValue("getOnSelectItems", null);
+        assertThat(selectBody.getSelectItems().get(0).toString())
+                .isEqualTo("(phone)");
     }
 
     @Test
@@ -4573,7 +4579,7 @@ public class SelectTest {
 
     @Test
     public void testWithValueListWithOutExtraBrackets1135() throws JSQLParserException {
-         assertSqlCanBeParsedAndDeparsed("with sample_data(\"DAY\") as (values 0, 1, 2)\n"
+        assertSqlCanBeParsedAndDeparsed("with sample_data(\"DAY\") as (values 0, 1, 2)\n"
                 + "           select \"DAY\" from sample_data", true);
         assertSqlCanBeParsedAndDeparsed("with sample_data(day, value) as (values (0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16)) select day, value from sample_data", true);
     }
@@ -4598,7 +4604,7 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("select count(*)\n" + "from cfe.instrument\n" + "group by ()",
                 true);
     }
-    
+
     @Test
     public void testGroupedByWithExtraBracketsIssue1210() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
@@ -4606,10 +4612,9 @@ public class SelectTest {
                 true);
         assertSqlCanBeParsedAndDeparsed("select a,b,c from table group by rollup((a,b,c))",
                 true);
-        
-        
+
     }
-    
+
     @Test
     public void testGroupedByWithExtraBracketsIssue1168() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
@@ -4621,12 +4626,12 @@ public class SelectTest {
     public void testSelectRowElement() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT (t.tup).id, (tup).name FROM t WHERE (t.tup).id IN (1, 2, 3)");
     }
-    
+
     @Test
     public void testSelectCastProblemIssue1248() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CAST(t1.sign2 AS Nullable (char))");
     }
-    
+
 //    @Test
 //    public void testSelectCastProblemIssue1248_2() throws JSQLParserException {
 //        assertSqlCanBeParsedAndDeparsed("SELECT CAST(t1.sign2 AS Nullable(decimal(30, 10)))");
@@ -4640,7 +4645,7 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(
                 "select * from foo where id != ALL(VALUES 1,2,3)",
                 true);
-        
+
         assertSqlCanBeParsedAndDeparsed(
                 "select * from foo where id != ALL(?::uid[])",
                 true);
@@ -4649,12 +4654,12 @@ public class SelectTest {
     public void testSelectAllOperatorIssue1140() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM table t0 WHERE t0.id != all(5)");
     }
-    
+
     @Test
     public void testSelectAllOperatorIssue1140_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM table t0 WHERE t0.id != all(?::uuid[])");
     }
-    
+
     @Test
     public void testDB2SpecialRegisterDateTimeIssue1249() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT_TIME", true);
@@ -4664,151 +4669,151 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT_DATE", true);
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM test.abc WHERE col > CURRENT DATE", true);
     }
-    
+
     @Test
     public void testKeywordFilterIssue1255() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT col1 AS filter FROM table");
     }
-    
+
     @Test
     public void testConnectByRootIssue1255() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-            "SELECT last_name \"Employee\", CONNECT_BY_ROOT last_name \"Manager\",\n" +
-            "   LEVEL-1 \"Pathlen\", SYS_CONNECT_BY_PATH(last_name, '/') \"Path\"\n" +
-            "   FROM employees\n" +
-            "   WHERE LEVEL > 1 and department_id = 110\n" +
-            "   CONNECT BY PRIOR employee_id = manager_id", true);
+                "SELECT last_name \"Employee\", CONNECT_BY_ROOT last_name \"Manager\",\n"
+                + "   LEVEL-1 \"Pathlen\", SYS_CONNECT_BY_PATH(last_name, '/') \"Path\"\n"
+                + "   FROM employees\n"
+                + "   WHERE LEVEL > 1 and department_id = 110\n"
+                + "   CONNECT BY PRIOR employee_id = manager_id", true);
 
         assertSqlCanBeParsedAndDeparsed(
-            "SELECT name, SUM(salary) \"Total_Salary\" FROM (\n" +
-            "   SELECT CONNECT_BY_ROOT last_name as name, Salary\n" +
-            "      FROM employees\n" +
-            "      WHERE department_id = 110\n" +
-            "      CONNECT BY PRIOR employee_id = manager_id)\n" +
-            "      GROUP BY name", true);
-        
+                "SELECT name, SUM(salary) \"Total_Salary\" FROM (\n"
+                + "   SELECT CONNECT_BY_ROOT last_name as name, Salary\n"
+                + "      FROM employees\n"
+                + "      WHERE department_id = 110\n"
+                + "      CONNECT BY PRIOR employee_id = manager_id)\n"
+                + "      GROUP BY name", true);
+
         assertSqlCanBeParsedAndDeparsed(
-            "SELECT CONNECT_BY_ROOT last_name as name"
-          + ", salary "
-          + "FROM employees "
-          + "WHERE department_id = 110 "
-          + "CONNECT BY PRIOR employee_id = manager_id", true);
+                "SELECT CONNECT_BY_ROOT last_name as name"
+                + ", salary "
+                + "FROM employees "
+                + "WHERE department_id = 110 "
+                + "CONNECT BY PRIOR employee_id = manager_id", true);
     }
-    
+
     public void testUnionLimitOrderByIssue1268() throws JSQLParserException {
         String sqlStr = "(SELECT __time FROM traffic_protocol_stat_log LIMIT 1) UNION ALL (SELECT __time FROM traffic_protocol_stat_log ORDER BY __time LIMIT 1)";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
-    
+
     @Test
     public void testCastToRowConstructorIssue1267() throws JSQLParserException {
         String sqlStr = "SELECT CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR)) AS datapoints";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
-  
+
     @Test
     public void testCollisionWithSpecialStringFunctionsIssue1284() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-          "SELECT test( a in (1) AND 2=2) ", true);
-        
+                "SELECT test( a in (1) AND 2=2) ", true);
+
         assertSqlCanBeParsedAndDeparsed(
-            "select\n" +
-            "sum(if(column1 in('value1', 'value2'), 1, 0)) as tcp_logs,\n" +
-            "sum(if(column1 in ('value1', 'value2') and column2 = 'value3', 1, 0)) as base_tcp_logs\n" +
-            "from\n" +
-            "table1\n" +
-            "where\n" +
-            "recv_time >= toDateTime('2021-07-20 00:00:00')\n" +
-            "and recv_time < toDateTime('2021-07-21 00:00:00')", true);
+                "select\n"
+                + "sum(if(column1 in('value1', 'value2'), 1, 0)) as tcp_logs,\n"
+                + "sum(if(column1 in ('value1', 'value2') and column2 = 'value3', 1, 0)) as base_tcp_logs\n"
+                + "from\n"
+                + "table1\n"
+                + "where\n"
+                + "recv_time >= toDateTime('2021-07-20 00:00:00')\n"
+                + "and recv_time < toDateTime('2021-07-21 00:00:00')", true);
     }
 
     @Test
     public void testJoinWithTrailingOnExpressionIssue1302() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "SELECT * FROM TABLE1 tb1\n" +
-                        "INNER JOIN TABLE2 tb2\n" +
-                        "INNER JOIN TABLE3 tb3\n" +
-                        "INNER JOIN TABLE4 tb4\n" +
-                        "ON (tb3.aaa = tb4.aaa)\n" +
-                        "ON (tb2.aaa = tb3.aaa)\n" +
-                        "ON (tb1.aaa = tb2.aaa)", true);
+                "SELECT * FROM TABLE1 tb1\n"
+                + "INNER JOIN TABLE2 tb2\n"
+                + "INNER JOIN TABLE3 tb3\n"
+                + "INNER JOIN TABLE4 tb4\n"
+                + "ON (tb3.aaa = tb4.aaa)\n"
+                + "ON (tb2.aaa = tb3.aaa)\n"
+                + "ON (tb1.aaa = tb2.aaa)", true);
 
         assertSqlCanBeParsedAndDeparsed(
-                "SELECT *\n" +
-                        "FROM\n" +
-                        "TABLE1 tbl1\n" +
-                        "    INNER JOIN TABLE2 tbl2\n" +
-                        "        INNER JOIN TABLE3 tbl3\n" +
-                        "        ON (tbl2.column1 = tbl3.column1)\n" +
-                        "    ON (tbl1.column2 = tbl2.column2)\n" +
-                        "WHERE\n" +
-                        "tbl1.column1 = 123", true);
+                "SELECT *\n"
+                + "FROM\n"
+                + "TABLE1 tbl1\n"
+                + "    INNER JOIN TABLE2 tbl2\n"
+                + "        INNER JOIN TABLE3 tbl3\n"
+                + "        ON (tbl2.column1 = tbl3.column1)\n"
+                + "    ON (tbl1.column2 = tbl2.column2)\n"
+                + "WHERE\n"
+                + "tbl1.column1 = 123", true);
     }
 
     @Test
     public void testSimpleJoinOnExpressionIssue1229() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "select t1.column1,t1.column2,t2.field1,t2.field2 from T_DT_ytb_01 t1 , T_DT_ytb_02 t2 on t1.column1 = t2.field1", true);
- }
+    }
 
     @Test
     public void testNestedCaseComplexExpressionIssue1306() throws JSQLParserException {
         // with extra brackets
         assertSqlCanBeParsedAndDeparsed(
-            "SELECT CASE\n" +
-            "WHEN 'USD' = 'USD'\n" +
-            "THEN 0\n" +
-            "ELSE CASE\n" +
-            "WHEN 'USD' = 'EURO'\n" +
-            "THEN ( CASE\n" +
-            "WHEN 'A' = 'B'\n" +
-            "THEN 0\n" +
-            "ELSE 1\n" +
-            "END * 100 )\n" +
-            "ELSE 2\n" +
-            "END\n" +
-            "END AS \"column1\"\n" +
-            "FROM test_schema.table_name\n" +
-            "", true);
+                "SELECT CASE\n"
+                + "WHEN 'USD' = 'USD'\n"
+                + "THEN 0\n"
+                + "ELSE CASE\n"
+                + "WHEN 'USD' = 'EURO'\n"
+                + "THEN ( CASE\n"
+                + "WHEN 'A' = 'B'\n"
+                + "THEN 0\n"
+                + "ELSE 1\n"
+                + "END * 100 )\n"
+                + "ELSE 2\n"
+                + "END\n"
+                + "END AS \"column1\"\n"
+                + "FROM test_schema.table_name\n"
+                + "", true);
 
         // without brackets
         assertSqlCanBeParsedAndDeparsed(
-            "SELECT CASE\n" +
-            "WHEN 'USD' = 'USD'\n" +
-            "THEN 0\n" +
-            "ELSE CASE\n" +
-            "WHEN 'USD' = 'EURO'\n" +
-            "THEN CASE\n" +
-            "WHEN 'A' = 'B'\n" +
-            "THEN 0\n" +
-            "ELSE 1\n" +
-            "END * 100 \n" +
-            "ELSE 2\n" +
-            "END\n" +
-            "END AS \"column1\"\n" +
-            "FROM test_schema.table_name\n" +
-            "", true);
+                "SELECT CASE\n"
+                + "WHEN 'USD' = 'USD'\n"
+                + "THEN 0\n"
+                + "ELSE CASE\n"
+                + "WHEN 'USD' = 'EURO'\n"
+                + "THEN CASE\n"
+                + "WHEN 'A' = 'B'\n"
+                + "THEN 0\n"
+                + "ELSE 1\n"
+                + "END * 100 \n"
+                + "ELSE 2\n"
+                + "END\n"
+                + "END AS \"column1\"\n"
+                + "FROM test_schema.table_name\n"
+                + "", true);
     }
 
     @Test
     public void testGroupByComplexExpressionIssue1308() throws JSQLParserException {
         // without extra brackets
         assertSqlCanBeParsedAndDeparsed(
-                "select * \n" +
-                        "from dual \n" +
-                        "group by case when 1=1 then 'X' else 'Y' end, column1", true);
+                "select * \n"
+                + "from dual \n"
+                + "group by case when 1=1 then 'X' else 'Y' end, column1", true);
 
         // with extra  brackets for List
         assertSqlCanBeParsedAndDeparsed(
-                "select * \n" +
-                        "from dual \n" +
-                        "group by (case when 1=1 then 'X' else 'Y' end, column1)", true);
+                "select * \n"
+                + "from dual \n"
+                + "group by (case when 1=1 then 'X' else 'Y' end, column1)", true);
 
         // with extra brackets for Expression
         assertSqlCanBeParsedAndDeparsed(
-                "select * \n" +
-                        "from dual \n" +
-                        "group by (case when 1=1 then 'X' else 'Y' end), column1", true);
+                "select * \n"
+                + "from dual \n"
+                + "group by (case when 1=1 then 'X' else 'Y' end), column1", true);
     }
 
     @Test
