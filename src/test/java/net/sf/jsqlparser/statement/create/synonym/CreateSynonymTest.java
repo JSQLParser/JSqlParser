@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement.create.synonym;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Synonym;
 import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -51,5 +53,8 @@ public class CreateSynonymTest {
         Assertions.assertThat(createSynonym.isPublicSynonym()).isTrue();
         Assertions.assertThat(createSynonym.getSynonym().getFullyQualifiedName()).isEqualTo("TBL_TABLE_NAME");
         Assertions.assertThat(createSynonym.getFor()).isEqualTo("SCHEMA.T_TBL_NAME");
+
+        Assert.assertEquals(2, createSynonym.getForList().size());
+        Assert.assertEquals("NEW_TBL_TABLE_NAME", createSynonym.withSynonym(new Synonym().withName("NEW_TBL_TABLE_NAME")).getSynonym().getName());
     }
 }

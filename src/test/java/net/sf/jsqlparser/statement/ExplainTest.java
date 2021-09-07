@@ -65,5 +65,8 @@ public class ExplainTest {
 
         ExplainStatement.Option buffers = explain.getOption(ExplainStatement.OptionType.BUFFERS);
         assertThat(buffers).isNotNull().extracting(ExplainStatement.Option::getValue).isEqualTo("FALSE");
+
+        explain = (ExplainStatement) CCJSqlParserUtil.parse("EXPLAIN SELECT * FROM mytable");
+        assertThat(explain.getOption(ExplainStatement.OptionType.ANALYZE)).isNull();
     }
 }
