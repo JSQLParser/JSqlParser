@@ -14,3 +14,4 @@ select * from dual t1,
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select*from dual t1,(dual left outer join select*from dual tt2 using(dummy)) recorded first on Sep 7, 2021 7:58:09 AM

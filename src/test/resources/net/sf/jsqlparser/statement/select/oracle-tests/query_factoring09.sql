@@ -17,3 +17,4 @@ where rn <= cases
 order by pname
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: with rn as(select rownum rn from dual connect by level<=select max(cases)from t1)select pname from t1,rn where rn<=cases order by pname recorded first on Sep 7, 2021 7:58:10 AM

@@ -19,3 +19,4 @@ select *
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select*from employees x where salary>select avg(salary)from x and 1=1 and hiredate=sysdate and to_yminterval('01-00')<sysdate and to_yminterval('01-00')+x<sysdate or a=b and d=e recorded first on Sep 7, 2021 7:58:10 AM

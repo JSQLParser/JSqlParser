@@ -183,12 +183,12 @@ public class Update implements Statement {
 
     @Deprecated
     public boolean isUseColumnsBrackets() {
-        return updateSets.get(0).usingBrackets;
+        return updateSets.get(0).usingBracketsForColumns;
     }
 
     @Deprecated
     public void setUseColumnsBrackets(boolean useColumnsBrackets) {
-        updateSets.get(0).usingBrackets = useColumnsBrackets;
+        updateSets.get(0).usingBracketsForColumns = useColumnsBrackets;
     }
 
     @Deprecated
@@ -268,7 +268,7 @@ public class Update implements Statement {
                 b.append(", ");
             }
 
-            if (updateSet.usingBrackets) {
+            if (updateSet.usingBracketsForColumns) {
                 b.append("(");
             }
 
@@ -279,11 +279,15 @@ public class Update implements Statement {
                 b.append(updateSet.columns.get(i));
             }
 
-            if (updateSet.usingBrackets) {
+            if (updateSet.usingBracketsForColumns) {
                 b.append(")");
             }
 
             b.append(" = ");
+
+            if (updateSet.usingBracketsForValues) {
+                b.append("(");
+            }
 
             for (int i = 0; i < updateSet.expressions.size(); i++) {
                 if (i > 0) {
@@ -291,34 +295,12 @@ public class Update implements Statement {
                 }
                 b.append(updateSet.expressions.get(i));
             }
+            if (updateSet.usingBracketsForValues) {
+                b.append(")");
+            }
 
             j++;
         }
-
-//        if (!useSelect) {
-//            for (int i = 0; i < getColumns().size(); i++) {
-//                if (i != 0) {
-//                    b.append(", ");
-//                }
-//                b.append(columns.get(i)).append(" = ");
-//                b.append(expressions.get(i));
-//            }
-//        } else {
-//            if (useColumnsBrackets) {
-//                b.append("(");
-//            }
-//            for (int i = 0; i < getColumns().size(); i++) {
-//                if (i != 0) {
-//                    b.append(", ");
-//                }
-//                b.append(columns.get(i));
-//            }
-//            if (useColumnsBrackets) {
-//                b.append(")");
-//            }
-//            b.append(" = ");
-//            b.append("(").append(select).append(")");
-//        }
         if (fromItem != null) {
             b.append(" FROM ").append(fromItem);
             if (joins != null) {

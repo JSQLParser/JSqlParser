@@ -25,3 +25,4 @@ select
   )
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select sum(nvl(pl.qty,0))from oline ol,pline pl,blocation bl where ol.id=pl.id and pl.no=pl.no and bl.id=pl.id and(select count(*)from la.sa where pl.id like sa.bid>0 or select count(*)from la.sa where bl.id like sa.id>0) recorded first on Sep 7, 2021 7:58:10 AM

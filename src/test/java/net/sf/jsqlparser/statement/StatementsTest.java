@@ -67,7 +67,10 @@ public class StatementsTest {
 
     @Test
     public void testStatementsErrorRecovery() throws JSQLParserException, ParseException {
-        String sqls = "select * from mytable; select * from;";
+        // "SELECT *" and "SELECT 1,2" are valid statements and so would return a correct SELECT object
+        // String sqls = "select * from mytable; select * from;";
+        String sqls = "select * from mytable; select from;";
+
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqls));
         parser.setErrorRecovery(true);
         Statements parseStatements = parser.Statements();
@@ -75,6 +78,7 @@ public class StatementsTest {
         assertEquals(2, parseStatements.getStatements().size());
 
         assertTrue(parseStatements.getStatements().get(0) instanceof Select);
+
         assertNull(parseStatements.getStatements().get(1));
     }
 
@@ -93,7 +97,10 @@ public class StatementsTest {
 
     @Test
     public void testStatementsErrorRecovery3() throws JSQLParserException, ParseException {
-        String sqls = "select * from mytable; select * from;select * from mytable2";
+        // "SELECT *" and "SELECT 1, 2" are valid SELECT statements
+        // String sqls = "select * from mytable; select * from;select * from mytable2";
+        String sqls = "select * from mytable; select from;select * from mytable2";
+
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqls));
         parser.setErrorRecovery(true);
         Statements parseStatements = parser.Statements();

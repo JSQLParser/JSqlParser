@@ -1114,6 +1114,7 @@ Update Update( List<WithItem> with ):
 
     UpdateSet updateSet = null;
     Column tableColumn = null;
+    SubSelect subSelect;
     Expression valueExpression = null;
     ExpressionList expressionList;
     Expression where = null;
@@ -1130,31 +1131,44 @@ Update Update( List<WithItem> with ):
 
     <K_SET>
     (
-         LOOKAHEAD(3) (
-            tableColumn=Column() "=" valueExpression=SimpleExpression() { update.addUpdateSet(tableColumn, valueExpression); }
-            ("," tableColumn=Column() "=" valueExpression=SimpleExpression() { update.addUpdateSet(tableColumn, valueExpression); } )*
-        )
+        LOOKAHEAD(3) tableColumn=Column() "=" valueExpression=SimpleExpression() { update.addUpdateSet(tableColumn, valueExpression); }
+                     ("," tableColumn=Column() "=" valueExpression=SimpleExpression() { update.addUpdateSet(tableColumn, valueExpression); } )*
         |
         (
             { updateSet = new UpdateSet(); update.addUpdateSet(updateSet); }
 
-            [ "(" { updateSet.setUsingBrackets(true); } ]
+            [ LOOKAHEAD(2) "(" { updateSet.setUsingBracketsForColumns(true); } ]
             tableColumn=Column() { updateSet.add(tableColumn); }
-            ("," tableColumn=Column() { updateSet.add(tableColumn); } )*
-            [ ")" ]
+            ( LOOKAHEAD(2) "," tableColumn=Column() { updateSet.add(tableColumn); } )*
+            [ LOOKAHEAD(2) ")" ]
 
             "="
 
-            expressionList = ComplexExpressionList() { updateSet.add(expressionList); }
             (
-                ","
-                tableColumn=Column() { updateSet = new UpdateSet(tableColumn); update.addUpdateSet(updateSet); }
-                ("," tableColumn=Column() { updateSet.add(tableColumn); } )*
+                LOOKAHEAD(3) subSelect=SubSelect() { updateSet.add(subSelect.withUseBrackets(false)); }
+                |
+                LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
+                |
+                valueExpression = Expression() { updateSet.add(valueExpression); }
+            )
+
+            (
+                ","  { updateSet = new UpdateSet(); update.addUpdateSet(updateSet); }
+
+                [ LOOKAHEAD(2) "(" { updateSet.setUsingBracketsForColumns(true); } ]
+                tableColumn=Column() { updateSet.add(tableColumn); }
+                ( LOOKAHEAD(2) "," tableColumn=Column() { updateSet.add(tableColumn); } )*
+                [ LOOKAHEAD(2) ")" ]
 
                 "="
-                "("
-                expressionList = ComplexExpressionList() { updateSet.add(expressionList); }
-                ")"
+
+                (
+                    LOOKAHEAD(3) subSelect=SubSelect() { updateSet.add(subSelect.withUseBrackets(false)); }
+                    |
+                    LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
+                    |
+                    valueExpression = Expression() { updateSet.add(valueExpression); }
+                )
             ) *
         )
     )
@@ -1815,12 +1829,12 @@ PlainSelect PlainSelect() #PlainSelect:
     selectItems=SelectItemsList()
 
     [intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); } ]
-    [ <K_FROM>
+    [ LOOKAHEAD(2) <K_FROM>
       fromItem=FromItem()
       joins=JoinsList() ]
 
     [ ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
-    [ where=WhereClause() { plainSelect.setWhere(where); }]
+    [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); }]
     [ oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
     [ groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
     [ having=Having() { plainSelect.setHaving(having); }]
@@ -1877,7 +1891,7 @@ SelectBody SetOperationList() #SetOperationList: {
     )*
 
 
-    [orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
+    [ LOOKAHEAD(2) orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
     [LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {list.setLimit(limit);} ]
     [LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);} ]
     [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);} ]
@@ -1992,7 +2006,7 @@ List<SelectItem> SelectItemsList():
     SelectItem selectItem = null;
 }
 {
-    selectItem=SelectItem() { selectItemsList.add(selectItem); } ("," selectItem=SelectItem() { selectItemsList.add(selectItem); } )*
+    selectItem=SelectItem() { selectItemsList.add(selectItem); } ( LOOKAHEAD(2) "," selectItem=SelectItem() { selectItemsList.add(selectItem); } )*
 
     { return selectItemsList; }
 }
@@ -2280,7 +2294,7 @@ List<Table> IntoClause():
     Table table;
 }
 {
-    <K_INTO> table=Table() { tables.add(table); } ("," table=Table() { tables.add(table); } )*
+    <K_INTO> table=Table() { tables.add(table); } ( LOOKAHEAD(2) "," table=Table() { tables.add(table); } )*
     {
         return tables;
     }
@@ -2432,7 +2446,7 @@ List<Join> JoinsList():
     Join join = null;
 }
 {
-    (join=JoinerExpression() { joinsList.add(join); })*
+    ( LOOKAHEAD(2) join=JoinerExpression() { joinsList.add(join); })*
     { return joinsList; }
 }
 
@@ -2655,7 +2669,7 @@ List<OrderByElement> OrderByElements():
 }
 {
     <K_ORDER> [ <K_SIBLINGS> ] <K_BY> orderByElement=OrderByElement() { orderByList.add(orderByElement); }
-        ("," orderByElement=OrderByElement() { orderByList.add(orderByElement); } )*
+        ( LOOKAHEAD(2) "," orderByElement=OrderByElement() { orderByList.add(orderByElement); } )*
     {
         return orderByList;
     }
