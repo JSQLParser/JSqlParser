@@ -11,4 +11,3 @@ select * from (( select * from dual)) a
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: select*from(select*from dual)a recorded first on Sep 7, 2021 7:58:09 AM

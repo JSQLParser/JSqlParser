@@ -20,4 +20,3 @@ where
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: select*from v.e where cid<>rid and rid not in(select distinct rid from v.s)union(select distinct rid from v.p)and "timestamp"<=1298505600000 recorded first on Sep 7, 2021 7:58:09 AM

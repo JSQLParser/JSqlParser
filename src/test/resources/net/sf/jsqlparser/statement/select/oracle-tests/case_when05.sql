@@ -21,4 +21,3 @@ select staleness
 from st0
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: select staleness,osize,obj#,type#,case when row_number()over(partition by bo# order by staleness,osize,obj#)=1 then 64 else 0 end+case when row_number()over(partition by select tcp0.bo# from tabcompart$ tcp0 where tcp0.obj#=st0.bo# order by staleness,osize,obj#)=1 then 32 else 0 end aflags,0 status,:b3 sid,:b2 serial#,part#,bo# from st0 recorded first on Sep 7, 2021 7:58:09 AM

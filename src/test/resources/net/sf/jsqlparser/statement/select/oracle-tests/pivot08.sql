@@ -13,4 +13,3 @@ from   (select product_code, quantity
 pivot  (sum(quantity) as sum_quantity for product_code in ('a' as a, 'b' as b, 'c' as c))
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:07 AM
---@FAILURE: select*from select product_code,quantity from pivot_test pivot(sum(quantity)as sum_quantity for product_code in('a' as a,'b' as b,'c' as c)) recorded first on Sep 7, 2021 7:58:09 AM
