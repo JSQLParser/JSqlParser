@@ -104,6 +104,15 @@ public class RenameTableStatementTest {
 
       // this needs to succeed
       ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
+
+      sqlStr = "ALTER TABLE IF EXISTS public.oldTableName RENAME TO newTableName";
+      TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+      //  should fail when not supported in Oracle
+      ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
+
+      // this needs to succeed
+      ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
   }
   
   @Test

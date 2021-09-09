@@ -5596,7 +5596,7 @@ AlterExpression AlterExpression():
                        }
                )
                |
-         (  <K_CONSTRAINT> [<K_IF> <K_EXISTS> { alterExp.setConstraintIfExists(true); } ]
+         (  <K_CONSTRAINT> [<K_IF> <K_EXISTS> { alterExp.setUsingIfExists(true); } ]
          (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>)
              {
                 alterExp.setConstraintName(tk.image);
@@ -5655,13 +5655,21 @@ Alter AlterTable():
     Alter alter = new Alter();
     Table table;
     AlterExpression alterExp;
-
+    boolean usingIfExists = false;
 }
 {
-    <K_ALTER> <K_TABLE> [ <K_ONLY> { alter.setUseOnly(true); } ] table=Table() { alter.setTable(table); }
-     ( alterExp=AlterExpression() { alter.addAlterExpression(alterExp); }
-       ("," alterExp=AlterExpression() { alter.addAlterExpression(alterExp); } )*
-     )
+    <K_ALTER> <K_TABLE>
+    [ <K_ONLY> { alter.setUseOnly(true); } ]
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { usingIfExists = true; } ]
+
+    table=Table() { alter.setTable(table); }
+
+    alterExp=AlterExpression() { if (usingIfExists)
+                                    alter.addAlterExpression( alterExp.withUsingIfExists(true) );
+                                  else
+                                    alter.addAlterExpression(alterExp); }
+
+    ("," alterExp=AlterExpression() { alter.addAlterExpression(alterExp); } )*
 
     {
         return alter;
