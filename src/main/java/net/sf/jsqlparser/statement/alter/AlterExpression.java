@@ -32,6 +32,7 @@ public class AlterExpression {
 
   private AlterOperation operation;
   private String optionalSpecifier;
+  private String newTableName;
   private String columnName;
   private String columnOldName;
   // private ColDataType dataType;
@@ -246,6 +247,14 @@ public class AlterExpression {
     this.fkSourceColumns = fkSourceColumns;
   }
 
+  public String getNewTableName() {
+    return newTableName;
+  }
+
+  public void setNewTableName(String newTableName) {
+    this.newTableName = newTableName;
+  }
+
   public String getColumnName() {
     return columnName;
   }
@@ -367,6 +376,8 @@ public class AlterExpression {
     
     if (operation== AlterOperation.UNSPECIFIC) {
         b.append(optionalSpecifier);
+    } else if (operation== AlterOperation.RENAME_TABLE) {
+      b.append("RENAME TO ").append(newTableName);
     } else {
         b.append(operation).append(" ");
 

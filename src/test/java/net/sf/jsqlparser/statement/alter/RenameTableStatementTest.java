@@ -88,8 +88,22 @@ public class RenameTableStatementTest {
   @Test
   public void testValidator() throws JSQLParserException {
     String sqlStr = "RENAME oldTableName TO newTableName";
+    TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-    ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
+      // this needs to succeed
+      ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
+
+      // this should fail when not supported in Postgres
+      ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
+
+      sqlStr = "ALTER TABLE public.oldTableName RENAME TO newTableName";
+      TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+      //  should fail when not supported in Oracle
+      ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
+
+      // this needs to succeed
+      ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
   }
   
   @Test
