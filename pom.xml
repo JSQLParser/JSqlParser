@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.3-SNAPSHOT</version>
     <name>JSQLParser library</name> 
     <inceptionYear>2004</inceptionYear>
     <organization>
@@ -182,13 +182,7 @@
                 <groupId>org.javacc.plugin</groupId>
                 <artifactId>javacc-maven-plugin</artifactId>
                 <version>3.0.3</version>
-
-                <!-- 
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>javacc-maven-plugin</artifactId>
-                <version>2.6</version>
-                --> 
-                
+                                
                 <executions>
                     <execution>
                         <id>javacc</id>
@@ -205,8 +199,7 @@
                         <goals>
                             <goal>jjtree</goal>
                         </goals>
-                    </execution>
-                    
+                    </execution>    
                 </executions>
                 <dependencies>
                     <dependency>

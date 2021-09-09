@@ -22,6 +22,7 @@ Please provide feedback on:
 * API changes: extend visitor with return values (https://github.com/JSQLParser/JSqlParser/issues/901)
 
 ## News
+* Released version **4.2** of JSqlParser
 * Released version **4.1** of JSqlParser
 * Released version **4.0** of JSqlParser
 * The array parsing is the default behaviour. Square bracket quotation has to be enabled using 
@@ -53,24 +54,7 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 4.2
-* API change: Support `SELECT ...` without a `FROM` clause, making `SELECT 1, 2` and `SELECT *` parsable statements (before those failed)
-* API change: Support complex `UPDATE` sets (using multiple `SubQuery` or `ValueList` or Single Values, in combination)
-* Support nested `CASE` expressions with complex expression arguments
-* API change: Support `JOIN` with multiple trailing `ON` Expressions (`JOIN ... JOIN ... ON ... ON ...`)
-* Support Oracle Hierarchical `CONNECT_BY_ROOT` Operator
-* Support Transact-SQL `IF ... ELSE ...` Statement Control Flows.
-* Allow optional parameters for the  `ALTER TABLE ...` statement (e.g. `ALTER TABLE ... MOVE TABLESPACE ...`)
-* Support Oracle `ALTER SYSTEM ...` statement
-* Support Oracle Named Function Parameters`Func( param1 => arg1, ...`
-* Add Gradle build
-* Allow `JdbcParameter` or `JdbcNamedParameter` for MySQL FullTextSearch
-* Allow `Cast` into `Row` Constructor  
-* Support Oracle `RENAME ... TO ...` statement
-* Support Oracle `PURGE` statement
-* Support JSON functions `JSON_OBJECT()`, `JSON_ARRAY()`, `JSON_OBJECTAGG()`, `JSON_ARRAYAGG()`
-* API change: merge ALL and ANY expressions class
-* Allow DB2 compliant `CURRENT DATE`in addition to `CURRENT_DATE` (without underscore)
+## Extensions in the latest SNAPSHOT version 4.3
 
 Additionally, we have fixed many errors and improved the code quality and the test coverage.
 
@@ -146,7 +130,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>4.1</version>
+	<version>4.2</version>
 </dependency>
 ```
 
