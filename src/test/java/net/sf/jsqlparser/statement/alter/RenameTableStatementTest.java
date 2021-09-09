@@ -10,7 +10,6 @@
 
 package net.sf.jsqlparser.statement.alter;
 
-import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
@@ -22,6 +21,8 @@ import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  *
@@ -90,31 +91,31 @@ public class RenameTableStatementTest {
     String sqlStr = "RENAME oldTableName TO newTableName";
     TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-      // this needs to succeed
-      ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
+    // this needs to succeed
+    ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
 
-      // this should fail when not supported in Postgres
-      ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
+    // this should fail when not supported in Postgres
+    ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
 
-      sqlStr = "ALTER TABLE public.oldTableName RENAME TO newTableName";
-      TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    sqlStr = "ALTER TABLE public.oldTableName RENAME TO newTableName";
+    TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-      //  should fail when not supported in Oracle
-      ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
+    // this needs to succeed according to: https://docs.oracle.com/cd/B28359_01/server.111/b28286/statements_3001.htm
+    ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
 
-      // this needs to succeed
-      ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
+    // this needs to succeed
+    ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
 
-      sqlStr = "ALTER TABLE IF EXISTS public.oldTableName RENAME TO newTableName";
-      TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    sqlStr = "ALTER TABLE IF EXISTS public.oldTableName RENAME TO newTableName";
+    TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-      //  should fail when not supported in Oracle
-      ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
+    //  should fail when IF EXISTS is not supported in Oracle 11
+    ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
 
-      // this needs to succeed
-      ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
+    // this needs to succeed
+    ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
   }
-  
+
   @Test
   public void testObjectAccess() {
       Table oldTable = new Table("oldTableName");
