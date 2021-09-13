@@ -496,7 +496,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(MultiExpressionList multiExprList) {
-        for (ExpressionList exprList : multiExprList.getExprList()) {
+        for (ExpressionList exprList : multiExprList.getExpressionLists()) {
             exprList.accept(this);
         }
     }

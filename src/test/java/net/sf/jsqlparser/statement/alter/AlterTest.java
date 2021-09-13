@@ -290,6 +290,67 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableAddColumnSpanner7() throws JSQLParserException {
+        final String sql = "ALTER TABLE ORDER_PATIENT ADD COLUMN FIRST_NAME_UPPERCASE STRING(MAX)" +
+                " AS (UPPER(FIRST_NAME)) STORED";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertStatementCanBeDeparsedAs(stmt, sql);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExps = alter.getAlterExpressions();
+        AlterExpression col1Exp = alterExps.get(0);
+        assertTrue(col1Exp.getColDataTypeList().get(0).toString().endsWith(" STORED"));
+        assertTrue(col1Exp.hasColumn());
+    }
+
+    @Test
+    public void testAlterTableAddColumnSpanner8() throws JSQLParserException {
+        final String sql = "ALTER TABLE ORDER_PATIENT ADD COLUMN NAMES ARRAY<STRING(MAX)>";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertStatementCanBeDeparsedAs(stmt, sql);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExps = alter.getAlterExpressions();
+        AlterExpression col1Exp = alterExps.get(0);
+        assertTrue(col1Exp.hasColumn());
+        assertNotNull(col1Exp.getColDataTypeList());
+        assertEquals(1, col1Exp.getColDataTypeList().size());
+        ColumnDataType type = col1Exp.getColDataTypeList().get(0);
+        assertEquals("NAMES", type.getColumnName());
+        assertEquals("ARRAY<STRING(MAX)>", type.getColDataType().toString());
+    }
+
+    @Test
+    public void testAlterColumnSetCommitTimestamp1() throws JSQLParserException {
+        final String sql = "ALTER TABLE FOCUS_PATIENT ALTER COLUMN UPDATE_DATE_TIME_GMT SET OPTIONS (allow_commit_timestamp=true)";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertStatementCanBeDeparsedAs(stmt, sql);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExps = alter.getAlterExpressions();
+        AlterExpression col1Exp = alterExps.get(0);
+        assertTrue(col1Exp.hasColumn());
+        assertNotNull(col1Exp.getColDataTypeList());
+        assertEquals(1, col1Exp.getColDataTypeList().size());
+        ColumnDataType type = col1Exp.getColDataTypeList().get(0);
+        assertEquals("UPDATE_DATE_TIME_GMT", type.getColumnName());
+        assertEquals("UPDATE_DATE_TIME_GMT SET OPTIONS (allow_commit_timestamp=true)", type.toString());
+    }
+
+    @Test
+    public void testAlterColumnSetCommitTimestamp2() throws JSQLParserException {
+        final String sql = "ALTER TABLE FOCUS_PATIENT ALTER COLUMN UPDATE_DATE_TIME_GMT SET OPTIONS (allow_commit_timestamp=null)";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertStatementCanBeDeparsedAs(stmt, sql);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExps = alter.getAlterExpressions();
+        AlterExpression col1Exp = alterExps.get(0);
+        assertTrue(col1Exp.hasColumn());
+        assertNotNull(col1Exp.getColDataTypeList());
+        assertEquals(1, col1Exp.getColDataTypeList().size());
+        ColumnDataType type = col1Exp.getColDataTypeList().get(0);
+        assertEquals("UPDATE_DATE_TIME_GMT", type.getColumnName());
+        assertEquals("UPDATE_DATE_TIME_GMT SET OPTIONS (allow_commit_timestamp=null)", type.toString());
+    }
+
+    @Test
     public void testAlterTableModifyColumn1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE animals MODIFY (col1 integer, col2 number (8, 2))");
     }
@@ -410,7 +471,7 @@ public class AlterTest {
     }
 
     @Test
-    public void testIssue633() throws JSQLParserException, JSQLParserException, JSQLParserException {
+    public void testIssue633() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE team_phases ADD CONSTRAINT team_phases_id_key UNIQUE (id)");
     }
 

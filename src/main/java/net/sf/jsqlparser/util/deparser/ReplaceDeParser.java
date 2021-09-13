@@ -123,7 +123,7 @@ public class ReplaceDeParser extends AbstractDeParser<Replace> implements ItemsL
     @Override
     public void visit(MultiExpressionList multiExprList) {
         buffer.append("VALUES ");
-        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
+        for (Iterator<ExpressionList> it = multiExprList.getExpressionLists().iterator(); it.hasNext();) {
             buffer.append("(");
             for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter.hasNext();) {
                 Expression expression = iter.next();

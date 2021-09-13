@@ -31,13 +31,13 @@ public class DeclareStatementDeParser extends AbstractDeParser<DeclareStatement>
             declare.getUserVariable().accept(expressionVisitor);
         }
 
-        if (declare.getType() == DeclareType.AS) {
+        if (declare.getDeclareType() == DeclareType.AS) {
             buffer.append(" AS ");
             buffer.append(declare.getTypeName());
             return;
         }
 
-        if (declare.getType() == DeclareType.TABLE) {
+        if (declare.getDeclareType() == DeclareType.TABLE) {
             buffer.append(" TABLE (");
             for (int i = 0; i < declare.getColumnDefinitions().size(); i++) {
                 if (i > 0) {

@@ -739,7 +739,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(MultiExpressionList multiExprList) {
-        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
+        for (Iterator<ExpressionList> it = multiExprList.getExpressionLists().iterator(); it.hasNext();) {
             it.next().accept(this);
             if (it.hasNext()) {
                 buffer.append(", ");

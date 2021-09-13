@@ -64,7 +64,7 @@ public class CreateTableTest {
 
     @Test
     public void testCreateTableAsSelect()
-            throws JSQLParserException, JSQLParserException, JSQLParserException, JSQLParserException {
+            throws JSQLParserException {
         String statement = "CREATE TABLE a AS SELECT col1, col2 FROM b";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
@@ -857,4 +857,37 @@ public class CreateTableTest {
         assertSqlCanBeParsedAndDeparsed(
                 "CREATE TABLE temp.abc AS (SELECT c FROM t1) UNION (SELECT c FROM t2)");
     }
+
+    @Test
+    public void testCreateTableSpanner() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE COMMAND (\n" +
+                    "   DATASET_ID      INT64       NOT NULL,\n" +
+                    "   COMMAND_ID      STRING(MAX) NOT NULL,\n" +
+                    "   VAL_BOOL        BOOL,\n" +
+                    "   VAL_BYTES       BYTES(1024),\n" +
+                    "   VAL_DATE        DATE,\n" +
+                    "   VAL_TIMESTAMP   TIMESTAMP,\n" +
+                    "   VAL_COMMIT_TIMESTAMP   TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp = true),\n" +
+                    "   VAL_FLOAT64     FLOAT64,\n" +
+                    "   VAL_JSON        JSON(2048),\n" +
+                    "   VAL_NUMERIC     NUMERIC,\n" +
+                    "   VAL_STRING      STRING(MAX),\n" +
+                    "   VAL_TIMESTAMP   TIMESTAMP,\n" +
+                    "   ARR_BOOL        ARRAY<BOOL>,\n" +
+                    "   ARR_BYTES       ARRAY<BYTES(1024)>,\n" +
+                    "   ARR_DATE        ARRAY<DATE>,\n" +
+                    "   ARR_TIMESTAMP   ARRAY<TIMESTAMP>,\n" +
+                    "   ARR_FLOAT64     ARRAY<FLOAT64>,\n" +
+                    "   ARR_JSON        ARRAY<JSON(2048)>,\n" +
+                    "   ARR_NUMERIC     ARRAY<NUMERIC>,\n" +
+                    "   ARR_STRING      ARRAY<STRING(MAX)>,\n" +
+                    "   ARR_TIMESTAMP   ARRAY<TIMESTAMP>,\n" +
+                    "   PAYLOAD         STRING(MAX),\n" +
+                    "   AUTHOR          STRING(MAX) NOT NULL,\n" +
+                    "   SEARCH          STRING(MAX) AS (UPPER(AUTHOR)) STORED\n" +
+                    " ) PRIMARY KEY ( DATASET_ID, COMMAND_ID )\n" +
+                    ",   INTERLEAVE IN PARENT DATASET ON DELETE CASCADE", true);
+    }
+
 }

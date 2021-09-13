@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import net.sf.jsqlparser.expression.SpannerInterleaveIn;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -37,6 +38,7 @@ public class CreateTable implements Statement {
     private boolean orReplace = false;
 
     private RowMovement rowMovement;
+    private SpannerInterleaveIn interleaveIn = null;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -186,7 +188,7 @@ public class CreateTable implements Statement {
             sql += ")";
         }
         String options = PlainSelect.getStringList(tableOptionsStrings, false, false);
-        if (options != null && options.length() > 0) {
+        if (!options.isEmpty()) {
             sql += " " + options;
         }
 
@@ -194,10 +196,13 @@ public class CreateTable implements Statement {
             sql += " " + rowMovement.getMode().toString() + " ROW MOVEMENT";
         }
         if (select != null) {
-            sql += " AS " + (selectParenthesis ? "(" : "") + select.toString() + (selectParenthesis ? ")" : "");
+            sql += " AS " + (selectParenthesis ? "(" : "") + select + (selectParenthesis ? ")" : "");
         }
         if (likeTable != null) {
-            sql += " LIKE " + (selectParenthesis ? "(" : "") + likeTable.toString() + (selectParenthesis ? ")" : "");
+            sql += " LIKE " + (selectParenthesis ? "(" : "") + likeTable + (selectParenthesis ? ")" : "");
+        }
+        if (interleaveIn != null) {
+            sql += ", " + interleaveIn;
         }
         return sql;
     }
@@ -298,5 +303,18 @@ public class CreateTable implements Statement {
         List<Index> collection = Optional.ofNullable(getIndexes()).orElseGet(ArrayList::new);
         collection.addAll(indexes);
         return this.withIndexes(collection);
+    }
+
+    public SpannerInterleaveIn getSpannerInterleaveIn() {
+        return interleaveIn;
+    }
+
+    public void setSpannerInterleaveIn(SpannerInterleaveIn spannerInterleaveIn) {
+        this.interleaveIn = spannerInterleaveIn;
+    }
+
+    public CreateTable withSpannerInterleaveIn(SpannerInterleaveIn spannerInterleaveIn) {
+        this.interleaveIn = spannerInterleaveIn;
+        return this;
     }
 }

@@ -375,7 +375,7 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(MultiExpressionList multiExprList) {
-        for (ExpressionList list : multiExprList.getExprList()) {
+        for (ExpressionList list : multiExprList.getExpressionLists()) {
             visit(list);
         }
     }
