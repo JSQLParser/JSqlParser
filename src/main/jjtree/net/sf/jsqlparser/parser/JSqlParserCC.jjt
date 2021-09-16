@@ -3052,6 +3052,7 @@ Expression RegularCondition() #RegularCondition:
     | token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }
     | token=<OP_NOTEQUALSBANG> { result = new NotEqualsTo(token.image); }
     | "@@" { result = new Matches(); }
+    | "@?" { result = new Matches(); }
     | "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
     | [<K_NOT> { not=true; } ] <K_REGEXP> [ <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(not, binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
     | <K_RLIKE> [ <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE).useRLike(); }
