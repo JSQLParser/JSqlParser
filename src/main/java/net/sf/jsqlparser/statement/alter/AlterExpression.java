@@ -32,6 +32,7 @@ public class AlterExpression {
 
   private AlterOperation operation;
   private String optionalSpecifier;
+  private String newTableName;
   private String columnName;
   private String columnOldName;
   // private ColDataType dataType;
@@ -44,7 +45,7 @@ public class AlterExpression {
   private String ukName;
   private Index index = null;
   private String constraintName;
-  private boolean constraintIfExists;
+  private boolean usingIfExists;
 
   private Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
 
@@ -246,6 +247,14 @@ public class AlterExpression {
     this.fkSourceColumns = fkSourceColumns;
   }
 
+  public String getNewTableName() {
+    return newTableName;
+  }
+
+  public void setNewTableName(String newTableName) {
+    this.newTableName = newTableName;
+  }
+
   public String getColumnName() {
     return columnName;
   }
@@ -280,12 +289,12 @@ public class AlterExpression {
     this.constraintName = constraintName;
   }
 
-  public boolean isConstraintIfExists() {
-    return constraintIfExists;
+  public boolean isUsingIfExists() {
+    return usingIfExists;
   }
 
-  public void setConstraintIfExists(boolean constraintIfExists) {
-    this.constraintIfExists = constraintIfExists;
+  public void setUsingIfExists(boolean usingIfExists) {
+    this.usingIfExists = usingIfExists;
   }
 
   public List<String> getPkColumns() {
@@ -367,6 +376,9 @@ public class AlterExpression {
     
     if (operation== AlterOperation.UNSPECIFIC) {
         b.append(optionalSpecifier);
+    } else if (operation== AlterOperation.RENAME_TABLE) {
+
+      b.append("RENAME TO ").append(newTableName);
     } else {
         b.append(operation).append(" ");
 
@@ -417,7 +429,7 @@ public class AlterExpression {
           }
         } else if (constraintName != null) {
           b.append("CONSTRAINT ");
-          if (constraintIfExists) {
+          if (usingIfExists) {
             b.append("IF EXISTS ");
           }
           b.append(constraintName);
@@ -504,8 +516,8 @@ public class AlterExpression {
     return this;
   }
 
-  public AlterExpression constraintIfExists(boolean constraintIfExists) {
-    this.setConstraintIfExists(constraintIfExists);
+  public AlterExpression withUsingIfExists(boolean usingIfExists) {
+    this.setUsingIfExists(usingIfExists);
     return this;
   }
 

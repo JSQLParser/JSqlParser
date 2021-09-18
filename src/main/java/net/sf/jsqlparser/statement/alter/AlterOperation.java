@@ -10,5 +10,5 @@
 package net.sf.jsqlparser.statement.alter;
 
 public enum AlterOperation {
-    ADD, ALTER, DROP, MODIFY, CHANGE, ALGORITHM, RENAME, COMMENT, UNSPECIFIC;
+    ADD, ALTER, DROP, MODIFY, CHANGE, ALGORITHM, RENAME, RENAME_TABLE, COMMENT, UNSPECIFIC;
 }
