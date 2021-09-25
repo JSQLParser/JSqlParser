@@ -12,7 +12,7 @@ plugins {
 }
 
 group = 'com.github.jsqlparser'
-version = '4.2-SNAPSHOT'
+version = '4.3-SNAPSHOT'
 description = 'JSQLParser library'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
