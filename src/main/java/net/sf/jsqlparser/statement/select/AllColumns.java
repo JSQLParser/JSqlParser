@@ -9,9 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-public class AllColumns extends ASTNodeAccessImpl implements SelectItem {
+public class AllColumns extends ASTNodeAccessImpl implements SelectItem, Expression {
 
     @Override
     public void accept(SelectItemVisitor selectItemVisitor) {
@@ -23,4 +25,8 @@ public class AllColumns extends ASTNodeAccessImpl implements SelectItem {
         return "*";
     }
 
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
 }

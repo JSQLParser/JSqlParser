@@ -207,8 +207,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
             } else {
                 params = namedParameters.toString();
             }
-        } else if (isAllColumns()) {
-            params = "(*)";
         } else {
             params = "()";
         }

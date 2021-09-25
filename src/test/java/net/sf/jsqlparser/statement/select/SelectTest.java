@@ -1119,9 +1119,8 @@ public class SelectTest {
         assertEquals("MAX", fun.getName());
         assertEquals("b", ((Column) fun.getParameters().getExpressions().get(1)).
                 getFullyQualifiedName());
-        assertTrue(((Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).
-                getExpression())
-                .isAllColumns());
+        assertTrue( ((Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).
+                getExpression()).getParameters().getExpressions().get(0) instanceof AllColumns);
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT {fn MAX(a, b, c)}, COUNT(*), D FROM tab1 GROUP BY D";
@@ -1133,9 +1132,8 @@ public class SelectTest {
         assertEquals("MAX", fun.getName());
         assertEquals("b", ((Column) fun.getParameters().getExpressions().get(1)).
                 getFullyQualifiedName());
-        assertTrue(((Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).
-                getExpression())
-                .isAllColumns());
+        assertTrue( ((Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).
+                getExpression()).getParameters().getExpressions().get(0) instanceof AllColumns);
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT ab.MAX(a, b, c), cd.COUNT(*), D FROM tab1 GROUP BY D";
@@ -1149,7 +1147,7 @@ public class SelectTest {
         fun = (Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).
                 getExpression();
         assertEquals("cd.COUNT", fun.getName());
-        assertTrue(fun.isAllColumns());
+        assertTrue(fun.getParameters().getExpressions().get(0) instanceof AllColumns);
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -4821,5 +4819,41 @@ public class SelectTest {
         // without extra brackets
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT col FROM table USE INDEX(primary)", true);
+    }
+
+    @Test
+    public void testTableSpaceKeyword() throws JSQLParserException {
+        // without extra brackets
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT DDF.tablespace                                  TABLESPACE_NAME\n" +
+                        "         , maxtotal / 1024 / 1024                        \"MAX_MB\"\n" +
+                        "         , ( total - free ) / 1024 / 1024                \"USED_MB\"\n" +
+                        "         , ( maxtotal - ( total - free ) ) / 1024 / 1024 \"AVAILABLE_MB\"\n" +
+                        "         , total / 1024 / 1024                           \"ALLOCATED_MB\"\n" +
+                        "         , free / 1024 / 1024                            \"ALLOCATED_FREE_MB\"\n" +
+                        "         , ( ( total - free ) / maxtotal * 100 )         \"USED_PERC\"\n" +
+                        "         , cnt                                           \"FILE_COUNT\"\n" +
+                        "  FROM   (SELECT tablespace_name                  TABLESPACE\n" +
+                        "                 , SUM(bytes)                     TOTAL\n" +
+                        "                 , SUM(Greatest(maxbytes, bytes)) MAXTOTAL\n" +
+                        "                 , Count(*)                       CNT\n" +
+                        "          FROM   dba_data_files\n" +
+                        "          GROUP  BY tablespace_name) DDF\n" +
+                        "         , (SELECT tablespace_name TABLESPACE\n" +
+                        "                   , SUM(bytes)    FREE\n" +
+                        "                   , Max(bytes)    MAXF\n" +
+                        "            FROM   dba_free_space\n" +
+                        "            GROUP  BY tablespace_name) DFS\n" +
+                        "  WHERE  DDF.tablespace = DFS.tablespace\n" +
+                        "  ORDER  BY 1 DESC", true);
+    }
+
+    @Test
+    public void testTableSpecificAllColumnsIssue1346() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT count(*) from a", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT count(a.*) from a", true);
     }
 }

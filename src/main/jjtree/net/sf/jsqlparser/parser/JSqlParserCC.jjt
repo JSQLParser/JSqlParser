@@ -1642,6 +1642,8 @@ String RelObjectNameWithoutValue() :
       | tk=<K_LOG> | tk=<K_DUMP> | tk=<K_FLUSH> | tk=<K_ACTIVE> | tk=<K_RESUME> | tk=<K_SWITCH> | tk=<K_SUSPEND>
       | tk=<K_ARCHIVE> | tk=<K_QUIESCE> | tk=<K_HISTORY> | tk=<K_SHUTDOWN> | tk=<K_REGISTER> | tk=<K_UNQIESCE>
       | tk=<K_RESTRICTED> | tk=<K_CHECKPOINT> | tk=<K_DISCONNECT>
+
+      | tk=<K_TABLESPACE>
       )
 
     { return tk.image; }
@@ -4522,7 +4524,9 @@ Function InternalFunction(Function retval) :
 
     "(" [ [ LOOKAHEAD(2)(<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); } | <K_UNIQUE> { retval.setUnique(true); }) ]
         ( LOOKAHEAD(4)
-            "*" { retval.setAllColumns(true); }
+            "*" { expr1 = new AllColumns(); expressionList = new ExpressionList(expr1).withUsingBrackets(false); }
+            |
+            LOOKAHEAD(AllTableColumns()) expr1=AllTableColumns() { expressionList = new ExpressionList(expr1).withUsingBrackets(false); }
             |
             LOOKAHEAD(3, { getAsBoolean(Feature.allowComplexParsing) }) (expressionList=ComplexExpressionList() {expressionList.setUsingBrackets(false);} [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
