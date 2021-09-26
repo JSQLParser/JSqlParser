@@ -772,4 +772,10 @@ public class AlterTest {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE a DROP FOREIGN KEY (b, c, d)", true);
     }
 
+    @Test
+    public void testAlterTableChangeColumnDropNotNull() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE a MODIFY COLUMN b DROP NOT NULL", true);
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE a MODIFY (COLUMN b DROP NOT NULL, COLUMN c DROP NOT NULL)", true);
+    }
+
 }

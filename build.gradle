@@ -68,12 +68,13 @@ jacocoTestReport {
         html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
     }
 }
-
 jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.838
+                minimum = JavaVersion.current().isJava8() // for any reason, different results
+                        ? 0.83                            // depending on the Java Version
+                        : 0.842
             }
         }
     }
