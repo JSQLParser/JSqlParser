@@ -4826,6 +4826,6 @@ public class SelectTest {
     @Test
     public void testReservedKeywordsIssue1352() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "SELECT * from b1.system", true);
+                "SELECT system1 from b1.system", true);
     }
 }
