@@ -4822,4 +4822,10 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT col FROM table USE INDEX(primary)", true);
     }
+
+    @Test
+    public void testReservedKeywordsIssue1352() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT * from b1.system", true);
+    }
 }
