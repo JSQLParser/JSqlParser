@@ -1643,6 +1643,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_ARCHIVE> | tk=<K_QUIESCE> | tk=<K_HISTORY> | tk=<K_SHUTDOWN> | tk=<K_REGISTER> | tk=<K_UNQIESCE>
       | tk=<K_RESTRICTED> | tk=<K_CHECKPOINT> | tk=<K_DISCONNECT>
       | tk=<K_SYSTEM>
+      | tk=<K_QUERY>
       )
 
     { return tk.image; }
