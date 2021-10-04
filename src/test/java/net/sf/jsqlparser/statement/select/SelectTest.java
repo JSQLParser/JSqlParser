@@ -4829,5 +4829,7 @@ public class SelectTest {
                 "SELECT system from b1.system", true);
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT query from query.query", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT fulltext from fulltext.fulltext", true);
     }
 }

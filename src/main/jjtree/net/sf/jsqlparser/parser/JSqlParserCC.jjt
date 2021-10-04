@@ -1644,6 +1644,8 @@ String RelObjectNameWithoutValue() :
       | tk=<K_RESTRICTED> | tk=<K_CHECKPOINT> | tk=<K_DISCONNECT>
       | tk=<K_SYSTEM>
       | tk=<K_QUERY>
+
+      | tk=<K_FULLTEXT>
       )
 
     { return tk.image; }
