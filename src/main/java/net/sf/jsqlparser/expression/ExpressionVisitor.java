@@ -15,6 +15,8 @@ import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
 public interface ExpressionVisitor {
@@ -174,5 +176,10 @@ public interface ExpressionVisitor {
     void visit(JsonFunction aThis);
 
     void visit(ConnectByRootOperator aThis);
+
     void visit(OracleNamedFunctionParameter aThis);
+
+    void visit(AllColumns allColumns);
+
+    void visit(AllTableColumns allTableColumns);
 }

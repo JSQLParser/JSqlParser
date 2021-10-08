@@ -104,11 +104,7 @@ import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSy
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.SubSelect;
-import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.select.*;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionDeParser extends AbstractDeParser<Expression>
@@ -486,9 +482,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         buffer.append(function.getName());
-        if (function.isAllColumns() && function.getParameters() == null) {
-            buffer.append("(*)");
-        } else if (function.getParameters() == null && function.getNamedParameters() == null) {
+        if (function.getParameters() == null && function.getNamedParameters() == null) {
             buffer.append("()");
         } else {
             buffer.append("(");
@@ -1033,5 +1027,15 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
           .append(" => ");
         
         oracleNamedFunctionParameter.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(AllColumns allColumns) {
+        buffer.append(allColumns.toString());
+    }
+
+    @Override
+    public void visit(AllTableColumns allTableColumns) {
+        buffer.append(allTableColumns.toString());
     }
 }
