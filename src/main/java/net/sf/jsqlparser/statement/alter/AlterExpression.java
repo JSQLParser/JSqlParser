@@ -379,6 +379,15 @@ public class AlterExpression {
     } else if (operation== AlterOperation.RENAME_TABLE) {
 
       b.append("RENAME TO ").append(newTableName);
+    } else if (operation== AlterOperation.DROP_PRIMARY_KEY) {
+
+      b.append("DROP PRIMARY KEY ");
+    } else if (operation== AlterOperation.DROP_UNIQUE) {
+
+      b.append("DROP UNIQUE (").append(PlainSelect.getStringList(pkColumns)).append(')');
+    } else if (operation== AlterOperation.DROP_FOREIGN_KEY) {
+
+      b.append("DROP FOREIGN KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
     } else {
         b.append(operation).append(" ");
 
@@ -468,6 +477,7 @@ public class AlterExpression {
         if (getUseEqual()) {
           b.append('=');
         }
+
         if (parameters != null && !parameters.isEmpty()) {
           b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
         }
