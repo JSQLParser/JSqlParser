@@ -1644,8 +1644,8 @@ String RelObjectNameWithoutValue() :
       | tk=<K_RESTRICTED> | tk=<K_CHECKPOINT> | tk=<K_DISCONNECT>
       | tk=<K_SYSTEM>
       | tk=<K_QUERY>
-
       | tk=<K_FULLTEXT>
+      | tk=<K_TABLESPACE>
       )
 
     { return tk.image; }
@@ -4526,7 +4526,9 @@ Function InternalFunction(Function retval) :
 
     "(" [ [ LOOKAHEAD(2)(<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); } | <K_UNIQUE> { retval.setUnique(true); }) ]
         ( LOOKAHEAD(4)
-            "*" { retval.setAllColumns(true); }
+            "*" { expr1 = new AllColumns(); expressionList = new ExpressionList(expr1).withUsingBrackets(false); }
+            |
+            LOOKAHEAD(AllTableColumns()) expr1=AllTableColumns() { expressionList = new ExpressionList(expr1).withUsingBrackets(false); }
             |
             LOOKAHEAD(3, { getAsBoolean(Feature.allowComplexParsing) }) (expressionList=ComplexExpressionList() {expressionList.setUsingBrackets(false);} [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
@@ -5572,43 +5574,50 @@ AlterExpression AlterExpression():
         )
         (
           (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>)
-          alterExpressionColumnDataType = AlterExpressionColumnDataType() {
-              alterExp.withColumnOldName(tk.image).addColDataType(alterExpressionColumnDataType);
-          }
+          alterExpressionColumnDataType = AlterExpressionColumnDataType() {  alterExp.withColumnOldName(tk.image).addColDataType(alterExpressionColumnDataType); }
         )
       )
       |
-      (<K_DROP>
-        {
-              alterExp.setOperation(AlterOperation.DROP);
-          }
-           (
-               (  (LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); })?
-                  (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>)
-                       {
-                              alterExp.setColumnName(tk.image);
-                       }
-                  [tk=<K_CASCADE> { alterExp.addParameters(tk.image); } ]
-
-               )
-               |
-               (  tk=<K_INDEX>
-                  (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>)
-                       {
-                           index = new Index().withType(tk.image).withName(tk2.image);
-                           alterExp.setIndex(index);
-                       }
-               )
-               |
-         (  <K_CONSTRAINT> [<K_IF> <K_EXISTS> { alterExp.setUsingIfExists(true); } ]
-         (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>)
-             {
-                alterExp.setConstraintName(tk.image);
-             }
-         )
-         )
-      )
-      |
+        <K_DROP> { alterExp.setOperation(AlterOperation.DROP);          }
+        (
+            (
+                ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
+                (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setColumnName(tk.image); }
+                [tk=<K_CASCADE> { alterExp.addParameters(tk.image); } ]
+            )
+            |
+            (
+               tk=<K_INDEX>
+               ( tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER> ) {
+                       index = new Index().withType(tk.image).withName(tk2.image);
+                       alterExp.setIndex(index);
+                   }
+            )
+            |
+            (
+               tk=<K_UNIQUE>  { alterExp.setOperation(AlterOperation.DROP_UNIQUE); }
+               columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+               [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
+            )
+            |
+            (
+               tk=<K_PRIMARY> tk2=<K_KEY> { alterExp.setOperation(AlterOperation.DROP_PRIMARY_KEY); }
+               [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
+            )
+            |
+            (
+               tk=<K_FOREIGN> tk2=<K_KEY> { alterExp.setOperation(AlterOperation.DROP_FOREIGN_KEY); }
+               columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+               [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
+            )
+            |
+            (
+                <K_CONSTRAINT> [<K_IF> <K_EXISTS> { alterExp.setUsingIfExists(true); } ]
+                ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setConstraintName(tk.image); }
+                [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
+            )
+        )
+        |
       (<K_ALGORITHM>
          {
             alterExp.setOperation(AlterOperation.ALGORITHM);
