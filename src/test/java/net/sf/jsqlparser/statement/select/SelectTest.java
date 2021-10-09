@@ -4822,6 +4822,16 @@ public class SelectTest {
     }
 
     @Test
+    public void testReservedKeywordsIssue1352() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT system from b1.system", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT query from query.query", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT fulltext from fulltext.fulltext", true);
+    }
+  
+    @Test
     public void testTableSpaceKeyword() throws JSQLParserException {
         // without extra brackets
         assertSqlCanBeParsedAndDeparsed(

@@ -1642,7 +1642,9 @@ String RelObjectNameWithoutValue() :
       | tk=<K_LOG> | tk=<K_DUMP> | tk=<K_FLUSH> | tk=<K_ACTIVE> | tk=<K_RESUME> | tk=<K_SWITCH> | tk=<K_SUSPEND>
       | tk=<K_ARCHIVE> | tk=<K_QUIESCE> | tk=<K_HISTORY> | tk=<K_SHUTDOWN> | tk=<K_REGISTER> | tk=<K_UNQIESCE>
       | tk=<K_RESTRICTED> | tk=<K_CHECKPOINT> | tk=<K_DISCONNECT>
-
+      | tk=<K_SYSTEM>
+      | tk=<K_QUERY>
+      | tk=<K_FULLTEXT>
       | tk=<K_TABLESPACE>
       )
 
