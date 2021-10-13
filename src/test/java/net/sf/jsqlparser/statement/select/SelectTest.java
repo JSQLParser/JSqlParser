@@ -4830,7 +4830,7 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT fulltext from fulltext.fulltext", true);
     }
-  
+
     @Test
     public void testTableSpaceKeyword() throws JSQLParserException {
         // without extra brackets
@@ -4865,5 +4865,11 @@ public class SelectTest {
 
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT count(a.*) from a", true);
+    }
+
+    @Test
+    public void testCanCallSubSelectOnWithItemEvenIfNotSetIssue1369() {
+        WithItem item = new WithItem();
+        assertThat(item.getSubSelect()).isNull();
     }
 }
