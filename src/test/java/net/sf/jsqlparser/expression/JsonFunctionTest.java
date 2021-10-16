@@ -190,4 +190,12 @@ public class JsonFunctionTest {
         ")\n" +
         "from SYSIBM.DUAL", true);
   }
+
+
+    @Test
+    public void testIssue1371() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{a, 1, b, 2}')", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{{a, 1}, {b, 2}}')", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{a, b}', '{1,2 }')", true);
+    }
 }

@@ -304,7 +304,7 @@ public class TestUtils {
         OracleHint hint = ps.getOracleHint();
         assertNotNull(hint);
         assertEquals(hints[0], hint.getValue());
-      } else {
+      } else
         if (stmt.getSelectBody() instanceof SetOperationList) {
           SetOperationList setop = (SetOperationList) stmt.getSelectBody();
           for (int i = 0; i < setop.getSelects().size(); i++) {
@@ -318,22 +318,16 @@ public class TestUtils {
             }
           }
         }
-      }
     } else if (statement instanceof Update) {
       Update stmt = (Update) statement;
       OracleHint hint = stmt.getOracleHint();
       assertNotNull(hint);
       assertEquals(hints[0], hint.getValue());
     } else if (statement instanceof Insert) {
-      Insert stmt = (Insert) statement;
-      OracleHint hint = stmt.getOracleHint();
-      assertNotNull(hint);
-      assertEquals(hints[0], hint.getValue());
-    } else if (statement instanceof Update) {
-      Update stmt = (Update) statement;
-      OracleHint hint = stmt.getOracleHint();
-      assertNotNull(hint);
-      assertEquals(hints[0], hint.getValue());
+        Insert stmt = (Insert) statement;
+        OracleHint hint = stmt.getOracleHint();
+        assertNotNull(hint);
+        assertEquals(hints[0], hint.getValue());
     } else if (statement instanceof Delete) {
       Delete stmt = (Delete) statement;
       OracleHint hint = stmt.getOracleHint();

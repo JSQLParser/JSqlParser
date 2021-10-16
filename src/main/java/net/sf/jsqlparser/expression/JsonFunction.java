@@ -12,6 +12,9 @@ package net.sf.jsqlparser.expression;
 import java.util.ArrayList;
 import java.util.Objects;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
+import net.sf.jsqlparser.parser.feature.FeatureSet;
 
 /**
  *
@@ -119,6 +122,9 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
       case OBJECT:
         appendObject(builder);
         break;
+      case POSTGRES_OBJECT:
+        appendPostgresObject(builder);
+        break;
       case ARRAY:
         appendArray(builder);
         break;
@@ -179,6 +185,19 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
       }
     }
 
+    builder.append(" ) ");
+
+    return builder;
+  }
+
+
+  @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+  public StringBuilder appendPostgresObject(StringBuilder builder) {
+    builder.append("JSON_OBJECT( ");
+    for (JsonKeyValuePair keyValuePair : keyValuePairs) {
+      builder.append(keyValuePair.getKey());
+      if (keyValuePair.getValue()!=null) builder.append(", ").append(keyValuePair.getValue());
+    }
     builder.append(" ) ");
 
     return builder;
