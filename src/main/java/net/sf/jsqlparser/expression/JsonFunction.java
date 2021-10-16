@@ -12,9 +12,6 @@ package net.sf.jsqlparser.expression;
 import java.util.ArrayList;
 import java.util.Objects;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
-import net.sf.jsqlparser.parser.feature.FeatureSet;
 
 /**
  *
@@ -130,8 +127,6 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
         break;
       default:
         // this should never happen really
-        throw new UnsupportedOperationException("JSON Aggregate Function of the type "
-            + functionType.name() + " has not been implemented yet.");
     }
     return builder;
   }
@@ -196,7 +191,9 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
     builder.append("JSON_OBJECT( ");
     for (JsonKeyValuePair keyValuePair : keyValuePairs) {
       builder.append(keyValuePair.getKey());
-      if (keyValuePair.getValue()!=null) builder.append(", ").append(keyValuePair.getValue());
+      if (keyValuePair.getValue()!=null) {
+        builder.append(", ").append(keyValuePair.getValue());
+      }
     }
     builder.append(" ) ");
 
@@ -222,10 +219,10 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
           builder.append(" NULL ON NULL ");
           break;
         case ABSENT:
-          builder.append(" ABSENT On NULL ");
+          builder.append(" ABSENT ON NULL ");
           break;
         default:
-          // "ON NULL" was ommitted
+          // "ON NULL" was omitted
       }
     }
     builder.append(") ");
