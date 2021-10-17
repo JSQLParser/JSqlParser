@@ -11,6 +11,8 @@ package net.sf.jsqlparser.statement.select;
 
 import java.nio.charset.Charset;
 import static net.sf.jsqlparser.test.TestUtils.*;
+
+import net.sf.jsqlparser.expression.*;
 import org.apache.commons.io.IOUtils;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -24,6 +26,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.rules.TestName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -32,19 +35,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.BinaryExpression;
-import net.sf.jsqlparser.expression.DoubleValue;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.IntervalExpression;
-import net.sf.jsqlparser.expression.JdbcNamedParameter;
-import net.sf.jsqlparser.expression.JdbcParameter;
-import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.expression.NotExpression;
-import net.sf.jsqlparser.expression.SignedExpression;
-import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.expression.TimeValue;
-import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
@@ -333,7 +323,7 @@ public class SelectTest {
 
         assertNull(((PlainSelect) select.getSelectBody()).getLimit());
         assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
-        assertEquals("?", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetJdbcParameter().toString());
+        assertEquals("?", ((PlainSelect) select.getSelectBody()).getOffset().getOffset().toString());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
@@ -383,8 +373,8 @@ public class SelectTest {
         rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
 
         assertNull(offset);
-        assertNull(rowCount);
-        assertEquals(3, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
+        Assertions.assertTrue( rowCount instanceof NullValue);
+        assertEquals(new LongValue(3), ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
         assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isLimitNull());
         assertSqlCanBeParsedAndDeparsed(statement);
@@ -394,9 +384,12 @@ public class SelectTest {
         offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
         rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
 
+        System.out.println(rowCount.getClass().getName());
+
         assertNull(offset);
-        assertNull(rowCount);
-        assertEquals(5, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
+        Assertions.assertTrue( rowCount instanceof AllValue);
+
+        assertEquals(new LongValue(5), ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
         assertTrue(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitNull());
         assertSqlCanBeParsedAndDeparsed(statement);
@@ -408,7 +401,7 @@ public class SelectTest {
 
         assertNull(offset);
         assertEquals(0, ((LongValue) rowCount).getValue());
-        assertEquals(3, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
+        assertEquals(new LongValue(3), ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitAll());
         assertFalse(((PlainSelect) select.getSelectBody()).getLimit().isLimitNull());
         assertSqlCanBeParsedAndDeparsed(statement);
@@ -418,7 +411,7 @@ public class SelectTest {
 
         assertNull(((PlainSelect) select.getSelectBody()).getLimit());
         assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
-        assertEquals("?", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetJdbcParameter().toString());
+        assertEquals("?", ((PlainSelect) select.getSelectBody()).getOffset().getOffset().toString());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "(SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?) UNION "
@@ -563,10 +556,9 @@ public class SelectTest {
         assertNotNull(((PlainSelect) select.getSelectBody()).getFetch());
         assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getFetch().getFetchParam());
         assertFalse(((PlainSelect) select.getSelectBody()).getFetch().isFetchParamFirst());
-        assertNull(((PlainSelect) select.getSelectBody()).getOffset().getOffsetJdbcParameter());
         assertNull(((PlainSelect) select.getSelectBody()).getFetch().getFetchJdbcParameter());
-        assertEquals(3, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
-        assertEquals(5, ((PlainSelect) select.getSelectBody()).getFetch().getRowCount());
+        Assertions.assertEquals("3", ((PlainSelect) select.getSelectBody()).getOffset().getOffset().toString());
+        Assertions.assertEquals(5, ((PlainSelect) select.getSelectBody()).getFetch().getRowCount());
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -582,7 +574,7 @@ public class SelectTest {
         assertEquals("ROW", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetParam());
         assertEquals("ROW", ((PlainSelect) select.getSelectBody()).getFetch().getFetchParam());
         assertTrue(((PlainSelect) select.getSelectBody()).getFetch().isFetchParamFirst());
-        assertEquals(3, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
+        assertEquals(new LongValue(3), ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
         assertEquals(5, ((PlainSelect) select.getSelectBody()).getFetch().getRowCount());
         assertStatementCanBeDeparsedAs(select, statement);
     }
@@ -597,7 +589,7 @@ public class SelectTest {
         assertNotNull(((PlainSelect) select.getSelectBody()).getOffset());
         assertNull(((PlainSelect) select.getSelectBody()).getFetch());
         assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetParam());
-        assertEquals(3, ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
+        assertEquals(new LongValue(3), ((PlainSelect) select.getSelectBody()).getOffset().getOffset());
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -627,7 +619,7 @@ public class SelectTest {
         assertNotNull(((PlainSelect) select.getSelectBody()).getFetch());
         assertEquals("ROWS", ((PlainSelect) select.getSelectBody()).getFetch().getFetchParam());
         assertFalse(((PlainSelect) select.getSelectBody()).getFetch().isFetchParamFirst());
-        assertEquals("?", ((PlainSelect) select.getSelectBody()).getOffset().getOffsetJdbcParameter().toString());
+        assertEquals("?", ((PlainSelect) select.getSelectBody()).getOffset().getOffset().toString());
         assertEquals("?", ((PlainSelect) select.getSelectBody()).getFetch().getFetchJdbcParameter().toString());
         assertStatementCanBeDeparsedAs(select, statement);
     }
@@ -942,7 +934,7 @@ public class SelectTest {
         assertEquals(3, ((LongValue) ((PlainSelect) setList.getSelects().get(2)).getLimit().
                 getRowCount()).getValue());
         assertNull(((PlainSelect) setList.getSelects().get(2)).getLimit().getOffset());
-        assertEquals(4, ((PlainSelect) setList.getSelects().get(2)).getOffset().getOffset());
+        assertEquals(new LongValue(4), ((PlainSelect) setList.getSelects().get(2)).getOffset().getOffset());
 
         // use brakets for toString
         // use standard limit syntax

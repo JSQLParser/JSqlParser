@@ -329,12 +329,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     public void deparseOffset(Offset offset) {
         // OFFSET offset
         // or OFFSET offset (ROW | ROWS)
-        if (offset.getOffsetJdbcParameter() != null) {
-            buffer.append(" OFFSET ").append(offset.getOffsetJdbcParameter());
-        } else {
-            buffer.append(" OFFSET ");
-            buffer.append(offset.getOffset());
-        }
+        buffer.append(" OFFSET ");
+        buffer.append(offset.getOffset());
         if (offset.getOffsetParam() != null) {
             buffer.append(" ").append(offset.getOffsetParam());
         }

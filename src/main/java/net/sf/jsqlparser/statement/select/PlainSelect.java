@@ -433,6 +433,16 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             if (where != null) {
                 sql.append(" WHERE ").append(where);
             }
+
+            if (limit != null) {
+                sql.append(limit);
+            }
+            if (offset != null) {
+                sql.append(offset);
+            }
+            if (fetch != null) {
+                sql.append(fetch);
+            }
         }
         if (forXmlPath != null) {
             sql.append(" FOR XML PATH(").append(forXmlPath).append(")");

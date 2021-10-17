@@ -1857,7 +1857,7 @@ PlainSelect PlainSelect() #PlainSelect:
 
     [LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
 
-    [ <K_FOR> <K_XML> <K_PATH> "(" token = <S_CHAR_LITERAL> ")" { plainSelect.setForXmlPath(token.image); } ]
+    [LOOKAHEAD(3) <K_FOR> <K_XML> <K_PATH> "(" token = <S_CHAR_LITERAL> ")" { plainSelect.setForXmlPath(token.image); } ]
 
     {
         plainSelect.setSelectItems(selectItems);
@@ -2722,35 +2722,21 @@ JdbcNamedParameter SimpleJdbcNamedParameter() : {
 Limit LimitWithOffset() #LimitWithOffset:
 {
     Limit limit = new Limit();
-    Token token = null;
-    String name;
-    JdbcParameter jdbc = null;
+    Expression rowCountExpression;
+    Expression offsetExpression;
 }
 {
     (
-            LOOKAHEAD(5)
-                // mysql-> LIMIT offset,row_count
-                <K_LIMIT>
-                     (
-                         token=<S_LONG> { limit.setOffset(new LongValue(token.image)); }
-                         |
-                         jdbc = SimpleJdbcParameter() { limit.setOffset(jdbc); }
-                         |
-                         ":" { limit.setOffset(new JdbcNamedParameter()); } [ LOOKAHEAD(2) name = RelObjectNameExt() { ((JdbcNamedParameter)limit.getOffset()).setName(name); } ]
-
-                     )
-                     ","
-
-                (
-                token=<S_LONG> { limit.setRowCount(new LongValue(token.image)); }
-                |
-                 jdbc = SimpleJdbcParameter() { limit.setRowCount(jdbc); }
-                 |
-                 ":" { limit.setRowCount(new JdbcNamedParameter()); } [ LOOKAHEAD(2) name = RelObjectNameExt() { ((JdbcNamedParameter)limit.getRowCount()).setName(name); } ]
-                )
-            |
-            limit = PlainLimit()
+        LOOKAHEAD(<K_LIMIT> Expression() "," Expression()) (
+            // mysql-> LIMIT offset,row_count
+            <K_LIMIT>
+            offsetExpression=Expression() { limit.setOffset( offsetExpression ); }
+            ","
+            rowCountExpression=Expression() { limit.setRowCount( rowCountExpression ); }
         )
+        |
+        limit = PlainLimit()
+    )
     {
         linkAST(limit,jjtThis);
         return limit;
@@ -2760,23 +2746,17 @@ Limit LimitWithOffset() #LimitWithOffset:
 Limit PlainLimit() #PlainLimit:
 {
     Limit limit = new Limit();
-    Token token = null;
-    JdbcParameter jdbc;
-    String name;
+    Expression rowCountExpression;
 }
 {
     // mysql-postgresql-> LIMIT (row_count | ALL | NULL)
     <K_LIMIT>
      (
-         token=<S_LONG> { limit.setRowCount(new LongValue(token.image)); }
-         |
-         jdbc = SimpleJdbcParameter() { limit.setRowCount(jdbc); }
-         |
-        ":" { limit.setRowCount(new JdbcNamedParameter()); } [ LOOKAHEAD(2) name = RelObjectNameExt() { ((JdbcNamedParameter)limit.getRowCount()).setName(name); } ]
-         |
-         <K_ALL> { limit.setLimitAll(true);}
-         |
-         <K_NULL> { limit.setLimitNull(true); }
+        (
+            LOOKAHEAD(3) "(" rowCountExpression = SubSelect() ")"
+            |
+            rowCountExpression = Expression()
+        ) { limit.setRowCount(rowCountExpression); }
      )
     {
         linkAST(limit,jjtThis);
@@ -2787,19 +2767,16 @@ Limit PlainLimit() #PlainLimit:
 Offset Offset():
 {
     Offset offset = new Offset();
-    Token token = null;
-    JdbcParameter jdbc;
-    JdbcNamedParameter jdbcNamed;
+    Expression offsetExpression;
 }
 {
     (
             // postgresql-> OFFSET offset
             // sqlserver-oracle-> OFFSET offset (ROW | ROWS)
              <K_OFFSET>
-                 (token=<S_LONG> { offset.setOffset(Long.parseLong(token.image)); }
-                 | jdbc = SimpleJdbcParameter() { offset.setOffsetJdbcParameter(jdbc); }
-                 | jdbcNamed = SimpleJdbcNamedParameter() { offset.setOffsetJdbcParameter(jdbcNamed); })
-                 [(<K_ROWS> { offset.setOffsetParam("ROWS"); } | <K_ROW> { offset.setOffsetParam("ROW"); })]
+             offsetExpression=Expression() { offset.setOffset( offsetExpression ); }
+
+             [(<K_ROWS> { offset.setOffsetParam("ROWS"); } | <K_ROW> { offset.setOffsetParam("ROW"); })]
 
         )
     {
@@ -3443,20 +3420,23 @@ Expression AnyComparisonExpression() :
 }
 {
  (<K_ANY> { anyType = AnyType.ANY; } | <K_SOME> { anyType = AnyType.SOME; } | <K_ALL> { anyType = AnyType.ALL; } )
+    "("
 
     // if the next block looks alike an ExpressionList without Brackets, then parse as List
-    ( LOOKAHEAD( "(" <K_VALUES> SimpleExpressionList(false) ")" ) 
-        "(" <K_VALUES>
+    (
+        LOOKAHEAD( <K_VALUES> SimpleExpressionList(false) )
+        (
+            <K_VALUES>
             simpleExpressionList = SimpleExpressionList(false) { anyComparisonExpr=new AnyComparisonExpression(anyType, simpleExpressionList).withUseBracketsForValues(false); }
-        ")"
-
-    // Otherwise parse it as a SubSelect
-        | "(" subSelect = SubSelect() { anyComparisonExpr=new AnyComparisonExpression(anyType, subSelect.withUseBrackets(false)).withUseBracketsForValues(false); } ")"
+        )
+         // Otherwise parse it as a SubSelect
+        | subSelect = SubSelect() { anyComparisonExpr=new AnyComparisonExpression(anyType, subSelect.withUseBrackets(false)).withUseBracketsForValues(false); }
             
     )
-   {
+    ")"
+    {
       return anyComparisonExpr;
-   }
+    }
 }
 
 Expression SimpleExpression():
@@ -3701,7 +3681,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | retval=ConnectByRootOperator()
 
-        | retval=Column()
+        | LOOKAHEAD(2) <K_ALL> { retval = new AllValue(); }
+
+        | LOOKAHEAD(2) retval=Column()
 
         | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
 
@@ -3712,6 +3694,7 @@ Expression PrimaryExpression() #PrimaryExpression:
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
         | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
+
         | (
             (
                 (LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing)}) "(" list = ComplexExpressionList() ")"
