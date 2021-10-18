@@ -18,3 +18,4 @@ select trim(valeur)
 from liste
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:07 AM
+--@FAILURE: Encountered unexpected token: "by" "BY" recorded first on 18 Oct 2021, 21:15:56

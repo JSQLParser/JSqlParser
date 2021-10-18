@@ -28,3 +28,4 @@ connect by nocycle obj=prior link
 start with obj='a'
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 14, 2021 9:00:57 PM
+--@FAILURE: Encountered unexpected token: "by" "BY" recorded first on 18 Oct 2021, 21:15:56
