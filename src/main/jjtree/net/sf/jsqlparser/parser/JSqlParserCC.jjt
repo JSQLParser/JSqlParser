@@ -2269,6 +2269,7 @@ UnPivot UnPivot():
     Column unpivotClause;
     List<Column> unpivotForClause;
     List<SelectExpressionItem> unpivotInClause;
+    Alias alias = null;
 }
 {
     <K_UNPIVOT>
@@ -2280,10 +2281,12 @@ UnPivot UnPivot():
     unpivotInClause = PivotSingleInItems()
     ")"
     ")"
+    [ alias = Alias() ]
     {
         retval.setUnPivotClause(unpivotClause);
         retval.setUnPivotForClause(unpivotForClause);
         retval.setUnPivotInClause(unpivotInClause);
+        retval.setAlias(alias);
         return retval;
     }
 }

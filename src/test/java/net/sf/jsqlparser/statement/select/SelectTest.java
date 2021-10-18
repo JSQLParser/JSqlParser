@@ -2519,6 +2519,31 @@ public class SelectTest {
     }
 
     @Test
+    public void testUnPivotWithAlias() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT simulation_id, un_piv_alias.signal, un_piv_alias.val AS value FROM" +
+                " (SELECT simulation_id," +
+                    " convert(numeric(18, 2), sum(convert(int, init_on))) DosingOnStatus_TenMinutes_sim," +
+                    " convert(numeric(18, 2), sum(CASE WHEN pump_status = 0 THEN 10 ELSE 0 END)) AS DosingOffDurationHour_Hour_sim" +
+                " FROM ft_simulation_result" +
+                " WHERE simulation_id = 210 AND data_timestamp BETWEEN convert(datetime, '2021-09-14', 120) AND convert(datetime, '2021-09-18', 120)" +
+                " GROUP BY simulation_id) sim_data" +
+                " UNPIVOT" +
+                " (" +
+                "val" +
+                " FOR signal IN (DosingOnStatus_TenMinutes_sim, DosingOnDuration_Hour_sim)" +
+                ") un_piv_alias");
+    }
+
+   @Test
+    public void testUnPivot() throws JSQLParserException {
+        String stmt = "SELECT * FROM sale_stats" +
+                " UNPIVOT (" +
+                "quantity" +
+                " FOR product_code IN (product_a AS 'A', product_b AS 'B', product_c AS 'C'))";
+       assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testPivotWithAlias() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (SELECT * FROM mytable LEFT JOIN mytable2 ON Factor_ID = Id) f PIVOT (max(f.value) FOR f.factoryCode IN (ZD, COD, SW, PH))");
     }

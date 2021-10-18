@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.schema.Column;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class UnPivot {
     private Column unpivotClause;
     private List<Column> unpivotForClause;
     private List<SelectExpressionItem> unpivotInClause;
+    private Alias alias;
 
     public void accept(PivotVisitor pivotVisitor) {
         pivotVisitor.visit(this);
@@ -69,11 +71,20 @@ public class UnPivot {
                 + (includeNullsSpecified && !includeNulls ? " EXCLUDE NULLS" : "")
                 + " (" + unpivotClause
                 + " FOR " + PlainSelect.getStringList(unpivotForClause, true, unpivotForClause != null && unpivotForClause.size() > 1)
-                + " IN " + PlainSelect.getStringList(unpivotInClause, true, true) + ")";
+                + " IN " + PlainSelect.getStringList(unpivotInClause, true, true) + ")"
+                + (alias!=null ? alias.toString() : "");
     }
 
     public UnPivot withIncludeNulls(boolean includeNulls) {
         this.setIncludeNulls(includeNulls);
         return this;
+    }
+
+    public Alias getAlias() {
+        return alias;
+    }
+
+    public void setAlias(Alias alias) {
+        this.alias = alias;
     }
 }
