@@ -185,6 +185,7 @@ public class SpecialOracleTest {
             "keywordasidentifier01.sql",
             "keywordasidentifier02.sql",
             "keywordasidentifier03.sql",
+            "keywordasidentifier04.sql",
             "keywordasidentifier05.sql",
             "lexer02.sql",
             "lexer03.sql",
