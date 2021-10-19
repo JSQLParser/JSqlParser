@@ -4866,4 +4866,19 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT count(a.*) from a", true);
     }
+
+    @Test
+    public void testLogicalExpressionSelectItemIssue1381() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT ( 1 + 1 ) = ( 1 + 2 )", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT ( 1 = 1 ) = ( 1 = 2 )", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT ( ( 1 = 1 ) AND ( 1 = 2 ) )", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT ( 1 = 1 ) AND ( 1 = 2 )", true);
+    }
 }
