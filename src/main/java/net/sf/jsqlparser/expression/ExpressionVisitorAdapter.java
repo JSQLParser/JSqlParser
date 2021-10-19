@@ -185,8 +185,6 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             expr.getRightExpression().accept(this);
         } else if (expr.getRightItemsList() != null) {
             expr.getRightItemsList().accept(this);
-        } else {
-            expr.getMultiExpressionList().accept(this);
         }
     }
 

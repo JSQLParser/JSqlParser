@@ -198,8 +198,6 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
                 validateFeature(c, Feature.oracleOldJoinSyntax);
             }
         }
-
-        validateOptionalMultiExpressionList(inExpression.getMultiExpressionList());
         validateOptionalExpression(inExpression.getRightExpression(), this);
         validateOptionalItemsList(inExpression.getRightItemsList());
     }

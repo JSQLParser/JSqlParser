@@ -4888,5 +4888,10 @@ public class SelectTest {
                         "\t\t(select distinct  rid  from v.p )\n" +
                         "\t)\n" +
                         "\tand  \"timestamp\"  <= 1298505600000", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "select * " +
+                        "from table_a " +
+                        "where (a, b, c) in ((1, 2, 3), (3, 4, 5))", true);
     }
 }
