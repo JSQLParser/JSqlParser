@@ -20,3 +20,5 @@ where
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered unexpected token: "union" "UNION" recorded first on 19 Oct 2021, 18:53:13
+--@FAILURE: select*from v.e where cid<>rid and rid not in(((select distinct rid from v.s)union(select distinct rid from v.p)))and "timestamp"<=1298505600000 recorded first on 19 Oct 2021, 18:54:06

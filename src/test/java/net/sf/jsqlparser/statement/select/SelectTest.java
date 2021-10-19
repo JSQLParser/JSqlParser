@@ -4866,4 +4866,27 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT count(a.*) from a", true);
     }
+
+    @Test
+    public void testComplexInExpressionIssue905() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "select * " +
+                        "from table_a " +
+                        "where other_id in (" +
+                        "   (select id from table_b where name like '%aa%')" +
+                        "   , (select id from table_b where name like '%bb%')" +
+                        ")", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "select * from v.e\n" +
+                        "where\n" +
+                        "\tcid <> rid\n" +
+                        "\tand  rid  not in\n" +
+                        "\t(\n" +
+                        "\t\t(select distinct  rid  from  v.s )\n" +
+                        "\t\tunion\n" +
+                        "\t\t(select distinct  rid  from v.p )\n" +
+                        "\t)\n" +
+                        "\tand  \"timestamp\"  <= 1298505600000", true);
+    }
 }
