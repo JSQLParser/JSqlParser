@@ -253,11 +253,16 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         buffer.append(subSelect.isUseBrackets() ? ")" : "");
         Alias alias = subSelect.getAlias();
         if (alias != null) {
-            buffer.append(alias.toString());
+            buffer.append(alias);
         }
         Pivot pivot = subSelect.getPivot();
         if (pivot != null) {
             pivot.accept(this);
+        }
+
+        UnPivot unPivot = subSelect.getUnPivot();
+        if (unPivot != null) {
+            unPivot.accept(this);
         }
     }
 
@@ -308,6 +313,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                 .append(PlainSelect.getStringList(unpivotForClause, true,
                         unpivotForClause != null && unpivotForClause.size() > 1))
                 .append(" IN ").append(PlainSelect.getStringList(unpivot.getUnPivotInClause(), true, true)).append(")");
+        if (unpivot.getAlias() != null) {
+            buffer.append(unpivot.getAlias().toString());
+        }
     }
 
     @Override
