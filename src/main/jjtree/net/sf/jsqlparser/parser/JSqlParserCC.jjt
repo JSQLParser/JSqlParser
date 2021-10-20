@@ -5584,9 +5584,30 @@ AlterExpression AlterExpression():
         <K_DROP> { alterExp.setOperation(AlterOperation.DROP);          }
         (
             (
-                ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
-                (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setColumnName(tk.image); }
-                [tk=<K_CASCADE> { alterExp.addParameters(tk.image); } ]
+                (
+                    // we use the PK Columns Field instead of the Column Field
+                    // for holding multiple DROP Columns
+                    columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+
+                    [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]
+
+                    [
+                        "CASCADE" { alterExp.addParameters("CASCADE"); }
+                        [ "CONSTRAINTS" { alterExp.addParameters("CONSTRAINTS"); } ]
+                    ]
+                )
+                |
+                (
+                    ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
+                    (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setColumnName(tk.image); }
+
+                    [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]
+
+                    [
+                        "CASCADE" { alterExp.addParameters("CASCADE"); }
+                        [ "CONSTRAINTS" { alterExp.addParameters("CONSTRAINTS"); } ]
+                    ]
+                )
             )
             |
             (
