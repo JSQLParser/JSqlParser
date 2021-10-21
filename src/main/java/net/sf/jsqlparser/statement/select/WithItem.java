@@ -89,7 +89,7 @@ public class WithItem implements SelectBody {
     }
 
     public SubSelect getSubSelect() {
-        return subSelect.withUseBrackets(false);
+        return subSelect;
     }
 
     public void setSubSelect(SubSelect subSelect) {

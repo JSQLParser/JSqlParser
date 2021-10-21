@@ -9,15 +9,15 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.AllValue;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class Limit extends ASTNodeAccessImpl {
 
     private Expression rowCount;
     private Expression offset;
-    private boolean limitAll;
-    private boolean limitNull = false;
 
     public Expression getOffset() {
         return offset;
@@ -35,37 +35,43 @@ public class Limit extends ASTNodeAccessImpl {
         rowCount = l;
     }
 
+    @Deprecated
     public boolean isLimitAll() {
-        return limitAll;
+        return rowCount instanceof AllValue;
     }
 
+    @Deprecated
     public void setLimitAll(boolean b) {
-        limitAll = b;
+        if (b) {
+            rowCount = new AllValue();
+        }
     }
 
+    @Deprecated
     public boolean isLimitNull() {
-        return limitNull;
+        return rowCount instanceof NullValue;
     }
 
+    @Deprecated
     public void setLimitNull(boolean b) {
-        limitNull = b;
+        if (b) {
+            rowCount = new NullValue();
+        }
     }
 
     @Override
     public String toString() {
         String retVal = " LIMIT ";
-        if (limitNull) {
-            retVal += "NULL";
+
+        if (rowCount instanceof AllValue || rowCount instanceof NullValue) {
+            // no offset allowed
+            retVal += rowCount;
         } else {
-            if (limitAll) {
-                retVal += "ALL";
-            } else {
-                if (null != offset) {
-                    retVal += offset + ", ";
-                }
-                if (null != rowCount) {
-                    retVal += rowCount;
-                }
+            if (null != offset) {
+                retVal += offset + ", ";
+            }
+            if (null != rowCount) {
+                retVal += rowCount;
             }
         }
 
@@ -82,11 +88,13 @@ public class Limit extends ASTNodeAccessImpl {
         return this;
     }
 
+    @Deprecated
     public Limit withLimitAll(boolean limitAll) {
         this.setLimitAll(limitAll);
         return this;
     }
 
+    @Deprecated
     public Limit withLimitNull(boolean limitNull) {
         this.setLimitNull(limitNull);
         return this;

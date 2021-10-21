@@ -182,4 +182,6 @@ public interface ExpressionVisitor {
     void visit(AllColumns allColumns);
 
     void visit(AllTableColumns allTableColumns);
+
+    void visit(AllValue allValue);
 }

@@ -13,8 +13,10 @@ package net.sf.jsqlparser.expression;
 import java.util.Objects;
 import junit.framework.Assert;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 
 /**
  *
@@ -138,6 +140,14 @@ public class JsonFunctionTest {
         "SELECT JSON_OBJECT( KEY foo VALUE bar FORMAT JSON, foo:bar, foo:bar ABSENT ON NULL) FROM dual ",
         true);
 
+      TestUtils.assertSqlCanBeParsedAndDeparsed(
+              "SELECT JSON_OBJECT( KEY foo VALUE bar FORMAT JSON, foo:bar, foo:bar ABSENT ON NULL WITH UNIQUE KEYS) FROM dual ",
+              true);
+
+      TestUtils.assertSqlCanBeParsedAndDeparsed(
+              "SELECT JSON_OBJECT( KEY foo VALUE bar FORMAT JSON, foo:bar, foo:bar ABSENT ON NULL WITHOUT UNIQUE KEYS) FROM dual ",
+              true);
+
     TestUtils.assertExpressionCanBeParsedAndDeparsed("json_object(null on null)", true);
     
     TestUtils.assertExpressionCanBeParsedAndDeparsed("json_object(absent on null)", true);
@@ -189,5 +199,31 @@ public class JsonFunctionTest {
         "  ) \"t\"\n" +
         ")\n" +
         "from SYSIBM.DUAL", true);
+  }
+
+
+    @Test
+    public void testIssue1371() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{a, 1, b, 2}')", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{{a, 1}, {b, 2}}')", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{a, b}', '{1,2 }')", true);
+    }
+
+    @Test
+    public void testJavaMethods() throws JSQLParserException {
+       String expressionStr= "JSON_OBJECT( KEY foo VALUE bar FORMAT JSON, foo:bar, foo:bar ABSENT ON NULL WITHOUT UNIQUE KEYS)";
+       JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
+
+       Assertions.assertEquals(JsonFunctionType.OBJECT, jsonFunction.getType());
+       Assertions.assertNotEquals(jsonFunction.withType(JsonFunctionType.POSTGRES_OBJECT), jsonFunction.getType());
+
+       Assertions.assertEquals(3, jsonFunction.getKeyValuePairs().size());
+       Assertions.assertEquals(new JsonKeyValuePair("foo", "bar", true, true), jsonFunction.getKeyValuePair(0));
+
+       jsonFunction.setOnNullType(JsonAggregateOnNullType.NULL);
+       Assertions.assertEquals(JsonAggregateOnNullType.ABSENT, jsonFunction.withOnNullType(JsonAggregateOnNullType.ABSENT).getOnNullType());
+
+       jsonFunction.setUniqueKeysType(JsonAggregateUniqueKeysType.WITH);
+       Assertions.assertEquals(JsonAggregateUniqueKeysType.WITH, jsonFunction.withUniqueKeysType(JsonAggregateUniqueKeysType.WITH).getUniqueKeysType());
   }
 }
