@@ -714,6 +714,11 @@ public enum Feature {
      */
     allowSquareBracketQuotation(false),
 
+    /**
+       allow parsing of RDBMS specific syntax by switching off SQL Standard Compliant Syntax
+    */
+    allowPostgresSpecificSyntax(false),
+
     // PERFORMANCE
     
     /**

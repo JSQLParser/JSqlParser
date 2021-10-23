@@ -27,7 +27,7 @@ public class JsonKeyValuePair {
   public JsonKeyValuePair(String key, Object value, boolean usingKeyKeyword,
       boolean usingValueKeyword) {
     this.key = Objects.requireNonNull(key, "The KEY of the Pair must not be null");
-    this.value = Objects.requireNonNull(value, "The VALUE of the Pair must not be null");
+    this.value = value;
     this.usingKeyKeyword = usingKeyKeyword;
     this.usingValueKeyword = usingValueKeyword;
   }

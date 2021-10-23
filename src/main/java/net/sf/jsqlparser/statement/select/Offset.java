@@ -10,50 +10,35 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.JdbcNamedParameter;
-import net.sf.jsqlparser.expression.JdbcParameter;
 
 public class Offset {
-
-    private long offset;
-    private Expression offsetJdbcParameter = null;
+    private Expression offsetExpression = null;
     private String offsetParam = null;
 
-    public long getOffset() {
-        return offset;
+    public Expression getOffset() {
+        return offsetExpression;
     }
 
     public String getOffsetParam() {
         return offsetParam;
     }
 
-    public void setOffset(long l) {
-        offset = l;
+    public void setOffset(Expression offsetExpression) {
+        this.offsetExpression = offsetExpression;
     }
 
     public void setOffsetParam(String s) {
         offsetParam = s;
     }
 
-    public Expression getOffsetJdbcParameter() {
-        return offsetJdbcParameter;
-    }
-
-    public void setOffsetJdbcParameter(JdbcParameter jdbc) {
-        offsetJdbcParameter = jdbc;
-    }
-    
-    public void setOffsetJdbcParameter(JdbcNamedParameter jdbc) {
-        offsetJdbcParameter = jdbc;
-    }
 
     @Override
     public String toString() {
-        return " OFFSET " + (offsetJdbcParameter!=null ? offsetJdbcParameter.toString() : offset) + (offsetParam != null ? " " + offsetParam : "");
+        return " OFFSET " +  offsetExpression + (offsetParam != null ? " " + offsetParam : "");
     }
 
-    public Offset withOffset(long offset) {
-        this.setOffset(offset);
+    public Offset withOffset(Expression offsetExpression) {
+        this.setOffset(offsetExpression);
         return this;
     }
 
@@ -62,7 +47,7 @@ public class Offset {
         return this;
     }
 
-    public <E extends Expression> E getOffsetJdbcParameter(Class<E> type) {
-        return type.cast(getOffsetJdbcParameter());
+    public <E extends Expression> E getOffset(Class<E> type) {
+        return type.cast(getOffset());
     }
 }

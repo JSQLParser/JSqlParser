@@ -388,6 +388,9 @@ public class AlterExpression {
     } else if (operation== AlterOperation.DROP_FOREIGN_KEY) {
 
       b.append("DROP FOREIGN KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
+    } else if (operation== AlterOperation.DROP && columnName==null && pkColumns!=null && pkColumns.size()>0) {
+      // Oracle Multi Column Drop
+      b.append("DROP (").append(PlainSelect.getStringList(pkColumns)).append(')');
     } else {
         b.append(operation).append(" ");
 
@@ -471,16 +474,18 @@ public class AlterExpression {
         } else if (index != null) {
           b.append(index);
         }
+
+
         if (getConstraints() != null && !getConstraints().isEmpty()) {
           b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
         }
         if (getUseEqual()) {
           b.append('=');
         }
+    }
 
-        if (parameters != null && !parameters.isEmpty()) {
-          b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
-        }
+    if (parameters != null && !parameters.isEmpty()) {
+      b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
     }
 
     return b.toString();
