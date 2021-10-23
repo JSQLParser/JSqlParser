@@ -2285,7 +2285,7 @@ UnPivot UnPivot():
     unpivotInClause = PivotSingleInItems()
     ")"
     ")"
-    [ alias = Alias() ]
+    [ LOOKAHEAD(2) alias = Alias() ]
     {
         retval.setUnPivotClause(unpivotClause);
         retval.setUnPivotForClause(unpivotForClause);
