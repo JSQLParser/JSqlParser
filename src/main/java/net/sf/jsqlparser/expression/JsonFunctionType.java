@@ -17,4 +17,5 @@ package net.sf.jsqlparser.expression;
 public enum JsonFunctionType {
     OBJECT
     , ARRAY
+    , POSTGRES_OBJECT
 }

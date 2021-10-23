@@ -2131,7 +2131,7 @@ PlainSelect PlainSelect() #PlainSelect:
 
     [LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
 
-    [ <K_FOR> <K_XML> <K_PATH> "(" token = <S_CHAR_LITERAL> ")" { plainSelect.setForXmlPath(token.image); } ]
+    [LOOKAHEAD(3) <K_FOR> <K_XML> <K_PATH> "(" token = <S_CHAR_LITERAL> ")" { plainSelect.setForXmlPath(token.image); } ]
 
     {
         plainSelect.setSelectItems(selectItems);
@@ -2547,6 +2547,7 @@ UnPivot UnPivot():
     Column unpivotClause;
     List<Column> unpivotForClause;
     List<SelectExpressionItem> unpivotInClause;
+    Alias alias = null;
 }
 {
     <K_UNPIVOT>
@@ -2558,10 +2559,12 @@ UnPivot UnPivot():
     unpivotInClause = PivotSingleInItems()
     ")"
     ")"
+    [ LOOKAHEAD(2) alias = Alias() ]
     {
         retval.setUnPivotClause(unpivotClause);
         retval.setUnPivotForClause(unpivotForClause);
         retval.setUnPivotInClause(unpivotInClause);
+        retval.setAlias(alias);
         return retval;
     }
 }
@@ -2996,35 +2999,21 @@ JdbcNamedParameter SimpleJdbcNamedParameter() : {
 Limit LimitWithOffset() #LimitWithOffset:
 {
     Limit limit = new Limit();
-    Token token = null;
-    String name;
-    JdbcParameter jdbc = null;
+    Expression rowCountExpression;
+    Expression offsetExpression;
 }
 {
     (
-            LOOKAHEAD(5)
-                // mysql-> LIMIT offset,row_count
-                <K_LIMIT>
-                     (
-                         token=<S_LONG> { limit.setOffset(new LongValue(token.image)); }
-                         |
-                         jdbc = SimpleJdbcParameter() { limit.setOffset(jdbc); }
-                         |
-                         ":" { limit.setOffset(new JdbcNamedParameter()); } [ LOOKAHEAD(2) name = RelObjectNameExt() { ((JdbcNamedParameter)limit.getOffset()).setName(name); } ]
-
-                     )
-                     ","
-
-                (
-                token=<S_LONG> { limit.setRowCount(new LongValue(token.image)); }
-                |
-                 jdbc = SimpleJdbcParameter() { limit.setRowCount(jdbc); }
-                 |
-                 ":" { limit.setRowCount(new JdbcNamedParameter()); } [ LOOKAHEAD(2) name = RelObjectNameExt() { ((JdbcNamedParameter)limit.getRowCount()).setName(name); } ]
-                )
-            |
-            limit = PlainLimit()
+        LOOKAHEAD(<K_LIMIT> Expression() "," Expression()) (
+            // mysql-> LIMIT offset,row_count
+            <K_LIMIT>
+            offsetExpression=Expression() { limit.setOffset( offsetExpression ); }
+            ","
+            rowCountExpression=Expression() { limit.setRowCount( rowCountExpression ); }
         )
+        |
+        limit = PlainLimit()
+    )
     {
         linkAST(limit,jjtThis);
         return limit;
@@ -3034,23 +3023,17 @@ Limit LimitWithOffset() #LimitWithOffset:
 Limit PlainLimit() #PlainLimit:
 {
     Limit limit = new Limit();
-    Token token = null;
-    JdbcParameter jdbc;
-    String name;
+    Expression rowCountExpression;
 }
 {
     // mysql-postgresql-> LIMIT (row_count | ALL | NULL)
     <K_LIMIT>
      (
-         token=<S_LONG> { limit.setRowCount(new LongValue(token.image)); }
-         |
-         jdbc = SimpleJdbcParameter() { limit.setRowCount(jdbc); }
-         |
-        ":" { limit.setRowCount(new JdbcNamedParameter()); } [ LOOKAHEAD(2) name = RelObjectNameExt() { ((JdbcNamedParameter)limit.getRowCount()).setName(name); } ]
-         |
-         <K_ALL> { limit.setLimitAll(true);}
-         |
-         <K_NULL> { limit.setLimitNull(true); }
+        (
+            LOOKAHEAD(3) "(" rowCountExpression = SubSelect() ")"
+            |
+            rowCountExpression = Expression()
+        ) { limit.setRowCount(rowCountExpression); }
      )
     {
         linkAST(limit,jjtThis);
@@ -3061,19 +3044,16 @@ Limit PlainLimit() #PlainLimit:
 Offset Offset():
 {
     Offset offset = new Offset();
-    Token token = null;
-    JdbcParameter jdbc;
-    JdbcNamedParameter jdbcNamed;
+    Expression offsetExpression;
 }
 {
     (
             // postgresql-> OFFSET offset
             // sqlserver-oracle-> OFFSET offset (ROW | ROWS)
              <K_OFFSET>
-                 (token=<S_LONG> { offset.setOffset(Long.parseLong(token.image)); }
-                 | jdbc = SimpleJdbcParameter() { offset.setOffsetJdbcParameter(jdbc); }
-                 | jdbcNamed = SimpleJdbcNamedParameter() { offset.setOffsetJdbcParameter(jdbcNamed); })
-                 [(<K_ROWS> { offset.setOffsetParam("ROWS"); } | <K_ROW> { offset.setOffsetParam("ROW"); })]
+             offsetExpression=Expression() { offset.setOffset( offsetExpression ); }
+
+             [(<K_ROWS> { offset.setOffsetParam("ROWS"); } | <K_ROW> { offset.setOffsetParam("ROW"); })]
 
         )
     {
@@ -3717,20 +3697,23 @@ Expression AnyComparisonExpression() :
 }
 {
  (<K_ANY> { anyType = AnyType.ANY; } | <K_SOME> { anyType = AnyType.SOME; } | <K_ALL> { anyType = AnyType.ALL; } )
+    "("
 
     // if the next block looks alike an ExpressionList without Brackets, then parse as List
-    ( LOOKAHEAD( "(" <K_VALUES> SimpleExpressionList(false) ")" ) 
-        "(" <K_VALUES>
+    (
+        LOOKAHEAD( <K_VALUES> SimpleExpressionList(false) )
+        (
+            <K_VALUES>
             simpleExpressionList = SimpleExpressionList(false) { anyComparisonExpr=new AnyComparisonExpression(anyType, simpleExpressionList).withUseBracketsForValues(false); }
-        ")"
-
-    // Otherwise parse it as a SubSelect
-        | "(" subSelect = SubSelect() { anyComparisonExpr=new AnyComparisonExpression(anyType, subSelect.withUseBrackets(false)).withUseBracketsForValues(false); } ")"
+        )
+         // Otherwise parse it as a SubSelect
+        | subSelect = SubSelect() { anyComparisonExpr=new AnyComparisonExpression(anyType, subSelect.withUseBrackets(false)).withUseBracketsForValues(false); }
             
     )
-   {
+    ")"
+    {
       return anyComparisonExpr;
-   }
+    }
 }
 
 Expression SimpleExpression():
@@ -3975,7 +3958,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | retval=ConnectByRootOperator()
 
-        | retval=Column()
+        | LOOKAHEAD(2) <K_ALL> { retval = new AllValue(); }
+
+        | LOOKAHEAD(2) retval=Column()
 
         | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
 
@@ -3986,6 +3971,7 @@ Expression PrimaryExpression() #PrimaryExpression:
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
         | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
+
         | (
             (
                 (LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing)}) "(" list = ComplexExpressionList() ")"
@@ -4184,7 +4170,7 @@ JsonFunction JsonFunction() : {
     boolean usingKeyKeyword = false;
     boolean usingValueKeyword = false;
     Token keyToken;
-    Token valueToken;
+    Token valueToken = null;
     JsonKeyValuePair keyValuePair;
 
     Expression expression;
@@ -4195,22 +4181,39 @@ JsonFunction JsonFunction() : {
     (
         ( 
           ( <K_JSON_OBJECT> 
-            "(" { result.setType( JsonFunctionType.OBJECT ); } 
-            
+            "(" { result.setType( JsonFunctionType.OBJECT ); }
+
             (
                 // --- First Element
-                [ "KEY" { usingKeyKeyword = true; } ]
-                ( keyToken = <DT_ZONE> | keyToken = <S_DOUBLE> | keyToken = <S_LONG> | keyToken = <S_HEX> | keyToken = <S_CHAR_LITERAL> | keyToken = <S_IDENTIFIER> | keyToken = <S_QUOTED_IDENTIFIER> )
-                ( ":" | "VALUE" { usingValueKeyword = true; } ) 
-                ( valueToken = <S_IDENTIFIER> | valueToken = <S_QUOTED_IDENTIFIER> ) { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
+                LOOKAHEAD(2)
+                (
+                    // Postgres Specific Syntax:
+                    // SELECT json_object('{a, 1, b, 2}');
+                    // SELECT json_object('{{a, 1}, {b, 2}}');
+                    // SELECT json_object('{a, b}', '{1,2 }');
+                    { result.setType( JsonFunctionType.POSTGRES_OBJECT ); }
+                    keyToken = <S_CHAR_LITERAL>
+                    [ "," valueToken = <S_CHAR_LITERAL> ]
+                    { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken !=null ? valueToken.image : null, false, false ); result.add(keyValuePair); }
+                )
+                |
+                (
+
+                    // SQL2016 compliant Syntax
+                    [   "KEY" { usingKeyKeyword = true; } ]
+
+                    ( keyToken = <DT_ZONE> | keyToken = <S_DOUBLE> | keyToken = <S_LONG> | keyToken = <S_HEX> | keyToken = <S_CHAR_LITERAL> | keyToken = <S_IDENTIFIER> | keyToken = <S_QUOTED_IDENTIFIER> )
+                    ( ":" | "VALUE" { usingValueKeyword = true; } )
+                    ( valueToken = <S_IDENTIFIER> | valueToken = <S_QUOTED_IDENTIFIER> ) { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
+                )
 
                 [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
 
                 // --- Next Elements
                 (   ","  { usingKeyKeyword = false; usingValueKeyword = false;  }
                     [ "KEY" { usingKeyKeyword = true; } ]
-                    keyToken = <S_IDENTIFIER> 
-                    ( ":" | "VALUE" { usingValueKeyword = true; } ) 
+                    keyToken = <S_IDENTIFIER>
+                    ( ":" | "VALUE" { usingValueKeyword = true; } )
                     // token = <DT_ZONE> | <S_DOUBLE> | <S_LONG> | <S_HEX> | <S_CHAR_LITERAL> { result.setValue( token.image ); }
                     valueToken = <S_IDENTIFIER> { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
 
@@ -4218,12 +4221,12 @@ JsonFunction JsonFunction() : {
                 )*
             )*
 
-            [ 
-              ( 
+            [
+              (
                   <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
               )
               |
-              ( 
+              (
                   <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
               )
             ]
@@ -4237,7 +4240,6 @@ JsonFunction JsonFunction() : {
                   <K_WITHOUT> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITHOUT ); }
               )
             ]
-
             ")"
           )
           |
@@ -5855,9 +5857,30 @@ AlterExpression AlterExpression():
         <K_DROP> { alterExp.setOperation(AlterOperation.DROP);          }
         (
             (
-                ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
-                (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setColumnName(tk.image); }
-                [tk=<K_CASCADE> { alterExp.addParameters(tk.image); } ]
+                (
+                    // we use the PK Columns Field instead of the Column Field
+                    // for holding multiple DROP Columns
+                    columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+
+                    [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]
+
+                    [
+                        "CASCADE" { alterExp.addParameters("CASCADE"); }
+                        [ "CONSTRAINTS" { alterExp.addParameters("CONSTRAINTS"); } ]
+                    ]
+                )
+                |
+                (
+                    ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
+                    (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setColumnName(tk.image); }
+
+                    [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]
+
+                    [
+                        "CASCADE" { alterExp.addParameters("CASCADE"); }
+                        [ "CONSTRAINTS" { alterExp.addParameters("CONSTRAINTS"); } ]
+                    ]
+                )
             )
             |
             (
