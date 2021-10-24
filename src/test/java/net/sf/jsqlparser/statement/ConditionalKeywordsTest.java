@@ -20,16 +20,24 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
  */
 
 @RunWith(Parameterized.class)
-public class KeywordsTest {
-    public final static Logger LOGGER = Logger.getLogger(KeywordsTest.class.getName());
+public class ConditionalKeywordsTest {
+    public final static Logger LOGGER = Logger.getLogger(ConditionalKeywordsTest.class.getName());
 
     @Parameters(name = "Keyword {0}")
     public final static Iterable<String> KEY_WORDS() {
         List<String> keywords = new ArrayList<>();
         try {
-            keywords.addAll(ParserKeywordsUtils.getDefinedKeywords());
-            for (String reserved: ParserKeywordsUtils.getReservedKeywords(ParserKeywordsUtils.RESTRICTED_JSQLPARSER)) {
-                keywords.remove(reserved);
+            try {
+                keywords.addAll(ParserKeywordsUtils.getDefinedKeywords());
+                for (String reserved: ParserKeywordsUtils.getReservedKeywords(
+                        // get all PARSER RESTRICTED without the ALIAS RESTRICTED
+                        ParserKeywordsUtils.RESTRICTED_JSQLPARSER
+                        & ~ParserKeywordsUtils.RESTRICTED_ALIAS
+                        )) {
+                    keywords.remove(reserved);
+                }
+            } catch (Exception ex) {
+                LOGGER.log(Level.SEVERE, "Failed to generate the Keyword List", ex);
             }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Failed to generate the Keyword List", ex);
@@ -39,15 +47,14 @@ public class KeywordsTest {
 
     protected String keyword;
 
-    public KeywordsTest(String keyword) {
+    public ConditionalKeywordsTest(String keyword) {
         this.keyword = keyword;
     }
 
     @Test
-    public void testRelObjectNameWithoutValue() throws JSQLParserException {
-        String sqlStr = String.format("SELECT %1$s.%1$s AS %1$s from %1$s.%1$s AS %1$s",  keyword);
+    public void testRelObjectNameExt() throws JSQLParserException {
+        String sqlStr = String.format("SELECT %1$s.%1$s.%1$s AS \"%1$s\" from %1$s ORDER BY %1$s ",  keyword);
         LOGGER.fine(sqlStr);
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
-
 }

@@ -264,6 +264,10 @@ public class SpecialOracleTest {
                     recordSuccessOnSourceFile(file);
                 } catch (JSQLParserException ex) {
                     String message = ex.getMessage();
+                    if (message==null) {
+                        message = "Exception without message: " + ex.toString();
+                    }
+
                     int pos = message.indexOf('\n');
                     if (pos > 0) {
                       message = message.substring(0, pos);

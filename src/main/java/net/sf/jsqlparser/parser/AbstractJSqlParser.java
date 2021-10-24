@@ -48,5 +48,4 @@ public abstract class AbstractJSqlParser<P> {
     public List<ParseException> getParseErrors() {
         return parseErrors;
     }
-
 }
