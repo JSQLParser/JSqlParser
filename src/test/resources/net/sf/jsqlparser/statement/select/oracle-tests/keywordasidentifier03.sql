@@ -33,5 +33,3 @@ where ind.index_name = ie.index_name(+)
 and ind.index_owner = ie.index_owner(+)
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: Exception without message: net.sf.jsqlparser.JSQLParserException recorded first on 24 Oct 2021, 02:38:30
---@FAILURE: Encountered unexpected token: "(" "(" recorded first on 24 Oct 2021, 02:45:19
