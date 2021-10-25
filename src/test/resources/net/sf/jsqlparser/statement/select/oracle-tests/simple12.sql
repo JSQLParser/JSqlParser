@@ -16,5 +16,3 @@ from dual
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: SELECT+1,t2.division_name AS aaaa,a.*,sum(t3.amount)FROM dual recorded first on 25 Oct 2021, 18:46:42
---@FAILURE: select+1,t2.division_name as aaaa,a.*,sum(t3.amount)from dual recorded first on 25 Oct 2021, 18:55:27

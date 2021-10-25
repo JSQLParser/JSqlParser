@@ -15,5 +15,3 @@ employee_id, manager_id, job_id
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: SELECT lpad(' ',2*(level-1))||last_name org_chart,employee_id,manager_id,job_id FROM employees START WITH job_id='ad_pres' CONNECT BY PRIOR employee_id=manager_id AND level<=2 recorded first on 25 Oct 2021, 18:46:41
---@FAILURE: select lpad(' ',2*(level-1))||last_name org_chart,employee_id,manager_id,job_id from employees start with job_id='ad_pres' connect by prior employee_id=manager_id and level<=2 recorded first on 25 Oct 2021, 18:55:26

@@ -13,5 +13,3 @@ select employee_id from (select * from employees)
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: SELECT employee_id FROM(SELECT*FROM employees)FOR UPDATE OF employee_id recorded first on 25 Oct 2021, 18:46:41
---@FAILURE: select employee_id from(select*from employees)for update of employee_id recorded first on 25 Oct 2021, 18:55:26

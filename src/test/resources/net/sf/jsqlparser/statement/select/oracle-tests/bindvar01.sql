@@ -23,5 +23,3 @@ values
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: INSERT INTO p(a1,b2,c3,d4,e5,f6,g7,h8)VALUES(:b1,:b2,:b3,:b4,:5,:6,:7,:8) recorded first on 25 Oct 2021, 18:46:41
---@FAILURE: insert into p(a1,b2,c3,d4,e5,f6,g7,h8)values(:b1,:b2,:b3,:b4,:5,:6,:7,:8) recorded first on 25 Oct 2021, 18:55:26

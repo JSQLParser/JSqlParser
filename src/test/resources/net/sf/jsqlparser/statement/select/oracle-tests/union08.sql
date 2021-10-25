@@ -14,5 +14,3 @@ select * from dual where exists (
 )
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: SELECT*FROM dual WHERE EXISTS((SELECT*FROM dual)UNION ALL(SELECT*FROM dual)) recorded first on 25 Oct 2021, 18:46:42
---@FAILURE: select*from dual where exists((select*from dual)union all(select*from dual)) recorded first on 25 Oct 2021, 18:55:27

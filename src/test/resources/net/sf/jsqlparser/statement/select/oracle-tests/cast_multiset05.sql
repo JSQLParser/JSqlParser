@@ -15,5 +15,3 @@ from
 	)
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: SELECT*FROM table(function_name()) recorded first on 25 Oct 2021, 18:46:41
---@FAILURE: select*from table(function_name()) recorded first on 25 Oct 2021, 18:55:26
