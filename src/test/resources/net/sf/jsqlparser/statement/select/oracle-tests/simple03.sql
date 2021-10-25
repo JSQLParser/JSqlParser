@@ -12,3 +12,5 @@ select employee_id from (select employee_id+1 as employee_id from employees)
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: SELECT employee_id FROM(SELECT employee_id+1 AS employee_id FROM employees)FOR UPDATE OF employee_id recorded first on 25 Oct 2021, 18:46:42
+--@FAILURE: select employee_id from(select employee_id+1 as employee_id from employees)for update of employee_id recorded first on 25 Oct 2021, 18:55:27

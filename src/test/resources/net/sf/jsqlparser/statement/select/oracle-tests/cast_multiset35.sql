@@ -18,3 +18,5 @@ select owner
      ,      object_type
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: SELECT owner,object_type,CAST(collect(DISTINCT object_name)AS varchar2_ntt)AS object_names FROM all_objects GROUP BY owner,object_type recorded first on 25 Oct 2021, 18:46:41
+--@FAILURE: select owner,object_type,cast(collect(distinct object_name)as varchar2_ntt)as object_names from all_objects group by owner,object_type recorded first on 25 Oct 2021, 18:55:26

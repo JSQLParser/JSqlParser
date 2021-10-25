@@ -28,3 +28,5 @@ connect by nocycle obj=prior link
 start with obj='a'
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 14, 2021 9:00:57 PM
+--@FAILURE: WITH o AS(SELECT 'a' obj,'b' link FROM dual UNION ALL SELECT 'a','c' FROM dual UNION ALL SELECT 'c','d' FROM dual UNION ALL SELECT 'd','c' FROM dual UNION ALL SELECT 'd','e' FROM dual UNION ALL SELECT 'e','e' FROM dual)SELECT CONNECT_BY_ROOT obj root,level,obj,link,sys_connect_by_path(obj||'->'||link,','),connect_by_iscycle,connect_by_isleaf FROM o CONNECT BY NOCYCLE obj=PRIOR link START WITH obj='a' recorded first on 25 Oct 2021, 18:46:41
+--@FAILURE: with o as(select 'a' obj,'b' link from dual union all select 'a','c' from dual union all select 'c','d' from dual union all select 'd','c' from dual union all select 'd','e' from dual union all select 'e','e' from dual)select connect_by_root obj root,level,obj,link,sys_connect_by_path(obj||'->'||link,','),connect_by_iscycle,connect_by_isleaf from o connect by nocycle obj=prior link start with obj='a' recorded first on 25 Oct 2021, 18:55:26
