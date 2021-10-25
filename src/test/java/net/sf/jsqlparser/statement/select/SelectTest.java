@@ -4889,4 +4889,10 @@ public class SelectTest {
         WithItem item = new WithItem();
         assertThat(item.getSubSelect()).isNull();
     }
+
+    @Test
+    public void testCaseElseExpressionIssue1375() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM t1 WHERE CASE WHEN 1 = 1 THEN c1 = 'a' ELSE c2 = 'b' AND c4 = 'd' END", true);
+    }
 }
