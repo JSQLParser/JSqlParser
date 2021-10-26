@@ -153,7 +153,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CASCADE: "CASCADE">
 |   <K_CASE:"CASE">
 |   <K_CASEWHEN:"CASEWHEN">  /* H2 casewhen function */
-|   <K_CAST:"CAST">
+|   <K_CAST: ( "CAST" | "TRY_CAST" ) >
 |   <K_CHARACTER:"CHARACTER">
 |   <K_CHANGE:"CHANGE">
 |   <K_CHECK:"CHECK">
