@@ -1131,11 +1131,8 @@ Update Update( List<WithItem> with ):
 }
 {
    <K_UPDATE> { update.setOracleHint(getOracleHint()); }
-    [(tk = <K_LOW_PRIORITY>)
-    {if (tk!=null)
-        modifierPriority = UpdateModifierPriority.LOW_PRIORITY;
-    }]
-    [<K_IGNORE>{ modifierIgnore = true; }]
+    [<K_LOW_PRIORITY> { modifierPriority = UpdateModifierPriority.LOW_PRIORITY; }]
+    [<K_IGNORE> { modifierIgnore = true; }]
     table=TableWithAlias() startJoins=JoinsList()
     <K_SET>
     (
@@ -1497,12 +1494,9 @@ Delete Delete( List<WithItem> with ):
 }
 {
     <K_DELETE> { delete.setOracleHint(getOracleHint()); }
-    [(tk = <K_LOW_PRIORITY>)
-    {if (tk!=null)
-        modifierPriority = DeleteModifierPriority.LOW_PRIORITY;
-    }]
-    [<K_QUICK>{ modifierQuick = true; }]
-    [<K_IGNORE>{ modifierIgnore = true; }]
+    [<K_LOW_PRIORITY> { modifierPriority = DeleteModifierPriority.LOW_PRIORITY; }]
+    [<K_QUICK> { modifierQuick = true; }]
+    [<K_IGNORE> { modifierIgnore = true; }]
     [LOOKAHEAD(4) (table=TableWithAlias() { tables.add(table); }
           ("," table=TableWithAlias() { tables.add(table); } )*
     <K_FROM> | <K_FROM>) { hasFrom = true; }]
