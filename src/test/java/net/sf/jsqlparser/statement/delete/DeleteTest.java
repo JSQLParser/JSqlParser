@@ -143,39 +143,39 @@ public class DeleteTest {
     @Test
     public void testDeleteLowPriority() throws JSQLParserException {
         String stmt = "DELETE LOW_PRIORITY FROM tablename";
-        Delete delete = (Delete)assertSqlCanBeParsedAndDeparsed(stmt);
+        Delete delete = (Delete) assertSqlCanBeParsedAndDeparsed(stmt);
         assertEquals(delete.getModifierPriority(), DeleteModifierPriority.LOW_PRIORITY);
     }
 
     @Test
     public void testDeleteQuickModifier() throws JSQLParserException {
         String stmt = "DELETE QUICK FROM tablename";
-        Delete delete = (Delete)assertSqlCanBeParsedAndDeparsed(stmt);
+        Delete delete = (Delete) assertSqlCanBeParsedAndDeparsed(stmt);
         assertTrue(delete.isModifierQuick());
         String stmt2 = "DELETE FROM tablename";
-        Delete delete2 = (Delete)assertSqlCanBeParsedAndDeparsed(stmt2);
+        Delete delete2 = (Delete) assertSqlCanBeParsedAndDeparsed(stmt2);
         assertFalse(delete2.isModifierQuick());
     }
 
     @Test
     public void testDeleteIgnoreModifier() throws JSQLParserException {
         String stmt = "DELETE IGNORE FROM tablename";
-        Delete delete = (Delete)assertSqlCanBeParsedAndDeparsed(stmt);
+        Delete delete = (Delete) assertSqlCanBeParsedAndDeparsed(stmt);
         assertTrue(delete.isModifierIgnore());
         String stmt2 = "DELETE FROM tablename";
-        Delete delete2 = (Delete)assertSqlCanBeParsedAndDeparsed(stmt2);
+        Delete delete2 = (Delete) assertSqlCanBeParsedAndDeparsed(stmt2);
         assertFalse(delete2.isModifierIgnore());
     }
 
     @Test
     public void testDeleteMultipleModifiers() throws JSQLParserException {
         String stmt = "DELETE LOW_PRIORITY QUICK FROM tablename";
-        Delete delete = (Delete)assertSqlCanBeParsedAndDeparsed(stmt);
+        Delete delete = (Delete) assertSqlCanBeParsedAndDeparsed(stmt);
         assertEquals(delete.getModifierPriority(), DeleteModifierPriority.LOW_PRIORITY);
         assertTrue(delete.isModifierQuick());
 
         String stmt2 = "DELETE LOW_PRIORITY QUICK IGNORE FROM tablename";
-        Delete delete2 = (Delete)assertSqlCanBeParsedAndDeparsed(stmt2);
+        Delete delete2 = (Delete) assertSqlCanBeParsedAndDeparsed(stmt2);
         assertEquals(delete2.getModifierPriority(), DeleteModifierPriority.LOW_PRIORITY);
         assertTrue(delete2.isModifierIgnore());
         assertTrue(delete2.isModifierQuick());

@@ -27,8 +27,6 @@ import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
-import net.sf.jsqlparser.statement.update.Update;
-import net.sf.jsqlparser.statement.update.UpdateModifierPriority;
 
 public class Delete implements Statement {
 
@@ -42,12 +40,13 @@ public class Delete implements Statement {
     private Limit limit;
     private List<OrderByElement> orderByElements;
     private boolean hasFrom = true;
-    public List<WithItem> getWithItemsList() {
-        return withItemsList;
-    }
     private DeleteModifierPriority modifierPriority;
     private boolean modifierIgnore;
     private boolean modifierQuick;
+
+    public List<WithItem> getWithItemsList() {
+        return withItemsList;
+    }
 
     public void setWithItemsList(List<WithItem> withItemsList) {
         this.withItemsList = withItemsList;

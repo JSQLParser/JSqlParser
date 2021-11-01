@@ -21,7 +21,6 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.insert.InsertModifierPriority;
 import net.sf.jsqlparser.statement.select.*;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
