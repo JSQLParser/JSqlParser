@@ -59,7 +59,8 @@ public class JSQLParserFluentModelTests {
                 )).withRightExpression(
                 new InExpression()
                         .withLeftExpression(new Column(asList("t1", "col3")))
-                        .withRightItemsList(new ExpressionList().addExpressions(new StringValue("A"))));
+                        .withRightItemsList(new ExpressionList(new StringValue("A"))));
+
         Select select = new Select().withSelectBody(new PlainSelect().addSelectItems(new AllColumns()).withFromItem(t1)
                 .addJoins(new Join().withRightItem(t2)
                         .withOnExpression(
@@ -95,8 +96,7 @@ public class JSQLParserFluentModelTests {
                         .withRightExpression(
                                 new InExpression()
                                         .withLeftExpression(new Column(asList("t1", "col3")))
-                                        .withRightItemsList(new ExpressionList()
-                                                .addExpressions(new StringValue("B"), new StringValue("C")))))
+                                        .withRightItemsList(new ExpressionList(new StringValue("B"), new StringValue("C")))))
                 .withRightExpression(new Column(asList("t2", "col4")));
 
         Select select = new Select().withSelectBody(new PlainSelect().addSelectItems(new AllColumns()).withFromItem(t1)

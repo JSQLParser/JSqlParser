@@ -2924,7 +2924,7 @@ Expression XorExpression():
 }
 {
     left=OrExpression() { result = left; }
-    (
+    ( LOOKAHEAD(2)
         <K_XOR>
         right=OrExpression()
         {
@@ -2943,7 +2943,7 @@ Expression OrExpression():
 }
 {
     left=AndExpression() { result = left; }
-    (
+    ( LOOKAHEAD(2)
         <K_OR>
         right=AndExpression()
         {
@@ -2973,7 +2973,7 @@ Expression AndExpression() :
     )
     { result = left; }
 
-    (
+    ( LOOKAHEAD(2)
         { boolean useOperator = false; }
          (<K_AND> | <K_AND_OPERATOR> {useOperator=true;} )
         (
@@ -3100,7 +3100,7 @@ Expression InExpression() #InExpression :
 {
     InExpression result = new InExpression();
     ItemsList leftItemsList = null;
-    ItemsList rightItemsList = null;
+    ExpressionList rightItemsList = null;
     Expression leftExpression = null;
     Expression rightExpression = null;
     Token token;
@@ -3113,17 +3113,13 @@ Expression InExpression() #InExpression :
 
     [<K_NOT> { result.setNot(true); } ] <K_IN>
     (
-      // syntactic lookahead for a multi expression list, ie: ((a,b),(c,d))
-      LOOKAHEAD(3) multiExpressionList = MultiInExpressions()
-      | LOOKAHEAD(3) rightExpression = Function()
-      | LOOKAHEAD(2) token=<S_CHAR_LITERAL> { rightExpression = new StringValue(token.image); }
-      | LOOKAHEAD(3) "(" (LOOKAHEAD(3) rightItemsList=SubSelect() | rightItemsList=SimpleExpressionList(true) )")"
-      | rightExpression = SimpleExpression()
+      LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  result.setRightExpression(new StringValue(token.image)); }
+      | LOOKAHEAD(3) rightExpression = Function() {  result.setRightExpression(rightExpression); }
+      | LOOKAHEAD( "(" ComplexExpressionList() ")" ) "(" rightItemsList=ComplexExpressionList() { result.setRightItemsList(rightItemsList.withBrackets(true) ); } ")"
+      | LOOKAHEAD(3) "(" rightExpression = SubSelect() {  result.setRightExpression( ((SubSelect) rightExpression).withUseBrackets(true) ); } ")"
+      | LOOKAHEAD(2) rightExpression = SimpleExpression() {  result.setRightExpression(rightExpression); }
     )
     {
-        result.setRightItemsList(rightItemsList);
-        result.setRightExpression(rightExpression);
-        result.setMultiExpressionList(multiExpressionList);
         linkAST(result,jjtThis);
         return result;
     }
