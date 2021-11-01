@@ -27,6 +27,8 @@ import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.update.UpdateModifierPriority;
 
 public class Delete implements Statement {
 
@@ -43,6 +45,9 @@ public class Delete implements Statement {
     public List<WithItem> getWithItemsList() {
         return withItemsList;
     }
+    private DeleteModifierPriority modifierPriority;
+    private boolean modifierIgnore;
+    private boolean modifierQuick;
 
     public void setWithItemsList(List<WithItem> withItemsList) {
         this.withItemsList = withItemsList;
@@ -160,10 +165,20 @@ public class Delete implements Statement {
         
         b.append("DELETE");
 
+        if (modifierPriority != null) {
+            b.append(" ").append(modifierPriority.name());
+        }
+        if (modifierQuick) {
+            b.append(" QUICK");
+        }
+        if (modifierIgnore) {
+            b.append(" IGNORE");
+        }
+
         if (tables != null && tables.size() > 0) {
             b.append(" ");
             b.append(tables.stream()
-                    .map(t -> t.toString())
+                    .map(Table::toString)
                     .collect(joining(", ")));
         }
 
@@ -241,6 +256,45 @@ public class Delete implements Statement {
     public Delete withHasFrom(boolean hasFrom) {
         this.setHasFrom(hasFrom);
         return this;
+    }
+
+    public Delete withModifierPriority(DeleteModifierPriority modifierPriority){
+        this.setModifierPriority(modifierPriority);
+        return this;
+    }
+
+    public Delete withModifierIgnore(boolean modifierIgnore){
+        this.setModifierIgnore(modifierIgnore);
+        return this;
+    }
+
+    public Delete withModifierQuick(boolean modifierQuick){
+        this.setModifierQuick(modifierQuick);
+        return this;
+    }
+
+    public void setModifierPriority(DeleteModifierPriority modifierPriority) {
+        this.modifierPriority = modifierPriority;
+    }
+
+    public DeleteModifierPriority getModifierPriority() {
+        return modifierPriority;
+    }
+
+    public void setModifierIgnore(boolean modifierIgnore) {
+        this.modifierIgnore = modifierIgnore;
+    }
+
+    public void setModifierQuick(boolean modifierQuick) {
+        this.modifierQuick = modifierQuick;
+    }
+
+    public boolean isModifierIgnore() {
+        return modifierIgnore;
+    }
+
+    public boolean isModifierQuick() {
+        return modifierQuick;
     }
 
     public Delete addTables(Table... tables) {

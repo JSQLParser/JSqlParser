@@ -18,8 +18,8 @@ import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.junit.Assert;
@@ -247,5 +247,30 @@ public class UpdateTest {
 
         Assert.assertEquals(1, update.getUpdateSets().get(2).getColumns().size());
         Assert.assertEquals(1, update.getUpdateSets().get(2).getExpressions().size());
+    }
+
+    @Test
+    public void testUpdateLowPriority() throws JSQLParserException {
+        String stmt = "UPDATE LOW_PRIORITY table1 A SET A.columna = 'XXX'";
+        Update update = (Update)assertSqlCanBeParsedAndDeparsed(stmt);
+        assertEquals(update.getModifierPriority(), UpdateModifierPriority.LOW_PRIORITY);
+    }
+
+    @Test
+    public void testUpdateIgnoreModifier() throws JSQLParserException {
+        String stmt = "UPDATE IGNORE table1 A SET A.columna = 'XXX'";
+        Update update = (Update)assertSqlCanBeParsedAndDeparsed(stmt);
+        assertTrue(update.isModifierIgnore());
+        String stmt2 = "UPDATE table1 A SET A.columna = 'XXX'";
+        Update update2 = (Update)assertSqlCanBeParsedAndDeparsed(stmt2);
+        assertFalse(update2.isModifierIgnore());
+    }
+
+    @Test
+    public void testUpdateMultipleModifiers() throws JSQLParserException {
+        String stmt = "UPDATE LOW_PRIORITY IGNORE table1 A SET A.columna = 'XXX'";
+        Update update = (Update)assertSqlCanBeParsedAndDeparsed(stmt);
+        assertEquals(update.getModifierPriority(), UpdateModifierPriority.LOW_PRIORITY);
+        assertTrue(update.isModifierIgnore());
     }
 }

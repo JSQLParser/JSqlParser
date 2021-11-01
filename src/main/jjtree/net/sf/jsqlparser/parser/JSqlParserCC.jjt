@@ -326,6 +326,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PUBLIC:"PUBLIC">
 |   <K_PURGE:"PURGE">
 |   <K_QUERY:"QUERY">
+|   <K_QUICK : "QUICK">
 |   <K_QUIESCE: "QUIESCE">
 |   <K_RANGE: "RANGE">
 |   <K_READ: "READ" >
@@ -1124,11 +1125,18 @@ Update Update( List<WithItem> with ):
     List<OrderByElement> orderByElements;
     boolean useColumnsBrackets = false;
     List<SelectExpressionItem> returning = null;
+    Token tk = null;
+    UpdateModifierPriority modifierPriority = null;
+    boolean modifierIgnore = false;
 }
 {
-   <K_UPDATE> { update.setOracleHint(getOracleHint()); } table=TableWithAlias()  
-        startJoins=JoinsList()
-
+   <K_UPDATE> { update.setOracleHint(getOracleHint()); }
+    [(tk = <K_LOW_PRIORITY>)
+    {if (tk!=null)
+        modifierPriority = UpdateModifierPriority.valueOf(tk.image.toUpperCase());
+    }]
+    [<K_IGNORE>{ modifierIgnore = true; }]
+    table=TableWithAlias() startJoins=JoinsList()
     <K_SET>
     (
         LOOKAHEAD(3) tableColumn=Column() "=" valueExpression=SimpleExpression() { update.addUpdateSet(tableColumn, valueExpression); }
@@ -1193,6 +1201,8 @@ Update Update( List<WithItem> with ):
               .withStartJoins(startJoins)
               .withFromItem(fromItem)
               .withJoins(joins)
+              .withModifierPriority(modifierPriority)
+              .withModifierIgnore(modifierIgnore)
               .withReturningExpressionList(returning);
    }
 }
@@ -1480,9 +1490,20 @@ Delete Delete( List<WithItem> with ):
     Limit limit = null;
     List<OrderByElement> orderByElements;
     boolean hasFrom = false;
+    Token tk = null;
+    DeleteModifierPriority modifierPriority = null;
+    boolean modifierIgnore = false;
+    boolean modifierQuick = false;
 }
 {
-    <K_DELETE> { delete.setOracleHint(getOracleHint()); } [LOOKAHEAD(4) (table=TableWithAlias() { tables.add(table); }
+    <K_DELETE> { delete.setOracleHint(getOracleHint()); }
+    [(tk = <K_LOW_PRIORITY>)
+    {if (tk!=null)
+        modifierPriority = DeleteModifierPriority.valueOf(tk.image.toUpperCase());
+    }]
+    [<K_QUICK>{ modifierQuick = true; }]
+    [<K_IGNORE>{ modifierIgnore = true; }]
+    [LOOKAHEAD(4) (table=TableWithAlias() { tables.add(table); }
           ("," table=TableWithAlias() { tables.add(table); } )*
     <K_FROM> | <K_FROM>) { hasFrom = true; }]
 
@@ -1497,7 +1518,13 @@ Delete Delete( List<WithItem> with ):
             delete.setJoins(joins);
         }
         return delete.withWithItemsList(with)
-              .withTables(tables).withTable(table).withHasFrom(hasFrom).withUsingList(usingList);
+              .withTables(tables)
+              .withTable(table)
+              .withHasFrom(hasFrom)
+              .withUsingList(usingList)
+              .withModifierPriority(modifierPriority)
+              .withModifierIgnore(modifierIgnore)
+              .withModifierQuick(modifierQuick);
     }
 }
 
