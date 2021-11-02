@@ -54,7 +54,7 @@ public class ParenthesisFromItem implements FromItem {
 
     @Override
     public Pivot getPivot() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
@@ -64,7 +64,7 @@ public class ParenthesisFromItem implements FromItem {
 
     @Override
     public UnPivot getUnPivot() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override

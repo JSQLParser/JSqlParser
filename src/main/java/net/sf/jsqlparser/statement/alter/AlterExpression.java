@@ -32,6 +32,7 @@ public class AlterExpression {
 
   private AlterOperation operation;
   private String optionalSpecifier;
+  private String newTableName;
   private String columnName;
   private String columnOldName;
   // private ColDataType dataType;
@@ -44,7 +45,7 @@ public class AlterExpression {
   private String ukName;
   private Index index = null;
   private String constraintName;
-  private boolean constraintIfExists;
+  private boolean usingIfExists;
 
   private Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
 
@@ -246,6 +247,14 @@ public class AlterExpression {
     this.fkSourceColumns = fkSourceColumns;
   }
 
+  public String getNewTableName() {
+    return newTableName;
+  }
+
+  public void setNewTableName(String newTableName) {
+    this.newTableName = newTableName;
+  }
+
   public String getColumnName() {
     return columnName;
   }
@@ -280,12 +289,12 @@ public class AlterExpression {
     this.constraintName = constraintName;
   }
 
-  public boolean isConstraintIfExists() {
-    return constraintIfExists;
+  public boolean isUsingIfExists() {
+    return usingIfExists;
   }
 
-  public void setConstraintIfExists(boolean constraintIfExists) {
-    this.constraintIfExists = constraintIfExists;
+  public void setUsingIfExists(boolean usingIfExists) {
+    this.usingIfExists = usingIfExists;
   }
 
   public List<String> getPkColumns() {
@@ -360,99 +369,121 @@ public class AlterExpression {
   }
 
   @Override
-  @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+  @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.ExcessiveMethodLength"})
   public String toString() {
 
     StringBuilder b = new StringBuilder();
+    
+    if (operation== AlterOperation.UNSPECIFIC) {
+        b.append(optionalSpecifier);
+    } else if (operation== AlterOperation.RENAME_TABLE) {
 
-    b.append(operation).append(" ");
+      b.append("RENAME TO ").append(newTableName);
+    } else if (operation== AlterOperation.DROP_PRIMARY_KEY) {
 
-    if (commentText != null) {
-      if (columnName != null) {
-        b.append(columnName).append(" COMMENT ");
-      }
-      b.append(commentText);
-    } else if (columnName != null) {
-      if (hasColumn) {
-        b.append("COLUMN ");
-      }
-      if (operation == AlterOperation.RENAME) {
-        b.append(columnOldName).append(" TO ");
-      }
-      b.append(columnName);
-    } else if (getColDataTypeList() != null) {
-      if (operation == AlterOperation.CHANGE) {
-        if (optionalSpecifier != null) {
-          b.append(optionalSpecifier).append(" ");
+      b.append("DROP PRIMARY KEY ");
+    } else if (operation== AlterOperation.DROP_UNIQUE) {
+
+      b.append("DROP UNIQUE (").append(PlainSelect.getStringList(pkColumns)).append(')');
+    } else if (operation== AlterOperation.DROP_FOREIGN_KEY) {
+
+      b.append("DROP FOREIGN KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
+    } else if (operation== AlterOperation.DROP && columnName==null && pkColumns!=null && pkColumns.size()>0) {
+      // Oracle Multi Column Drop
+      b.append("DROP (").append(PlainSelect.getStringList(pkColumns)).append(')');
+    } else {
+        b.append(operation).append(" ");
+
+        if (commentText != null) {
+          if (columnName != null) {
+            b.append(columnName).append(" COMMENT ");
+          }
+          b.append(commentText);
+        } else if (columnName != null) {
+          if (hasColumn) {
+            b.append("COLUMN ");
+          }
+          if (operation == AlterOperation.RENAME) {
+            b.append(columnOldName).append(" TO ");
+          }
+          b.append(columnName);
+        } else if (getColDataTypeList() != null) {
+          if (operation == AlterOperation.CHANGE) {
+            if (optionalSpecifier != null) {
+              b.append(optionalSpecifier).append(" ");
+            }
+            b.append(columnOldName).append(" ");
+          } else if (colDataTypeList.size() > 1) {
+            b.append("(");
+          } else {
+            if (hasColumn) {
+              b.append("COLUMN ");
+            }
+          }
+          b.append(PlainSelect.getStringList(colDataTypeList));
+          if (colDataTypeList.size() > 1) {
+            b.append(")");
+          }
+        } else if (getColumnDropNotNullList() != null) {
+          if (operation == AlterOperation.CHANGE) {
+            if (optionalSpecifier != null) {
+              b.append(optionalSpecifier).append(" ");
+            }
+            b.append(columnOldName).append(" ");
+          } else if (columnDropNotNullList.size() > 1) {
+            b.append("(");
+          } else {
+            b.append("COLUMN ");
+          }
+          b.append(PlainSelect.getStringList(columnDropNotNullList));
+          if (columnDropNotNullList.size() > 1) {
+            b.append(")");
+          }
+        } else if (constraintName != null) {
+          b.append("CONSTRAINT ");
+          if (usingIfExists) {
+            b.append("IF EXISTS ");
+          }
+          b.append(constraintName);
+        } else if (pkColumns != null) {
+          b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
+        } else if (ukColumns != null) {
+          b.append("UNIQUE");
+          if (ukName != null) {
+            if (getUk()) {
+              b.append(" KEY ");
+            } else {
+              b.append(" INDEX ");
+            }
+            b.append(ukName);
+          }
+          b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
+        } else if (fkColumns != null) {
+          b.append("FOREIGN KEY (")
+              .append(PlainSelect.getStringList(fkColumns))
+              .append(") REFERENCES ")
+              .append(
+                  fkSourceSchema != null && fkSourceSchema.trim().length() > 0
+                      ? fkSourceSchema + "."
+                      : "")
+              .append(fkSourceTable)
+              .append(" (")
+              .append(PlainSelect.getStringList(fkSourceColumns))
+              .append(")");
+          referentialActions.forEach(b::append);
+        } else if (index != null) {
+          b.append(index);
         }
-        b.append(columnOldName).append(" ");
-      } else if (colDataTypeList.size() > 1) {
-        b.append("(");
-      } else {
-        if (hasColumn) {
-          b.append("COLUMN ");
+
+
+        if (getConstraints() != null && !getConstraints().isEmpty()) {
+          b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
         }
-      }
-      b.append(PlainSelect.getStringList(colDataTypeList));
-      if (colDataTypeList.size() > 1) {
-        b.append(")");
-      }
-    } else if (getColumnDropNotNullList() != null) {
-      if (operation == AlterOperation.CHANGE) {
-        if (optionalSpecifier != null) {
-          b.append(optionalSpecifier).append(" ");
+        if (getUseEqual()) {
+          b.append('=');
         }
-        b.append(columnOldName).append(" ");
-      } else if (columnDropNotNullList.size() > 1) {
-        b.append("(");
-      } else {
-        b.append("COLUMN ");
-      }
-      b.append(PlainSelect.getStringList(columnDropNotNullList));
-      if (columnDropNotNullList.size() > 1) {
-        b.append(")");
-      }
-    } else if (constraintName != null) {
-      b.append("CONSTRAINT ");
-      if (constraintIfExists) {
-        b.append("IF EXISTS ");
-      }
-      b.append(constraintName);
-    } else if (pkColumns != null) {
-      b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
-    } else if (ukColumns != null) {
-      b.append("UNIQUE");
-      if (ukName != null) {
-        if (getUk()) {
-          b.append(" KEY ");
-        } else {
-          b.append(" INDEX ");
-        }
-        b.append(ukName);
-      }
-      b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
-    } else if (fkColumns != null) {
-      b.append("FOREIGN KEY (")
-          .append(PlainSelect.getStringList(fkColumns))
-          .append(") REFERENCES ")
-          .append(
-              fkSourceSchema != null && fkSourceSchema.trim().length() > 0
-                  ? fkSourceSchema + "."
-                  : "")
-          .append(fkSourceTable)
-          .append(" (")
-          .append(PlainSelect.getStringList(fkSourceColumns))
-          .append(")");
-      referentialActions.forEach(b::append);
-    } else if (index != null) {
-      b.append(index);
     }
-    if (getConstraints() != null && !getConstraints().isEmpty()) {
-      b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
-    }
-    if (getUseEqual()) {
-      b.append('=');
-    }
+
     if (parameters != null && !parameters.isEmpty()) {
       b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
     }
@@ -500,8 +531,8 @@ public class AlterExpression {
     return this;
   }
 
-  public AlterExpression constraintIfExists(boolean constraintIfExists) {
-    this.setConstraintIfExists(constraintIfExists);
+  public AlterExpression withUsingIfExists(boolean usingIfExists) {
+    this.setUsingIfExists(usingIfExists);
     return this;
   }
 

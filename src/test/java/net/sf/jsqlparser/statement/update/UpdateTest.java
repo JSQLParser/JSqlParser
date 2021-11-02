@@ -17,10 +17,12 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.schema.Column;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class UpdateTest {
@@ -32,13 +34,13 @@ public class UpdateTest {
         String statement = "UPDATE mytable set col1='as', col2=?, col3=565 Where o >= 3";
         Update update = (Update) parserManager.parse(new StringReader(statement));
         assertEquals("mytable", update.getTable().toString());
-        assertEquals(3, update.getColumns().size());
-        assertEquals("col1", ((Column) update.getColumns().get(0)).getColumnName());
-        assertEquals("col2", ((Column) update.getColumns().get(1)).getColumnName());
-        assertEquals("col3", ((Column) update.getColumns().get(2)).getColumnName());
-        assertEquals("as", ((StringValue) update.getExpressions().get(0)).getValue());
-        assertTrue(update.getExpressions().get(1) instanceof JdbcParameter);
-        assertEquals(565, ((LongValue) update.getExpressions().get(2)).getValue());
+        assertEquals(3, update.getUpdateSets().size());
+        assertEquals("col1", update.getUpdateSets().get(0).getColumns().get(0).getColumnName());
+        assertEquals("col2", update.getUpdateSets().get(1).getColumns().get(0).getColumnName());
+        assertEquals("col3", update.getUpdateSets().get(2).getColumns().get(0).getColumnName());
+        assertEquals("as", ((StringValue) update.getUpdateSets().get(0).getExpressions().get(0)).getValue());
+        assertTrue(update.getUpdateSets().get(1).getExpressions().get(0) instanceof JdbcParameter);
+        assertEquals(565, ((LongValue) update.getUpdateSets().get(2).getExpressions().get(0)).getValue());
 
         assertTrue(update.getWhere() instanceof GreaterThanEquals);
     }
@@ -189,4 +191,61 @@ public class UpdateTest {
   
     assertSqlCanBeParsedAndDeparsed(statement, true);
   }
+
+    @Test
+    public void testUpdateSetsIssue1316() throws JSQLParserException {
+        String sqlStr =
+                "update test\n" +
+                        "set (a, b) = (select '1', '2')";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr =
+                "update test\n" +
+                        "set a = '1'" +
+                        "    , b = '2'";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr =
+                "update test\n" +
+                        "set (a, b) = ('1', '2')";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr =
+                "update test\n" +
+                        "set (a, b) = (values ('1', '2'))";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr =
+                "update test\n" +
+                        "set (a, b) = (1, (select 2))";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr =
+                "UPDATE prpjpaymentbill b\n" +
+                "SET (   b.packagecode\n" +
+                "        , b.packageremark\n" +
+                "        , b.agentcode ) =   (   SELECT  p.payrefreason\n" +
+                "                                        , p.classcode\n" +
+                "                                        , p.riskcode\n" +
+                "                                FROM prpjcommbill p\n" +
+                "                                WHERE p.policertiid = 'SDDH200937010330006366' ) -- this is supposed to be UpdateSet 1\n" +
+                "     , b.payrefnotype = '05' -- this is supposed to be UpdateSet 2\n" +
+                "     , b.packageunit = '4101170402' -- this is supposed to be UpdateSet 3\n" +
+                "WHERE b.payrefno = 'B370202091026000005'";
+
+
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Update update = (Update) CCJSqlParserUtil.parse(sqlStr);
+        Assert.assertEquals(3, update.getUpdateSets().size());
+
+        Assert.assertEquals(3, update.getUpdateSets().get(0).getColumns().size());
+        Assert.assertEquals(1, update.getUpdateSets().get(0).getExpressions().size());
+
+        Assert.assertEquals(1, update.getUpdateSets().get(1).getColumns().size());
+        Assert.assertEquals(1, update.getUpdateSets().get(1).getExpressions().size());
+
+        Assert.assertEquals(1, update.getUpdateSets().get(2).getColumns().size());
+        Assert.assertEquals(1, update.getUpdateSets().get(2).getExpressions().size());
+    }
 }

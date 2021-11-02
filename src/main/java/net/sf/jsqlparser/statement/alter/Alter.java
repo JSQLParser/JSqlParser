@@ -70,6 +70,11 @@ public class Alter implements Statement {
         if (useOnly) {
             b.append("ONLY ");
         }
+
+        if (alterExpressions.size()>0 && alterExpressions.get(0).getOperation()==AlterOperation.RENAME_TABLE && alterExpressions.get(0).isUsingIfExists()) {
+            b.append("IF EXISTS ");
+        }
+
         b.append(table.getFullyQualifiedName()).append(" ");
 
         Iterator<AlterExpression> altIter = alterExpressions.iterator();

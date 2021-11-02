@@ -52,6 +52,11 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         nameparts = Arrays.asList(string);
     }
     
+    public Function withName(String name) {
+        this.setName(name);
+        return this;
+    }
+    
     public void setName(List<String> string) {
         nameparts = string;
     }
@@ -202,8 +207,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
             } else {
                 params = namedParameters.toString();
             }
-        } else if (isAllColumns()) {
-            params = "(*)";
         } else {
             params = "()";
         }

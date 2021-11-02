@@ -22,6 +22,7 @@ Please provide feedback on:
 * API changes: extend visitor with return values (https://github.com/JSQLParser/JSqlParser/issues/901)
 
 ## News
+* Released version **4.2** of JSqlParser
 * Released version **4.1** of JSqlParser
 * Released version **4.0** of JSqlParser
 * The array parsing is the default behaviour. Square bracket quotation has to be enabled using 
@@ -53,10 +54,9 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 4.2
+## Extensions in the latest SNAPSHOT version 4.3
 
-* API change: merge ALL and ANY expressions class
-* allow `CURRENT DATE`in addition to `CURRENT_DATE` (without underbar)
+Additionally, we have fixed many errors and improved the code quality and the test coverage.
 
 ## Extensions of JSqlParser releases
 
@@ -67,16 +67,22 @@ Also I would like to know about needed examples or documentation stuff.
 ## Building from the sources
 
 As the project is a Maven project, building is rather simple by running:
+```shell
+mvn package
+```
 
-	mvn package
+Since 4.2, alternatively Gradle can be used
+```shell
+gradle build
+```
     
 The project requires the following to build:
-- Maven 
+- Maven (or Gradle)
 - JDK 8 or later. The jar will target JDK 8, but the version of the maven-compiler-plugin that JsqlParser uses requires JDK 8+
 
-This will produce the jsqlparser-VERSION.jar file in the target/ directory.
+This will produce the jsqlparser-VERSION.jar file in the `target/` directory (`build/libs/jsqlparser-VERSION.jar` in case of Gradle).
 
-**To build this project without using Maven, one has to build the parser by JavaCC using the CLI options it provides.**
+**To build this project without using Maven or Gradle, one has to build the parser by JavaCC using the CLI options it provides.**
 
 ## Debugging through problems
 
@@ -124,7 +130,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>4.0</version>
+	<version>4.2</version>
 </dependency>
 ```
 

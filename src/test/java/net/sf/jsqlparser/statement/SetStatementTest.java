@@ -11,7 +11,12 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
+import net.sf.jsqlparser.expression.StringValue;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Collections;
 
 /**
  *
@@ -56,5 +61,14 @@ public class SetStatementTest {
     @Test
     public void testValueOnIssue927() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET standard_conforming_strings = on");
+    }
+
+    @Test
+    public void testObject() {
+        SetStatement setStatement = new SetStatement();
+        setStatement.add("standard_conforming_strings", Collections.singletonList(new StringValue("ON")), false);
+        setStatement.withUseEqual(0, true).remove(0);
+
+        Assert.assertEquals(0, setStatement.getCount());
     }
 }

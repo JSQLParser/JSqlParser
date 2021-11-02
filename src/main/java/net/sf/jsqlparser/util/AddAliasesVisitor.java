@@ -52,7 +52,7 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
     @Override
     public void visit(AllTableColumns allTableColumns) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+
     }
 
     @Override

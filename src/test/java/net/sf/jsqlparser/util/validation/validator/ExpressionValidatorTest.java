@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.validation.validator;
 import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
+import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 
 public class ExpressionValidatorTest extends ValidationTestAsserts {
@@ -227,5 +228,16 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
                 EXPRESSIONS);
         validateNoErrors("SELECT JSON_OBJECT( KEY foo VALUE bar FORMAT JSON, foo:bar, foo:bar ABSENT ON NULL) FROM mytbl", 1,
                 EXPRESSIONS);
+    }
+    
+    @Test
+    public void testConnectedByRootOperator() throws JSQLParserException {
+        validateNoErrors("SELECT CONNECT_BY_ROOT last_name as name"
+          + ", salary "
+          + "FROM employees "
+          + "WHERE department_id = 110 "
+          + "CONNECT BY PRIOR employee_id = manager_id"
+          , 1
+          , DatabaseType.ORACLE);
     }
 }

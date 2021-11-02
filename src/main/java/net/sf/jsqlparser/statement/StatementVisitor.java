@@ -11,6 +11,8 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
+import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -111,4 +113,11 @@ public interface StatementVisitor {
     void visit(CreateSynonym createSynonym);
 
     void visit(AlterSession alterSession);
+
+    void visit(IfElseStatement aThis);
+    void visit(RenameTableStatement renameTableStatement);
+
+    void visit(PurgeStatement purgeStatement);
+
+    void visit(AlterSystemStatement alterSystemStatement);
 }

@@ -94,4 +94,10 @@ public class DropTest {
     public void testDropSequence() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP SEQUENCE mysequence");
     }
+
+    @Test
+    public void testOracleMultiColumnDrop() throws JSQLParserException {
+        //assertSqlCanBeParsedAndDeparsed("ALTER TABLE foo DROP (bar, baz)");
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE foo DROP (bar, baz) CASCADE");
+    }
 }

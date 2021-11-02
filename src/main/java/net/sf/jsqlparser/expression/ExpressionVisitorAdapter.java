@@ -15,6 +15,7 @@ import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.ExpressionListItem;
@@ -184,8 +185,6 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             expr.getRightExpression().accept(this);
         } else if (expr.getRightItemsList() != null) {
             expr.getRightItemsList().accept(this);
-        } else {
-            expr.getMultiExpressionList().accept(this);
         }
     }
 
@@ -488,12 +487,16 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(AllColumns allColumns) {
-
+        allColumns.accept((ExpressionVisitor) this);
     }
 
     @Override
     public void visit(AllTableColumns allTableColumns) {
+        allTableColumns.accept((ExpressionVisitor) this);
+    }
 
+    @Override
+    public void visit(AllValue allValue) {
     }
 
     @Override
@@ -503,8 +506,14 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(RowConstructor rowConstructor) {
-        for (Expression expr : rowConstructor.getExprList().getExpressions()) {
-            expr.accept(this);
+        if (rowConstructor.getColumnDefinitions().isEmpty()) {
+            for (Expression expression: rowConstructor.getExprList().getExpressions()) {
+                expression.accept(this);
+              }
+        } else {
+            for (ColumnDefinition columnDefinition : rowConstructor.getColumnDefinitions()) {
+                columnDefinition.accept(this);
+            }
         }
     }
 
@@ -605,4 +614,18 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
             expr.getExpression().accept(this);
         }
     }
+
+    @Override
+    public void visit(ConnectByRootOperator connectByRootOperator) {
+        connectByRootOperator.getColumn().accept(this);
+    }
+    
+    @Override
+    public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
+        oracleNamedFunctionParameter.getExpression().accept(this);
+    }
+    
+    public void visit(ColumnDefinition columnDefinition) {
+       columnDefinition.accept(this);
+     }
 }

@@ -16,6 +16,8 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.PurgeStatement;
+import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
@@ -28,6 +30,8 @@ import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
+import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
@@ -265,16 +269,38 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(SavepointStatement savepointStatement) {
-        //@todo: write something usefull here
+        //TODO: not yet implemented
     }
 
     @Override
     public void visit(RollbackStatement rollbackStatement) {
-        //@todo: write something usefull here
+        //TODO: not yet implemented
     }
     
+    @Override
     public void visit(AlterSession alterSession) {
-        //@todo: write something usefull here
+        //TODO: not yet implemented
     }
 
+    @Override
+    public void visit(IfElseStatement ifElseStatement) {
+        ifElseStatement.getIfStatement().accept(this);
+        if (ifElseStatement.getElseStatement()!=null) {
+            ifElseStatement.getElseStatement().accept(this);
+        }
+    }
+
+    public void visit(RenameTableStatement renameTableStatement) {
+        //TODO: not yet implemented
+    }
+
+    @Override
+    public void visit(PurgeStatement purgeStatement) {
+        //TODO: not yet implemented
+    }
+
+    @Override
+    public void visit(AlterSystemStatement alterSystemStatement) {
+        //TODO: not yet implemented
+    }
 }

@@ -9,54 +9,7 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import net.sf.jsqlparser.expression.AnalyticExpression;
-import net.sf.jsqlparser.expression.AnyComparisonExpression;
-import net.sf.jsqlparser.expression.ArrayConstructor;
-import net.sf.jsqlparser.expression.ArrayExpression;
-import net.sf.jsqlparser.expression.BinaryExpression;
-import net.sf.jsqlparser.expression.CaseExpression;
-import net.sf.jsqlparser.expression.CastExpression;
-import net.sf.jsqlparser.expression.CollateExpression;
-import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
-import net.sf.jsqlparser.expression.DateValue;
-import net.sf.jsqlparser.expression.DoubleValue;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.ExtractExpression;
-import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.HexValue;
-import net.sf.jsqlparser.expression.IntervalExpression;
-import net.sf.jsqlparser.expression.JdbcNamedParameter;
-import net.sf.jsqlparser.expression.JdbcParameter;
-import net.sf.jsqlparser.expression.JsonAggregateFunction;
-import net.sf.jsqlparser.expression.JsonExpression;
-import net.sf.jsqlparser.expression.JsonFunction;
-import net.sf.jsqlparser.expression.KeepExpression;
-import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.expression.MySQLGroupConcat;
-import net.sf.jsqlparser.expression.NextValExpression;
-import net.sf.jsqlparser.expression.NotExpression;
-import net.sf.jsqlparser.expression.NullValue;
-import net.sf.jsqlparser.expression.NumericBind;
-import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.expression.Parenthesis;
-import net.sf.jsqlparser.expression.RowConstructor;
-import net.sf.jsqlparser.expression.RowGetExpression;
-import net.sf.jsqlparser.expression.SignedExpression;
-import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.expression.TimeKeyExpression;
-import net.sf.jsqlparser.expression.TimeValue;
-import net.sf.jsqlparser.expression.TimestampValue;
-import net.sf.jsqlparser.expression.TimezoneExpression;
-import net.sf.jsqlparser.expression.UserVariable;
-import net.sf.jsqlparser.expression.ValueListExpression;
-import net.sf.jsqlparser.expression.VariableAssignment;
-import net.sf.jsqlparser.expression.WhenClause;
-import net.sf.jsqlparser.expression.WindowElement;
-import net.sf.jsqlparser.expression.WindowOffset;
-import net.sf.jsqlparser.expression.WindowRange;
-import net.sf.jsqlparser.expression.XMLSerializeExpr;
+import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -95,6 +48,9 @@ import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
@@ -193,8 +149,6 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
                 validateFeature(c, Feature.oracleOldJoinSyntax);
             }
         }
-
-        validateOptionalMultiExpressionList(inExpression.getMultiExpressionList());
         validateOptionalExpression(inExpression.getRightExpression(), this);
         validateOptionalItemsList(inExpression.getRightItemsList());
     }
@@ -499,7 +453,13 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(RowConstructor rowConstructor) {
-        validateOptionalExpressionList(rowConstructor.getExprList());
+        if (rowConstructor.getColumnDefinitions().isEmpty()) {
+            validateOptionalExpressionList(rowConstructor.getExprList());
+        } else {
+            for (ColumnDefinition columnDefinition: rowConstructor.getColumnDefinitions()) {
+                validateName(NamedObject.column, columnDefinition.getColumnName());
+            }
+        }
     }
 
     @Override
@@ -589,6 +549,29 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     @Override
     public void visit(JsonFunction expression) {
         // no idea what this is good for
+    }
+
+    @Override
+    public void visit(ConnectByRootOperator connectByRootOperator) {
+        connectByRootOperator.getColumn().accept(this);
+    }
+    
+    @Override
+    public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
+        oracleNamedFunctionParameter.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(AllColumns allColumns) {
+    }
+
+    @Override
+    public void visit(AllTableColumns allTableColumns) {
+    }
+
+    @Override
+    public void visit(AllValue allValue) {
+
     }
 
 }

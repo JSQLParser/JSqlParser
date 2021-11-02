@@ -747,5 +747,35 @@ public class AlterTest {
             assertNull(alterExpression.getReferentialAction(Type.UPDATE));
         }
     }
+    
+    @Test
+    public void testRowFormatKeywordIssue1033() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE basic_test_case "
+            + "ADD COLUMN display_name varchar(512) NOT NULL DEFAULT '' AFTER name"
+            + ", ADD KEY test_case_status (test_case_status)"
+            + ", add KEY display_name (display_name), ROW_FORMAT=DYNAMIC", true);
+        
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE t1 MOVE TABLESPACE users", true);
+        
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test_tab MOVE PARTITION test_tab_q2 COMPRESS", true);
+    }
+
+    @Test
+    public void testAlterTableDropConstraintsIssue1342() throws JSQLParserException {
+        // Oracle compliant
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE a DROP PRIMARY KEY", true);
+
+        // Oracle compliant
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE a DROP UNIQUE (b, c, d)", true);
+
+        // NOT Oracle compliant!
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE a DROP FOREIGN KEY (b, c, d)", true);
+    }
+
+    @Test
+    public void testAlterTableChangeColumnDropNotNull() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE a MODIFY COLUMN b DROP NOT NULL", true);
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE a MODIFY (COLUMN b DROP NOT NULL, COLUMN c DROP NOT NULL)", true);
+    }
 
 }

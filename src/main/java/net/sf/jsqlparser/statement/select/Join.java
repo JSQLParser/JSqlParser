@@ -9,11 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
@@ -32,8 +29,8 @@ public class Join extends ASTNodeAccessImpl {
     private boolean straight = false;
     private boolean apply = false;
     private FromItem rightItem;
-    private Expression onExpression;
-    private List<Column> usingColumns;
+    private final LinkedList<Expression> onExpressions = new LinkedList<>();
+    private final LinkedList<Column> usingColumns = new LinkedList<>();
     private KSQLJoinWindow joinWindow;
 
     public boolean isSimple() {
@@ -228,17 +225,35 @@ public class Join extends ASTNodeAccessImpl {
     /**
      * Returns the "ON" expression (if any)
      */
+    @Deprecated
     public Expression getOnExpression() {
-        return onExpression;
+        return onExpressions.get(0);
     }
 
+    public Collection<Expression> getOnExpressions() {
+        return onExpressions;
+    }
+
+    @Deprecated
     public Join withOnExpression(Expression expression) {
         this.setOnExpression(expression);
         return this;
     }
 
+    @Deprecated
     public void setOnExpression(Expression expression) {
-        onExpression = expression;
+        onExpressions.add(0, expression);
+    }
+
+    public Join addOnExpression(Expression expression) {
+        onExpressions.add(expression);
+        return this;
+    }
+
+    public Join setOnExpressions(Collection<Expression> expressions) {
+        onExpressions.clear();
+        onExpressions.addAll(expressions);
+        return this;
     }
 
     /**
@@ -254,7 +269,8 @@ public class Join extends ASTNodeAccessImpl {
     }
 
     public void setUsingColumns(List<Column> list) {
-        usingColumns = list;
+        usingColumns.clear();
+        usingColumns.addAll(list);
     }
 
     public boolean isWindowJoin() {
@@ -281,46 +297,52 @@ public class Join extends ASTNodeAccessImpl {
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
-        if (isSimple() && isOuter()) {
-            return "OUTER " + rightItem;
-        } else if (isSimple()) {
-            return "" + rightItem;
-        } else {
-            String type = "";
+        StringBuilder builder = new StringBuilder();
 
+        if (isSimple() && isOuter()) {
+            builder.append("OUTER ").append(rightItem);
+        } else if (isSimple()) {
+            builder.append(rightItem);
+        } else {
             if (isRight()) {
-                type += "RIGHT ";
+                builder.append("RIGHT ");
             } else if (isNatural()) {
-                type += "NATURAL ";
+                builder.append("NATURAL ");
             } else if (isFull()) {
-                type += "FULL ";
+                builder.append("FULL ");
             } else if (isLeft()) {
-                type += "LEFT ";
+                builder.append("LEFT ");
             } else if (isCross()) {
-                type += "CROSS ";
+                builder.append("CROSS ");
             }
 
             if (isOuter()) {
-                type += "OUTER ";
+                builder.append("OUTER ");
             } else if (isInner()) {
-                type += "INNER ";
+                builder.append("INNER ");
             } else if (isSemi()) {
-                type += "SEMI ";
+                builder.append("SEMI ");
             }
 
             if (isStraight()) {
-                type = "STRAIGHT_JOIN ";
+                builder.append("STRAIGHT_JOIN ");
             } else if (isApply()) {
-                type += "APPLY ";
+                builder.append("APPLY ");
             } else {
-                type += "JOIN ";
+                builder.append("JOIN ");
             }
 
-            return type + rightItem + ((joinWindow != null) ? " WITHIN " + joinWindow : "")
-                    + ((onExpression != null) ? " ON " + onExpression + "" : "")
-                    + PlainSelect.getFormatedList(usingColumns, "USING", true, true);
+            builder.append(rightItem).append((joinWindow != null) ? " WITHIN " + joinWindow : "");
         }
 
+        for (Expression onExpression: onExpressions) {
+            builder.append(" ON ").append(onExpression);
+        }
+        if (usingColumns.size()>0) {
+            builder.append(PlainSelect.getFormatedList(usingColumns, "USING", true, true));
+        }
+
+        return builder.toString();
     }
 
     public Join addUsingColumns(Column... usingColumns) {
@@ -333,13 +355,5 @@ public class Join extends ASTNodeAccessImpl {
         List<Column> collection = Optional.ofNullable(getUsingColumns()).orElseGet(ArrayList::new);
         collection.addAll(usingColumns);
         return this.withUsingColumns(collection);
-    }
-
-    public <E extends FromItem> E getRightItem(Class<E> type) {
-        return type.cast(getRightItem());
-    }
-
-    public <E extends Expression> E getOnExpression(Class<E> type) {
-        return type.cast(getOnExpression());
     }
 }

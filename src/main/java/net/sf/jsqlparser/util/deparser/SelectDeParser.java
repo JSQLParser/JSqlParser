@@ -12,12 +12,7 @@ package net.sf.jsqlparser.util.deparser;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
-import net.sf.jsqlparser.expression.MySQLIndexHint;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.expression.SQLServerHints;
+import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
@@ -224,6 +219,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (plainSelect.isUseBrackets()) {
             buffer.append(")");
         }
+        
     }
 
     @Override
@@ -257,11 +253,16 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         buffer.append(subSelect.isUseBrackets() ? ")" : "");
         Alias alias = subSelect.getAlias();
         if (alias != null) {
-            buffer.append(alias.toString());
+            buffer.append(alias);
         }
         Pivot pivot = subSelect.getPivot();
         if (pivot != null) {
             pivot.accept(this);
+        }
+
+        UnPivot unPivot = subSelect.getUnPivot();
+        if (unPivot != null) {
+            unPivot.accept(this);
         }
     }
 
@@ -306,12 +307,17 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         boolean showOptions = unpivot.getIncludeNullsSpecified();
         boolean includeNulls = unpivot.getIncludeNulls();
         List<Column> unpivotForClause = unpivot.getUnPivotForClause();
-        buffer.append(" UNPIVOT").append(showOptions && includeNulls ? " INCLUDE NULLS" : "")
-                .append(showOptions && !includeNulls ? " EXCULDE NULLS" : "").append(" (")
-                .append(unpivot.getUnPivotClause()).append(" FOR ")
-                .append(PlainSelect.getStringList(unpivotForClause, true,
+        buffer
+                .append(" UNPIVOT")
+                .append(showOptions && includeNulls ? " INCLUDE NULLS" : "")
+                .append(showOptions && !includeNulls ? " EXCLUDE NULLS" : "")
+                .append(" (").append(unpivot.getUnPivotClause())
+                .append(" FOR ").append(PlainSelect.getStringList(unpivotForClause, true,
                         unpivotForClause != null && unpivotForClause.size() > 1))
                 .append(" IN ").append(PlainSelect.getStringList(unpivot.getUnPivotInClause(), true, true)).append(")");
+        if (unpivot.getAlias() != null) {
+            buffer.append(unpivot.getAlias().toString());
+        }
     }
 
     @Override
@@ -333,12 +339,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     public void deparseOffset(Offset offset) {
         // OFFSET offset
         // or OFFSET offset (ROW | ROWS)
-        if (offset.getOffsetJdbcParameter() != null) {
-            buffer.append(" OFFSET ").append(offset.getOffsetJdbcParameter());
-        } else {
-            buffer.append(" OFFSET ");
-            buffer.append(offset.getOffset());
-        }
+        buffer.append(" OFFSET ");
+        buffer.append(offset.getOffset());
         if (offset.getOffsetParam() != null) {
             buffer.append(" ").append(offset.getOffsetParam());
         }
@@ -428,11 +430,11 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             buffer.append(" WITHIN ");
             buffer.append(join.getJoinWindow().toString());
         }
-        if (join.getOnExpression() != null) {
+        for (Expression onExpression : join.getOnExpressions()) {
             buffer.append(" ON ");
-            join.getOnExpression().accept(expressionVisitor);
+            onExpression.accept(expressionVisitor);
         }
-        if (join.getUsingColumns() != null) {
+        if (join.getUsingColumns().size()>0) {
             buffer.append(" USING (");
             for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator.hasNext();) {
                 Column column = iterator.next();
@@ -532,6 +534,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     public void visit(ParenthesisFromItem parenthesis) {
         buffer.append("(");
         parenthesis.getFromItem().accept(this);
+        
         buffer.append(")");
         if (parenthesis.getAlias() != null) {
             buffer.append(parenthesis.getAlias().toString());
