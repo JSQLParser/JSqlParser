@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.statement.select.SubSelect;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -24,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
-import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -72,7 +73,7 @@ public class ExpressionVisitorAdapterTest {
         });
 
         assertTrue(exprList.get(0) instanceof Expression);
-        assertTrue(exprList.get(1) instanceof ItemsList);
+        assertTrue(exprList.get(1) instanceof ExpressionList);
     }
 
     @Test
@@ -88,12 +89,12 @@ public class ExpressionVisitorAdapterTest {
             public void visit(InExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
-                exprList.add(expr.getRightItemsList());
+                exprList.add(expr.getRightExpression());
             }
         });
 
         assertTrue(exprList.get(0) instanceof RowConstructor);
-        assertTrue(exprList.get(1) instanceof ItemsList);
+        assertTrue(exprList.get(1) instanceof SubSelect);
     }
 
     @Test

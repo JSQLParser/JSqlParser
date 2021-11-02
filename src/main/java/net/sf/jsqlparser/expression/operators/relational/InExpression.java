@@ -19,8 +19,6 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     private ItemsList rightItemsList;
     private boolean not = false;
     private Expression rightExpression;
-    private MultiExpressionList multiExpressionList;
-
     private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
 
     public InExpression() {
@@ -105,21 +103,12 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         if (not) {
             statementBuilder.append("NOT ");
         }
-
         statementBuilder.append("IN ");
-
-        if (multiExpressionList != null) {
-            statementBuilder.append("(");
-            statementBuilder.append(multiExpressionList);
-            statementBuilder.append(")");
+        if (rightExpression == null) {
+            statementBuilder.append(rightItemsList);
         } else {
-            if (rightExpression == null) {
-                statementBuilder.append(rightItemsList);
-            } else {
-                statementBuilder.append(rightExpression);
-            }
+            statementBuilder.append(rightExpression);
         }
-
         return statementBuilder.toString();
     }
 
@@ -135,21 +124,8 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         }
     }
 
-    public MultiExpressionList getMultiExpressionList() {
-        return multiExpressionList;
-    }
-
-    public void setMultiExpressionList(MultiExpressionList multiExpressionList) {
-        this.multiExpressionList = multiExpressionList;
-    }
-
     public InExpression withRightExpression(Expression rightExpression) {
         this.setRightExpression(rightExpression);
-        return this;
-    }
-
-    public InExpression withMultiExpressionList(MultiExpressionList multiExpressionList) {
-        this.setMultiExpressionList(multiExpressionList);
         return this;
     }
 

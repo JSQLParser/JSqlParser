@@ -4895,4 +4895,31 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT * FROM t1 WHERE CASE WHEN 1 = 1 THEN c1 = 'a' ELSE c2 = 'b' AND c4 = 'd' END", true);
     }
+  
+    public void testComplexInExpressionIssue905() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "select * " +
+                        "from table_a " +
+                        "where other_id in (" +
+                        "   (select id from table_b where name like '%aa%')" +
+                        "   , (select id from table_b where name like '%bb%')" +
+                        ")", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "select * from v.e\n" +
+                        "where\n" +
+                        "\tcid <> rid\n" +
+                        "\tand  rid  not in\n" +
+                        "\t(\n" +
+                        "\t\t(select distinct  rid  from  v.s )\n" +
+                        "\t\tunion\n" +
+                        "\t\t(select distinct  rid  from v.p )\n" +
+                        "\t)\n" +
+                        "\tand  \"timestamp\"  <= 1298505600000", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "select * " +
+                        "from table_a " +
+                        "where (a, b, c) in ((1, 2, 3), (3, 4, 5))", true);
+    }
 }
