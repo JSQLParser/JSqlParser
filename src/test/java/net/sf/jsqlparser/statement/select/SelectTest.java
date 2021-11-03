@@ -934,7 +934,7 @@ public class SelectTest {
         assertNull(((PlainSelect) setList.getSelects().get(2)).getLimit().getOffset());
         assertEquals(new LongValue(4), ((PlainSelect) setList.getSelects().get(2)).getOffset().getOffset());
 
-        // use brackets for toString
+        // use brakets for toString
         // use standard limit syntax
         String statementToString = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
                 + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION "
@@ -4886,6 +4886,39 @@ public class SelectTest {
     public void testCanCallSubSelectOnWithItemEvenIfNotSetIssue1369() {
         WithItem item = new WithItem();
         assertThat(item.getSubSelect()).isNull();
+    }
+
+    @Test
+    public void testCaseElseExpressionIssue1375() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM t1 WHERE CASE WHEN 1 = 1 THEN c1 = 'a' ELSE c2 = 'b' AND c4 = 'd' END", true);
+    }
+
+    public void testComplexInExpressionIssue905() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "select * " +
+                        "from table_a " +
+                        "where other_id in (" +
+                        "   (select id from table_b where name like '%aa%')" +
+                        "   , (select id from table_b where name like '%bb%')" +
+                        ")", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "select * from v.e\n" +
+                        "where\n" +
+                        "\tcid <> rid\n" +
+                        "\tand  rid  not in\n" +
+                        "\t(\n" +
+                        "\t\t(select distinct  rid  from  v.s )\n" +
+                        "\t\tunion\n" +
+                        "\t\t(select distinct  rid  from v.p )\n" +
+                        "\t)\n" +
+                        "\tand  \"timestamp\"  <= 1298505600000", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "select * " +
+                        "from table_a " +
+                        "where (a, b, c) in ((1, 2, 3), (3, 4, 5))", true);
     }
 
     @Test
