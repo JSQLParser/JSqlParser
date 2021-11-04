@@ -4291,7 +4291,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
     [ switchExp=Condition() ]
     ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
     [<K_ELSE> (LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] elseExp=CaseWhenExpression() [")" { ((CaseExpression) elseExp).setUsingBrackets(true); } ] 
-              | elseExp=Condition()
+              | elseExp=Expression()
               )
     ]
     <K_END>  { caseCounter--; }
@@ -4322,21 +4322,6 @@ WhenClause WhenThenSearchCondition():
        return whenThen;
     }
 }
-
-/*WhenClause WhenThenValue():
-{
-    WhenClause whenThen = new WhenClause();
-    Expression whenExp = null;
-    Expression thenExp = null;
-}
-{
-    <K_WHEN> whenExp=SimpleExpression() <K_THEN> thenExp=SimpleExpression()
-    {
-       whenThen.setWhenExpression(whenExp);
-       whenThen.setThenExpression(thenExp);
-       return whenThen;
-    }
-}*/
 
 RowConstructor RowConstructor(): {
     RowConstructor rowConstructor = new RowConstructor();
