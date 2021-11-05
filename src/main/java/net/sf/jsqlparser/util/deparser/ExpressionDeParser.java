@@ -264,9 +264,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public void visit(LikeExpression likeExpression) {
         visitBinaryExpression(likeExpression,
                 (likeExpression.isNot() ? " NOT" : "") + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
-        String escape = likeExpression.getEscape();
+        Expression escape = likeExpression.getEscape();
         if (escape != null) {
-            buffer.append(" ESCAPE '").append(escape).append('\'');
+            buffer.append(" ESCAPE ");
+            likeExpression.getEscape().accept(this);
         }
     }
 

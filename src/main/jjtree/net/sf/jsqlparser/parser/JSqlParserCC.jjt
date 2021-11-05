@@ -3176,10 +3176,11 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
 {
     LikeExpression result = new LikeExpression();
     Expression rightExpression = null;
+    Expression escape;
 }
 {
     [<K_NOT> { result.setNot(true); } ] ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
-    [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
+    [<K_ESCAPE> escape=Expression() { result.setEscape(escape); }]
     {
         result.setLeftExpression(leftExpression);
         result.setRightExpression(rightExpression);

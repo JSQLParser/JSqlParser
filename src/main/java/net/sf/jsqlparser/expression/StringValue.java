@@ -11,6 +11,8 @@ package net.sf.jsqlparser.expression;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
@@ -94,5 +96,18 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
     public StringValue withValue(String value) {
         this.setValue(value);
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StringValue that = (StringValue) o;
+        return Objects.equals(value, that.value) && Objects.equals(prefix, that.prefix);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, prefix);
     }
 }

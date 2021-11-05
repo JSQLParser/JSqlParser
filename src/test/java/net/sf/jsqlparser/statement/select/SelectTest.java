@@ -1448,7 +1448,7 @@ public class SelectTest {
         plainSelect = (PlainSelect) select.getSelectBody();
         assertEquals("test", ((StringValue) ((LikeExpression) plainSelect.getWhere()).
                 getRightExpression()).getValue());
-        assertEquals("test2", ((LikeExpression) plainSelect.getWhere()).getEscape());
+        assertEquals(new StringValue("test2"), ((LikeExpression) plainSelect.getWhere()).getEscape());
     }
 
     @Test
