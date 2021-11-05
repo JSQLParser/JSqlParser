@@ -71,12 +71,63 @@ jacocoTestReport {
 jacocoTestCoverageVerification {
     violationRules {
         rule {
+            //element = 'CLASS'
             limit {
-                minimum = JavaVersion.current().isJava8() // for any reason, different results
-                        ? 0.83                            // depending on the Java Version
-                        : 0.842
+                minimum = 0.84
             }
+            excludes = [
+                    'net.sf.jsqlparser.util.validation.*',
+                    'net.sf.jsqlparser.**.*Adapter',
+                    'net.sf.jsqlparser.parser.JJTCCJSqlParserState',
+                    'net.sf.jsqlparser.parser.TokenMgrError',
+                    'net.sf.jsqlparser.parser.StreamProvider',
+                    'net.sf.jsqlparser.parser.CCJSqlParserTokenManager',
+                    'net.sf.jsqlparser.parser.ParseException',
+                    'net.sf.jsqlparser.parser.SimpleNode',
+                    'net.sf.jsqlparser.parser.SimpleCharStream',
+                    'net.sf.jsqlparser.parser.StringProvider',
+            ]
         }
+        rule {
+            //element = 'CLASS'
+            limit {
+                counter = 'LINE'
+                value = 'MISSEDCOUNT'
+                maximum = 5458
+                }
+            excludes = [
+                    'net.sf.jsqlparser.util.validation.*',
+                    'net.sf.jsqlparser.**.*Adapter',
+                    'net.sf.jsqlparser.parser.JJTCCJSqlParserState',
+                    'net.sf.jsqlparser.parser.TokenMgrError',
+                    'net.sf.jsqlparser.parser.StreamProvider',
+                    'net.sf.jsqlparser.parser.CCJSqlParserTokenManager',
+                    'net.sf.jsqlparser.parser.ParseException',
+                    'net.sf.jsqlparser.parser.SimpleNode',
+                    'net.sf.jsqlparser.parser.SimpleCharStream',
+                    'net.sf.jsqlparser.parser.StringProvider',
+            ]
+        }
+//        rule {
+//            element = 'CLASS'
+//            limit {
+//                counter = 'LINE'
+//                value = 'MISSEDRATIO'
+//                maximum = 0.3
+//            }
+//            excludes = [
+//                    'net.sf.jsqlparser.util.validation.*',
+//                    'net.sf.jsqlparser.**.*Adapter',
+//                    'net.sf.jsqlparser.parser.JJTCCJSqlParserState',
+//                    'net.sf.jsqlparser.parser.TokenMgrError',
+//                    'net.sf.jsqlparser.parser.StreamProvider',
+//                    'net.sf.jsqlparser.parser.CCJSqlParserTokenManager',
+//                    'net.sf.jsqlparser.parser.ParseException',
+//                    'net.sf.jsqlparser.parser.SimpleNode',
+//                    'net.sf.jsqlparser.parser.SimpleCharStream',
+//                    'net.sf.jsqlparser.parser.StringProvider',
+//            ]
+//        }
     }
 }
 
