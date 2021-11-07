@@ -34,6 +34,8 @@ public class CreateTable implements Statement {
     private Table likeTable;
     private boolean selectParenthesis;
     private boolean ifNotExists = false;
+    private boolean orReplace = false;
+
     private RowMovement rowMovement;
 
     @Override
@@ -134,6 +136,14 @@ public class CreateTable implements Statement {
         this.ifNotExists = ifNotExists;
     }
 
+    public boolean isOrReplace() {
+        return orReplace;
+    }
+
+    public void setOrReplace(boolean orReplace) {
+        this.orReplace = orReplace;
+    }
+
     public boolean isSelectParenthesis() {
         return selectParenthesis;
     }
@@ -158,6 +168,7 @@ public class CreateTable implements Statement {
 
         sql = "CREATE " + (unlogged ? "UNLOGGED " : "")
                 + (!"".equals(createOps) ? createOps + " " : "")
+                + (orReplace ? "OR REPLACE " : "")
                 + "TABLE " + (ifNotExists ? "IF NOT EXISTS " : "") + table;
 
         if (columns != null && !columns.isEmpty()) {

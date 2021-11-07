@@ -45,6 +45,12 @@ public class CreateTableTest {
   private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
   @Test
+  public void testCreateTableOrReplace() throws JSQLParserException {
+    String statement = "CREATE OR REPLACE TABLE testtab (\"test\" varchar (255))";
+    assertSqlCanBeParsedAndDeparsed(statement);
+  }
+
+  @Test
   public void testCreateTable2() throws JSQLParserException {
     String statement = "CREATE TABLE testtab (\"test\" varchar (255))";
     assertSqlCanBeParsedAndDeparsed(statement);
