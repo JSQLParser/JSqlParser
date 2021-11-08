@@ -153,7 +153,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CASCADE: "CASCADE">
 |   <K_CASE:"CASE">
 |   <K_CASEWHEN:"CASEWHEN">  /* H2 casewhen function */
-|   <K_CAST: ( "CAST" | "TRY_CAST" ) >
+|   <K_CAST: "CAST">
+|   <K_TRY_CAST: "TRY_CAST">
 |   <K_CHARACTER:"CHARACTER">
 |   <K_CHANGE:"CHANGE">
 |   <K_CHECK:"CHECK">
@@ -1612,7 +1613,7 @@ String RelObjectNameWithoutValue() :
     (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> 
       | tk=<K_ALGORITHM> 
       | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE> | tk=<K_CHARACTER>
-      | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_COSTS> | tk=<K_DISABLE> | tk=<K_DESC>
+      | tk=<K_CAST> | tk =<K_TRY_CAST> | tk=<K_COMMENT> | tk=<K_COSTS> | tk=<K_DISABLE> | tk=<K_DESC>
       | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FILTER> | tk=<K_FIRST> | tk=<K_FOLLOWING> | tk=<K_JSON>
       | tk=<K_LAST> | tk=<K_LEADING> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE>
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_XML>
@@ -3667,6 +3668,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2) retval=CastExpression()
 
+        | LOOKAHEAD(2) retval=TryCastExpression()
+
         //| LOOKAHEAD(2) retval=RowConstructor()
 
         // support timestamp expressions
@@ -4271,6 +4274,31 @@ CastExpression CastExpression():
         | type=ColDataType() { retval.setType(type); } 
     )
     ")" 
+
+    {
+        retval.setLeftExpression(expression);
+        return retval;
+    }
+}
+
+TryCastExpression TryCastExpression():
+{
+    TryCastExpression retval = new TryCastExpression();
+    ColDataType type = null;
+    RowConstructor rowConstructor = null;
+    Expression expression = null;
+    boolean    useCastKeyword;
+}
+{
+    <K_TRY_CAST>
+    "("
+    expression=SimpleExpression()
+    <K_AS> { retval.setUseCastKeyword(true); }
+    (
+        LOOKAHEAD(3) rowConstructor = RowConstructor() { retval.setRowConstructor(rowConstructor); }
+        | type=ColDataType() { retval.setType(type); }
+    )
+    ")"
 
     {
         retval.setLeftExpression(expression);

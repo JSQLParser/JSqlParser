@@ -599,6 +599,21 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public void visit(TryCastExpression cast) {
+        if (cast.isUseCastKeyword()) {
+            buffer.append("TRY_CAST(");
+            cast.getLeftExpression().accept(this);
+            buffer.append(" AS ");
+            buffer.append( cast.getRowConstructor()!=null ? cast.getRowConstructor() : cast.getType() );
+            buffer.append(")");
+        } else {
+            cast.getLeftExpression().accept(this);
+            buffer.append("::");
+            buffer.append(cast.getType());
+        }
+    }
+
+    @Override
     public void visit(Modulo modulo) {
         visitBinaryExpression(modulo, " % ");
     }
