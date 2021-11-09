@@ -113,6 +113,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         return tables;
     }
 
+    public List<Table> getFullTableList(Expression expr) {
+        init(true);
+        expr.accept(this);
+        return fullTables;
+    }
+
     @Override
     public void visit(WithItem withItem) {
         otherItemNames.add(withItem.getName().toLowerCase());
