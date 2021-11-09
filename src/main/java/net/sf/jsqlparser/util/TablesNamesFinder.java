@@ -77,7 +77,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
     private List<String> tables;
-    private List<Table> fullTables;
+    private List<Table> tableNames;
     private boolean allowColumnProcessing = false;
 
     private List<String> otherItemNames;
@@ -91,7 +91,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public List<Table> getFullTableList(Statement statement) {
         init(false);
         statement.accept(this);
-        return fullTables;
+        return tableNames;
     }
 
     @Override
@@ -116,7 +116,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public List<Table> getFullTableList(Expression expr) {
         init(true);
         expr.accept(this);
-        return fullTables;
+        return tableNames;
     }
 
     @Override
@@ -171,7 +171,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         if (!otherItemNames.contains(tableWholeName.toLowerCase())
                 && !tables.contains(tableWholeName)) {
             tables.add(tableWholeName);
-            fullTables.add(tableName);
+            tableNames.add(tableName);
         }
     }
 
@@ -526,7 +526,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     protected void init(boolean allowColumnProcessing) {
         otherItemNames = new ArrayList<String>();
         tables = new ArrayList<String>();
-        fullTables = new ArrayList<>();
+        tableNames = new ArrayList<>();
         this.allowColumnProcessing = allowColumnProcessing;
     }
 
