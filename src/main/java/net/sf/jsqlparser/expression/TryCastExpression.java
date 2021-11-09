@@ -18,16 +18,16 @@ public class TryCastExpression extends ASTNodeAccessImpl implements Expression {
     private ColDataType type;
     private RowConstructor rowConstructor;
     private boolean useCastKeyword = true;
-    
+
     public RowConstructor getRowConstructor() {
         return rowConstructor;
     }
-    
+
     public void setRowConstructor(RowConstructor rowConstructor) {
         this.rowConstructor = rowConstructor;
         this.type = null;
     }
-    
+
     public TryCastExpression withRowConstructor(RowConstructor rowConstructor) {
         setRowConstructor(rowConstructor);
         return this;
@@ -67,8 +67,8 @@ public class TryCastExpression extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         if (useCastKeyword) {
             return rowConstructor!=null
-              ? "CAST(" + leftExpression + " AS " + rowConstructor.toString() + ")"
-              : "CAST(" + leftExpression + " AS " + type.toString() + ")";
+              ? "TRY_CAST(" + leftExpression + " AS " + rowConstructor.toString() + ")"
+              : "TRY_CAST(" + leftExpression + " AS " + type.toString() + ")";
         } else {
             return leftExpression + "::" + type.toString();
         }
