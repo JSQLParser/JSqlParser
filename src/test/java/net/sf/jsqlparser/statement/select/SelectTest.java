@@ -1661,6 +1661,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testComplexConditionInSelectClause() throws JSQLParserException {
+        String stmt = "SELECT (CASE WHEN col IS NULL THEN False ELSE True END) OR (CASE WHEN col2 IS NULL THEN False ELSE True END) FROM tbl";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testConcatProblem2_5() throws JSQLParserException {
         String stmt = "SELECT max((a || b) || c) FROM testtable";
         assertSqlCanBeParsedAndDeparsed(stmt);

@@ -2022,7 +2022,7 @@ SelectExpressionItem SelectExpressionItem():
     Alias alias = null;
 }
 {
-      expression=Condition() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
+      expression=Expression() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
              [alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
 }
 
