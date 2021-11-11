@@ -3614,6 +3614,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     Expression retval = null;
     CastExpression castExpr = null;
     TimezoneExpression timezoneExpr = null;
+    Expression timezoneRightExpr = null;
     Token token = null;
     Token sign = null;
     String tmp = "";
@@ -3738,11 +3739,11 @@ Expression PrimaryExpression() #PrimaryExpression:
         retval=castExpr;
     } )*
 
-    ( <K_AT> <K_DATETIMELITERAL> <K_ZONE> token=<S_CHAR_LITERAL> {
+    ( <K_AT> <K_DATETIMELITERAL> <K_ZONE> timezoneRightExpr=PrimaryExpression() {
         if (timezoneExpr == null)
             timezoneExpr = new TimezoneExpression();
 
-        timezoneExpr.addTimezoneExpression(token.image);
+        timezoneExpr.addTimezoneExpression(timezoneRightExpr);
     } )*
 
     {

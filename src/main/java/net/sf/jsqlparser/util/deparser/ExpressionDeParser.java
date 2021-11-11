@@ -923,8 +923,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public void visit(TimezoneExpression var) {
         var.getLeftExpression().accept(this);
 
-        for (String expr : var.getTimezoneExpressions()) {
-            buffer.append(" AT TIME ZONE " + expr);
+        for (Expression expr : var.getTimezoneExpressions()) {
+            buffer.append(" AT TIME ZONE ");
+            expr.accept(this);
         }
     }
 

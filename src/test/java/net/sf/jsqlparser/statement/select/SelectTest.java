@@ -887,6 +887,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testTimezoneExpressionWithColumnBasedTimezone() throws JSQLParserException {
+        String stmt = "SELECT 1 FROM tbl WHERE col AT TIME ZONE timezone_col < '2021-11-05 00:00:35'::date + INTERVAL '1 day' * 0";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testUnionWithOrderByAndLimitAndNoBrackets() throws JSQLParserException {
         String stmt = "SELECT id FROM table1 UNION SELECT id FROM table2 ORDER BY id ASC LIMIT 55";
         assertSqlCanBeParsedAndDeparsed(stmt);
