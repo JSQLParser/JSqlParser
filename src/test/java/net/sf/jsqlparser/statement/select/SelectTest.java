@@ -1167,6 +1167,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testQuotedCastExpression() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT col FROM test WHERE status = CASE WHEN anothercol = 5 THEN 'pending'::\"enum_test\" END");
+    }
+
+    @Test
     public void testWhere() throws JSQLParserException {
 
         final String statement = "SELECT * FROM tab1 WHERE";
