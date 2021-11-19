@@ -1035,11 +1035,12 @@ List<ExplainStatement.Option> ExplainStatementOptions():
 
 UseStatement Use(): {
     String name;
+    boolean hasSchemaKeyword = false;
 }
 {
-    <K_USE> name = RelObjectNameExt()
+    <K_USE> [ LOOKAHEAD(2) <K_SCHEMA> { hasSchemaKeyword = true; } ] name = RelObjectNameExt()
     {
-        return new UseStatement(name);
+        return new UseStatement(name, hasSchemaKeyword);
     }
 }
 
@@ -4834,6 +4835,7 @@ CreateTable CreateTable():
 }
 {
     <K_CREATE>
+    [ <K_OR> <K_REPLACE> { createTable.setOrReplace(true);} ]
     [ <K_UNLOGGED> { createTable.setUnlogged(true); } ]
 
     // table options, not required but 1 or none

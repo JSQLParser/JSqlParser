@@ -19,7 +19,11 @@ import org.junit.Test;
  */
 public class UseStatementTest {
 
-
+    @Test
+    public void testUseSchema() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("USE SCHEMA myschema");
+    }
+    
     @Test
     public void testSimpleUse() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("USE mydatabase");
