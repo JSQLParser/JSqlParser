@@ -6093,10 +6093,12 @@ List<Sequence.Parameter> SequenceParameters():
     }
    )
    |
-   (<K_RESTART> <K_WITH> token=<S_LONG>
+   (<K_RESTART> [<K_WITH> token=<S_LONG>]
     {
       parameter = new Sequence.Parameter(Sequence.ParameterType.RESTART_WITH);
-      parameter.setValue(Long.parseLong(token.image));
+      if(token != null){
+        parameter.setValue(Long.parseLong(token.image));
+      }
       sequenceParameters.add(parameter);
     }
    )

@@ -198,7 +198,11 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
                 case START_WITH:
                     return prefix("START WITH");
                 case RESTART_WITH:
-                    return prefix("RESTART WITH");
+                    if(value != null){
+                        return prefix("RESTART WITH");
+                    } else {
+                        return "RESTART";
+                    }
                 case MAXVALUE:
                 case MINVALUE:
                 case CACHE:

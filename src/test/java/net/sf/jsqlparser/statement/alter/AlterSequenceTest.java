@@ -116,4 +116,8 @@ public class AlterSequenceTest {
         assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_seq RESTART WITH 1");
     }
 
+    @Test
+    public void testAlterSequence_restartIssue1405WithoutValue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_seq RESTART");
+    }
 }
