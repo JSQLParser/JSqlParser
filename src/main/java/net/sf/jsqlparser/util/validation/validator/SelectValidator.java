@@ -175,7 +175,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
         validateFeature(Feature.unpivot);
 
         validateOptionalExpressions(unpivot.getUnPivotForClause());
-        validateOptionalExpression(unpivot.getUnPivotClause());
+        validateOptionalExpressions(unpivot.getUnPivotClause());
     }
 
     @Override

@@ -306,12 +306,14 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     public void visit(UnPivot unpivot) {
         boolean showOptions = unpivot.getIncludeNullsSpecified();
         boolean includeNulls = unpivot.getIncludeNulls();
+        List<Column> unPivotClause = unpivot.getUnPivotClause();
         List<Column> unpivotForClause = unpivot.getUnPivotForClause();
         buffer
                 .append(" UNPIVOT")
                 .append(showOptions && includeNulls ? " INCLUDE NULLS" : "")
                 .append(showOptions && !includeNulls ? " EXCLUDE NULLS" : "")
-                .append(" (").append(unpivot.getUnPivotClause())
+                .append(" (").append(PlainSelect.getStringList(unPivotClause, true,
+                        unPivotClause != null && unPivotClause.size() > 1))
                 .append(" FOR ").append(PlainSelect.getStringList(unpivotForClause, true,
                         unpivotForClause != null && unpivotForClause.size() > 1))
                 .append(" IN ").append(PlainSelect.getStringList(unpivot.getUnPivotInClause(), true, true)).append(")");

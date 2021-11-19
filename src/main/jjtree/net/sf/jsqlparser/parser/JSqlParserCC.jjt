@@ -2270,7 +2270,7 @@ PivotXml PivotXml():
 UnPivot UnPivot():
 {
     UnPivot retval = new UnPivot();
-    Column unpivotClause;
+    List<Column> unpivotClause;
     List<Column> unpivotForClause;
     List<SelectExpressionItem> unpivotInClause;
     Alias alias = null;
@@ -2279,7 +2279,7 @@ UnPivot UnPivot():
     <K_UNPIVOT>
     [ ( <K_INCLUDE> <K_NULLS> { retval.setIncludeNulls(true); }
     | <K_EXCLUDE> <K_NULLS> { retval.setIncludeNulls(false); } ) ]
-    "(" unpivotClause = Column() <K_FOR>
+    "(" unpivotClause = PivotForColumns() <K_FOR>
     unpivotForClause = PivotForColumns()
     <K_IN> "("
     unpivotInClause = PivotSingleInItems()

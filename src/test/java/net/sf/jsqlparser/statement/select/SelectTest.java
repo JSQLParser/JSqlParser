@@ -2534,6 +2534,15 @@ public class SelectTest {
     }
 
     @Test
+    public void testUnPivotWithMultiColumn() throws JSQLParserException {
+        String stmt = "SELECT * FROM sale_stats" +
+                " UNPIVOT (" +
+                "(quantity, rank)" +
+                " FOR product_code IN ((product_a, product_1) AS 'A', (product_b, product_2) AS 'B', (product_c, product_3) AS 'C'))";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testPivotWithAlias() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (SELECT * FROM mytable LEFT JOIN mytable2 ON Factor_ID = Id) f PIVOT (max(f.value) FOR f.factoryCode IN (ZD, COD, SW, PH))");
     }
