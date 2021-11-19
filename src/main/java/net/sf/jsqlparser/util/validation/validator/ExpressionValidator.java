@@ -349,6 +349,11 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     }
 
     @Override
+    public void visit(TryCastExpression cast) {
+        cast.getLeftExpression().accept(this);
+    }
+
+    @Override
     public void visit(Modulo modulo) {
         visitBinaryExpression(modulo, " % ");
     }

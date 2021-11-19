@@ -1757,6 +1757,32 @@ public class SelectTest {
     }
 
     @Test
+    public void testTryCast() throws JSQLParserException {
+        String stmt = "SELECT TRY_CAST(a AS varchar) FROM tabelle1";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+        stmt = "SELECT CAST(a AS varchar2) FROM tabelle1";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testTryCastInTryCast() throws JSQLParserException {
+        String stmt = "SELECT TRY_CAST(TRY_CAST(a AS numeric) AS varchar) FROM tabelle1";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testTryCastInTryCast2() throws JSQLParserException {
+        String stmt = "SELECT TRY_CAST('test' + TRY_CAST(assertEqual AS numeric) AS varchar) FROM tabelle1";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testTryCastTypeProblem() throws JSQLParserException {
+        String stmt = "SELECT TRY_CAST(col1 AS varchar (256)) FROM tabelle1";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testMySQLHintStraightJoin() throws JSQLParserException {
         String stmt = "SELECT col FROM tbl STRAIGHT_JOIN tbl2 ON tbl.id = tbl2.id";
         assertSqlCanBeParsedAndDeparsed(stmt);
