@@ -1633,7 +1633,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> 
-      | tk=<K_ALGORITHM> 
+      | tk=<K_ALGORITHM> | tk=<K_AT>
       | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE> | tk=<K_CHARACTER>
       | tk=<K_CAST> | tk=<K_COMMENT> | tk=<K_COSTS> | tk=<K_DISABLE> | tk=<K_DESC>
       | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FILTER> | tk=<K_FIRST> | tk=<K_FOLLOWING> | tk=<K_JSON>
@@ -3763,7 +3763,7 @@ Expression PrimaryExpression() #PrimaryExpression:
         retval=castExpr;
     } )*
 
-    ( <K_AT> <K_DATETIMELITERAL> <K_ZONE> timezoneRightExpr=PrimaryExpression() {
+    ( LOOKAHEAD(2) <K_AT> <K_DATETIMELITERAL> <K_ZONE> timezoneRightExpr=PrimaryExpression() {
         if (timezoneExpr == null)
             timezoneExpr = new TimezoneExpression();
 

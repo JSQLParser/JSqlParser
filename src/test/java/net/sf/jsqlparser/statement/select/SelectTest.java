@@ -4956,4 +4956,9 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT ( 1 = 1 ) AND ( 1 = 2 )", true);
     }
+    
+    @Test
+    public void testKeywordAtIssue1414() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM table1 at");
+    }
 }
