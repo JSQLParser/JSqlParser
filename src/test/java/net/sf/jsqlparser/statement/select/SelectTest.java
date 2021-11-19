@@ -384,8 +384,6 @@ public class SelectTest {
         offset = ((PlainSelect) select.getSelectBody()).getLimit().getOffset();
         rowCount = ((PlainSelect) select.getSelectBody()).getLimit().getRowCount();
 
-        System.out.println(rowCount.getClass().getName());
-
         assertNull(offset);
         Assertions.assertTrue( rowCount instanceof AllValue);
 
@@ -4895,7 +4893,7 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT * FROM t1 WHERE CASE WHEN 1 = 1 THEN c1 = 'a' ELSE c2 = 'b' AND c4 = 'd' END", true);
     }
-  
+
     public void testComplexInExpressionIssue905() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "select * " +
@@ -4921,5 +4919,20 @@ public class SelectTest {
                 "select * " +
                         "from table_a " +
                         "where (a, b, c) in ((1, 2, 3), (3, 4, 5))", true);
+    }
+
+    @Test
+    public void testLogicalExpressionSelectItemIssue1381() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT ( 1 + 1 ) = ( 1 + 2 )", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT ( 1 = 1 ) = ( 1 = 2 )", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT ( ( 1 = 1 ) AND ( 1 = 2 ) )", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT ( 1 = 1 ) AND ( 1 = 2 )", true);
     }
 }
