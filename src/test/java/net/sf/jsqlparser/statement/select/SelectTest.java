@@ -4664,6 +4664,7 @@ public class SelectTest {
                 true);
     }
 
+    @Test
     public void testSelectAllOperatorIssue1140() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM table t0 WHERE t0.id != all(5)");
     }
@@ -4880,6 +4881,15 @@ public class SelectTest {
 
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT count(a.*) from a", true);
+    }
+
+    @Test
+    public void testPostgresDollarQuotes_1372() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed( "SELECT UPPER($$some text$$) FROM a");
+        assertSqlCanBeParsedAndDeparsed( "SELECT * FROM a WHERE a.test = $$where text$$");
+        assertSqlCanBeParsedAndDeparsed( "SELECT * FROM a WHERE a.test = $$$$");
+        assertSqlCanBeParsedAndDeparsed( "SELECT * FROM a WHERE a.test = $$ $$");
+        assertSqlCanBeParsedAndDeparsed("SELECT aa AS $$My Column Name$$ FROM a");
     }
 
     @Test
