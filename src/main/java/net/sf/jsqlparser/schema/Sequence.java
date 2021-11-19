@@ -155,6 +155,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     public enum ParameterType {
         INCREMENT_BY,
         START_WITH,
+        RESTART_WITH,
         MAXVALUE,
         NOMAXVALUE,
         MINVALUE,
@@ -196,6 +197,8 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
                     return prefix("INCREMENT BY");
                 case START_WITH:
                     return prefix("START WITH");
+                case RESTART_WITH:
+                    return prefix("RESTART WITH");
                 case MAXVALUE:
                 case MINVALUE:
                 case CACHE:

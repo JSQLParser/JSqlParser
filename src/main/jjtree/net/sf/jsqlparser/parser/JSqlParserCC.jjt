@@ -356,6 +356,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SESSION:"SESSION">
 |   <K_SET:"SET">
 |   <K_RESET:"RESET">
+|   <K_RESTART:"RESTART">
 |   <K_SETS:"SETS">
 |   <K_SHOW : "SHOW">
 |   <K_SHUTDOWN : "SHUTDOWN">
@@ -6055,6 +6056,14 @@ List<Sequence.Parameter> SequenceParameters():
    (<K_START> <K_WITH> token=<S_LONG>
     {
       parameter = new Sequence.Parameter(Sequence.ParameterType.START_WITH);
+      parameter.setValue(Long.parseLong(token.image));
+      sequenceParameters.add(parameter);
+    }
+   )
+   |
+   (<K_RESTART> <K_WITH> token=<S_LONG>
+    {
+      parameter = new Sequence.Parameter(Sequence.ParameterType.RESTART_WITH);
       parameter.setValue(Long.parseLong(token.image));
       sequenceParameters.add(parameter);
     }
