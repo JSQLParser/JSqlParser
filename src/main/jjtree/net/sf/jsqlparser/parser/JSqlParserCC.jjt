@@ -157,6 +157,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TRY_CAST: "TRY_CAST">
 |   <K_CHARACTER:"CHARACTER">
 |   <K_CHANGE:"CHANGE">
+|   <K_CHANGES:"CHANGES">
 |   <K_CHECK:"CHECK">
 |   <K_CHECKPOINT:"CHECKPOINT">
 |   <K_CHAR:"CHAR">
@@ -198,6 +199,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DUMP:"DUMP">
 |   <K_DUPLICATE: "DUPLICATE">
 |   <K_ELSE:"ELSE">
+|   <K_EMIT : "EMIT">
 |   <K_ENABLE : "ENABLE">
 |   <K_END:"END">
 |   <K_ESCAPE:"ESCAPE">
@@ -1868,10 +1870,10 @@ PlainSelect PlainSelect() #PlainSelect:
     [ having=Having() { plainSelect.setHaving(having); }]
     [LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
     [LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements);    }   ]
+    [ <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
     [LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
     [LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
 	[LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
-
     [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
 
     [LOOKAHEAD(2) <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
