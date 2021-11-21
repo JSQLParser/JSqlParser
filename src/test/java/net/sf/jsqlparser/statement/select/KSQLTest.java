@@ -152,4 +152,24 @@ public class KSQLTest {
         assertStatementCanBeDeparsedAs(select, sql, true);
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
+
+    @Test
+    public void testKSQLEmitChanges() throws Exception {
+        String sql = "SELECT * FROM table1 t1 GROUP BY region.id EMIT CHANGES";
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        Select select = (Select) statement;
+        PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+        assertTrue(selectBody.isEmitChanges());
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testKSQLEmitChangesWithLimit() throws Exception {
+        String sql = "SELECT * FROM table1 t1 GROUP BY region.id EMIT CHANGES LIMIT 2";
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        Select select = (Select) statement;
+        PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+        assertTrue(selectBody.isEmitChanges());
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
 }

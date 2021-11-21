@@ -187,7 +187,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
                     plainSelect.getOrderByElements());
         }
-
+        if (plainSelect.isEmitChanges()){
+            buffer.append(" EMIT CHANGES");
+        }
         if (plainSelect.getLimit() != null) {
             new LimitDeparser(buffer).deParse(plainSelect.getLimit());
         }
