@@ -31,7 +31,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.BDDMockito.then;
@@ -51,7 +51,7 @@ public class StatementDeParserTest {
 
     private StatementDeParser statementDeParser;
 
-    @BeforeAll
+    @BeforeEach
     public void setUp() {
         statementDeParser = new StatementDeParser(expressionDeParser, selectDeParser, new StringBuilder());
     }

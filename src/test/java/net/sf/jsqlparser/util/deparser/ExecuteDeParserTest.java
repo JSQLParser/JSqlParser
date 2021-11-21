@@ -17,7 +17,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.execute.Execute.ExecType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
@@ -29,7 +29,7 @@ public class ExecuteDeParserTest {
 
     private StringBuilder buffer;
 
-    @BeforeAll
+    @BeforeEach
     public void setUp() {
         buffer = new StringBuilder();
         expressionVisitor = new ExpressionDeParser();

@@ -19,7 +19,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.BDDMockito.given;
@@ -43,7 +43,7 @@ public class ExpressionDeParserTest {
     @Mock
     private OrderByDeParser orderByDeParser;
 
-    @BeforeAll
+    @BeforeEach
     public void setUp() {
         buffer = new StringBuilder();
         expressionDeParser = new ExpressionDeParser(selectVisitor, buffer, orderByDeParser);
