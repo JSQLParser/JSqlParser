@@ -9,7 +9,7 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import static org.junit.Assert.assertEquals;
+
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.will;
 import static org.mockito.Mockito.mock;
@@ -17,12 +17,10 @@ import static org.mockito.Mockito.mock;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import net.sf.jsqlparser.expression.AnalyticExpression;
@@ -32,8 +30,12 @@ import net.sf.jsqlparser.expression.WindowElement;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ExpressionDeParserTest {
     private ExpressionDeParser expressionDeParser;
 
@@ -45,7 +47,7 @@ public class ExpressionDeParserTest {
     @Mock
     private OrderByDeParser orderByDeParser;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         buffer = new StringBuilder();
         expressionDeParser = new ExpressionDeParser(selectVisitor, buffer, orderByDeParser);

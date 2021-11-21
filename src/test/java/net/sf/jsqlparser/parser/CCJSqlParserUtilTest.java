@@ -23,33 +23,17 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+
+
+
+
+import org.junit.jupiter.api.Test;
 
 public class CCJSqlParserUtilTest {
-
-    public CCJSqlParserUtilTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     @Test
     public void testParseExpression() throws Exception {
@@ -71,20 +55,20 @@ public class CCJSqlParserUtilTest {
         assertTrue(mult.getRightExpression() instanceof Parenthesis);
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseExpressionNonPartial() throws Exception {
-        CCJSqlParserUtil.parseExpression("a+", false);
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseExpression("a+", false));
 
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseExpressionFromStringFail() throws Exception {
-        CCJSqlParserUtil.parse("whatever$");
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse("whatever$"));
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseExpressionFromRaderFail() throws Exception {
-        CCJSqlParserUtil.parse(new StringReader("whatever$"));
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(new StringReader("whatever$")));
     }
 
     @Test
@@ -99,21 +83,22 @@ public class CCJSqlParserUtilTest {
         assertEquals("a + b > 5 AND c < 3", result.toString());
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseCondExpressionFail() throws Exception {
-        CCJSqlParserUtil.parseCondExpression(";");
-
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseCondExpression(";"));
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseFromStreamFail() throws Exception {
-        CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)));
+        assertThrows(JSQLParserException.class, 
+                () -> CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8))));
 
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseFromStreamWithEncodingFail() throws Exception {
-        CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8.name());
+        assertThrows(JSQLParserException.class, 
+                () -> CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8.name()));
 
     }
 
@@ -123,10 +108,9 @@ public class CCJSqlParserUtilTest {
         assertEquals("x = 92 AND y = 29", result.toString());
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseCondExpressionNonPartial2() throws Exception {
-        Expression result = CCJSqlParserUtil.parseCondExpression("x=92 lasd y=29", false);
-        System.out.println(result.toString());
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseCondExpression("x=92 lasd y=29", false));
     }
 
     @Test
@@ -180,14 +164,14 @@ public class CCJSqlParserUtilTest {
         assertEquals(list.size(), 3);
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseStatementsFail() throws Exception {
-        CCJSqlParserUtil.parseStatements("select * from dual;WHATEVER!!");
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseStatements("select * from dual;WHATEVER!!"));
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseASTFail() throws Exception {
-        CCJSqlParserUtil.parseAST("select * from dual;WHATEVER!!");
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseAST("select * from dual;WHATEVER!!"));
     }
 
     @Test

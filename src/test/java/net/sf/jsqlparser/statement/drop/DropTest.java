@@ -11,7 +11,7 @@ package net.sf.jsqlparser.statement.drop;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
 
-import static org.junit.Assert.assertEquals;
+
 
 import java.io.StringReader;
 
@@ -19,7 +19,8 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class DropTest {
 

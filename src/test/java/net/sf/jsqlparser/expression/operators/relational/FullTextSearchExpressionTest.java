@@ -12,7 +12,7 @@ package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  *

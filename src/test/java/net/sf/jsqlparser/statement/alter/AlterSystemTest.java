@@ -18,8 +18,10 @@ import net.sf.jsqlparser.test.TestUtils;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
-import org.junit.Assert;
-import org.junit.Test;
+import net.sf.jsqlparser.util.validation.validator.ExpressionValidator;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -60,7 +62,7 @@ public class AlterSystemTest {
 
     Statement statement = CCJSqlParserUtil.parse(sqlStr);
     List<String> tables = new TablesNamesFinder().getTableList(statement);
-    Assert.assertEquals(0, tables.size());
+    assertEquals(0, tables.size());
   }
 
   /**
@@ -81,7 +83,7 @@ public class AlterSystemTest {
     String sqlStr = "ALTER SYSTEM KILL SESSION '13, 8'";
     AlterSystemStatement statement = (AlterSystemStatement) CCJSqlParserUtil.parse(sqlStr);
 
-    Assert.assertEquals(AlterSystemOperation.KILL_SESSION, statement.getOperation());
-    Assert.assertEquals("'13, 8'", statement.getParameters().get(0));
+    assertEquals(AlterSystemOperation.KILL_SESSION, statement.getOperation());
+    assertEquals("'13, 8'", statement.getParameters().get(0));
   }
 }

@@ -17,8 +17,11 @@ import net.sf.jsqlparser.test.TestUtils;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
-import org.junit.Assert;
-import org.junit.Test;
+import net.sf.jsqlparser.util.validation.validator.ExpressionValidator;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -63,8 +66,8 @@ public class PurgeStatementTest {
 
     Statement statement = CCJSqlParserUtil.parse(sqlStr);
     List<String> tables = new TablesNamesFinder().getTableList(statement);
-    Assert.assertEquals(1, tables.size());
-    Assert.assertTrue(tables.contains("testtable"));
+    assertEquals(1, tables.size());
+    assertTrue(tables.contains("testtable"));
   }
 
   /**
@@ -86,10 +89,8 @@ public class PurgeStatementTest {
       PurgeStatement purgeStatement = (PurgeStatement) CCJSqlParserUtil.parse(sqlStr);
       purgeStatement.setUserName("common");
        
-      Assert.assertEquals(PurgeObjectType.TABLESPACE, purgeStatement.getPurgeObjectType());
-      Assert.assertEquals("my_table_space", purgeStatement.getObject());
-      Assert.assertEquals("common", purgeStatement.getUserName());
-      
-     
+      assertEquals(PurgeObjectType.TABLESPACE, purgeStatement.getPurgeObjectType());
+      assertEquals("my_table_space", purgeStatement.getObject());
+      assertEquals("common", purgeStatement.getUserName());
     }
 }

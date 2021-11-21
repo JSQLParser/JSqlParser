@@ -13,18 +13,19 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.UUID;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
+import org.junit.jupiter.api.BeforeEach;
 
 public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
 
     private Connection connection;
     private String databaseName;
 
-    @Before
+    @BeforeEach
     public void setupDatabase() throws SQLException {
         databaseName = "testdb_" + Math.abs(UUID.randomUUID().hashCode());
         connection = DriverManager.getConnection("jdbc:h2:mem:" + databaseName);

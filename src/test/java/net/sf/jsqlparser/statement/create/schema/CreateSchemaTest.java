@@ -11,7 +11,7 @@ package net.sf.jsqlparser.statement.create.schema;
 
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import net.sf.jsqlparser.JSQLParserException;
 
 /**

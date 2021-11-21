@@ -21,8 +21,11 @@ import net.sf.jsqlparser.util.validation.ValidationError;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -49,7 +52,7 @@ public class IfElseStatementTest {
             + "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin3; ELSE CREATE TABLE tOrigin3 (ID VARCHAR (40));\n";
 
     Statements result = CCJSqlParserUtil.parseStatements(sqlStr);
-    Assert.assertEquals(sqlStr, result.toString());
+    assertEquals(sqlStr, result.toString());
   }
 
   @Test
@@ -59,7 +62,7 @@ public class IfElseStatementTest {
         + "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin3; ELSE CREATE TABLE tOrigin3 (ID VARCHAR (40));\n";
 
     Statements result = CCJSqlParserUtil.parseStatements(sqlStr);
-    Assert.assertEquals(sqlStr, result.toString());
+    assertEquals(sqlStr, result.toString());
   }
 
   @Test
@@ -73,12 +76,12 @@ public class IfElseStatementTest {
     ifElseStatement.setElseStatement(elseStatement);
     ifElseStatement.setUsingSemicolonForElseStatement(true);
 
-    Assert.assertEquals(ifElseStatement.isUsingSemicolonForIfStatement(),
+    assertEquals(ifElseStatement.isUsingSemicolonForIfStatement(),
         ifElseStatement.isUsingSemicolonForElseStatement());
-    Assert.assertEquals(ifElseStatement.getIfStatement().toString(),
+    assertEquals(ifElseStatement.getIfStatement().toString(),
         ifElseStatement.getElseStatement().toString());
 
-    Assert.assertNotNull(ifElseStatement.getCondition());
+    assertNotNull(ifElseStatement.getCondition());
   }
 
   @Test
@@ -95,7 +98,7 @@ public class IfElseStatementTest {
     Statement stmt = CCJSqlParserUtil.parse(sql);
     TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
     List<String> tableList = tablesNamesFinder.getTableList(stmt);
-    Assert.assertEquals(1, tableList.size());
-    Assert.assertTrue(tableList.contains("tOrigin1"));
+    assertEquals(1, tableList.size());
+    assertTrue(tableList.contains("tOrigin1"));
   }
 }

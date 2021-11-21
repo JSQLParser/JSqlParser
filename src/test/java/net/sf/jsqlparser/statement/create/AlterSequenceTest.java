@@ -19,7 +19,7 @@ import net.sf.jsqlparser.schema.Sequence.Parameter;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AlterSequenceTest {
 

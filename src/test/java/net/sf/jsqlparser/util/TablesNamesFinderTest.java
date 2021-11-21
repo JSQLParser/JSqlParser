@@ -30,7 +30,6 @@ import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.test.TestException;
-import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -40,9 +39,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 
 public class TablesNamesFinderTest {
@@ -110,10 +110,10 @@ public class TablesNamesFinderTest {
                     String[] tablesArray = tables.split("\\s+");
 
                     List<String> tableListRetr = tablesNamesFinder.getTableList(statement);
-                    assertEquals("stm num:" + numSt, tablesArray.length, tableListRetr.size());
+                    assertEquals(tablesArray.length, tableListRetr.size(), "stm num:" + numSt);
 
                     for (String element : tablesArray) {
-                        assertTrue("stm num:" + numSt, tableListRetr.contains(element));
+                        assertTrue(tableListRetr.contains(element), "stm num:" + numSt);
                     }
                 } catch (Exception e) {
                     throw new TestException("error at stm num: " + numSt + " in file " + resPath, e);

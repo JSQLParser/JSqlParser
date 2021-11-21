@@ -19,8 +19,11 @@ import net.sf.jsqlparser.test.TestUtils;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
-import org.junit.Assert;
-import org.junit.Test;
+import net.sf.jsqlparser.util.validation.validator.ExpressionValidator;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -81,8 +84,8 @@ public class OracleNamedFunctionParameterTest {
 
     Statement statement = CCJSqlParserUtil.parse(sqlStr);
     List<String> tables = new TablesNamesFinder().getTableList(statement);
-    Assert.assertEquals(1, tables.size());
-    Assert.assertTrue(tables.contains("test_table"));
+    assertEquals(1, tables.size());
+    assertTrue(tables.contains("test_table"));
   }
 
   /**

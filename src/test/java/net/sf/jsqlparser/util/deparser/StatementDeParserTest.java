@@ -18,11 +18,10 @@ import java.util.List;
 
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.update.UpdateSet;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
@@ -42,8 +41,11 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class StatementDeParserTest {
     @Mock
     private ExpressionDeParser expressionDeParser;
@@ -53,7 +55,7 @@ public class StatementDeParserTest {
 
     private StatementDeParser statementDeParser;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         statementDeParser = new StatementDeParser(expressionDeParser, selectDeParser, new StringBuilder());
     }

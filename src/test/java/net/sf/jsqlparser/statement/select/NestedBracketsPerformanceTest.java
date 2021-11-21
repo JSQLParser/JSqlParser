@@ -11,11 +11,15 @@ package net.sf.jsqlparser.statement.select;
 
 import java.util.logging.Logger;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import org.junit.Ignore;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+
+import org.junit.jupiter.api.Test;
+
+
 import net.sf.jsqlparser.JSQLParserException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Timeout;
 
 /**
  *
@@ -23,22 +27,26 @@ import net.sf.jsqlparser.JSQLParserException;
  */
 public class NestedBracketsPerformanceTest {
 
-    @Test(timeout = 2000)
+    @Test
+    @Timeout(2000)
     public void testIssue766() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('1','2'),'3'),'4'),'5'),'6'),'7'),'8'),'9'),'10'),'11'),'12'),'13'),'14'),'15'),'16'),'17'),'18'),'19'),'20'),'21'),col1 FROM tbl t1", true);
     }
 
-    @Test(timeout = 2000)
+    @Test
+    @Timeout(2000)
     public void testIssue766_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT concat(concat(concat('1', '2'), '3'), '4'), col1 FROM tbl t1");
     }
 
-    @Test(timeout = 2000)
+    @Test
+    @Timeout(2000)
     public void testIssue235() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT CASE WHEN ( CASE WHEN ( CASE WHEN ( CASE WHEN ( 1 ) THEN 0 END ) THEN 0 END ) THEN 0 END ) THEN 0 END FROM a", true);
     }
 
-    @Test(timeout = 2000)
+    @Test
+    @Timeout(2000)
     public void testNestedCaseWhenWithoutBracketsIssue1162() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE VIEW VIEW_NAME1 AS\n"
                 + "SELECT CASE\n"
@@ -71,7 +79,8 @@ public class NestedBracketsPerformanceTest {
                 + "FROM TABLE1", true);
     }
 
-    @Test(timeout = 2000)
+    @Test
+    @Timeout(2000)
     public void testNestedCaseWhenWithBracketsIssue1162() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE VIEW VIEW_NAME1 AS\n"
                 + "SELECT CASE\n"
@@ -104,8 +113,9 @@ public class NestedBracketsPerformanceTest {
                 + "FROM TABLE1", true);
     }
 
-    @Test(timeout = 200000)
-    @Ignore
+    @Test
+    @Timeout(2000)
+    @Disabled
     public void testIssue496() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select isNull(charLen(TEST_ID,0)+ isNull(charLen(TEST_DVC,0)+ isNull(charLen(TEST_NO,0)+ isNull(charLen(ATEST_ID,0)+ isNull(charLen(TESTNO,0)+ isNull(charLen(TEST_CTNT,0)+ isNull(charLen(TEST_MESG_CTNT,0)+ isNull(charLen(TEST_DTM,0)+ isNull(charLen(TEST_DTT,0)+ isNull(charLen(TEST_ADTT,0)+ isNull(charLen(TEST_TCD,0)+ isNull(charLen(TEST_PD,0)+ isNull(charLen(TEST_VAL,0)+ isNull(charLen(TEST_YN,0)+ isNull(charLen(TEST_DTACM,0)+ isNull(charLen(TEST_MST,0) from test_info_m");
     }
@@ -116,7 +126,8 @@ public class NestedBracketsPerformanceTest {
         assertSqlCanBeParsedAndDeparsed(sql);
     }
 
-    @Test(timeout = 2000)
+    @Test
+    @Timeout(2000)
     public void testRecursiveBracketExpressionIssue1019() {
         assertEquals("IF(1=1, 1, 2)", buildRecursiveBracketExpression("IF(1=1, $1, 2)", "1", 0));
         assertEquals("IF(1=1, IF(1=1, 1, 2), 2)", buildRecursiveBracketExpression("IF(1=1, $1, 2)", "1", 1));
@@ -128,12 +139,14 @@ public class NestedBracketsPerformanceTest {
         doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 10);
     }
 
-    @Test(timeout = 2000)
+    @Test
+    @Timeout(2000)
     public void testIssue1013() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT ((((((((((((((((tblA)))))))))))))))) FROM mytable");
     }
 
-    @Test(timeout = 2000)
+    @Test
+    @Timeout(2000)
     public void testIssue1013_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM ((((((((((((((((tblA))))))))))))))))");
     }
@@ -143,7 +156,8 @@ public class NestedBracketsPerformanceTest {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM (((tblA)))");
     }
 
-    @Test(timeout = 2000)
+    @Test
+    @Timeout(2000)
     public void testIssue1013_4() throws JSQLParserException {
         String s = "tblA";
         for (int i = 1; i < 100; i++) {
@@ -202,7 +216,8 @@ public class NestedBracketsPerformanceTest {
         return template.replace("$1", buildRecursiveBracketExpression(template, finalExpression, depth - 1));
     }
 
-    @Test(timeout = 2000)
+    @Test
+    @Timeout(2000)
     public void testIssue1103() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT\n" + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(\n"

@@ -12,10 +12,11 @@ package net.sf.jsqlparser.statement.show;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.test.TestUtils;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ShowTablesStatementTest {
 
@@ -52,12 +53,12 @@ public class ShowTablesStatementTest {
     @Test
     public void testObject() throws JSQLParserException, JSQLParserException {
         ShowTablesStatement showTablesStatement = (ShowTablesStatement) CCJSqlParserUtil.parse("SHOW TABLES WHERE table_name = 'FOO'");
-        Assert.assertEquals(0, showTablesStatement.getModifiers().size());
+        assertEquals(0, showTablesStatement.getModifiers().size());
         TestUtils.assertExpressionCanBeDeparsedAs(showTablesStatement.getWhereCondition(), "table_name = 'FOO'");
 
         showTablesStatement = (ShowTablesStatement) CCJSqlParserUtil.parse("SHOW FULL TABLES IN db_name");
-        Assert.assertEquals(1, showTablesStatement.getModifiers().size());
-        Assert.assertEquals(ShowTablesStatement.SelectionMode.IN, showTablesStatement.getSelectionMode());
+        assertEquals(1, showTablesStatement.getModifiers().size());
+        assertEquals(ShowTablesStatement.SelectionMode.IN, showTablesStatement.getSelectionMode());
 
         showTablesStatement = (ShowTablesStatement) CCJSqlParserUtil.parse("SHOW TABLES LIKE '%FOO%'");
         TestUtils.assertExpressionCanBeDeparsedAs(showTablesStatement.getLikeExpression(), "'%FOO%'");

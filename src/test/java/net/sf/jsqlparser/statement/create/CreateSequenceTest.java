@@ -18,7 +18,7 @@ import net.sf.jsqlparser.schema.Sequence;
 import net.sf.jsqlparser.schema.Sequence.Parameter;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CreateSequenceTest {
 

@@ -18,7 +18,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.statement.create.CreateTableTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CCJSqlParserManagerTest {
 

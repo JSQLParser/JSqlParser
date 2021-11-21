@@ -18,12 +18,16 @@ import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
+
+
 
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 public class UpdateTest {
 
@@ -111,10 +115,10 @@ public class UpdateTest {
         assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = 'thing' WHERE id = 1 RETURNING ABS(col_1) AS Bar, ABS(col_2), col_3 AS Foo");
     }
 
-    @Test(expected = JSQLParserException.class)
-    public void testUpdateDoesNotAllowLimitOffset() throws JSQLParserException {
+    @Test
+    public void testUpdateDoesNotAllowLimitOffset() {
         String statement = "UPDATE table1 A SET A.columna = 'XXX' WHERE A.cod_table = 'YYY' LIMIT 3,4";
-        parserManager.parse(new StringReader(statement));
+        assertThrows(JSQLParserException.class, () -> parserManager.parse(new StringReader(statement)));
     }
 
     @Test
@@ -236,16 +240,16 @@ public class UpdateTest {
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         Update update = (Update) CCJSqlParserUtil.parse(sqlStr);
-        Assert.assertEquals(3, update.getUpdateSets().size());
+        assertEquals(3, update.getUpdateSets().size());
 
-        Assert.assertEquals(3, update.getUpdateSets().get(0).getColumns().size());
-        Assert.assertEquals(1, update.getUpdateSets().get(0).getExpressions().size());
+        assertEquals(3, update.getUpdateSets().get(0).getColumns().size());
+        assertEquals(1, update.getUpdateSets().get(0).getExpressions().size());
 
-        Assert.assertEquals(1, update.getUpdateSets().get(1).getColumns().size());
-        Assert.assertEquals(1, update.getUpdateSets().get(1).getExpressions().size());
+        assertEquals(1, update.getUpdateSets().get(1).getColumns().size());
+        assertEquals(1, update.getUpdateSets().get(1).getExpressions().size());
 
-        Assert.assertEquals(1, update.getUpdateSets().get(2).getColumns().size());
-        Assert.assertEquals(1, update.getUpdateSets().get(2).getExpressions().size());
+        assertEquals(1, update.getUpdateSets().get(2).getColumns().size());
+        assertEquals(1, update.getUpdateSets().get(2).getExpressions().size());
     }
 
     @Test

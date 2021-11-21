@@ -20,11 +20,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+
+
+
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
@@ -39,6 +39,10 @@ import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.RowMovementMode;
 import net.sf.jsqlparser.test.TestException;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CreateTableTest {
 
@@ -593,7 +597,7 @@ public class CreateTableTest {
             }
           }
 
-          assertEquals("stm:" + query, colsList.length, colsFound.size());
+          assertEquals(colsList.length, colsFound.size(), "stm:" + query);
 
           for (int i = 0; i < colsList.length; i++) {
             assertEquals("stm:" + query, colsList[i], colsFound.get(i));

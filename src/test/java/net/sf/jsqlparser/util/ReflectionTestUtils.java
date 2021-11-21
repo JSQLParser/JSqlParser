@@ -9,11 +9,6 @@
  */
 package net.sf.jsqlparser.util;
 
-import static org.junit.Assume.assumeTrue;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -26,7 +21,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.junit.AssumptionViolatedException;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Assumptions;
+import org.opentest4j.TestAbortedException;
+
 
 /**
  * @author gitmotte
@@ -83,7 +82,7 @@ public class ReflectionTestUtils {
         for (Parameter p : m.getParameters()) {
             Class<?> type = p.getType();
             Object value = RandomUtils.getRandomValueForType(type);
-            assumeTrue("cannot get random value for type " + type, value != null);
+            Assumptions.assumeTrue(value != null, "cannot get random value for type " + type);
             params.add(value);
         }
         return params.toArray();
@@ -142,9 +141,9 @@ public class ReflectionTestUtils {
                     invoke(m, returnTypeCheck, argsFunction, object);
                 } catch (Exception e) {
                     assertFalse(
+                            false,
                             String.format("%s throws on invocation on object: %s", m.toGenericString(),
-                                    object.getClass()),
-                            false);
+                                    object.getClass()));
                 }
             }
         }
@@ -168,10 +167,10 @@ public class ReflectionTestUtils {
         try {
             Object returnValue = method.invoke(object, argsFunction.apply(method));
             if (!void.class.isAssignableFrom(method.getReturnType())) {
-                assertTrue("unexpected return-value with type " + returnValue.getClass() + " for method "
-                        + method.toGenericString(), returnValueCheck.test(returnValue, method));
+                assertTrue(returnValueCheck.test(returnValue, method), "unexpected return-value with type " + returnValue.getClass() + " for method "
+                        + method.toGenericString());
             }
-        } catch (AssumptionViolatedException tae) {
+        } catch (TestAbortedException tae) {
             log(Level.INFO, "skip methods " + method.toGenericString() + ", detail: " + tae.getMessage());
         }
     }

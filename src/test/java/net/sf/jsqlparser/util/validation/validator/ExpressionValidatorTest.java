@@ -9,7 +9,7 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;

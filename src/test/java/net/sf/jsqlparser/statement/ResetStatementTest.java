@@ -10,10 +10,12 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ResetStatementTest {
     @Test
@@ -29,11 +31,11 @@ public class ResetStatementTest {
     @Test
     public void testObject() {
         ResetStatement resetStatement=new ResetStatement();
-        Assert.assertNotNull(resetStatement.getName());
+        assertNotNull(resetStatement.getName());
 
         resetStatement.add("something");
         resetStatement.setName("somethingElse");
-        Assert.assertEquals("somethingElse", resetStatement.getName());
+        assertEquals("somethingElse", resetStatement.getName());
     }
 
 }

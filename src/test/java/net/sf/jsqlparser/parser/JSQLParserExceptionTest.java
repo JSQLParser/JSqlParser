@@ -10,46 +10,30 @@
 package net.sf.jsqlparser.parser;
 
 import net.sf.jsqlparser.JSQLParserException;
-import org.junit.After;
-import org.junit.AfterClass;
 
-import static org.junit.Assert.*;
+
+
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+
+import org.junit.jupiter.api.Test;
 
 /**
  *
  * @author schwitters
  */
 public class JSQLParserExceptionTest {
-
-    public JSQLParserExceptionTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of parseExpression method, of class CCJSqlParserUtil.
      */

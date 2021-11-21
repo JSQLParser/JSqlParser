@@ -26,10 +26,11 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Assert;
-import org.junit.ComparisonFailure;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 
 /**
  * Tries to parse and deparse all statments in net.sf.jsqlparser.test.oracle-tests.
@@ -279,22 +280,22 @@ public class SpecialOracleTest {
                 } catch (Exception ex) {
                     LOG.log(Level.SEVERE, "UNEXPECTED EXCEPTION: {0}\n\t" + ex.getMessage(), file.getName());
                     foundUnexpectedFailures = true;
-                } catch (ComparisonFailure ex) {
+                } catch (AssertionFailedError ex) {
                     if (sql.contains("@SUCCESSFULLY_PARSED_AND_DEPARSED") || EXPECTED_SUCCESSES.contains(file.getName())) {
                         LOG.log(Level.SEVERE, "UNEXPECTED DE-PARSING FAILURE: {0}\n" + ex.toString(), file.getName());
                         foundUnexpectedFailures = true;
                     } else {
                         LOG.log(Level.FINE, "EXPECTED DE-PARSING FAILURE: {0}", file.getName());
                     }
-                    recordFailureOnSourceFile(file, ex.getActual());
+                    recordFailureOnSourceFile(file, ex.getActual().getStringRepresentation());
                 }
             }
         }
 
         LOG.log(Level.INFO, "tested {0} files. got {1} correct parse results, expected {2}", new Object[]{count, success, EXPECTED_SUCCESSES.size()});
-        Assert.assertTrue(success >= EXPECTED_SUCCESSES.size());
+        assertTrue(success >= EXPECTED_SUCCESSES.size());
         
-        Assert.assertFalse("Found Testcases failing unexpectedly.", foundUnexpectedFailures);
+        assertFalse(foundUnexpectedFailures, "Found Testcases failing unexpectedly.");
       }
     
     @Test

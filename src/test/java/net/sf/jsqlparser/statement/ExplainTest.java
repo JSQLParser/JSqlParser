@@ -14,7 +14,7 @@ import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ExplainTest {
 

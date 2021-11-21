@@ -11,12 +11,15 @@
 package net.sf.jsqlparser.expression;
 
 import java.util.Objects;
-import junit.framework.Assert;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.test.TestUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -66,17 +69,17 @@ public class JsonFunctionTest {
       JsonKeyValuePair keyValuePair2 = new JsonKeyValuePair("foo", "bar", false, false).withUsingKeyKeyword(true).withUsingValueKeyword(true).withUsingFormatJson(false);
       
       // this should work because we compare based on KEY only
-      Assert.assertEquals(keyValuePair1, keyValuePair2);
+      assertEquals(keyValuePair1, keyValuePair2);
       
       // this must fail because all the properties are considered
-      Assert.assertFalse(Objects.equals(keyValuePair1.toString(), keyValuePair2.toString()));
+      assertFalse(Objects.equals(keyValuePair1.toString(), keyValuePair2.toString()));
       
       JsonKeyValuePair keyValuePair3 = new JsonKeyValuePair("foo", "bar", false, false).withUsingKeyKeyword(false).withUsingValueKeyword(false).withUsingFormatJson(false);
-      Assert.assertNotNull(keyValuePair3 );
-      Assert.assertEquals(keyValuePair3, keyValuePair3);
-      Assert.assertFalse(Objects.equals( keyValuePair3, f));
+      assertNotNull(keyValuePair3 );
+      assertEquals(keyValuePair3, keyValuePair3);
+      assertFalse(Objects.equals( keyValuePair3, f));
       
-      Assert.assertTrue(keyValuePair3.hashCode()!=0);
+      assertTrue(keyValuePair3.hashCode()!=0);
       
       f.add(keyValuePair2);
     }
@@ -92,7 +95,7 @@ public class JsonFunctionTest {
       JsonFunctionExpression expression2 = new JsonFunctionExpression(new NullValue()).withUsingFormatJson(
           true);
       
-      Assert.assertTrue(Objects.equals(expression1.toString(), expression2.toString()));
+      assertTrue(Objects.equals(expression1.toString(), expression2.toString()));
       
       f.add(expression1);
       f.add(expression2);

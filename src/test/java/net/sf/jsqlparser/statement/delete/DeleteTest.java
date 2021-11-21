@@ -11,7 +11,7 @@ package net.sf.jsqlparser.statement.delete;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
-import static org.junit.Assert.assertEquals;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,8 +23,10 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DeleteTest {
 
@@ -57,10 +59,10 @@ public class DeleteTest {
         assertEquals(5, parsed.getLimit().getRowCount(LongValue.class).getValue());
     }
 
-    @Test(expected = JSQLParserException.class)
-    public void testDeleteDoesNotAllowLimitOffset() throws JSQLParserException {
+    @Test
+    public void testDeleteDoesNotAllowLimitOffset() {
         String statement = "DELETE FROM table1 WHERE A.cod_table = 'YYY' LIMIT 3,4";
-        parserManager.parse(new StringReader(statement));
+        assertThrows(JSQLParserException.class, () -> parserManager.parse(new StringReader(statement)));
     }
 
     @Test

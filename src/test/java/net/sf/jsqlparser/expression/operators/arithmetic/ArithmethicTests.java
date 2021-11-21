@@ -9,10 +9,11 @@
  */
 package net.sf.jsqlparser.expression.operators.arithmetic;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.schema.Column;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ArithmethicTests {
 

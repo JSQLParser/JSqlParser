@@ -19,10 +19,14 @@ import net.sf.jsqlparser.test.TestUtils;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import net.sf.jsqlparser.util.validation.validator.ExpressionValidator;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -75,9 +79,9 @@ public class RenameTableStatementTest {
 
     Statement statement = CCJSqlParserUtil.parse(sqlStr);
     List<String> tables = new TablesNamesFinder().getTableList(statement);
-    Assert.assertEquals(2, tables.size());
-    Assert.assertTrue(tables.contains("oldTableName"));
-    Assert.assertTrue(tables.contains("newTableName"));
+    assertEquals(2, tables.size());
+    assertTrue(tables.contains("oldTableName"));
+    assertTrue(tables.contains("newTableName"));
   }
 
   /**
@@ -126,10 +130,10 @@ public class RenameTableStatementTest {
       renameTableStatement.withUsingIfExistsKeyword(true).setUsingIfExistsKeyword(false);
       renameTableStatement.withWaitDirective("NOWAIT").setWaitDirective("WAIT 20");
       
-      Assert.assertFalse(renameTableStatement.isTableNamesEmpty());
-      Assert.assertTrue(renameTableStatement.getTableNamesSize()>0);
-      Assert.assertFalse(renameTableStatement.isUsingTableKeyword());
-      Assert.assertFalse(renameTableStatement.isUsingIfExistsKeyword());
-      Assert.assertEquals("WAIT 20", renameTableStatement.getWaitDirective());
+      assertFalse(renameTableStatement.isTableNamesEmpty());
+      assertTrue(renameTableStatement.getTableNamesSize()>0);
+      assertFalse(renameTableStatement.isUsingTableKeyword());
+      assertFalse(renameTableStatement.isUsingIfExistsKeyword());
+      assertEquals("WAIT 20", renameTableStatement.getWaitDirective());
     }
 }

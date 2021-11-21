@@ -9,7 +9,7 @@
  */
 package net.sf.jsqlparser.schema;
 
-import static org.junit.Assert.assertEquals;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import net.sf.jsqlparser.JSQLParserException;
@@ -18,7 +18,8 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 /**
  *

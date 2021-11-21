@@ -11,7 +11,7 @@ package net.sf.jsqlparser.statement.builder;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import net.sf.jsqlparser.expression.AnyType;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperatorType;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;

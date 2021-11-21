@@ -11,11 +11,12 @@ package net.sf.jsqlparser.statement.alter;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AlterSessionTest {
     @Test
@@ -79,14 +80,14 @@ public class AlterSessionTest {
     @Test
     public void testObject() {
         AlterSession alterSession = new AlterSession(AlterSessionOperation.FORCE_PARALLEL_QUERY, Collections.emptyList());
-        Assert.assertEquals(AlterSessionOperation.FORCE_PARALLEL_QUERY, alterSession.getOperation());
+        assertEquals(AlterSessionOperation.FORCE_PARALLEL_QUERY, alterSession.getOperation());
 
         alterSession.setOperation(AlterSessionOperation.DISABLE_PARALLEL_DML);
-        Assert.assertEquals(AlterSessionOperation.DISABLE_PARALLEL_DML, alterSession.getOperation());
+        assertEquals(AlterSessionOperation.DISABLE_PARALLEL_DML, alterSession.getOperation());
 
-        Assert.assertEquals(0, alterSession.getParameters().size());
-
+        assertEquals(0, alterSession.getParameters().size());
+        
         alterSession.setParameters(Arrays.asList("PARALLEL", "6"));
-        Assert.assertEquals(2, alterSession.getParameters().size());
+        assertEquals(2, alterSession.getParameters().size());
     }
 }
