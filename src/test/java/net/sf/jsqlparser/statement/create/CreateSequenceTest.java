@@ -9,15 +9,13 @@
  */
 package net.sf.jsqlparser.statement.create;
 
-import static net.sf.jsqlparser.test.TestUtils.*;
-
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Sequence;
 import net.sf.jsqlparser.schema.Sequence.Parameter;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
+import static net.sf.jsqlparser.test.TestUtils.*;
 import org.junit.jupiter.api.Test;
 
 public class CreateSequenceTest {

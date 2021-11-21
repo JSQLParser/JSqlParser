@@ -14,10 +14,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.core.StringStartsWith;
-import org.junit.jupiter.api.Test;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.feature.Feature;
@@ -27,8 +23,11 @@ import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import net.sf.jsqlparser.util.validation.feature.MariaDbVersion;
 import net.sf.jsqlparser.util.validation.feature.MySqlVersion;
 import net.sf.jsqlparser.util.validation.validator.StatementValidator;
+import org.hamcrest.CoreMatchers;
 import static org.hamcrest.MatcherAssert.assertThat;
+import org.hamcrest.core.StringStartsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class ValidationTest extends ValidationTestAsserts {
 

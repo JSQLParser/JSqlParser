@@ -15,7 +15,6 @@ import net.sf.jsqlparser.statement.Statement;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import org.assertj.core.api.Assertions;
 import static org.junit.jupiter.api.Assertions.fail;
-
 import org.junit.jupiter.api.Test;
 
 /**

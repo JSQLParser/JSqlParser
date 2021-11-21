@@ -11,7 +11,6 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.Test;
 
 /**

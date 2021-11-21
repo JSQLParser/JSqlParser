@@ -9,10 +9,10 @@
  */
 package net.sf.jsqlparser.statement.create.schema;
 
+import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import org.junit.jupiter.api.Test;
-import net.sf.jsqlparser.JSQLParserException;
 
 /**
  *

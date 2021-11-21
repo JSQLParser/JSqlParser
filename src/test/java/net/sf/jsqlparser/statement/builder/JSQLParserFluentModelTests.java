@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.builder;
 
+import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
@@ -29,11 +30,8 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.test.TestUtils;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static net.sf.jsqlparser.test.TestUtils.*;
+import org.junit.jupiter.api.Test;
 
 public class JSQLParserFluentModelTests {
 

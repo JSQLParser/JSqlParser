@@ -9,24 +9,16 @@
  */
 package net.sf.jsqlparser.parser;
 
-import net.sf.jsqlparser.JSQLParserException;
-
-
-
-
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import net.sf.jsqlparser.JSQLParserException;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-
-
 import org.junit.jupiter.api.Test;
 
 /**

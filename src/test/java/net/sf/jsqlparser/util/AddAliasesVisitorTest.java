@@ -14,10 +14,6 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.select.Select;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-
-
-
 import org.junit.jupiter.api.Test;
 
 

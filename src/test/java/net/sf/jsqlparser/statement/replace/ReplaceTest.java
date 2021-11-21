@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.statement.replace;
 
 import java.io.StringReader;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
@@ -22,8 +21,6 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.test.TestUtils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-
 import org.junit.jupiter.api.Test;
 
 public class ReplaceTest {

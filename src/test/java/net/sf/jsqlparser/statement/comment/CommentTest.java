@@ -9,18 +9,14 @@
  */
 package net.sf.jsqlparser.statement.comment;
 
-import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.assertj.core.api.Assertions.assertThat;
-
-
-
 import java.io.StringReader;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 

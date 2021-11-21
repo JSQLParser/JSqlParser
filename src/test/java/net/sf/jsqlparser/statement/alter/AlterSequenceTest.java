@@ -10,9 +10,8 @@
 package net.sf.jsqlparser.statement.alter;
 
 import net.sf.jsqlparser.JSQLParserException;
-import org.junit.jupiter.api.Test;
-
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import org.junit.jupiter.api.Test;
 
 public class AlterSequenceTest {
 

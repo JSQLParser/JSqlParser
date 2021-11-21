@@ -9,14 +9,12 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.test.TestUtils;
-
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.Collections;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.test.TestUtils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class AlterSessionTest {
     @Test

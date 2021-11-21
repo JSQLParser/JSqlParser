@@ -11,10 +11,6 @@ package net.sf.jsqlparser.statement.execute;
 
 import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.*;
-
-
-
-
 import org.junit.jupiter.api.Test;
 
 /**

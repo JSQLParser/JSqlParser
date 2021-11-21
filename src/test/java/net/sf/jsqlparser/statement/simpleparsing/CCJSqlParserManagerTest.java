@@ -13,11 +13,10 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.Objects;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.statement.create.CreateTableTest;
+import net.sf.jsqlparser.test.TestException;
 import org.junit.jupiter.api.Test;
 
 public class CCJSqlParserManagerTest {

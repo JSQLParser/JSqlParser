@@ -10,14 +10,13 @@
 package net.sf.jsqlparser.expression;
 
 
-import net.sf.jsqlparser.JSQLParserException;
-import org.junit.jupiter.api.Test;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import net.sf.jsqlparser.JSQLParserException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class TimestampValueTest {
 

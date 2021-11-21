@@ -17,8 +17,6 @@ import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-
-
 import org.junit.jupiter.api.Test;
 
 public class CreateIndexTest {
