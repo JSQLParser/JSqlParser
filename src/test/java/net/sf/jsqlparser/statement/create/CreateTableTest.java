@@ -596,7 +596,7 @@ public class CreateTableTest {
                     assertEquals(colsList.length, colsFound.size(), "stm:" + query);
 
                     for (int i = 0; i < colsList.length; i++) {
-                        assertEquals("stm:" + query, colsList[i], colsFound.get(i));
+                        assertEquals(colsList[i], colsFound.get(i), "stm:" + query);
                     }
                 } catch (Exception e) {
                     throw new TestException("error at stm num: " + numSt + "  " + query, e);
