@@ -15,7 +15,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
@@ -142,16 +141,8 @@ public class SelectTest {
     }
 
     @Test
-    @Ignore
-    public void testMultiPartColumnNameWithDatabaseNameAndSchemaName() {
-        final String statement = "SELECT databaseName.schemaName..columnName FROM tableName";
-        Select select;
-        try {
-            select = (Select) parserManager.parse(new StringReader(statement));
-            fail("must not work");
-        } catch (JSQLParserException ex) {
-            //Logger.getLogger(SelectTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public void testMultiPartColumnNameWithDatabaseNameAndSchemaName() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT databaseName.schemaName..columnName FROM tableName");
     }
 
     @Test
