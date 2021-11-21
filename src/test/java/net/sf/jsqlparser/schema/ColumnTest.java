@@ -12,9 +12,8 @@ package net.sf.jsqlparser.schema;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
-
 /**
- * 
+ *
  * @author tw
  */
 public class ColumnTest {
@@ -26,7 +25,7 @@ public class ColumnTest {
             public String toString() {
                 return "anonymous class";
             }
-                
+
         };
         assertEquals("anonymous class", myColumn.toString());
     }

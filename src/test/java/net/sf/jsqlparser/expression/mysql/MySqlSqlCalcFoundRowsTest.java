@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
  * @author sam
  */
 public class MySqlSqlCalcFoundRowsTest {
+
     @Test
     public void testPossibleParsingWithSqlCalcFoundRowsHint() throws JSQLParserException {
         MySqlSqlCalcFoundRowRef ref = new MySqlSqlCalcFoundRowRef(false);
@@ -67,6 +68,7 @@ public class MySqlSqlCalcFoundRowsTest {
 }
 
 class MySqlSqlCalcFoundRowRef {
+
     public boolean sqlCalcFoundRows = false;
 
     public MySqlSqlCalcFoundRowRef(boolean sqlCalcFoundRows) {

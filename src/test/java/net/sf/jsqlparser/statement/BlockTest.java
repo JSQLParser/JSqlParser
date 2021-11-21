@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
  * @author Tobias Warneke (t.warneke@gmx.net)
  */
 public class BlockTest {
+
     /**
      * Test of getStatements method, of class Block.
      */
@@ -44,18 +45,20 @@ public class BlockTest {
                 + "", stmts.toString());
 
     }
+
     @Test
     public void testBlock3() throws JSQLParserException {
         Statements stmts = CCJSqlParserUtil.parseStatements("begin\nselect * from feature;\nend");
-        Block block =(Block) stmts.getStatements().get(0);
+        Block block = (Block) stmts.getStatements().get(0);
         assertFalse(block.getStatements().getStatements().isEmpty());
     }
+
     @Test
     public void testBlockToStringIsNullSafe() throws JSQLParserException {
         Block block = new Block();
         block.setStatements(null);
         assertEquals("BEGIN\n"
-                 + "END", block.toString());
+                + "END", block.toString());
     }
 
 }

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
  * @author toben
  */
 public class ExecuteTest {
+
     @Test
     public void testAcceptExecute() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("EXECUTE myproc 'a', 2, 'b'");

@@ -16,7 +16,6 @@ import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
-
 public class GrantTest {
 
     private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
@@ -93,7 +92,7 @@ public class GrantTest {
     public void testGrantQueryWithRole() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("GRANT ROLE_1 TO TEST_ROLE_1, TEST_ROLE_2");
     }
-    
+
     @Test
     public void testGrantSchemaParsingIssue1080() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("GRANT SELECT ON schema_name.table_name TO XYZ");

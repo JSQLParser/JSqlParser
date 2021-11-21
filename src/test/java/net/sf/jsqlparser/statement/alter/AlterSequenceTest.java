@@ -21,12 +21,12 @@ public class AlterSequenceTest {
     }
 
     @Test
-    public void testAlterSequence_withIncrement() throws JSQLParserException{
+    public void testAlterSequence_withIncrement() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_seq INCREMENT BY 1");
     }
 
     @Test
-    public void testAlterSequence_withStart() throws JSQLParserException{
+    public void testAlterSequence_withStart() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_seq START WITH 10");
     }
 
@@ -109,7 +109,7 @@ public class AlterSequenceTest {
         assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_sec START WITH 2 INCREMENT BY 5 NOCACHE");
         assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE");
     }
-    
+
     @Test
     public void testAlterSequence_restartIssue1405() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_seq RESTART WITH 1");

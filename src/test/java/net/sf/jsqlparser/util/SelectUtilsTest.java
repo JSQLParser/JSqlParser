@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 public class SelectUtilsTest {
+
     /**
      * Test of addColumn method, of class SelectUtils.
      */

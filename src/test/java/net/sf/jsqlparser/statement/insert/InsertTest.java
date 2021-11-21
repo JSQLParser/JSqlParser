@@ -53,7 +53,7 @@ public class InsertTest {
         assertTrue(((ExpressionList) insert.getItemsList()).getExpressions().get(0) instanceof JdbcParameter);
         assertEquals("sadfsd",
                 ((StringValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(1)).
-                getValue());
+                        getValue());
         assertEquals(234, ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().
                 get(2)).getValue());
         assertEquals(statement, "" + insert);
@@ -73,8 +73,6 @@ public class InsertTest {
                 .get(2)).getValue(), 0.0);
         assertEquals(statement, "" + insert);
 
-
-
     }
 
     @Test
@@ -86,9 +84,8 @@ public class InsertTest {
         assertEquals("col1", insert.getColumns().get(0).getColumnName());
         assertEquals("val1",
                 ((StringValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(0)).
-                getValue());
+                        getValue());
         assertEquals("INSERT INTO mytable (col1) VALUES ('val1')", insert.toString());
-
 
     }
 
@@ -362,26 +359,26 @@ public class InsertTest {
     public void testDisableKeywordIssue945() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO SOMESCHEMA.TEST (DISABLE, TESTCOLUMN) VALUES (1, 1)");
     }
-    
+
     @Test
     public void testWithListIssue282() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("WITH myctl AS (SELECT a, b FROM mytable) INSERT INTO mytable SELECT a, b FROM myctl");
     }
-    
+
     @Test
     public void testOracleHint() throws JSQLParserException {
         assertOracleHintExists("INSERT /*+ SOMEHINT */ INTO mytable VALUES (1, 2, 3)", true, "SOMEHINT");
-       
-       //@todo: add a testcase supposed to not finding a misplaced hint
+
+        //@todo: add a testcase supposed to not finding a misplaced hint
     }
 
-  @Test
-  public void testInsertTableArrays4() throws JSQLParserException {
-    assertSqlCanBeParsedAndDeparsed(
-        "INSERT INTO sal_emp\n"
-            + "    VALUES ('Carol',\n"
-            + "    ARRAY[20000, 25000, 25000, 25000],\n"
-            + "    ARRAY[['breakfast', 'consulting'], ['meeting', 'lunch']])",
-        true);
+    @Test
+    public void testInsertTableArrays4() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO sal_emp\n"
+                + "    VALUES ('Carol',\n"
+                + "    ARRAY[20000, 25000, 25000, 25000],\n"
+                + "    ARRAY[['breakfast', 'consulting'], ['meeting', 'lunch']])",
+                true);
     }
 }

@@ -34,8 +34,8 @@ import org.opentest4j.AssertionFailedError;
 /**
  * Tries to parse and deparse all statments in net.sf.jsqlparser.test.oracle-tests.
  *
- * As a matter of fact there are a lot of files that can still not processed. Here a step by step
- * improvement is the way to go.
+ * As a matter of fact there are a lot of files that can still not processed. Here a step by step improvement is the way
+ * to go.
  *
  * The test ensures, that the successful parsed file count does not decrease.
  *
@@ -46,11 +46,11 @@ public class SpecialOracleTest {
     //@todo: this is a workaround for Maven vs. Gradle
     //we will want to remove that after concluding the Gradle migration
     private static final File SQLS_DIR = new File("target/test-classes/net/sf/jsqlparser/statement/select/oracle-tests").isDirectory()
-        ? new File("target/test-classes/net/sf/jsqlparser/statement/select/oracle-tests")
-        : new File("build/resources/test/net/sf/jsqlparser/statement/select/oracle-tests");
-    
+            ? new File("target/test-classes/net/sf/jsqlparser/statement/select/oracle-tests")
+            : new File("build/resources/test/net/sf/jsqlparser/statement/select/oracle-tests");
+
     private static final File SQL_SOURCE_DIR = new File("src/test/resources/net/sf/jsqlparser/statement/select/oracle-tests");
-    
+
     private static final Logger LOG = Logger.getLogger(SpecialOracleTest.class.getName());
 
     private final List<String> EXPECTED_SUCCESSES = Arrays.asList(
@@ -250,7 +250,7 @@ public class SpecialOracleTest {
         int count = 0;
         int success = 0;
         File[] sqlTestFiles = SQLS_DIR.listFiles();
-        
+
         boolean foundUnexpectedFailures = false;
 
         for (File file : sqlTestFiles) {
@@ -265,16 +265,16 @@ public class SpecialOracleTest {
                     String message = ex.getMessage();
                     int pos = message.indexOf('\n');
                     if (pos > 0) {
-                      message = message.substring(0, pos);
+                        message = message.substring(0, pos);
                     }
-                        
+
                     if (sql.contains("@SUCCESSFULLY_PARSED_AND_DEPARSED") || EXPECTED_SUCCESSES.contains(file.getName())) {
                         LOG.log(Level.SEVERE, "UNEXPECTED PARSING FAILURE: {0}\n\t" + message, file.getName());
                         foundUnexpectedFailures = true;
                     } else {
                         LOG.log(Level.FINE, "EXPECTED PARSING FAILURE: {0}", file.getName());
                     }
-                    
+
                     recordFailureOnSourceFile(file, message);
                 } catch (Exception ex) {
                     LOG.log(Level.SEVERE, "UNEXPECTED EXCEPTION: {0}\n\t" + ex.getMessage(), file.getName());
@@ -293,10 +293,10 @@ public class SpecialOracleTest {
 
         LOG.log(Level.INFO, "tested {0} files. got {1} correct parse results, expected {2}", new Object[]{count, success, EXPECTED_SUCCESSES.size()});
         assertTrue(success >= EXPECTED_SUCCESSES.size());
-        
+
         assertFalse(foundUnexpectedFailures, "Found Testcases failing unexpectedly.");
-      }
-    
+    }
+
     @Test
     //@Ignore
     public void debugSpecificSql() throws IOException, JSQLParserException {
@@ -321,9 +321,9 @@ public class SpecialOracleTest {
         if (!sourceSql.contains("@SUCCESSFULLY_PARSED_AND_DEPARSED")) {
             LOG.log(Level.INFO, "NEW SUCCESS: {0}", file.getName());
             if (sourceFile.exists() && sourceFile.canWrite()) {
-                try (FileWriter writer = new FileWriter(sourceFile, true)) {
+                try ( FileWriter writer = new FileWriter(sourceFile, true)) {
                     writer.append("\n--@SUCCESSFULLY_PARSED_AND_DEPARSED first on ")
-                      .append(DateFormat.getDateTimeInstance().format(new Date()));
+                            .append(DateFormat.getDateTimeInstance().format(new Date()));
                 }
             }
         } else {
@@ -334,17 +334,17 @@ public class SpecialOracleTest {
             }
         }
     }
-    
+
     public void recordFailureOnSourceFile(File file, String message) throws IOException {
         File sourceFile = new File(SQL_SOURCE_DIR, file.getName());
         String sourceSql = FileUtils.readFileToString(sourceFile, Charset.forName("UTF-8"));
         if (!sourceSql.contains("@FAILURE: " + message)
-             && sourceFile.canWrite() ) {
-            try (FileWriter writer = new FileWriter(sourceFile, true)) {
+                && sourceFile.canWrite()) {
+            try ( FileWriter writer = new FileWriter(sourceFile, true)) {
                 writer.append("\n--@FAILURE: " + message + " recorded first on ")
-                  .append(DateFormat.getDateTimeInstance().format(new Date()));
+                        .append(DateFormat.getDateTimeInstance().format(new Date()));
             }
-        } 
+        }
     }
 
     @Test
@@ -359,13 +359,13 @@ public class SpecialOracleTest {
                 LOG.log(Level.FINE, "EXPECTED SUCCESS: {0}", file.getName());
             } catch (JSQLParserException ex) {
                 regressionFiles.add(file.getName());
-                
+
                 String message = ex.getMessage();
                 int pos = message.indexOf('\n');
                 if (pos > 0) {
-                  message = message.substring(0, pos);
+                    message = message.substring(0, pos);
                 }
-                        
+
                 LOG.log(Level.SEVERE, "UNEXPECTED PARSING FAILURE: {0}\n\t" + message, file.getName());
             }
         }
@@ -376,7 +376,7 @@ public class SpecialOracleTest {
     @Test
     public void testOperatorsWithSpaces() throws Exception {
         String sql;
-        
+
         // First, the regular way (normal for most databases).
         sql = "SELECT\n"
                 + "    Something\n"

@@ -23,8 +23,6 @@ import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
-
-
 public class AdaptersTest {
 
     /**

@@ -51,7 +51,7 @@ public class ValuesTest {
 
     @Test
     public void testObject() {
-        ValuesStatement valuesStatement=new ValuesStatement().addExpressions(new StringValue("1"), new StringValue("2"));
+        ValuesStatement valuesStatement = new ValuesStatement().addExpressions(new StringValue("1"), new StringValue("2"));
         valuesStatement.addExpressions(Arrays.asList(new StringValue("3"), new StringValue("4")));
 
         valuesStatement.accept(new StatementVisitorAdapter());

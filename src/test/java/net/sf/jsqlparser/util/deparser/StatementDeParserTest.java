@@ -42,6 +42,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class StatementDeParserTest {
+
     @Mock
     private ExpressionDeParser expressionDeParser;
 
@@ -119,14 +120,14 @@ public class StatementDeParserTest {
         withItem2.setSubSelect(withItem2SubSelect);
 
         statementDeParser.visit(insert);
-        
+
         then(withItem1).should().accept(selectDeParser);
         then(withItem2).should().accept(selectDeParser);
         then(selectBody).should().accept(selectDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
-    
+
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithoutItemsList() {
@@ -167,7 +168,6 @@ public class StatementDeParserTest {
 //
 //        then(itemsList).should().accept(argThat(is(replaceDeParserWithDeParsers(equalTo(expressionDeParser), equalTo(selectDeParser)))));
 //    }
-
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingSelect() {
@@ -247,7 +247,7 @@ public class StatementDeParserTest {
         SubSelect subSelect = new SubSelect().withSelectBody(selectBody);
         ExpressionList expressionList = new ExpressionList().addExpressions(subSelect);
 
-        UpdateSet updateSet=new UpdateSet();
+        UpdateSet updateSet = new UpdateSet();
         updateSet.add(column1);
         updateSet.add(column2);
         updateSet.add(expressionList);
@@ -317,7 +317,6 @@ public class StatementDeParserTest {
 //            }
 //        };
 //    }
-    
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeparsersWhenDeParsingUpsertWithExpressionList() throws JSQLParserException {
@@ -362,13 +361,13 @@ public class StatementDeParserTest {
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
-    
+
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeparsersWhenDeParsingIfThenStatement() throws JSQLParserException {
         String sqlStr = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1";
-        IfElseStatement ifElseStatement  = (IfElseStatement) CCJSqlParserUtil.parse(sqlStr);
+        IfElseStatement ifElseStatement = (IfElseStatement) CCJSqlParserUtil.parse(sqlStr);
         statementDeParser.deParse(ifElseStatement);
-      }
-    
+    }
+
 }

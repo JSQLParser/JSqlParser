@@ -91,33 +91,33 @@ public class DeleteTest {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
-     @Test
+    @Test
     public void testDeleteMultiTableIssue878() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DELETE table1, table2 FROM table1, table2");
     }
-    
+
     @Test
     public void testOracleHint() throws JSQLParserException {
         String sql = "DELETE /*+ SOMEHINT */ FROM mytable WHERE mytable.col = 9";
-        
+
         assertOracleHintExists(sql, true, "SOMEHINT");
-       
-       //@todo: add a testcase supposed to not finding a misplaced hint
-  }
 
-  @Test
-  public void testWith() throws JSQLParserException {
-    String statement =
-        ""
-            + "WITH a\n"
-            + "     AS (SELECT 1 id_instrument_ref)\n"
-            + "     , b\n"
-            + "       AS (SELECT 1 id_instrument_ref)\n"
-            + "DELETE FROM cfe.instrument_ref\n"
-            + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
-            + "                            FROM   a)";
+        //@todo: add a testcase supposed to not finding a misplaced hint
+    }
 
-    assertSqlCanBeParsedAndDeparsed(statement, true);
+    @Test
+    public void testWith() throws JSQLParserException {
+        String statement
+                = ""
+                + "WITH a\n"
+                + "     AS (SELECT 1 id_instrument_ref)\n"
+                + "     , b\n"
+                + "       AS (SELECT 1 id_instrument_ref)\n"
+                + "DELETE FROM cfe.instrument_ref\n"
+                + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
+                + "                            FROM   a)";
+
+        assertSqlCanBeParsedAndDeparsed(statement, true);
     }
 
     @Test

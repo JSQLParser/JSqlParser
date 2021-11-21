@@ -98,7 +98,7 @@ public class SelectValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testOracleJoin() throws JSQLParserException {
-        validateNoErrors("SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)", 1, 
+        validateNoErrors("SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)", 1,
                 DatabaseType.ORACLE);
     }
 

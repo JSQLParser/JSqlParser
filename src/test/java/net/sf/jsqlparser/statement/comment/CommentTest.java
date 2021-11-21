@@ -92,7 +92,7 @@ public class CommentTest {
         assertThat(comment.getColumn().getColumnName()).isEqualTo("myColumn");
         assertThat(comment.getColumn().getTable().getFullyQualifiedName()).isEqualTo("myTable");
     }
-        
+
     @Test
     public void testCommentTableColumnDiffersIssue984_2() throws JSQLParserException {
         Comment comment = (Comment) CCJSqlParserUtil.parse("COMMENT ON COLUMN mySchema.myTable.myColumn is 'Some comment'");
@@ -101,7 +101,7 @@ public class CommentTest {
         assertThat(comment.getColumn().getTable().getFullyQualifiedName()).isEqualTo("mySchema.myTable");
         assertThat(comment.getColumn().getTable().getName()).isEqualTo("myTable");
         assertThat(comment.getColumn().getTable().getSchemaName()).isEqualTo("mySchema");
-    }   
+    }
 
     @Test
     public void testCommentOnView() throws JSQLParserException {

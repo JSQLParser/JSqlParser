@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.schema;
 
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -62,7 +61,7 @@ public class TableTest {
         deparser.visit((PlainSelect) select.getSelectBody());
 
     }
-    
+
     @Test
     public void testTableRemoveNameParts() {
         Table table = new Table("link", "DICTIONARY");

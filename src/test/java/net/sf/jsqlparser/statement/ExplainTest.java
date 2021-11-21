@@ -48,7 +48,7 @@ public class ExplainTest {
     }
 
     @Test
-    public void testMultiOptions_orderPreserved() throws  JSQLParserException {
+    public void testMultiOptions_orderPreserved() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("EXPLAIN VERBOSE ANALYZE BUFFERS COSTS SELECT * FROM mytable");
     }
 

@@ -174,7 +174,7 @@ public class MergeTest {
             //expected to fail
         }
     }
-    
+
     @Test
     public void testOracleHint() throws JSQLParserException {
         String sql = "MERGE /*+ SOMEHINT */ INTO bonuses B\n"
@@ -188,53 +188,52 @@ public class MergeTest {
                 + "WHEN NOT MATCHED THEN\n"
                 + "  INSERT (B.employee_id, B.bonus)\n"
                 + "  VALUES (E.employee_id, E.salary * 0.05)  ";
-        
+
         assertOracleHintExists(sql, true, "SOMEHINT");
-       
-       //@todo: add a testcase supposed to not finding a misplaced hint
+
+        //@todo: add a testcase supposed to not finding a misplaced hint
     }
 
-  @Test
-  public void testInsertMergeWhere() throws JSQLParserException {
-    String sql =
-        "-- Both clauses present.\n"
-            + "MERGE INTO test1 a\n"
-            + "  USING all_objects b\n"
-            + "    ON (a.object_id = b.object_id)\n"
-            + "  WHEN MATCHED THEN\n"
-            + "    UPDATE SET a.status = b.status\n"
-            + "    WHERE  b.status != 'VALID'\n"
-            + "  WHEN NOT MATCHED THEN\n"
-            + "    INSERT (object_id, status)\n"
-            + "    VALUES (b.object_id, b.status)\n"
-            + "\n"
-            + "    WHERE  b.status != 'VALID'\n"
-            ;
+    @Test
+    public void testInsertMergeWhere() throws JSQLParserException {
+        String sql
+                = "-- Both clauses present.\n"
+                + "MERGE INTO test1 a\n"
+                + "  USING all_objects b\n"
+                + "    ON (a.object_id = b.object_id)\n"
+                + "  WHEN MATCHED THEN\n"
+                + "    UPDATE SET a.status = b.status\n"
+                + "    WHERE  b.status != 'VALID'\n"
+                + "  WHEN NOT MATCHED THEN\n"
+                + "    INSERT (object_id, status)\n"
+                + "    VALUES (b.object_id, b.status)\n"
+                + "\n"
+                + "    WHERE  b.status != 'VALID'\n";
 
-    Statement statement = CCJSqlParserUtil.parse(sql);
-    assertSqlCanBeParsedAndDeparsed(sql, true);
-    
-    Merge merge = (Merge) statement;
-    MergeInsert mergeInsert = merge.getMergeInsert();
-    Assertions.assertThat( mergeInsert.getWhereCondition() );
-    
-    MergeUpdate mergeUpdate = merge.getMergeUpdate();
-    Assertions.assertThat( mergeUpdate.getWhereCondition() );
-  }
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        assertSqlCanBeParsedAndDeparsed(sql, true);
 
-  @Test
-  public void testWith() throws JSQLParserException {
-    String statement =
-        ""
-            + "WITH a\n"
-            + "     AS (SELECT 1 id_instrument_ref)\n"
-            + "     , b\n"
-            + "       AS (SELECT 1 id_instrument_ref)\n"
-            + "MERGE INTO cfe.instrument_ref b\n"
-            + "using a\n"
-            + "ON ( b.id_instrument_ref = a.id_instrument_ref )\n"
-            + "WHEN matched THEN\n"
-            + "  UPDATE SET b.id_instrument = 'a' ";
-    assertSqlCanBeParsedAndDeparsed(statement, true);
-  }
+        Merge merge = (Merge) statement;
+        MergeInsert mergeInsert = merge.getMergeInsert();
+        Assertions.assertThat(mergeInsert.getWhereCondition());
+
+        MergeUpdate mergeUpdate = merge.getMergeUpdate();
+        Assertions.assertThat(mergeUpdate.getWhereCondition());
+    }
+
+    @Test
+    public void testWith() throws JSQLParserException {
+        String statement
+                = ""
+                + "WITH a\n"
+                + "     AS (SELECT 1 id_instrument_ref)\n"
+                + "     , b\n"
+                + "       AS (SELECT 1 id_instrument_ref)\n"
+                + "MERGE INTO cfe.instrument_ref b\n"
+                + "using a\n"
+                + "ON ( b.id_instrument_ref = a.id_instrument_ref )\n"
+                + "WHEN matched THEN\n"
+                + "  UPDATE SET b.id_instrument = 'a' ";
+        assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
 }

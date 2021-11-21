@@ -41,6 +41,7 @@ public class SetStatementTest {
     public void testMultiValue() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET v = 1, c = 3");
     }
+
     @Test
     public void testListValue() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET v = 1, 3");
@@ -55,7 +56,7 @@ public class SetStatementTest {
     public void tesLocalWithEq() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET LOCAL cursor_tuple_fraction = 0.05");
     }
-    
+
     @Test
     public void testValueOnIssue927() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET standard_conforming_strings = on");

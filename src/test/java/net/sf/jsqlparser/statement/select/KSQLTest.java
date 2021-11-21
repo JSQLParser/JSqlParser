@@ -19,9 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
-
-
-
 public class KSQLTest {
 
     @Test
@@ -144,7 +141,7 @@ public class KSQLTest {
 
         statement = CCJSqlParserUtil.parse(sql);
         System.out.println(statement.toString());
-                Select select = (Select) statement;
+        Select select = (Select) statement;
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         assertTrue(plainSelect.getKsqlWindow().isTumblingWindow());
         assertFalse(plainSelect.getKsqlWindow().isSessionWindow());

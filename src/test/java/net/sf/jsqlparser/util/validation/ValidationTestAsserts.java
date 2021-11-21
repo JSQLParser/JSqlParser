@@ -163,7 +163,7 @@ public class ValidationTestAsserts {
      * @param statementCount
      * @param errorCount
      * @param supported - the supported features
-     * @param features - the features not supported, assert errormessages against      {@link #assertNotSupported(Collection, Feature...)
+     * @param features - the features not supported, assert errormessages against null null     {@link #assertNotSupported(Collection, Feature...)
      */
     public static void validateNotSupported(String sql, int statementCount, int errorCount, Version supported,
             Feature... features) {
@@ -175,7 +175,7 @@ public class ValidationTestAsserts {
      * @param statementCount
      * @param errorCount
      * @param supported - the supported features
-     * @param features - the features not supported, assert errormessages against      {@link #assertNotSupported(Collection, Feature...)
+     * @param features - the features not supported, assert errormessages against null null     {@link #assertNotSupported(Collection, Feature...)
      */
     public static void validateNotSupported(String sql, int statementCount, int errorCount,
             Collection<Version> supported, Feature... features) {

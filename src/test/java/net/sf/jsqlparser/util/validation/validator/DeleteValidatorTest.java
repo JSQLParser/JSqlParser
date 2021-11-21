@@ -39,7 +39,6 @@ public class DeleteValidatorTest extends ValidationTestAsserts {
         validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL);
     }
 
-
     @Test
     public void testValidationDeleteLimitOrderBy() throws JSQLParserException {
         String sql = "DELETE FROM table t WHERE t.criteria > 5 ORDER BY t.criteria LIMIT 1;";

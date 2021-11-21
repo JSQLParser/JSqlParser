@@ -14,12 +14,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
 
-
 /**
- * 
+ *
  * @author tw
  */
 public class LongValueTest {
+
     @Test
     public void testSimpleNumber() {
         LongValue value = new LongValue("123");

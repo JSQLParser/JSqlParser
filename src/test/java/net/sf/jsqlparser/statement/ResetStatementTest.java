@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
 
 public class ResetStatementTest {
+
     @Test
     public void tesResetTZ() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("RESET Time Zone");
@@ -28,7 +29,7 @@ public class ResetStatementTest {
 
     @Test
     public void testObject() {
-        ResetStatement resetStatement=new ResetStatement();
+        ResetStatement resetStatement = new ResetStatement();
         assertNotNull(resetStatement.getName());
 
         resetStatement.add("something");

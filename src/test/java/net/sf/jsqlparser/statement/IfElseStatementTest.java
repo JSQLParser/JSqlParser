@@ -30,74 +30,74 @@ import org.junit.jupiter.api.Test;
  *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
-
 public class IfElseStatementTest {
-  @Test
-  public void testSimpleIfElseStatement() throws Exception {
-    TestUtils.assertSqlCanBeParsedAndDeparsed(
-        "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin", true);
-    TestUtils.assertSqlCanBeParsedAndDeparsed(
-        "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin;", true);
-    TestUtils.assertSqlCanBeParsedAndDeparsed(
-        "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin; ELSE CREATE TABLE tOrigin (ID VARCHAR(40));",
-        true);
-  }
 
-  @Test
-  public void testIfElseStatements1() throws Exception {
-    String sqlStr =
-        "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1; ELSE CREATE TABLE tOrigin1 (ID VARCHAR (40));\n"
-            + "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin2; ELSE CREATE TABLE tOrigin2 (ID VARCHAR (40));\n"
-            + "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin3; ELSE CREATE TABLE tOrigin3 (ID VARCHAR (40));\n";
+    @Test
+    public void testSimpleIfElseStatement() throws Exception {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin;", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin; ELSE CREATE TABLE tOrigin (ID VARCHAR(40));",
+                true);
+    }
 
-    Statements result = CCJSqlParserUtil.parseStatements(sqlStr);
-    assertEquals(sqlStr, result.toString());
-  }
+    @Test
+    public void testIfElseStatements1() throws Exception {
+        String sqlStr
+                = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1; ELSE CREATE TABLE tOrigin1 (ID VARCHAR (40));\n"
+                + "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin2; ELSE CREATE TABLE tOrigin2 (ID VARCHAR (40));\n"
+                + "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin3; ELSE CREATE TABLE tOrigin3 (ID VARCHAR (40));\n";
 
-  @Test
-  public void testIfElseStatements2() throws Exception {
-    String sqlStr = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1;\n"
-        + "CREATE TABLE tOrigin2 (ID VARCHAR (40));\n"
-        + "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin3; ELSE CREATE TABLE tOrigin3 (ID VARCHAR (40));\n";
+        Statements result = CCJSqlParserUtil.parseStatements(sqlStr);
+        assertEquals(sqlStr, result.toString());
+    }
 
-    Statements result = CCJSqlParserUtil.parseStatements(sqlStr);
-    assertEquals(sqlStr, result.toString());
-  }
+    @Test
+    public void testIfElseStatements2() throws Exception {
+        String sqlStr = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1;\n"
+                + "CREATE TABLE tOrigin2 (ID VARCHAR (40));\n"
+                + "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin3; ELSE CREATE TABLE tOrigin3 (ID VARCHAR (40));\n";
 
-  @Test
-  public void testObjectBuilder() throws JSQLParserException {
-    Statement ifStatement = CCJSqlParserUtil.parse("SELECT * from dual");
-    Statement elseStatement = CCJSqlParserUtil.parse("SELECT * from dual");
+        Statements result = CCJSqlParserUtil.parseStatements(sqlStr);
+        assertEquals(sqlStr, result.toString());
+    }
 
-    IfElseStatement ifElseStatement = new IfElseStatement(new NotExpression(), ifStatement);
-    ifElseStatement.setUsingSemicolonForIfStatement(true);
+    @Test
+    public void testObjectBuilder() throws JSQLParserException {
+        Statement ifStatement = CCJSqlParserUtil.parse("SELECT * from dual");
+        Statement elseStatement = CCJSqlParserUtil.parse("SELECT * from dual");
 
-    ifElseStatement.setElseStatement(elseStatement);
-    ifElseStatement.setUsingSemicolonForElseStatement(true);
+        IfElseStatement ifElseStatement = new IfElseStatement(new NotExpression(), ifStatement);
+        ifElseStatement.setUsingSemicolonForIfStatement(true);
 
-    assertEquals(ifElseStatement.isUsingSemicolonForIfStatement(),
-        ifElseStatement.isUsingSemicolonForElseStatement());
-    assertEquals(ifElseStatement.getIfStatement().toString(),
-        ifElseStatement.getElseStatement().toString());
+        ifElseStatement.setElseStatement(elseStatement);
+        ifElseStatement.setUsingSemicolonForElseStatement(true);
 
-    assertNotNull(ifElseStatement.getCondition());
-  }
+        assertEquals(ifElseStatement.isUsingSemicolonForIfStatement(),
+                ifElseStatement.isUsingSemicolonForElseStatement());
+        assertEquals(ifElseStatement.getIfStatement().toString(),
+                ifElseStatement.getElseStatement().toString());
 
-  @Test
-  public void testValidation() {
-    String sqlStr = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1;";
-    List<ValidationError> errors =
-        Validation.validate(Arrays.asList(DatabaseType.SQLSERVER, FeaturesAllowed.DROP), sqlStr);
-    ValidationTestAsserts.assertErrorsSize(errors, 0);
-  }
+        assertNotNull(ifElseStatement.getCondition());
+    }
 
-  @Test
-  public void testTableNames() throws JSQLParserException {
-    String sql = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1;";
-    Statement stmt = CCJSqlParserUtil.parse(sql);
-    TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-    List<String> tableList = tablesNamesFinder.getTableList(stmt);
-    assertEquals(1, tableList.size());
-    assertTrue(tableList.contains("tOrigin1"));
-  }
+    @Test
+    public void testValidation() {
+        String sqlStr = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1;";
+        List<ValidationError> errors
+                = Validation.validate(Arrays.asList(DatabaseType.SQLSERVER, FeaturesAllowed.DROP), sqlStr);
+        ValidationTestAsserts.assertErrorsSize(errors, 0);
+    }
+
+    @Test
+    public void testTableNames() throws JSQLParserException {
+        String sql = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1;";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(stmt);
+        assertEquals(1, tableList.size());
+        assertTrue(tableList.contains("tOrigin1"));
+    }
 }

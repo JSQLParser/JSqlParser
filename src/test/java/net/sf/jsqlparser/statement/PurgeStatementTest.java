@@ -7,7 +7,6 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-
 package net.sf.jsqlparser.statement;
 
 import java.util.List;
@@ -39,57 +38,57 @@ public class PurgeStatementTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed("PURGE TABLESPACE my_table_space", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("PURGE TABLESPACE my_table_space USER cfe", true);
     }
-    
-   /**
-   * This test will trigger the method {@link StatementVisitorAdaptor#visit() Visit Method} in the
-   * StatementVisitorAdaptor needed for the Code Coverage.
-   * 
-   * @throws net.sf.jsqlparser.JSQLParserException
-   */
-  @Test
-  public void testStatementVisitorAdaptor() throws JSQLParserException {
-    String sqlStr = "PURGE TABLE testtable";
 
-    CCJSqlParserUtil.parse(sqlStr).accept(new StatementVisitorAdapter());
-  }
+    /**
+     * This test will trigger the method {@link StatementVisitorAdaptor#visit() Visit Method} in the
+     * StatementVisitorAdaptor needed for the Code Coverage.
+     *
+     * @throws net.sf.jsqlparser.JSQLParserException
+     */
+    @Test
+    public void testStatementVisitorAdaptor() throws JSQLParserException {
+        String sqlStr = "PURGE TABLE testtable";
 
-  /**
-   * This test will trigger the method {@link TableNamesFinder#visit() Visit Method} in the
-   * TableNamesFinder needed for the Code Coverage.
-   * 
-   * @throws net.sf.jsqlparser.JSQLParserException
-   */
-  @Test
-  public void testTableNamesFinder() throws JSQLParserException {
-    String sqlStr = "PURGE TABLE testtable";
+        CCJSqlParserUtil.parse(sqlStr).accept(new StatementVisitorAdapter());
+    }
 
-    Statement statement = CCJSqlParserUtil.parse(sqlStr);
-    List<String> tables = new TablesNamesFinder().getTableList(statement);
-    assertEquals(1, tables.size());
-    assertTrue(tables.contains("testtable"));
-  }
+    /**
+     * This test will trigger the method {@link TableNamesFinder#visit() Visit Method} in the TableNamesFinder needed
+     * for the Code Coverage.
+     *
+     * @throws net.sf.jsqlparser.JSQLParserException
+     */
+    @Test
+    public void testTableNamesFinder() throws JSQLParserException {
+        String sqlStr = "PURGE TABLE testtable";
 
-  /**
-   * This test will trigger the method {@link ExpressionValidator#visit() Visit Method} in the
-   * ExpressionValidator needed for the Code Coverage.
-   * 
-   * @throws net.sf.jsqlparser.JSQLParserException
-   */
-  @Test
-  public void testValidator() throws JSQLParserException {
-    String sqlStr = "PURGE TABLE testtable";
+        Statement statement = CCJSqlParserUtil.parse(sqlStr);
+        List<String> tables = new TablesNamesFinder().getTableList(statement);
+        assertEquals(1, tables.size());
+        assertTrue(tables.contains("testtable"));
+    }
 
-    ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
-  }
+    /**
+     * This test will trigger the method {@link ExpressionValidator#visit() Visit Method} in the ExpressionValidator
+     * needed for the Code Coverage.
+     *
+     * @throws net.sf.jsqlparser.JSQLParserException
+     */
+    @Test
+    public void testValidator() throws JSQLParserException {
+        String sqlStr = "PURGE TABLE testtable";
 
-  @Test
-  public void testObjectAccess() throws JSQLParserException {
-      String sqlStr = "PURGE TABLESPACE my_table_space USER cfe";
-      PurgeStatement purgeStatement = (PurgeStatement) CCJSqlParserUtil.parse(sqlStr);
-      purgeStatement.setUserName("common");
-       
-      assertEquals(PurgeObjectType.TABLESPACE, purgeStatement.getPurgeObjectType());
-      assertEquals("my_table_space", purgeStatement.getObject());
-      assertEquals("common", purgeStatement.getUserName());
+        ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
+    }
+
+    @Test
+    public void testObjectAccess() throws JSQLParserException {
+        String sqlStr = "PURGE TABLESPACE my_table_space USER cfe";
+        PurgeStatement purgeStatement = (PurgeStatement) CCJSqlParserUtil.parse(sqlStr);
+        purgeStatement.setUserName("common");
+
+        assertEquals(PurgeObjectType.TABLESPACE, purgeStatement.getPurgeObjectType());
+        assertEquals("my_table_space", purgeStatement.getObject());
+        assertEquals("common", purgeStatement.getUserName());
     }
 }

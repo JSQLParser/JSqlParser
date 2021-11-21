@@ -101,7 +101,7 @@ public class CreateIndexTest {
         assertNull(createIndex.getIndex().getType());
         assertEquals("mytab", createIndex.getTable().getFullyQualifiedName());
         assertEquals("mycol", createIndex.getIndex().getColumnsNames().get(0));
-        assertEquals("GIST", createIndex.getIndex().getUsing()); 
+        assertEquals("GIST", createIndex.getIndex().getUsing());
         assertEquals(statement, "" + createIndex);
         assertSqlCanBeParsedAndDeparsed(statement);
     }
@@ -110,30 +110,30 @@ public class CreateIndexTest {
     public void testCreateIndexIssue633() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)");
     }
-    
+
     @Test
     public void testFullIndexNameIssue936() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX \"TS\".\"IDX\" ON \"TEST\" (\"ID\" ASC) TABLESPACE \"TS\"");
     }
-    
+
     @Test
     public void testFullIndexNameIssue936_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX \"TS\".\"IDX\" ON \"TEST\" (\"ID\") TABLESPACE \"TS\"");
     }
 
-  @Test
-  public void testCreateIndexTrailingOptions() throws JSQLParserException {
-    String statement =
-        "CREATE UNIQUE INDEX cfe.version_info_idx2\n"
-            + "    ON cfe.version_info ( major_version\n"
-            + "                            , minor_version\n"
-            + "                            , patch_level ) parallel compress nologging\n"
-            + ";";
-    CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
-    List<String> tailParameters = createIndex.getTailParameters();
-    assertEquals(3, tailParameters.size());
-    assertEquals(tailParameters.get(0), "parallel");
-    assertEquals(tailParameters.get(1), "compress");
-    assertEquals(tailParameters.get(2), "nologging");
-  }
+    @Test
+    public void testCreateIndexTrailingOptions() throws JSQLParserException {
+        String statement
+                = "CREATE UNIQUE INDEX cfe.version_info_idx2\n"
+                + "    ON cfe.version_info ( major_version\n"
+                + "                            , minor_version\n"
+                + "                            , patch_level ) parallel compress nologging\n"
+                + ";";
+        CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
+        List<String> tailParameters = createIndex.getTailParameters();
+        assertEquals(3, tailParameters.size());
+        assertEquals(tailParameters.get(0), "parallel");
+        assertEquals(tailParameters.get(1), "compress");
+        assertEquals(tailParameters.get(2), "nologging");
+    }
 }

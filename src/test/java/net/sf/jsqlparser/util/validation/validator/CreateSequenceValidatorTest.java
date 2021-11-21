@@ -19,8 +19,8 @@ import org.junit.jupiter.api.Test;
 
 public class CreateSequenceValidatorTest extends ValidationTestAsserts {
 
-    private static final DatabaseType DATABASES_SUPPORTING_SEQUENCES[] = new DatabaseType[] { DatabaseType.ORACLE,
-            DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2 };
+    private static final DatabaseType DATABASES_SUPPORTING_SEQUENCES[] = new DatabaseType[]{DatabaseType.ORACLE,
+        DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2};
 
     @Test
     public void testValidateCreateSequence() throws JSQLParserException {

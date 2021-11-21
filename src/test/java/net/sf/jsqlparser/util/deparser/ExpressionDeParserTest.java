@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.expression.AnalyticExpression;
@@ -33,6 +32,7 @@ import org.mockito.stubbing.Answer;
 
 @ExtendWith(MockitoExtension.class)
 public class ExpressionDeParserTest {
+
     private ExpressionDeParser expressionDeParser;
 
     @Mock

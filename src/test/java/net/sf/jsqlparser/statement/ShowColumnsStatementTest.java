@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
  */
 public class ShowColumnsStatementTest {
 
-
     @Test
     public void testSimpleUse() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SHOW COLUMNS FROM mydatabase");

@@ -25,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Assumptions;
 import org.opentest4j.TestAbortedException;
 
-
 /**
  * @author gitmotte
  */
@@ -45,17 +44,15 @@ public class ReflectionTestUtils {
             && m.getParameterCount() == 1;
 
     /**
-     * Testing of setters, getters, with-/add-methods by calling them with random
-     * parameter-values
+     * Testing of setters, getters, with-/add-methods by calling them with random parameter-values
      * <ul>
      * <li>testing, whether return-value is the specific type (not the parent)
      * <li>testing, whether calling the methods do not throw any exceptions
      * </ul>
      *
      * @param objs
-     * @param testMethodFilter - additional filter to skip some methods (by
-     *                         returning <code>false</code>). Default-Filters:
-     *                         {@link #notDeclaredInObjectClass(Method)},
+     * @param testMethodFilter - additional filter to skip some methods (by returning <code>false</code>).
+     * Default-Filters: null     {@link #notDeclaredInObjectClass(Method)},
      *                         {@link #GETTER_METHODS}, {@link #SETTER_METHODS},
      *                         {@link #CHAINING_METHODS}
      */
@@ -90,8 +87,7 @@ public class ReflectionTestUtils {
     /**
      * @param returnValue
      * @param m
-     * @return <code>true</code>, if the return-type is equals the method-declaring
-     *         class
+     * @return <code>true</code>, if the return-type is equals the method-declaring class
      */
     private static boolean returnTypeThis(Object returnValue, Method m) {
         return returnValue != null && m.getDeclaringClass().equals(returnValue.getClass());
@@ -121,7 +117,7 @@ public class ReflectionTestUtils {
      * @param methodFilters
      */
     @SafeVarargs
-    public static void testMethodInvocation( Object object, BiPredicate<Object, Method> returnTypeCheck,
+    public static void testMethodInvocation(Object object, BiPredicate<Object, Method> returnTypeCheck,
             Function<Method, Object[]> argsFunction,
             Predicate<Method>... methodFilters) {
         log(Level.INFO, "testing methods of class " + object.getClass());
@@ -149,8 +145,7 @@ public class ReflectionTestUtils {
     }
 
     /**
-     * Invoke one method of given object with args provided by #argsFunction, and
-     * test it's return-value
+     * Invoke one method of given object with args provided by #argsFunction, and test it's return-value
      *
      * @param method
      * @param returnValueCheck
@@ -162,7 +157,7 @@ public class ReflectionTestUtils {
     public static void invoke(Method method, BiPredicate<Object, Method> returnValueCheck,
             Function<Method, Object[]> argsFunction,
             Object object)
-                    throws IllegalAccessException, InvocationTargetException {
+            throws IllegalAccessException, InvocationTargetException {
         try {
             Object returnValue = method.invoke(object, argsFunction.apply(method));
             if (!void.class.isAssignableFrom(method.getReturnType())) {

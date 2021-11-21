@@ -21,8 +21,7 @@ import net.sf.jsqlparser.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Test;
 
 /**
- * Testing of setters, getters, with-/add-methods by calling them with random
- * parameter-values
+ * Testing of setters, getters, with-/add-methods by calling them with random parameter-values
  * <ul>
  * <li>testing, whether return-value is the specific type (not the parent)
  * <li>testing, whether calling the methods do not throw any exceptions
@@ -37,7 +36,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.AnalyticExpression(),
             new net.sf.jsqlparser.expression.AnyComparisonExpression(AnyType.ANY, new SubSelect()),
             new net.sf.jsqlparser.expression.AnyComparisonExpression(AnyType.ALL, new SubSelect()),
-             new net.sf.jsqlparser.expression.AnyComparisonExpression(AnyType.SOME, new SubSelect()),
+            new net.sf.jsqlparser.expression.AnyComparisonExpression(AnyType.SOME, new SubSelect()),
             new net.sf.jsqlparser.expression.ArrayExpression(),
             new net.sf.jsqlparser.expression.CaseExpression(), new net.sf.jsqlparser.expression.CastExpression(),
             new net.sf.jsqlparser.expression.CollateExpression(),
@@ -51,7 +50,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.MySQLGroupConcat(),
             new net.sf.jsqlparser.expression.MySQLIndexHint("action", "indexQualifier",
                     asList("idx_name", "idx_name_col")),
-            new net.sf.jsqlparser.expression.NextValExpression(asList("sequence" ), "NEXT VALUE"),
+            new net.sf.jsqlparser.expression.NextValExpression(asList("sequence"), "NEXT VALUE"),
             new net.sf.jsqlparser.expression.NotExpression(),
             new net.sf.jsqlparser.expression.NullValue(), new net.sf.jsqlparser.expression.NumericBind(),
             new net.sf.jsqlparser.expression.OracleHierarchicalExpression(),

@@ -29,11 +29,11 @@ public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
         databaseName = "testdb_" + Math.abs(UUID.randomUUID().hashCode());
         connection = DriverManager.getConnection("jdbc:h2:mem:" + databaseName);
         connection
-        .prepareStatement(
-                "CREATE TABLE mytable (id bigint, ref bigint, description varchar(100), active boolean);")
-        .execute();
+                .prepareStatement(
+                        "CREATE TABLE mytable (id bigint, ref bigint, description varchar(100), active boolean);")
+                .execute();
         connection.prepareStatement("CREATE TABLE mysecondtable (id bigint, description varchar(100), active boolean);")
-        .execute();
+                .execute();
         connection.prepareStatement("CREATE VIEW myview AS SELECT * FROM mytable").execute();
     }
 
@@ -105,7 +105,6 @@ public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
         sql = String.format("SELECT public.mytable.id FROM mytable", databaseName);
         validateNoErrors(sql, 1, DatabaseType.H2, meta.clearCache());
     }
-
 
     @Test
     public void testValidationDropView3Parts() throws JSQLParserException, SQLException {

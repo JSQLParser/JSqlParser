@@ -134,7 +134,7 @@ public class SpeedTest {
         elapsedTime = System.currentTimeMillis() - time;
         statementsPerSecond = numTests * 1000 / elapsedTime;
         System.out.
-        println(numTests + " select scans for table name executed in " + elapsedTime + " milliseconds");
+                println(numTests + " select scans for table name executed in " + elapsedTime + " milliseconds");
         System.out.println(" (" + statementsPerSecond + " select scans for table name per second,  "
                 + df.format(1.0 / statementsPerSecond) + " seconds per select scans for table name)");
 

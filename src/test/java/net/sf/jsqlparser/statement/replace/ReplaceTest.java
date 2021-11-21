@@ -84,7 +84,6 @@ public class ReplaceTest {
                 assertSqlCanBeParsedAndDeparsed("REPLACE INTO mytable (key, data) VALUES (1, \"aaa\")");
     }
 
-
     @Test
     public void testMultipleValues() throws JSQLParserException {
         TestUtils.

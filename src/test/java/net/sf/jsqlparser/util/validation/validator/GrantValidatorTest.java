@@ -27,7 +27,7 @@ public class GrantValidatorTest extends ValidationTestAsserts {
             validateNoErrors(sql, 1, DatabaseType.DATABASES);
         }
     }
-    
+
     @Test
     public void testValidateGrantNotAllowed() throws JSQLParserException {
         for (String sql : Arrays.asList("GRANT SELECT ON t1 TO u", "GRANT SELECT, INSERT ON t1 TO u, u2",

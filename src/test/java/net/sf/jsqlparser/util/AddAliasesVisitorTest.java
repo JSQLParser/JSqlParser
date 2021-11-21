@@ -16,8 +16,8 @@ import net.sf.jsqlparser.statement.select.Select;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
-
 public class AddAliasesVisitorTest {
+
     private CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     /**
