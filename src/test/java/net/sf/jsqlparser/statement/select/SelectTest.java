@@ -4972,4 +4972,9 @@ public class SelectTest {
     public void testKeywordAtIssue1414() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM table1 at");
     }
+    
+    @Test
+    public void testIgnoreNullsForWindowFunctionsIssue1429() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT lag(mydata) IGNORE NULLS OVER (ORDER BY sortorder) AS previous_status FROM mytable");
+    }
 }

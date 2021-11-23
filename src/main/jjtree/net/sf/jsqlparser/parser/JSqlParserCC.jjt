@@ -4184,7 +4184,7 @@ void windowFun(AnalyticExpression retval):{
          WindowElement windowElement = null;
          boolean partitionByBrackets = false;
 } {
-    (<K_OVER> {retval.setType(AnalyticType.OVER);}
+    ([<K_IGNORE> <K_NULLS> { retval.setIgnoreNullsOutside(true); } ] <K_OVER> {retval.setType(AnalyticType.OVER);}
         | <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);} )
 
     "("

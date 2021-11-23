@@ -36,7 +36,8 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private AnalyticType type = AnalyticType.OVER;
     private boolean distinct = false;
     private boolean unique = false;
-    private boolean ignoreNulls = false;
+    private boolean ignoreNulls = false;            //IGNORE NULLS inside function parameters
+    private boolean ignoreNullsOutside = false;     //IGNORE NULLS outside function parameters
     private Expression filterExpression = null;
     private WindowElement windowElement = null;
     private List<OrderByElement> funcOrderBy = null;
@@ -178,6 +179,14 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.ignoreNulls = ignoreNulls;
     }
 
+    public boolean isIgnoreNullsOutside() {
+        return ignoreNullsOutside;
+    }
+
+    public void setIgnoreNullsOutside(boolean ignoreNullsOutside) {
+        this.ignoreNullsOutside = ignoreNullsOutside;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.MissingBreakInSwitch"})
     public String toString() {
@@ -220,6 +229,10 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             }
         }
 
+        if (isIgnoreNullsOutside()) {
+            b.append("IGNORE NULLS ");
+        }
+        
         switch (type) {
             case FILTER_ONLY:
                 return b.toString();
