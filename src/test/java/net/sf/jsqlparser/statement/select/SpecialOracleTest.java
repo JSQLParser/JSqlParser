@@ -185,6 +185,7 @@ public class SpecialOracleTest {
             "keywordasidentifier01.sql",
             "keywordasidentifier02.sql",
             "keywordasidentifier03.sql",
+            "keywordasidentifier04.sql",
             "keywordasidentifier05.sql",
             "lexer02.sql",
             "lexer03.sql",
@@ -263,6 +264,10 @@ public class SpecialOracleTest {
                     recordSuccessOnSourceFile(file);
                 } catch (JSQLParserException ex) {
                     String message = ex.getMessage();
+                    if (message==null) {
+                        message = "Exception without message: " + ex.toString();
+                    }
+
                     int pos = message.indexOf('\n');
                     if (pos > 0) {
                       message = message.substring(0, pos);
