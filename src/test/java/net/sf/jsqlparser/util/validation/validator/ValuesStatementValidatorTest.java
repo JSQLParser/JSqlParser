@@ -9,9 +9,9 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import org.junit.Test;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
+import org.junit.jupiter.api.Test;
 
 public class ValuesStatementValidatorTest extends ValidationTestAsserts {
 

@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.statement.select;
 
 import java.io.StringReader;
-
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
 

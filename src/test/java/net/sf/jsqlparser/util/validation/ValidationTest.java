@@ -14,11 +14,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.core.StringStartsWith;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.feature.Feature;
@@ -28,6 +23,11 @@ import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import net.sf.jsqlparser.util.validation.feature.MariaDbVersion;
 import net.sf.jsqlparser.util.validation.feature.MySqlVersion;
 import net.sf.jsqlparser.util.validation.validator.StatementValidator;
+import org.hamcrest.CoreMatchers;
+import static org.hamcrest.MatcherAssert.assertThat;
+import org.hamcrest.core.StringStartsWith;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class ValidationTest extends ValidationTestAsserts {
 
@@ -88,6 +88,7 @@ public class ValidationTest extends ValidationTestAsserts {
 
         assertErrorsSize(errors, 0);
     }
+
     @Test
     public void testWithValidationOnlyParse2() throws JSQLParserException {
 
@@ -146,7 +147,7 @@ public class ValidationTest extends ValidationTestAsserts {
         assertEquals("UPDATE + SELECT + feature set",
                 FeaturesAllowed.UPDATE.copy().add(new FeaturesAllowed(Feature.commit)).getName());
     }
-    
+
     @Test
     public void testRowConstructorValidation() throws JSQLParserException {
         String stmt = "SELECT CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))";
@@ -154,6 +155,5 @@ public class ValidationTest extends ValidationTestAsserts {
                 Arrays.asList(DatabaseType.ANSI_SQL, FeaturesAllowed.SELECT), stmt);
         assertErrorsSize(errors, 0);
     }
-
 
 }

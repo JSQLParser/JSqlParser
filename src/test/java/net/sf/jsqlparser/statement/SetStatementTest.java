@@ -9,14 +9,12 @@
  */
 package net.sf.jsqlparser.statement;
 
-import net.sf.jsqlparser.JSQLParserException;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-
-import net.sf.jsqlparser.expression.StringValue;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.util.Collections;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.StringValue;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -43,6 +41,7 @@ public class SetStatementTest {
     public void testMultiValue() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET v = 1, c = 3");
     }
+
     @Test
     public void testListValue() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET v = 1, 3");
@@ -57,7 +56,7 @@ public class SetStatementTest {
     public void tesLocalWithEq() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET LOCAL cursor_tuple_fraction = 0.05");
     }
-    
+
     @Test
     public void testValueOnIssue927() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SET standard_conforming_strings = on");
@@ -69,6 +68,6 @@ public class SetStatementTest {
         setStatement.add("standard_conforming_strings", Collections.singletonList(new StringValue("ON")), false);
         setStatement.withUseEqual(0, true).remove(0);
 
-        Assert.assertEquals(0, setStatement.getCount());
+        assertEquals(0, setStatement.getCount());
     }
 }

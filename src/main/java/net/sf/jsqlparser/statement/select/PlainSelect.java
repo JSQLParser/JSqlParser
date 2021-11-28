@@ -53,6 +53,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private String forXmlPath;
     private KSQLWindow ksqlWindow = null;
     private boolean noWait = false;
+    private boolean emitChanges = false;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -321,6 +322,14 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.ksqlWindow = ksqlWindow;
     }
 
+    public void setEmitChanges(boolean emitChanges) {
+        this.emitChanges = emitChanges;
+    }
+
+    public boolean isEmitChanges() {
+        return emitChanges;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity" , "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
     public String toString() {
@@ -400,6 +409,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
                 sql.append(" HAVING ").append(having);
             }
             sql.append(orderByToString(oracleSiblings, orderByElements));
+            if (emitChanges){
+                sql.append(" EMIT CHANGES");
+            }
             if (limit != null) {
                 sql.append(limit);
             }

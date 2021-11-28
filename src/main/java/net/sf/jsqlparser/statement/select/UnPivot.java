@@ -18,7 +18,7 @@ public class UnPivot {
 
     private boolean includeNulls = false;
     private boolean includeNullsSpecified = false;
-    private Column unpivotClause;
+    private List<Column> unpivotClause;
     private List<Column> unpivotForClause;
     private List<SelectExpressionItem> unpivotInClause;
     private Alias alias;
@@ -40,11 +40,11 @@ public class UnPivot {
         return includeNullsSpecified;
     }
 
-    public Column getUnPivotClause() {
+    public List<Column> getUnPivotClause() {
         return unpivotClause;
     }
 
-    public void setUnPivotClause(Column unpivotClause) {
+    public void setUnPivotClause(List<Column> unpivotClause) {
         this.unpivotClause = unpivotClause;
     }
 
@@ -69,7 +69,7 @@ public class UnPivot {
         return "UNPIVOT"
                 + (includeNullsSpecified && includeNulls ? " INCLUDE NULLS" : "")
                 + (includeNullsSpecified && !includeNulls ? " EXCLUDE NULLS" : "")
-                + " (" + unpivotClause
+                + " (" + PlainSelect.getStringList(unpivotClause, true, unpivotClause != null && unpivotClause.size() > 1)
                 + " FOR " + PlainSelect.getStringList(unpivotForClause, true, unpivotForClause != null && unpivotForClause.size() > 1)
                 + " IN " + PlainSelect.getStringList(unpivotInClause, true, true) + ")"
                 + (alias!=null ? alias.toString() : "");

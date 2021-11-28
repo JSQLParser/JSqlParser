@@ -9,11 +9,11 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
+import org.junit.jupiter.api.Test;
 
 public class ExpressionValidatorTest extends ValidationTestAsserts {
 
@@ -205,7 +205,7 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
         validateNoErrors("SELECT DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney') AS another_date FROM mytbl", 1,
                 EXPRESSIONS);
     }
-    
+
     @Test
     public void testJsonFunctionExpression() throws JSQLParserException {
         validateNoErrors("SELECT json_array(null on null) FROM mytbl", 1,
@@ -214,14 +214,14 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
                 EXPRESSIONS);
         validateNoErrors("SELECT json_array(null, null null on null) FROM mytbl", 1,
                 EXPRESSIONS);
-        
+
         validateNoErrors("SELECT json_object(null on null) FROM mytbl", 1,
                 EXPRESSIONS);
-        
+
         validateNoErrors("SELECT json_object() FROM mytbl", 1,
                 EXPRESSIONS);
     }
-    
+
     @Test
     public void testJsonAggregartFunctionExpression() throws JSQLParserException {
         validateNoErrors("SELECT JSON_ARRAYAGG( a FORMAT JSON ABSENT ON NULL ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name ) FROM mytbl", 1,
@@ -229,15 +229,15 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
         validateNoErrors("SELECT JSON_OBJECT( KEY foo VALUE bar FORMAT JSON, foo:bar, foo:bar ABSENT ON NULL) FROM mytbl", 1,
                 EXPRESSIONS);
     }
-    
+
     @Test
     public void testConnectedByRootOperator() throws JSQLParserException {
         validateNoErrors("SELECT CONNECT_BY_ROOT last_name as name"
-          + ", salary "
-          + "FROM employees "
-          + "WHERE department_id = 110 "
-          + "CONNECT BY PRIOR employee_id = manager_id"
-          , 1
-          , DatabaseType.ORACLE);
+                + ", salary "
+                + "FROM employees "
+                + "WHERE department_id = 110 "
+                + "CONNECT BY PRIOR employee_id = manager_id",
+                1,
+                DatabaseType.ORACLE);
     }
 }

@@ -18,12 +18,12 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import net.sf.jsqlparser.util.validation.feature.Version;
 import net.sf.jsqlparser.util.validation.metadata.DatabaseMetaDataValidation;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ValidationTestAsserts {
 
@@ -60,7 +60,7 @@ public class ValidationTestAsserts {
      */
     public static void assertErrorsSize(Collection<?> errors, int size) {
         assertNotNull(errors);
-        assertEquals(String.format("Expected %d errors, but got: %s", size, errors.toString()), size, errors.size());
+        assertEquals(size, errors.size(), String.format("Expected %d errors, but got: %s", size, errors.toString()));
     }
 
     /**
@@ -74,7 +74,7 @@ public class ValidationTestAsserts {
 
     /**
      * validates and asserts that no errors occured
-     * 
+     *
      * @param sql
      * @param statementCount
      * @param versions
@@ -98,7 +98,7 @@ public class ValidationTestAsserts {
     }
 
     public static List<ValidationError> validate(String sql, int statementCount, int errorCount,
-            ValidationCapability ...validationCapabilities ) {
+            ValidationCapability... validationCapabilities) {
         return validate(sql, statementCount, errorCount, Arrays.asList(validationCapabilities));
     }
 
@@ -134,10 +134,9 @@ public class ValidationTestAsserts {
      * @param sql
      * @param statementCount
      * @param errorCount
-     * @param allowed        - the allowed feature
-     * @param features       - the features not allowed, assert errormessages
-     *                       against
-     *                       {@link #assertNotAllowed(Collection, Feature...)}
+     * @param allowed - the allowed feature
+     * @param features - the features not allowed, assert errormessages against
+     * {@link #assertNotAllowed(Collection, Feature...)}
      */
     public static void validateNotAllowed(String sql, int statementCount, int errorCount, FeaturesAllowed allowed,
             Feature... features) {
@@ -148,10 +147,9 @@ public class ValidationTestAsserts {
      * @param sql
      * @param statementCount
      * @param errorCount
-     * @param allowed        - the allowed features
-     * @param features       - the features not allowed, assert errormessages
-     *                       against
-     *                       {@link #assertNotAllowed(Collection, Feature...)}
+     * @param allowed - the allowed features
+     * @param features - the features not allowed, assert errormessages against
+     * {@link #assertNotAllowed(Collection, Feature...)}
      */
     public static void validateNotAllowed(String sql, int statementCount, int errorCount,
             Collection<FeaturesAllowed> allowed,
@@ -165,9 +163,7 @@ public class ValidationTestAsserts {
      * @param statementCount
      * @param errorCount
      * @param supported - the supported features
-     * @param features - the features not supported, assert errormessages
-     * against
-     * {@link #assertNotSupported(Collection, Feature...)
+     * @param features - the features not supported, assert errormessages against null null     {@link #assertNotSupported(Collection, Feature...)
      */
     public static void validateNotSupported(String sql, int statementCount, int errorCount, Version supported,
             Feature... features) {
@@ -179,9 +175,7 @@ public class ValidationTestAsserts {
      * @param statementCount
      * @param errorCount
      * @param supported - the supported features
-     * @param features - the features not supported, assert errormessages
-     * against
-     * {@link #assertNotSupported(Collection, Feature...)
+     * @param features - the features not supported, assert errormessages against null null     {@link #assertNotSupported(Collection, Feature...)
      */
     public static void validateNotSupported(String sql, int statementCount, int errorCount,
             Collection<Version> supported, Feature... features) {
@@ -190,7 +184,6 @@ public class ValidationTestAsserts {
     }
 
     // PRIVATES //
-
     private static Set<String> toErrorsSet(Collection<ValidationException> errors) {
         return errors.stream().map(Exception::getMessage).collect(Collectors.toSet());
     }

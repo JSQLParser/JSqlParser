@@ -10,12 +10,12 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.Arrays;
-import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
+import org.junit.jupiter.api.Test;
 
 public class CreateTableValidatorTest extends ValidationTestAsserts {
 
@@ -36,6 +36,7 @@ public class CreateTableValidatorTest extends ValidationTestAsserts {
         String sql = "CREATE TABLE test_descending_indexes (c1 INT, c2 INT, INDEX idx1 (c1 ASC, c2 DESC))";
         validateNoErrors(sql, 1, DatabaseType.DATABASES);
     }
+
     @Test
     public void testValidationCreateTableWithIndex2() throws JSQLParserException {
         String sql = "CREATE TABLE TABLE1 (COLUMN1 VARCHAR2 (15), COLUMN2 VARCHAR2 (15), CONSTRAINT P_PK PRIMARY KEY (COLUMN1) USING INDEX TABLESPACE \"T_INDEX\") TABLESPACE \"T_SPACE\"";

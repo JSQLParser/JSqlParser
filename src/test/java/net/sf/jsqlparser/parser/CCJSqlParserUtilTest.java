@@ -23,33 +23,12 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 public class CCJSqlParserUtilTest {
-
-    public CCJSqlParserUtilTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     @Test
     public void testParseExpression() throws Exception {
@@ -71,20 +50,20 @@ public class CCJSqlParserUtilTest {
         assertTrue(mult.getRightExpression() instanceof Parenthesis);
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseExpressionNonPartial() throws Exception {
-        CCJSqlParserUtil.parseExpression("a+", false);
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseExpression("a+", false));
 
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseExpressionFromStringFail() throws Exception {
-        CCJSqlParserUtil.parse("whatever$");
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse("whatever$"));
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseExpressionFromRaderFail() throws Exception {
-        CCJSqlParserUtil.parse(new StringReader("whatever$"));
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(new StringReader("whatever$")));
     }
 
     @Test
@@ -99,21 +78,22 @@ public class CCJSqlParserUtilTest {
         assertEquals("a + b > 5 AND c < 3", result.toString());
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseCondExpressionFail() throws Exception {
-        CCJSqlParserUtil.parseCondExpression(";");
-
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseCondExpression(";"));
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseFromStreamFail() throws Exception {
-        CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)));
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8))));
 
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseFromStreamWithEncodingFail() throws Exception {
-        CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8.name());
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8.name()));
 
     }
 
@@ -123,10 +103,9 @@ public class CCJSqlParserUtilTest {
         assertEquals("x = 92 AND y = 29", result.toString());
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseCondExpressionNonPartial2() throws Exception {
-        Expression result = CCJSqlParserUtil.parseCondExpression("x=92 lasd y=29", false);
-        System.out.println(result.toString());
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseCondExpression("x=92 lasd y=29", false));
     }
 
     @Test
@@ -180,14 +159,14 @@ public class CCJSqlParserUtilTest {
         assertEquals(list.size(), 3);
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseStatementsFail() throws Exception {
-        CCJSqlParserUtil.parseStatements("select * from dual;WHATEVER!!");
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseStatements("select * from dual;WHATEVER!!"));
     }
 
-    @Test(expected = JSQLParserException.class)
+    @Test
     public void testParseASTFail() throws Exception {
-        CCJSqlParserUtil.parseAST("select * from dual;WHATEVER!!");
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseAST("select * from dual;WHATEVER!!"));
     }
 
     @Test
@@ -210,64 +189,65 @@ public class CCJSqlParserUtilTest {
                 + "bigint (20) NOT NULL COMMENT 'column id as sent by SYSTEM', PRIMARY KEY (`id`), UNIQUE KEY `uk_another_column_id` "
                 + "(`another_column_id`));\n", result.toString());
     }
-    
+
     @Test
     public void testParseExpressionIssue982() throws Exception {
         Expression result = CCJSqlParserUtil.parseExpression("tab.col");
         assertEquals("tab.col", result.toString());
     }
-    
+
     @Test
     public void testParseExpressionWithBracketsIssue1159() throws Exception {
-        Expression result = CCJSqlParserUtil.parseExpression("[travel_data].[travel_id]", false, 
+        Expression result = CCJSqlParserUtil.parseExpression("[travel_data].[travel_id]", false,
                 parser -> parser.withSquareBracketQuotation(true));
         assertEquals("[travel_data].[travel_id]", result.toString());
     }
-    
+
     @Test
     public void testParseExpressionWithBracketsIssue1159_2() throws Exception {
-        Expression result = CCJSqlParserUtil.parseCondExpression("[travel_data].[travel_id]", false, 
+        Expression result = CCJSqlParserUtil.parseCondExpression("[travel_data].[travel_id]", false,
                 parser -> parser.withSquareBracketQuotation(true));
         assertEquals("[travel_data].[travel_id]", result.toString());
     }
+
     @Test
     public void testNestingDepth() throws Exception {
-      assertEquals(2,
-          CCJSqlParserUtil.getNestingDepth("SELECT concat(concat('A','B'),'B') FROM mytbl"));
-      assertEquals(20, CCJSqlParserUtil.getNestingDepth(
-          "concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('A','B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B') FROM mytbl"));
-      assertEquals(4, CCJSqlParserUtil.getNestingDepth("" 
-          + "-- MERGE 1\n"
-          + "MERGE INTO cfe.impairment imp\n" + "    USING ( WITH x AS (\n"
-          + "                    SELECT  a.id_instrument\n"
-          + "                            , a.id_currency\n"
-          + "                            , a.id_instrument_type\n"
-          + "                            , b.id_portfolio\n"
-          + "                            , c.attribute_value product_code\n"
-          + "                            , t.valid_date\n" + "                            , t.ccf\n"
-          + "                    FROM cfe.instrument a\n"
-          + "                        INNER JOIN cfe.impairment b\n"
-          + "                            ON a.id_instrument = b.id_instrument\n"
-          + "                        LEFT JOIN cfe.instrument_attribute c\n"
-          + "                            ON a.id_instrument = c.id_instrument\n"
-          + "                                AND c.id_attribute = 'product'\n"
-          + "                        INNER JOIN cfe.ext_ccf t\n"
-          + "                            ON ( a.id_currency LIKE t.id_currency )\n"
-          + "                                AND ( a.id_instrument_type LIKE t.id_instrument_type )\n"
-          + "                                AND ( b.id_portfolio LIKE t.id_portfolio\n"
-          + "                                        OR ( b.id_portfolio IS NULL\n"
-          + "                                                AND t.id_portfolio = '%' ) )\n"
-          + "                                AND ( c.attribute_value LIKE t.product_code\n"
-          + "                                        OR ( c.attribute_value IS NULL\n"
-          + "                                                AND t.product_code = '%' ) ) )\n"
-          + "SELECT /*+ PARALLEL */ *\n" + "            FROM x x1\n"
-          + "            WHERE x1.valid_date = ( SELECT max\n"
-          + "                                    FROM x\n"
-          + "                                    WHERE id_instrument = x1.id_instrument ) ) s\n"
-          + "        ON ( imp.id_instrument = s.id_instrument )\n" + "WHEN MATCHED THEN\n"
-          + "    UPDATE SET  imp.ccf = s.ccf\n" + ";"));
+        assertEquals(2,
+                CCJSqlParserUtil.getNestingDepth("SELECT concat(concat('A','B'),'B') FROM mytbl"));
+        assertEquals(20, CCJSqlParserUtil.getNestingDepth(
+                "concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('A','B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B') FROM mytbl"));
+        assertEquals(4, CCJSqlParserUtil.getNestingDepth(""
+                + "-- MERGE 1\n"
+                + "MERGE INTO cfe.impairment imp\n" + "    USING ( WITH x AS (\n"
+                + "                    SELECT  a.id_instrument\n"
+                + "                            , a.id_currency\n"
+                + "                            , a.id_instrument_type\n"
+                + "                            , b.id_portfolio\n"
+                + "                            , c.attribute_value product_code\n"
+                + "                            , t.valid_date\n" + "                            , t.ccf\n"
+                + "                    FROM cfe.instrument a\n"
+                + "                        INNER JOIN cfe.impairment b\n"
+                + "                            ON a.id_instrument = b.id_instrument\n"
+                + "                        LEFT JOIN cfe.instrument_attribute c\n"
+                + "                            ON a.id_instrument = c.id_instrument\n"
+                + "                                AND c.id_attribute = 'product'\n"
+                + "                        INNER JOIN cfe.ext_ccf t\n"
+                + "                            ON ( a.id_currency LIKE t.id_currency )\n"
+                + "                                AND ( a.id_instrument_type LIKE t.id_instrument_type )\n"
+                + "                                AND ( b.id_portfolio LIKE t.id_portfolio\n"
+                + "                                        OR ( b.id_portfolio IS NULL\n"
+                + "                                                AND t.id_portfolio = '%' ) )\n"
+                + "                                AND ( c.attribute_value LIKE t.product_code\n"
+                + "                                        OR ( c.attribute_value IS NULL\n"
+                + "                                                AND t.product_code = '%' ) ) )\n"
+                + "SELECT /*+ PARALLEL */ *\n" + "            FROM x x1\n"
+                + "            WHERE x1.valid_date = ( SELECT max\n"
+                + "                                    FROM x\n"
+                + "                                    WHERE id_instrument = x1.id_instrument ) ) s\n"
+                + "        ON ( imp.id_instrument = s.id_instrument )\n" + "WHEN MATCHED THEN\n"
+                + "    UPDATE SET  imp.ccf = s.ccf\n" + ";"));
     }
-    
+
     @Test
     public void testParseStatementIssue1250() throws Exception {
         Statement result = CCJSqlParserUtil.parse("Select test.* from (Select * from sch.PERSON_TABLE // root test\n) as test");

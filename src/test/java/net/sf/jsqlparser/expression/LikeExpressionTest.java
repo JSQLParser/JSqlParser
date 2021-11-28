@@ -17,11 +17,12 @@ import org.junit.jupiter.api.Test;
  *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
-public class CastExpressionTest {
+public class LikeExpressionTest {
 
     @Test
-    public void testCastToRowConstructorIssue1267() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))", true);
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CAST(ROW(dataid, value, calcMark) AS testcol)", true);
+    public void testLikeWithEscapeExpressionIssue420() throws JSQLParserException {
+        TestUtils.assertExpressionCanBeParsedAndDeparsed("a LIKE ?1 ESCAPE ?2", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed("select * from dual where a LIKE ?1 ESCAPE ?2", true);
     }
 }

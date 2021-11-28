@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.builder;
 
+import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
@@ -29,11 +30,8 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.test.TestUtils;
-import org.junit.Test;
-
-import java.util.List;
-
 import static net.sf.jsqlparser.test.TestUtils.*;
+import org.junit.jupiter.api.Test;
 
 public class JSQLParserFluentModelTests {
 
@@ -57,9 +55,9 @@ public class JSQLParserFluentModelTests {
                                 new JdbcParameter().withIndex(
                                         2)))
                 )).withRightExpression(
-                new InExpression()
-                        .withLeftExpression(new Column(asList("t1", "col3")))
-                        .withRightItemsList(new ExpressionList(new StringValue("A"))));
+                        new InExpression()
+                                .withLeftExpression(new Column(asList("t1", "col3")))
+                                .withRightItemsList(new ExpressionList(new StringValue("A"))));
 
         Select select = new Select().withSelectBody(new PlainSelect().addSelectItems(new AllColumns()).withFromItem(t1)
                 .addJoins(new Join().withRightItem(t2)
@@ -78,8 +76,8 @@ public class JSQLParserFluentModelTests {
 
     @Test
     public void testParseAndBuildForXOR() throws JSQLParserException {
-        String statement = "SELECT * FROM tab1 AS t1 JOIN tab2 t2 ON t1.ref = t2.id " +
-                "WHERE (t1.col1 XOR t2.col2) AND t1.col3 IN ('B', 'C') XOR t2.col4";
+        String statement = "SELECT * FROM tab1 AS t1 JOIN tab2 t2 ON t1.ref = t2.id "
+                + "WHERE (t1.col1 XOR t2.col2) AND t1.col3 IN ('B', 'C') XOR t2.col4";
 
         Statement parsed = TestUtils.assertSqlCanBeParsedAndDeparsed(statement);
 
@@ -118,8 +116,8 @@ public class JSQLParserFluentModelTests {
 
     @Test
     public void testParseAndBuildForXORComplexCondition() throws JSQLParserException {
-        String statement = "SELECT * FROM tab1 AS t1 WHERE " +
-                "a AND b OR c XOR d";
+        String statement = "SELECT * FROM tab1 AS t1 WHERE "
+                + "a AND b OR c XOR d";
 
         Statement parsed = TestUtils.assertSqlCanBeParsedAndDeparsed(statement);
 
@@ -146,8 +144,8 @@ public class JSQLParserFluentModelTests {
 
     @Test
     public void testParseAndBuildForXORs() throws JSQLParserException {
-        String statement = "SELECT * FROM tab1 AS t1 WHERE " +
-                "a XOR b XOR c";
+        String statement = "SELECT * FROM tab1 AS t1 WHERE "
+                + "a XOR b XOR c";
 
         Statement parsed = TestUtils.assertSqlCanBeParsedAndDeparsed(statement);
 

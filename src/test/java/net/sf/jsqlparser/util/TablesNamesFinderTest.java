@@ -9,6 +9,11 @@
  */
 package net.sf.jsqlparser.util;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.util.Iterator;
+import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -30,20 +35,12 @@ import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.test.TestException;
-import org.junit.Test;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.Iterator;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 public class TablesNamesFinderTest {
 
@@ -110,10 +107,10 @@ public class TablesNamesFinderTest {
                     String[] tablesArray = tables.split("\\s+");
 
                     List<String> tableListRetr = tablesNamesFinder.getTableList(statement);
-                    assertEquals("stm num:" + numSt, tablesArray.length, tableListRetr.size());
+                    assertEquals(tablesArray.length, tableListRetr.size(), "stm num:" + numSt);
 
                     for (String element : tablesArray) {
-                        assertTrue("stm num:" + numSt, tableListRetr.contains(element));
+                        assertTrue(tableListRetr.contains(element), "stm num:" + numSt);
                     }
                 } catch (Exception e) {
                     throw new TestException("error at stm num: " + numSt + " in file " + resPath, e);
@@ -627,7 +624,7 @@ public class TablesNamesFinderTest {
         Statement stmt = CCJSqlParserUtil.parse(sql);
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
         assertThatThrownBy(() -> tablesNamesFinder.getTableList(stmt)).isInstanceOf(UnsupportedOperationException.class)
-        .hasMessage("Finding tables from CreateSequence is not supported");
+                .hasMessage("Finding tables from CreateSequence is not supported");
     }
 
     @Test
@@ -636,7 +633,7 @@ public class TablesNamesFinderTest {
         Statement stmt = CCJSqlParserUtil.parse(sql);
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
         assertThatThrownBy(() -> tablesNamesFinder.getTableList(stmt)).isInstanceOf(UnsupportedOperationException.class)
-        .hasMessage("Finding tables from AlterSequence is not supported");
+                .hasMessage("Finding tables from AlterSequence is not supported");
     }
 
     @Test
@@ -647,12 +644,12 @@ public class TablesNamesFinderTest {
         assertThatThrownBy(() -> tablesNamesFinder.getTableList(stmt)).isInstanceOf(UnsupportedOperationException.class)
                 .hasMessage("Finding tables from CreateSynonym is not supported");
     }
-    
+
     @Test
     public void testNPEIssue1009() throws JSQLParserException {
         Statement stmt = CCJSqlParserUtil.parse(" SELECT * FROM (SELECT * FROM biz_fund_info WHERE tenant_code = ? AND ((ta_code, manager_code) IN ((?, ?)) OR department_type IN (?)))");
-        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();    
-        
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+
         assertThat(tablesNamesFinder.getTableList(stmt)).containsExactly("biz_fund_info");
     }
 
@@ -666,7 +663,6 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("mytbl"));
     }
 
-
     @Test
     public void testUsing() throws JSQLParserException {
         String sql = "DELETE A USING B.C D WHERE D.Z = 1";
@@ -677,7 +673,7 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("A"));
         assertTrue(tableList.contains("B.C"));
     }
-    
+
     @Test
     public void testJsonFunction() throws JSQLParserException {
         String sql = "SELECT JSON_ARRAY(  1, 2, 3 ) FROM mytbl";
@@ -687,7 +683,7 @@ public class TablesNamesFinderTest {
         assertEquals(1, tableList.size());
         assertTrue(tableList.contains("mytbl"));
     }
-    
+
     @Test
     public void testJsonAggregateFunction() throws JSQLParserException {
         String sql = "SELECT JSON_ARRAYAGG( (SELECT * from dual) FORMAT JSON) FROM mytbl";
@@ -698,15 +694,15 @@ public class TablesNamesFinderTest {
         assertTrue(tableList.contains("dual"));
         assertTrue(tableList.contains("mytbl"));
     }
-    
+
     @Test
     public void testConnectedByRootOperator() throws JSQLParserException {
         String sql = "SELECT CONNECT_BY_ROOT last_name as name"
-          + ", salary "
-          + "FROM employees "
-          + "WHERE department_id = 110 "
-          + "CONNECT BY PRIOR employee_id = manager_id";
-        
+                + ", salary "
+                + "FROM employees "
+                + "WHERE department_id = 110 "
+                + "CONNECT BY PRIOR employee_id = manager_id";
+
         Statement stmt = CCJSqlParserUtil.parse(sql);
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
         List<String> tableList = tablesNamesFinder.getTableList(stmt);

@@ -9,16 +9,14 @@
  */
 package net.sf.jsqlparser.statement.create;
 
-import static net.sf.jsqlparser.test.TestUtils.*;
-
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Sequence;
 import net.sf.jsqlparser.schema.Sequence.Parameter;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
-import org.junit.Test;
+import static net.sf.jsqlparser.test.TestUtils.*;
+import org.junit.jupiter.api.Test;
 
 public class CreateSequenceTest {
 
@@ -30,16 +28,16 @@ public class CreateSequenceTest {
     }
 
     @Test
-    public void testCreateSequence_withIncrement() throws JSQLParserException{
+    public void testCreateSequence_withIncrement() throws JSQLParserException {
         String statement = "CREATE SEQUENCE db.schema.my_seq INCREMENT BY 1";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new CreateSequence().withSequence(
                 new Sequence().withDatabase(new Database("db")).withSchemaName("schema").withName("my_seq")
-                .addParameters(new Parameter(ParameterType.INCREMENT_BY).withValue(1L))), statement);
+                        .addParameters(new Parameter(ParameterType.INCREMENT_BY).withValue(1L))), statement);
     }
 
     @Test
-    public void testCreateSequence_withStart() throws JSQLParserException{
+    public void testCreateSequence_withStart() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE SEQUENCE my_seq START WITH 10");
     }
 

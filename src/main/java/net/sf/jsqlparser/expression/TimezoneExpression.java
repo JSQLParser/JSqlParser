@@ -17,7 +17,7 @@ import java.util.List;
 public class TimezoneExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
-    private ArrayList<String> timezoneExpressions = new ArrayList<>();
+    private ArrayList<Expression> timezoneExpressions = new ArrayList<>();
 
     public Expression getLeftExpression() {
         return leftExpression;
@@ -32,19 +32,19 @@ public class TimezoneExpression extends ASTNodeAccessImpl implements Expression 
         expressionVisitor.visit(this);
     }
 
-    public List<String> getTimezoneExpressions() {
+    public List<Expression> getTimezoneExpressions() {
         return timezoneExpressions;
     }
 
-    public void addTimezoneExpression(String timezoneExpr) {
+    public void addTimezoneExpression(Expression timezoneExpr) {
         this.timezoneExpressions.add(timezoneExpr);
     }
 
     @Override
     public String toString() {
         String returnValue = getLeftExpression().toString();
-        for (String expr : timezoneExpressions) {
-            returnValue += " AT TIME ZONE " + expr;
+        for (Expression expr : timezoneExpressions) {
+            returnValue += " AT TIME ZONE " + expr.toString();
         }
 
         return returnValue;

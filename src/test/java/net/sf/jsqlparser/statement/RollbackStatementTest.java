@@ -9,8 +9,9 @@
  */
 package net.sf.jsqlparser.statement;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 public class RollbackStatementTest {
 
@@ -22,9 +23,9 @@ public class RollbackStatementTest {
                 .withSavepointName("mySavePoint")
                 .withForceDistributedTransactionIdentifier("$ForceDistributedTransactionIdentifier");
 
-        Assert.assertTrue(rollbackStatement.isUsingSavepointKeyword());
-        Assert.assertEquals("mySavePoint", rollbackStatement.getSavepointName());
-        Assert.assertEquals("$ForceDistributedTransactionIdentifier", rollbackStatement.getForceDistributedTransactionIdentifier());
+        assertTrue(rollbackStatement.isUsingSavepointKeyword());
+        assertEquals("mySavePoint", rollbackStatement.getSavepointName());
+        assertEquals("$ForceDistributedTransactionIdentifier", rollbackStatement.getForceDistributedTransactionIdentifier());
     }
 
 }

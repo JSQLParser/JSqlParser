@@ -56,6 +56,9 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.3
 
+* moved to JUnit 5 as a test framework
+* added **IGNORE NULLS** to window functions
+
 Additionally, we have fixed many errors and improved the code quality and the test coverage.
 
 ## Extensions of JSqlParser releases

@@ -47,6 +47,15 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
       }
     }
         buffer.append("DELETE");
+        if (delete.getModifierPriority() != null) {
+            buffer.append(" ").append(delete.getModifierPriority());
+        }
+        if (delete.isModifierQuick()) {
+            buffer.append(" QUICK");
+        }
+        if (delete.isModifierIgnore()) {
+            buffer.append(" IGNORE");
+        }
         if (delete.getTables() != null && !delete.getTables().isEmpty()) {
             buffer.append(
                     delete.getTables().stream().map(Table::getFullyQualifiedName).collect(joining(", ", " ", "")));
