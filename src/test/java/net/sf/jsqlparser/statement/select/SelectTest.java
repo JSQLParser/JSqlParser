@@ -45,7 +45,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
+@Execution(ExecutionMode.CONCURRENT)
 public class SelectTest {
 
     private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
@@ -4971,5 +4974,10 @@ public class SelectTest {
     @Test
     public void testKeywordAtIssue1414() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM table1 at");
+    }
+    
+    @Test
+    public void testIgnoreNullsForWindowFunctionsIssue1429() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT lag(mydata) IGNORE NULLS OVER (ORDER BY sortorder) AS previous_status FROM mytable");
     }
 }

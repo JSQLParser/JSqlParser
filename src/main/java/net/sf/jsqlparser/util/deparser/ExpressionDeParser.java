@@ -674,6 +674,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 buffer.append(" ");
             }
         }
+        
+        if (aexpr.isIgnoreNullsOutside()) {
+            buffer.append("IGNORE NULLS ");
+        }
 
         switch (aexpr.getType()) {
             case FILTER_ONLY:
