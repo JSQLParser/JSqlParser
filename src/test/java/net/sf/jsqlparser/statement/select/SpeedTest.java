@@ -23,10 +23,7 @@ import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 
-//@Execution(ExecutionMode.CONCURRENT)
 public class SpeedTest {
 
     private final static int NUM_REPS_500 = 500;
