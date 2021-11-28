@@ -1,16 +1,24 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2021 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.ParserKeywordsUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
@@ -19,12 +27,10 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 
-@RunWith(Parameterized.class)
 public class KeywordsTest {
     public final static Logger LOGGER = Logger.getLogger(KeywordsTest.class.getName());
 
-    @Parameters(name = "Keyword {0}")
-    public final static Iterable<String> KEY_WORDS() {
+    public final static Stream<String> KEY_WORDS() {
         List<String> keywords = new ArrayList<>();
         try {
             keywords.addAll(ParserKeywordsUtils.getDefinedKeywords());
@@ -34,17 +40,12 @@ public class KeywordsTest {
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Failed to generate the Keyword List", ex);
         }
-        return keywords;
+        return keywords.stream();
     }
 
-    protected String keyword;
-
-    public KeywordsTest(String keyword) {
-        this.keyword = keyword;
-    }
-
-    @Test
-    public void testRelObjectNameWithoutValue() throws JSQLParserException {
+    @ParameterizedTest(name = "Keyword {0}")
+    @MethodSource("KEY_WORDS")
+    public void testRelObjectNameWithoutValue(String keyword) throws JSQLParserException {
         String sqlStr = String.format("SELECT %1$s.%1$s AS %1$s from %1$s.%1$s AS %1$s",  keyword);
         LOGGER.fine(sqlStr);
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);

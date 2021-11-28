@@ -1335,8 +1335,8 @@ Update Update( List<WithItem> with ):
 }
 {
    <K_UPDATE> { update.setOracleHint(getOracleHint()); }
-    [<K_LOW_PRIORITY> { modifierPriority = UpdateModifierPriority.LOW_PRIORITY; }]
-    [<K_IGNORE> { modifierIgnore = true; }]
+    [ LOOKAHEAD(2) <K_LOW_PRIORITY> { modifierPriority = UpdateModifierPriority.LOW_PRIORITY; }]
+    [ LOOKAHEAD(2) <K_IGNORE> { modifierIgnore = true; }]
     table=TableWithAlias() startJoins=JoinsList()
     <K_SET>
     (
@@ -1698,9 +1698,9 @@ Delete Delete( List<WithItem> with ):
 }
 {
     <K_DELETE> { delete.setOracleHint(getOracleHint()); }
-    [<K_LOW_PRIORITY> { modifierPriority = DeleteModifierPriority.LOW_PRIORITY; }]
-    [<K_QUICK> { modifierQuick = true; }]
-    [<K_IGNORE> { modifierIgnore = true; }]
+    [ LOOKAHEAD(2) <K_LOW_PRIORITY> { modifierPriority = DeleteModifierPriority.LOW_PRIORITY; }]
+    [ LOOKAHEAD(2) <K_QUICK> { modifierQuick = true; }]
+    [ LOOKAHEAD(2) <K_IGNORE> { modifierIgnore = true; }]
     [LOOKAHEAD(4) (table=TableWithAlias() { tables.add(table); }
           ("," table=TableWithAlias() { tables.add(table); } )*
     <K_FROM> | <K_FROM>) { hasFrom = true; }]
@@ -1835,12 +1835,12 @@ The following tokens are allowed as Names for Schema, Table, Column and Aliases
 // Generated Code! Please do not edit manually.
 // Instead:
 // 1) define the ALL_RESERVED_KEYWORDS in the PARSER DECLARATION above (line 157 ff)
-// 2) then insert the Code fragment built by Graddle Task :JSQLParser:updateKeywords
+// 2) then insert the Code fragment built by Gradle Task :JSQLParser:updateKeywords
 String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME>
-       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="BEGIN" | tk="BINARY" | tk="BIT" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="COSTS" | tk="CYCLE" | tk="DATABASE" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTO" | tk="ISNULL" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOG" | tk="LOW_PRIORITY" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="PARALLEL" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUIESCE" | tk="RANGE" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REGISTER" | tk="RENAME" | tk="REPLACE" | tk="RESET" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROW" | tk="ROWS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TO" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLTEXT" | tk="YAML" | tk="ZONE" )
+       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="BEGIN" | tk="BINARY" | tk="BIT" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="COSTS" | tk="CYCLE" | tk="DATABASE" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTO" | tk="ISNULL" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOG" | tk="LOW_PRIORITY" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="PARALLEL" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REGISTER" | tk="RENAME" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROW" | tk="ROWS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TO" | tk="TRUE" | tk="TRUNCATE" | tk="TRY_CAST" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLTEXT" | tk="YAML" | tk="ZONE" )
     { return tk.image; }
 }
 
