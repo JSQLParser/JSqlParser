@@ -30,7 +30,7 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 public class KeywordsTest {
     public final static Logger LOGGER = Logger.getLogger(KeywordsTest.class.getName());
 
-    public final static Stream<String> KEY_WORDS() {
+    public final static Stream<String> keyWords() {
         List<String> keywords = new ArrayList<>();
         try {
             keywords.addAll(ParserKeywordsUtils.getDefinedKeywords());
@@ -44,7 +44,7 @@ public class KeywordsTest {
     }
 
     @ParameterizedTest(name = "Keyword {0}")
-    @MethodSource("KEY_WORDS")
+    @MethodSource("keyWords")
     public void testRelObjectNameWithoutValue(String keyword) throws JSQLParserException {
         String sqlStr = String.format("SELECT %1$s.%1$s AS %1$s from %1$s.%1$s AS %1$s",  keyword);
         LOGGER.fine(sqlStr);

@@ -32,7 +32,7 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 public class ConditionalKeywordsTest {
     public final static Logger LOGGER = Logger.getLogger(ConditionalKeywordsTest.class.getName());
 
-    public final static Stream<String> KEY_WORDS() {
+    public final static Stream<String> keyWords() {
         List<String> keywords = new ArrayList<>();
         try {
             try {
@@ -54,7 +54,7 @@ public class ConditionalKeywordsTest {
     }
 
     @ParameterizedTest(name = "Keyword {0}")
-    @MethodSource("KEY_WORDS")
+    @MethodSource("keyWords")
     public void testRelObjectNameExt(String keyword) throws JSQLParserException {
         String sqlStr = String.format("SELECT %1$s.%1$s.%1$s AS \"%1$s\" from %1$s ORDER BY %1$s ",  keyword);
         LOGGER.fine(sqlStr);
