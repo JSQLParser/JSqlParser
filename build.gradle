@@ -19,12 +19,12 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 repositories {
 	gradlePluginPortal()
     mavenLocal()
+    mavenCentral()
     maven {
         url = uri('https://repo.maven.apache.org/maven2/')
     }
-
     maven {
-        url "https://plugins.gradle.org/m2/"
+      url "https://plugins.gradle.org/m2/"
     }
 }
 
@@ -37,7 +37,7 @@ dependencies {
     testImplementation 'com.h2database:h2:1.4.200'
 
 
-    
+
     // for JaCoCo Reports
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-params'
@@ -49,6 +49,7 @@ dependencies {
 
     // enforce latest version of JavaCC
     javacc 'net.java.dev.javacc:javacc:7.0.10'
+
 }
 
 compileJavacc {
@@ -70,6 +71,16 @@ jacoco {
 
 test {
     useJUnitPlatform()
+
+    // set heap size for the test JVM(s)
+    minHeapSize = "128m"
+    maxHeapSize = "1G"
+
+    jvmArgs << [
+            '-Djunit.jupiter.execution.parallel.enabled=true',
+            '-Djunit.jupiter.execution.parallel.config.strategy=dynamic',
+            '-Djunit.jupiter.execution.parallel.mode.default=concurrent'
+    ]
 
     finalizedBy jacocoTestReport // report is always generated after tests run
     finalizedBy jacocoTestCoverageVerification
@@ -108,7 +119,7 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'LINE'
                 value = 'MISSEDCOUNT'
-                maximum = 5458
+                maximum = 5500
                 }
             excludes = [
                     'net.sf.jsqlparser.util.validation.*',
@@ -249,7 +260,7 @@ task updateKeywords(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = "net.sf.jsqlparser.parser.ParserKeywordsUtils"
 }
-  
+
 
 publishing {
     publications {
