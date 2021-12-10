@@ -124,6 +124,7 @@ public final class CCJSqlParserUtil {
         });
     }
 
+    @SuppressWarnings("PMD.CyclomaticComplexity")
     public static Expression parseExpression(String expressionStr, boolean allowPartialParse, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         Expression expression = null;
 
@@ -189,6 +190,7 @@ public final class CCJSqlParserUtil {
         });
     }
 
+    @SuppressWarnings("PMD.CyclomaticComplexity")
     public static Expression parseCondExpression(String conditionalExpressionStr, boolean allowPartialParse, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         Expression expression = null;
 
