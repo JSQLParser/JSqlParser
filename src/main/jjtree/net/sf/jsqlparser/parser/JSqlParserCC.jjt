@@ -3725,27 +3725,14 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
 
         | (
-            (
-                (LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing)}) "(" list = ComplexExpressionList() ")"
-                  {
-                      if (list.getExpressions().size() == 1) {
-                          retval = new Parenthesis(list.getExpressions().get(0));
-                      } else {
-                          retval = new RowConstructor().withExprList(list);
-                      }
+             "(" ( LOOKAHEAD( { getAsBoolean(Feature.allowComplexParsing) } ) list = ComplexExpressionList() |  list = SimpleExpressionList(true) ) ")"
+              {
+                  if (list.getExpressions().size() == 1) {
+                      retval = new Parenthesis(list.getExpressions().get(0));
+                  } else {
+                      retval = new RowConstructor().withExprList(list);
                   }
-                )
-
-                | ("(" list = SimpleExpressionList(true) ")"
-                      {
-                          if (list.getExpressions().size() == 1) {
-                              retval = new Parenthesis(list.getExpressions().get(0));
-                          } else {
-                              retval = new RowConstructor().withExprList(list);
-                          }
-                      }
-               )
-           )
+              }
            ["." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); }]
         )
     )
@@ -4478,28 +4465,6 @@ FullTextSearch FullTextSearch() : {
         return fs;
     }
 }
-
-/* Function FunctionWithCondParams() #Function: {
-    Function retval = new Function();
-    String funcName = null;
-    ExpressionList expressionList = null;
-    Token token = null;
-}
-{
-    (token = <K_IF> | token = <K_IIF> | token = <K_CASEWHEN> ) { funcName=token.image; }
-
-    "("
-        expressionList=ComplexExpressionList()
-	")"
-
-    {
-        retval.setParameters(expressionList);
-        retval.setName(funcName);
-        linkAST(retval,jjtThis);
-        return retval;
-    }
-} */
-
 
 Function Function() #Function:
 {

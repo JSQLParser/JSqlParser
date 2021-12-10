@@ -23,25 +23,26 @@ repositories {
     maven {
         url = uri('https://repo.maven.apache.org/maven2/')
     }
+
     maven {
       url "https://plugins.gradle.org/m2/"
     }
 }
 
 dependencies {
-    testImplementation 'commons-io:commons-io:2.6'
-    testImplementation 'junit:junit:4.13.1'
-    testImplementation 'org.mockito:mockito-core:2.28.2'
-    testImplementation 'org.assertj:assertj-core:3.16.1'
-    testImplementation 'org.apache.commons:commons-lang3:3.10'
-    testImplementation 'com.h2database:h2:1.4.200'
+    testImplementation 'commons-io:commons-io:2.11.0+'
+    testImplementation 'org.mockito:mockito-core:4.1.0+'
+    testImplementation 'org.assertj:assertj-core:3.21.0+'
+    testImplementation 'org.hamcrest:hamcrest-core:2.2+'
+    testImplementation 'org.apache.commons:commons-lang3:3.12.0+'
+    testImplementation 'com.h2database:h2:2.0.202+'
     
     // for JaCoCo Reports
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2+'
     
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:4.1.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.1.0+'
     
     // enforce latest version of JavaCC
     javacc 'net.java.dev.javacc:javacc:7.0.10'
@@ -58,7 +59,6 @@ java {
 
     spotbugs
     pmd
-
 }
 
 jacoco {
