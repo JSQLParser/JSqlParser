@@ -69,6 +69,7 @@ import java.util.*;
 public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     public int bracketsCounter = 0;
     public int caseCounter = 0;
+    public boolean interrupted = false;
     
     public CCJSqlParser withConfiguration(FeatureConfiguration configuration) {
         token_source.configuration = configuration;
@@ -3296,7 +3297,7 @@ ExpressionList SimpleExpressionList(boolean outerBrackets) #ExpressionList:
 }
 {
     expr=SimpleExpression() { expressions.add(expr); } 
-    ( LOOKAHEAD(2) "," expr=SimpleExpression() { expressions.add(expr); } )*
+    ( LOOKAHEAD(2, {!interrupted} ) "," expr=SimpleExpression() { expressions.add(expr); } )*
     {
         retval.setExpressions(expressions);
         return retval;
@@ -3316,7 +3317,7 @@ ExpressionList ComplexExpressionList() #ExpressionList:
     ) { expressions.add(expr); }
 
     (
-        LOOKAHEAD(2) ","
+        LOOKAHEAD(2, {!interrupted}) ","
         (
             LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
             | expr=Expression() 
@@ -3657,35 +3658,35 @@ Expression PrimaryExpression() #PrimaryExpression:
     (
         <K_NULL> { retval = new NullValue(); }
 
-        | LOOKAHEAD(3) retval=CaseWhenExpression()
+        | LOOKAHEAD(3, {!interrupted}) retval=CaseWhenExpression()
 
         | retval = SimpleJdbcParameter()
 
-        | LOOKAHEAD(2) retval=JdbcNamedParameter()
+        | LOOKAHEAD(2, {!interrupted}) retval=JdbcNamedParameter()
 
         | retval=UserVariable()
 
-        | LOOKAHEAD(2) retval=NumericBind()
+        | LOOKAHEAD(2, {!interrupted}) retval=NumericBind()
 
-        | LOOKAHEAD(3) retval=ExtractExpression()
+        | LOOKAHEAD(3, {!interrupted}) retval=ExtractExpression()
 
         | retval=MySQLGroupConcat()
 
         | retval=XMLSerializeExpr()
 
-        | LOOKAHEAD(JsonExpression()) retval=JsonExpression()
+        | LOOKAHEAD(JsonExpression(), {!interrupted}) retval=JsonExpression()
 
-        | LOOKAHEAD(JsonFunction()) retval = JsonFunction()
+        | LOOKAHEAD(JsonFunction(), {!interrupted}) retval = JsonFunction()
 
-        | LOOKAHEAD(JsonAggregateFunction()) retval = JsonAggregateFunction()
+        | LOOKAHEAD(JsonAggregateFunction(), {!interrupted}) retval = JsonAggregateFunction()
 
         /* | LOOKAHEAD(FunctionWithCondParams()) retval = FunctionWithCondParams() */
 
-        | LOOKAHEAD(FullTextSearch()) retval = FullTextSearch()
+        | LOOKAHEAD(FullTextSearch(), {!interrupted}) retval = FullTextSearch()
 
-        | LOOKAHEAD(Function()) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
+        | LOOKAHEAD(Function(), {!interrupted}) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
 
-        | LOOKAHEAD(2) retval = IntervalExpression() { dateExpressionAllowed = false; }
+        | LOOKAHEAD(2, {!interrupted}) retval = IntervalExpression() { dateExpressionAllowed = false; }
 
         | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
 
@@ -3693,26 +3694,26 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | token=<S_HEX>  { retval = new HexValue(token.image); }
 
-        | LOOKAHEAD(2) retval=CastExpression()
+        | LOOKAHEAD(2, {!interrupted}) retval=CastExpression()
 
-        | LOOKAHEAD(2) retval=TryCastExpression()
+        | LOOKAHEAD(2, {!interrupted}) retval=TryCastExpression()
 
         //| LOOKAHEAD(2) retval=RowConstructor()
 
         // support timestamp expressions
         | (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
 
-        | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
+        | LOOKAHEAD(2, {!interrupted}) retval=DateTimeLiteralExpression()
 
-        | LOOKAHEAD(2) <K_ARRAY_LITERAL> retval=ArrayConstructor(true)
+        | LOOKAHEAD(2, {!interrupted}) <K_ARRAY_LITERAL> retval=ArrayConstructor(true)
 
-        | LOOKAHEAD(2) retval = NextValExpression()
+        | LOOKAHEAD(2, {!interrupted}) retval = NextValExpression()
 
         | retval=ConnectByRootOperator()
 
-        | LOOKAHEAD(2) <K_ALL> { retval = new AllValue(); }
+        | LOOKAHEAD(2, {!interrupted}) <K_ALL> { retval = new AllValue(); }
 
-        | LOOKAHEAD(2) retval=Column()
+        | LOOKAHEAD(2, {!interrupted}) retval=Column()
 
         | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
 
@@ -3722,10 +3723,10 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
-        | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
+        | LOOKAHEAD("(" retval=SubSelect() ")", {!interrupted} ) "(" retval=SubSelect() ")"
 
         | (
-             "(" ( LOOKAHEAD( { getAsBoolean(Feature.allowComplexParsing) } ) list = ComplexExpressionList() |  list = SimpleExpressionList(true) ) ")"
+             "(" ( LOOKAHEAD( { getAsBoolean(Feature.allowComplexParsing) && !interrupted } ) list = ComplexExpressionList() |  list = SimpleExpressionList(true) ) ")"
               {
                   if (list.getExpressions().size() == 1) {
                       retval = new Parenthesis(list.getExpressions().get(0));

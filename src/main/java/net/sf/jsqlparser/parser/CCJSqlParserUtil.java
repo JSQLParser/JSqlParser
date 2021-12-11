@@ -12,6 +12,12 @@ package net.sf.jsqlparser.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
@@ -23,8 +29,11 @@ import net.sf.jsqlparser.statement.Statements;
  *
  * @author toben
  */
+
+@SuppressWarnings("PMD.CyclomaticComplexity")
 public final class CCJSqlParserUtil {
     public final static int ALLOWED_NESTING_DEPTH = 10;
+    public static final int PARSER_TIMEOUT = 6000;
 
     private CCJSqlParserUtil() {
     }
@@ -235,11 +244,25 @@ public final class CCJSqlParserUtil {
      * @throws JSQLParserException
      */
     public static Statement parseStatement(CCJSqlParser parser) throws JSQLParserException {
+        Statement statement = null;
         try {
-            return parser.Statement();
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            Future<Statement> future = executorService.submit(new Callable<Statement>() {
+                @Override
+                public Statement call() throws Exception {
+                    return parser.Statement();
+                }
+            });
+            executorService.shutdown();
+
+            statement = future.get(PARSER_TIMEOUT, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException ex) {
+            parser.interrupted = true;
+            throw new JSQLParserException("Time out occurred.", ex);
         } catch (Exception ex) {
             throw new JSQLParserException(ex);
         }
+        return statement;
     }
 
     /**
@@ -270,11 +293,25 @@ public final class CCJSqlParserUtil {
      * @throws JSQLParserException
      */
     public static Statements parseStatements(CCJSqlParser parser) throws JSQLParserException {
+        Statements statements = null;
         try {
-            return parser.Statements();
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            Future<Statements> future = executorService.submit(new Callable<Statements>() {
+                @Override
+                public Statements call() throws Exception {
+                    return parser.Statements();
+                }
+            });
+            executorService.shutdown();
+
+            statements = future.get(PARSER_TIMEOUT, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException ex) {
+            parser.interrupted = true;
+            throw new JSQLParserException("Time out occurred.", ex);
         } catch (Exception ex) {
             throw new JSQLParserException(ex);
         }
+        return statements;
     }
 
     public static void streamStatements(StatementListener listener, InputStream is, String encoding) throws JSQLParserException {

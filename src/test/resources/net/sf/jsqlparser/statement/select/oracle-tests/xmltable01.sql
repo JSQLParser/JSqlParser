@@ -17,3 +17,4 @@ from warehouses,
 warehouse2
 
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: net.sf.jsqlparser.parser.ParseException: Encountered unexpected token: "(" "(" recorded first on 10 Dec 2021, 23:47:01

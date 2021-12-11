@@ -10,3 +10,4 @@
 select value(p$) from "XDB"."XDB$SCHEMA"                 as of snapshot(:2) p$ where SYS_NC_OID$ = :1
 
 --@FAILURE: Encountered unexpected token: "snapshot" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: net.sf.jsqlparser.parser.ParseException: Encountered unexpected token: "snapshot" <S_IDENTIFIER> recorded first on 10 Dec 2021, 23:47:00

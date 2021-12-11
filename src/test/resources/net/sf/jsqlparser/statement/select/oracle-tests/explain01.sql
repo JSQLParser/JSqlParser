@@ -17,3 +17,4 @@ explain plan
                where location_id = 1700)
 
 --@FAILURE: Encountered unexpected token: "plan" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: net.sf.jsqlparser.parser.ParseException: Encountered unexpected token: "plan" <S_IDENTIFIER> recorded first on 10 Dec 2021, 23:47:00

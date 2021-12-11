@@ -1,14 +1,14 @@
 plugins {
     id 'java'
     id 'maven-publish'
-    id "ca.coglinc2.javacc" version "3.0.0"
+    id "ca.coglinc2.javacc" version "latest.release"
     id 'jacoco'
-    id "com.github.spotbugs" version "4.7.2"
+    id "com.github.spotbugs" version "latest.release"
     id 'pmd'
     id 'checkstyle'
     
     // download the RR tools which have no Maven Repository
-    id "de.undercouch.download" version "4.1.2"
+    id "de.undercouch.download" version "latest.release"
 }
 
 group = 'com.github.jsqlparser'
@@ -46,13 +46,6 @@ dependencies {
 
     // enforce latest version of JavaCC
     javacc 'net.java.dev.javacc:javacc:7.0.10'
-    
-    // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:4.1.0'
-
-    // enforce latest version of JavaCC
-    javacc 'net.java.dev.javacc:javacc:7.0.10'
-
 }
 
 compileJavacc {
@@ -179,7 +172,7 @@ spotbugs {
 
 pmd {
     consoleOutput = false
-    toolVersion = "6.36.0"
+    toolVersion = "6.41.0"
     
     sourceSets = [sourceSets.main]
     
@@ -198,7 +191,7 @@ pmd {
 }
 
 checkstyle {
-    toolVersion "8.45.1"
+    toolVersion "9.2"
     sourceSets = [sourceSets.main, sourceSets.test]
     configFile =rootProject.file('config/checkstyle/checkstyle.xml')
 }
