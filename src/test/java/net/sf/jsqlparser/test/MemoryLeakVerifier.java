@@ -56,9 +56,6 @@ public class MemoryLeakVerifier {
 
     private final List<WeakReference<Object>> references = new ArrayList<>();
 
-    public MemoryLeakVerifier() {
-    }
-
     public void addObject(Object object) {
         references.add(new WeakReference<>(object));
     }
