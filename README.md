@@ -54,25 +54,7 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 4.3
-
-* moved to JUnit 5 as a test framework
-* added **IGNORE NULLS** to window functions
-* Postgres compliant **ALTER TABLE schema.oldTableName RENAME TO newTableName**
-* added use of * or mytable.* as a function parameter
-* enhanced support for ddl drop of indexes
-* support alias for Unpivot statement
-* support for limit and offset expressions
-* support for special **JSON_OBJECT** function parsing
-* allow ComplexExpressions for **CASE** expression (preview)
-* support MYSQL modifiers for **DELETE** / **UPDATE** 
-* support for Postgres Dollar quotation:  **$$mystring$$**
-* support for expression in escaping of a like expression: **LIKE ? ESCAPE ?**
-* support for **CREATE OR REPLACE TABLE**
-* support for multi column unpivot
-* support for **RESTART** in Postgres **ALTER SEQUENCE**
-* improved support of **IGNORE NULLS** in window functions
-* upgraded some maven plugin versions
+## Extensions in the latest SNAPSHOT version 4.4
 
 Additionally, we have fixed many errors and improved the code quality and the test coverage.
 
