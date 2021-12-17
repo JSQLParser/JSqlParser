@@ -24,6 +24,7 @@ public class SetOperationList implements SelectBody {
     private Limit limit;
     private Offset offset;
     private Fetch fetch;
+    private WithIsolation withIsolation;
 
     @Override
     public void accept(SelectVisitor selectVisitor) {
@@ -96,7 +97,16 @@ public class SetOperationList implements SelectBody {
         this.fetch = fetch;
     }
 
+    public Fetch getWithIsolation() {
+        return fetch;
+    }
+
+    public void setWithIsolation(WithIsolation withIsolation) {
+        this.withIsolation = withIsolation;
+    }
+
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public String toString() {
         StringBuilder buffer = new StringBuilder();
 
@@ -122,6 +132,9 @@ public class SetOperationList implements SelectBody {
         }
         if (fetch != null) {
             buffer.append(fetch.toString());
+        }
+        if (withIsolation != null) {
+            buffer.append(withIsolation.toString());
         }
         return buffer.toString();
     }

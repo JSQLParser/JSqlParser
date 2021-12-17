@@ -199,6 +199,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (plainSelect.getFetch() != null) {
             deparseFetch(plainSelect.getFetch());
         }
+        if (plainSelect.getWithIsolation() != null) {
+            buffer.append(plainSelect.getWithIsolation().toString());
+        }
         if (plainSelect.isForUpdate()) {
             buffer.append(" FOR UPDATE");
             if (plainSelect.getForUpdateTable() != null) {
@@ -479,6 +482,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
         if (list.getFetch() != null) {
             deparseFetch(list.getFetch());
+        }
+        if (list.getWithIsolation() != null) {
+            buffer.append(list.getWithIsolation().toString());
         }
     }
 
