@@ -54,10 +54,7 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 4.3
-
-* moved to JUnit 5 as a test framework
-* added **IGNORE NULLS** to window functions
+## Extensions in the latest SNAPSHOT version 4.4
 
 Additionally, we have fixed many errors and improved the code quality and the test coverage.
 
