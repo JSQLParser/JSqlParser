@@ -5118,4 +5118,19 @@ public class SelectTest {
         // we should not have any Objects left in the weak reference map
         verifier.assertGarbageCollected();
     }
+
+    @Test
+    public void testWithIsolation() throws JSQLParserException {
+        String statement = "SELECT * FROM mytable WHERE mytable.col = 9 WITH ur";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        String isolation = ((PlainSelect) select.getSelectBody()).getWithIsolation().getIsolation();
+        assertEquals("ur", isolation);
+        assertSqlCanBeParsedAndDeparsed(statement);
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 WITH Cs";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        isolation = ((PlainSelect) select.getSelectBody()).getWithIsolation().getIsolation();
+        assertEquals("Cs", isolation);
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
 }

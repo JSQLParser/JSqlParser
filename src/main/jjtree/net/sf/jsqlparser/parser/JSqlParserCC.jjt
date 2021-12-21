@@ -213,6 +213,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXTENDED:"EXTENDED">
 |   <K_EXTRACT:"EXTRACT">
 |   <K_FETCH:"FETCH">
+|   <K_ISOLATION:("UR" | "RS" | "RR" | "CS")>
 |   <K_FILTER: "FILTER">
 |   <K_FIRST: "FIRST">
 |   <K_FALSE: "FALSE">
@@ -1809,6 +1810,7 @@ PlainSelect PlainSelect() #PlainSelect:
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
+    WithIsolation withIsolation = null;
     OptimizeFor optimize = null;
     Top top = null;
         Skip skip = null;
@@ -1876,7 +1878,7 @@ PlainSelect PlainSelect() #PlainSelect:
     [LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
 	[LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
     [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
-
+    [LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { plainSelect.setWithIsolation(withIsolation);    } ]
     [LOOKAHEAD(2) <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
         [ <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ]
         [ LOOKAHEAD(<K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ]
@@ -1902,6 +1904,7 @@ SelectBody SetOperationList() #SetOperationList: {
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
+    WithIsolation withIsolation = null;
     SelectBody select = null;
     List<SelectBody> selects = new ArrayList<SelectBody>();
     List<SetOperation> operations = new ArrayList<SetOperation>();
@@ -1926,6 +1929,7 @@ SelectBody SetOperationList() #SetOperationList: {
     [LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {list.setLimit(limit);} ]
     [LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);} ]
     [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);} ]
+    [LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { list.setWithIsolation(withIsolation);} ]
 
     {
         if (selects.size()==1 && selects.get(0) instanceof PlainSelect && orderByElements==null) {
@@ -1957,6 +1961,7 @@ SelectBody SetOperationListWithoutIntialSelect(FromItem fromItem) #SetOperationL
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
+    WithIsolation withIsolation = null;
     SelectBody select;
     List<SelectBody> selects = new ArrayList<SelectBody>();
     List<SetOperation> operations = new ArrayList<SetOperation>();
@@ -2833,6 +2838,24 @@ Fetch Fetch():
         )
     {
         return fetch;
+    }
+}
+
+WithIsolation WithIsolation():
+{
+    WithIsolation withIsolation = new WithIsolation();
+    Token token = null;
+    JdbcParameter jdbc;
+}
+{
+    (
+            //with (ur | cs | rs | rr)
+             <K_WITH>
+             token=<K_ISOLATION> { withIsolation.setIsolation(token.image); }
+
+        )
+    {
+        return withIsolation;
     }
 }
 
