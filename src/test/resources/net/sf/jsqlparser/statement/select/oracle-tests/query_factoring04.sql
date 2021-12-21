@@ -27,3 +27,4 @@ order by order1
 
 
 --@FAILURE: Encountered unexpected token: "search" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:07 AM
+--@FAILURE: net.sf.jsqlparser.parser.ParseException: Encountered unexpected token: "search" <S_IDENTIFIER> recorded first on 21 Dec 2021, 15:15:17

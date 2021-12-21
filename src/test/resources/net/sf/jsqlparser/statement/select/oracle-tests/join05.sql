@@ -17,3 +17,4 @@ select times.time_id, product, quantity from inventory
 
 
 --@FAILURE: Encountered unexpected token: "by" "BY" recorded first on Aug 3, 2021, 7:20:07 AM
+--@FAILURE: net.sf.jsqlparser.parser.ParseException: Encountered unexpected token: "by" "BY" recorded first on 21 Dec 2021, 15:15:16

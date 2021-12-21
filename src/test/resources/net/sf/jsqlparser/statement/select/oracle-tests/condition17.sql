@@ -11,3 +11,4 @@ delete from table_name
 where current of cursor_name
 
 --@FAILURE: Encountered unexpected token: "of" "OF" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: net.sf.jsqlparser.parser.ParseException: Encountered unexpected token: "of" "OF" recorded first on 21 Dec 2021, 15:15:16
