@@ -253,6 +253,7 @@ task renderRR() {
 publishing {
     publications {
         maven(MavenPublication) {
+            artifactId 'jsqlparser'
             from(components.java)
         }
     }
