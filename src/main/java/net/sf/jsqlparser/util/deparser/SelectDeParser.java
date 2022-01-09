@@ -122,8 +122,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             buffer.append(top).append(" ");
         }
 
-        if (plainSelect.getMySqlSqlNoCache()) {
-            buffer.append("SQL_NO_CACHE").append(" ");
+        if (plainSelect.getMySqlSqlCacheFlag() != null) {
+            buffer.append(plainSelect.getMySqlSqlCacheFlag().name()).append(" ");
         }
 
         if (plainSelect.getMySqlSqlCalcFoundRows()) {

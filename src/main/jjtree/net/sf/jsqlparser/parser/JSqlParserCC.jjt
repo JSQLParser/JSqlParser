@@ -404,6 +404,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_USER:"USER">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
 |   <K_SQL_NO_CACHE: "SQL_NO_CACHE">
+|   <K_SQL_CACHE: "SQL_CACHE">
 |   <K_USING:"USING">
 |   <K_SIGNED:"SIGNED">
 |   <K_STRING_FUNCTION_NAME: ("SUBSTR" | "SUBSTRING" | "TRIM" | "POSITION" | "OVERLAY")>
@@ -1849,7 +1850,8 @@ PlainSelect PlainSelect() #PlainSelect:
             )
         |
             (
-                <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlNoCache(true); }
+                <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_NO_CACHE); }
+                | <K_SQL_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_CACHE); }
             )
         )
     ]
