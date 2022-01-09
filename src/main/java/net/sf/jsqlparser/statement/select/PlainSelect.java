@@ -54,6 +54,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private KSQLWindow ksqlWindow = null;
     private boolean noWait = false;
     private boolean emitChanges = false;
+    private WithIsolation withIsolation;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -330,6 +331,15 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return emitChanges;
     }
 
+    
+    public WithIsolation getWithIsolation() {
+        return withIsolation;
+    }
+
+    public void setWithIsolation(WithIsolation withIsolation) {
+        this.withIsolation = withIsolation;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity" , "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
     public String toString() {
@@ -421,6 +431,10 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             if (fetch != null) {
                 sql.append(fetch);
             }
+
+            if (withIsolation != null) {
+                sql.append(withIsolation);
+            }
             if (isForUpdate()) {
                 sql.append(" FOR UPDATE");
 
@@ -455,6 +469,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             if (fetch != null) {
                 sql.append(fetch);
             }
+            if (withIsolation != null) {
+                sql.append(withIsolation);
+            }            
         }
         if (forXmlPath != null) {
             sql.append(" FOR XML PATH(").append(forXmlPath).append(")");

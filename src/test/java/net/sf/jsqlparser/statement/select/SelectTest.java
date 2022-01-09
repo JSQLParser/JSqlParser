@@ -4986,4 +4986,19 @@ public class SelectTest {
     public void testIgnoreNullsForWindowFunctionsIssue1429() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT lag(mydata) IGNORE NULLS OVER (ORDER BY sortorder) AS previous_status FROM mytable");
     }
+
+    @Test
+    public void testWithIsolation() throws JSQLParserException {
+        String statement = "SELECT * FROM mytable WHERE mytable.col = 9 WITH ur";
+        Select select = (Select) parserManager.parse(new StringReader(statement));
+        String isolation = ((PlainSelect) select.getSelectBody()).getWithIsolation().getIsolation();
+        assertEquals("ur", isolation);
+        assertSqlCanBeParsedAndDeparsed(statement);
+
+        statement = "SELECT * FROM mytable WHERE mytable.col = 9 WITH Cs";
+        select = (Select) parserManager.parse(new StringReader(statement));
+        isolation = ((PlainSelect) select.getSelectBody()).getWithIsolation().getIsolation();
+        assertEquals("Cs", isolation);
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
 }
