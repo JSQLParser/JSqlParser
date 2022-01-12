@@ -3141,6 +3141,7 @@ Expression SQLCondition():
          | LOOKAHEAD(IsNullExpression()) result=IsNullExpression(left)
          | LOOKAHEAD(IsBooleanExpression()) result=IsBooleanExpression(left)
          | LOOKAHEAD(2) result=LikeExpression(left)
+         | LOOKAHEAD(IsDistinctExpression()) result=IsDistinctExpression(left)
          | result=SimilarToExpression(left)
         )) ]
     )
@@ -3250,6 +3251,22 @@ Expression SimilarToExpression(Expression leftExpression) #SimilarToExpression:
     <K_SIMILAR> <K_TO>
     rightExpression=SimpleExpression()
     [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
+    {
+        result.setLeftExpression(leftExpression);
+        result.setRightExpression(rightExpression);
+        linkAST(result,jjtThis);
+        return result;
+    }
+}
+
+Expression IsDistinctExpression(Expression leftExpression) #IsDistinctExpression:
+{
+    IsDistinctExpression result = new IsDistinctExpression();
+    Expression rightExpression = null;
+}
+{
+    <K_IS> [<K_NOT> { result.setNot(true); } ] <K_DISTINCT> <K_FROM>
+    rightExpression=SimpleExpression()
     {
         result.setLeftExpression(leftExpression);
         result.setRightExpression(rightExpression);
