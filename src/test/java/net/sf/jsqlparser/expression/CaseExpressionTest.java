@@ -33,6 +33,16 @@ public class CaseExpressionTest {
     }
 
     @Test
+    public void testCaseExclamationWhen() throws JSQLParserException {
+        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN !true THEN 1 ELSE 2 END", true);
+    }
+
+    @Test
+    public void testCaseNotWhen() throws JSQLParserException {
+        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN NOT true THEN 1 ELSE 2 END", true);
+    }
+
+    @Test
     public void testCaseAndWhen() throws JSQLParserException {
         TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN true AND false THEN 1 ELSE 2 END", true);
     }
@@ -40,6 +50,16 @@ public class CaseExpressionTest {
     @Test
     public void testCaseOrWhen() throws JSQLParserException {
         TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN true OR false THEN 1 ELSE 2 END", true);
+    }
+
+    @Test
+    public void testCaseExclamationSwitch() throws JSQLParserException {
+        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE !true WHEN true THEN 1 ELSE 2 END", true);
+    }
+
+    @Test
+    public void testCaseNotSwitch() throws JSQLParserException {
+        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE NOT true WHEN true THEN 1 ELSE 2 END", true);
     }
 
     @Test
