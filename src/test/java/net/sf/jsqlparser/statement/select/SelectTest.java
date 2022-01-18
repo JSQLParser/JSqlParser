@@ -898,6 +898,25 @@ public class SelectTest {
                 + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION "
                 + "SELECT * FROM mytable2 LIMIT 3, 4";
         assertStatementCanBeDeparsedAs(select, statementToString);
+
+        //with fetch and with ur
+        String statement2 = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
+                + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION " + "SELECT * FROM mytable2 ORDER BY COL DESC FETCH FIRST 1 ROWS ONLY WITH UR";
+
+        Select select2 = (Select) parserManager.parse(new StringReader(statement2));
+        SetOperationList setList2 = (SetOperationList) select2.getSelectBody();
+        assertEquals(3, setList2.getSelects().size());
+        assertEquals("mytable", ((Table) ((PlainSelect) setList2.getSelects().get(0)).getFromItem()).
+                getName());
+        assertEquals("mytable3", ((Table) ((PlainSelect) setList2.getSelects().get(1)).getFromItem()).
+                getName());
+        assertEquals("mytable2", ((Table) ((PlainSelect) setList2.getSelects().get(2)).getFromItem()).
+                getName());
+        assertEquals(1, ((SetOperationList) setList2).getFetch().getRowCount());
+
+        assertEquals("UR", ((SetOperationList) setList2).getWithIsolation().getIsolation());
+
+        assertStatementCanBeDeparsedAs(select2, statement2);
     }
 
     @Test

@@ -1938,15 +1938,23 @@ SelectBody SetOperationList() #SetOperationList: {
                 ((PlainSelect)selects.get(0)).setUseBrackets(true);
             return selects.get(0);
         } else {
-            if (selects.size()>1 && selects.get(selects.size()-1) instanceof PlainSelect) {
+            if (selects.size()>1 && selects.get(selects.size()-1) instanceof PlainSelect && !brackets.get(brackets.size() - 1)) {
                 PlainSelect ps = (PlainSelect)selects.get(selects.size()-1);
-                if (ps.getOrderByElements() != null && !brackets.get(brackets.size() - 1)) {
+                if (ps.getOrderByElements() != null) {
                     list.setOrderByElements(ps.getOrderByElements());
                     list.setLimit(ps.getLimit());
                     list.setOffset(ps.getOffset());
                     ps.setOrderByElements(null);
                     ps.setLimit(null);
                     ps.setOffset(null);
+                }
+                if (ps.getFetch() != null) {
+                    list.setFetch(ps.getFetch());
+                    ps.setFetch(null);
+                }
+                if (ps.getWithIsolation() != null) {
+                    list.setWithIsolation(ps.getWithIsolation());
+                    ps.setWithIsolation(null);
                 }
             }
             list.setBracketsOpsAndSelects(brackets,selects,operations);
