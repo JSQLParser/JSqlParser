@@ -962,6 +962,18 @@ public class SelectTest {
     }
 
     @Test
+    public void testIsDistinctFrom() throws JSQLParserException {
+        String stmt = "SELECT name FROM tbl WHERE name IS DISTINCT FROM foo";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testIsNotDistinctFrom() throws JSQLParserException {
+        String stmt = "SELECT name FROM tbl WHERE name IS NOT DISTINCT FROM foo";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testDistinctTop() throws JSQLParserException {
         String statement = "SELECT DISTINCT TOP 5 myid, mycol FROM mytable WHERE mytable.col = 9";
         Select select = (Select) parserManager.parse(new StringReader(statement));
