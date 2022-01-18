@@ -4368,7 +4368,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
 }
 {
     <K_CASE> { caseCounter++; }
-    [ switchExp=Condition() ]
+    [ switchExp=Expression() ]
     ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
     [<K_ELSE> (LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] elseExp=CaseWhenExpression() [")" { ((CaseExpression) elseExp).setUsingBrackets(true); } ] 
               | elseExp=Expression()
