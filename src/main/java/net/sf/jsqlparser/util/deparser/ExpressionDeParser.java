@@ -52,6 +52,7 @@ import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpr
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -987,5 +988,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(AllValue allValue) {
         buffer.append(allValue);
+    }
+
+    @Override
+    public void visit(IsDistinctExpression isDistinctExpression) {
+        buffer.append(isDistinctExpression.getLeftExpression() +
+                isDistinctExpression.getStringExpression() +
+                isDistinctExpression.getRightExpression());
     }
 }
