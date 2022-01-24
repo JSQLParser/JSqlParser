@@ -12,7 +12,7 @@ plugins {
 }
 
 group = 'com.github.jsqlparser'
-version = '4.3-SNAPSHOT'
+version = '4.4-SNAPSHOT'
 description = 'JSQLParser library'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
@@ -35,17 +35,19 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.16.1'
     testImplementation 'org.apache.commons:commons-lang3:3.10'
     testImplementation 'com.h2database:h2:1.4.200'
-    
+
     // for JaCoCo Reports
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.+'
+
+
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
     testImplementation 'org.mockito:mockito-junit-jupiter:4.1.0'
-    
+
     // enforce latest version of JavaCC
     javacc 'net.java.dev.javacc:javacc:7.0.10'
-    
+
 }
 
 compileJavacc {
@@ -249,7 +251,7 @@ task renderRR() {
         } 
     }
 }
-  
+
 
 publishing {
     publications {
