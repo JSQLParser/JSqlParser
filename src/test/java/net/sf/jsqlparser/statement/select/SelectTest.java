@@ -5001,4 +5001,9 @@ public class SelectTest {
         assertEquals("Cs", isolation);
         assertSqlCanBeParsedAndDeparsed(statement);
     }
+    
+    @Test
+    public void testKeywordDefaultIssue1470() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2, col3) VALUES (?, 'sadfsd', default)");
+    }
 }
