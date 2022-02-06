@@ -97,8 +97,8 @@ public class SetOperationList implements SelectBody {
         this.fetch = fetch;
     }
 
-    public Fetch getWithIsolation() {
-        return fetch;
+    public WithIsolation getWithIsolation() {
+        return this.withIsolation;
     }
 
     public void setWithIsolation(WithIsolation withIsolation) {

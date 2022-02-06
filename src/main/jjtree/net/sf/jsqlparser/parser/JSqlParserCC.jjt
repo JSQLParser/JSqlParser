@@ -1938,15 +1938,23 @@ SelectBody SetOperationList() #SetOperationList: {
                 ((PlainSelect)selects.get(0)).setUseBrackets(true);
             return selects.get(0);
         } else {
-            if (selects.size()>1 && selects.get(selects.size()-1) instanceof PlainSelect) {
+            if (selects.size()>1 && selects.get(selects.size()-1) instanceof PlainSelect && !brackets.get(brackets.size() - 1)) {
                 PlainSelect ps = (PlainSelect)selects.get(selects.size()-1);
-                if (ps.getOrderByElements() != null && !brackets.get(brackets.size() - 1)) {
+                if (ps.getOrderByElements() != null) {
                     list.setOrderByElements(ps.getOrderByElements());
                     list.setLimit(ps.getLimit());
                     list.setOffset(ps.getOffset());
                     ps.setOrderByElements(null);
                     ps.setLimit(null);
                     ps.setOffset(null);
+                }
+                if (ps.getFetch() != null) {
+                    list.setFetch(ps.getFetch());
+                    ps.setFetch(null);
+                }
+                if (ps.getWithIsolation() != null) {
+                    list.setWithIsolation(ps.getWithIsolation());
+                    ps.setWithIsolation(null);
                 }
             }
             list.setBracketsOpsAndSelects(brackets,selects,operations);
@@ -3141,6 +3149,7 @@ Expression SQLCondition():
          | LOOKAHEAD(IsNullExpression()) result=IsNullExpression(left)
          | LOOKAHEAD(IsBooleanExpression()) result=IsBooleanExpression(left)
          | LOOKAHEAD(2) result=LikeExpression(left)
+         | LOOKAHEAD(IsDistinctExpression()) result=IsDistinctExpression(left)
          | result=SimilarToExpression(left)
         )) ]
     )
@@ -3250,6 +3259,22 @@ Expression SimilarToExpression(Expression leftExpression) #SimilarToExpression:
     <K_SIMILAR> <K_TO>
     rightExpression=SimpleExpression()
     [<K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
+    {
+        result.setLeftExpression(leftExpression);
+        result.setRightExpression(rightExpression);
+        linkAST(result,jjtThis);
+        return result;
+    }
+}
+
+Expression IsDistinctExpression(Expression leftExpression) #IsDistinctExpression:
+{
+    IsDistinctExpression result = new IsDistinctExpression();
+    Expression rightExpression = null;
+}
+{
+    <K_IS> [<K_NOT> { result.setNot(true); } ] <K_DISTINCT> <K_FROM>
+    rightExpression=SimpleExpression()
     {
         result.setLeftExpression(leftExpression);
         result.setRightExpression(rightExpression);
