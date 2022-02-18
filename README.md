@@ -56,6 +56,8 @@ Also I would like to know about needed examples or documentation stuff.
 
 ## Extensions in the latest SNAPSHOT version 4.4
 
+* support for **timestamp with local time zone**
+
 Additionally, we have fixed many errors and improved the code quality and the test coverage.
 
 ## Extensions of JSqlParser releases
