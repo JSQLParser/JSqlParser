@@ -645,7 +645,7 @@ public class SelectTest {
     public void testTopWithParenthesis() throws JSQLParserException {
         final String firstColumnName = "alias.columnName1";
         final String secondColumnName = "alias.columnName2";
-        final String statement = "SELECT TOP (5) PERCENT " + firstColumnName + ", " + secondColumnName + " FROM schemaName.tableName alias ORDER BY " + secondColumnName + " DESC";
+        final String statement = "SELECT TOP (5) PERCENT WITH TIES " + firstColumnName + ", " + secondColumnName + " FROM schemaName.tableName alias ORDER BY " + secondColumnName + " DESC";
         final Select select = (Select) parserManager.parse(new StringReader(statement));
 
         final PlainSelect selectBody = (PlainSelect) select.getSelectBody();
@@ -654,6 +654,7 @@ public class SelectTest {
         assertEquals("5", top.getExpression().toString());
         assertTrue(top.hasParenthesis());
         assertTrue(top.isPercentage());
+        assertTrue(top.isWithTies());
 
         final List<SelectItem> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
