@@ -122,8 +122,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             buffer.append(top).append(" ");
         }
 
-        if (plainSelect.getMySqlSqlNoCache()) {
-            buffer.append("SQL_NO_CACHE").append(" ");
+        if (plainSelect.getMySqlSqlCacheFlag() != null) {
+            buffer.append(plainSelect.getMySqlSqlCacheFlag().name()).append(" ");
         }
 
         if (plainSelect.getMySqlSqlCalcFoundRows()) {
@@ -187,7 +187,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
                     plainSelect.getOrderByElements());
         }
-
+        if (plainSelect.isEmitChanges()){
+            buffer.append(" EMIT CHANGES");
+        }
         if (plainSelect.getLimit() != null) {
             new LimitDeparser(buffer).deParse(plainSelect.getLimit());
         }
@@ -196,6 +198,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
         if (plainSelect.getFetch() != null) {
             deparseFetch(plainSelect.getFetch());
+        }
+        if (plainSelect.getWithIsolation() != null) {
+            buffer.append(plainSelect.getWithIsolation().toString());
         }
         if (plainSelect.isForUpdate()) {
             buffer.append(" FOR UPDATE");
@@ -306,12 +311,14 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     public void visit(UnPivot unpivot) {
         boolean showOptions = unpivot.getIncludeNullsSpecified();
         boolean includeNulls = unpivot.getIncludeNulls();
+        List<Column> unPivotClause = unpivot.getUnPivotClause();
         List<Column> unpivotForClause = unpivot.getUnPivotForClause();
         buffer
                 .append(" UNPIVOT")
                 .append(showOptions && includeNulls ? " INCLUDE NULLS" : "")
                 .append(showOptions && !includeNulls ? " EXCLUDE NULLS" : "")
-                .append(" (").append(unpivot.getUnPivotClause())
+                .append(" (").append(PlainSelect.getStringList(unPivotClause, true,
+                        unPivotClause != null && unPivotClause.size() > 1))
                 .append(" FOR ").append(PlainSelect.getStringList(unpivotForClause, true,
                         unpivotForClause != null && unpivotForClause.size() > 1))
                 .append(" IN ").append(PlainSelect.getStringList(unpivot.getUnPivotInClause(), true, true)).append(")");
@@ -475,6 +482,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
         if (list.getFetch() != null) {
             deparseFetch(list.getFetch());
+        }
+        if (list.getWithIsolation() != null) {
+            buffer.append(list.getWithIsolation().toString());
         }
     }
 

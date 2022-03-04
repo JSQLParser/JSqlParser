@@ -45,6 +45,7 @@ import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpr
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Column;
@@ -349,6 +350,11 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     }
 
     @Override
+    public void visit(TryCastExpression cast) {
+        cast.getLeftExpression().accept(this);
+    }
+
+    @Override
     public void visit(Modulo modulo) {
         visitBinaryExpression(modulo, " % ");
     }
@@ -572,6 +578,12 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     @Override
     public void visit(AllValue allValue) {
 
+    }
+
+    @Override
+    public void visit(IsDistinctExpression isDistinctExpression) {
+        isDistinctExpression.getLeftExpression().accept(this);
+        isDistinctExpression.getRightExpression().accept(this);
     }
 
 }

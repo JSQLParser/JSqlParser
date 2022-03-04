@@ -10,9 +10,8 @@
 package net.sf.jsqlparser.statement.alter;
 
 import net.sf.jsqlparser.JSQLParserException;
-import org.junit.Test;
-
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import org.junit.jupiter.api.Test;
 
 public class AlterSequenceTest {
 
@@ -22,12 +21,12 @@ public class AlterSequenceTest {
     }
 
     @Test
-    public void testAlterSequence_withIncrement() throws JSQLParserException{
+    public void testAlterSequence_withIncrement() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_seq INCREMENT BY 1");
     }
 
     @Test
-    public void testAlterSequence_withStart() throws JSQLParserException{
+    public void testAlterSequence_withStart() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_seq START WITH 10");
     }
 
@@ -111,4 +110,13 @@ public class AlterSequenceTest {
         assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE");
     }
 
+    @Test
+    public void testAlterSequence_restartIssue1405() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_seq RESTART WITH 1");
+    }
+
+    @Test
+    public void testAlterSequence_restartIssue1405WithoutValue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_seq RESTART");
+    }
 }

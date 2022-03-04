@@ -38,6 +38,8 @@ public class Update implements Statement {
     private Limit limit;
     private boolean returningAllColumns = false;
     private List<SelectExpressionItem> returningExpressionList = null;
+    private UpdateModifierPriority modifierPriority;
+    private boolean modifierIgnore;
 
     public ArrayList<UpdateSet> getUpdateSets() {
         return updateSets;
@@ -233,6 +235,23 @@ public class Update implements Statement {
         this.returningExpressionList = returningExpressionList;
     }
 
+    public UpdateModifierPriority getModifierPriority() {
+        return modifierPriority;
+    }
+
+    public void setModifierPriority(UpdateModifierPriority modifierPriority) {
+        this.modifierPriority = modifierPriority;
+    }
+
+    public boolean isModifierIgnore() {
+        return modifierIgnore;
+    }
+
+    public void setModifierIgnore(boolean modifierIgnore) {
+        this.modifierIgnore = modifierIgnore;
+    }
+
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.ExcessiveMethodLength"})
     public String toString() {
@@ -250,6 +269,12 @@ public class Update implements Statement {
             }
         }
         b.append("UPDATE ");
+        if (modifierPriority != null) {
+            b.append(modifierPriority.name()).append(" ");
+        }
+        if (modifierIgnore) {
+            b.append("IGNORE ");
+        }
         b.append(table);
         if (startJoins != null) {
             for (Join join : startJoins) {
@@ -402,6 +427,16 @@ public class Update implements Statement {
 
     public Update withExpressions(List<Expression> expressions) {
         this.setExpressions(expressions);
+        return this;
+    }
+
+    public Update withModifierPriority(UpdateModifierPriority modifierPriority){
+        this.setModifierPriority(modifierPriority);
+        return this;
+    }
+
+    public Update withModifierIgnore(boolean modifierIgnore){
+        this.setModifierIgnore(modifierIgnore);
         return this;
     }
 

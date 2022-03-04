@@ -9,16 +9,9 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
-import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
@@ -32,11 +25,16 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CheckConstraint;
-import net.sf.jsqlparser.statement.create.table.Index;
-import net.sf.jsqlparser.statement.create.table.NamedConstraint;
-import net.sf.jsqlparser.statement.create.table.Index.ColumnParams;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
-import org.junit.Test;
+import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.Index.ColumnParams;
+import net.sf.jsqlparser.statement.create.table.NamedConstraint;
+import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 public class AlterTest {
 
@@ -146,19 +144,19 @@ public class AlterTest {
     public void testAlterTableForgeignKey4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL");
     }
-    
+
     @Test
     public void testAlterTableForgeignWithFkSchema() throws JSQLParserException {
-      final String FK_SCHEMA_NAME = "my_schema";
-      final String FK_TABLE_NAME= "ra_user";
-      String sql = "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES " + FK_SCHEMA_NAME +"." + FK_TABLE_NAME + " (id) ON DELETE SET NULL";
-      assertSqlCanBeParsedAndDeparsed(sql);
-      
-      Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
-      AlterExpression alterExpression = alter.getAlterExpressions().get(0);
+        final String FK_SCHEMA_NAME = "my_schema";
+        final String FK_TABLE_NAME = "ra_user";
+        String sql = "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES " + FK_SCHEMA_NAME + "." + FK_TABLE_NAME + " (id) ON DELETE SET NULL";
+        assertSqlCanBeParsedAndDeparsed(sql);
 
-      assertEquals(alterExpression.getFkSourceSchema(), FK_SCHEMA_NAME);
-      assertEquals(alterExpression.getFkSourceTable(), FK_TABLE_NAME);
+        Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+        AlterExpression alterExpression = alter.getAlterExpressions().get(0);
+
+        assertEquals(alterExpression.getFkSourceSchema(), FK_SCHEMA_NAME);
+        assertEquals(alterExpression.getFkSourceTable(), FK_TABLE_NAME);
     }
 
     @Test
@@ -287,7 +285,7 @@ public class AlterTest {
         AlterExpression col1Exp = alterExps.get(0);
         assertEquals("not", col1Exp.getColDataTypeList().get(0).getColumnSpecs().get(0));
         assertEquals("null", col1Exp.getColDataTypeList().get(0).getColumnSpecs().get(1));
-        
+
         assertEquals(col1Exp.hasColumn(), true);
     }
 
@@ -304,8 +302,8 @@ public class AlterTest {
         // COLUMN keyword DOES NOT appear in deparsed statement, modify becomes all caps
         assertStatementCanBeDeparsedAs(alter, "ALTER TABLE mytable MODIFY col1 timestamp (6)");
 
-        assertEquals(AlterOperation.MODIFY,  alterExpression.getOperation());
-        
+        assertEquals(AlterOperation.MODIFY, alterExpression.getOperation());
+
         assertEquals(alterExpression.hasColumn(), false);
     }
 
@@ -314,12 +312,12 @@ public class AlterTest {
         // http://www.postgresqltutorial.com/postgresql-change-column-type/
         String sql = "ALTER TABLE table_name ALTER COLUMN column_name_1 TYPE TIMESTAMP, ALTER COLUMN column_name_2 TYPE BOOLEAN";
         assertSqlCanBeParsedAndDeparsed(sql);
-        
+
         Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
         AlterExpression alterExpression = alter.getAlterExpressions().get(0);
-        
-        assertEquals(AlterOperation.ALTER,  alterExpression.getOperation());
-        
+
+        assertEquals(AlterOperation.ALTER, alterExpression.getOperation());
+
         assertEquals(alterExpression.hasColumn(), true);
     }
 
@@ -423,12 +421,12 @@ public class AlterTest {
 
     @Test
     public void testAlterTableIndex586() throws Exception {
-        Statement result = CCJSqlParserUtil.parse("ALTER TABLE biz_add_fee DROP INDEX operation_time, " +
-                "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) " +
-                "USING BTREE, ALGORITHM = INPLACE");
-        assertEquals("ALTER TABLE biz_add_fee DROP INDEX operation_time , " +
-                "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) " +
-                "USING BTREE, ALGORITHM = INPLACE", result.toString());
+        Statement result = CCJSqlParserUtil.parse("ALTER TABLE biz_add_fee DROP INDEX operation_time, "
+                + "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) "
+                + "USING BTREE, ALGORITHM = INPLACE");
+        assertEquals("ALTER TABLE biz_add_fee DROP INDEX operation_time , "
+                + "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) "
+                + "USING BTREE, ALGORITHM = INPLACE", result.toString());
     }
 
     @Test
@@ -444,8 +442,8 @@ public class AlterTest {
                 .withTable(new Table("american_football_action_plays"))
                 .withIndex(
                         new Index().withName("idx_american_football_action_plays_1")
-                        .addColumns(new ColumnParams("play_type", null)).withUsing("btree")
-                        );
+                                .addColumns(new ColumnParams("play_type", null)).withUsing("btree")
+                );
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }
@@ -486,16 +484,16 @@ public class AlterTest {
     @Test
     public void testAlterTableForeignKeyIssue981() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "ALTER TABLE atconfigpro " +
-                "ADD CONSTRAINT atconfigpro_atconfignow_id_foreign FOREIGN KEY (atconfignow_id) REFERENCES atconfignow(id) ON DELETE CASCADE, " +
-                "ADD CONSTRAINT atconfigpro_attariff_id_foreign FOREIGN KEY (attariff_id) REFERENCES attariff(id) ON DELETE CASCADE");
+                "ALTER TABLE atconfigpro "
+                + "ADD CONSTRAINT atconfigpro_atconfignow_id_foreign FOREIGN KEY (atconfignow_id) REFERENCES atconfignow(id) ON DELETE CASCADE, "
+                + "ADD CONSTRAINT atconfigpro_attariff_id_foreign FOREIGN KEY (attariff_id) REFERENCES attariff(id) ON DELETE CASCADE");
     }
 
     @Test
     public void testAlterTableForeignKeyIssue981_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "ALTER TABLE atconfigpro " +
-                        "ADD CONSTRAINT atconfigpro_atconfignow_id_foreign FOREIGN KEY (atconfignow_id) REFERENCES atconfignow(id) ON DELETE CASCADE");
+                "ALTER TABLE atconfigpro "
+                + "ADD CONSTRAINT atconfigpro_atconfignow_id_foreign FOREIGN KEY (atconfignow_id) REFERENCES atconfignow(id) ON DELETE CASCADE");
     }
 
     @Test
@@ -658,8 +656,8 @@ public class AlterTest {
 
     @Test
     public void testIssue985_1() throws JSQLParserException {
-        String statement = "ALTER TABLE texto_fichero " +
-                "ADD CONSTRAINT texto_fichero_fichero_id_foreign FOREIGN KEY (fichero_id) "
+        String statement = "ALTER TABLE texto_fichero "
+                + "ADD CONSTRAINT texto_fichero_fichero_id_foreign FOREIGN KEY (fichero_id) "
                 + "REFERENCES fichero (id) ON DELETE SET DEFAULT ON UPDATE CASCADE, "
                 + "ADD CONSTRAINT texto_fichero_texto_id_foreign FOREIGN KEY (texto_id) "
                 + "REFERENCES texto(id) ON DELETE SET DEFAULT ON UPDATE CASCADE";
@@ -667,8 +665,8 @@ public class AlterTest {
         assertStatementCanBeDeparsedAs(parsed, statement, true);
         assertReferentialActionOnConstraint(parsed, Action.CASCADE, Action.SET_DEFAULT);
 
-        statement = "ALTER TABLE texto_fichero " +
-                "ADD FOREIGN KEY (fichero_id) "
+        statement = "ALTER TABLE texto_fichero "
+                + "ADD FOREIGN KEY (fichero_id) "
                 + "REFERENCES fichero (id) ON DELETE SET DEFAULT ON UPDATE CASCADE, "
                 + "ADD FOREIGN KEY (texto_id) "
                 + "REFERENCES texto(id) ON DELETE SET DEFAULT ON UPDATE CASCADE";
@@ -679,8 +677,8 @@ public class AlterTest {
 
     @Test
     public void testIssue985_2() throws JSQLParserException {
-        String statement = "ALTER TABLE texto " +
-                "ADD CONSTRAINT texto_autor_id_foreign FOREIGN KEY (autor_id) "
+        String statement = "ALTER TABLE texto "
+                + "ADD CONSTRAINT texto_autor_id_foreign FOREIGN KEY (autor_id) "
                 + "REFERENCES users (id) ON UPDATE CASCADE, "
                 + "ADD CONSTRAINT texto_tipotexto_id_foreign FOREIGN KEY (tipotexto_id) "
                 + "REFERENCES tipotexto(id) ON UPDATE CASCADE";
@@ -688,11 +686,11 @@ public class AlterTest {
         assertStatementCanBeDeparsedAs(parsed, statement, true);
         assertReferentialActionOnConstraint(parsed, Action.CASCADE, null);
     }
-    
+
     @Test
     public void testAlterTableDefaultValueTrueIssue926() throws JSQLParserException {
         Alter parsed = (Alter) CCJSqlParserUtil.parse("ALTER TABLE my_table ADD some_column BOOLEAN DEFAULT FALSE");
-        
+
         // There shall be no COLUMN where there is no COLUMN
         assertStatementCanBeDeparsedAs(parsed, "ALTER TABLE my_table ADD some_column BOOLEAN DEFAULT FALSE");
     }
@@ -747,16 +745,16 @@ public class AlterTest {
             assertNull(alterExpression.getReferentialAction(Type.UPDATE));
         }
     }
-    
+
     @Test
     public void testRowFormatKeywordIssue1033() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE basic_test_case "
-            + "ADD COLUMN display_name varchar(512) NOT NULL DEFAULT '' AFTER name"
-            + ", ADD KEY test_case_status (test_case_status)"
-            + ", add KEY display_name (display_name), ROW_FORMAT=DYNAMIC", true);
-        
+                + "ADD COLUMN display_name varchar(512) NOT NULL DEFAULT '' AFTER name"
+                + ", ADD KEY test_case_status (test_case_status)"
+                + ", add KEY display_name (display_name), ROW_FORMAT=DYNAMIC", true);
+
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE t1 MOVE TABLESPACE users", true);
-        
+
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE test_tab MOVE PARTITION test_tab_q2 COMPRESS", true);
     }
 

@@ -10,10 +10,10 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.Arrays;
-import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
+import org.junit.jupiter.api.Test;
 
 public class LimitValidatorTest extends ValidationTestAsserts {
 
@@ -31,6 +31,5 @@ public class LimitValidatorTest extends ValidationTestAsserts {
             validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL, DatabaseType.POSTGRESQL);
         }
     }
-
 
 }

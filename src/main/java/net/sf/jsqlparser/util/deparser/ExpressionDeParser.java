@@ -52,6 +52,7 @@ import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpr
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -264,9 +265,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public void visit(LikeExpression likeExpression) {
         visitBinaryExpression(likeExpression,
                 (likeExpression.isNot() ? " NOT" : "") + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
-        String escape = likeExpression.getEscape();
+        Expression escape = likeExpression.getEscape();
         if (escape != null) {
-            buffer.append(" ESCAPE '").append(escape).append('\'');
+            buffer.append(" ESCAPE ");
+            likeExpression.getEscape().accept(this);
         }
     }
 
@@ -599,6 +601,21 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public void visit(TryCastExpression cast) {
+        if (cast.isUseCastKeyword()) {
+            buffer.append("TRY_CAST(");
+            cast.getLeftExpression().accept(this);
+            buffer.append(" AS ");
+            buffer.append( cast.getRowConstructor()!=null ? cast.getRowConstructor() : cast.getType() );
+            buffer.append(")");
+        } else {
+            cast.getLeftExpression().accept(this);
+            buffer.append("::");
+            buffer.append(cast.getType());
+        }
+    }
+
+    @Override
     public void visit(Modulo modulo) {
         visitBinaryExpression(modulo, " % ");
     }
@@ -657,6 +674,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             if (aexpr.getType() != AnalyticType.FILTER_ONLY) {
                 buffer.append(" ");
             }
+        }
+        
+        if (aexpr.isIgnoreNullsOutside()) {
+            buffer.append("IGNORE NULLS ");
         }
 
         switch (aexpr.getType()) {
@@ -923,8 +944,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public void visit(TimezoneExpression var) {
         var.getLeftExpression().accept(this);
 
-        for (String expr : var.getTimezoneExpressions()) {
-            buffer.append(" AT TIME ZONE " + expr);
+        for (Expression expr : var.getTimezoneExpressions()) {
+            buffer.append(" AT TIME ZONE ");
+            expr.accept(this);
         }
     }
 
@@ -966,5 +988,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(AllValue allValue) {
         buffer.append(allValue);
+    }
+
+    @Override
+    public void visit(IsDistinctExpression isDistinctExpression) {
+        buffer.append(isDistinctExpression.getLeftExpression() +
+                isDistinctExpression.getStringExpression() +
+                isDistinctExpression.getRightExpression());
     }
 }

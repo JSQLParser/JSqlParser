@@ -10,12 +10,12 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.Arrays;
-import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
+import org.junit.jupiter.api.Test;
 
 public class DeleteValidatorTest extends ValidationTestAsserts {
 
@@ -38,7 +38,6 @@ public class DeleteValidatorTest extends ValidationTestAsserts {
         validateNotSupported(sql, 1, 1, Arrays.asList(DatabaseType.H2), Feature.deleteTables, Feature.deleteJoin);
         validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL);
     }
-
 
     @Test
     public void testValidationDeleteLimitOrderBy() throws JSQLParserException {

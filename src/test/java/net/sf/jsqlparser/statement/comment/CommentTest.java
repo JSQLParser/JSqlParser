@@ -9,19 +9,16 @@
  */
 package net.sf.jsqlparser.statement.comment;
 
-import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import static org.junit.Assert.assertEquals;
-
 import java.io.StringReader;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import org.junit.Test;
+import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class CommentTest {
 
@@ -95,7 +92,7 @@ public class CommentTest {
         assertThat(comment.getColumn().getColumnName()).isEqualTo("myColumn");
         assertThat(comment.getColumn().getTable().getFullyQualifiedName()).isEqualTo("myTable");
     }
-        
+
     @Test
     public void testCommentTableColumnDiffersIssue984_2() throws JSQLParserException {
         Comment comment = (Comment) CCJSqlParserUtil.parse("COMMENT ON COLUMN mySchema.myTable.myColumn is 'Some comment'");
@@ -104,7 +101,7 @@ public class CommentTest {
         assertThat(comment.getColumn().getTable().getFullyQualifiedName()).isEqualTo("mySchema.myTable");
         assertThat(comment.getColumn().getTable().getName()).isEqualTo("myTable");
         assertThat(comment.getColumn().getTable().getSchemaName()).isEqualTo("mySchema");
-    }   
+    }
 
     @Test
     public void testCommentOnView() throws JSQLParserException {

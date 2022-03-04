@@ -48,7 +48,14 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
                 buffer.append(" ");
             }
         }
-        buffer.append("UPDATE ").append(update.getTable());
+        buffer.append("UPDATE ");
+        if (update.getModifierPriority() != null) {
+            buffer.append(update.getModifierPriority()).append(" ");
+        }
+        if (update.isModifierIgnore()) {
+            buffer.append("IGNORE ");
+        }
+        buffer.append(update.getTable());
         if (update.getStartJoins() != null) {
             for (Join join : update.getStartJoins()) {
                 if (join.isSimple()) {

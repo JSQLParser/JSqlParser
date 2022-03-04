@@ -9,9 +9,9 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import org.junit.Test;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
+import org.junit.jupiter.api.Test;
 
 public class OrderByValidatorTest extends ValidationTestAsserts {
 
@@ -20,6 +20,7 @@ public class OrderByValidatorTest extends ValidationTestAsserts {
         String sql = "SELECT * FROM tab ORDER BY a ASC, b DESC, c";
         validateNoErrors(sql, 1, DatabaseType.DATABASES);
     }
+
     @Test
     public void testOrderByNullOrdering() {
         String sql = "SELECT * FROM tab ORDER BY a ASC NULLS FIRST, b DESC NULLS LAST";

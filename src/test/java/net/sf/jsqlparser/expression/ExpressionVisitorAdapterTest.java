@@ -11,50 +11,26 @@ package net.sf.jsqlparser.expression;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.statement.select.SubSelect;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
+import net.sf.jsqlparser.statement.select.SubSelect;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author tw
  */
 public class ExpressionVisitorAdapterTest {
-
-    public ExpressionVisitorAdapterTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     @Test
     public void testInExpressionProblem() throws JSQLParserException {
@@ -235,42 +211,42 @@ public class ExpressionVisitorAdapterTest {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         expr.accept(adapter);
     }
-    
+
     @Test
     public void testJsonFunction() throws JSQLParserException {
-         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         CCJSqlParserUtil
-          .parseExpression("JSON_OBJECT( KEY foo VALUE bar, KEY foo VALUE bar)")
-          .accept(adapter);
+                .parseExpression("JSON_OBJECT( KEY foo VALUE bar, KEY foo VALUE bar)")
+                .accept(adapter);
         CCJSqlParserUtil
-          .parseExpression("JSON_ARRAY( (SELECT * from dual) )")
-          .accept(adapter);
+                .parseExpression("JSON_ARRAY( (SELECT * from dual) )")
+                .accept(adapter);
     }
-    
+
     @Test
     public void testJsonAggregateFunction() throws JSQLParserException {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         CCJSqlParserUtil
-          .parseExpression("JSON_OBJECTAGG( KEY foo VALUE bar NULL ON NULL WITH UNIQUE KEYS ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name )")
-          .accept(adapter);
+                .parseExpression("JSON_OBJECTAGG( KEY foo VALUE bar NULL ON NULL WITH UNIQUE KEYS ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name )")
+                .accept(adapter);
         CCJSqlParserUtil
-          .parseExpression("JSON_ARRAYAGG( a FORMAT JSON ABSENT ON NULL ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name )")
-          .accept(adapter);
+                .parseExpression("JSON_ARRAYAGG( a FORMAT JSON ABSENT ON NULL ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name )")
+                .accept(adapter);
     }
-    
+
     @Test
     public void testConnectedByRootExpression() throws JSQLParserException {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         CCJSqlParserUtil
-          .parseExpression("CONNECT_BY_ROOT last_name as name")
-          .accept(adapter);
+                .parseExpression("CONNECT_BY_ROOT last_name as name")
+                .accept(adapter);
     }
-    
+
     @Test
     public void testRowConstructor() throws JSQLParserException {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         CCJSqlParserUtil
-          .parseExpression("CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))")
-          .accept(adapter);
+                .parseExpression("CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))")
+                .accept(adapter);
     }
 }

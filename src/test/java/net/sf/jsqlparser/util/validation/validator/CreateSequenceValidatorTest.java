@@ -10,17 +10,17 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.Arrays;
-import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
+import org.junit.jupiter.api.Test;
 
 public class CreateSequenceValidatorTest extends ValidationTestAsserts {
 
-    private static final DatabaseType DATABASES_SUPPORTING_SEQUENCES[] = new DatabaseType[] { DatabaseType.ORACLE,
-            DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2 };
+    private static final DatabaseType DATABASES_SUPPORTING_SEQUENCES[] = new DatabaseType[]{DatabaseType.ORACLE,
+        DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2};
 
     @Test
     public void testValidateCreateSequence() throws JSQLParserException {

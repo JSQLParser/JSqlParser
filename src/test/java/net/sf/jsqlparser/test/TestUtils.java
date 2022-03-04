@@ -9,9 +9,6 @@
  */
 package net.sf.jsqlparser.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,7 +18,6 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -41,8 +37,10 @@ import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -66,9 +64,8 @@ public class TestUtils {
      * Tries to parse and deparse the given statement.
      *
      * @param statement
-     * @param laxDeparsingCheck removes all linefeeds from the original and
-     *                          removes all double spaces. The check is
-     *                          caseinsensitive.
+     * @param laxDeparsingCheck removes all linefeeds from the original and removes all double spaces. The check is
+     * caseinsensitive.
      * @return the parsed {@link Statement}
      * @throws JSQLParserException
      */
@@ -79,9 +76,8 @@ public class TestUtils {
 
     /**
      * @param statement
-     * @param laxDeparsingCheck removes all linefeeds from the original and
-     *                          removes all double spaces. The check is
-     *                          caseinsensitive.
+     * @param laxDeparsingCheck removes all linefeeds from the original and removes all double spaces. The check is
+     * caseinsensitive.
      * @param consumer - a parser-consumer for parser-configurations from outside
      * @return the parsed {@link Statement}
      * @throws JSQLParserException
@@ -105,9 +101,8 @@ public class TestUtils {
     }
 
     /**
-     * Asserts that the {@link Statement} can be deparsed and deparsing results in
-     * given #statement
-     * 
+     * Asserts that the {@link Statement} can be deparsed and deparsing results in given #statement
+     *
      * @param stmt
      * @param statement
      */
@@ -117,7 +112,7 @@ public class TestUtils {
 
     /**
      * Compares the object-tree of a given parsed model and a created one.
-     * 
+     *
      * @param parsed
      * @param created
      */
@@ -127,8 +122,7 @@ public class TestUtils {
 
     /**
      * @param stmt
-     * @return a {@link String} build by {@link ToStringBuilder} and
-     *         {@link ObjectTreeToStringStyle#INSTANCE}
+     * @return a {@link String} build by {@link ToStringBuilder} and {@link ObjectTreeToStringStyle#INSTANCE}
      */
     public static String toReflectionString(Statement stmt) {
         return toReflectionString(stmt, false);
@@ -136,8 +130,7 @@ public class TestUtils {
 
     /**
      * @param stmt
-     * @return a {@link String} build by {@link ToStringBuilder} and
-     *         {@link ObjectTreeToStringStyle#INSTANCE}
+     * @return a {@link String} build by {@link ToStringBuilder} and {@link ObjectTreeToStringStyle#INSTANCE}
      */
     public static String toReflectionString(Statement stmt, boolean includingASTNode) {
         ReflectionToStringBuilder strb = new ReflectionToStringBuilder(stmt,
@@ -146,10 +139,9 @@ public class TestUtils {
     }
 
     /**
-     * Replacement of {@link Arrays#asList(Object...)} which returns
-     * java.util.Arrays$ArrayList not java.util.ArrayList, the internal model uses
-     * java.util.ArrayList by default, which supports modification
-     * 
+     * Replacement of {@link Arrays#asList(Object...)} which returns java.util.Arrays$ArrayList not java.util.ArrayList,
+     * the internal model uses java.util.ArrayList by default, which supports modification
+     *
      * @param <T>
      * @param obj
      * @return a {@link ArrayList} of given items
@@ -161,8 +153,7 @@ public class TestUtils {
 
     /**
      * <p>
-     * {@code ToStringStyle} that outputs on multiple lines without identity
-     * hashcode.
+     * {@code ToStringStyle} that outputs on multiple lines without identity hashcode.
      * </p>
      */
     private static final class ObjectTreeToStringStyle extends MultilineRecursiveToStringStyle {
@@ -200,21 +191,19 @@ public class TestUtils {
         }
 
         /**
-         * empty {@link Collection}'s should be printed as <code>null</code>, otherwise
-         * the outcome cannot be compared
+         * empty {@link Collection}'s should be printed as <code>null</code>, otherwise the outcome cannot be compared
          */
         @Override
         protected void appendDetail(final StringBuffer buffer, final String fieldName, final Collection<?> coll) {
             if (coll.isEmpty()) {
                 appendNullText(buffer, fieldName);
             } else {
-                super.appendDetail(buffer, fieldName,  coll);
+                super.appendDetail(buffer, fieldName, coll);
             }
         }
 
         /**
-         * empty {@link Map}'s should be printed as <code>null</code>, otherwise the
-         * outcome cannot be compared
+         * empty {@link Map}'s should be printed as <code>null</code>, otherwise the outcome cannot be compared
          */
         @Override
         protected void appendDetail(final StringBuffer buffer, final String fieldName, final Map<?, ?> coll) {
@@ -241,14 +230,12 @@ public class TestUtils {
     }
 
     /**
-     * Asserts that the {@link Statement} can be deparsed and deparsing results in
-     * given #statement
-     * 
+     * Asserts that the {@link Statement} can be deparsed and deparsing results in given #statement
+     *
      * @param stmt
      * @param statement
-     * @param laxDeparsingCheck removes all linefeeds from the original and
-     *                          removes all double spaces. The check is
-     *                          caseinsensitive.
+     * @param laxDeparsingCheck removes all linefeeds from the original and removes all double spaces. The check is
+     * caseinsensitive.
      */
     public static void assertDeparse(Statement stmt, String statement, boolean laxDeparsingCheck) {
         StatementDeParser deParser = new StatementDeParser(new StringBuilder());
@@ -283,56 +270,55 @@ public class TestUtils {
 
         assertEquals(expression, stringBuilder.toString());
     }
-    
+
     public static void assertExpressionCanBeParsedAndDeparsed(String expressionStr, boolean laxDeparsingCheck) throws JSQLParserException {
         Expression expression = CCJSqlParserUtil.parseExpression(expressionStr);
         assertEquals(buildSqlString(expressionStr, laxDeparsingCheck),
                 buildSqlString(expression.toString(), laxDeparsingCheck));
     }
 
-  public static void assertOracleHintExists(String sql, boolean assertDeparser, String... hints)
-      throws JSQLParserException {
-    if (assertDeparser) {
-      assertSqlCanBeParsedAndDeparsed(sql, true);
-    }
-
-    Statement statement = CCJSqlParserUtil.parse(sql);
-    if (statement instanceof Select) {
-      Select stmt = (Select) statement;
-      if (stmt.getSelectBody() instanceof PlainSelect) {
-        PlainSelect ps = (PlainSelect) stmt.getSelectBody();
-        OracleHint hint = ps.getOracleHint();
-        assertNotNull(hint);
-        assertEquals(hints[0], hint.getValue());
-      } else
-        if (stmt.getSelectBody() instanceof SetOperationList) {
-          SetOperationList setop = (SetOperationList) stmt.getSelectBody();
-          for (int i = 0; i < setop.getSelects().size(); i++) {
-            PlainSelect pselect = (PlainSelect) setop.getSelects().get(i);
-            OracleHint hint = pselect.getOracleHint();
-            if (hints[i] == null) {
-              Assert.assertNull(hint);
-            } else {
-              assertNotNull(hint);
-              assertEquals(hints[i], hint.getValue());
-            }
-          }
+    public static void assertOracleHintExists(String sql, boolean assertDeparser, String... hints)
+            throws JSQLParserException {
+        if (assertDeparser) {
+            assertSqlCanBeParsedAndDeparsed(sql, true);
         }
-    } else if (statement instanceof Update) {
-      Update stmt = (Update) statement;
-      OracleHint hint = stmt.getOracleHint();
-      assertNotNull(hint);
-      assertEquals(hints[0], hint.getValue());
-    } else if (statement instanceof Insert) {
-        Insert stmt = (Insert) statement;
-        OracleHint hint = stmt.getOracleHint();
-        assertNotNull(hint);
-        assertEquals(hints[0], hint.getValue());
-    } else if (statement instanceof Delete) {
-      Delete stmt = (Delete) statement;
-      OracleHint hint = stmt.getOracleHint();
-      assertNotNull(hint);
-      assertEquals(hints[0], hint.getValue());
+
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        if (statement instanceof Select) {
+            Select stmt = (Select) statement;
+            if (stmt.getSelectBody() instanceof PlainSelect) {
+                PlainSelect ps = (PlainSelect) stmt.getSelectBody();
+                OracleHint hint = ps.getOracleHint();
+                assertNotNull(hint);
+                assertEquals(hints[0], hint.getValue());
+            } else if (stmt.getSelectBody() instanceof SetOperationList) {
+                SetOperationList setop = (SetOperationList) stmt.getSelectBody();
+                for (int i = 0; i < setop.getSelects().size(); i++) {
+                    PlainSelect pselect = (PlainSelect) setop.getSelects().get(i);
+                    OracleHint hint = pselect.getOracleHint();
+                    if (hints[i] == null) {
+                        assertNull(hint);
+                    } else {
+                        assertNotNull(hint);
+                        assertEquals(hints[i], hint.getValue());
+                    }
+                }
+            }
+        } else if (statement instanceof Update) {
+            Update stmt = (Update) statement;
+            OracleHint hint = stmt.getOracleHint();
+            assertNotNull(hint);
+            assertEquals(hints[0], hint.getValue());
+        } else if (statement instanceof Insert) {
+            Insert stmt = (Insert) statement;
+            OracleHint hint = stmt.getOracleHint();
+            assertNotNull(hint);
+            assertEquals(hints[0], hint.getValue());
+        } else if (statement instanceof Delete) {
+            Delete stmt = (Delete) statement;
+            OracleHint hint = stmt.getOracleHint();
+            assertNotNull(hint);
+            assertEquals(hints[0], hint.getValue());
+        }
     }
-  }
 }

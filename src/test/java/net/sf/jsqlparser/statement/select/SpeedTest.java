@@ -16,13 +16,13 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.util.TablesNamesFinder;
+import org.junit.jupiter.api.Test;
 
 public class SpeedTest {
 
@@ -134,7 +134,7 @@ public class SpeedTest {
         elapsedTime = System.currentTimeMillis() - time;
         statementsPerSecond = numTests * 1000 / elapsedTime;
         System.out.
-        println(numTests + " select scans for table name executed in " + elapsedTime + " milliseconds");
+                println(numTests + " select scans for table name executed in " + elapsedTime + " milliseconds");
         System.out.println(" (" + statementsPerSecond + " select scans for table name per second,  "
                 + df.format(1.0 / statementsPerSecond) + " seconds per select scans for table name)");
 

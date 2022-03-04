@@ -12,13 +12,12 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
-import org.junit.Test;
-
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 public class KSQLTest {
 
@@ -142,7 +141,7 @@ public class KSQLTest {
 
         statement = CCJSqlParserUtil.parse(sql);
         System.out.println(statement.toString());
-                Select select = (Select) statement;
+        Select select = (Select) statement;
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         assertTrue(plainSelect.getKsqlWindow().isTumblingWindow());
         assertFalse(plainSelect.getKsqlWindow().isSessionWindow());
@@ -152,5 +151,25 @@ public class KSQLTest {
 
         assertStatementCanBeDeparsedAs(select, sql, true);
         assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testKSQLEmitChanges() throws Exception {
+        String sql = "SELECT * FROM table1 t1 GROUP BY region.id EMIT CHANGES";
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        Select select = (Select) statement;
+        PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+        assertTrue(selectBody.isEmitChanges());
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testKSQLEmitChangesWithLimit() throws Exception {
+        String sql = "SELECT * FROM table1 t1 GROUP BY region.id EMIT CHANGES LIMIT 2";
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        Select select = (Select) statement;
+        PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+        assertTrue(selectBody.isEmitChanges());
+        assertSqlCanBeParsedAndDeparsed(sql);
     }
 }

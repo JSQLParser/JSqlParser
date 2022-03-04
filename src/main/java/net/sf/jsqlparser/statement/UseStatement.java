@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement;
 public class UseStatement implements Statement {
 
     private String name;
+    private boolean schemaKeyword;
 
     public UseStatement() {
         // empty constructor
@@ -19,6 +20,11 @@ public class UseStatement implements Statement {
 
     public UseStatement(String name) {
         this.name = name;
+    }
+
+    public UseStatement(String name, boolean hasSchemaKeyword) {
+        this.name = name;
+        this.schemaKeyword = hasSchemaKeyword;
     }
 
     public String getName() {
@@ -29,9 +35,17 @@ public class UseStatement implements Statement {
         this.name = name;
     }
 
+    public boolean hasSchemaKeyword() {
+        return schemaKeyword;
+    }
+
+    public void setSchemaKeyword(boolean schemaKeyword) {
+        this.schemaKeyword = schemaKeyword;
+    }
+
     @Override
     public String toString() {
-        return "USE " + name;
+        return "USE " + (schemaKeyword ? "SCHEMA " : "") + name;
     }
 
     @Override

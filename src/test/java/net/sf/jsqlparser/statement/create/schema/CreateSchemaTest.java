@@ -9,16 +9,17 @@
  */
 package net.sf.jsqlparser.statement.create.schema;
 
+import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import org.junit.Test;
-import net.sf.jsqlparser.JSQLParserException;
+import org.junit.jupiter.api.Test;
 
 /**
  *
  * @author tw
  */
-public class CreateSchemaTest {  
+public class CreateSchemaTest {
+
     @Test
     public void testSimpleCreateSchema() throws JSQLParserException {
         String statement = "CREATE SCHEMA myschema";

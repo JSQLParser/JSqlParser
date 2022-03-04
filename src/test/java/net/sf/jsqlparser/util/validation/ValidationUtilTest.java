@@ -10,9 +10,9 @@
 package net.sf.jsqlparser.util.validation;
 
 import java.util.Arrays;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import net.sf.jsqlparser.schema.Column;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class ValidationUtilTest extends ValidationTestAsserts {
 

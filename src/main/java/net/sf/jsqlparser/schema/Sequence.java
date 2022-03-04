@@ -60,7 +60,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         setDatabase(database);
         return this;
     }
-    
+
     public String getSchemaName() {
         return getIndex(SCHEMA_IDX);
     }
@@ -155,6 +155,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     public enum ParameterType {
         INCREMENT_BY,
         START_WITH,
+        RESTART_WITH,
         MAXVALUE,
         NOMAXVALUE,
         MINVALUE,
@@ -175,6 +176,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
      * Represents a parameter when declaring a sequence
      */
     public static class Parameter {
+
         private final ParameterType option;
         private Long value;
 
@@ -196,6 +198,12 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
                     return prefix("INCREMENT BY");
                 case START_WITH:
                     return prefix("START WITH");
+                case RESTART_WITH:
+                    if (value != null) {
+                        return prefix("RESTART WITH");
+                    } else {
+                        return "RESTART";
+                    }
                 case MAXVALUE:
                 case MINVALUE:
                 case CACHE:

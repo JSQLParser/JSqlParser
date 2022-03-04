@@ -10,13 +10,13 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.Arrays;
-import org.junit.Test;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import net.sf.jsqlparser.util.validation.feature.MariaDbVersion;
+import org.junit.jupiter.api.Test;
 
 public class SelectValidatorTest extends ValidationTestAsserts {
 
@@ -98,7 +98,7 @@ public class SelectValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testOracleJoin() throws JSQLParserException {
-        validateNoErrors("SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)", 1, 
+        validateNoErrors("SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)", 1,
                 DatabaseType.ORACLE);
     }
 

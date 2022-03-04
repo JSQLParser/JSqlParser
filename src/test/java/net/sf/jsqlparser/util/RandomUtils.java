@@ -29,8 +29,7 @@ import java.util.logging.Logger;
 import org.apache.commons.lang3.RandomStringUtils;
 
 /**
- * An utility to get a random value for any type given - see
- * {@link #getRandomValueForType(Class)}
+ * An utility to get a random value for any type given - see {@link #getRandomValueForType(Class)}
  *
  * @author gitmotte
  * @see #pushObjects(List)
@@ -70,8 +69,7 @@ public class RandomUtils {
     /**
      * @param <T>
      * @param type
-     * @return a random non-<code>null</code> value for given type or
-     *         <code>null</code> if not supported.
+     * @return a random non-<code>null</code> value for given type or <code>null</code> if not supported.
      */
     public static <T> T getRandomValueForType(Class<T> type) {
         Object value = null;
@@ -110,7 +108,7 @@ public class RandomUtils {
                 Set<Object> c = new HashSet<>();
                 value = c;
             } else if (type.isArray()) {
-                Object [] a = (Object[]) Array.newInstance(type.getComponentType(), size);
+                Object[] a = (Object[]) Array.newInstance(type.getComponentType(), size);
                 for (int i = 0; i < size; i++) {
                     a[i] = getRandomValueForType(type.getComponentType());
                 }

@@ -305,6 +305,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(TryCastExpression expr) {
+        expr.getLeftExpression().accept(this);
+    }
+
+    @Override
     public void visit(Modulo expr) {
         visitBinaryExpression(expr);
     }
@@ -497,6 +502,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(AllValue allValue) {
+    }
+
+    @Override
+    public void visit(IsDistinctExpression isDistinctExpression) {
+        visitBinaryExpression(isDistinctExpression);
     }
 
     @Override

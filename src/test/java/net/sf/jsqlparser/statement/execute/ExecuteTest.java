@@ -11,11 +11,7 @@ package net.sf.jsqlparser.statement.execute;
 
 import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.*;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -23,30 +19,6 @@ import org.junit.Test;
  */
 public class ExecuteTest {
 
-    public ExecuteTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    /**
-     * Test of accept method, of class Execute.
-     *
-     * @throws net.sf.jsqlparser.JSQLParserException
-     */
     @Test
     public void testAcceptExecute() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("EXECUTE myproc 'a', 2, 'b'");

@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.values;
 
+import java.util.Arrays;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.RowConstructor;
@@ -18,12 +19,8 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SetOperationList;
-
 import static net.sf.jsqlparser.test.TestUtils.*;
-
-import org.junit.Test;
-
-import java.util.Arrays;
+import org.junit.jupiter.api.Test;
 
 public class ValuesTest {
 
@@ -54,7 +51,7 @@ public class ValuesTest {
 
     @Test
     public void testObject() {
-        ValuesStatement valuesStatement=new ValuesStatement().addExpressions(new StringValue("1"), new StringValue("2"));
+        ValuesStatement valuesStatement = new ValuesStatement().addExpressions(new StringValue("1"), new StringValue("2"));
         valuesStatement.addExpressions(Arrays.asList(new StringValue("3"), new StringValue("4")));
 
         valuesStatement.accept(new StatementVisitorAdapter());

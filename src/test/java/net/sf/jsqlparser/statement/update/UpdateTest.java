@@ -10,20 +10,19 @@
 package net.sf.jsqlparser.statement.update;
 
 import java.io.StringReader;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 public class UpdateTest {
 
@@ -111,10 +110,10 @@ public class UpdateTest {
         assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET col = 'thing' WHERE id = 1 RETURNING ABS(col_1) AS Bar, ABS(col_2), col_3 AS Foo");
     }
 
-    @Test(expected = JSQLParserException.class)
-    public void testUpdateDoesNotAllowLimitOffset() throws JSQLParserException {
+    @Test
+    public void testUpdateDoesNotAllowLimitOffset() {
         String statement = "UPDATE table1 A SET A.columna = 'XXX' WHERE A.cod_table = 'YYY' LIMIT 3,4";
-        parserManager.parse(new StringReader(statement));
+        assertThrows(JSQLParserException.class, () -> parserManager.parse(new StringReader(statement)));
     }
 
     @Test
@@ -157,95 +156,119 @@ public class UpdateTest {
     public void testUpdateIssue750() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("update a,(select * from c) b set a.id=b.id where a.id=b.id", true);
     }
-    
+
     @Test
     public void testUpdateIssue962Validate() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE tbl_user_card SET validate = '1', identityCodeFlag = 1 WHERE id = 9150000293816");
     }
-    
+
     @Test
     public void testUpdateVariableAssignment() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("UPDATE transaction_id SET latest_id_wallet = (@cur_id_wallet := latest_id_wallet) + 1");
     }
-    
+
     @Test
     public void testOracleHint() throws JSQLParserException {
         assertOracleHintExists("UPDATE /*+ SOMEHINT */ mytable set col1='as', col2=?, col3=565 Where o >= 3", true, "SOMEHINT");
-       
-       //@todo: add a testcase supposed to not finding a misplaced hint
-       // assertOracleHintExists("UPDATE  mytable /*+ SOMEHINT */ set col1='as', col2=?, col3=565 Where o >= 3", true, "SOMEHINT");
+
+        //@todo: add a testcase supposed to not finding a misplaced hint
+        // assertOracleHintExists("UPDATE  mytable /*+ SOMEHINT */ set col1='as', col2=?, col3=565 Where o >= 3", true, "SOMEHINT");
     }
 
-  @Test
-  public void testWith() throws JSQLParserException {
-    String statement =
-        ""
-            + "WITH a\n"
-            + "     AS (SELECT 1 id_instrument_ref)\n"
-            + "     , b\n"
-            + "       AS (SELECT 1 id_instrument_ref)\n"
-            + "UPDATE cfe.instrument_ref\n"
-            + "SET id_instrument=null\n"
-            + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
-            + "                            FROM   a)";
-  
-    assertSqlCanBeParsedAndDeparsed(statement, true);
-  }
+    @Test
+    public void testWith() throws JSQLParserException {
+        String statement
+                = ""
+                + "WITH a\n"
+                + "     AS (SELECT 1 id_instrument_ref)\n"
+                + "     , b\n"
+                + "       AS (SELECT 1 id_instrument_ref)\n"
+                + "UPDATE cfe.instrument_ref\n"
+                + "SET id_instrument=null\n"
+                + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
+                + "                            FROM   a)";
+
+        assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
 
     @Test
     public void testUpdateSetsIssue1316() throws JSQLParserException {
-        String sqlStr =
-                "update test\n" +
-                        "set (a, b) = (select '1', '2')";
+        String sqlStr
+                = "update test\n"
+                + "set (a, b) = (select '1', '2')";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        sqlStr =
-                "update test\n" +
-                        "set a = '1'" +
-                        "    , b = '2'";
+        sqlStr
+                = "update test\n"
+                + "set a = '1'"
+                + "    , b = '2'";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        sqlStr =
-                "update test\n" +
-                        "set (a, b) = ('1', '2')";
+        sqlStr
+                = "update test\n"
+                + "set (a, b) = ('1', '2')";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        sqlStr =
-                "update test\n" +
-                        "set (a, b) = (values ('1', '2'))";
+        sqlStr
+                = "update test\n"
+                + "set (a, b) = (values ('1', '2'))";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        sqlStr =
-                "update test\n" +
-                        "set (a, b) = (1, (select 2))";
+        sqlStr
+                = "update test\n"
+                + "set (a, b) = (1, (select 2))";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        sqlStr =
-                "UPDATE prpjpaymentbill b\n" +
-                "SET (   b.packagecode\n" +
-                "        , b.packageremark\n" +
-                "        , b.agentcode ) =   (   SELECT  p.payrefreason\n" +
-                "                                        , p.classcode\n" +
-                "                                        , p.riskcode\n" +
-                "                                FROM prpjcommbill p\n" +
-                "                                WHERE p.policertiid = 'SDDH200937010330006366' ) -- this is supposed to be UpdateSet 1\n" +
-                "     , b.payrefnotype = '05' -- this is supposed to be UpdateSet 2\n" +
-                "     , b.packageunit = '4101170402' -- this is supposed to be UpdateSet 3\n" +
-                "WHERE b.payrefno = 'B370202091026000005'";
-
+        sqlStr
+                = "UPDATE prpjpaymentbill b\n"
+                + "SET (   b.packagecode\n"
+                + "        , b.packageremark\n"
+                + "        , b.agentcode ) =   (   SELECT  p.payrefreason\n"
+                + "                                        , p.classcode\n"
+                + "                                        , p.riskcode\n"
+                + "                                FROM prpjcommbill p\n"
+                + "                                WHERE p.policertiid = 'SDDH200937010330006366' ) -- this is supposed to be UpdateSet 1\n"
+                + "     , b.payrefnotype = '05' -- this is supposed to be UpdateSet 2\n"
+                + "     , b.packageunit = '4101170402' -- this is supposed to be UpdateSet 3\n"
+                + "WHERE b.payrefno = 'B370202091026000005'";
 
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         Update update = (Update) CCJSqlParserUtil.parse(sqlStr);
-        Assert.assertEquals(3, update.getUpdateSets().size());
+        assertEquals(3, update.getUpdateSets().size());
 
-        Assert.assertEquals(3, update.getUpdateSets().get(0).getColumns().size());
-        Assert.assertEquals(1, update.getUpdateSets().get(0).getExpressions().size());
+        assertEquals(3, update.getUpdateSets().get(0).getColumns().size());
+        assertEquals(1, update.getUpdateSets().get(0).getExpressions().size());
 
-        Assert.assertEquals(1, update.getUpdateSets().get(1).getColumns().size());
-        Assert.assertEquals(1, update.getUpdateSets().get(1).getExpressions().size());
+        assertEquals(1, update.getUpdateSets().get(1).getColumns().size());
+        assertEquals(1, update.getUpdateSets().get(1).getExpressions().size());
 
-        Assert.assertEquals(1, update.getUpdateSets().get(2).getColumns().size());
-        Assert.assertEquals(1, update.getUpdateSets().get(2).getExpressions().size());
+        assertEquals(1, update.getUpdateSets().get(2).getColumns().size());
+        assertEquals(1, update.getUpdateSets().get(2).getExpressions().size());
+    }
+
+    @Test
+    public void testUpdateLowPriority() throws JSQLParserException {
+        String stmt = "UPDATE LOW_PRIORITY table1 A SET A.columna = 'XXX'";
+        Update update = (Update) assertSqlCanBeParsedAndDeparsed(stmt);
+        assertEquals(update.getModifierPriority(), UpdateModifierPriority.LOW_PRIORITY);
+    }
+
+    @Test
+    public void testUpdateIgnoreModifier() throws JSQLParserException {
+        String stmt = "UPDATE IGNORE table1 A SET A.columna = 'XXX'";
+        Update update = (Update) assertSqlCanBeParsedAndDeparsed(stmt);
+        assertTrue(update.isModifierIgnore());
+        String stmt2 = "UPDATE table1 A SET A.columna = 'XXX'";
+        Update update2 = (Update) assertSqlCanBeParsedAndDeparsed(stmt2);
+        assertFalse(update2.isModifierIgnore());
+    }
+
+    @Test
+    public void testUpdateMultipleModifiers() throws JSQLParserException {
+        String stmt = "UPDATE LOW_PRIORITY IGNORE table1 A SET A.columna = 'XXX'";
+        Update update = (Update) assertSqlCanBeParsedAndDeparsed(stmt);
+        assertEquals(update.getModifierPriority(), UpdateModifierPriority.LOW_PRIORITY);
+        assertTrue(update.isModifierIgnore());
     }
 }

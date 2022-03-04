@@ -11,7 +11,7 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -19,6 +19,10 @@ import org.junit.Test;
  */
 public class UseStatementTest {
 
+    @Test
+    public void testUseSchema() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("USE SCHEMA myschema");
+    }
 
     @Test
     public void testSimpleUse() throws JSQLParserException {

@@ -9,14 +9,12 @@
  */
 package net.sf.jsqlparser.statement.grant;
 
+import java.io.StringReader;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import org.junit.Test;
-
-import java.io.StringReader;
-
 import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class GrantTest {
 
@@ -94,7 +92,7 @@ public class GrantTest {
     public void testGrantQueryWithRole() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("GRANT ROLE_1 TO TEST_ROLE_1, TEST_ROLE_2");
     }
-    
+
     @Test
     public void testGrantSchemaParsingIssue1080() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("GRANT SELECT ON schema_name.table_name TO XYZ");
