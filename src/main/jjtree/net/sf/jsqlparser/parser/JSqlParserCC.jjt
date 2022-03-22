@@ -449,7 +449,7 @@ TOKEN : /* Operators */
 
 TOKEN : /* Date/Time with time zones */
 {
-    <DT_ZONE: <K_DATETIMELITERAL> (<WHITESPACE>)* ("(" <S_LONG> ")")? (<WHITESPACE>)* (<K_WITH> | <K_WITHOUT>) (<WHITESPACE>)+ "TIME" (<WHITESPACE>)+ <K_ZONE>>
+    <DT_ZONE: <K_DATETIMELITERAL> (<WHITESPACE>)* ("(" <S_LONG> ")")? (<WHITESPACE>)* (<K_WITH> | <K_WITHOUT>) ((<WHITESPACE>)+ <K_LOCAL>)? (<WHITESPACE>)+ "TIME" (<WHITESPACE>)+ <K_ZONE>>
 }
 
 TOKEN : /* Numeric Constants */
@@ -1641,7 +1641,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_ALGORITHM> | tk=<K_AT>
       | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE> | tk=<K_CHARACTER>
       | tk=<K_CAST> | tk =<K_TRY_CAST> | tk=<K_COMMENT> | tk=<K_COSTS> | tk=<K_DISABLE> | tk=<K_DESC>
-      | tk=<K_DO> | tk=<K_EXTRACT> | tk=<K_FILTER> | tk=<K_FIRST> | tk=<K_FOLLOWING> | tk=<K_JSON>
+      | tk=<K_DO> | tk=<K_DEFAULT> | tk=<K_EXTRACT> | tk=<K_FILTER> | tk=<K_FIRST> | tk=<K_FOLLOWING> | tk=<K_JSON>
       | tk=<K_LAST> | tk=<K_LEADING> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE>
       | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_XML>
       | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY>
@@ -4393,7 +4393,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
 }
 {
     <K_CASE> { caseCounter++; }
-    [ switchExp=Condition() ]
+    [ switchExp=Expression() ]
     ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
     [<K_ELSE> (LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] elseExp=CaseWhenExpression() [")" { ((CaseExpression) elseExp).setUsingBrackets(true); } ] 
               | elseExp=Expression()
@@ -5104,7 +5104,7 @@ ColDataType ColDataType():
 		| tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 		| ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_DATE_LITERAL> | tk=<K_XML> | tk=<K_INTERVAL>
 			| tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> | tk=<K_BINARY> | tk=<K_JSON> )
-                        [ "." tk2=<S_IDENTIFIER> ]
+                        [ "." (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) ]
 		    { if (tk2!=null) colDataType.setDataType(tk.image + "." + tk2.image); else colDataType.setDataType(tk.image); }
 		| tk=<K_UNSIGNED>  [LOOKAHEAD(2) tk2=<S_IDENTIFIER>] 
                     { if (tk2!=null) colDataType.setDataType(tk.image + " " + tk2.image); else colDataType.setDataType(tk.image); } 

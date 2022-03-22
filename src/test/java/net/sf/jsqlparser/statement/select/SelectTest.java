@@ -5032,4 +5032,14 @@ public class SelectTest {
         assertEquals("Cs", isolation);
         assertSqlCanBeParsedAndDeparsed(statement);
     }
+    
+    @Test
+    public void testKeywordDefaultIssue1470() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2, col3) VALUES (?, 'sadfsd', default)");
+    }
+    
+    @Test
+    public void testLoclTimezone1471() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT TO_CHAR(CAST(SYSDATE AS TIMESTAMP WITH LOCAL TIME ZONE), 'HH:MI:SS AM TZD') FROM DUAL");
+    }
 }

@@ -253,4 +253,16 @@ public class CCJSqlParserUtilTest {
         Statement result = CCJSqlParserUtil.parse("Select test.* from (Select * from sch.PERSON_TABLE // root test\n) as test");
         assertEquals("SELECT test.* FROM (SELECT * FROM sch.PERSON_TABLE) AS test", result.toString());
     }
+    
+    @Test
+    public void testCondExpressionIssue1482() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseCondExpression("test_table_enum.f1_enum IN ('TEST2'::test.test_enum)", false);
+        assertEquals("test_table_enum.f1_enum IN ('TEST2'::test.test_enum)", expr.toString());
+    }
+    
+    @Test
+    public void testCondExpressionIssue1482_2() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseCondExpression("test_table_enum.f1_enum IN ('TEST2'::test.\"test_enum\")", false);
+        assertEquals("test_table_enum.f1_enum IN ('TEST2'::test.\"test_enum\")", expr.toString());
+    }
 }
