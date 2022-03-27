@@ -235,6 +235,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
            ,  { "UNPIVOT" , RESTRICTED_JSQLPARSER }
            ,  { "USE" , RESTRICTED_JSQLPARSER }
            ,  { "USING" , RESTRICTED_SQL2016 }
+           ,  { "SQL_CACHE" , RESTRICTED_JSQLPARSER }
            ,  { "SQL_CALC_FOUND_ROWS" , RESTRICTED_JSQLPARSER }
            ,  { "SQL_NO_CACHE" , RESTRICTED_JSQLPARSER }
            ,  { "STRAIGHT_JOIN" , RESTRICTED_JSQLPARSER }
