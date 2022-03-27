@@ -121,7 +121,7 @@ public enum MySqlVersion implements Version {
                     Feature.commit,
                     //
                     Feature.mySqlHintStraightJoin,
-                    Feature.mysqlSqlNoCache,
+                    Feature.mysqlSqlCacheFlag,
                     Feature.mysqlCalcFoundRows));
 
     private Set<Feature> features;

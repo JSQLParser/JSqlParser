@@ -122,8 +122,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             buffer.append(top).append(" ");
         }
 
-        if (plainSelect.getMySqlSqlNoCache()) {
-            buffer.append("SQL_NO_CACHE").append(" ");
+        if (plainSelect.getMySqlSqlCacheFlag() != null) {
+            buffer.append(plainSelect.getMySqlSqlCacheFlag().name()).append(" ");
         }
 
         if (plainSelect.getMySqlSqlCalcFoundRows()) {
@@ -198,6 +198,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
         if (plainSelect.getFetch() != null) {
             deparseFetch(plainSelect.getFetch());
+        }
+        if (plainSelect.getWithIsolation() != null) {
+            buffer.append(plainSelect.getWithIsolation().toString());
         }
         if (plainSelect.isForUpdate()) {
             buffer.append(" FOR UPDATE");
@@ -479,6 +482,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
         if (list.getFetch() != null) {
             deparseFetch(list.getFetch());
+        }
+        if (list.getWithIsolation() != null) {
+            buffer.append(list.getWithIsolation().toString());
         }
     }
 

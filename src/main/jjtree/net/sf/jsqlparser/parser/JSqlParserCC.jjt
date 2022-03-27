@@ -410,6 +410,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXTENDED:"EXTENDED">
 |   <K_EXTRACT:"EXTRACT">
 |   <K_FETCH:"FETCH">
+|   <K_ISOLATION:("UR" | "RS" | "RR" | "CS")>
 |   <K_FILTER: "FILTER">
 |   <K_FIRST: "FIRST">
 |   <K_FALSE: "FALSE">
@@ -602,6 +603,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_USER:"USER">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
 |   <K_SQL_NO_CACHE: "SQL_NO_CACHE">
+|   <K_SQL_CACHE: "SQL_CACHE">
 |   <K_USING:"USING">
 |   <K_SIGNED:"SIGNED">
 |   <K_STRING_FUNCTION_NAME: ("SUBSTR" | "SUBSTRING" | "TRIM" | "POSITION" | "OVERLAY")>
@@ -645,7 +647,7 @@ TOKEN : /* Operators */
 
 TOKEN : /* Date/Time with time zones */
 {
-    <DT_ZONE: <K_DATETIMELITERAL> (<WHITESPACE>)* ("(" <S_LONG> ")")? (<WHITESPACE>)* (<K_WITH> | <K_WITHOUT>) (<WHITESPACE>)+ "TIME" (<WHITESPACE>)+ <K_ZONE>>
+    <DT_ZONE: <K_DATETIMELITERAL> (<WHITESPACE>)* ("(" <S_LONG> ")")? (<WHITESPACE>)* (<K_WITH> | <K_WITHOUT>) ((<WHITESPACE>)+ <K_LOCAL>)? (<WHITESPACE>)+ "TIME" (<WHITESPACE>)+ <K_ZONE>>
 }
 
 TOKEN : /* Numeric Constants */
@@ -1972,6 +1974,7 @@ PlainSelect PlainSelect() #PlainSelect:
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
+    WithIsolation withIsolation = null;
     OptimizeFor optimize = null;
     Top top = null;
         Skip skip = null;
@@ -2013,7 +2016,8 @@ PlainSelect PlainSelect() #PlainSelect:
             )
         |
             (
-                <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlNoCache(true); }
+                <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_NO_CACHE); }
+                | <K_SQL_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_CACHE); }
             )
         )
     ]
@@ -2039,7 +2043,7 @@ PlainSelect PlainSelect() #PlainSelect:
     [LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
 	[LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
     [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
-
+    [LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { plainSelect.setWithIsolation(withIsolation);    } ]
     [LOOKAHEAD(2) <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
         [ <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ]
         [ LOOKAHEAD(<K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ]
@@ -2065,6 +2069,7 @@ SelectBody SetOperationList() #SetOperationList: {
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
+    WithIsolation withIsolation = null;
     SelectBody select = null;
     List<SelectBody> selects = new ArrayList<SelectBody>();
     List<SetOperation> operations = new ArrayList<SetOperation>();
@@ -2089,6 +2094,7 @@ SelectBody SetOperationList() #SetOperationList: {
     [LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {list.setLimit(limit);} ]
     [LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);} ]
     [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);} ]
+    [LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { list.setWithIsolation(withIsolation);} ]
 
     {
         if (selects.size()==1 && selects.get(0) instanceof PlainSelect && orderByElements==null) {
@@ -2096,15 +2102,23 @@ SelectBody SetOperationList() #SetOperationList: {
                 ((PlainSelect)selects.get(0)).setUseBrackets(true);
             return selects.get(0);
         } else {
-            if (selects.size()>1 && selects.get(selects.size()-1) instanceof PlainSelect) {
+            if (selects.size()>1 && selects.get(selects.size()-1) instanceof PlainSelect && !brackets.get(brackets.size() - 1)) {
                 PlainSelect ps = (PlainSelect)selects.get(selects.size()-1);
-                if (ps.getOrderByElements() != null && !brackets.get(brackets.size() - 1)) {
+                if (ps.getOrderByElements() != null) {
                     list.setOrderByElements(ps.getOrderByElements());
                     list.setLimit(ps.getLimit());
                     list.setOffset(ps.getOffset());
                     ps.setOrderByElements(null);
                     ps.setLimit(null);
                     ps.setOffset(null);
+                }
+                if (ps.getFetch() != null) {
+                    list.setFetch(ps.getFetch());
+                    ps.setFetch(null);
+                }
+                if (ps.getWithIsolation() != null) {
+                    list.setWithIsolation(ps.getWithIsolation());
+                    ps.setWithIsolation(null);
                 }
             }
             list.setBracketsOpsAndSelects(brackets,selects,operations);
@@ -2120,6 +2134,7 @@ SelectBody SetOperationListWithoutIntialSelect(FromItem fromItem) #SetOperationL
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
+    WithIsolation withIsolation = null;
     SelectBody select;
     List<SelectBody> selects = new ArrayList<SelectBody>();
     List<SetOperation> operations = new ArrayList<SetOperation>();
@@ -2999,6 +3014,24 @@ Fetch Fetch():
     }
 }
 
+WithIsolation WithIsolation():
+{
+    WithIsolation withIsolation = new WithIsolation();
+    Token token = null;
+    JdbcParameter jdbc;
+}
+{
+    (
+            //with (ur | cs | rs | rr)
+             <K_WITH>
+             token=<K_ISOLATION> { withIsolation.setIsolation(token.image); }
+
+        )
+    {
+        return withIsolation;
+    }
+}
+
 OptimizeFor OptimizeFor():
 {
     Token token;
@@ -3280,6 +3313,7 @@ Expression SQLCondition():
          | LOOKAHEAD(IsNullExpression()) result=IsNullExpression(left)
          | LOOKAHEAD(IsBooleanExpression()) result=IsBooleanExpression(left)
          | LOOKAHEAD(2) result=LikeExpression(left)
+         | LOOKAHEAD(IsDistinctExpression()) result=IsDistinctExpression(left)
          | result=SimilarToExpression(left)
         )) ]
     )
@@ -3389,6 +3423,22 @@ Expression SimilarToExpression(Expression leftExpression) #SimilarToExpression:
     <K_SIMILAR> <K_TO>
     rightExpression=SimpleExpression()
     [ LOOKAHEAD(2) <K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
+    {
+        result.setLeftExpression(leftExpression);
+        result.setRightExpression(rightExpression);
+        linkAST(result,jjtThis);
+        return result;
+    }
+}
+
+Expression IsDistinctExpression(Expression leftExpression) #IsDistinctExpression:
+{
+    IsDistinctExpression result = new IsDistinctExpression();
+    Expression rightExpression = null;
+}
+{
+    <K_IS> [<K_NOT> { result.setNot(true); } ] <K_DISTINCT> <K_FROM>
+    rightExpression=SimpleExpression()
     {
         result.setLeftExpression(leftExpression);
         result.setRightExpression(rightExpression);
@@ -4507,7 +4557,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
 }
 {
     <K_CASE> { caseCounter++; }
-    [ switchExp=Condition() ]
+    [ switchExp=Expression() ]
     ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
     [<K_ELSE> (LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] elseExp=CaseWhenExpression() [")" { ((CaseExpression) elseExp).setUsingBrackets(true); } ] 
               | elseExp=Expression()
@@ -5218,7 +5268,7 @@ ColDataType ColDataType():
 		| tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 		| ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_DATE_LITERAL> | tk=<K_XML> | tk=<K_INTERVAL>
 			| tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> | tk=<K_BINARY> | tk=<K_JSON> )
-                        [ "." tk2=<S_IDENTIFIER> ]
+                        [ "." (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) ]
 		    { if (tk2!=null) colDataType.setDataType(tk.image + "." + tk2.image); else colDataType.setDataType(tk.image); }
 		| tk=<K_UNSIGNED>  [LOOKAHEAD(2) tk2=<S_IDENTIFIER>] 
                     { if (tk2!=null) colDataType.setDataType(tk.image + " " + tk2.image); else colDataType.setDataType(tk.image); } 
