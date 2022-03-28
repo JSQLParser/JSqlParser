@@ -634,7 +634,12 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
         oracleNamedFunctionParameter.getExpression().accept(this);
     }
-    
+
+    @Override
+    public void visit(GeometryDistance geometryDistance) {
+        visitBinaryExpression(geometryDistance);
+    }
+
     public void visit(ColumnDefinition columnDefinition) {
        columnDefinition.accept(this);
      }

@@ -2804,6 +2804,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testGeometryDistance() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo ORDER BY a <-> b");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo ORDER BY a <#> b");
+    }
+
+    @Test
     public void testJsonExpression() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT data->'images'->'thumbnail'->'url' AS thumb FROM instagram");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM sales WHERE sale->'items'->>'description' = 'milk'");

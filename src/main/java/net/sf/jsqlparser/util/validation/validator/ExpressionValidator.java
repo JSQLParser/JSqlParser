@@ -586,4 +586,8 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         isDistinctExpression.getRightExpression().accept(this);
     }
 
+    @Override
+    public void visit(GeometryDistance geometryDistance) {
+        visitOldOracleJoinBinaryExpression(geometryDistance, " <-> ");
+    }
 }

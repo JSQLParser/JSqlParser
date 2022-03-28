@@ -996,4 +996,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 isDistinctExpression.getStringExpression() +
                 isDistinctExpression.getRightExpression());
     }
+
+    @Override
+    public void visit(GeometryDistance geometryDistance) {
+        visitOldOracleJoinBinaryExpression(geometryDistance, " <-> ");
+    }
 }
