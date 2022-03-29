@@ -505,6 +505,11 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
+    public void visit(IsDistinctExpression isDistinctExpression) {
+        visitBinaryExpression(isDistinctExpression);
+    }
+
+    @Override
     public void visit(SelectExpressionItem selectExpressionItem) {
         selectExpressionItem.getExpression().accept(this);
     }

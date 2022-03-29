@@ -909,6 +909,25 @@ public class SelectTest {
                 + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION "
                 + "SELECT * FROM mytable2 LIMIT 3, 4";
         assertStatementCanBeDeparsedAs(select, statementToString);
+
+        //with fetch and with ur
+        String statement2 = "SELECT * FROM mytable WHERE mytable.col = 9 UNION "
+                + "SELECT * FROM mytable3 WHERE mytable3.col = ? UNION " + "SELECT * FROM mytable2 ORDER BY COL DESC FETCH FIRST 1 ROWS ONLY WITH UR";
+
+        Select select2 = (Select) parserManager.parse(new StringReader(statement2));
+        SetOperationList setList2 = (SetOperationList) select2.getSelectBody();
+        assertEquals(3, setList2.getSelects().size());
+        assertEquals("mytable", ((Table) ((PlainSelect) setList2.getSelects().get(0)).getFromItem()).
+                getName());
+        assertEquals("mytable3", ((Table) ((PlainSelect) setList2.getSelects().get(1)).getFromItem()).
+                getName());
+        assertEquals("mytable2", ((Table) ((PlainSelect) setList2.getSelects().get(2)).getFromItem()).
+                getName());
+        assertEquals(1, ((SetOperationList) setList2).getFetch().getRowCount());
+
+        assertEquals("UR", ((SetOperationList) setList2).getWithIsolation().getIsolation());
+
+        assertStatementCanBeDeparsedAs(select2, statement2);
     }
 
     @Test
@@ -951,6 +970,18 @@ public class SelectTest {
                 ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).
                         getExpression()).getColumnName());
         assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    @Test
+    public void testIsDistinctFrom() throws JSQLParserException {
+        String stmt = "SELECT name FROM tbl WHERE name IS DISTINCT FROM foo";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testIsNotDistinctFrom() throws JSQLParserException {
+        String stmt = "SELECT name FROM tbl WHERE name IS NOT DISTINCT FROM foo";
+        assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
     @Test
@@ -2818,6 +2849,12 @@ public class SelectTest {
     @Test
     public void testSqlNoCache() throws JSQLParserException {
         String stmt = "SELECT SQL_NO_CACHE sales.date FROM sales";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+    
+    @Test
+    public void testSqlCache() throws JSQLParserException {
+        String stmt = "SELECT SQL_CACHE sales.date FROM sales";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
@@ -5132,5 +5169,15 @@ public class SelectTest {
         isolation = ((PlainSelect) select.getSelectBody()).getWithIsolation().getIsolation();
         assertEquals("Cs", isolation);
         assertSqlCanBeParsedAndDeparsed(statement);
+    }
+    
+    @Test
+    public void testKeywordDefaultIssue1470() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2, col3) VALUES (?, 'sadfsd', default)");
+    }
+    
+    @Test
+    public void testLoclTimezone1471() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT TO_CHAR(CAST(SYSDATE AS TIMESTAMP WITH LOCAL TIME ZONE), 'HH:MI:SS AM TZD') FROM DUAL");
     }
 }

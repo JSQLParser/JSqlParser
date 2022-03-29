@@ -699,7 +699,7 @@ public enum Feature {
     // MYSQL
 
     mySqlHintStraightJoin,
-    mysqlSqlNoCache,
+    mysqlSqlCacheFlag,
     mysqlCalcFoundRows,
 
     // SQLSERVER
