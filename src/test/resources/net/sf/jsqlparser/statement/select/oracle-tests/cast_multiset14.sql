@@ -13,4 +13,3 @@ from customers_demo
 order by customer_id
 
 --@FAILURE: Encountered unexpected token: "intersect" "INTERSECT" recorded first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: net.sf.jsqlparser.parser.ParseException: Encountered unexpected token: "intersect" "INTERSECT" recorded first on 21 Dec 2021, 15:15:16

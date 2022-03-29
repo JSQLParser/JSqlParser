@@ -14,4 +14,3 @@ insert into (
   (1, 'morgan', 'dba', '1', 40)
 
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: net.sf.jsqlparser.parser.ParseException: Encountered unexpected token: "(" "(" recorded first on 21 Dec 2021, 15:15:16

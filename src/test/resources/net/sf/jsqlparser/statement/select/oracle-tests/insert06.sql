@@ -23,4 +23,3 @@ else
 select * from emp
 
 --@FAILURE: Encountered unexpected token: "when" "WHEN" recorded first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: net.sf.jsqlparser.parser.ParseException: Encountered unexpected token: "when" "WHEN" recorded first on 21 Dec 2021, 15:15:16

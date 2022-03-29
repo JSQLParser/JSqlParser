@@ -19,4 +19,3 @@ dimension by (0 dim)
             regexp_replace (str_new[0], '(^|;)([^;]+;)(.*?;)?\2+', '\1\2\3'));
 
 --@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: net.sf.jsqlparser.parser.ParseException: Encountered unexpected token: "partition" "PARTITION" recorded first on 21 Dec 2021, 15:15:16

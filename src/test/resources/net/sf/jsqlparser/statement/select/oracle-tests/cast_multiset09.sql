@@ -11,4 +11,3 @@ update customers_demo
 set cust_address_ntab = cust_address_ntab multiset union cust_address_ntab
 
 --@FAILURE: Encountered unexpected token: "multiset" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: net.sf.jsqlparser.parser.ParseException: Encountered unexpected token: "multiset" <S_IDENTIFIER> recorded first on 21 Dec 2021, 15:15:16
