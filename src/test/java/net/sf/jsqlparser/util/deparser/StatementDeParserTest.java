@@ -367,11 +367,18 @@ public class StatementDeParserTest {
     }
 
     @Test
-    public void testIssue1500() throws JSQLParserException {
+    public void testIssue1500AllColumns() throws JSQLParserException {
         String sqlStr = "select count(*) from some_table";
         Select select = (Select) CCJSqlParserUtil.parse(sqlStr);
         PlainSelect selectBody = (PlainSelect) select.getSelectBody();
-        SelectItem selectItem = selectBody.getSelectItems().get(0);
+        selectBody.accept(new SelectDeParser());
+    }
+
+    @Test
+    public void testIssue1500AllTableColumns() throws JSQLParserException {
+        String sqlStr = "select count(a.*) from some_table a";
+        Select select = (Select) CCJSqlParserUtil.parse(sqlStr);
+        PlainSelect selectBody = (PlainSelect) select.getSelectBody();
         selectBody.accept(new SelectDeParser());
     }
 }
