@@ -115,7 +115,7 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'LINE'
                 value = 'MISSEDCOUNT'
-                maximum = 5500
+                maximum = 5513
                 }
             excludes = [
                     'net.sf.jsqlparser.util.validation.*',
