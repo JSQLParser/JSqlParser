@@ -1000,6 +1000,6 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(GeometryDistance geometryDistance) {
-        visitOldOracleJoinBinaryExpression(geometryDistance, " <-> ");
+        visitOldOracleJoinBinaryExpression(geometryDistance, " " + geometryDistance.getStringExpression() + " ");
     }
 }
