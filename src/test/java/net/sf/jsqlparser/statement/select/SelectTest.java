@@ -664,6 +664,22 @@ public class SelectTest {
     }
 
     @Test
+    public void testTopWithTies() throws JSQLParserException {
+        final String statement = "SELECT TOP (5) PERCENT WITH TIES columnName1, columnName2 FROM tableName";
+        final Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        final PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+
+        final Top top = selectBody.getTop();
+        assertEquals("5", top.getExpression().toString());
+        assertTrue(top.hasParenthesis());
+        assertTrue(top.isPercentage());
+        assertTrue(top.isWithTies());
+
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    @Test
     public void testTopWithJdbcParameter() throws JSQLParserException {
         String statement = "SELECT TOP ?1 * FROM mytable WHERE mytable.col = 9";
 
