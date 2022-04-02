@@ -23,11 +23,7 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.replace.Replace;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SubSelect;
-import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -370,4 +366,12 @@ public class StatementDeParserTest {
         statementDeParser.deParse(ifElseStatement);
     }
 
+    @Test
+    public void testIssue1500() throws JSQLParserException {
+        String sqlStr = "select count(*) from some_table";
+        Select select = (Select) CCJSqlParserUtil.parse(sqlStr);
+        PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+        SelectItem selectItem = selectBody.getSelectItems().get(0);
+        selectBody.accept(new SelectDeParser());
+    }
 }
