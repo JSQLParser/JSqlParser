@@ -1004,9 +1004,12 @@ public class SelectTest {
     public void testDistinctWithFollowingBrackets() throws JSQLParserException {
         Select select = (Select) assertSqlCanBeParsedAndDeparsed("SELECT DISTINCT (phone), name FROM admin_user");
         PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+        Distinct distinct = selectBody.getDistinct();
+
         assertThat(selectBody.getDistinct())
                 .isNotNull()
-                .hasFieldOrPropertyWithValue("getOnSelectItems", null);
+                .hasFieldOrPropertyWithValue("onSelectItems", null);
+
         assertThat(selectBody.getSelectItems().get(0).toString())
                 .isEqualTo("(phone)");
     }
