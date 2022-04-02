@@ -496,7 +496,6 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(AllTableColumns allTableColumns) {
-        allTableColumns.accept((ExpressionVisitor) this);
     }
 
     @Override
