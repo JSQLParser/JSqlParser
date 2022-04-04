@@ -51,6 +51,12 @@ public class TestUtils {
     private static final Pattern SQL_COMMENT_PATTERN = Pattern.
             compile("(--.*$)|(/\\*.*?\\*/)", Pattern.MULTILINE);
 
+    private static final Pattern SQL_SANITATION_PATTERN
+            = Pattern.compile("(\\s+)", Pattern.MULTILINE);
+
+    private static final Pattern SQL_SANITATION_PATTERN2
+            = Pattern.compile("\\s*([!/,()=+\\-*|\\]<>])\\s*", Pattern.MULTILINE);
+
     /**
      * @param statement
      * @return the parsed {@link Statement}
@@ -94,10 +100,17 @@ public class TestUtils {
     }
 
     public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement, boolean laxDeparsingCheck) {
-        assertEquals(buildSqlString(statement, laxDeparsingCheck),
-                buildSqlString(parsed.toString(), laxDeparsingCheck));
+        String sanitizedInputSqlStr = buildSqlString(parsed.toString(), laxDeparsingCheck);
+        String sanitizedStatementStr = buildSqlString(statement, laxDeparsingCheck);
 
-        assertDeparse(parsed, statement, laxDeparsingCheck);
+        assertEquals(sanitizedStatementStr, sanitizedInputSqlStr);
+
+        StringBuilder builder = new StringBuilder();
+        parsed.accept( new StatementDeParser(builder) );
+
+        String sanitizedDeparsedStr = buildSqlString(builder.toString(), laxDeparsingCheck);
+
+        assertEquals(sanitizedStatementStr, sanitizedDeparsedStr);
     }
 
     /**
@@ -245,12 +258,19 @@ public class TestUtils {
     }
 
     public static String buildSqlString(final String originalSql, boolean laxDeparsingCheck) {
-        String sql = SQL_COMMENT_PATTERN.matcher(originalSql).replaceAll("");
         if (laxDeparsingCheck) {
-            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").
-                    replaceAll("\\s*([!/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
+            // remove comments
+            String sanitizedSqlStr = SQL_COMMENT_PATTERN.matcher(originalSql).replaceAll("");
+
+            // redundant white space
+            sanitizedSqlStr = SQL_SANITATION_PATTERN.matcher(sanitizedSqlStr).replaceAll(" ");
+
+            // replace some more stuff
+            sanitizedSqlStr = SQL_SANITATION_PATTERN2.matcher(sanitizedSqlStr).replaceAll("$1");
+            return sanitizedSqlStr.trim().toLowerCase();
         } else {
-            return sql;
+            // remove comments only
+            return SQL_COMMENT_PATTERN.matcher(originalSql).replaceAll("");
         }
     }
 

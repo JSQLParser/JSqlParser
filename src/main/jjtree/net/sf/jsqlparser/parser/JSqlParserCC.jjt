@@ -422,6 +422,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WHERE:"WHERE">
 |   <K_WINDOW:"WINDOW">
 |   <K_WITH:"WITH">
+|   <K_WITH_TIES:"WITH TIES">
 |   <K_WITHIN:"WITHIN">
 |   <K_WITHOUT:"WITHOUT">
 |   <K_WORK:"WORK">
@@ -2904,6 +2905,7 @@ Top Top():
             { top.setParenthesis(true);}
        ")"
     ) [ LOOKAHEAD(2) <K_PERCENT>            { top.setPercentage(true); } ]
+      [ LOOKAHEAD(2) <K_WITH_TIES>            { top.setWithTies(true); }]
     {
         return top;
     }
@@ -3111,6 +3113,8 @@ Expression RegularCondition() #RegularCondition:
         | <OP_CONCAT> { result = new JsonOperator("||"); }
         | "-" { result = new JsonOperator("-"); }
         | "-#" { result = new JsonOperator("-#"); }
+        | "<->" { result = new GeometryDistance("<->"); }
+        | "<#>" { result = new GeometryDistance("<#>"); }
     )
 
     ( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; }

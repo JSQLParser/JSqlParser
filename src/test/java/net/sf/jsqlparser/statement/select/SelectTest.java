@@ -675,6 +675,22 @@ public class SelectTest {
     }
 
     @Test
+    public void testTopWithTies() throws JSQLParserException {
+        final String statement = "SELECT TOP (5) PERCENT WITH TIES columnName1, columnName2 FROM tableName";
+        final Select select = (Select) parserManager.parse(new StringReader(statement));
+
+        final PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+
+        final Top top = selectBody.getTop();
+        assertEquals("5", top.getExpression().toString());
+        assertTrue(top.hasParenthesis());
+        assertTrue(top.isPercentage());
+        assertTrue(top.isWithTies());
+
+        assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    @Test
     public void testTopWithJdbcParameter() throws JSQLParserException {
         String statement = "SELECT TOP ?1 * FROM mytable WHERE mytable.col = 9";
 
@@ -1015,6 +1031,8 @@ public class SelectTest {
     public void testDistinctWithFollowingBrackets() throws JSQLParserException {
         Select select = (Select) assertSqlCanBeParsedAndDeparsed("SELECT DISTINCT (phone), name FROM admin_user");
         PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+        Distinct distinct = selectBody.getDistinct();
+
         assertThat(selectBody.getDistinct())
                 .isNotNull()
                 .hasFieldOrPropertyWithValue("onSelectItems", null);
@@ -2812,6 +2830,12 @@ public class SelectTest {
     public void testNotEqualsTo() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo WHERE a != b");
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo WHERE a <> b");
+    }
+
+    @Test
+    public void testGeometryDistance() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo ORDER BY a <-> b");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo ORDER BY a <#> b");
     }
 
     @Test
