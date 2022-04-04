@@ -114,7 +114,7 @@
                 <configuration>
                     <rulesets>
                         <!-- Custom local file system rule set -->
-                        <ruleset>${basedir}/ruleset.xml</ruleset>
+                        <ruleset>${project.basedir}/ruleset.xml</ruleset>
                     </rulesets>
                     <excludes>
                         <exclude>**/*Bean.java</exclude>
