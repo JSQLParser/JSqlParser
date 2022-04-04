@@ -1031,4 +1031,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(AlterSystemStatement alterSystemStatement) {
         // no tables involved in this statement
     }
+
+    @Override
+    public void visit(GeometryDistance geometryDistance) {
+        visitBinaryExpression(geometryDistance);
+    }
 }

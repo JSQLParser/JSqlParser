@@ -29,24 +29,21 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'commons-io:commons-io:2.6'
-    testImplementation 'junit:junit:4.13.1'
-    testImplementation 'org.mockito:mockito-core:2.28.2'
-    testImplementation 'org.assertj:assertj-core:3.16.1'
-    testImplementation 'org.apache.commons:commons-lang3:3.10'
-    testImplementation 'com.h2database:h2:1.4.200'
-
-
-
+    testImplementation 'commons-io:commons-io:2.11.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:4.3.1'
+    testImplementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'org.apache.commons:commons-lang3:3.12.0'
+    testImplementation 'com.h2database:h2:2.1.210'
+    
     // for JaCoCo Reports
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:4.1.0'
-
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.3.1'
+    
     // enforce latest version of JavaCC
     javacc 'net.java.dev.javacc:javacc:7.0.10'
 
@@ -119,7 +116,7 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'LINE'
                 value = 'MISSEDCOUNT'
-                maximum = 5500
+                maximum = 5513
                 }
             excludes = [
                     'net.sf.jsqlparser.util.validation.*',
