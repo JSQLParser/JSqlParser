@@ -162,10 +162,13 @@ public class JsonFunctionTest {
     public void testObjectIssue1504() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT JSON_OBJECT(key 'person' value tp.account) obj", true);
+
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT JSON_OBJECT(key 'person' value tp.account, key 'person' value tp.account) obj", true);
+
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT JSON_OBJECT( 'person' : tp.account) obj", true);
+
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT JSON_OBJECT( 'person' : tp.account, 'person' : tp.account) obj", true);
 
@@ -174,7 +177,12 @@ public class JsonFunctionTest {
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT JSON_OBJECT( 'person' VALUE tp.person, 'account' VALUE tp.account) obj", true);
+    }
 
+    @Test
+    public void testObjectMySQL() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT JSON_OBJECT('person', tp.person, 'account', tp.account) obj", true);
     }
 
     @Test
@@ -225,9 +233,9 @@ public class JsonFunctionTest {
 
     @Test
     public void testIssue1371() throws JSQLParserException {
-//        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{a, 1, b, 2}')", true);
-//        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{{a, 1}, {b, 2}}')", true);
-//        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{a, b}', '{1,2 }')", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{a, 1, b, 2}')", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{{a, 1}, {b, 2}}')", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{a, b}', '{1,2 }')", true);
     }
 
     @Test

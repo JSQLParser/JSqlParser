@@ -226,7 +226,7 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
     public void testJsonAggregartFunctionExpression() throws JSQLParserException {
         validateNoErrors("SELECT JSON_ARRAYAGG( a FORMAT JSON ABSENT ON NULL ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name ) FROM mytbl", 1,
                 EXPRESSIONS);
-        validateNoErrors("SELECT JSON_OBJECT( KEY foo VALUE bar FORMAT JSON, foo:bar, foo:bar ABSENT ON NULL) FROM mytbl", 1,
+        validateNoErrors("SELECT JSON_OBJECT( KEY 'foo' VALUE bar FORMAT JSON, 'foo':bar, 'foo':bar ABSENT ON NULL) FROM mytbl", 1,
                 EXPRESSIONS);
     }
 
