@@ -9,15 +9,10 @@
  */
 package net.sf.jsqlparser.expression;
 
-import java.util.Objects;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -69,17 +64,17 @@ public class JsonFunctionTest {
         JsonKeyValuePair keyValuePair2 = new JsonKeyValuePair("foo", "bar", false, false).withUsingKeyKeyword(true).withUsingValueKeyword(true).withUsingFormatJson(false);
 
         // this should work because we compare based on KEY only
-        assertEquals(keyValuePair1, keyValuePair2);
+        Assertions.assertEquals(keyValuePair1, keyValuePair2);
 
         // this must fail because all the properties are considered
-        assertFalse(Objects.equals(keyValuePair1.toString(), keyValuePair2.toString()));
+        Assertions.assertNotEquals(keyValuePair1.toString(), keyValuePair2.toString());
 
         JsonKeyValuePair keyValuePair3 = new JsonKeyValuePair("foo", "bar", false, false).withUsingKeyKeyword(false).withUsingValueKeyword(false).withUsingFormatJson(false);
-        assertNotNull(keyValuePair3);
-        assertEquals(keyValuePair3, keyValuePair3);
-        assertFalse(Objects.equals(keyValuePair3, f));
+        Assertions.assertNotNull(keyValuePair3);
+        Assertions.assertEquals(keyValuePair3, keyValuePair3);
+        Assertions.assertNotEquals(keyValuePair3, f);
 
-        assertTrue(keyValuePair3.hashCode() != 0);
+        Assertions.assertTrue(keyValuePair3.hashCode() != 0);
 
         f.add(keyValuePair2);
     }
@@ -95,7 +90,7 @@ public class JsonFunctionTest {
         JsonFunctionExpression expression2 = new JsonFunctionExpression(new NullValue()).withUsingFormatJson(
                 true);
 
-        assertTrue(Objects.equals(expression1.toString(), expression2.toString()));
+        Assertions.assertEquals(expression1.toString(), expression2.toString());
 
         f.add(expression1);
         f.add(expression2);
