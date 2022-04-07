@@ -3977,6 +3977,7 @@ JsonFunction JsonFunction() : {
     boolean usingValueKeyword = false;
     Token keyToken;
     Token valueToken = null;
+    Column column = null;
     JsonKeyValuePair keyValuePair;
 
     Expression expression;
@@ -3988,64 +3989,73 @@ JsonFunction JsonFunction() : {
         ( 
           ( <K_JSON_OBJECT> 
             "(" { result.setType( JsonFunctionType.OBJECT ); }
+//                LOOKAHEAD(2)
+//                (
+//                    // Postgres Specific Syntax:
+//                    // SELECT json_object('{a, 1, b, 2}');
+//                    // SELECT json_object('{{a, 1}, {b, 2}}');
+//                    // SELECT json_object('{a, b}', '{1,2 }');
+//                    { result.setType( JsonFunctionType.POSTGRES_OBJECT ); }
+//                    keyToken = <S_CHAR_LITERAL>
+//                    [ "," valueToken = <S_CHAR_LITERAL> ]
+//                    { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken !=null ? valueToken.image : null, false, false ); result.add(keyValuePair); }
+//                )
+//                |
 
-            (
-                // --- First Element
-                LOOKAHEAD(2)
                 (
-                    // Postgres Specific Syntax:
-                    // SELECT json_object('{a, 1, b, 2}');
-                    // SELECT json_object('{{a, 1}, {b, 2}}');
-                    // SELECT json_object('{a, b}', '{1,2 }');
-                    { result.setType( JsonFunctionType.POSTGRES_OBJECT ); }
-                    keyToken = <S_CHAR_LITERAL>
-                    [ "," valueToken = <S_CHAR_LITERAL> ]
-                    { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken !=null ? valueToken.image : null, false, false ); result.add(keyValuePair); }
-                )
-                |
-                (
-
+                    // --- First Element
                     // SQL2016 compliant Syntax
                     [   "KEY" { usingKeyKeyword = true; } ]
+                    keyToken = <S_CHAR_LITERAL>
 
-                    ( keyToken = <DT_ZONE> | keyToken = <S_DOUBLE> | keyToken = <S_LONG> | keyToken = <S_HEX> | keyToken = <S_CHAR_LITERAL> | keyToken = <S_IDENTIFIER> | keyToken = <S_QUOTED_IDENTIFIER> )
-                    ( ":" | "VALUE" { usingValueKeyword = true; } )
-                    ( valueToken = <S_IDENTIFIER> | valueToken = <S_QUOTED_IDENTIFIER> ) { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
-                )
+                    (
+                        ( ":" | "VALUE" { usingValueKeyword = true; } )
+                        (
+                            column = Column() { keyValuePair = new JsonKeyValuePair( keyToken.image, column, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
+                            |
+                            ( valueToken = <DT_ZONE> | valueToken = <S_DOUBLE> | valueToken = <S_LONG> | valueToken = <S_HEX> | valueToken = <S_CHAR_LITERAL> ) { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
+                        )
+                        [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
 
-                [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
+                        // --- Next Elements
+                        (   ","  { usingKeyKeyword = false; usingValueKeyword = false;  }
+                            [   "KEY" { usingKeyKeyword = true; } ]
+                            keyToken = <S_CHAR_LITERAL>
+                            ( ":" | "VALUE" { usingValueKeyword = true; } )
+                            (
+                                column = Column() { keyValuePair = new JsonKeyValuePair( keyToken.image, column, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
+                                |
+                                ( valueToken = <DT_ZONE> | valueToken = <S_DOUBLE> | valueToken = <S_LONG> | valueToken = <S_HEX> | valueToken = <S_CHAR_LITERAL> ) { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
+                            )
+                            [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
+                        )*
+                    )
+//                    |
+//                    (
+//                        [ "," valueToken = <S_CHAR_LITERAL> ]
+//                        { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken !=null ? valueToken.image : null, false, false ); result.add(keyValuePair); }
+//                    )
+                )?
 
-                // --- Next Elements
-                (   ","  { usingKeyKeyword = false; usingValueKeyword = false;  }
-                    [ "KEY" { usingKeyKeyword = true; } ]
-                    keyToken = <S_IDENTIFIER>
-                    ( ":" | "VALUE" { usingValueKeyword = true; } )
-                    // token = <DT_ZONE> | <S_DOUBLE> | <S_LONG> | <S_HEX> | <S_CHAR_LITERAL> { result.setValue( token.image ); }
-                    valueToken = <S_IDENTIFIER> { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
+                [
+                  (
+                      <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
+                  )
+                  |
+                  (
+                      <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
+                  )
+                ]
 
-                    [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
-                )*
-            )*
-
-            [
-              (
-                  <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
-              )
-              |
-              (
-                  <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
-              )
-            ]
-
-            [
-              (
-                  <K_WITH> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITH ); }
-              )
-              |
-              (
-                  <K_WITHOUT> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITHOUT ); }
-              )
-            ]
+                [
+                  (
+                      <K_WITH> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITH ); }
+                  )
+                  |
+                  (
+                      <K_WITHOUT> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITHOUT ); }
+                  )
+                ]
             ")"
           )
           |
