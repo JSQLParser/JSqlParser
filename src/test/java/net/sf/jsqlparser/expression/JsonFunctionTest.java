@@ -154,6 +154,15 @@ public class JsonFunctionTest {
     }
 
     @Test
+    public void testObjectWithExpression() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT JSON_OBJECT( KEY 'foo' VALUE cast( bar AS VARCHAR(40)), KEY 'foo' VALUE bar) FROM dual ", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT JSON_ARRAYAGG(obj) FROM (SELECT trt.relevance_id,JSON_OBJECT('id',CAST(trt.id AS CHAR),'taskName',trt.task_name,'openStatus',trt.open_status,'taskSort',trt.task_sort) as obj FROM tb_review_task trt ORDER BY trt.task_sort ASC)", true);
+    }
+
+    @Test
     public void testObjectIssue1504() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT JSON_OBJECT(key 'person' value tp.account) obj", true);

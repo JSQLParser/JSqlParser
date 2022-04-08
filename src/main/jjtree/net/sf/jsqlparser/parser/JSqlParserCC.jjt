@@ -3983,7 +3983,7 @@ JsonFunction JsonFunction() : {
     Column column = null;
     JsonKeyValuePair keyValuePair;
 
-    Expression expression;
+    Expression expression = null;
     JsonFunctionExpression functionExpression;
   
 }
@@ -4002,21 +4002,15 @@ JsonFunction JsonFunction() : {
                              ( LOOKAHEAD(2)
                                 ( ":" |  "," { result.setType( JsonFunctionType.POSTGRES_OBJECT ); } | "VALUE" { usingValueKeyword = true; } )
                                 (
-                                    column = Column()
-                                    |
-                                    ( valueToken = <DT_ZONE> | valueToken = <S_DOUBLE> | valueToken = <S_LONG> | valueToken = <S_HEX> | valueToken = <S_CHAR_LITERAL> )
+                                    expression = Expression()
                                 )
                                 [ <K_FORMAT> <K_JSON> { usingFormatJason = true; } ]
                             )? {
-                                   if (valueToken !=null) {
-                                       keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword );
-                                       keyValuePair.setUsingFormatJson( usingFormatJason );
-                                       result.add(keyValuePair);
-                                   } else if (column !=null) {
-                                       keyValuePair = new JsonKeyValuePair( keyToken.image, column, usingKeyKeyword, usingValueKeyword );
-                                       keyValuePair.setUsingFormatJson( usingFormatJason );
-                                       result.add(keyValuePair);
-                                  } else {
+                                   if (expression !=null) {
+                                                                           keyValuePair = new JsonKeyValuePair( keyToken.image, expression, usingKeyKeyword, usingValueKeyword );
+                                                                           keyValuePair.setUsingFormatJson( usingFormatJason );
+                                                                           result.add(keyValuePair);
+                                                                      } else {
                                        result.setType( JsonFunctionType.POSTGRES_OBJECT );
                                        keyValuePair = new JsonKeyValuePair( keyToken.image, null, false, false );
                                        result.add(keyValuePair);
@@ -4029,9 +4023,7 @@ JsonFunction JsonFunction() : {
                                 keyToken = <S_CHAR_LITERAL>
                                 ( ":" | ","  { result.setType( JsonFunctionType.MYSQL_OBJECT ); } | "VALUE" { usingValueKeyword = true; } )
                                 (
-                                    column = Column() { keyValuePair = new JsonKeyValuePair( keyToken.image, column, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
-                                    |
-                                    ( valueToken = <DT_ZONE> | valueToken = <S_DOUBLE> | valueToken = <S_LONG> | valueToken = <S_HEX> | valueToken = <S_CHAR_LITERAL> ) { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
+                                    expression = Expression() { keyValuePair = new JsonKeyValuePair( keyToken.image, expression, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
                                 )
                                 [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
                             )*
