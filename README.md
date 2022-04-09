@@ -60,6 +60,7 @@ Also I would like to know about needed examples or documentation stuff.
 * support for operators **<->** and **<#>**
 * improvement of test methods
 * validation bugfixes
+* Json function Improvements and Bugfix #1506
 
 Additionally, we have fixed many errors and improved the code quality and the test coverage.
 
