@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.parser;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -45,7 +46,7 @@ public class ParserKeywordsUtils {
 
     public static void main(String[] args) throws Exception {
         if (args.length<1) {
-            throw new Exception("No filename provided as parameters ARGS[0]");
+            throw new IllegalArgumentException("No filename provided as parameters ARGS[0]");
         }
 
         File file = new File(args[0]);
@@ -53,7 +54,7 @@ public class ParserKeywordsUtils {
             buildGrammarForRelObjectName(file);
             buildGrammarForRelObjectNameWithoutValue(file);
         } else {
-            throw new Exception("Can't read file " + args[0]);
+            throw new FileNotFoundException("Can't read file " + args[0]);
         }
     }
 
@@ -85,7 +86,7 @@ public class ParserKeywordsUtils {
     }
 
     public static void buildGrammarForRelObjectName(File file) throws Exception {
-        Pattern pattern = Pattern.compile("String\\W*RelObjectName\\W*\\(\\W*\\)\\W*:\\s*\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}\\s*\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}", Pattern.MULTILINE);
+        // Pattern pattern = Pattern.compile("String\\W*RelObjectName\\W*\\(\\W*\\)\\W*:\\s*\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}\\s*\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}", Pattern.MULTILINE);
         TreeSet<String> allKeywords = new TreeSet<>();
         for (String reserved: CCJSqlParser.getReservedKeywords(RESTRICTED_ALIAS)) {
             allKeywords.add(reserved);
