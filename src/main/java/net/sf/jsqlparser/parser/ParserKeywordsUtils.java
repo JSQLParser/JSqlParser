@@ -9,7 +9,14 @@
  */
 package net.sf.jsqlparser.parser;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class ParserKeywordsUtils {
     public final static int RESTRICTED_FUNCTION = 1;
@@ -37,16 +44,23 @@ public class ParserKeywordsUtils {
         return CCJSqlParser.getReservedKeywords(restriction);
     }
 
-    public final static void main(String[] args) {
-        try {
-            System.out.println( buildGrammarForRelObjectNameWithoutValue() );
-            System.out.println( buildGrammarForRelObjectName() );
-        } catch (Exception e) {
-            e.printStackTrace();
+    public static void main(String[] args) throws Exception {
+        if (args.length<1) {
+            throw new IllegalArgumentException("No filename provided as parameters ARGS[0]");
+        }
+
+        File file = new File(args[0]);
+        if (file.exists() && file.canRead()) {
+            buildGrammarForRelObjectName(file);
+            buildGrammarForRelObjectNameWithoutValue(file);
+        } else {
+            throw new FileNotFoundException("Can't read file " + args[0]);
         }
     }
 
-    public static String buildGrammarForRelObjectNameWithoutValue() throws Exception {
+    public static void buildGrammarForRelObjectNameWithoutValue(File file) throws Exception {
+        Pattern pattern = Pattern.compile("String\\W*RelObjectNameWithoutValue\\W*\\(\\W*\\)\\W*:\\s*\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}\\s*\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}", Pattern.MULTILINE);
+
         TreeSet<String> allKeywords = new TreeSet<>();
         allKeywords.addAll(CCJSqlParser.getDefinedKeywords());
         for (String reserved: CCJSqlParser.getReservedKeywords(RESTRICTED_JSQLPARSER)) {
@@ -68,10 +82,11 @@ public class ParserKeywordsUtils {
                        + "    { return tk.image; }\n"
                        + "}");
 
-        return builder.toString();
+        replaceInFile(file, pattern, builder.toString());
     }
 
-    public static String buildGrammarForRelObjectName() throws Exception {
+    public static void buildGrammarForRelObjectName(File file) throws Exception {
+        // Pattern pattern = Pattern.compile("String\\W*RelObjectName\\W*\\(\\W*\\)\\W*:\\s*\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}\\s*\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}", Pattern.MULTILINE);
         TreeSet<String> allKeywords = new TreeSet<>();
         for (String reserved: CCJSqlParser.getReservedKeywords(RESTRICTED_ALIAS)) {
             allKeywords.add(reserved);
@@ -96,6 +111,16 @@ public class ParserKeywordsUtils {
                        + "    { return tk!=null ? tk.image : result; }\n"
                        + "}");
 
-        return builder.toString();
+        // @todo: Needs fine-tuning, we are not replacing this part yet
+        // replaceInFile(file, pattern, builder.toString());
+    }
+
+    private static void replaceInFile(File file, Pattern pattern, String replacement) throws IOException {
+        Path path = file.toPath();
+        Charset charset = Charset.defaultCharset();
+
+        String content = new String(Files.readAllBytes(path), charset);
+        content = pattern.matcher(content).replaceAll(replacement);
+        Files.write(file.toPath(), content.getBytes(charset));
     }
 }
