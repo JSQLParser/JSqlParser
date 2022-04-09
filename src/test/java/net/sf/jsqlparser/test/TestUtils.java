@@ -54,8 +54,9 @@ public class TestUtils {
     private static final Pattern SQL_SANITATION_PATTERN
             = Pattern.compile("(\\s+)", Pattern.MULTILINE);
 
+    // Assure SPACE around Syntax Characters
     private static final Pattern SQL_SANITATION_PATTERN2
-            = Pattern.compile("\\s*([!/,()=+\\-*|\\]<>])\\s*", Pattern.MULTILINE);
+            = Pattern.compile("\\s*([!/,()=+\\-*|\\]<>:])\\s*", Pattern.MULTILINE);
 
     /**
      * @param statement
@@ -265,7 +266,7 @@ public class TestUtils {
             // redundant white space
             sanitizedSqlStr = SQL_SANITATION_PATTERN.matcher(sanitizedSqlStr).replaceAll(" ");
 
-            // replace some more stuff
+            // assure spacing around Syntax Characters
             sanitizedSqlStr = SQL_SANITATION_PATTERN2.matcher(sanitizedSqlStr).replaceAll("$1");
             return sanitizedSqlStr.trim().toLowerCase();
         } else {
