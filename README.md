@@ -59,6 +59,7 @@ Also I would like to know about needed examples or documentation stuff.
 * support for **top with ties**
 * support for operators **<->** and **<#>**
 * improvement of test methods
+* validation bugfixes
 
 Additionally, we have fixed many errors and improved the code quality and the test coverage.
 
