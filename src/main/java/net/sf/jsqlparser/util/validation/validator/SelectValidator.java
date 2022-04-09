@@ -92,11 +92,13 @@ public class SelectValidator extends AbstractValidator<SelectItem>
             validateOptionalFeature(c, plainSelect.getOptimizeFor(), Feature.optimizeFor);
         } // end for
 
-        validateOptionalList(plainSelect.getSelectItems(), () -> this, (e, v) -> e.accept(v));
-
         validateOptionalFromItem(plainSelect.getFromItem());
         validateOptionalFromItems(plainSelect.getIntoTables());
         validateOptionalJoins(plainSelect.getJoins());
+        
+        // to correctly recognize aliased tables
+        validateOptionalList(plainSelect.getSelectItems(), () -> this, (e, v) -> e.accept(v));
+        
         validateOptionalExpression(plainSelect.getWhere());
         validateOptionalExpression(plainSelect.getOracleHierarchical());
 

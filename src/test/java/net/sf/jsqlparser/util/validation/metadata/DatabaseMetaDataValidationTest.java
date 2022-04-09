@@ -131,4 +131,10 @@ public class DatabaseMetaDataValidationTest extends ValidationTestAsserts {
         validateMetadata(sql, 1, 1, meta, true, String.format("public.anotherView", databaseName));
     }
 
+    @Test
+    public void testValidationMetadataSelectWithColumnsAndAlias2() throws JSQLParserException, SQLException {
+        String sql = "select my.id from mytable as my";
+        JdbcDatabaseMetaDataCapability meta = new JdbcDatabaseMetaDataCapability(connection, NamesLookup.UPPERCASE);
+        validateNoErrors(sql, 1, DatabaseType.H2, meta); // no errors
+    }
 }
