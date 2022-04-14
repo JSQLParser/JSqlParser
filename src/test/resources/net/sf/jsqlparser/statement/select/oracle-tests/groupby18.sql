@@ -18,4 +18,3 @@ group by grouping sets(fact_1_id, fact_2_id), grouping sets(fact_3_id, fact_4_id
 order by fact_1_id, fact_2_id, fact_3_id, fact_4_id
 
 --@FAILURE: Encountered unexpected token: "," "," recorded first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: net.sf.jsqlparser.parser.ParseException: Encountered unexpected token: "," "," recorded first on 21 Dec 2021, 15:15:16
