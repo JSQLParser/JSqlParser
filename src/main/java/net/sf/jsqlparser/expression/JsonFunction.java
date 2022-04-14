@@ -57,6 +57,10 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
     expressions.add(i, expression);
   }
 
+  public boolean isEmpty() {
+    return keyValuePairs.isEmpty();
+  }
+
   public JsonAggregateOnNullType getOnNullType() {
     return onNullType;
   }
@@ -121,6 +125,9 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
         break;
       case POSTGRES_OBJECT:
         appendPostgresObject(builder);
+        break;
+      case MYSQL_OBJECT:
+        appendMySqlObject(builder);
         break;
       case ARRAY:
         appendArray(builder);
@@ -194,6 +201,22 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
       if (keyValuePair.getValue()!=null) {
         builder.append(", ").append(keyValuePair.getValue());
       }
+    }
+    builder.append(" ) ");
+
+    return builder;
+  }
+
+  public StringBuilder appendMySqlObject(StringBuilder builder) {
+    builder.append("JSON_OBJECT( ");
+    int i=0;
+    for (JsonKeyValuePair keyValuePair : keyValuePairs) {
+      if (i>0) {
+        builder.append(", ");
+      }
+      builder.append(keyValuePair.getKey());
+      builder.append(", ").append(keyValuePair.getValue());
+      i++;
     }
     builder.append(" ) ");
 

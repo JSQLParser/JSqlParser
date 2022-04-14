@@ -186,4 +186,8 @@ public interface ExpressionVisitor {
     void visit(AllTableColumns allTableColumns);
 
     void visit(AllValue allValue);
+
+    void visit(IsDistinctExpression isDistinctExpression);
+
+    void visit(GeometryDistance geometryDistance);
 }

@@ -22,9 +22,7 @@ Please provide feedback on:
 * API changes: extend visitor with return values (https://github.com/JSQLParser/JSqlParser/issues/901)
 
 ## News
-* Released version **4.2** of JSqlParser
-* Released version **4.1** of JSqlParser
-* Released version **4.0** of JSqlParser
+* Released version **4.4** of JSqlParser
 * The array parsing is the default behaviour. Square bracket quotation has to be enabled using 
   a parser flag (**CCJSqlParser.withSquareBracketQuotation**).
 * due to an API change the version will be 3.0
@@ -54,7 +52,7 @@ To help JSqlParser's development you are encouraged to provide
 
 Also I would like to know about needed examples or documentation stuff.
 
-## Extensions in the latest SNAPSHOT version 4.4
+## Extensions in the latest SNAPSHOT version 4.5
 
 Additionally, we have fixed many errors and improved the code quality and the test coverage.
 

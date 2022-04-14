@@ -577,6 +577,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
+    public void visit(IsDistinctExpression isDistinctExpression) {
+        visitBinaryExpression(isDistinctExpression);
+    }
+
+    @Override
     public void visit(SelectExpressionItem item) {
         item.getExpression().accept(this);
     }
@@ -1025,5 +1030,10 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(AlterSystemStatement alterSystemStatement) {
         // no tables involved in this statement
+    }
+
+    @Override
+    public void visit(GeometryDistance geometryDistance) {
+        visitBinaryExpression(geometryDistance);
     }
 }
