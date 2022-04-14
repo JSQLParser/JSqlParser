@@ -133,7 +133,7 @@ public class NestedBracketsPerformanceTest {
 
     @Test
     public void testRecursiveBracketExpressionIssue1019_2() throws JSQLParserException {
-        doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 10);
+        doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 8);
     }
 
     @Test
