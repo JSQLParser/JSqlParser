@@ -47,7 +47,6 @@ public class KeywordsTest {
     @MethodSource("keyWords")
     public void testRelObjectNameWithoutValue(String keyword) throws JSQLParserException {
         String sqlStr = String.format("SELECT %1$s.%1$s AS %1$s from %1$s.%1$s AS %1$s",  keyword);
-        LOGGER.fine(sqlStr);
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 

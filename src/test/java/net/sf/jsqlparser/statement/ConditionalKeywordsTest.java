@@ -57,7 +57,6 @@ public class ConditionalKeywordsTest {
     @MethodSource("keyWords")
     public void testRelObjectNameExt(String keyword) throws JSQLParserException {
         String sqlStr = String.format("SELECT %1$s.%1$s.%1$s AS \"%1$s\" from %1$s ORDER BY %1$s ",  keyword);
-        LOGGER.fine(sqlStr);
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

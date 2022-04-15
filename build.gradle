@@ -39,6 +39,7 @@ dependencies {
     
     // for JaCoCo Reports
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.+'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
@@ -253,7 +254,10 @@ task updateKeywords(type: JavaExec) {
     group = "Execution"
     description = "Run the main class with JavaExecTask"
     classpath = sourceSets.main.runtimeClasspath
-    main = "net.sf.jsqlparser.parser.ParserKeywordsUtils"
+    args = [
+            project(':JSQLParser').file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath
+    ]
+    mainClass = 'net.sf.jsqlparser.parser.ParserKeywordsUtils'
 }
 
 
