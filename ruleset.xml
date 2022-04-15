@@ -40,8 +40,6 @@ under the License.
 	<rule ref="category/java/bestpractices.xml/UnusedPrivateField" />
 	<rule ref="category/java/bestpractices.xml/UnusedPrivateMethod" />
 
-	<rule ref="category/java/codestyle.xml/DontImportJavaLang" />
-	<rule ref="category/java/codestyle.xml/DuplicateImports" />
 	<rule ref="category/java/codestyle.xml/ExtendsObject" />
 	<rule ref="category/java/codestyle.xml/ForLoopShouldBeWhileLoop" />
 	<rule ref="category/java/codestyle.xml/TooManyStaticImports" />
@@ -92,7 +90,6 @@ under the License.
 	<rule ref="category/java/errorprone.xml/EmptySynchronizedBlock" />
 	<rule ref="category/java/errorprone.xml/EmptyTryBlock" />
 	<rule ref="category/java/errorprone.xml/EmptyWhileStmt" />
-	<rule ref="category/java/errorprone.xml/ImportFromSamePackage" />
 	<rule ref="category/java/errorprone.xml/JumbledIncrementer" />
 	<rule ref="category/java/errorprone.xml/MisplacedNullCheck" />
 	<rule ref="category/java/errorprone.xml/OverrideBothEqualsAndHashcode" />
@@ -103,15 +100,12 @@ under the License.
 	<rule ref="category/java/errorprone.xml/UselessOperationOnImmutable" />
     
     <!-- for Codazy -->
-	<!-- <rule ref="category/java/errorprone.xml/MissingBreakInSwitch" /> -->
-
 	<rule ref="category/java/multithreading.xml/AvoidThreadGroup" />
 	<rule ref="category/java/multithreading.xml/DontCallThreadRun" />
 	<rule ref="category/java/multithreading.xml/DoubleCheckedLocking" />
 
 	<rule ref="category/java/performance.xml/BigIntegerInstantiation" />
-	<rule ref="category/java/performance.xml/BooleanInstantiation" />
-    
+
     <!-- for Codazy -->
 	<!-- <rule ref="category/java/documentation.xml/UncommentedEmptyMethodBody" /> -->
 </ruleset>

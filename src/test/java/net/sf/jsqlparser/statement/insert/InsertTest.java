@@ -19,6 +19,7 @@ import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -32,9 +33,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 public class InsertTest {
 
@@ -185,13 +188,12 @@ public class InsertTest {
 
     @Test
     public void testInsertMultiRowValueDifferent() throws JSQLParserException {
-        try {
-            assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e, c)");
-        } catch (Exception e) {
-            return;
-        }
-
-        fail("should not work");
+        Assertions.assertThrowsExactly(JSQLParserException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                CCJSqlParserUtil.parse("INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e, c)");
+            }
+        });
     }
 
     @Test

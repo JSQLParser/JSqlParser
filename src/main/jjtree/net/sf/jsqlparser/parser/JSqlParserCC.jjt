@@ -1840,7 +1840,7 @@ The following tokens are allowed as Names for Schema, Table, Column and Aliases
 // Generated Code! Please do not edit manually.
 // Instead:
 // 1) define the ALL_RESERVED_KEYWORDS in the PARSER DECLARATION above (line 157 ff)
-// 2) then insert the Code fragment built by Gradle Task :JSQLParser:updateKeywords
+// 2) run the Gradle Task :JSQLParser:updateKeywords, which would update/replace the content of this method
 String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
