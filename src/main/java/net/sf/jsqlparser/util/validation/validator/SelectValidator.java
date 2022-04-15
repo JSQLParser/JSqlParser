@@ -52,7 +52,7 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  * @author gitmotte
  */
 public class SelectValidator extends AbstractValidator<SelectItem>
-implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
+        implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     @Override
     public void visit(PlainSelect plainSelect) {
@@ -74,7 +74,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             }
 
             validateOptionalFeature(c, plainSelect.getTop(), Feature.top);
-            validateFeature(c, plainSelect.getMySqlSqlNoCache(), Feature.mysqlSqlNoCache);
+            validateFeature(c, plainSelect.getMySqlSqlCacheFlag() != null, Feature.mysqlSqlCacheFlag);
             validateFeature(c, plainSelect.getMySqlSqlCalcFoundRows(), Feature.mysqlCalcFoundRows);
             validateOptionalFeature(c, plainSelect.getIntoTables(), Feature.selectInto);
             validateOptionalFeature(c, plainSelect.getKsqlWindow(), Feature.kSqlWindow);
@@ -92,11 +92,13 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
             validateOptionalFeature(c, plainSelect.getOptimizeFor(), Feature.optimizeFor);
         } // end for
 
-        validateOptionalList(plainSelect.getSelectItems(), () -> this, (e, v) -> e.accept(v));
-
         validateOptionalFromItem(plainSelect.getFromItem());
         validateOptionalFromItems(plainSelect.getIntoTables());
         validateOptionalJoins(plainSelect.getJoins());
+        
+        // to correctly recognize aliased tables
+        validateOptionalList(plainSelect.getSelectItems(), () -> this, (e, v) -> e.accept(v));
+        
         validateOptionalExpression(plainSelect.getWhere());
         validateOptionalExpression(plainSelect.getOracleHierarchical());
 
@@ -243,7 +245,7 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
         }
 
         validateOptionalFromItem(join.getRightItem());
-        for (Expression onExpression: join.getOnExpressions()) {
+        for (Expression onExpression : join.getOnExpressions()) {
             validateOptionalExpression(onExpression);
         }
         validateOptionalExpressions(join.getUsingColumns());
@@ -330,7 +332,5 @@ implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
     public void validate(SelectItem statement) {
         statement.accept(this);
     }
-
-
 
 }

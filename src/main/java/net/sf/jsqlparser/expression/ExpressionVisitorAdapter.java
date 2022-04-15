@@ -492,16 +492,19 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
 
     @Override
     public void visit(AllColumns allColumns) {
-        allColumns.accept((ExpressionVisitor) this);
     }
 
     @Override
     public void visit(AllTableColumns allTableColumns) {
-        allTableColumns.accept((ExpressionVisitor) this);
     }
 
     @Override
     public void visit(AllValue allValue) {
+    }
+
+    @Override
+    public void visit(IsDistinctExpression isDistinctExpression) {
+        visitBinaryExpression(isDistinctExpression);
     }
 
     @Override
@@ -629,7 +632,12 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
         oracleNamedFunctionParameter.getExpression().accept(this);
     }
-    
+
+    @Override
+    public void visit(GeometryDistance geometryDistance) {
+        visitBinaryExpression(geometryDistance);
+    }
+
     public void visit(ColumnDefinition columnDefinition) {
        columnDefinition.accept(this);
      }

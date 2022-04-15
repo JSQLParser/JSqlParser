@@ -49,11 +49,12 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private boolean useBrackets = false;
     private Wait wait;
     private boolean mySqlSqlCalcFoundRows = false;
-    private boolean sqlNoCacheFlag = false;
+    private MySqlSqlCacheFlags mySqlCacheFlag = null;
     private String forXmlPath;
     private KSQLWindow ksqlWindow = null;
     private boolean noWait = false;
     private boolean emitChanges = false;
+    private WithIsolation withIsolation;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -330,6 +331,15 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return emitChanges;
     }
 
+    
+    public WithIsolation getWithIsolation() {
+        return withIsolation;
+    }
+
+    public void setWithIsolation(WithIsolation withIsolation) {
+        this.withIsolation = withIsolation;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity" , "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
     public String toString() {
@@ -361,8 +371,8 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         if (top != null) {
             sql.append(top).append(" ");
         }
-        if (sqlNoCacheFlag) {
-            sql.append("SQL_NO_CACHE").append(" ");
+        if (mySqlCacheFlag != null) {
+            sql.append(mySqlCacheFlag.name()).append(" ");
         }
         if (mySqlSqlCalcFoundRows) {
             sql.append("SQL_CALC_FOUND_ROWS").append(" ");
@@ -421,6 +431,10 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             if (fetch != null) {
                 sql.append(fetch);
             }
+
+            if (withIsolation != null) {
+                sql.append(withIsolation);
+            }
             if (isForUpdate()) {
                 sql.append(" FOR UPDATE");
 
@@ -455,6 +469,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             if (fetch != null) {
                 sql.append(fetch);
             }
+            if (withIsolation != null) {
+                sql.append(withIsolation);
+            }            
         }
         if (forXmlPath != null) {
             sql.append(" FOR XML PATH(").append(forXmlPath).append(")");
@@ -544,8 +561,8 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return this;
     }
 
-    public PlainSelect withMySqlSqlNoCache(boolean sqlNoCacheFlagSet) {
-        this.setMySqlSqlNoCache(sqlNoCacheFlagSet);
+    public PlainSelect withMySqlSqlNoCache(MySqlSqlCacheFlags mySqlCacheFlag) {
+        this.setMySqlSqlCacheFlag(mySqlCacheFlag);
         return this;
     }
 
@@ -553,16 +570,16 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.mySqlSqlCalcFoundRows = mySqlCalcFoundRows;
     }
 
-    public void setMySqlSqlNoCache(boolean sqlNoCacheFlagSet) {
-        this.sqlNoCacheFlag = sqlNoCacheFlagSet;
+    public void setMySqlSqlCacheFlag(MySqlSqlCacheFlags sqlCacheFlag) {
+        this.mySqlCacheFlag = sqlCacheFlag;
     }
 
     public boolean getMySqlSqlCalcFoundRows() {
         return this.mySqlSqlCalcFoundRows;
     }
 
-    public boolean getMySqlSqlNoCache() {
-        return this.sqlNoCacheFlag;
+    public MySqlSqlCacheFlags getMySqlSqlCacheFlag() {
+        return this.mySqlCacheFlag;
     }
 
     public void setNoWait(boolean noWait) {

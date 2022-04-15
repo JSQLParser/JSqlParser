@@ -74,7 +74,8 @@ import java.util.*;
 public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     public int bracketsCounter = 0;
     public int caseCounter = 0;
-    
+    public boolean interrupted = false;
+
     public CCJSqlParser withConfiguration(FeatureConfiguration configuration) {
         token_source.configuration = configuration;
         return this;
@@ -410,6 +411,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXTENDED:"EXTENDED">
 |   <K_EXTRACT:"EXTRACT">
 |   <K_FETCH:"FETCH">
+|   <K_ISOLATION:("UR" | "RS" | "RR" | "CS")>
 |   <K_FILTER: "FILTER">
 |   <K_FIRST: "FIRST">
 |   <K_FALSE: "FALSE">
@@ -602,6 +604,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_USER:"USER">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
 |   <K_SQL_NO_CACHE: "SQL_NO_CACHE">
+|   <K_SQL_CACHE: "SQL_CACHE">
 |   <K_USING:"USING">
 |   <K_SIGNED:"SIGNED">
 |   <K_STRING_FUNCTION_NAME: ("SUBSTR" | "SUBSTRING" | "TRIM" | "POSITION" | "OVERLAY")>
@@ -617,6 +620,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WHERE:"WHERE">
 |   <K_WINDOW:"WINDOW">
 |   <K_WITH:"WITH">
+|   <K_WITH_TIES:"WITH TIES">
 |   <K_WITHIN:"WITHIN">
 |   <K_WITHOUT:"WITHOUT">
 |   <K_WORK:"WORK">
@@ -645,7 +649,7 @@ TOKEN : /* Operators */
 
 TOKEN : /* Date/Time with time zones */
 {
-    <DT_ZONE: <K_DATETIMELITERAL> (<WHITESPACE>)* ("(" <S_LONG> ")")? (<WHITESPACE>)* (<K_WITH> | <K_WITHOUT>) (<WHITESPACE>)+ "TIME" (<WHITESPACE>)+ <K_ZONE>>
+    <DT_ZONE: <K_DATETIMELITERAL> (<WHITESPACE>)* ("(" <S_LONG> ")")? (<WHITESPACE>)* (<K_WITH> | <K_WITHOUT>) ((<WHITESPACE>)+ <K_LOCAL>)? (<WHITESPACE>)+ "TIME" (<WHITESPACE>)+ <K_ZONE>>
 }
 
 TOKEN : /* Numeric Constants */
@@ -1839,8 +1843,45 @@ The following tokens are allowed as Names for Schema, Table, Column and Aliases
 String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
-    ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME>
-       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="BEGIN" | tk="BINARY" | tk="BIT" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="COSTS" | tk="CYCLE" | tk="DATABASE" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTO" | tk="ISNULL" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOG" | tk="LOW_PRIORITY" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="PARALLEL" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REGISTER" | tk="RENAME" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROW" | tk="ROWS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TO" | tk="TRUE" | tk="TRUNCATE" | tk="TRY_CAST" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLTEXT" | tk="YAML" | tk="ZONE" )
+    (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> 
+      | tk=<K_ALGORITHM> | tk=<K_AT>
+      | tk=<K_BYTE> | tk=<K_CHAR> | tk=<K_CHANGE> | tk=<K_CHARACTER>
+      | tk=<K_CAST> | tk =<K_TRY_CAST> | tk=<K_COMMENT> | tk=<K_COSTS> | tk=<K_DISABLE> | tk=<K_DESC>
+      | tk=<K_DO> | tk=<K_DEFAULT> | tk=<K_EXTRACT> | tk=<K_FILTER> | tk=<K_FIRST> | tk=<K_FOLLOWING> | tk=<K_JSON>
+      | tk=<K_LAST> | tk=<K_LEADING> | tk=<K_MATERIALIZED> | tk=<K_NULLS> | tk=<K_PARTITION> | tk=<K_RANGE>
+      | tk=<K_ROW> | tk=<K_ROWS> | tk=<K_SIBLINGS> | tk=<K_XML>
+      | tk=<K_COLUMN> | tk=<K_REPLACE> | tk=<K_TRUNCATE> | tk=<K_KEY>
+      | tk=<K_OPEN> | tk=<K_OVER> | tk=<K_PERCENT> | tk=<K_PRIOR>
+      | tk=<K_SEPARATOR> | tk=<K_NO> | tk=<K_ACTION> | tk=<K_CASCADE> | tk=<K_END>
+      | tk=<K_TABLE> | tk=<K_DATETIMELITERAL> | tk=<K_COMMIT> | tk=<K_PRECISION>
+      | tk=<K_INSERT> | tk=<K_INDEX> | tk=<K_PRIMARY> | tk=<K_ENABLE>
+      | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_TO> | tk=<K_TYPE> | tk=<K_ISNULL>
+	  | tk=<K_ZONE> | tk=<K_COLUMNS> | tk=<K_DESCRIBE> | tk=<K_FN> | tk=<K_PATH>
+      | tk=<K_DATE_LITERAL> | tk=<K_NEXTVAL> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_DUPLICATE>
+      | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIGNED> | tk=<K_SIZE> | tk=<K_SEQUENCE> | tk=<K_SESSION> | tk=<K_SKIP>
+      | tk=<K_SYNONYM>
+      | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE> | tk=<K_CYCLE> | tk=<K_OF> | tk=<K_EXCLUDE>
+    /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
+      | tk=<K_FORMAT> | tk=<K_DIV> | tk=<K_UNSIGNED> | tk=<K_CASE> | tk=<K_LOCAL>
+      | tk=<K_ARRAY_LITERAL>
+      | tk=<K_STRING_FUNCTION_NAME>
+      | tk=<K_USER>
+      | tk=<K_RECYCLEBIN> | tk=<K_DBA_RECYCLEBIN>
+
+      /* Keywords for ALTER SESSION */
+      /* | tk=<K_NAME> */ | tk=<K_TIMEOUT> | tk=<K_PARALLEL>
+
+      | tk=<K_LINK>
+      /* Keywords for ALTER SYSTEM */
+      | tk=<K_LOG> | tk=<K_DUMP> | tk=<K_FLUSH> | tk=<K_ACTIVE> | tk=<K_RESUME> | tk=<K_SWITCH> | tk=<K_SUSPEND>
+      | tk=<K_ARCHIVE> | tk=<K_QUIESCE> | tk=<K_HISTORY> | tk=<K_SHUTDOWN> | tk=<K_REGISTER> | tk=<K_UNQIESCE>
+      | tk=<K_RESTRICTED> | tk=<K_CHECKPOINT> | tk=<K_DISCONNECT>
+      | tk=<K_SYSTEM>
+      | tk=<K_QUERY>
+      | tk=<K_FULLTEXT>
+      | tk=<K_TABLESPACE>
+      )
+
     { return tk.image; }
 }
 
@@ -1972,6 +2013,7 @@ PlainSelect PlainSelect() #PlainSelect:
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
+    WithIsolation withIsolation = null;
     OptimizeFor optimize = null;
     Top top = null;
         Skip skip = null;
@@ -2013,7 +2055,8 @@ PlainSelect PlainSelect() #PlainSelect:
             )
         |
             (
-                <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlNoCache(true); }
+                <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_NO_CACHE); }
+                | <K_SQL_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_CACHE); }
             )
         )
     ]
@@ -2039,7 +2082,7 @@ PlainSelect PlainSelect() #PlainSelect:
     [LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
 	[LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
     [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
-
+    [LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { plainSelect.setWithIsolation(withIsolation);    } ]
     [LOOKAHEAD(2) <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
         [ <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ]
         [ LOOKAHEAD(<K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ]
@@ -2065,6 +2108,7 @@ SelectBody SetOperationList() #SetOperationList: {
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
+    WithIsolation withIsolation = null;
     SelectBody select = null;
     List<SelectBody> selects = new ArrayList<SelectBody>();
     List<SetOperation> operations = new ArrayList<SetOperation>();
@@ -2089,22 +2133,37 @@ SelectBody SetOperationList() #SetOperationList: {
     [LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {list.setLimit(limit);} ]
     [LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);} ]
     [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);} ]
+    [LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { list.setWithIsolation(withIsolation);} ]
 
     {
         if (selects.size()==1 && selects.get(0) instanceof PlainSelect && orderByElements==null) {
-            if (brackets.get(0))
-                ((PlainSelect)selects.get(0)).setUseBrackets(true);
+            if (brackets.get(0)) {
+                if (limit==null && offset==null && fetch==null && withIsolation==null)
+                    ((PlainSelect)selects.get(0)).setUseBrackets(true);
+                else {
+                    list.setBracketsOpsAndSelects(brackets,selects,operations);
+                    return list;    //brackets with outside limit, offset
+                }
+            }
             return selects.get(0);
         } else {
-            if (selects.size()>1 && selects.get(selects.size()-1) instanceof PlainSelect) {
+            if (selects.size()>1 && selects.get(selects.size()-1) instanceof PlainSelect && !brackets.get(brackets.size() - 1)) {
                 PlainSelect ps = (PlainSelect)selects.get(selects.size()-1);
-                if (ps.getOrderByElements() != null && !brackets.get(brackets.size() - 1)) {
+                if (ps.getOrderByElements() != null) {
                     list.setOrderByElements(ps.getOrderByElements());
                     list.setLimit(ps.getLimit());
                     list.setOffset(ps.getOffset());
                     ps.setOrderByElements(null);
                     ps.setLimit(null);
                     ps.setOffset(null);
+                }
+                if (ps.getFetch() != null) {
+                    list.setFetch(ps.getFetch());
+                    ps.setFetch(null);
+                }
+                if (ps.getWithIsolation() != null) {
+                    list.setWithIsolation(ps.getWithIsolation());
+                    ps.setWithIsolation(null);
                 }
             }
             list.setBracketsOpsAndSelects(brackets,selects,operations);
@@ -2120,6 +2179,7 @@ SelectBody SetOperationListWithoutIntialSelect(FromItem fromItem) #SetOperationL
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
+    WithIsolation withIsolation = null;
     SelectBody select;
     List<SelectBody> selects = new ArrayList<SelectBody>();
     List<SetOperation> operations = new ArrayList<SetOperation>();
@@ -2999,6 +3059,24 @@ Fetch Fetch():
     }
 }
 
+WithIsolation WithIsolation():
+{
+    WithIsolation withIsolation = new WithIsolation();
+    Token token = null;
+    JdbcParameter jdbc;
+}
+{
+    (
+            //with (ur | cs | rs | rr)
+             <K_WITH>
+             token=<K_ISOLATION> { withIsolation.setIsolation(token.image); }
+
+        )
+    {
+        return withIsolation;
+    }
+}
+
 OptimizeFor OptimizeFor():
 {
     Token token;
@@ -3034,6 +3112,7 @@ Top Top():
             { top.setParenthesis(true);}
        ")"
     ) [ LOOKAHEAD(2) <K_PERCENT>            { top.setPercentage(true); } ]
+      [ LOOKAHEAD(2) <K_WITH_TIES>            { top.setWithTies(true); }]
     {
         return top;
     }
@@ -3241,6 +3320,8 @@ Expression RegularCondition() #RegularCondition:
         | <OP_CONCAT> { result = new JsonOperator("||"); }
         | "-" { result = new JsonOperator("-"); }
         | "-#" { result = new JsonOperator("-#"); }
+        | "<->" { result = new GeometryDistance("<->"); }
+        | "<#>" { result = new GeometryDistance("<#>"); }
     )
 
     ( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; }
@@ -3280,6 +3361,7 @@ Expression SQLCondition():
          | LOOKAHEAD(IsNullExpression()) result=IsNullExpression(left)
          | LOOKAHEAD(IsBooleanExpression()) result=IsBooleanExpression(left)
          | LOOKAHEAD(2) result=LikeExpression(left)
+         | LOOKAHEAD(IsDistinctExpression()) result=IsDistinctExpression(left)
          | result=SimilarToExpression(left)
         )) ]
     )
@@ -3397,6 +3479,22 @@ Expression SimilarToExpression(Expression leftExpression) #SimilarToExpression:
     }
 }
 
+Expression IsDistinctExpression(Expression leftExpression) #IsDistinctExpression:
+{
+    IsDistinctExpression result = new IsDistinctExpression();
+    Expression rightExpression = null;
+}
+{
+    <K_IS> [<K_NOT> { result.setNot(true); } ] <K_DISTINCT> <K_FROM>
+    rightExpression=SimpleExpression()
+    {
+        result.setLeftExpression(leftExpression);
+        result.setRightExpression(rightExpression);
+        linkAST(result,jjtThis);
+        return result;
+    }
+}
+
 Expression IsNullExpression(Expression leftExpression):
 {
     IsNullExpression result = new IsNullExpression();
@@ -3460,7 +3558,7 @@ ExpressionList SimpleExpressionList(boolean outerBrackets) #ExpressionList:
 }
 {
     expr=SimpleExpression() { expressions.add(expr); } 
-    ( LOOKAHEAD(2) "," expr=SimpleExpression() { expressions.add(expr); } )*
+    ( LOOKAHEAD(2, {!interrupted} ) "," expr=SimpleExpression() { expressions.add(expr); } )*
     {
         retval.setExpressions(expressions);
         return retval;
@@ -3480,7 +3578,7 @@ ExpressionList ComplexExpressionList() #ExpressionList:
     ) { expressions.add(expr); }
 
     (
-        LOOKAHEAD(2) ","
+        LOOKAHEAD(2, {!interrupted}) ","
         (
             LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
             | expr=Expression() 
@@ -3821,35 +3919,35 @@ Expression PrimaryExpression() #PrimaryExpression:
     (
         <K_NULL> { retval = new NullValue(); }
 
-        | LOOKAHEAD(3) retval=CaseWhenExpression()
+        | LOOKAHEAD(3, {!interrupted}) retval=CaseWhenExpression()
 
         | retval = SimpleJdbcParameter()
 
-        | LOOKAHEAD(2) retval=JdbcNamedParameter()
+        | LOOKAHEAD(2, {!interrupted}) retval=JdbcNamedParameter()
 
         | retval=UserVariable()
 
-        | LOOKAHEAD(2) retval=NumericBind()
+        | LOOKAHEAD(2, {!interrupted}) retval=NumericBind()
 
-        | LOOKAHEAD(3) retval=ExtractExpression()
+        | LOOKAHEAD(3, {!interrupted}) retval=ExtractExpression()
 
         | LOOKAHEAD(3) retval=MySQLGroupConcat()
 
         | retval=XMLSerializeExpr()
 
-        | LOOKAHEAD(JsonExpression()) retval=JsonExpression()
+        | LOOKAHEAD(JsonExpression(), {!interrupted}) retval=JsonExpression()
 
-        | LOOKAHEAD(JsonFunction()) retval = JsonFunction()
+        | LOOKAHEAD(JsonFunction(), {!interrupted}) retval = JsonFunction()
 
-        | LOOKAHEAD(JsonAggregateFunction()) retval = JsonAggregateFunction()
+        | LOOKAHEAD(JsonAggregateFunction(), {!interrupted}) retval = JsonAggregateFunction()
 
         /* | LOOKAHEAD(FunctionWithCondParams()) retval = FunctionWithCondParams() */
 
-        | LOOKAHEAD(FullTextSearch()) retval = FullTextSearch()
+        | LOOKAHEAD(FullTextSearch(), {!interrupted}) retval = FullTextSearch()
 
-        | LOOKAHEAD(Function()) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
+        | LOOKAHEAD(Function(), {!interrupted}) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
 
-        | LOOKAHEAD(2) retval = IntervalExpression() { dateExpressionAllowed = false; }
+        | LOOKAHEAD(2, {!interrupted}) retval = IntervalExpression() { dateExpressionAllowed = false; }
 
         | token=<S_DOUBLE>  { retval = new DoubleValue(token.image); }
 
@@ -3857,26 +3955,26 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | token=<S_HEX>  { retval = new HexValue(token.image); }
 
-        | LOOKAHEAD(2) retval=CastExpression()
+        | LOOKAHEAD(2, {!interrupted}) retval=CastExpression()
 
-        | LOOKAHEAD(2) retval=TryCastExpression()
+        | LOOKAHEAD(2, {!interrupted}) retval=TryCastExpression()
 
         //| LOOKAHEAD(2) retval=RowConstructor()
 
         // support timestamp expressions
         | (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
 
-        | LOOKAHEAD(2) retval=DateTimeLiteralExpression()
+        | LOOKAHEAD(2, {!interrupted}) retval=DateTimeLiteralExpression()
 
-        | LOOKAHEAD(2) <K_ARRAY_LITERAL> retval=ArrayConstructor(true)
+        | LOOKAHEAD(2, {!interrupted}) <K_ARRAY_LITERAL> retval=ArrayConstructor(true)
 
-        | LOOKAHEAD(2) retval = NextValExpression()
+        | LOOKAHEAD(2, {!interrupted}) retval = NextValExpression()
 
         | retval=ConnectByRootOperator()
 
-        | LOOKAHEAD(2) <K_ALL> { retval = new AllValue(); }
+        | LOOKAHEAD(2, {!interrupted}) <K_ALL> { retval = new AllValue(); }
 
-        | LOOKAHEAD(2) retval=Column()
+        | LOOKAHEAD(2, {!interrupted}) retval=Column()
 
         | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
 
@@ -3886,30 +3984,17 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
-        | LOOKAHEAD("(" retval=SubSelect() ")") "(" retval=SubSelect() ")"
+        | LOOKAHEAD("(" retval=SubSelect() ")", {!interrupted} ) "(" retval=SubSelect() ")"
 
         | (
-            (
-                (LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing)}) "(" list = ComplexExpressionList() ")"
-                  {
-                      if (list.getExpressions().size() == 1) {
-                          retval = new Parenthesis(list.getExpressions().get(0));
-                      } else {
-                          retval = new RowConstructor().withExprList(list);
-                      }
+             "(" ( LOOKAHEAD( { getAsBoolean(Feature.allowComplexParsing) && !interrupted } ) list = ComplexExpressionList() |  list = SimpleExpressionList(true) ) ")"
+              {
+                  if (list.getExpressions().size() == 1) {
+                      retval = new Parenthesis(list.getExpressions().get(0));
+                  } else {
+                      retval = new RowConstructor().withExprList(list);
                   }
-                )
-
-                | ("(" list = SimpleExpressionList(true) ")"
-                      {
-                          if (list.getExpressions().size() == 1) {
-                              retval = new Parenthesis(list.getExpressions().get(0));
-                          } else {
-                              retval = new RowConstructor().withExprList(list);
-                          }
-                      }
-               )
-           )
+              }
            ["." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); }]
         )
     )
@@ -4085,11 +4170,13 @@ JsonFunction JsonFunction() : {
     JsonFunction result = new JsonFunction();
     boolean usingKeyKeyword = false;
     boolean usingValueKeyword = false;
+    boolean usingFormatJason = false;
     Token keyToken;
     Token valueToken = null;
+    Column column = null;
     JsonKeyValuePair keyValuePair;
 
-    Expression expression;
+    Expression expression = null;
     JsonFunctionExpression functionExpression;
   
 }
@@ -4098,64 +4185,64 @@ JsonFunction JsonFunction() : {
         ( 
           ( <K_JSON_OBJECT> 
             "(" { result.setType( JsonFunctionType.OBJECT ); }
-
-            (
-                // --- First Element
-                LOOKAHEAD(2)
                 (
-                    // Postgres Specific Syntax:
-                    // SELECT json_object('{a, 1, b, 2}');
-                    // SELECT json_object('{{a, 1}, {b, 2}}');
-                    // SELECT json_object('{a, b}', '{1,2 }');
-                    { result.setType( JsonFunctionType.POSTGRES_OBJECT ); }
-                    keyToken = <S_CHAR_LITERAL>
-                    [ "," valueToken = <S_CHAR_LITERAL> ]
-                    { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken !=null ? valueToken.image : null, false, false ); result.add(keyValuePair); }
+                    (
+                        // SQL2016 compliant Syntax
+                        (
+                            [   "KEY" { usingKeyKeyword = true; } ]
+                            keyToken = <S_CHAR_LITERAL>
+
+                             ( LOOKAHEAD(2)
+                                ( ":" |  "," { result.setType( JsonFunctionType.POSTGRES_OBJECT ); } | "VALUE" { usingValueKeyword = true; } )
+                                (
+                                    expression = Expression()
+                                )
+                                [ <K_FORMAT> <K_JSON> { usingFormatJason = true; } ]
+                            )? {
+                                   if (expression !=null) {
+                                                                           keyValuePair = new JsonKeyValuePair( keyToken.image, expression, usingKeyKeyword, usingValueKeyword );
+                                                                           keyValuePair.setUsingFormatJson( usingFormatJason );
+                                                                           result.add(keyValuePair);
+                                                                      } else {
+                                       result.setType( JsonFunctionType.POSTGRES_OBJECT );
+                                       keyValuePair = new JsonKeyValuePair( keyToken.image, null, false, false );
+                                       result.add(keyValuePair);
+                                  }
+                               }
+
+                            // --- Next Elements
+                            (   ","  { usingKeyKeyword = false; usingValueKeyword = false;  }
+                                [   "KEY" { usingKeyKeyword = true; } ]
+                                keyToken = <S_CHAR_LITERAL>
+                                ( ":" | ","  { result.setType( JsonFunctionType.MYSQL_OBJECT ); } | "VALUE" { usingValueKeyword = true; } )
+                                (
+                                    expression = Expression() { keyValuePair = new JsonKeyValuePair( keyToken.image, expression, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
+                                )
+                                [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
+                            )*
+                        )
+                    )?
+
+                    [
+                      (
+                          <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
+                      )
+                      |
+                      (
+                          <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
+                      )
+                    ]
+
+                    [
+                      (
+                          <K_WITH> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITH ); }
+                      )
+                      |
+                      (
+                          <K_WITHOUT> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITHOUT ); }
+                      )
+                    ]
                 )
-                |
-                (
-
-                    // SQL2016 compliant Syntax
-                    [   "KEY" { usingKeyKeyword = true; } ]
-
-                    ( keyToken = <DT_ZONE> | keyToken = <S_DOUBLE> | keyToken = <S_LONG> | keyToken = <S_HEX> | keyToken = <S_CHAR_LITERAL> | keyToken = <S_IDENTIFIER> | keyToken = <S_QUOTED_IDENTIFIER> )
-                    ( ":" | "VALUE" { usingValueKeyword = true; } )
-                    ( valueToken = <S_IDENTIFIER> | valueToken = <S_QUOTED_IDENTIFIER> ) { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
-                )
-
-                [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
-
-                // --- Next Elements
-                (   ","  { usingKeyKeyword = false; usingValueKeyword = false;  }
-                    [ "KEY" { usingKeyKeyword = true; } ]
-                    keyToken = <S_IDENTIFIER>
-                    ( ":" | "VALUE" { usingValueKeyword = true; } )
-                    // token = <DT_ZONE> | <S_DOUBLE> | <S_LONG> | <S_HEX> | <S_CHAR_LITERAL> { result.setValue( token.image ); }
-                    valueToken = <S_IDENTIFIER> { keyValuePair = new JsonKeyValuePair( keyToken.image, valueToken.image, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
-
-                    [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
-                )*
-            )*
-
-            [
-              (
-                  <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
-              )
-              |
-              (
-                  <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
-              )
-            ]
-
-            [
-              (
-                  <K_WITH> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITH ); }
-              )
-              |
-              (
-                  <K_WITHOUT> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITHOUT ); }
-              )
-            ]
             ")"
           )
           |
@@ -4507,7 +4594,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
 }
 {
     <K_CASE> { caseCounter++; }
-    [ switchExp=Condition() ]
+    [ switchExp=Expression() ]
     ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
     [<K_ELSE> (LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] elseExp=CaseWhenExpression() [")" { ((CaseExpression) elseExp).setUsingBrackets(true); } ] 
               | elseExp=Expression()
@@ -4642,28 +4729,6 @@ FullTextSearch FullTextSearch() : {
         return fs;
     }
 }
-
-/* Function FunctionWithCondParams() #Function: {
-    Function retval = new Function();
-    String funcName = null;
-    ExpressionList expressionList = null;
-    Token token = null;
-}
-{
-    (token = <K_IF> | token = <K_IIF> | token = <K_CASEWHEN> ) { funcName=token.image; }
-
-    "("
-        expressionList=ComplexExpressionList()
-	")"
-
-    {
-        retval.setParameters(expressionList);
-        retval.setName(funcName);
-        linkAST(retval,jjtThis);
-        return retval;
-    }
-} */
-
 
 Function Function() #Function:
 {
@@ -5218,7 +5283,7 @@ ColDataType ColDataType():
 		| tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 		| ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_DATE_LITERAL> | tk=<K_XML> | tk=<K_INTERVAL>
 			| tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> | tk=<K_BINARY> | tk=<K_JSON> )
-                        [ "." tk2=<S_IDENTIFIER> ]
+                        [ "." (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) ]
 		    { if (tk2!=null) colDataType.setDataType(tk.image + "." + tk2.image); else colDataType.setDataType(tk.image); }
 		| tk=<K_UNSIGNED>  [LOOKAHEAD(2) tk2=<S_IDENTIFIER>] 
                     { if (tk2!=null) colDataType.setDataType(tk.image + " " + tk2.image); else colDataType.setDataType(tk.image); } 

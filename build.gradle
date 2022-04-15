@@ -1,18 +1,18 @@
 plugins {
     id 'java'
     id 'maven-publish'
-    id "ca.coglinc2.javacc" version "3.0.0"
+    id "ca.coglinc2.javacc" version "latest.release"
     id 'jacoco'
-    id "com.github.spotbugs" version "4.7.2"
+    id "com.github.spotbugs" version "latest.release"
     id 'pmd'
     id 'checkstyle'
     
     // download the RR tools which have no Maven Repository
-    id "de.undercouch.download" version "4.1.2"
+    id "de.undercouch.download" version "latest.release"
 }
 
 group = 'com.github.jsqlparser'
-version = '4.3-SNAPSHOT'
+version = '4.5-SNAPSHOT'
 description = 'JSQLParser library'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
@@ -23,33 +23,29 @@ repositories {
     maven {
         url = uri('https://repo.maven.apache.org/maven2/')
     }
+
     maven {
       url "https://plugins.gradle.org/m2/"
     }
 }
 
 dependencies {
-    testImplementation 'commons-io:commons-io:2.6'
-    testImplementation 'junit:junit:4.13.1'
-    testImplementation 'org.mockito:mockito-core:2.28.2'
-    testImplementation 'org.assertj:assertj-core:3.16.1'
-    testImplementation 'org.apache.commons:commons-lang3:3.10'
-    testImplementation 'com.h2database:h2:1.4.200'
-
-
-
+    testImplementation 'commons-io:commons-io:2.+'
+    testImplementation 'org.mockito:mockito-core:4.+'
+    testImplementation 'org.assertj:assertj-core:3.+'
+    testImplementation 'org.hamcrest:hamcrest-core:2.+'
+    testImplementation 'org.apache.commons:commons-lang3:3.+'
+    testImplementation 'com.h2database:h2:2.+'
+    
     // for JaCoCo Reports
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.+'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:4.1.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.+'
 
     // enforce latest version of JavaCC
     javacc 'net.java.dev.javacc:javacc:7.0.10'
-
 }
 
 compileJavacc {
@@ -62,7 +58,6 @@ java {
 
     spotbugs
     pmd
-
 }
 
 jacoco {
@@ -119,7 +114,7 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'LINE'
                 value = 'MISSEDCOUNT'
-                maximum = 5500
+                maximum = 5513
                 }
             excludes = [
                     'net.sf.jsqlparser.util.validation.*',
@@ -177,7 +172,7 @@ spotbugs {
 
 pmd {
     consoleOutput = false
-    toolVersion = "6.36.0"
+    toolVersion = "6.41.0"
     
     sourceSets = [sourceSets.main]
     
@@ -196,7 +191,7 @@ pmd {
 }
 
 checkstyle {
-    toolVersion "8.45.1"
+    toolVersion "9.2"
     sourceSets = [sourceSets.main, sourceSets.test]
     configFile =rootProject.file('config/checkstyle/checkstyle.xml')
 }
@@ -265,6 +260,7 @@ task updateKeywords(type: JavaExec) {
 publishing {
     publications {
         maven(MavenPublication) {
+            artifactId 'jsqlparser'
             from(components.java)
         }
     }

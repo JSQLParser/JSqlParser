@@ -30,6 +30,7 @@ import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
+import net.sf.jsqlparser.expression.operators.relational.GeometryDistance;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
@@ -45,6 +46,7 @@ import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpr
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Column;
@@ -579,4 +581,14 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     }
 
+    @Override
+    public void visit(IsDistinctExpression isDistinctExpression) {
+        isDistinctExpression.getLeftExpression().accept(this);
+        isDistinctExpression.getRightExpression().accept(this);
+    }
+
+    @Override
+    public void visit(GeometryDistance geometryDistance) {
+        visitOldOracleJoinBinaryExpression(geometryDistance, " <-> ");
+    }
 }
