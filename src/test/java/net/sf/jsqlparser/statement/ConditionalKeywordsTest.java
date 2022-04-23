@@ -11,10 +11,12 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.ParserKeywordsUtils;
+import org.junit.Ignore;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -33,10 +35,11 @@ public class ConditionalKeywordsTest {
     public final static Logger LOGGER = Logger.getLogger(ConditionalKeywordsTest.class.getName());
 
     public final static Stream<String> keyWords() {
+        File file = new File("src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt");
         List<String> keywords = new ArrayList<>();
         try {
             try {
-                keywords.addAll(ParserKeywordsUtils.getDefinedKeywords());
+                keywords.addAll( ParserKeywordsUtils.getAllKeywords(file) );
                 for (String reserved: ParserKeywordsUtils.getReservedKeywords(
                         // get all PARSER RESTRICTED without the ALIAS RESTRICTED
                         ParserKeywordsUtils.RESTRICTED_JSQLPARSER

@@ -11,11 +11,14 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.ParserKeywordsUtils;
+import org.junit.Ignore;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -31,9 +34,10 @@ public class KeywordsTest {
     public final static Logger LOGGER = Logger.getLogger(KeywordsTest.class.getName());
 
     public final static Stream<String> keyWords() {
+        File file = new File("src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt");
         List<String> keywords = new ArrayList<>();
         try {
-            keywords.addAll(ParserKeywordsUtils.getDefinedKeywords());
+            keywords.addAll( ParserKeywordsUtils.getAllKeywords(file) );
             for (String reserved: ParserKeywordsUtils.getReservedKeywords(ParserKeywordsUtils.RESTRICTED_JSQLPARSER)) {
                 keywords.remove(reserved);
             }
