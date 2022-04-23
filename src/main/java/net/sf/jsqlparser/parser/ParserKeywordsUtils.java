@@ -37,7 +37,9 @@ public class ParserKeywordsUtils {
             | RESTRICTED_ALIAS
             | RESTRICTED_SQL2016;
 
-    public static List<String> getReservedKeywords(int restrictriction) {
+
+    @SuppressWarnings({"PMD.ExcessiveMethodLength"})
+    public static List<String> getReservedKeywords(int restriction) {
         // Classification follows http://www.h2database.com/html/advanced.html#keywords
         Object[][] ALL_RESERVED_KEYWORDS = {
                 { "ABSENT", RESTRICTED_JSQLPARSER }
@@ -173,9 +175,10 @@ public class ParserKeywordsUtils {
             int value = (int) data[1];
 
             // test if bit is not set
-            if ( (value & restrictriction) == restrictriction
-                    || (restrictriction & value) == value )
-                keywords.add( (String) data[0] );
+            if ( (value & restriction) == restriction
+                    || (restriction & value) == value ) {
+                keywords.add((String) data[0]);
+            }
         }
 
         return keywords;

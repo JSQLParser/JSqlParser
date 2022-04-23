@@ -4,8 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,7 +15,7 @@ class ParserKeywordsUtilsTest {
     }
 
     @Test
-    void getAllKeywords() throws IOException, URISyntaxException {
+    void getAllKeywords() throws IOException {
         File file = new File("src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt");
         Set<String> allKeywords =  ParserKeywordsUtils.getAllKeywords(file);
 
