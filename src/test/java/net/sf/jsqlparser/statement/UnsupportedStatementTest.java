@@ -4,7 +4,6 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.Select;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
@@ -44,7 +43,6 @@ public class UnsupportedStatementTest {
     }
 
     @Test
-    @Disabled
     public void testUnsupportedStatementsMiddleInBlock() throws JSQLParserException {
         String sqlStr = "Select * from dual; This is an unsupported statement; Select * from dual;";
 
@@ -54,5 +52,15 @@ public class UnsupportedStatementTest {
         Assertions.assertInstanceOf(Select.class, statements.getStatements().get(0));
         Assertions.assertInstanceOf(UnsupportedStatement.class, statements.getStatements().get(1));
         Assertions.assertInstanceOf(Select.class, statements.getStatements().get(2));
+
+//        This will not fail, but always return the Unsupported Statements
+//        Since we can't LOOKAHEAD in the Statements() production
+
+//        Assertions.assertThrowsExactly(JSQLParserException.class, new Executable() {
+//            @Override
+//            public void execute() throws Throwable {
+//                CCJSqlParserUtil.parseStatements(sqlStr, parser -> parser.withUnsupportedStatements(false) );
+//            }
+//        });
     }
 }

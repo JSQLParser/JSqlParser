@@ -657,10 +657,27 @@ Block Block() #Block : {
 }
 {
     <K_BEGIN>
-(<ST_SEMICOLON>)*
+    (<ST_SEMICOLON>)*
     try {
-       (stm = SingleStatement() | stm = Block()) { list.add(stm); } <ST_SEMICOLON>
-       ( (stm = SingleStatement() | stm = Block()) <ST_SEMICOLON> { list.add(stm); } )*
+       (
+           (
+                stm = SingleStatement()
+                | stm = Block()
+           )
+           <ST_SEMICOLON>
+           { list.add(stm); }
+       )
+
+        (
+             (
+                (
+                    stm = SingleStatement()
+                    | stm = Block()
+                )
+                <ST_SEMICOLON>
+                { list.add(stm); }
+            )
+       )*
     } catch (ParseException e) {
         if (errorRecovery) {
             parseErrors.add(e);
@@ -669,11 +686,13 @@ Block Block() #Block : {
             throw e;
         }           
     }
+
     {
         stmts.setStatements(list);
         block.setStatements(stmts);
     }
-    <K_END>
+
+    <K_END> [LOOKAHEAD(2) <ST_SEMICOLON>]
     {
         return block;
     }
@@ -737,6 +756,11 @@ Statements Statements() #Statements : {
 
                     [ LOOKAHEAD(2)  <ST_SEMICOLON> ]
                ) { list.add(stm); }
+               |
+               // For any reason, we can't LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) } ) here
+               // As it will result in a Stack Overflow
+               stm = UnsupportedStatement()
+               { if ( !((UnsupportedStatement) stm).isEmpty() ) list.add(stm); }
             ]
         )*
         <EOF>
@@ -6323,7 +6347,7 @@ List<String> captureUnsupportedStatementDeclaration() {
 
   while(true) {
     tok = getToken(1);
-    if(tok.kind == EOF || tok.kind== ST_SEMICOLON) {
+    if( tok.kind == EOF || tok.kind== ST_SEMICOLON || tok.kind== K_END ) {
       break;
     }
     tokens.add(tok.image);
