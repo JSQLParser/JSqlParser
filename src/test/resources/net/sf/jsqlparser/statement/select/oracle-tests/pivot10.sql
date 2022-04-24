@@ -28,4 +28,3 @@
  where d_t = 'p'
 
 --@FAILURE: Encountered unexpected token: "pivot" "PIVOT" recorded first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: select*from s join d using(c) recorded first on 23 Apr 2022, 16:44:21

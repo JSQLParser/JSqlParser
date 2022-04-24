@@ -30,4 +30,3 @@ select
 
 
 --@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: select name,to_char(dt,'dd-mm-yyyy')dt,amt,cum_amt from(select name,trunc(dt,'mm')dt,sum(amt)amt from c group by name,trunc(dt,'mm'))model recorded first on 23 Apr 2022, 16:44:21

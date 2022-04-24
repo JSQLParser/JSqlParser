@@ -39,4 +39,3 @@ select spf.*, nvl(a, ddr_a) as a, b, d,
 
 
 --@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Aug 3, 2021, 7:20:07 AM
---@FAILURE: select a,b,d,c,dt,p,pp,tech_pp,tech_p from(select a,b,d,c,dt,p,pp,odr from(select spf.*,nvl(a,ddr_a)as a,b,d,rank()over(partition by nvl(a,d_a),c,b,dt order by inp,spf.rowid asc)as odr from t_pp spf join t_a sa on(spf.a_id=sa.a_id)where spf.dt between to_date('2001-01-01','rrrr-mm.dd')and to_date('2001-01-31','rrrr-mm-dd'))where odr=1 and c='1234')model recorded first on 23 Apr 2022, 16:44:21

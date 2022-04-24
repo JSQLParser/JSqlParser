@@ -19,4 +19,3 @@ dimension by (0 dim)
             regexp_replace (str_new[0], '(^|;)([^;]+;)(.*?;)?\2+', '\1\2\3'));
 
 --@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: select bio,rtrim(str_new,';')new_str from db_temp model recorded first on 23 Apr 2022, 16:44:21
