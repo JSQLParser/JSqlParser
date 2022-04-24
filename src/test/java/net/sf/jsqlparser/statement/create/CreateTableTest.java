@@ -170,7 +170,6 @@ public class CreateTableTest {
         CreateTable createTable
                 = (CreateTable) CCJSqlParserUtil.parseStatements(sqlStr).getStatements().get(0);
 
-        System.out.println(createTable.toString());
     }
 
     @Test

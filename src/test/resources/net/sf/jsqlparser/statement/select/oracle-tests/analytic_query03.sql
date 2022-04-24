@@ -17,3 +17,4 @@ select times.time_id, product, quantity from inventory
 
 
 --@FAILURE: Encountered unexpected token: "by" "BY" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select times.time_id,product,quantity from inventory partition recorded first on 23 Apr 2022, 16:44:21

@@ -27,3 +27,4 @@ level3[any] = case when org_level[cv()] = 3 then ename [cv()] end,
 level4[any] = case when org_level[cv()] = 4 then ename [cv()] end )
 
 --@FAILURE: Encountered unexpected token: "return" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select organisation,level1,level2,level3,level4 from(select 'org_name' as organisation,level as org_level,ename from emp connect by prior empno=mgr start with ename='king')model recorded first on 23 Apr 2022, 16:44:21

@@ -22,3 +22,7 @@ BEGIN
 END;
 
 --@FAILURE: Encountered unexpected token: "BEGIN" "BEGIN" recorded first on Aug 3, 2021, 7:20:07 AM
+--@FAILURE: begin<<outer_loop>>for i in 1. .3 loop<<inner_loop>>for i in 1. .3 loop if outer_loop . i=2 then dbms_output . put_line('outer:'||to_char(outer_loop . i)||' inner:'||to_char(inner_loop . i)); end if ; end loop inner_loop ; end loop outer_loop ; end ; recorded first on 23 Apr 2022, 15:05:41
+--@FAILURE: <<outer_loop>>for i in 1. .3 loop<<inner_loop>>for i in 1. .3 loop if outer_loop . i=2 then dbms_output . put_line('outer:'||to_char(outer_loop . i)||' inner:'||to_char(inner_loop . i)); end if ; end loop inner_loop ; end loop outer_loop ; end ; recorded first on 23 Apr 2022, 15:48:28
+--@FAILURE: Encountered unexpected token: "END" "END" recorded first on 23 Apr 2022, 16:09:20
+--@FAILURE: Encountered unexpected token: ";" ";" recorded first on 23 Apr 2022, 23:14:35

@@ -13,3 +13,4 @@ where current of c_cur1
 
 
 --@FAILURE: Encountered unexpected token: "of" "OF" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: update tab1 set c1='x' where current recorded first on 23 Apr 2022, 16:44:21

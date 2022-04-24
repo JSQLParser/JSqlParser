@@ -27,3 +27,4 @@ order by country, prod, year
 
 
 --@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select country,prod,year,s from sales_view_ref model recorded first on 23 Apr 2022, 16:44:21

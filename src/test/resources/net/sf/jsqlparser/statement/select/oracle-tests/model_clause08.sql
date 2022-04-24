@@ -21,3 +21,4 @@ order by
   key
 
 --@FAILURE: Encountered unexpected token: "dimension" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:07 AM
+--@FAILURE: select key,num_val,m_1 from t model recorded first on 23 Apr 2022, 16:44:21

@@ -16,3 +16,4 @@ select cust_gender, count(*) as cnt, round(avg(age)) as avg_age
 	    
 
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select cust_gender,count(*)as cnt,round(avg(age))as avg_age from mining_data_apply_v where prediction recorded first on 23 Apr 2022, 16:44:21

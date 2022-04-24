@@ -20,3 +20,4 @@ select time_id, product
 
 
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:07 AM
+--@FAILURE: select time_id,product,last_value(quantity ignore nulls)over(partition by product order by time_id)quantity,last_value recorded first on 23 Apr 2022, 16:44:21

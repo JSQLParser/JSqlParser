@@ -508,7 +508,7 @@ Statement Statement() #Statement:
             stm = SingleStatement() {  ifElseStatement = new IfElseStatement(condition, stm); }
             [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
             [ LOOKAHEAD(2) 
-                <K_ELSE> stm2 = SingleStatement() {  ifElseStatement.setElseStatement(stm2);  } 
+                <K_ELSE> stm2 = SingleStatement() {  ifElseStatement.setElseStatement(stm2);  }
                 [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForElseStatement(true); }]
             ]
             <EOF>
@@ -519,6 +519,8 @@ Statement Statement() #Statement:
             [ <ST_SEMICOLON> ]
             <EOF>
         )
+        |
+        LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
     } catch (ParseException e) {
         if (errorRecovery) {
             parseErrors.add(e);
@@ -707,33 +709,35 @@ Statements Statements() #Statements : {
 
                  [ LOOKAHEAD(2)  <ST_SEMICOLON> ]
             ) { list.add(stm); }
+            |
+            LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
+            { if ( !((UnsupportedStatement) stm).isEmpty() ) list.add(stm); }
         )
 
-
-        ( 
-            <ST_SEMICOLON> { if (stm2!=null) 
-                                ifElseStatement.setUsingSemicolonForElseStatement(true); 
-                             else if (ifElseStatement!=null) 
-                                ifElseStatement.setUsingSemicolonForIfStatement(true); } 
+        (
+            <ST_SEMICOLON> { if (stm2!=null)
+                                ifElseStatement.setUsingSemicolonForElseStatement(true);
+                             else if (ifElseStatement!=null)
+                                ifElseStatement.setUsingSemicolonForIfStatement(true); }
             [
                 (
-                    <K_IF> condition=Condition() 
+                    <K_IF> condition=Condition()
                     stm = SingleStatement() {  ifElseStatement = new IfElseStatement(condition, stm); }
-                    [ LOOKAHEAD(2) 
+                    [ LOOKAHEAD(2)
                         [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
-                        <K_ELSE> stm2 = SingleStatement() {  ifElseStatement.setElseStatement(stm2);  } 
+                        <K_ELSE> stm2 = SingleStatement() {  ifElseStatement.setElseStatement(stm2);  }
                     ]
 
                     { list.add( ifElseStatement ); }
                )
                |
                (
-                    stm = SingleStatement() 
+                    stm = SingleStatement()
                     | stm = Block()
 
                     [ LOOKAHEAD(2)  <ST_SEMICOLON> ]
                ) { list.add(stm); }
-            ] 
+            ]
         )*
         <EOF>
     } catch (ParseException e) {
@@ -6286,6 +6290,17 @@ Synonym Synonym() #Synonym :
     }
 }
 
+UnsupportedStatement UnsupportedStatement():
+{
+  List<String> tokens = new LinkedList<String>();
+}
+{
+  tokens=captureUnsupportedStatementDeclaration()
+  {
+    return new UnsupportedStatement(tokens);
+  }
+}
+
 JAVACODE
 List<String> captureRest() {
   List<String> tokens = new LinkedList<String>();
@@ -6293,6 +6308,22 @@ List<String> captureRest() {
   while(true) {
     tok = getToken(1);
     if(tok.kind == EOF) {
+      break;
+    }
+    tokens.add(tok.image);
+    tok = getNextToken();
+  }
+  return tokens;
+}
+
+JAVACODE
+List<String> captureUnsupportedStatementDeclaration() {
+  List<String> tokens = new LinkedList<String>();
+  Token tok;
+
+  while(true) {
+    tok = getToken(1);
+    if(tok.kind == EOF || tok.kind== ST_SEMICOLON) {
       break;
     }
     tokens.add(tok.image);

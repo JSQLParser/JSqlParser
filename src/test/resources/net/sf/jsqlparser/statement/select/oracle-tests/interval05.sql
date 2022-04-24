@@ -11,3 +11,4 @@
 select 'yes' from dual where (sysdate-5,sysdate) overlaps (sysdate-2,sysdate-1)
 
 --@FAILURE: Encountered unexpected token: "overlaps" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select 'yes' from dual where(sysdate-5,sysdate) recorded first on 23 Apr 2022, 16:44:21
