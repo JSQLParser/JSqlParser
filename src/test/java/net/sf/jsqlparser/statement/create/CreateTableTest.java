@@ -857,4 +857,9 @@ public class CreateTableTest {
         assertSqlCanBeParsedAndDeparsed(
                 "CREATE TABLE temp.abc AS (SELECT c FROM t1) UNION (SELECT c FROM t2)");
     }
+
+    @Test
+    public void testCreateTableBinaryIssue1518() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE `s` (`a` enum ('a', 'b', 'c') CHARACTER SET binary COLLATE binary)");
+    }
 }

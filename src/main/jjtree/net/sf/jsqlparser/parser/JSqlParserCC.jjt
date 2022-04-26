@@ -5093,7 +5093,7 @@ ColDataType ColDataType():
     [LOOKAHEAD(2) "(" {tk2 =null;} ( ( ( tk=<S_LONG> [ LOOKAHEAD(2) (tk2=<K_BYTE> | tk2=<K_CHAR>) ] ) | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> | tk=<K_CHAR> )
 		{ argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:"")); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
     [( "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
-    [LOOKAHEAD(2) <K_CHARACTER> <K_SET> tk=<S_IDENTIFIER> { colDataType.setCharacterSet(tk.image); } ]
+    [LOOKAHEAD(2) <K_CHARACTER> <K_SET> (tk=<S_IDENTIFIER> | tk=<K_BINARY>) { colDataType.setCharacterSet(tk.image); } ]
 
     {
         if (argumentsStringList.size() > 0)
@@ -5272,6 +5272,8 @@ List<String> CreateParameter():
             tk=<K_FALSE> { param.add(tk.image); }
             |
             tk=<K_PARALLEL> { param.add(tk.image); }
+            |
+            tk=<K_BINARY> { param.add(tk.image); }
             |
             (<K_ARRAY_LITERAL> exp=ArrayConstructor(true)) { param.add(exp.toString()); }
             |
