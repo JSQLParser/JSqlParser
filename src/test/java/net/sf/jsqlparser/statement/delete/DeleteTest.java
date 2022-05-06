@@ -178,4 +178,15 @@ public class DeleteTest {
         assertTrue(delete2.isModifierIgnore());
         assertTrue(delete2.isModifierQuick());
     }
+
+    @Test
+    public void testDeleteReturningIssue1527() throws JSQLParserException {
+        String statement = "delete from t returning *";
+        assertSqlCanBeParsedAndDeparsed(statement, true);
+
+        statement = "delete from products\n" +
+                "  WHERE price <= 99.99\n" +
+                "  RETURNING name, price AS new_price";
+        assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
 }

@@ -17,6 +17,7 @@ import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 public class DeleteDeParser extends AbstractDeParser<Delete> {
@@ -89,6 +90,11 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
         }
         if (delete.getLimit() != null) {
             new LimitDeparser(buffer).deParse(delete.getLimit());
+        }
+
+        if (delete.getReturningExpressionList() != null) {
+            buffer.append(" RETURNING ").append(PlainSelect.
+                    getStringList(delete.getReturningExpressionList(), true, false));
         }
 
     }

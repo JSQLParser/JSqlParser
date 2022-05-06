@@ -24,7 +24,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
@@ -43,9 +43,7 @@ public class Insert implements Statement {
     private InsertModifierPriority modifierPriority = null;
     private boolean modifierIgnore = false;
 
-    private boolean returningAllColumns = false;
-
-    private List<SelectExpressionItem> returningExpressionList = null;
+    private List<SelectItem> returningExpressionList = null;
     
     private boolean useSet = false;
     private List<Column> setColumns;
@@ -102,19 +100,11 @@ public class Insert implements Statement {
         this.useValues = useValues;
     }
 
-    public boolean isReturningAllColumns() {
-        return returningAllColumns;
-    }
-
-    public void setReturningAllColumns(boolean returningAllColumns) {
-        this.returningAllColumns = returningAllColumns;
-    }
-
-    public List<SelectExpressionItem> getReturningExpressionList() {
+    public List<SelectItem> getReturningExpressionList() {
         return returningExpressionList;
     }
 
-    public void setReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
+    public void setReturningExpressionList(List<SelectItem> returningExpressionList) {
         this.returningExpressionList = returningExpressionList;
     }
 
@@ -274,9 +264,7 @@ public class Insert implements Statement {
             }
         }
 
-        if (isReturningAllColumns()) {
-            sql.append(" RETURNING *");
-        } else if (getReturningExpressionList() != null) {
+        if (getReturningExpressionList() != null) {
             sql.append(" RETURNING ").append(PlainSelect.
                     getStringList(getReturningExpressionList(), true, false));
         }
@@ -329,12 +317,7 @@ public class Insert implements Statement {
         return this;
     }
 
-    public Insert withReturningAllColumns(boolean returningAllColumns) {
-        this.setReturningAllColumns(returningAllColumns);
-        return this;
-    }
-
-    public Insert withReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
+    public Insert withReturningExpressionList(List<SelectItem> returningExpressionList) {
         this.setReturningExpressionList(returningExpressionList);
         return this;
     }
@@ -410,14 +393,14 @@ public class Insert implements Statement {
         return this.withDuplicateUpdateExpressionList(collection);
     }
 
-    public Insert addReturningExpressionList(SelectExpressionItem... returningExpressionList) {
-        List<SelectExpressionItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+    public Insert addReturningExpressionList(SelectItem... returningExpressionList) {
+        List<SelectItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, returningExpressionList);
         return this.withReturningExpressionList(collection);
     }
 
-    public Insert addReturningExpressionList(Collection<? extends SelectExpressionItem> returningExpressionList) {
-        List<SelectExpressionItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+    public Insert addReturningExpressionList(Collection<? extends SelectItem> returningExpressionList) {
+        List<SelectItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(returningExpressionList);
         return this.withReturningExpressionList(collection);
     }

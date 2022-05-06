@@ -26,6 +26,7 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 public class Delete implements Statement {
@@ -43,6 +44,21 @@ public class Delete implements Statement {
     private DeleteModifierPriority modifierPriority;
     private boolean modifierIgnore;
     private boolean modifierQuick;
+
+    private List<SelectItem> returningExpressionList = null;
+
+    public List<SelectItem> getReturningExpressionList() {
+        return returningExpressionList;
+    }
+
+    public void setReturningExpressionList(List<SelectItem> returningExpressionList) {
+        this.returningExpressionList = returningExpressionList;
+    }
+
+    public Delete withReturningExpressionList(List<SelectItem> returningExpressionList) {
+        this.returningExpressionList = returningExpressionList;
+        return this;
+    }
 
     public List<WithItem> getWithItemsList() {
         return withItemsList;
@@ -214,6 +230,12 @@ public class Delete implements Statement {
         if (limit != null) {
             b.append(limit);
         }
+
+        if (getReturningExpressionList() != null) {
+            b.append(" RETURNING ").append(PlainSelect.
+                    getStringList(getReturningExpressionList(), true, false));
+        }
+
         return b.toString();
     }
 

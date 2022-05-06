@@ -1133,7 +1133,7 @@ Update Update( List<WithItem> with ):
     Limit limit = null;
     List<OrderByElement> orderByElements;
     boolean useColumnsBrackets = false;
-    List<SelectExpressionItem> returning = null;
+    List<SelectItem> returning = null;
     Token tk = null;
     UpdateModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
@@ -1195,11 +1195,7 @@ Update Update( List<WithItem> with ):
 
    [ orderByElements = OrderByElements() { update.setOrderByElements(orderByElements); } ]
    [ limit = PlainLimit() { update.setLimit(limit); } ]
-   [ <K_RETURNING> (
-              "*" { update.setReturningAllColumns(true); }
-              | returning=ListExpressionItem()
-              )
-       ]
+   [ <K_RETURNING> returning=SelectItemsList() ]
 
    {
         return update.withWithItemsList(with)
@@ -1292,7 +1288,7 @@ Insert Insert( List<WithItem> with ):
     ItemsList itemsList = null;
     Expression exp = null;
     MultiExpressionList multiExpr = null;
-    List<SelectExpressionItem> returning = null;
+    List<SelectItem> returning = null;
     Select select = null;
     boolean useValues = true;
     boolean useSelectBrackets = false;
@@ -1380,11 +1376,7 @@ Insert Insert( List<WithItem> with ):
         duplicateUpdateExpressionList.add(exp); } )*]
 
 
-    [ <K_RETURNING> (
-           "*" { insert.setReturningAllColumns(true); }
-           | returning=ListExpressionItem()
-           )
-    ]
+    [ <K_RETURNING> returning=SelectItemsList() ]
 
     {
         if (!columns.isEmpty()) { 
@@ -1500,6 +1492,8 @@ Delete Delete( List<WithItem> with ):
     DeleteModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
     boolean modifierQuick = false;
+
+    List<SelectItem> returning = null;
 }
 {
     <K_DELETE> { delete.setOracleHint(getOracleHint()); }
@@ -1516,6 +1510,8 @@ Delete Delete( List<WithItem> with ):
     [where=WhereClause() { delete.setWhere(where); } ]
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]
+
+    [ <K_RETURNING> returning=SelectItemsList() ]
     {
         if (joins != null && joins.size() > 0) {
             delete.setJoins(joins);
@@ -1527,7 +1523,8 @@ Delete Delete( List<WithItem> with ):
               .withUsingList(usingList)
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore)
-              .withModifierQuick(modifierQuick);
+              .withModifierQuick(modifierQuick)
+              .withReturningExpressionList(returning);
     }
 }
 
