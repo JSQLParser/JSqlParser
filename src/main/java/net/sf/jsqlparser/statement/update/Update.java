@@ -19,6 +19,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.*;
@@ -39,6 +40,16 @@ public class Update implements Statement {
     private List<SelectItem> returningExpressionList = null;
     private UpdateModifierPriority modifierPriority;
     private boolean modifierIgnore;
+
+    private OutputClause outputClause;
+
+    public OutputClause getOutputClause() {
+        return outputClause;
+    }
+
+    public void setOutputClause(OutputClause outputClause) {
+        this.outputClause = outputClause;
+    }
 
     public ArrayList<UpdateSet> getUpdateSets() {
         return updateSets;
@@ -318,6 +329,11 @@ public class Update implements Statement {
 
             j++;
         }
+
+        if (outputClause!=null) {
+            outputClause.appendTo(b);
+        }
+
         if (fromItem != null) {
             b.append(" FROM ").append(fromItem);
             if (joins != null) {

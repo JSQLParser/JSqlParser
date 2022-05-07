@@ -61,6 +61,11 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
             buffer.append(
                     delete.getTables().stream().map(Table::getFullyQualifiedName).collect(joining(", ", " ", "")));
         }
+
+        if (delete.getOutputClause()!=null) {
+            delete.getOutputClause().appendTo(buffer);
+        }
+
         if (delete.isHasFrom()) {
             buffer.append(" FROM");
         }

@@ -20,6 +20,7 @@ import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.Join;
@@ -44,8 +45,16 @@ public class Delete implements Statement {
     private DeleteModifierPriority modifierPriority;
     private boolean modifierIgnore;
     private boolean modifierQuick;
-
     private List<SelectItem> returningExpressionList = null;
+    private OutputClause outputClause;
+
+    public OutputClause getOutputClause() {
+        return outputClause;
+    }
+
+    public void setOutputClause(OutputClause outputClause) {
+        this.outputClause = outputClause;
+    }
 
     public List<SelectItem> getReturningExpressionList() {
         return returningExpressionList;
@@ -196,6 +205,11 @@ public class Delete implements Statement {
                     .map(Table::toString)
                     .collect(joining(", ")));
         }
+
+        if (outputClause!=null) {
+            outputClause.appendTo(b);
+        }
+
 
         if (hasFrom) {
             b.append(" FROM");

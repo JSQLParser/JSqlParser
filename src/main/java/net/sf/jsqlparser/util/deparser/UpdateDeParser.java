@@ -103,6 +103,11 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
 
             j++;
         }
+
+        if (update.getOutputClause()!=null) {
+            update.getOutputClause().appendTo(buffer);
+        }
+
         if (update.getFromItem() != null) {
             buffer.append(" FROM ").append(update.getFromItem());
             if (update.getJoins() != null) {

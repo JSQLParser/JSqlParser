@@ -77,6 +77,10 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
             buffer.append(")");
         }
 
+        if (insert.getOutputClause()!=null) {
+            insert.getOutputClause().appendTo(buffer);
+        }
+
         if (insert.getItemsList() != null) {
             insert.getItemsList().accept(this);
         }

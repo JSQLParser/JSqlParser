@@ -20,6 +20,7 @@ import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -49,6 +50,16 @@ public class Insert implements Statement {
     private List<Column> setColumns;
     private List<Expression> setExpressionList;
     private List<WithItem> withItemsList;
+
+    private OutputClause outputClause;
+
+    public OutputClause getOutputClause() {
+        return outputClause;
+    }
+
+    public void setOutputClause(OutputClause outputClause) {
+        this.outputClause = outputClause;
+    }
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -222,6 +233,10 @@ public class Insert implements Statement {
         sql.append(table).append(" ");
         if (columns != null) {
             sql.append(PlainSelect.getStringList(columns, true, true)).append(" ");
+        }
+
+        if (outputClause!=null) {
+            outputClause.appendTo(sql);
         }
 
         if (useValues) {
