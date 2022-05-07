@@ -8,7 +8,9 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import java.util.List;
 import java.util.Objects;
 
-/** T-SQL Output Clause
+/**
+ * T-SQL Output Clause
+ *
  * @see <a href="https://docs.microsoft.com/en-us/sql/t-sql/queries/output-clause-transact-sql?view=sql-server-ver15">OUTPUT Clause (Transact-SQL)</a>
  *
  * <pre>
@@ -27,6 +29,18 @@ import java.util.Objects;
  * </pre>
  */
 public class OutputClause {
+    List<SelectItem> selectItemList;
+    UserVariable tableVariable;
+    Table outputTable;
+    List<String> columnList;
+
+    public OutputClause(List<SelectItem> selectItemList, UserVariable tableVariable, Table outputTable, List<String> columnList) {
+        this.selectItemList = Objects.requireNonNull(selectItemList, "The Select List of the Output Clause must not be null.");
+        this.tableVariable = tableVariable;
+        this.outputTable = outputTable;
+        this.columnList = columnList;
+    }
+
     public List<SelectItem> getSelectItemList() {
         return selectItemList;
     }
@@ -59,26 +73,14 @@ public class OutputClause {
         this.columnList = columnList;
     }
 
-    public OutputClause(List<SelectItem> selectItemList, UserVariable tableVariable, Table outputTable, List<String> columnList) {
-        this.selectItemList = Objects.requireNonNull(selectItemList, "The Select List of the Output Clause must not be null.");
-        this.tableVariable = tableVariable;
-        this.outputTable = outputTable;
-        this.columnList = columnList;
-    }
-
-    List<SelectItem> selectItemList;
-    UserVariable tableVariable;
-    Table outputTable;
-    List<String> columnList;
-
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append(" OUTPUT ");
         PlainSelect.appendStringListTo(builder, selectItemList, true, false);
 
-        if (tableVariable!=null) {
-            builder.append(" INTO ").append(tableVariable.toString());
-        } else if (outputTable!=null) {
-            builder.append(" INTO ").append(outputTable.toString());
+        if (tableVariable != null) {
+            builder.append(" INTO ").append(tableVariable);
+        } else if (outputTable != null) {
+            builder.append(" INTO ").append(outputTable);
         }
 
         PlainSelect.appendStringListTo(builder, columnList, true, false);
