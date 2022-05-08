@@ -73,7 +73,7 @@ public class InsertTest {
                 .withColumns(Arrays.asList(new Column("col1"), new Column("col2"), new Column("col3")))
                 .withSelect(select);
 
-        assertDeparse(insert, statement);
+        assertDeparse(insert2, statement);
 
         statement = "INSERT INTO myschema.mytable VALUES (?, ?, 2.3)";
         insert = (Insert) parserManager.parse(new StringReader(statement));

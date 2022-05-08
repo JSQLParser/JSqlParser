@@ -123,12 +123,7 @@ public class Insert implements Statement {
 
     @Deprecated
     public boolean isUseValues() {
-        SelectBody selectBody = select.getSelectBody();
-        if (selectBody instanceof ValuesStatement) {
-            return true;
-        } else {
-            return false;
-        }
+        return (select!=null && select.getSelectBody() instanceof ValuesStatement);
     }
 
     public boolean isReturningAllColumns() {
