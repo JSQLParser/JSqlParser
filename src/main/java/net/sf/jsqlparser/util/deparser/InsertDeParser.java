@@ -77,13 +77,9 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
             buffer.append(")");
         }
 
-        if (insert.getItemsList() != null) {
-            insert.getItemsList().accept(this);
-        }
-
         if (insert.getSelect() != null) {
             buffer.append(" ");
-            if (insert.isUseSelectBrackets()) {
+            if (insert.getSelect().isUsingWithBrackets()) {
                 buffer.append("(");
             }
             if (insert.getSelect().getWithItemsList() != null) {
@@ -94,7 +90,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
                 buffer.append(" ");
             }
             insert.getSelect().getSelectBody().accept(selectVisitor);
-            if (insert.isUseSelectBrackets()) {
+            if (insert.getSelect().isUsingWithBrackets()) {
                 buffer.append(")");
             }
         }

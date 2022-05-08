@@ -88,6 +88,7 @@ public enum OracleVersion implements Version {
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/INSERT.html
                     Feature.insert,
                     Feature.insertValues,
+                    Feature.values,
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/INSERT.html
                     // see "single_table_insert"
                     Feature.insertFromSelect,
