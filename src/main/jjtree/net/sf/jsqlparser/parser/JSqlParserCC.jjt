@@ -5430,6 +5430,21 @@ AlterExpression.ColumnDropNotNull AlterExpressionColumnDropNotNull():
     }
 }
 
+AlterExpression.ColumnDropDefault AlterExpressionColumnDropDefault():
+{
+    String columnName = null;
+    boolean withNot = false;
+    ColDataType dataType = null;
+    List<String> columnSpecs = null;
+    List<String> parameter = null;
+}
+{
+    columnName = RelObjectName() <K_DROP> <K_DEFAULT>
+    {
+        return new AlterExpression.ColumnDropDefault(columnName);
+    }
+}
+
 List<ConstraintState> AlterExpressionConstraintState():
 {
     List<ConstraintState> retval = new ArrayList<ConstraintState>();
@@ -5485,6 +5500,7 @@ AlterExpression AlterExpression():
     Table fkTable = null;
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
+    AlterExpression.ColumnDropDefault alterExpressionColumnDropDefault = null;
     ReferentialAction.Action action = null;
 
     // for captureRest()
@@ -5512,10 +5528,22 @@ AlterExpression AlterExpression():
               [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
             )
                     |
-            LOOKAHEAD(3) ( (LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); })?
-                (LOOKAHEAD(2) alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
-                |
-                alterExpressionColumnDropNotNull = AlterExpressionColumnDropNotNull() { alterExp.addColDropNotNull( alterExpressionColumnDropNotNull); })
+            LOOKAHEAD(3) (
+                ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
+
+                (
+                    LOOKAHEAD(2) alterExpressionColumnDataType = AlterExpressionColumnDataType() {
+                            alterExp.addColDataType(alterExpressionColumnDataType);
+                         }
+                    |
+                    LOOKAHEAD(3) alterExpressionColumnDropNotNull = AlterExpressionColumnDropNotNull() {
+                            alterExp.addColDropNotNull( alterExpressionColumnDropNotNull);
+                         }
+                    |
+                    alterExpressionColumnDropDefault = AlterExpressionColumnDropDefault() {
+                            alterExp.addColDropDefault( alterExpressionColumnDropDefault);
+                         }
+                )
             )
             |
             (
