@@ -408,23 +408,21 @@ public class InsertTest {
 
     @Test
     public void testInsertUnionSelectIssue1491() throws JSQLParserException {
-        //@todo: Make this work
-//        assertSqlCanBeParsedAndDeparsed(
-//                "insert into table1 (tf1,tf2,tf2)\n" +
-//                        "select sf1,sf2,sf3 from s1" +
-//                        "union " +
-//                        "select rf1,rf2,rf2 from r1"
-//                , true
-//        );
+        assertSqlCanBeParsedAndDeparsed(
+                "insert into table1 (tf1,tf2,tf2)\n" +
+                        "select sf1,sf2,sf3 from s1\n" +
+                        "union\n" +
+                        "select rf1,rf2,rf2 from r1\n"
+                , true
+        );
 
-        //@todo: Make this work
-//        assertSqlCanBeParsedAndDeparsed(
-//                "insert into table1 (tf1,tf2,tf2)\n" +
-//                        "( select sf1,sf2,sf3 from s1" +
-//                        "union " +
-//                        "select rf1,rf2,rf2 from r1 )"
-//                , true
-//        );
+        assertSqlCanBeParsedAndDeparsed(
+                "insert into table1 (tf1,tf2,tf2)\n" +
+                        "( select sf1,sf2,sf3 from s1\n" +
+                        "union\n" +
+                        "select rf1,rf2,rf2 from r1\n)"
+                , true
+        );
 
         assertSqlCanBeParsedAndDeparsed(
                 "insert into table1 (tf1,tf2,tf2)\n" +
