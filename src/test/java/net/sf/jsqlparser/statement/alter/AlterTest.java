@@ -471,6 +471,7 @@ public class AlterTest {
 
     @Test
     public void testAlterTableRenameColumn() throws JSQLParserException {
+        // With Column Keyword
         String sql = "ALTER TABLE \"test_table\" RENAME COLUMN \"test_column\" TO \"test_c\"";
         assertSqlCanBeParsedAndDeparsed(sql);
 
@@ -479,6 +480,10 @@ public class AlterTest {
         assertEquals(expression.getOperation(), AlterOperation.RENAME);
         assertEquals(expression.getColOldName(), "\"test_column\"");
         assertEquals(expression.getColumnName(), "\"test_c\"");
+
+        // Without Column Keyword
+        sql = "ALTER TABLE \"test_table\" RENAME \"test_column\" TO \"test_c\"";
+        assertSqlCanBeParsedAndDeparsed(sql);
     }
 
     @Test
