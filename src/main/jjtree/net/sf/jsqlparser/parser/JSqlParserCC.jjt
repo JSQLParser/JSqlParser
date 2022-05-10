@@ -1662,7 +1662,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_ARRAY_LITERAL>
       | tk=<K_STRING_FUNCTION_NAME>
       | tk=<K_USER>
-      | tk=<K_RECYCLEBIN> | tk=<K_DBA_RECYCLEBIN>
+      | tk=<K_RECYCLEBIN> | tk=<K_DBA_RECYCLEBIN> | tk=<K_ISOLATION>
 
       /* Keywords for ALTER SESSION */
       /* | tk=<K_NAME> */ | tk=<K_TIMEOUT> | tk=<K_PARALLEL>
