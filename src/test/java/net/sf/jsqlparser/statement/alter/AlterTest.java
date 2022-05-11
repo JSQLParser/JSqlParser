@@ -131,22 +131,22 @@ public class AlterTest {
     }
 
     @Test
-    public void testAlterTableForgeignKey2() throws JSQLParserException {
+    public void testAlterTableForeignKey2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id)");
     }
 
     @Test
-    public void testAlterTableForgeignKey3() throws JSQLParserException {
+    public void testAlterTableForeignKey3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE RESTRICT");
     }
 
     @Test
-    public void testAlterTableForgeignKey4() throws JSQLParserException {
+    public void testAlterTableForeignKey4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL");
     }
 
     @Test
-    public void testAlterTableForgeignWithFkSchema() throws JSQLParserException {
+    public void testAlterTableForeignWithFkSchema() throws JSQLParserException {
         final String FK_SCHEMA_NAME = "my_schema";
         final String FK_TABLE_NAME = "ra_user";
         String sql = "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES " + FK_SCHEMA_NAME + "." + FK_TABLE_NAME + " (id) ON DELETE SET NULL";
@@ -774,6 +774,14 @@ public class AlterTest {
     public void testAlterTableChangeColumnDropNotNull() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE a MODIFY COLUMN b DROP NOT NULL", true);
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE a MODIFY (COLUMN b DROP NOT NULL, COLUMN c DROP NOT NULL)", true);
+    }
+
+    @Test
+    public void testAlterTableChangeColumnDropDefault() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE a MODIFY COLUMN b DROP DEFAULT", true);
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE a MODIFY (COLUMN b DROP DEFAULT, COLUMN c DROP DEFAULT)", true);
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE a MODIFY (COLUMN b DROP NOT NULL, COLUMN b DROP DEFAULT)", true);
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE a MODIFY (COLUMN b DROP DEFAULT, COLUMN b DROP NOT NULL)", true);
     }
 
 }
