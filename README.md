@@ -60,6 +60,7 @@ Additionally, we have fixed many errors and improved the code quality and the te
 
 * [Release Notes](https://github.com/JSQLParser/JSqlParser/releases)
 * Modifications before GitHub's release tagging are listed in the [Older Releases](https://github.com/JSQLParser/JSqlParser/wiki/Older-Releases) page.
+* UnsupportedStatement support instead of throwing Exceptions
 
 
 ## Building from the sources
