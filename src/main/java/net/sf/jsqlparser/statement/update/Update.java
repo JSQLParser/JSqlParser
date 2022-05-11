@@ -19,6 +19,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.*;
@@ -36,10 +37,19 @@ public class Update implements Statement {
     private OracleHint oracleHint = null;
     private List<OrderByElement> orderByElements;
     private Limit limit;
-    private boolean returningAllColumns = false;
-    private List<SelectExpressionItem> returningExpressionList = null;
+    private List<SelectItem> returningExpressionList = null;
     private UpdateModifierPriority modifierPriority;
     private boolean modifierIgnore;
+
+    private OutputClause outputClause;
+
+    public OutputClause getOutputClause() {
+        return outputClause;
+    }
+
+    public void setOutputClause(OutputClause outputClause) {
+        this.outputClause = outputClause;
+    }
 
     public ArrayList<UpdateSet> getUpdateSets() {
         return updateSets;
@@ -219,19 +229,12 @@ public class Update implements Statement {
         return limit;
     }
 
-    public boolean isReturningAllColumns() {
-        return returningAllColumns;
-    }
 
-    public void setReturningAllColumns(boolean returningAllColumns) {
-        this.returningAllColumns = returningAllColumns;
-    }
-
-    public List<SelectExpressionItem> getReturningExpressionList() {
+    public List<SelectItem> getReturningExpressionList() {
         return returningExpressionList;
     }
 
-    public void setReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
+    public void setReturningExpressionList(List<SelectItem> returningExpressionList) {
         this.returningExpressionList = returningExpressionList;
     }
 
@@ -326,6 +329,11 @@ public class Update implements Statement {
 
             j++;
         }
+
+        if (outputClause!=null) {
+            outputClause.appendTo(b);
+        }
+
         if (fromItem != null) {
             b.append(" FROM ").append(fromItem);
             if (joins != null) {
@@ -350,9 +358,7 @@ public class Update implements Statement {
             b.append(limit);
         }
 
-        if (isReturningAllColumns()) {
-            b.append(" RETURNING *");
-        } else if (getReturningExpressionList() != null) {
+        if (getReturningExpressionList() != null) {
             b.append(" RETURNING ").append(PlainSelect.
                     getStringList(getReturningExpressionList(), true, false));
         }
@@ -405,12 +411,8 @@ public class Update implements Statement {
         return this;
     }
 
-    public Update withReturningAllColumns(boolean returningAllColumns) {
-        this.setReturningAllColumns(returningAllColumns);
-        return this;
-    }
 
-    public Update withReturningExpressionList(List<SelectExpressionItem> returningExpressionList) {
+    public Update withReturningExpressionList(List<SelectItem> returningExpressionList) {
         this.setReturningExpressionList(returningExpressionList);
         return this;
     }
@@ -500,14 +502,14 @@ public class Update implements Statement {
         return this.withOrderByElements(collection);
     }
 
-    public Update addReturningExpressionList(SelectExpressionItem... returningExpressionList) {
-        List<SelectExpressionItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+    public Update addReturningExpressionList(SelectItem... returningExpressionList) {
+        List<SelectItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, returningExpressionList);
         return this.withReturningExpressionList(collection);
     }
 
-    public Update addReturningExpressionList(Collection<? extends SelectExpressionItem> returningExpressionList) {
-        List<SelectExpressionItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+    public Update addReturningExpressionList(Collection<? extends SelectItem> returningExpressionList) {
+        List<SelectItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(returningExpressionList);
         return this.withReturningExpressionList(collection);
     }

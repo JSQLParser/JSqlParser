@@ -16,7 +16,7 @@ import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.OrderByVisitor;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
@@ -103,6 +103,11 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
 
             j++;
         }
+
+        if (update.getOutputClause()!=null) {
+            update.getOutputClause().appendTo(buffer);
+        }
+
         if (update.getFromItem() != null) {
             buffer.append(" FROM ").append(update.getFromItem());
             if (update.getJoins() != null) {
@@ -127,17 +132,9 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
             new LimitDeparser(buffer).deParse(update.getLimit());
         }
 
-        if (update.isReturningAllColumns()) {
-            buffer.append(" RETURNING *");
-        } else if (update.getReturningExpressionList() != null) {
-            buffer.append(" RETURNING ");
-            for (Iterator<SelectExpressionItem> iter = update.getReturningExpressionList().iterator(); iter
-                    .hasNext();) {
-                buffer.append(iter.next().toString());
-                if (iter.hasNext()) {
-                    buffer.append(", ");
-                }
-            }
+        if (update.getReturningExpressionList() != null) {
+            buffer.append(" RETURNING ").append(PlainSelect.
+                    getStringList(update.getReturningExpressionList(), true, false));
         }
     }
 

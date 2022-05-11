@@ -315,6 +315,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT: "=>">
 |   <K_ORDER:"ORDER">
 |   <K_OUTER:"OUTER">
+|   <K_OUTPUT:"OUTPUT">
 |   <K_OVER:"OVER">
 |   <K_OPTIMIZE: "OPTIMIZE" >
 |   <K_PARALLEL:"PARALLEL">
@@ -1161,10 +1162,12 @@ Update Update( List<WithItem> with ):
     Limit limit = null;
     List<OrderByElement> orderByElements;
     boolean useColumnsBrackets = false;
-    List<SelectExpressionItem> returning = null;
+    List<SelectItem> returning = null;
     Token tk = null;
     UpdateModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
+
+    OutputClause outputClause = null;
 }
 {
    <K_UPDATE> { update.setOracleHint(getOracleHint()); }
@@ -1215,21 +1218,19 @@ Update Update( List<WithItem> with ):
         )
     )
 
-   [ <K_FROM>
+    [ outputClause = OutputClause() {update.setOutputClause(outputClause); } ]
+
+    [ <K_FROM>
       fromItem=FromItem()
       joins=JoinsList() ]
 
-   [ where=WhereClause() { update.setWhere(where); } ]
+    [ where=WhereClause() { update.setWhere(where); } ]
 
-   [ orderByElements = OrderByElements() { update.setOrderByElements(orderByElements); } ]
-   [ limit = PlainLimit() { update.setLimit(limit); } ]
-   [ <K_RETURNING> (
-              "*" { update.setReturningAllColumns(true); }
-              | returning=ListExpressionItem()
-              )
-       ]
+    [ orderByElements = OrderByElements() { update.setOrderByElements(orderByElements); } ]
+    [ limit = PlainLimit() { update.setLimit(limit); } ]
+    [ <K_RETURNING> returning=SelectItemsList() ]
 
-   {
+    {
         return update.withWithItemsList(with)
               .withTable(table)
               .withStartJoins(startJoins)
@@ -1238,7 +1239,7 @@ Update Update( List<WithItem> with ):
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore)
               .withReturningExpressionList(returning);
-   }
+    }
 }
 
 Replace Replace():
@@ -1320,7 +1321,7 @@ Insert Insert( List<WithItem> with ):
     ItemsList itemsList = null;
     Expression exp = null;
     MultiExpressionList multiExpr = null;
-    List<SelectExpressionItem> returning = null;
+    List<SelectItem> returning = null;
     Select select = null;
     boolean useValues = true;
     boolean useSelectBrackets = false;
@@ -1335,6 +1336,7 @@ Insert Insert( List<WithItem> with ):
     List<Expression> setExpressionList = new ArrayList<Expression>();
     String name = null;
     boolean useAs = false;
+    OutputClause outputClause = null;
 }
 {    
     <K_INSERT> { insert.setOracleHint(getOracleHint()); }
@@ -1347,7 +1349,10 @@ Insert Insert( List<WithItem> with ):
 
     [ [<K_AS> { useAs = true; } ] name=RelObjectNameWithoutValue() { table.setAlias(new Alias(name,useAs)); }]
 
-     [LOOKAHEAD(2) "(" tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"  ]
+    [LOOKAHEAD(2) "(" tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"  ]
+
+    [ outputClause = OutputClause() { insert.setOutputClause(outputClause); } ]
+
     (
         LOOKAHEAD(2) [<K_VALUES> | <K_VALUE>]  "(" exp=SimpleExpression() { primaryExpList.add(exp); }
                 ("," exp=SimpleExpression()  { primaryExpList.add(exp); } )* ")" { itemsList = new ExpressionList(primaryExpList); }
@@ -1408,11 +1413,7 @@ Insert Insert( List<WithItem> with ):
         duplicateUpdateExpressionList.add(exp); } )*]
 
 
-    [ <K_RETURNING> (
-           "*" { insert.setReturningAllColumns(true); }
-           | returning=ListExpressionItem()
-           )
-    ]
+    [ <K_RETURNING> returning=SelectItemsList() ]
 
     {
         if (!columns.isEmpty()) { 
@@ -1432,6 +1433,32 @@ Insert Insert( List<WithItem> with ):
               .withUseSet(useSet)
               .withUseSetColumns(setColumns)
               .withSetExpressionList(setExpressionList);
+    }
+}
+
+OutputClause OutputClause():
+{
+    List<SelectItem> selectItemList = null;
+    UserVariable tableVariable = null;
+    Table outputTable = null;
+    List<String> columnList = null;
+}
+{
+    <K_OUTPUT>
+    selectItemList = SelectItemsList()
+    [   <K_INTO>
+        (
+            tableVariable = UserVariable()
+            |
+            outputTable = Table()
+        )
+        [
+           LOOKAHEAD(2)  columnList = ColumnsNamesList()
+        ]
+    ]
+
+    {
+        return new OutputClause(selectItemList, tableVariable, outputTable, columnList);
     }
 }
 
@@ -1528,6 +1555,9 @@ Delete Delete( List<WithItem> with ):
     DeleteModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
     boolean modifierQuick = false;
+
+    List<SelectItem> returning = null;
+    OutputClause outputClause = null;
 }
 {
     <K_DELETE> { delete.setOracleHint(getOracleHint()); }
@@ -1536,6 +1566,7 @@ Delete Delete( List<WithItem> with ):
     [<K_IGNORE> { modifierIgnore = true; }]
     [LOOKAHEAD(4) (table=TableWithAlias() { tables.add(table); }
           ("," table=TableWithAlias() { tables.add(table); } )*
+    [ outputClause = OutputClause() {delete.setOutputClause(outputClause); } ]
     <K_FROM> | <K_FROM>) { hasFrom = true; }]
 
     [ LOOKAHEAD(3) table=TableWithAlias()  joins=JoinsList() ]
@@ -1544,6 +1575,8 @@ Delete Delete( List<WithItem> with ):
     [where=WhereClause() { delete.setWhere(where); } ]
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]
+
+    [  <K_RETURNING> returning=SelectItemsList() ]
     {
         if (joins != null && joins.size() > 0) {
             delete.setJoins(joins);
@@ -1555,7 +1588,8 @@ Delete Delete( List<WithItem> with ):
               .withUsingList(usingList)
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore)
-              .withModifierQuick(modifierQuick);
+              .withModifierQuick(modifierQuick)
+              .withReturningExpressionList(returning);
     }
 }
 
@@ -2100,7 +2134,7 @@ SelectExpressionItem SelectExpressionItem():
 }
 {
       expression=Expression() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
-      [alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
+      [ LOOKAHEAD(2)  alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
 }
 
 SelectItem SelectItem() #SelectItem:
