@@ -28,6 +28,11 @@ public abstract class AbstractJSqlParser<P> {
     public P withAllowComplexParsing(boolean allowComplexParsing) {
       return withFeature(Feature.allowComplexParsing, allowComplexParsing);
     }
+
+    public P withUnsupportedStatements(boolean allowUnsupportedStatements) {
+        return withFeature(Feature.allowUnsupportedStatements, allowUnsupportedStatements);
+    }
+    
     public P withFeature(Feature f, boolean enabled) {
         getConfiguration().setValue(f, enabled);
         return me();

@@ -234,4 +234,9 @@ public class StatementVisitorAdapter implements StatementVisitor {
     @Override
     public void visit(AlterSystemStatement alterSystemStatement) {
     }
+
+    @Override
+    public void visit(UnsupportedStatement unsupportedStatement) {
+
+    }
 }

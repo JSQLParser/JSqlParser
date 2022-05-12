@@ -79,6 +79,7 @@ public class ParserKeywordsUtils {
                 ,  { "INNER" , RESTRICTED_SQL2016 }
                 ,  { "INTERSECT" , RESTRICTED_SQL2016 }
                 ,  { "INTERVAL", RESTRICTED_SQL2016 }
+                ,  { "INTO" , RESTRICTED_JSQLPARSER }
                 ,  { "IS" , RESTRICTED_SQL2016 }
                 ,  { "JOIN" , RESTRICTED_JSQLPARSER }
                 ,  { "LATERAL" , RESTRICTED_SQL2016 }
@@ -97,6 +98,7 @@ public class ParserKeywordsUtils {
                 ,  { "OR" , RESTRICTED_SQL2016 }
                 ,  { "ORDER" , RESTRICTED_SQL2016 }
                 ,  { "OUTER" , RESTRICTED_JSQLPARSER }
+                ,  { "OUTPUT" , RESTRICTED_JSQLPARSER }
                 ,  { "OPTIMIZE ", RESTRICTED_JSQLPARSER }
                 ,  { "PIVOT" , RESTRICTED_JSQLPARSER }
                 ,  { "PROCEDURE" , RESTRICTED_ALIAS }

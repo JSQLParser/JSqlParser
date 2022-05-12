@@ -271,16 +271,31 @@ public final class CCJSqlParserUtil {
      * @return the statements parsed
      */
     public static Statements parseStatements(String sqls) throws JSQLParserException {
+        return parseStatements(sqls, null);
+    }
+
+    /**
+     * Parse a statement list.
+     *
+     * @return the statements parsed
+     */
+    public static Statements parseStatements(String sqls, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         Statements statements = null;
 
         // first, try to parse fast and simple
         try {
             CCJSqlParser parser = newParser(sqls).withAllowComplexParsing(false);
+            if (consumer != null) {
+                consumer.accept(parser);
+            }
             statements = parseStatements(parser);
         } catch (JSQLParserException ex) {
             // when fast simple parsing fails, try complex parsing but only if it has a chance to succeed
             if (getNestingDepth(sqls)<=ALLOWED_NESTING_DEPTH) {
                 CCJSqlParser parser = newParser(sqls).withAllowComplexParsing(true);
+                if (consumer != null) {
+                    consumer.accept(parser);
+                }
                 statements = parseStatements(parser);
             }
         }

@@ -40,6 +40,8 @@ public class AlterExpression {
   private List<ColumnDataType> colDataTypeList;
   private List<ColumnDropNotNull> columnDropNotNullList;
 
+  private List<ColumnDropDefault> columnDropDefaultList;
+
   private List<String> pkColumns;
   private List<String> ukColumns;
   private String ukName;
@@ -239,6 +241,13 @@ public class AlterExpression {
     columnDropNotNullList.add(columnDropNotNull);
   }
 
+  public void addColDropDefault(ColumnDropDefault columnDropDefault) {
+    if (columnDropDefaultList == null) {
+      columnDropDefaultList = new ArrayList<>();
+    }
+    columnDropDefaultList.add(columnDropDefault);
+  }
+
   public List<String> getFkSourceColumns() {
     return fkSourceColumns;
   }
@@ -425,20 +434,11 @@ public class AlterExpression {
             b.append(")");
           }
         } else if (getColumnDropNotNullList() != null) {
-          if (operation == AlterOperation.CHANGE) {
-            if (optionalSpecifier != null) {
-              b.append(optionalSpecifier).append(" ");
-            }
-            b.append(columnOldName).append(" ");
-          } else if (columnDropNotNullList.size() > 1) {
-            b.append("(");
-          } else {
-            b.append("COLUMN ");
-          }
+          b.append("COLUMN ");
           b.append(PlainSelect.getStringList(columnDropNotNullList));
-          if (columnDropNotNullList.size() > 1) {
-            b.append(")");
-          }
+        } else if ( columnDropDefaultList != null && !columnDropDefaultList.isEmpty() ) {
+          b.append("COLUMN ");
+          b.append(PlainSelect.getStringList(columnDropDefaultList));
         } else if (constraintName != null) {
           b.append("CONSTRAINT ");
           if (usingIfExists) {
@@ -729,6 +729,24 @@ public class AlterExpression {
     @Override
     public String toString() {
       return columnName + " DROP" + (withNot ? " NOT " : " ") + "NULL";
+    }
+  }
+
+  public static final class ColumnDropDefault {
+
+    private final String columnName;
+
+    public ColumnDropDefault(String columnName) {
+      this.columnName = columnName;
+    }
+
+    public String getColumnName() {
+      return columnName;
+    }
+
+    @Override
+    public String toString() {
+      return columnName + " DROP DEFAULT";
     }
   }
 }
