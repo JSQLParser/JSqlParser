@@ -170,7 +170,6 @@ public class CreateTableTest {
         CreateTable createTable
                 = (CreateTable) CCJSqlParserUtil.parseStatements(sqlStr).getStatements().get(0);
 
-        System.out.println(createTable.toString());
     }
 
     @Test
@@ -856,5 +855,10 @@ public class CreateTableTest {
     public void testCreateUnionIssue1309() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "CREATE TABLE temp.abc AS (SELECT c FROM t1) UNION (SELECT c FROM t2)");
+    }
+
+    @Test
+    public void testCreateTableBinaryIssue1518() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE `s` (`a` enum ('a', 'b', 'c') CHARACTER SET binary COLLATE binary)");
     }
 }

@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
@@ -378,5 +379,10 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     @Override
     public void visit(AlterSystemStatement alterSystemStatement) {
         alterSystemStatement.appendTo(buffer);
+    }
+
+    @Override
+    public void visit(UnsupportedStatement unsupportedStatement) {
+        unsupportedStatement.appendTo(buffer);
     }
 }

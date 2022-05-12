@@ -54,15 +54,17 @@ Any requests for examples or any particular documentation will be most welcome.
 
 ## Extensions in the latest SNAPSHOT version 4.5
 
-- `INSERT` supports `SetOperations` (e. g. `INSERT INTO ... SELECT ... FROM ... UNION SELECT ... FROM ...`), those `SetOperations` are used both for `SELECT` and `VALUES` clauses (API change) in order to simplify the Grammar
-- `(WITH ... SELECT ...)` statements within brackets are now supported
-
 Additionally, we have fixed many errors and improved the code quality and the test coverage.
 
 ## Extensions of JSqlParser releases
 
 * [Release Notes](https://github.com/JSQLParser/JSqlParser/releases)
 * Modifications before GitHub's release tagging are listed in the [Older Releases](https://github.com/JSQLParser/JSqlParser/wiki/Older-Releases) page.
+* UnsupportedStatement support instead of throwing Exceptions
+* support for **RETURNING** clause of a **DELETE** statement
+* Add support for `... ALTER COLUMN ... DROP DEFAULT`
+* `INSERT` supports `SetOperations` (e. g. `INSERT INTO ... SELECT ... FROM ... UNION SELECT ... FROM ...`), those `SetOperations` are used both for `SELECT` and `VALUES` clauses (API change) in order to simplify the Grammar
+* `(WITH ... SELECT ...)` statements within brackets are now supported
 
 
 ## Building from the sources

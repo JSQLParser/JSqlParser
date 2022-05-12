@@ -120,4 +120,6 @@ public interface StatementVisitor {
     void visit(PurgeStatement purgeStatement);
 
     void visit(AlterSystemStatement alterSystemStatement);
+
+    void visit(UnsupportedStatement unsupportedStatement);
 }

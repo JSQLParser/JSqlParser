@@ -445,4 +445,24 @@ public class InsertTest {
                 , true
         );
     }
+
+    @Test
+    public void testInsertOutputClause() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO dbo.EmployeeSales (LastName, FirstName, CurrentSales)  \n" +
+                        "  OUTPUT INSERTED.EmployeeID,\n" +
+                        "         INSERTED.LastName,   \n" +
+                        "         INSERTED.FirstName,   \n" +
+                        "         INSERTED.CurrentSales,\n" +
+                        "         INSERTED.ProjectedSales\n" +
+                        "  INTO @MyTableVar  \n" +
+                        "    SELECT c.LastName, c.FirstName, sp.SalesYTD  \n" +
+                        "    FROM Sales.SalesPerson AS sp  \n" +
+                        "    INNER JOIN Person.Person AS c  \n" +
+                        "        ON sp.BusinessEntityID = c.BusinessEntityID  \n" +
+                        "    WHERE sp.BusinessEntityID LIKE '2%'  \n" +
+                        "    ORDER BY c.LastName, c.FirstName"
+                , true
+        );
+    }
 }
