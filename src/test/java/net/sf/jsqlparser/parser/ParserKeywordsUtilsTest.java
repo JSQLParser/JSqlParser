@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 class ParserKeywordsUtilsTest {
     final static File FILE = new File("src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt");
@@ -23,13 +22,13 @@ class ParserKeywordsUtilsTest {
     @Test
     void getAllKeywords() throws IOException {
         Set<String> allKeywords =  ParserKeywordsUtils.getAllKeywordsUsingRegex(FILE);
-        assertFalse( allKeywords.isEmpty(), "Keyword List must not be empty!" );
+        Assertions.assertFalse( allKeywords.isEmpty(), "Keyword List must not be empty!" );
     }
 
     @Test
     void getAllKeywordsUsingJavaCC() throws Exception {
         Set<String> allKeywords =  ParserKeywordsUtils.getAllKeywordsUsingJavaCC(FILE);
-        assertFalse( allKeywords.isEmpty(), "Keyword List must not be empty!" );
+        Assertions.assertFalse( allKeywords.isEmpty(), "Keyword List must not be empty!" );
     }
 
     // Test, if all Tokens found per RegEx are also found from the JavaCCParser
