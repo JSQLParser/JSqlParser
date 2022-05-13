@@ -35,7 +35,7 @@ public class KeywordsTest {
         File file = new File("src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt");
         List<String> keywords = new ArrayList<>();
         try {
-            keywords.addAll( ParserKeywordsUtils.getAllKeywords(file) );
+            keywords.addAll( ParserKeywordsUtils.getAllKeywordsUsingRegex(file) );
             for (String reserved: ParserKeywordsUtils.getReservedKeywords(ParserKeywordsUtils.RESTRICTED_JSQLPARSER)) {
                 keywords.remove(reserved);
             }
