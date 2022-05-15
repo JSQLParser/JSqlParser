@@ -100,6 +100,7 @@ public enum H2Version implements Version {
                     // http://h2database.com/html/commands.html#insert
                     Feature.insert,
                     Feature.insertValues,
+                    Feature.values,
                     Feature.insertFromSelect,
                     // http://h2database.com/html/commands.html#update
                     Feature.update,
@@ -136,7 +137,8 @@ public enum H2Version implements Version {
                     // http://www.h2database.com/html/commands.html#grant_role
                     Feature.grant,
                     // http://h2database.com/html/commands.html#commit
-                    Feature.commit));
+                    Feature.commit
+            ));
 
     private Set<Feature> features;
     private String versionString;

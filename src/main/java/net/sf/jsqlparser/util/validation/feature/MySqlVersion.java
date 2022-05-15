@@ -54,6 +54,7 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/insert.html
                     Feature.insert,
                     Feature.insertValues,
+                    Feature.values,
                     Feature.insertFromSelect, Feature.insertUseSet, Feature.insertModifierPriority,
                     Feature.insertModifierIgnore, Feature.insertUseDuplicateKeyUpdate,
 

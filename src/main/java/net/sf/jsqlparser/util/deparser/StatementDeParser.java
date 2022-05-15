@@ -143,6 +143,9 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         expressionDeParser.setBuffer(buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         if (select.getWithItemsList() != null && !select.getWithItemsList().isEmpty()) {
+            if (select.isUsingWithBrackets()) {
+                buffer.append("( ");
+            }
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = select.getWithItemsList().iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
@@ -154,6 +157,9 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
             }
         }
         select.getSelectBody().accept(selectDeParser);
+        if (select.isUsingWithBrackets()) {
+            buffer.append(" )");
+        }
     }
 
     @Override

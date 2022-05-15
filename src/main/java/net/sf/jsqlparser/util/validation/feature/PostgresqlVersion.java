@@ -109,6 +109,7 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-insert.html
                     Feature.insert,
                     Feature.insertValues,
+                    Feature.values,
                     Feature.insertFromSelect,
                     Feature.insertReturningAll, Feature.insertReturningExpressionList,
                     // https://www.postgresql.org/docs/current/sql-update.html

@@ -544,8 +544,29 @@ Statement SingleStatement() :
 {
     try {
         (
+            LOOKAHEAD(2) (
+                "(" with=WithList()
+                (
+                    stm = Select( with ) { ( (Select) stm).setUsingWithBrackets(true); }
+
+                    /* @todo: unsure, if we need to implement those
+                              since DMLs in brackets do not really make any sense
+                    |
+                    stm = Insert( with ) { ( (Insert) stm).setUsingWithBrackets(true); }
+                    |
+                    stm = Update( with ) { ( (Update) stm).setUsingWithBrackets(true); }
+                    |
+                    stm = Delete( with ) { ( (Delete) stm).setUsingWithBrackets(true); }
+                    |
+                    stm = Merge( with ) { ( (Merge) stm).setUsingWithBrackets(true); }
+
+                     */
+                )
+                ")"
+            )
+            |
             (
-                [ with=WithList() {  } ]
+                [ with=WithList() ]
                 (
                     stm = Select( with )
                     |
@@ -558,86 +579,86 @@ Statement SingleStatement() :
                     stm = Merge( with)
                 )
             )
-        |
-        stm = Upsert()
-        |
-        LOOKAHEAD(3)
-        stm = Replace()
-        |
-        LOOKAHEAD(2)
-        stm = AlterTable()
-        |
-        LOOKAHEAD(2)
-        stm = AlterSession()
-        |
-        LOOKAHEAD(CreateFunctionStatement())
-        stm = CreateFunctionStatement()
-        |
-        LOOKAHEAD(CreateIndex())
-        stm = CreateIndex()
-        |
-        LOOKAHEAD(CreateSchema())
-        stm = CreateSchema()
-        |
-        LOOKAHEAD(CreateSequence())
-        stm = CreateSequence()
-        |
-        LOOKAHEAD(CreateSynonym())
-        stm = CreateSynonym()
-        |
-        LOOKAHEAD(CreateTable())
-        stm = CreateTable()
-        |
-        LOOKAHEAD(CreateView())
-        stm = CreateView()
-        |
-        LOOKAHEAD(AlterView())
-        stm = AlterView()
-        |
-        LOOKAHEAD(AlterSequence())
-        stm = AlterSequence()
-        |
-        stm = Drop()
-        |
-        stm = Truncate()
-        |
-        stm = Execute()
-        |
-        stm = Set()
-        |
-        stm = RenameTableStatement()
-        |
-        stm = Reset()
-        |
-        LOOKAHEAD(ShowColumns())
-        stm = ShowColumns()
-        |
-        LOOKAHEAD(ShowTables())
-        stm = ShowTables()
-        |
-        stm = Show()
-        |
-        stm = Use()
-        |
-        stm = SavepointStatement()
-        |
-        stm = RollbackStatement()
-        |
-        stm = Commit()
-        |
-        stm = Comment()
-        |
-        stm = Describe()
-        |
-        stm = Explain()
-        |
-        stm = Declare()
-        |
-        stm = Grant()
-        |
-        stm = PurgeStatement()
-        |
-        stm = AlterSystemStatement()
+            |
+            stm = Upsert()
+            |
+            LOOKAHEAD(3)
+            stm = Replace()
+            |
+            LOOKAHEAD(2)
+            stm = AlterTable()
+            |
+            LOOKAHEAD(2)
+            stm = AlterSession()
+            |
+            LOOKAHEAD(CreateFunctionStatement())
+            stm = CreateFunctionStatement()
+            |
+            LOOKAHEAD(CreateIndex())
+            stm = CreateIndex()
+            |
+            LOOKAHEAD(CreateSchema())
+            stm = CreateSchema()
+            |
+            LOOKAHEAD(CreateSequence())
+            stm = CreateSequence()
+            |
+            LOOKAHEAD(CreateSynonym())
+            stm = CreateSynonym()
+            |
+            LOOKAHEAD(CreateTable())
+            stm = CreateTable()
+            |
+            LOOKAHEAD(CreateView())
+            stm = CreateView()
+            |
+            LOOKAHEAD(AlterView())
+            stm = AlterView()
+            |
+            LOOKAHEAD(AlterSequence())
+            stm = AlterSequence()
+            |
+            stm = Drop()
+            |
+            stm = Truncate()
+            |
+            stm = Execute()
+            |
+            stm = Set()
+            |
+            stm = RenameTableStatement()
+            |
+            stm = Reset()
+            |
+            LOOKAHEAD(ShowColumns())
+            stm = ShowColumns()
+            |
+            LOOKAHEAD(ShowTables())
+            stm = ShowTables()
+            |
+            stm = Show()
+            |
+            stm = Use()
+            |
+            stm = SavepointStatement()
+            |
+            stm = RollbackStatement()
+            |
+            stm = Commit()
+            |
+            stm = Comment()
+            |
+            stm = Describe()
+            |
+            stm = Explain()
+            |
+            stm = Declare()
+            |
+            stm = Grant()
+            |
+            stm = PurgeStatement()
+            |
+            stm = AlterSystemStatement()
         )
         { return stm; }
     } catch (ParseException e) {
@@ -1136,7 +1157,7 @@ ShowStatement Show(): {
 ValuesStatement Values(): {
     ItemsList itemsList;
 } {
-    <K_VALUES>
+    ( <K_VALUES> | <K_VALUE> )
 
     itemsList = SimpleExpressionList(false)
 
@@ -1317,14 +1338,9 @@ Insert Insert( List<WithItem> with ):
     Table table = null;
     Column tableColumn = null;
     List<Column> columns = new ArrayList<Column>();
-    List<Expression> primaryExpList = new ArrayList<Expression>();
-    ItemsList itemsList = null;
     Expression exp = null;
-    MultiExpressionList multiExpr = null;
-    List<SelectItem> returning = null;
+    List<SelectExpressionItem> returning = null;
     Select select = null;
-    boolean useValues = true;
-    boolean useSelectBrackets = false;
     boolean useDuplicate = false;
     List<Column> duplicateUpdateColumns = null;
     List<Expression> duplicateUpdateExpressionList = null;
@@ -1354,38 +1370,8 @@ Insert Insert( List<WithItem> with ):
     [ outputClause = OutputClause() { insert.setOutputClause(outputClause); } ]
 
     (
-        LOOKAHEAD(2) [<K_VALUES> | <K_VALUE>]  "(" exp=SimpleExpression() { primaryExpList.add(exp); }
-                ("," exp=SimpleExpression()  { primaryExpList.add(exp); } )* ")" { itemsList = new ExpressionList(primaryExpList); }
-            ("," "(" exp=SimpleExpression() {
-                    if (multiExpr==null) {
-                        multiExpr=new MultiExpressionList();
-                        multiExpr.addExpressionList((ExpressionList)itemsList);
-                        itemsList = multiExpr;
-                    }
-                    primaryExpList = new ArrayList<Expression>();
-                    primaryExpList.add(exp); }
-                ("," exp=SimpleExpression() { primaryExpList.add(exp); } )* ")" { multiExpr.addExpressionList(primaryExpList); } )*
-
-        |
-
         (
-            LOOKAHEAD(2) "(" { useSelectBrackets = true; }
-                { insert.setUseValues(false); }
-                select = SelectWithWithItems( )
-            ")"
-            |
-            { insert.setUseValues(false); }
-            select = SelectWithWithItems( )
-        )
-
-        |
-
-        <K_SET>
-        (
-            {
-                useSet = true;
-                insert.setUseValues(false);
-            }
+            <K_SET> { useSet = true; }
             tableColumn=Column() "=" exp=SimpleExpression()
             {
                 setColumns = new ArrayList<Column>();
@@ -1397,6 +1383,8 @@ Insert Insert( List<WithItem> with ):
                 { setColumns.add(tableColumn);
                 setExpressionList.add(exp); } )*
         )
+        |
+        select = SelectWithWithItems( )
     )
 
     [ <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
@@ -1420,8 +1408,6 @@ Insert Insert( List<WithItem> with ):
             insert.setColumns(columns);
         }
         return insert.withWithItemsList(with)
-              .withItemsList(itemsList)
-              .withUseSelectBrackets(useSelectBrackets)
               .withSelect(select)
               .withTable(table)
               .withUseDuplicate(useDuplicate)
@@ -1750,7 +1736,7 @@ String RelObjectName() :
 {    Token tk = null; String result = null; }
 {
     (result = RelObjectNameWithoutValue()
-		| tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON> | tk=<K_ORDER> | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE> 
+		| tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON> | tk=<K_ORDER> | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE>
         | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES> )
 
     {
@@ -1835,7 +1821,14 @@ Select SelectWithWithItems( ):
     List<WithItem> with = null;
 }
 {
-    [ with=WithList() {  } ] select = Select( with )
+    LOOKAHEAD(2) (
+        "(" with=WithList()  select = Select( with ) ")" { return select.withUsingWithBrackets(true); }
+    )
+    |
+    (
+         [ with=WithList() ] select = Select( with )
+    )
+
     {
         return select;
     }
