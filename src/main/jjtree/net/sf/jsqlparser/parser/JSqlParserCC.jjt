@@ -1821,14 +1821,9 @@ Select SelectWithWithItems( ):
     List<WithItem> with = null;
 }
 {
-    // LOOKAHEAD(2) ( 
-    //    "(" with=WithList()  select = Select( with ) ")" { select.withUsingWithBrackets(true); }
-    //)
-    //|
-    //(
-        [ with=WithList() ] 
-        select = Select( with )
-    //)
+    (LOOKAHEAD(2) (  "(" with=WithList()  select = Select( with ) ")" { select.withUsingWithBrackets(true); }   )
+    |
+    (  [with=WithList()] select = Select( with )  ))
     {
             return select;
     }

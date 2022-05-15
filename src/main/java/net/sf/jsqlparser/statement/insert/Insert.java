@@ -255,6 +255,10 @@ public class Insert implements Statement {
         if (columns != null) {
             sql.append(PlainSelect.getStringList(columns, true, true)).append(" ");
         }
+        
+        if (outputClause !=null) {
+            sql.append(outputClause.toString());
+        }
 
         if (select != null) {
             sql.append(select);
