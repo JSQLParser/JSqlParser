@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
@@ -142,6 +143,9 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         expressionDeParser.setBuffer(buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         if (select.getWithItemsList() != null && !select.getWithItemsList().isEmpty()) {
+            if (select.isUsingWithBrackets()) {
+                buffer.append("( ");
+            }
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = select.getWithItemsList().iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
@@ -153,6 +157,9 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
             }
         }
         select.getSelectBody().accept(selectDeParser);
+        if (select.isUsingWithBrackets()) {
+            buffer.append(" )");
+        }
     }
 
     @Override
@@ -372,5 +379,10 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     @Override
     public void visit(AlterSystemStatement alterSystemStatement) {
         alterSystemStatement.appendTo(buffer);
+    }
+
+    @Override
+    public void visit(UnsupportedStatement unsupportedStatement) {
+        unsupportedStatement.appendTo(buffer);
     }
 }

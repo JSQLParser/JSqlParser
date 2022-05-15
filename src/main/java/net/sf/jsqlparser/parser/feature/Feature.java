@@ -725,7 +725,13 @@ public enum Feature {
      * allows complex expression parameters or named parameters for functions
      * will be switched off, when deep nesting of functions is detected
      */
-     allowComplexParsing(true)
+     allowComplexParsing(true),
+
+    /**
+     * allows passing through Unsupported Statements as a plain List of Tokens
+     * needs to be switched off, when VALIDATING statements or parsing blocks
+     */
+    allowUnsupportedStatements(false),
     ;
 
     private Object value;

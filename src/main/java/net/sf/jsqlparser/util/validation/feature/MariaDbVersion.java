@@ -60,7 +60,7 @@ public enum MariaDbVersion implements Version {
                     Feature.withItem, Feature.withItemRecursive,
 
                     // https://mariadb.com/kb/en/insert/
-                    Feature.insert, Feature.insertValues,
+                    Feature.insert, Feature.insertValues, Feature.values,
                     Feature.insertFromSelect, Feature.insertModifierPriority, Feature.insertModifierIgnore,
                     Feature.insertUseSet, Feature.insertUseDuplicateKeyUpdate, Feature.insertReturningExpressionList,
 
