@@ -18,7 +18,7 @@ options {
 //  FORCE_LA_CHECK = true;
     UNICODE_INPUT = true;
     JAVA_TEMPLATE_TYPE = "modern";
-    JDK_VERSION = "1.7";
+    JDK_VERSION = "1.8";
     TOKEN_EXTENDS = "BaseToken";
     COMMON_TOKEN_ACTION = true;
     NODE_DEFAULT_VOID = true;
@@ -1339,7 +1339,7 @@ Insert Insert( List<WithItem> with ):
     Column tableColumn = null;
     List<Column> columns = new ArrayList<Column>();
     Expression exp = null;
-    List<SelectExpressionItem> returning = null;
+    List<SelectItem> returning = null;
     Select select = null;
     boolean useDuplicate = false;
     List<Column> duplicateUpdateColumns = null;
@@ -1821,16 +1821,16 @@ Select SelectWithWithItems( ):
     List<WithItem> with = null;
 }
 {
-    LOOKAHEAD(2) (
-        "(" with=WithList()  select = Select( with ) ")" { return select.withUsingWithBrackets(true); }
-    )
-    |
-    (
-         [ with=WithList() ] select = Select( with )
-    )
-
+    // LOOKAHEAD(2) ( 
+    //    "(" with=WithList()  select = Select( with ) ")" { select.withUsingWithBrackets(true); }
+    //)
+    //|
+    //(
+        [ with=WithList() ] 
+        select = Select( with )
+    //)
     {
-        return select;
+            return select;
     }
 }
 
