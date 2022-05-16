@@ -228,7 +228,7 @@ task renderRR() {
         
         javaexec { 
           standardOutput = new FileOutputStream("${buildDir}/rr/JSqlParserCC.ebnf")
-          main="-jar";
+          main="-jar"
           args = [
               "$buildDir/rr/convert.war",
               "$buildDir/generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj"
@@ -236,7 +236,7 @@ task renderRR() {
         }
         
         javaexec {
-          main="-jar";
+          main="-jar"
           args = [
               "$buildDir/rr/rr.war",
               "-noepsilon",
