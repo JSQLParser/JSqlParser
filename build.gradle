@@ -52,17 +52,6 @@ dependencies {
 }
 
 compileJavacc {
-    doFirst {
-        javaexec {
-            group = "Execution"
-            description = "Run the main class with JavaExecTask"
-            classpath = sourceSets.main.runtimeClasspath
-            args = [
-                    project(':JSQLParser').file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath
-            ]
-            mainClass = 'net.sf.jsqlparser.parser.ParserKeywordsUtils'
-        }
-    }
     arguments = [grammar_encoding: 'UTF-8', static: 'false', java_template_type: 'modern']
 }
 
@@ -261,6 +250,16 @@ task renderRR() {
             ]
         } 
     }
+}
+
+task updateKeywords(type: JavaExec) {
+    group = "Execution"
+    description = "Run the main class with JavaExecTask"
+    classpath = sourceSets.main.runtimeClasspath
+    args = [
+            project(':JSQLParser').file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath
+    ]
+    mainClass = 'net.sf.jsqlparser.parser.ParserKeywordsUtils'
 }
 
 publishing {
