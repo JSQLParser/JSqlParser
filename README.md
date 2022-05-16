@@ -50,7 +50,7 @@ To help JSqlParser's development you are encouraged to provide
 
 **Please write in English, since it's the language most of the dev team knows.**
 
-Also I would like to know about needed examples or documentation stuff.
+Any requests for examples or any particular documentation will be most welcome.
 
 ## Extensions in the latest SNAPSHOT version 4.5
 
@@ -62,6 +62,9 @@ Additionally, we have fixed many errors and improved the code quality and the te
 * Modifications before GitHub's release tagging are listed in the [Older Releases](https://github.com/JSQLParser/JSqlParser/wiki/Older-Releases) page.
 * UnsupportedStatement support instead of throwing Exceptions
 * support for **RETURNING** clause of a **DELETE** statement
+* Add support for `... ALTER COLUMN ... DROP DEFAULT`
+* `INSERT` supports `SetOperations` (e. g. `INSERT INTO ... SELECT ... FROM ... UNION SELECT ... FROM ...`), those `SetOperations` are used both for `SELECT` and `VALUES` clauses (API change) in order to simplify the Grammar
+* `(WITH ... SELECT ...)` statements within brackets are now supported
 * Better Keyword Management and Documentation of Keywords
 
 
@@ -79,7 +82,7 @@ gradle build
     
 The project requires the following to build:
 - Maven (or Gradle)
-- JDK 8 or later. The jar will target JDK 8, but the version of the maven-compiler-plugin that JsqlParser uses requires JDK 8+
+- JDK 8 or later. The JAR will target JDK 8, but the version of the maven-compiler-plugin that JSqlParser uses requires JDK 8+
 
 This will produce the jsqlparser-VERSION.jar file in the `target/` directory (`build/libs/jsqlparser-VERSION.jar` in case of Gradle).
 
@@ -109,7 +112,7 @@ This is a valid piece of source code:
 
 ## Maven Repository
 
-JSQLParser is deployed at sonatypes open source maven repository. 
+JSQLParser is deployed at Sonatype open source maven repository. 
 Starting from now I will deploy there. The first snapshot version there will be 0.8.5-SNAPSHOT.
 To use it this is the repository configuration:
 
@@ -124,14 +127,14 @@ To use it this is the repository configuration:
      </repository>
 </repositories>
 ```
-This repositories releases will be synched to maven central. Snapshots remain at sonatype.
+These repository releases will be synchronised to Maven Central. Snapshots remain at Sonatype.
 
 And this is the dependency declaration in your pom:
 ```xml
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>4.2</version>
+	<version>4.4</version>
 </dependency>
 ```
 
