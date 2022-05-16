@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
@@ -253,6 +254,10 @@ public class Insert implements Statement {
         sql.append(table).append(" ");
         if (columns != null) {
             sql.append(PlainSelect.getStringList(columns, true, true)).append(" ");
+        }
+        
+        if (outputClause !=null) {
+            sql.append(outputClause.toString());
         }
 
         if (select != null) {
