@@ -2734,6 +2734,19 @@ GroupByElement GroupByColumnReferences():
     <K_GROUP> <K_BY>
     (     LOOKAHEAD(2) (
               "(" ")" { groupBy.withUsingBrackets(true); }
+              (
+                LOOKAHEAD(2) (
+                  <K_GROUPING> <K_SETS> "("
+                      ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }
+                          | LOOKAHEAD(3) "(" list = SimpleExpressionList(true) ")" { groupBy.addGroupingSet(list); }
+                          | expr = SimpleExpression() { groupBy.addGroupingSet(expr); } )
+
+                      ( "," ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }
+                          | LOOKAHEAD(3) "(" list = SimpleExpressionList(true) ")" { groupBy.addGroupingSet(list); }
+                          | expr = SimpleExpression() { groupBy.addGroupingSet(expr); } ) )*
+                  ")"
+                )
+              )?
           )
           |
           LOOKAHEAD(2) ( 
@@ -2750,6 +2763,19 @@ GroupByElement GroupByColumnReferences():
           |
           LOOKAHEAD(2) (  
             list = ComplexExpressionList() { groupBy.setGroupByExpressionList(list.withUsingBrackets(false)); }
+            (
+              LOOKAHEAD(2) (
+                <K_GROUPING> <K_SETS> "("
+                    ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }
+                        | LOOKAHEAD(3) "(" list = SimpleExpressionList(true) ")" { groupBy.addGroupingSet(list); }
+                        | expr = SimpleExpression() { groupBy.addGroupingSet(expr); } )
+
+                    ( "," ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }
+                        | LOOKAHEAD(3) "(" list = SimpleExpressionList(true) ")" { groupBy.addGroupingSet(list); }
+                        | expr = SimpleExpression() { groupBy.addGroupingSet(expr); } ) )*
+                ")"
+              )
+            )?
           )
     )
     {
