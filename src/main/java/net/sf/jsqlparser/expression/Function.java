@@ -14,6 +14,8 @@ import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -25,7 +27,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private List<String> nameparts;
     private ExpressionList parameters;
     private NamedExpressionList namedParameters;
-    private boolean allColumns = false;
     private boolean distinct = false;
     private boolean unique = false;
     private boolean isEscaped = false;
@@ -61,12 +62,19 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         nameparts = string;
     }
 
+    @Deprecated
     public boolean isAllColumns() {
-        return allColumns;
+        List expressions = parameters.getExpressions();
+
+        return expressions.size()==1
+                && (expressions.get(0) instanceof AllColumns
+                     || expressions.get(0) instanceof AllTableColumns );
     }
 
+    @Deprecated
     public void setAllColumns(boolean b) {
-        allColumns = b;
+        parameters.getExpressions().clear();
+        parameters.addExpressions(new AllColumns());
     }
 
     public boolean isIgnoreNulls() {

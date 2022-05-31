@@ -12,3 +12,4 @@ case when row_number() over (partition by bo# order by staleness, osize, obj#) =
 from f
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: java.lang.NullPointerException: Cannot invoke "net.sf.jsqlparser.expression.operators.relational.ExpressionList.getExpressions()" because "this.parameters" is null recorded first on 31 May 2022, 17:49:11
