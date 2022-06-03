@@ -1847,6 +1847,8 @@ String RelObjectNameWithoutValue() :
       | tk=<K_QUERY>
       | tk=<K_FULLTEXT>
       | tk=<K_TABLESPACE>
+
+      | tk=<K_KEEP>
       )
 
     { return tk.image; }

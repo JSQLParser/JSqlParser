@@ -14,4 +14,4 @@ union all
 from v$backup_piece bp)
 
 
---@FAILURE: Encountered unexpected token: "." "." recorded first on Aug 3, 2021, 7:20:08 AM
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on 3 Jun 2022, 18:48:09
