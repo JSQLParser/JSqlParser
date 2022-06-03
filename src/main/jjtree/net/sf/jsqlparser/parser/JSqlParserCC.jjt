@@ -169,6 +169,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_COMMA: ",">
 |   <K_COMMIT:"COMMIT">
 |   <K_COMMENT:"COMMENT">
+|   <K_CONFLICT:"CONFLICT">
 |   <K_CONNECT:"CONNECT">
 |   <K_CONNECT_BY_ROOT: "CONNECT_BY_ROOT"> 
 |   <K_CONSTRAINT:"CONSTRAINT">
@@ -1353,6 +1354,10 @@ Insert Insert( List<WithItem> with ):
     String name = null;
     boolean useAs = false;
     OutputClause outputClause = null;
+
+    UpdateSet updateSet = null;
+    InsertConflictTarget conflictTarget = null;
+    InsertConflictAction conflictAction = null;
 }
 {    
     <K_INSERT> { insert.setOracleHint(getOracleHint()); }
@@ -1387,7 +1392,7 @@ Insert Insert( List<WithItem> with ):
         select = SelectWithWithItems( )
     )
 
-    [ <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
+    [ LOOKAHEAD(2) <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
         { useDuplicate = true; }
       tableColumn=Column() "=" exp=SimpleExpression()
         {
@@ -1400,6 +1405,11 @@ Insert Insert( List<WithItem> with ):
         { duplicateUpdateColumns.add(tableColumn);
         duplicateUpdateExpressionList.add(exp); } )*]
 
+    [
+        <K_ON> <K_CONFLICT>
+        [ conflictTarget = InsertConflictTarget() ]
+        conflictAction = InsertConflictAction() { insert.withConflictTarget(conflictTarget).setConflictAction(conflictAction); }
+    ]
 
     [ <K_RETURNING> returning=SelectItemsList() ]
 
@@ -1420,6 +1430,119 @@ Insert Insert( List<WithItem> with ):
               .withUseSetColumns(setColumns)
               .withSetExpressionList(setExpressionList);
     }
+}
+
+InsertConflictTarget  InsertConflictTarget():
+{
+    String indexColumnName = null;
+    Expression indexExpression = null;
+    Expression whereExpression = null;
+    String constraintName = null ;
+}
+{
+    (
+        (
+           "("
+            indexColumnName = RelObjectNameExt2()
+//            |
+//            (
+//                "(" indexExpression = Expression() ")"
+//            )
+
+            ")"
+            [ whereExpression = WhereClause() ]
+        )
+        |
+        (
+         <K_ON> <K_CONSTRAINT> constraintName = RelObjectNameExt2()
+        )
+    )
+
+    { return new InsertConflictTarget(indexColumnName, indexExpression, whereExpression, constraintName); }
+}
+
+InsertConflictAction InsertConflictAction():
+{
+    ArrayList<UpdateSet> updateSets = new ArrayList<UpdateSet>();
+    UpdateSet updateSet = null;
+    Expression whereExpression = null;
+
+    Column tableColumn = null;
+    SubSelect subSelect;
+    Expression valueExpression = null;
+    ExpressionList expressionList;
+}
+{
+    LOOKAHEAD(2) (
+        <K_DO> <K_NOTHING> { return new InsertConflictAction( ConflictActionType.DO_NOTHING ); }
+    )
+    |
+    (
+        <K_DO> <K_UPDATE> <K_SET>
+        (
+            LOOKAHEAD(3) tableColumn=Column()
+                           "=" valueExpression=SimpleExpression() {
+                                                                    updateSet = new UpdateSet();
+                                                                    updateSet.add(tableColumn);
+                                                                    updateSet.add(valueExpression);
+                                                                    updateSets.add(updateSet);
+                                                                    }
+                         (
+                            ","
+                            tableColumn=Column()
+                            "=" valueExpression=SimpleExpression() {
+                                                                    updateSet = new UpdateSet();
+                                                                    updateSet.add(tableColumn);
+                                                                    updateSet.add(valueExpression);
+                                                                    updateSets.add(updateSet);
+                                                                    }
+                        )*
+            |
+            (
+                { updateSet = new UpdateSet(); updateSets.add(updateSet); }
+
+                [ LOOKAHEAD(2) "(" { updateSet.setUsingBracketsForColumns(true); } ]
+                tableColumn=Column() { updateSet.add(tableColumn); }
+                ( LOOKAHEAD(2) "," tableColumn=Column() { updateSet.add(tableColumn); } )*
+                [ LOOKAHEAD(2) ")" ]
+
+                "="
+
+                (
+                    LOOKAHEAD(3) subSelect=SubSelect() { updateSet.add(subSelect.withUseBrackets(false)); }
+                    |
+                    LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
+                    |
+                    valueExpression = Expression() { updateSet.add(valueExpression); }
+                )
+
+                (
+                    ","  { updateSet = new UpdateSet(); updateSets.add(updateSet); }
+
+                    [ LOOKAHEAD(2) "(" { updateSet.setUsingBracketsForColumns(true); } ]
+                    tableColumn=Column() { updateSet.add(tableColumn); }
+                    ( LOOKAHEAD(2) "," tableColumn=Column() { updateSet.add(tableColumn); } )*
+                    [ LOOKAHEAD(2) ")" ]
+
+                    "="
+
+                    (
+                        LOOKAHEAD(3) subSelect=SubSelect() { updateSet.add(subSelect.withUseBrackets(false)); }
+                        |
+                        LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
+                        |
+                        valueExpression = Expression() { updateSet.add(valueExpression); }
+                    )
+                ) *
+            )
+        )
+
+        [ whereExpression = WhereClause() ]
+    )
+
+    { return new InsertConflictAction( ConflictActionType.DO_UPDATE )
+                        .withUpdateSets(updateSets)
+                        .withWhereExpression(whereExpression); }
 }
 
 OutputClause OutputClause():

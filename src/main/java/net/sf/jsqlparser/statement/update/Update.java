@@ -288,47 +288,8 @@ public class Update implements Statement {
                 }
             }
         }
-        b.append(" SET ");
 
-        int j = 0;
-        for (UpdateSet updateSet : updateSets) {
-            if (j > 0) {
-                b.append(", ");
-            }
-
-            if (updateSet.usingBracketsForColumns) {
-                b.append("(");
-            }
-
-            for (int i = 0; i < updateSet.columns.size(); i++) {
-                if (i > 0) {
-                    b.append(", ");
-                }
-                b.append(updateSet.columns.get(i));
-            }
-
-            if (updateSet.usingBracketsForColumns) {
-                b.append(")");
-            }
-
-            b.append(" = ");
-
-            if (updateSet.usingBracketsForValues) {
-                b.append("(");
-            }
-
-            for (int i = 0; i < updateSet.expressions.size(); i++) {
-                if (i > 0) {
-                    b.append(", ");
-                }
-                b.append(updateSet.expressions.get(i));
-            }
-            if (updateSet.usingBracketsForValues) {
-                b.append(")");
-            }
-
-            j++;
-        }
+        UpdateSet.appendUpdateSetsTo(b, updateSets);
 
         if (outputClause!=null) {
             outputClause.appendTo(b);
