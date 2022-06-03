@@ -1,18 +1,24 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2022 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.insert;
 
 import net.sf.jsqlparser.expression.Expression;
 
-import java.util.Objects;
-
 /**
- * @see https://www.postgresql.org/docs/current/sql-insert.html
+ * https://www.postgresql.org/docs/current/sql-insert.html
  * <pre>
  * conflict_target can be one of:
  *
  *     ( { index_column_name | ( index_expression ) } [ COLLATE collation ] [ opclass ] [, ...] ) [ WHERE index_predicate ]
  *     ON CONSTRAINT constraint_name
  * </pre>
- * <p>
  * Currently, COLLATE is not supported yet.
  */
 public class InsertConflictTarget {
@@ -88,12 +94,12 @@ public class InsertConflictTarget {
         if (constraintName==null) {
             builder.append(" ( ");
 
-            if (indexColumnName != null) {
+            //@todo: Index Expression is not supported yet
+            //if (indexColumnName != null) {
                 builder.append(indexColumnName);
-            } else {
-                //@todo: Index Expression is not supported yet
-                //builder.append(" ( ").append(indexExpression).append(" )");
-            }
+            //} else {
+            //    builder.append(" ( ").append(indexExpression).append(" )");
+            //}
             builder.append(" ");
 
             //@todo: Collate is not supported yet

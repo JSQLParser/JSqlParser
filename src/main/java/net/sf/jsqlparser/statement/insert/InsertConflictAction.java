@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2022 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.insert;
 
 import net.sf.jsqlparser.expression.Expression;
@@ -7,6 +16,20 @@ import net.sf.jsqlparser.statement.update.UpdateSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+
+/**
+ * https://www.postgresql.org/docs/current/sql-insert.html
+ * <pre>
+ * conflict_action is one of:
+ *
+ *     DO NOTHING
+ *     DO UPDATE SET { column_name = { expression | DEFAULT } |
+ *                     ( column_name [, ...] ) = [ ROW ] ( { expression | DEFAULT } [, ...] ) |
+ *                     ( column_name [, ...] ) = ( sub-SELECT )
+ *                   } [, ...]
+ *               [ WHERE condition ]
+ * </pre>
+ */
 
 public class InsertConflictAction {
     ConflictActionType conflictActionType;
@@ -60,6 +83,7 @@ public class InsertConflictAction {
         return this;
     }
 
+    @SuppressWarnings("PMD.SwitchStmtsShouldHaveDefault")
     public StringBuilder appendTo(StringBuilder builder) {
         switch (conflictActionType) {
             case DO_NOTHING:

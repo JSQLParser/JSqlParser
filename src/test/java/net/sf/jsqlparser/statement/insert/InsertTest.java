@@ -521,8 +521,8 @@ public class InsertTest {
                         "select * from a";
         Insert insert = (Insert) CCJSqlParserUtil.parse( sqlStr );
 
-        Expression whereExpression = CCJSqlParserUtil.parseExpression("a=1",false);
-        Expression valueExpression = CCJSqlParserUtil.parseExpression("b/2",false);
+        Expression whereExpression = CCJSqlParserUtil.parseExpression("a=1", false);
+        Expression valueExpression = CCJSqlParserUtil.parseExpression("b/2", false);
 
         InsertConflictTarget conflictTarget = new InsertConflictTarget("a", null, null, null);
         insert.setConflictTarget(conflictTarget);
