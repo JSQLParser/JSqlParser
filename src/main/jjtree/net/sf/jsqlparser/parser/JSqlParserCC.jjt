@@ -24,6 +24,7 @@ options {
     NODE_DEFAULT_VOID = true;
     TRACK_TOKENS = true;
     VISITOR = true;
+    GRAMMAR_ENCODING = "UTF-8";
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -1463,6 +1464,7 @@ InsertConflictTarget  InsertConflictTarget():
 
 InsertConflictAction InsertConflictAction():
 {
+    InsertConflictAction conflictAction;
     ArrayList<UpdateSet> updateSets = new ArrayList<UpdateSet>();
     UpdateSet updateSet = null;
     Expression whereExpression = null;
@@ -1473,51 +1475,34 @@ InsertConflictAction InsertConflictAction():
     ExpressionList expressionList;
 }
 {
-    LOOKAHEAD(2) (
-        <K_DO> <K_NOTHING> { return new InsertConflictAction( ConflictActionType.DO_NOTHING ); }
-    )
-    |
     (
-        <K_DO> <K_UPDATE> <K_SET>
+        LOOKAHEAD(2) (
+            <K_DO> <K_NOTHING> { conflictAction = new InsertConflictAction( ConflictActionType.DO_NOTHING ); }
+        )
+        |
         (
-            LOOKAHEAD(3) tableColumn=Column()
-                           "=" valueExpression=SimpleExpression() {
-                                                                    updateSet = new UpdateSet();
-                                                                    updateSet.add(tableColumn);
-                                                                    updateSet.add(valueExpression);
-                                                                    updateSets.add(updateSet);
-                                                                    }
-                         (
-                            ","
-                            tableColumn=Column()
-                            "=" valueExpression=SimpleExpression() {
-                                                                    updateSet = new UpdateSet();
-                                                                    updateSet.add(tableColumn);
-                                                                    updateSet.add(valueExpression);
-                                                                    updateSets.add(updateSet);
-                                                                    }
-                        )*
-            |
+            <K_DO> <K_UPDATE> <K_SET> { conflictAction = new InsertConflictAction( ConflictActionType.DO_UPDATE ); }
             (
-                { updateSet = new UpdateSet(); updateSets.add(updateSet); }
-
-                [ LOOKAHEAD(2) "(" { updateSet.setUsingBracketsForColumns(true); } ]
-                tableColumn=Column() { updateSet.add(tableColumn); }
-                ( LOOKAHEAD(2) "," tableColumn=Column() { updateSet.add(tableColumn); } )*
-                [ LOOKAHEAD(2) ")" ]
-
-                "="
-
+                LOOKAHEAD(3) tableColumn=Column()
+                               "=" valueExpression=SimpleExpression() {
+                                                                        updateSet = new UpdateSet();
+                                                                        updateSet.add(tableColumn);
+                                                                        updateSet.add(valueExpression);
+                                                                        updateSets.add(updateSet);
+                                                                        }
+                             (
+                                ","
+                                tableColumn=Column()
+                                "=" valueExpression=SimpleExpression() {
+                                                                        updateSet = new UpdateSet();
+                                                                        updateSet.add(tableColumn);
+                                                                        updateSet.add(valueExpression);
+                                                                        updateSets.add(updateSet);
+                                                                        }
+                            )*
+                |
                 (
-                    LOOKAHEAD(3) subSelect=SubSelect() { updateSet.add(subSelect.withUseBrackets(false)); }
-                    |
-                    LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
-                    |
-                    valueExpression = Expression() { updateSet.add(valueExpression); }
-                )
-
-                (
-                    ","  { updateSet = new UpdateSet(); updateSets.add(updateSet); }
+                    { updateSet = new UpdateSet(); updateSets.add(updateSet); }
 
                     [ LOOKAHEAD(2) "(" { updateSet.setUsingBracketsForColumns(true); } ]
                     tableColumn=Column() { updateSet.add(tableColumn); }
@@ -1533,16 +1518,35 @@ InsertConflictAction InsertConflictAction():
                         |
                         valueExpression = Expression() { updateSet.add(valueExpression); }
                     )
-                ) *
-            )
-        )
 
-        [ whereExpression = WhereClause() ]
+                    (
+                        ","  { updateSet = new UpdateSet(); updateSets.add(updateSet); }
+
+                        [ LOOKAHEAD(2) "(" { updateSet.setUsingBracketsForColumns(true); } ]
+                        tableColumn=Column() { updateSet.add(tableColumn); }
+                        ( LOOKAHEAD(2) "," tableColumn=Column() { updateSet.add(tableColumn); } )*
+                        [ LOOKAHEAD(2) ")" ]
+
+                        "="
+
+                        (
+                            LOOKAHEAD(3) subSelect=SubSelect() { updateSet.add(subSelect.withUseBrackets(false)); }
+                            |
+                            LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
+                            |
+                            valueExpression = Expression() { updateSet.add(valueExpression); }
+                        )
+                    ) *
+                )
+            )
+
+            [ whereExpression = WhereClause() ]
+        )
     )
 
-    { return new InsertConflictAction( ConflictActionType.DO_UPDATE )
-                        .withUpdateSets(updateSets)
-                        .withWhereExpression(whereExpression); }
+    { return conflictAction
+                .withUpdateSets(updateSets)
+                .withWhereExpression(whereExpression); }
 }
 
 OutputClause OutputClause():
