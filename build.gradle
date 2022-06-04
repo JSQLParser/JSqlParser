@@ -172,7 +172,7 @@ spotbugs {
 
 pmd {
     consoleOutput = false
-    toolVersion = "6.41.0"
+    toolVersion = "6.46.0"
     
     sourceSets = [sourceSets.main]
     
