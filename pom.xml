@@ -114,7 +114,7 @@
                 <configuration>
                     <rulesets>
                         <!-- Custom local file system rule set -->
-                        <ruleset>${project.basedir}/ruleset.xml</ruleset>
+                        <ruleset>${project.basedir}/config/pmd/ruleset.xml</ruleset>
                     </rulesets>
                     <excludes>
                         <exclude>**/*Bean.java</exclude>
@@ -625,7 +625,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <pmdVersion>6.36.0</pmdVersion>
+        <pmdVersion>6.41.0</pmdVersion>
     </properties>
 
     <description>JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes.
