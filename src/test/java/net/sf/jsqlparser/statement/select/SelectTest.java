@@ -2692,6 +2692,11 @@ public class SelectTest {
     }
 
     @Test
+    public void testNotRlike() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE first_name NOT RLIKE '^Ste(v|ph)en$'");
+    }
+
+    @Test
     public void testBooleanFunction1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE test_func(col1)";
         assertSqlCanBeParsedAndDeparsed(stmt);

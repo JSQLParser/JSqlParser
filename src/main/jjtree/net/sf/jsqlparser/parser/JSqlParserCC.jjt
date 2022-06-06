@@ -3300,7 +3300,7 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
     Expression escape;
 }
 {
-    [<K_NOT> { result.setNot(true); } ] ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
+    [<K_NOT> { result.setNot(true); } ] ( <K_LIKE> | <K_ILIKE> | <K_RLIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
     [<K_ESCAPE> escape=Expression() { result.setEscape(escape); }]
     {
         result.setLeftExpression(leftExpression);
