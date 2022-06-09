@@ -11,3 +11,4 @@ select * from sys.dual natural join sys.dual
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered unexpected token: "natural" "NATURAL" recorded first on 9 Jun 2022, 21:50:07
