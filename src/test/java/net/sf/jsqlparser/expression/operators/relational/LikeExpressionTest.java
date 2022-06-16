@@ -9,9 +9,9 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -24,5 +24,13 @@ public class LikeExpressionTest {
         LikeExpression instance = new LikeExpression();
         assertFalse(instance.isNot());
         assertTrue(instance.withNot(true).isNot());
+    }
+
+    @Test
+    public void testSetEscapeAndGetStringExpression() {
+        LikeExpression instance = new LikeExpression();
+        LikeExpression instance2 = new LikeExpression();
+        instance.setEscape(instance2);
+        assertEquals("null LIKE null ESCAPE null LIKE null", instance.toString());
     }
 }
