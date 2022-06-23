@@ -49,21 +49,11 @@ public class HiveTest {
 
     @Test
     public void testGroupByGroupingSets() throws Exception {
-        String sql;
-        Statement statement;
-
-        sql = "SELECT\n"
+        String sql = "SELECT\n"
             + "    C1, C2, C3, MAX(Value)\n"
             + "FROM\n"
             + "    Sometable\n"
             + "GROUP BY C1, C2, C3 GROUPING SETS ((C1, C2), (C1, C2, C3), ())";
-
-        statement = CCJSqlParserUtil.parse(sql);
-
-        System.out.println(statement.toString());
-
-        Select select = (Select) statement;
-        assertStatementCanBeDeparsedAs(select, sql, true);
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
 }
