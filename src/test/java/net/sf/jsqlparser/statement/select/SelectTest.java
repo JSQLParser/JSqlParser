@@ -2501,6 +2501,12 @@ public class SelectTest {
     }
 
     @Test
+    public void selectIsolationKeywordsAsAlias() throws JSQLParserException {
+        String stmt = "SELECT col FROM tbl cs";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testMultiValueInBinds() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE (a, b) IN ((?, ?), (?, ?))";
         assertSqlCanBeParsedAndDeparsed(stmt);
