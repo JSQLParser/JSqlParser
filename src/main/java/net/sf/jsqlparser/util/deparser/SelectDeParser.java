@@ -401,10 +401,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             buffer.append(", ");
         } else {
 
+            if (join.isNatural()) {
+                buffer.append(" NATURAL");
+            }
+
             if (join.isRight()) {
                 buffer.append(" RIGHT");
-            } else if (join.isNatural()) {
-                buffer.append(" NATURAL");
             } else if (join.isFull()) {
                 buffer.append(" FULL");
             } else if (join.isLeft()) {
