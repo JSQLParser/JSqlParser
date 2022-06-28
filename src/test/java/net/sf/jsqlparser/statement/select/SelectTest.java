@@ -5213,4 +5213,17 @@ public class SelectTest {
     public void testMissingLimitIssue1505() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("(SELECT * FROM mytable) LIMIT 1");
     }
+
+    @Test
+    public void testPostgresNaturalJoinIssue1559() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT t1.ID,t1.name, t2.DID, t2.name\n" +
+                "FROM table1 as t1\n" +
+                "NATURAL RIGHT JOIN table2 as t2", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT t1.ID,t1.name, t2.DID, t2.name\n" +
+                        "FROM table1 as t1\n" +
+                        "NATURAL RIGHT JOIN table2 as t2", true);
+    }
 }
