@@ -9,6 +9,10 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,10 +31,13 @@ public class LikeExpressionTest {
     }
 
     @Test
-    public void testSetEscapeAndGetStringExpression() {
-        LikeExpression instance = new LikeExpression();
-        LikeExpression instance2 = new LikeExpression();
+    public void testSetEscapeAndGetStringExpression() throws JSQLParserException {
+        LikeExpression instance  = (LikeExpression) CCJSqlParserUtil.parseExpression("name LIKE 'J%$_%'");
+        // escape character should be $
+        Expression instance2 = new StringValue("$");
         instance.setEscape(instance2);
-        assertEquals("null LIKE null ESCAPE null LIKE null", instance.toString());
+
+        // match all records with names that start with letter ’J’ and have the ’_’ character in them
+        assertEquals("name LIKE 'J%$_%' ESCAPE '$'", instance.toString());
     }
 }
