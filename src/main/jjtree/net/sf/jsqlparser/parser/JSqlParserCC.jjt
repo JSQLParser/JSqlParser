@@ -5435,12 +5435,55 @@ List<String> ColumnsNamesList():
     }
 }
 
+String FuncArgsListItem():
+{
+	Token tk = null;
+    String argName = null;
+    String argType = null;
+}
+{
+    (
+        LOOKAHEAD(2) (
+            argName = RelObjectName()
+            argType = RelObjectName()
+            [ "(" tk = <S_LONG>  ")" { argType = argType + "(" + tk.image + ")"; } ]
+        )
+        |
+        (
+            argType = RelObjectName()
+            [ "(" tk = <S_LONG>  ")" { argType = argType + "(" + tk.image + ")"; } ]
+        )
+    )
+	{
+	    return argName != null ? String.format("%s %s", argName, argType) : argType;
+	}
+}
+
+List<String> FuncArgsList():
+{
+    List<String> retval = null;
+    String img = null;
+}
+{
+    "("
+         { retval = new ArrayList<String>(); }
+         [
+            img=FuncArgsListItem() { retval.add(img); }
+            ( "," img=FuncArgsListItem() { retval.add(img); } )*
+         ]
+    ")"
+    {
+        return retval;
+    }
+}
+
 Drop Drop():
 {
     Drop drop = new Drop();
     Token tk = null;
     Table name;
     List<String> dropArgs = new ArrayList<String>();
+    List<String> funcArgs = null;
 }
 {
     <K_DROP>
@@ -5456,17 +5499,25 @@ Drop Drop():
         tk=<K_SCHEMA>
         |
         tk=<K_SEQUENCE>
+        |
+        tk=<K_FUNCTION>
     )
     { drop.setType(tk.image); }
 
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
 
     name = Table() { drop.setName(name); }
+    [ funcArgs = FuncArgsList() ]
     ((tk=<S_IDENTIFIER> | tk=<K_CASCADE> | tk=<K_RESTRICT> ) { dropArgs.add(tk.image); })*
 
     {
-        if (dropArgs.size() > 0)
+        if (dropArgs.size() > 0) {
             drop.setParameters(dropArgs);
+        }
+        if (drop.getType().equals("FUNCTION")) {
+            drop.getTypeToParameters().put("FUNCTION", funcArgs);
+        }
+
         return drop;
     }
 }
