@@ -28,6 +28,10 @@ public class DropDeParser extends AbstractDeParser<Drop> {
 
         buffer.append(" ").append(drop.getName());
 
+        if (drop.getType().equals("FUNCTION")) {
+            buffer.append(Drop.formatFuncParams(drop.getParamsByType("FUNCTION")));
+        }
+
         if (drop.getParameters() != null && !drop.getParameters().isEmpty()) {
             buffer.append(" ").append(PlainSelect.getStringList(drop.getParameters()));
         }
