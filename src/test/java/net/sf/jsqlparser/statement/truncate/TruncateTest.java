@@ -42,6 +42,24 @@ public class TruncateTest {
     }
 
     @Test
+    public void testTruncatePostgresqlWithoutTableName() throws Exception {
+        String statement = "TRUncATE myschema.mytab";
+        Truncate truncate = (Truncate) parserManager.parse(new StringReader(statement));
+        assertEquals("myschema", truncate.getTable().getSchemaName());
+        assertEquals("myschema.mytab", truncate.getTable().getFullyQualifiedName());
+        assertEquals("TRUNCATE TABLE MYSCHEMA.MYTAB", truncate.toString().toUpperCase());
+
+        statement = "TRUncATE       mytab";
+        String toStringStatement = "TRUncATE  mytab";
+        truncate = (Truncate) parserManager.parse(new StringReader(statement));
+        assertEquals("mytab", truncate.getTable().getName());
+        assertEquals("TRUNCATE TABLE MYTAB", truncate.toString().toUpperCase());
+
+        statement = "TRUNCATE  mytab CASCADE";
+        truncate = (Truncate) parserManager.parse(new StringReader(statement));
+        assertEquals("TRUNCATE TABLE MYTAB CASCADE", truncate.toString().toUpperCase());
+    }
+    @Test
     public void testTruncateDeparse() throws JSQLParserException {
         String statement = "TRUNCATE TABLE foo";
         assertSqlCanBeParsedAndDeparsed(statement);

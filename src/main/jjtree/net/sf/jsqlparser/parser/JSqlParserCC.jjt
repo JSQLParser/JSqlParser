@@ -5451,7 +5451,15 @@ Truncate Truncate():
     Table table;
 }
 {
-    <K_TRUNCATE> <K_TABLE>
+/**
+* TRUNCATE can be followed directly by the table name in Postgresql
+* See: https://www.postgresql.org/docs/current/sql-truncate.html
+*
+* TRUNCATE [ TABLE ] [ ONLY ] name [ * ] [, ... ]
+*      [ RESTART IDENTITY | CONTINUE IDENTITY ] [ CASCADE | RESTRICT ]
+*
+*/
+    <K_TRUNCATE> [<K_TABLE>] [<K_ONLY>]
 	table=Table() { truncate.setTable(table); truncate.setCascade(false); } [ <K_CASCADE> {truncate.setCascade(true);} ]
     {
         return truncate;
