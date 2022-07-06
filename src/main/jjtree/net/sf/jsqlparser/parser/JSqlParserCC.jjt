@@ -4988,8 +4988,10 @@ CreateTable CreateTable():
                             sk3=RelObjectName()
                             /* colNames=ColumnsNamesList() */
                             colNames = ColumnNamesWithParamsList()
+                            { idxSpec.clear(); }
+                            ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                             {
-                                index = new Index().withType(tk.image).withName(sk3).withColumns(colNames);
+                                index = new Index().withType(tk.image).withName(sk3).withColumns(colNames).withIndexSpec(idxSpec);
                                 indexes.add(index);
                             }
                     )
@@ -5005,6 +5007,7 @@ CreateTable CreateTable():
                          )
                             /* colNames=ColumnsNamesList() */
                             colNames = ColumnNamesWithParamsList()
+                            { idxSpec.clear(); }
                             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                             {
                                 index.withColumns(colNames).withIndexSpec(idxSpec);
@@ -5021,6 +5024,7 @@ CreateTable CreateTable():
                             sk3=RelObjectName()
                             /* colNames=ColumnsNamesList() */
                             colNames = ColumnNamesWithParamsList()
+                            { idxSpec.clear(); }
                             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                             {
                                 index = new Index()
@@ -5337,6 +5341,8 @@ List<String> CreateParameter():
             tk=<K_PARALLEL> { param.add(tk.image); }
             |
             tk=<K_BINARY> { param.add(tk.image); }
+            |
+            (tk=<K_CHARACTER> tk2=<K_SET>) { param.add(tk.image); param.add(tk2.image);}
             |
             (<K_ARRAY_LITERAL> exp=ArrayConstructor(true)) { param.add(exp.toString()); }
             |
