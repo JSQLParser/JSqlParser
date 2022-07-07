@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserDefaultVisitor;
 import net.sf.jsqlparser.parser.CCJSqlParserTreeConstants;
@@ -17,6 +19,7 @@ import net.sf.jsqlparser.parser.SimpleNode;
 import net.sf.jsqlparser.parser.Token;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
@@ -178,5 +181,40 @@ public class SelectASTTest {
         assertNotNull(subSelectEnd);
         assertEquals(30, subSelectStart.beginColumn);
         assertEquals(49, subSelectEnd.endColumn);
+    }
+
+    @Test
+    public void testSelectASTExtractWithCommentsIssue1580() throws JSQLParserException {
+        String sql = "SELECT  /* testcomment */ \r\n a,  b FROM  -- testcomment2 \r\n mytable \r\n order by   b,  c";
+        SimpleNode root = (SimpleNode) CCJSqlParserUtil.parseAST(sql);
+        List<Token> comments = new ArrayList<>();
+
+        root.jjtAccept(new CCJSqlParserDefaultVisitor() {
+            @Override
+            public Object visit(SimpleNode node, Object data) {
+                if (node.jjtGetFirstToken().specialToken != null) {
+                    //needed since for different nodes we got the same first token
+                    if (!comments.contains(node.jjtGetFirstToken().specialToken)) {
+                        comments.add(node.jjtGetFirstToken().specialToken);
+                    }
+                }
+                return super.visit(node, data);
+            }
+        }, null);
+
+        assertThat(comments)
+                .extracting(token -> token.image)
+                .containsExactly("/* testcomment */", "-- testcomment2 ");
+    }
+
+    @Test
+    public void testSelectASTExtractWithCommentsIssue1580_2() throws JSQLParserException {
+        String sql = "/* I want this comment */\n"
+                + "SELECT order_detail_id, quantity\n"
+                + "/* But ignore this one safely */\n"
+                + "FROM order_details;";
+        SimpleNode root = (SimpleNode) CCJSqlParserUtil.parseAST(sql);
+
+        assertThat(root.jjtGetFirstToken().specialToken.image).isEqualTo("/* I want this comment */");
     }
 }
