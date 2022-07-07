@@ -50,7 +50,6 @@ public class TruncateTest {
         assertEquals("TRUNCATE TABLE MYSCHEMA.MYTAB", truncate.toString().toUpperCase());
 
         statement = "TRUncATE       mytab";
-        String toStringStatement = "TRUncATE  mytab";
         truncate = (Truncate) parserManager.parse(new StringReader(statement));
         assertEquals("mytab", truncate.getTable().getName());
         assertEquals("TRUNCATE TABLE MYTAB", truncate.toString().toUpperCase());
