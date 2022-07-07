@@ -9,9 +9,11 @@
  */
 package net.sf.jsqlparser.util.cnfexpression;
 
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class CNFTest {
@@ -328,4 +330,48 @@ public class CNFTest {
         assertEquals(expected.toString(), result.toString());
     }
 
+    @Test
+    @Disabled
+    public void testStackOverflowIssue1576() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseCondExpression(
+                "((3.0 >= 4.0 AND 5.0 <= 6.0) OR "
+                + "(7.0 < 8.0 AND 9.0 > 10.0) OR "
+                + "(11.0 = 11.0 AND 19.0 > 20.0) OR "
+                + "(17.0 = 14.0 AND 19.0 > 17.0) OR "
+                + "(17.0 = 18.0 AND 20.0 > 20.0) OR "
+                + "(17.0 = 16.0 AND 19.0 > 20.0) OR "
+                + "(17.0 = 18.0 AND 19.0 > 20.0) OR "
+                + "(17.0 = 18.0 AND 19.0 > 20.0) OR "
+                + "(17.0 = 22.0 AND 19.0 > 20.0) OR "
+                + "(18.0 = 18.0 AND 22.0 > 20.0) OR "
+                + "(17.0 = 18.0 AND 19.0 > 20.0) OR "
+                + "(18.0 = 18.0 AND 22.0 > 20.0) OR "
+                + "(18.0 = 19.0 AND 22.0 > 20.0) OR "
+                + "(17.0 = 18.0 AND 19.0 > 20.0))"
+        );
+
+        System.out.println(expr);
+
+        Expression result = CNFConverter.convertToCNF(expr);
+
+        System.out.println(result);
+    }
+    
+    @Test
+    public void testStackOverflowIssue1576_2() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseCondExpression(
+                "((3.0 >= 4.0 AND 5.0 <= 6.0) OR "
+                + "(7.0 < 8.0 AND 9.0 > 10.0) OR "
+                + "(11.0 = 11.0 AND 19.0 > 20.0) OR "
+                + "(17.0 = 14.0 AND 19.0 > 17.0) OR "
+                + "(17.0 = 18.0 AND 20.0 > 20.0) OR "
+                + "(17.0 = 16.0 AND 19.0 > 20.0))"
+        );
+
+        System.out.println(expr);
+
+        Expression result = CNFConverter.convertToCNF(expr);
+
+        System.out.println(result);
+    }
 }
