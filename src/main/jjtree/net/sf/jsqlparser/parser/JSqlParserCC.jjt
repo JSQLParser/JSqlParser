@@ -37,6 +37,7 @@ import net.sf.jsqlparser.expression.operators.conditional.*;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
+import net.sf.jsqlparser.statement.analyze.*;
 import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.alter.sequence.*;
 import net.sf.jsqlparser.statement.comment.*;
@@ -619,6 +620,8 @@ Statement SingleStatement() :
             stm = AlterSequence()
             |
             stm = Drop()
+            |
+            stm = Analyze()
             |
             stm = Truncate()
             |
@@ -5162,6 +5165,21 @@ ColDataType ColDataType():
         if (argumentsStringList.size() > 0)
             colDataType.setArgumentsStringList(argumentsStringList);
         return colDataType;
+    }
+}
+
+Analyze Analyze():
+{
+    Analyze analyze = new Analyze();
+    Table table = null;
+}
+{
+    <K_ANALYZE>
+    table=Table()
+
+    {
+    	analyze.setTable(table);
+    	return analyze;
     }
 }
 
