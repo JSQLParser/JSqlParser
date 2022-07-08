@@ -5459,7 +5459,7 @@ Truncate Truncate():
 *      [ RESTART IDENTITY | CONTINUE IDENTITY ] [ CASCADE | RESTRICT ]
 *
 */
-    <K_TRUNCATE> [<K_TABLE>] [<K_ONLY>]
+    <K_TRUNCATE> [<K_TABLE>  {truncate.setTableToken(true);}] [<K_ONLY>  {truncate.setOnly(true);}]
 	table=Table() { truncate.setTable(table); truncate.setCascade(false); } [ <K_CASCADE> {truncate.setCascade(true);} ]
     {
         return truncate;

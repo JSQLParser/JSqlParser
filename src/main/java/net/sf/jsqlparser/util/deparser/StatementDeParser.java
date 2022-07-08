@@ -164,11 +164,20 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
 
     @Override
     public void visit(Truncate truncate) {
-        buffer.append("TRUNCATE TABLE ");
-        buffer.append(truncate.getTable());
-        if (truncate.getCascade()) {
-            buffer.append(" CASCADE");
+        buffer.append("TRUNCATE");
+        if (truncate.isTableToken()) {
+            buffer.append(" TABLE");
         }
+        if (truncate.isOnly()) {
+            buffer.append(" ONLY");
+        }
+        buffer.append(" ");
+        buffer.append(truncate.getTable());
+
+        if (truncate.getCascade()) {
+            buffer.append( " CASCADE");
+        }
+
     }
 
     @Override
