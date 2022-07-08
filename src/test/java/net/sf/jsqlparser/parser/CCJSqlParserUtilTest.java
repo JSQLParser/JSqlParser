@@ -270,49 +270,4 @@ public class CCJSqlParserUtilTest {
         Expression expr = CCJSqlParserUtil.parseCondExpression("test_table_enum.f1_enum IN ('TEST2'::test.\"test_enum\")", false);
         assertEquals("test_table_enum.f1_enum IN ('TEST2'::test.\"test_enum\")", expr.toString());
     }
-
-    @Test
-    public void testParseStatementIssue1488() throws JSQLParserException {
-        Statements result = CCJSqlParserUtil.parseStatements("CREATE TABLE u_call_record (\n" +
-             "card_user_id int(11) NOT NULL,\n" +
-             "device_id int(11) NOT NULL,\n" +
-             "call_start_at int(11) NOT NULL DEFAULT CURRENT_TIMESTAMP(11),\n" +
-             "card_user_name varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n" +
-             "sim_id varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n" +
-             "called_number varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n" +
-             "called_nickname varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n" +
-             "talk_time smallint(8) NULL DEFAULT NULL,\n" +
-             "area_name varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n" +
-             "area_service_id int(11) NULL DEFAULT NULL,\n" +
-             "operator_id int(4) NULL DEFAULT NULL,\n" +
-             "status tinyint(4) NULL DEFAULT NULL,\n" +
-             "create_at timestamp NULL DEFAULT NULL,\n" +
-             "place_user varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n" +
-             "PRIMARY KEY (card_user_id, device_id, call_start_at) USING BTREE,\n" +
-             "INDEX ucr_index_area_name(area_name) USING BTREE,\n" +
-             "INDEX ucr_index_area_service_id(area_service_id) USING BTREE,\n" +
-             "INDEX ucr_index_called_number(called_number) USING BTREE,\n" +
-             "INDEX ucr_index_create_at(create_at) USING BTREE,\n" +
-             "INDEX ucr_index_operator_id(operator_id) USING BTREE,\n" +
-             "INDEX ucr_index_place_user(place_user) USING BTREE,\n" +
-             "INDEX ucr_index_sim_id(sim_id) USING BTREE,\n" +
-             "INDEX ucr_index_status(status) USING BTREE,\n" +
-             "INDEX ucr_index_talk_time(talk_time) USING BTREE\n" +
-             ") ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;");
-
-        assertEquals("CREATE TABLE u_call_record (card_user_id int (11) NOT NULL, device_id int (11) NOT NULL, " +
-             "call_start_at int (11) NOT NULL DEFAULT CURRENT_TIMESTAMP (11), card_user_name varchar (32) CHARACTER SET " +
-             "utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL, sim_id varchar (32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci" +
-             " NULL DEFAULT NULL, called_number varchar (12) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT " +
-             "NULL, called_nickname varchar (32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL, talk_time " +
-             "smallint (8) NULL DEFAULT NULL, area_name varchar (32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL " +
-             "DEFAULT NULL, area_service_id int (11) NULL DEFAULT NULL, operator_id int (4) NULL DEFAULT NULL, status tinyint (4) " +
-             "NULL DEFAULT NULL, create_at timestamp NULL DEFAULT NULL, place_user varchar (16) CHARACTER SET utf8mb4 COLLATE " +
-             "utf8mb4_general_ci NULL DEFAULT NULL, PRIMARY KEY (card_user_id, device_id, call_start_at) USING BTREE, INDEX " +
-             "ucr_index_area_name (area_name) USING BTREE, INDEX ucr_index_area_service_id (area_service_id) USING BTREE, " +
-             "INDEX ucr_index_called_number (called_number) USING BTREE, INDEX ucr_index_create_at (create_at) USING BTREE, " +
-             "INDEX ucr_index_operator_id (operator_id) USING BTREE, INDEX ucr_index_place_user (place_user) USING BTREE, " +
-             "INDEX ucr_index_sim_id (sim_id) USING BTREE, INDEX ucr_index_status (status) USING BTREE, INDEX ucr_index_talk_time " +
-             "(talk_time) USING BTREE) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;\n", result.toString());
-    }
 }
