@@ -17,7 +17,6 @@ import static java.util.stream.Collectors.toList;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Parenthesis;
-import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
