@@ -32,7 +32,7 @@ public class CloneHelperTest {
         MultipleExpression ors = transform( Arrays.asList("a>b", "5=a", "b=c", "a>c"));
         Expression expr = CloneHelper.changeBack(true, ors);
         assertThat(expr).isInstanceOf(Parenthesis.class);
-        assertThat(expr.toString()).isEqualTo("a > b OR 5 = a OR b = c OR a > c");
+        assertThat(expr.toString()).isEqualTo("(a > b OR 5 = a OR b = c OR a > c)");
     }
     
     @Test
@@ -40,7 +40,7 @@ public class CloneHelperTest {
         MultipleExpression ors = transform( Arrays.asList("a>b", "5=a", "b=c", "a>c", "e<f"));
         Expression expr = CloneHelper.changeBack(true, ors);
         assertThat(expr).isInstanceOf(Parenthesis.class);
-        assertThat(expr.toString()).isEqualTo("a > b OR 5 = a OR b = c OR a > c OR e < f");
+        assertThat(expr.toString()).isEqualTo("(a > b OR 5 = a OR b = c OR a > c OR e < f)");
     }
     
     private static MultipleExpression transform(List<String> expressions) {
