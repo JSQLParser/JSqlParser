@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,7 +32,7 @@ public class CloneHelperTest {
     public void testChangeBack() {
         MultipleExpression ors = transform( Arrays.asList("a>b", "5=a", "b=c", "a>c"));
         Expression expr = CloneHelper.changeBack(true, ors);
-        assertThat(expr).isInstanceOf(OrExpression.class);
+        assertThat(expr).isInstanceOf(Parenthesis.class);
         assertThat(expr.toString()).isEqualTo("a > b OR 5 = a OR b = c OR a > c");
     }
     
@@ -39,7 +40,7 @@ public class CloneHelperTest {
     public void testChangeBackOddNumberOfExpressions() {
         MultipleExpression ors = transform( Arrays.asList("a>b", "5=a", "b=c", "a>c", "e<f"));
         Expression expr = CloneHelper.changeBack(true, ors);
-        assertThat(expr).isInstanceOf(OrExpression.class);
+        assertThat(expr).isInstanceOf(Parenthesis.class);
         assertThat(expr.toString()).isEqualTo("a > b OR 5 = a OR b = c OR a > c OR e < f");
     }
     
