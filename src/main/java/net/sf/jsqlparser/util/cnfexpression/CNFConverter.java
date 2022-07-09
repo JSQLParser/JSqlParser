@@ -213,7 +213,6 @@ public class CNFConverter {
     // notice temp1 will be settled as the root and temp2 will be 
     // settled as the dummy root.
     private boolean isUsed = false;
-    private CloneHelper clone = new CloneHelper();
 
     private class Mule {
 
@@ -234,9 +233,8 @@ public class CNFConverter {
     }
 
     /**
-     * this method takes an expression tree and converts that into a CNF form. Notice the 5 steps
-     * shown above will turn into 5 different methods. For the sake of testing, I set them public.
-     * return the converted expression.
+     * this method takes an expression tree and converts that into a CNF form. Notice the 5 steps shown above will turn
+     * into 5 different methods. For the sake of testing, I set them public. return the converted expression.
      *
      * @param express the original expression tree.
      */
@@ -260,21 +258,21 @@ public class CNFConverter {
     }
 
     /**
-     * this is the first step that rebuild the expression tree. Use the standard specified in the
-     * above class. Traverse the original tree recursively and rebuild the tree from that.
+     * this is the first step that rebuild the expression tree. Use the standard specified in the above class. Traverse
+     * the original tree recursively and rebuild the tree from that.
      *
      * @param express the original expression tree.
      */
     private void reorder(Expression express) {
-        root = clone.modify(express);
+        root = CloneHelper.modify(express);
         List<Expression> list = new ArrayList<Expression>();
         list.add(root);
         dummy = new MultiAndExpression(list);
     }
 
     /**
-     * This method is used to deal with pushing not operators down. Since it needs an extra
-     * parameter, I will create a new method to handle this.
+     * This method is used to deal with pushing not operators down. Since it needs an extra parameter, I will create a
+     * new method to handle this.
      */
     private void pushNotDown() {
         /* set the two temp parameters to their staring point. */
@@ -290,11 +288,10 @@ public class CNFConverter {
     }
 
     /**
-     * This method is the helper function to push not operators down. traverse the tree thoroughly,
-     * when we meet the not operator. We only need to consider these three operators:
-     * MultiAndOperator, MultiOrOperator, NotOperator. Handle them in a seperate way. when we finish
-     * the traverse, the expression tree will have all the not operators pushed as downwards as they
-     * could. In the method, I use two global variables: temp1 and temp2 to traverse the expression
+     * This method is the helper function to push not operators down. traverse the tree thoroughly, when we meet the not
+     * operator. We only need to consider these three operators: MultiAndOperator, MultiOrOperator, NotOperator. Handle
+     * them in a seperate way. when we finish the traverse, the expression tree will have all the not operators pushed
+     * as downwards as they could. In the method, I use two global variables: temp1 and temp2 to traverse the expression
      * tree. Notice that temp2 will always be the parent of temp1.
      *
      * @param index the index of the children appeared in parents array.
@@ -322,8 +319,8 @@ public class CNFConverter {
     }
 
     /**
-     * This function mainly deals with pushing not operators down. check the child. If it is not a
-     * logic operator(and or or). stop at that point. Else use De Morgan law to push not downwards.
+     * This function mainly deals with pushing not operators down. check the child. If it is not a logic operator(and or
+     * or). stop at that point. Else use De Morgan law to push not downwards.
      *
      * @param index the index of the children appeared in parents array.
      */
@@ -386,10 +383,9 @@ public class CNFConverter {
     }
 
     /**
-     * This method serves as dealing with the third step. It is used to put all the adjacent same
-     * multi operators together. BFS the tree and do it node by node. In the end we will get the
-     * tree where all the same multi operators store in the same odd level of the tree or in the
-     * same even level of the tree.
+     * This method serves as dealing with the third step. It is used to put all the adjacent same multi operators
+     * together. BFS the tree and do it node by node. In the end we will get the tree where all the same multi operators
+     * store in the same odd level of the tree or in the same even level of the tree.
      */
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
     private void gather() {
@@ -468,10 +464,10 @@ public class CNFConverter {
     }
 
     /**
-     * First, BFS the tree and gather all the or operators and their parents into a stack. Next, pop
-     * them out and push the and operators under the or operators upwards(if there are). Do this
-     * level by level, which means during each level we will call the gather() method to make the
-     * tree uniform. When we move out of the stack. The expression tree shall be in CNF form.
+     * First, BFS the tree and gather all the or operators and their parents into a stack. Next, pop them out and push
+     * the and operators under the or operators upwards(if there are). Do this level by level, which means during each
+     * level we will call the gather() method to make the tree uniform. When we move out of the stack. The expression
+     * tree shall be in CNF form.
      */
     private void pushAndUp() {
         Queue<Mule> queue = new LinkedList<Mule>();
@@ -517,12 +513,11 @@ public class CNFConverter {
     }
 
     /**
-     * This helper function is used to deal with pushing and up: generally, pop the top element out
-     * of the stack, use BFS to traverse the tree and push and up. It will case the expression tree
-     * to have the and as the new root and multiple or as the children. Push them on the queue and
-     * repeat the same process until the newly generated or operator does not have any and operators
-     * in it(which means no elements will be added into the queue). when one level is finished,
-     * regroup the tree. Do this until the stack is empty, the result will be the expression in CNF
+     * This helper function is used to deal with pushing and up: generally, pop the top element out of the stack, use
+     * BFS to traverse the tree and push and up. It will case the expression tree to have the and as the new root and
+     * multiple or as the children. Push them on the queue and repeat the same process until the newly generated or
+     * operator does not have any and operators in it(which means no elements will be added into the queue). when one
+     * level is finished, regroup the tree. Do this until the stack is empty, the result will be the expression in CNF
      * form.
      *
      * @param stack the stack stores a list of combined data.
@@ -570,7 +565,7 @@ public class CNFConverter {
                 MultiAndExpression newand = new MultiAndExpression(list);
                 parents.setChild(parents.getIndex(children), newand);
                 for (int i = 0; i < and.size(); i++) {
-                    Expression temp = clone.shallowCopy(children);
+                    Expression temp = CloneHelper.shallowCopy(children);
                     MultipleExpression mtemp = (MultipleExpression) temp;
                     mtemp.addChild(mtemp.size(), and.getChild(i));
                     newand.addChild(i, mtemp);
@@ -581,11 +576,10 @@ public class CNFConverter {
     }
 
     /**
-     * This is the final step of the CNF conversion: now we have the Expression tree that has one
-     * multiple and expression with a list of multiple or expression as the child. So we need to
-     * convert the multiple expression back to the binary counterparts. Note the converted tree is
-     * left inclined. Also I attach a parenthesis node before the or expression that is attached to
-     * the and expression to make the generated result resembles the CNF form.
+     * This is the final step of the CNF conversion: now we have the Expression tree that has one multiple and
+     * expression with a list of multiple or expression as the child. So we need to convert the multiple expression back
+     * to the binary counterparts. Note the converted tree is left inclined. Also I attach a parenthesis node before the
+     * or expression that is attached to the and expression to make the generated result resembles the CNF form.
      */
     private void changeBack() {
         if (!(root instanceof MultiAndExpression)) {
@@ -593,9 +587,9 @@ public class CNFConverter {
         }
         MultipleExpression temp = (MultipleExpression) root;
         for (int i = 0; i < temp.size(); i++) {
-            temp.setChild(i, clone.changeBack(true, temp.getChild(i)));
+            temp.setChild(i, CloneHelper.changeBack(true, temp.getChild(i)));
         }
-        root = clone.changeBack(false, temp);
+        root = CloneHelper.changeBack(false, temp);
     }
 
 }
