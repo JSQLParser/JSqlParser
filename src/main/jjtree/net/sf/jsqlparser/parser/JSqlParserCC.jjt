@@ -5542,7 +5542,7 @@ Truncate Truncate():
 *      [ RESTART IDENTITY | CONTINUE IDENTITY ] [ CASCADE | RESTRICT ]
 *
 */
-    <K_TRUNCATE> [<K_TABLE>  {truncate.setTableToken(true);}] [<K_ONLY>  {truncate.setOnly(true);}]
+    <K_TRUNCATE> [LOOKAHEAD(2) <K_TABLE>  {truncate.setTableToken(true);}] [<K_ONLY>  {truncate.setOnly(true);}]
 	table=Table() { truncate.setTable(table); truncate.setCascade(false); } [ <K_CASCADE> {truncate.setCascade(true);} ]
     {
         return truncate;
@@ -6066,11 +6066,7 @@ AlterSystemStatement AlterSystemStatement():
         )
         |
         ( 
-            "DISCONNECT" "SESSION" { operation = AlterSystemOperation.DISCONNECT_SESSION; }
-        )
-        |
-        ( 
-            "KILL" "SESSION" { operation = AlterSystemOperation.KILL_SESSION; }
+            "KILL SESSION" { operation = AlterSystemOperation.KILL_SESSION; }
         )
         |
         ( 
