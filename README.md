@@ -69,8 +69,9 @@ Additionally, we have fixed many errors and improved the code quality and the te
 * `(WITH ... SELECT ...)` statements within brackets are now supported
 * Postgres `NATURAL { INNER | LEFT | RIGHT } JOIN` support
 * extended support for Hive dialect `GROUPING SETS`
-* support for postgres **drop** function
+* support for Postgresql **drop** function
 * support table option **character set** and **index** options
+* support Postgresql optional **TABLE** in **TRUNCATE**
 
 
 ## Building from the sources
