@@ -72,6 +72,7 @@ Additionally, we have fixed many errors and improved the code quality and the te
 * support for Postgresql **drop** function
 * support table option **character set** and **index** options
 * support Postgresql optional **TABLE** in **TRUNCATE**
+* support for `ANALYZE mytable`
 
 
 ## Building from the sources

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import java.io.StringReader;
 
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AnalyzeTest {
@@ -32,5 +33,9 @@ public class AnalyzeTest {
 
         assertDeparse(new Analyze().withTable(new Table("mytab")), statement);
     }
-
+    
+    @Test
+    public void testAnalyze2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ANALYZE mytable");
+    }
 }
