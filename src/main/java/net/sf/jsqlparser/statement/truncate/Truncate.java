@@ -18,6 +18,9 @@ public class Truncate implements Statement {
     private Table table;
     boolean cascade;  // to support TRUNCATE TABLE ... CASCADE
 
+    boolean tableToken;  // to support TRUNCATE without TABLE
+    boolean only; // to support TRUNCATE with ONLY
+
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
@@ -41,10 +44,42 @@ public class Truncate implements Statement {
 
     @Override
     public String toString() {
-        if (cascade) {
-            return "TRUNCATE TABLE " + table + " CASCADE";
+        StringBuilder sb = new StringBuilder();
+        sb.append("TRUNCATE");
+        if (tableToken) {
+            sb.append(" TABLE");
         }
-        return "TRUNCATE TABLE " + table;
+        if (only) {
+            sb.append(" ONLY");
+        }
+        sb.append(" ");
+        sb.append(table);
+
+        if (cascade) {
+            sb.append( " CASCADE");
+        }
+        return sb.toString();
+    }
+
+    public boolean isTableToken() {
+        return tableToken;
+    }
+
+    public void setTableToken(boolean hasTable) {
+        this.tableToken = hasTable;
+    }
+
+    public boolean isOnly() {
+        return only;
+    }
+
+    public void setOnly(boolean only) {
+        this.only = only;
+    }
+
+    public Truncate withTableToken(boolean hasTableToken){
+        this.setTableToken(hasTableToken);
+        return this;
     }
 
     public Truncate withTable(Table table) {
@@ -56,4 +91,9 @@ public class Truncate implements Statement {
         this.setCascade(cascade);
         return this;
     }
+    public Truncate withOnly(boolean only) {
+        this.setOnly(only);
+        return this;
+    }
 }
+
