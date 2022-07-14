@@ -6058,11 +6058,11 @@ AlterSystemStatement AlterSystemStatement():
         )
         |
         ( 
-            "DISCONNECT SESSION" { operation = AlterSystemOperation.DISCONNECT_SESSION; }
+            "DISCONNECT" "SESSION" { operation = AlterSystemOperation.DISCONNECT_SESSION; }
         )
         |
         ( 
-            "KILL SESSION" { operation = AlterSystemOperation.KILL_SESSION; }
+            "KILL" "SESSION" { operation = AlterSystemOperation.KILL_SESSION; }
         )
         |
         ( 
