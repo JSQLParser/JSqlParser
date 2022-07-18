@@ -21,6 +21,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
 
@@ -33,7 +34,6 @@ import net.sf.jsqlparser.statement.Statements;
 @SuppressWarnings("PMD.CyclomaticComplexity")
 public final class CCJSqlParserUtil {
     public final static int ALLOWED_NESTING_DEPTH = 10;
-    public static final int PARSER_TIMEOUT = 6000;
 
     private CCJSqlParserUtil() {
     }
@@ -255,7 +255,7 @@ public final class CCJSqlParserUtil {
             });
             executorService.shutdown();
 
-            statement = future.get(PARSER_TIMEOUT, TimeUnit.MILLISECONDS);
+            statement = future.get( parser.getConfiguration().getAsInteger(Feature.timeOut), TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             parser.interrupted = true;
             throw new JSQLParserException("Time out occurred.", ex);
@@ -319,7 +319,7 @@ public final class CCJSqlParserUtil {
             });
             executorService.shutdown();
 
-            statements = future.get(PARSER_TIMEOUT, TimeUnit.MILLISECONDS);
+            statements = future.get( parser.getConfiguration().getAsInteger(Feature.timeOut) , TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             parser.interrupted = true;
             throw new JSQLParserException("Time out occurred.", ex);

@@ -741,6 +741,8 @@ public enum Feature {
      * needs to be switched off, when VALIDATING statements or parsing blocks
      */
     allowUnsupportedStatements(false),
+
+    timeOut( 6000)
     ;
 
     private Object value;

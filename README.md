@@ -73,6 +73,7 @@ Additionally, we have fixed many errors and improved the code quality and the te
 * support table option **character set** and **index** options
 * support Postgresql optional **TABLE** in **TRUNCATE**
 * support for `ANALYZE mytable`
+* Implement Parser Timeout Feature, e. g. `CCJSqlParserUtil.parse(sqlStr, parser -> parser.withTimeOut(60000));`
 
 
 ## Building from the sources

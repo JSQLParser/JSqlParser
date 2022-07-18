@@ -32,9 +32,18 @@ public abstract class AbstractJSqlParser<P> {
     public P withUnsupportedStatements(boolean allowUnsupportedStatements) {
         return withFeature(Feature.allowUnsupportedStatements, allowUnsupportedStatements);
     }
+
+    public P withTimeOut(int timeOutMillSeconds) {
+        return withFeature(Feature.timeOut, timeOutMillSeconds);
+    }
     
     public P withFeature(Feature f, boolean enabled) {
         getConfiguration().setValue(f, enabled);
+        return me();
+    }
+
+    public P withFeature(Feature f, int value) {
+        getConfiguration().setValue(f, value);
         return me();
     }
 
@@ -44,6 +53,10 @@ public abstract class AbstractJSqlParser<P> {
 
     public boolean getAsBoolean(Feature f) {
         return getConfiguration().getAsBoolean(f);
+    }
+
+    public Integer getAsInteger(Feature f) {
+        return getConfiguration().getAsInteger(f);
     }
 
     public void setErrorRecovery(boolean errorRecovery) {
