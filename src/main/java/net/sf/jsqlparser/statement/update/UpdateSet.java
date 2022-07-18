@@ -96,7 +96,7 @@ public class UpdateSet {
         return builder;
     }
 
-    @SuppressWarnings("PMD.CyclomaticComplexity")
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPath"})
     StringBuilder appendTo(StringBuilder builder, int j) {
         if (j > 0) {
             builder.append(", ");
