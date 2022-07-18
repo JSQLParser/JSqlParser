@@ -178,4 +178,15 @@ public class SelectValidatorTest extends ValidationTestAsserts {
                 1, DatabaseType.POSTGRESQL, DatabaseType.ORACLE);
     }
 
+    @Test
+    public void testValidateIssue1502() throws JSQLParserException {
+        validateNoErrors(
+                "select b.id, name ,(select name from Blog where name = 'sadf') as name2 "
+                + ", category, owner, b.update_time "
+                + "from Blog as b "
+                + "left join Content "
+                + "ON b.id = Content.blog_id "
+                + "where name = 'sadf' order by Content.title desc",
+                1, DatabaseType.POSTGRESQL);
+    }    
 }

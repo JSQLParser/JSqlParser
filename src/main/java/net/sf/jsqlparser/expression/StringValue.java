@@ -31,7 +31,7 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
     public StringValue(String escapedValue) {
         // removing "'" at the start and at the end
-        if (escapedValue.startsWith("'") && escapedValue.endsWith("'")) {
+        if (escapedValue.length() >= 2 && escapedValue.startsWith("'") && escapedValue.endsWith("'")) {
             value = escapedValue.substring(1, escapedValue.length() - 1);
             return;
         }

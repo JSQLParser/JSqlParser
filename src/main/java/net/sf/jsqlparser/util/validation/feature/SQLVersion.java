@@ -29,10 +29,13 @@ public enum SQLVersion implements Version {
             Feature.jdbcParameter,
             Feature.jdbcNamedParameter,
             // common features
+            Feature.setOperation,
             Feature.select,
             Feature.selectGroupBy, Feature.function,
             Feature.insert,
+            Feature.insertFromSelect,
             Feature.insertValues,
+            Feature.values,
             Feature.update,
             Feature.delete,
             Feature.truncate,

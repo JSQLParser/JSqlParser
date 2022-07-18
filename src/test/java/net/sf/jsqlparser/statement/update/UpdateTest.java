@@ -271,4 +271,36 @@ public class UpdateTest {
         assertEquals(update.getModifierPriority(), UpdateModifierPriority.LOW_PRIORITY);
         assertTrue(update.isModifierIgnore());
     }
+
+    @Test
+    public void testUpdateOutputClause() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "UPDATE /* TOP (10) */ HumanResources.Employee  \n" +
+                        "SET VacationHours = VacationHours * 1.25,  \n" +
+                        "    ModifiedDate = GETDATE()   \n" +
+                        "OUTPUT inserted.BusinessEntityID,  \n" +
+                        "       deleted.VacationHours,  \n" +
+                        "       inserted.VacationHours,  \n" +
+                        "       inserted.ModifiedDate  \n" +
+                        "INTO @MyTableVar"
+                , true
+        );
+
+        assertSqlCanBeParsedAndDeparsed(
+                "UPDATE Production.WorkOrder  \n" +
+                        "SET ScrapReasonID = 4  \n" +
+                        "OUTPUT deleted.ScrapReasonID,  \n" +
+                        "       inserted.ScrapReasonID,   \n" +
+                        "       inserted.WorkOrderID,  \n" +
+                        "       inserted.ProductID,  \n" +
+                        "       p.Name  \n" +
+                        "    INTO @MyTestVar  \n" +
+                        "FROM Production.WorkOrder AS wo  \n" +
+                        "    INNER JOIN Production.Product AS p   \n" +
+                        "    ON wo.ProductID = p.ProductID   \n" +
+                        "    AND wo.ScrapReasonID= 16  \n" +
+                        "    AND p.ProductID = 733"
+                , true
+        );
+    }
 }

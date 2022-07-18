@@ -1,25 +1,28 @@
 ---
-name: Bug report
+name: SQL Parser Error
 about: Create a report to help us improve
-title: ''
-labels: ''
+title: 'JSQLParser Version : RDBMS : failing feature description'
+labels: 'Parser Error', 'Feature Request', 'Documentation', 'Java API', 'RDBMS support'
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Failing SQL Feature**
+- Brief description of the failing SQL feature
+- Example: `WITH ROLLUP` can't be parsed
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Example SQL
-2. Parsing this SQL using JSqlParser with this statements
-3. Exception
+**SQL Example**
+- Simplified Query Example, focusing on the failing feature
+```sql
+-- Replace with your ACTUAL example
+select 1
+from dual
+```
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
-
-**System**
- - Database you are using
-- Java Version
+**Software Information**
 - JSqlParser version
+- Database (e. g. Oracle, MS SQL Server, H2, PostgreSQL, IBM DB2 )
+
+**Tips**
+Please write in English and avoid Screenshots (as we can't copy and paste content from it).
+[Try your example online with the latest JSQLParser](http://217.160.215.75:8080/jsqlformatter/demo.html) and share the link in the error report.

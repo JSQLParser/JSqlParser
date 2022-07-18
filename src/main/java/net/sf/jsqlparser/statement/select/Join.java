@@ -304,10 +304,12 @@ public class Join extends ASTNodeAccessImpl {
         } else if (isSimple()) {
             builder.append(rightItem);
         } else {
+            if (isNatural()) {
+                builder.append("NATURAL ");
+            }
+
             if (isRight()) {
                 builder.append("RIGHT ");
-            } else if (isNatural()) {
-                builder.append("NATURAL ");
             } else if (isFull()) {
                 builder.append("FULL ");
             } else if (isLeft()) {

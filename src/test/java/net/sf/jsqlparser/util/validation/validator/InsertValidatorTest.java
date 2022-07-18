@@ -28,8 +28,13 @@ public class InsertValidatorTest extends ValidationTestAsserts {
     @Test
     public void testValidationInsertNotAllowed() throws JSQLParserException {
         String sql = "INSERT INTO tab1 (a, b, c) VALUES (5, 'val', ?)";
-        validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC), Feature.insert,
-                Feature.insertValues);
+        validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC)
+                , Feature.insertValues
+                , Feature.setOperation
+                , Feature.insertFromSelect
+                , Feature.values
+                , Feature.insert
+        );
     }
 
     @Test

@@ -19,7 +19,7 @@ import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
@@ -76,14 +76,14 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
             }
             buffer.append(")");
         }
-
-        if (insert.getItemsList() != null) {
-            insert.getItemsList().accept(this);
+        
+        if (insert.getOutputClause() != null) {
+            buffer.append(insert.getOutputClause().toString());
         }
 
         if (insert.getSelect() != null) {
             buffer.append(" ");
-            if (insert.isUseSelectBrackets()) {
+            if (insert.getSelect().isUsingWithBrackets()) {
                 buffer.append("(");
             }
             if (insert.getSelect().getWithItemsList() != null) {
@@ -94,7 +94,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
                 buffer.append(" ");
             }
             insert.getSelect().getSelectBody().accept(selectVisitor);
-            if (insert.isUseSelectBrackets()) {
+            if (insert.getSelect().isUsingWithBrackets()) {
                 buffer.append(")");
             }
         }
@@ -129,17 +129,9 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
             }
         }
 
-        if (insert.isReturningAllColumns()) {
-            buffer.append(" RETURNING *");
-        } else if (insert.getReturningExpressionList() != null) {
-            buffer.append(" RETURNING ");
-            for (Iterator<SelectExpressionItem> iter = insert.getReturningExpressionList().iterator(); iter
-                    .hasNext();) {
-                buffer.append(iter.next().toString());
-                if (iter.hasNext()) {
-                    buffer.append(", ");
-                }
-            }
+        if (insert.getReturningExpressionList() != null) {
+            buffer.append(" RETURNING ").append(PlainSelect.
+                    getStringList(insert.getReturningExpressionList(), true, false));
         }
     }
 

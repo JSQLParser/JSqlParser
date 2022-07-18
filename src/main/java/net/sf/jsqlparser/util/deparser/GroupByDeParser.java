@@ -51,6 +51,9 @@ public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
             buffer.append(" )");
         }
         if (!groupBy.getGroupingSets().isEmpty()) {
+            if (buffer.charAt(buffer.length() - 1) != ' ') {
+                buffer.append(' ');
+            }
             buffer.append("GROUPING SETS (");
             boolean first = true;
             for (Object o : groupBy.getGroupingSets()) {

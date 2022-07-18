@@ -178,4 +178,42 @@ public class DeleteTest {
         assertTrue(delete2.isModifierIgnore());
         assertTrue(delete2.isModifierQuick());
     }
+
+    @Test
+    public void testDeleteReturningIssue1527() throws JSQLParserException {
+        String statement = "delete from t returning *";
+        assertSqlCanBeParsedAndDeparsed(statement, true);
+
+        statement = "delete from products\n" +
+                "  WHERE price <= 99.99\n" +
+                "  RETURNING name, price AS new_price";
+        assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
+    @Test
+    public void testDeleteOutputClause() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "DELETE Sales.ShoppingCartItem OUTPUT DELETED.* FROM Sales"
+                , true
+        );
+
+        assertSqlCanBeParsedAndDeparsed(
+                "DELETE Sales.ShoppingCartItem OUTPUT Sales.ShoppingCartItem FROM Sales"
+                , true
+        );
+
+        assertSqlCanBeParsedAndDeparsed(
+                "DELETE Production.ProductProductPhoto  \n" +
+                        "OUTPUT DELETED.ProductID,  \n" +
+                        "       p.Name,  \n" +
+                        "       p.ProductModelID,  \n" +
+                        "       DELETED.ProductPhotoID  \n" +
+                        "    INTO @MyTableVar  \n" +
+                        "FROM Production.ProductProductPhoto AS ph  \n" +
+                        "JOIN Production.Product as p   \n" +
+                        "    ON ph.ProductID = p.ProductID   \n" +
+                        "    WHERE p.ProductModelID BETWEEN 120 and 130"
+                , true
+        );
+
+    }
 }
