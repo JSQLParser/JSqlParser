@@ -18,18 +18,16 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 
 /**
- * This class is mainly used for handling the cloning of an expression tree.
- * Note this is the shallow copy of the tree. That means I do not modify
- * or copy the expression other than these expressions:
- * AND, OR, NOT, (), MULTI-AND, MULTI-OR.
- * Since the CNF conversion only change the condition part of the tree.
+ * This class is mainly used for handling the cloning of an expression tree. Note this is the shallow copy of the tree.
+ * That means I do not modify or copy the expression other than these expressions: AND, OR, NOT, (), MULTI-AND,
+ * MULTI-OR. Since the CNF conversion only change the condition part of the tree.
  *
  * @author messfish
  *
  */
 class CloneHelper {
 
-    public Expression modify(Expression express) {
+    public static Expression modify(Expression express) {
         if (express instanceof NotExpression) {
             return new NotExpression(modify(((NotExpression) express).getExpression()));
         }
@@ -40,7 +38,7 @@ class CloneHelper {
         }
         if (express instanceof AndExpression) {
             AndExpression and = (AndExpression) express;
-            List<Expression> list = new ArrayList<Expression>();
+            List<Expression> list = new ArrayList<>();
             list.add(modify(and.getLeftExpression()));
             list.add(modify(and.getRightExpression()));
             MultiAndExpression result = new MultiAndExpression(list);
@@ -51,7 +49,7 @@ class CloneHelper {
         }
         if (express instanceof OrExpression) {
             OrExpression or = (OrExpression) express;
-            List<Expression> list = new ArrayList<Expression>();
+            List<Expression> list = new ArrayList<>();
             list.add(modify(or.getLeftExpression()));
             list.add(modify(or.getRightExpression()));
             MultiOrExpression result = new MultiOrExpression(list);
@@ -71,16 +69,16 @@ class CloneHelper {
     }
 
     /**
-     * This method is used to copy the expression which happens at step four. I only copy the
-     * conditional expressions since the CNF only changes the conditional part.
+     * This method is used to copy the expression which happens at step four. I only copy the conditional expressions
+     * since the CNF only changes the conditional part.
      *
      * @param express the expression that will be copied.
      * @return the copied expression.
      */
-    public Expression shallowCopy(Expression express) {
+    public static Expression shallowCopy(Expression express) {
         if (express instanceof MultipleExpression) {
             MultipleExpression multi = (MultipleExpression) express;
-            List<Expression> list = new ArrayList<Expression>();
+            List<Expression> list = new ArrayList<>();
             for (int i = 0; i < multi.size(); i++) {
                 list.add(shallowCopy(multi.getChild(i)));
             }
@@ -95,32 +93,54 @@ class CloneHelper {
     }
 
     /**
-     * This helper method is used to change the multiple expression into the binary form,
-     * respectively and return the root of the expression tree.
+     * This helper method is used to change the multiple expression into the binary form, respectively and return the
+     * root of the expression tree.
      *
      * @param isMultiOr variable tells whether the expression is or.
      * @param exp the expression that needs to be converted.
      * @return the root of the expression tree.
      */
-    public Expression changeBack(Boolean isMultiOr, Expression exp) {
+    public static Expression changeBack(Boolean isMultiOr, Expression exp) {
         if (!(exp instanceof MultipleExpression)) {
             return exp;
         }
-        MultipleExpression changed = (MultipleExpression) exp;
-        Expression result = changed.getChild(0);
-        for (int i = 1; i < changed.size(); i++) {
-            Expression left = result;
-            Expression right = changed.getChild(i);
-            if (isMultiOr) {
-                result = new OrExpression(left, right);
-            } else {
-                result = new AndExpression(left, right);
+
+        List<Expression> result = ((MultipleExpression) exp).getList();
+        while (result.size() > 1) {
+            List<Expression> compressed = new ArrayList<>();
+            for (int i = 0; i < result.size(); i = i + 2) {
+                Expression left = result.get(i);
+                Expression right = i + 1 < result.size() ? result.get(i + 1) : null;
+
+                if (isMultiOr) {
+                    compressed.add(right != null ? new OrExpression(left, right) : left);
+                } else {
+                    compressed.add(right != null ? new AndExpression(left, right) : left);
+                }
             }
+            result = compressed;
         }
         if (isMultiOr) {
-            return new Parenthesis(result);
+            return new Parenthesis(result.get(0));
+        } else {
+            return result.get(0);
         }
-        return result;
+
+//        MultipleExpression changed = (MultipleExpression) exp;
+//        Expression result = changed.getChild(0);
+//        for (int i = 1; i < changed.size(); i++) {
+//            Expression left = result;
+//            Expression right = changed.getChild(i);
+//            if (isMultiOr) {
+//                result = new OrExpression(left, right);
+//            } else {
+//                result = new AndExpression(left, right);
+//            }
+//        }
+//        if (isMultiOr) {
+//            return new Parenthesis(result);
+//        }
+//        return result;
     }
 
 }

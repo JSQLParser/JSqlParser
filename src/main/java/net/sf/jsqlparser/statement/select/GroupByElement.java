@@ -95,7 +95,14 @@ public class GroupByElement {
             if (groupByExpressions.isUsingBrackets()) {
                 b.append(" )");
             }
-        } else if (groupingSets.size() > 0) {
+        } else if (groupByExpressions.isUsingBrackets()) {
+            b.append("()");
+        }
+
+        if (groupingSets.size() > 0) {
+            if (b.charAt(b.length() - 1) != ' ') {
+                b.append(' ');
+            }
             b.append("GROUPING SETS (");
             boolean first = true;
             for (Object o : groupingSets) {
@@ -112,10 +119,6 @@ public class GroupByElement {
                 }
             }
             b.append(")");
-        } else {
-            if (groupByExpressions.isUsingBrackets()) {
-                b.append("()");
-            }
         }
 
         return b.toString();

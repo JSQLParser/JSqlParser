@@ -97,4 +97,29 @@ public class DropTest {
         //assertSqlCanBeParsedAndDeparsed("ALTER TABLE foo DROP (bar, baz)");
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE foo DROP (bar, baz) CASCADE");
     }
+
+    @Test
+    public void testUniqueFunctionDrop() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP FUNCTION myFunc");
+    }
+
+    @Test
+    public void testZeroArgDropFunction() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP FUNCTION myFunc()");
+    }
+
+    @Test
+    public void testDropFunctionWithSimpleType() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP FUNCTION myFunc(integer, varchar)");
+    }
+
+    @Test
+    public void testDropFunctionWithNameAndType() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP FUNCTION myFunc(amount integer, name varchar)");
+    }
+
+    @Test
+    public void testDropFunctionWithNameAndParameterizedType() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP FUNCTION myFunc(amount integer, name varchar(255))");
+    }
 }

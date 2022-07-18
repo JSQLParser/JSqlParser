@@ -67,6 +67,12 @@ Additionally, we have fixed many errors and improved the code quality and the te
 * Add support for `... ALTER COLUMN ... DROP DEFAULT`
 * `INSERT` supports `SetOperations` (e. g. `INSERT INTO ... SELECT ... FROM ... UNION SELECT ... FROM ...`), those `SetOperations` are used both for `SELECT` and `VALUES` clauses (API change) in order to simplify the Grammar
 * `(WITH ... SELECT ...)` statements within brackets are now supported
+* Postgres `NATURAL { INNER | LEFT | RIGHT } JOIN` support
+* extended support for Hive dialect `GROUPING SETS`
+* support for Postgresql **drop** function
+* support table option **character set** and **index** options
+* support Postgresql optional **TABLE** in **TRUNCATE**
+* support for `ANALYZE mytable`
 * PostgreSQL `INSERT INTO ... ON CONFLICT ... DO ...` statements
 
 

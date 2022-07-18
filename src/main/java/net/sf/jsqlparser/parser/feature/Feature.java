@@ -28,6 +28,7 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -393,6 +394,14 @@ public enum Feature {
      * SQL "ALTER INDEX" statement is allowed
      */
     alterIndex,
+
+
+    /**
+     * SQL "ANALYZE" statement is allowed
+     *
+     * @see Analyze
+     */
+    analyze,
 
     /**
      * SQL "TRUNCATE" statement is allowed

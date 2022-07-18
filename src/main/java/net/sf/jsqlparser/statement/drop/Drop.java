@@ -12,7 +12,9 @@ package net.sf.jsqlparser.statement.drop;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -24,6 +26,7 @@ public class Drop implements Statement {
     private String type;
     private Table name;
     private List<String> parameters;
+    private Map<String, List<String>> typeToParameters = new HashMap<>();
     private boolean ifExists = false;
 
     @Override
@@ -63,16 +66,39 @@ public class Drop implements Statement {
         this.ifExists = ifExists;
     }
 
+    public Map<String, List<String>> getTypeToParameters() {
+        return typeToParameters;
+    }
+
+    public void setTypeToParameters(Map<String, List<String>> typeToParameters) {
+        this.typeToParameters = typeToParameters;
+    }
+
     @Override
     public String toString() {
         String sql = "DROP " + type + " "
                 + (ifExists ? "IF EXISTS " : "") + name.toString();
+
+        if (type.equals("FUNCTION")) {
+            sql += formatFuncParams(getParamsByType("FUNCTION"));
+        }
 
         if (parameters != null && !parameters.isEmpty()) {
             sql += " " + PlainSelect.getStringList(parameters);
         }
 
         return sql;
+    }
+
+    public static String formatFuncParams(List<String> params) {
+        if (params == null) {
+            return "";
+        }
+        return params.isEmpty() ? "()" : PlainSelect.getStringList(params, true, true);
+    }
+
+    public List<String> getParamsByType(String type) {
+        return typeToParameters.get(type);
     }
 
     public Drop withIfExists(boolean ifExists) {

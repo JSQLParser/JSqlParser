@@ -57,4 +57,10 @@ public class StringValueTest {
         assertEquals(expectedValue, v.getValue());
         assertEquals(expectedPrefix, v.getPrefix());
     }
+    
+    @Test
+    public void testIssue1566EmptyStringValue() {
+        StringValue v = new StringValue("'");
+        assertEquals("'", v.getValue());
+    }
 }
