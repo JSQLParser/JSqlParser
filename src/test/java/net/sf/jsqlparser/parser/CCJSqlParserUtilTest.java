@@ -295,7 +295,7 @@ public class CCJSqlParserUtilTest {
         // With DEFAULT TIMEOUT 6 Seconds, we expect the statement to timeout normally
         // A TimeoutException wrapped into a Parser Exception should be thrown
 
-        Assertions.assertThrows(TimeoutException.class, new Executable() {
+        assertThrows(TimeoutException.class, new Executable() {
             @Override
             public void execute() throws Throwable {
                 try {
@@ -314,7 +314,7 @@ public class CCJSqlParserUtilTest {
         // With custom TIMEOUT 60 Seconds, we expect the statement to not timeout but to fail instead
         // No TimeoutException wrapped into a Parser Exception must be thrown
         // Instead we expect a Parser Exception only
-        Assertions.assertThrows(JSQLParserException.class, new Executable() {
+        assertThrows(JSQLParserException.class, new Executable() {
             @Override
             public void execute() throws Throwable {
                 try {
