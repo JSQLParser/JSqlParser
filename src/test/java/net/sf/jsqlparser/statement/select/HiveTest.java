@@ -46,4 +46,14 @@ public class HiveTest {
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
+
+    @Test
+    public void testGroupByGroupingSets() throws Exception {
+        String sql = "SELECT\n"
+            + "    C1, C2, C3, MAX(Value)\n"
+            + "FROM\n"
+            + "    Sometable\n"
+            + "GROUP BY C1, C2, C3 GROUPING SETS ((C1, C2), (C1, C2, C3), ())";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
 }

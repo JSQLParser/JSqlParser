@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.statement.insert;
 
-import java.io.StringReader;
-import java.util.Arrays;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -24,6 +22,13 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import java.io.StringReader;
+import java.util.Arrays;
+
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -33,8 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 public class InsertTest {
 
@@ -56,13 +59,21 @@ public class InsertTest {
                         getValue());
         assertEquals(234, ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().
                 get(2)).getValue());
-        assertEquals(statement, "" + insert);
+        assertEquals(statement, insert.toString());
 
-        assertDeparse(new Insert().withTable(new Table("mytable"))
-                .addColumns(Arrays.asList(new Column("col1"), new Column("col2"), new Column("col3")))
-                .withItemsList(new ExpressionList(new JdbcParameter(), new StringValue("sadfsd"),
-                        new LongValue().withValue(234))),
-                statement);
+        ExpressionList expressionList =new ExpressionList(
+                new JdbcParameter()
+                , new StringValue("sadfsd")
+                , new LongValue().withValue(234)
+        );
+
+        Select select = new Select().withSelectBody(new ValuesStatement().withExpressions(expressionList));
+
+        Insert insert2 = new Insert().withTable(new Table("mytable"))
+                .withColumns(Arrays.asList(new Column("col1"), new Column("col2"), new Column("col3")))
+                .withSelect(select);
+
+        assertDeparse(insert2, statement);
 
         statement = "INSERT INTO myschema.mytable VALUES (?, ?, 2.3)";
         insert = (Insert) parserManager.parse(new StringReader(statement));
@@ -82,9 +93,9 @@ public class InsertTest {
         assertEquals("mytable", insert.getTable().getName());
         assertEquals(1, insert.getColumns().size());
         assertEquals("col1", insert.getColumns().get(0).getColumnName());
-        assertEquals("val1",
-                ((StringValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(0)).
-                        getValue());
+        assertEquals("('val1')",
+                (((ExpressionList) insert.getItemsList()).getExpressions().get(0)).
+                        toString());
         assertEquals("INSERT INTO mytable (col1) VALUES ('val1')", insert.toString());
 
     }
@@ -103,11 +114,11 @@ public class InsertTest {
         assertEquals("mytable2",
                 ((Table) ((PlainSelect) insert.getSelect().getSelectBody()).getFromItem()).getName());
 
-        // toString uses brakets
+        // toString uses brackets
         String statementToString = "INSERT INTO mytable (col1, col2, col3) SELECT * FROM mytable2";
         assertEquals(statementToString, "" + insert);
 
-        assertDeparse(new Insert().withUseValues(false).withUseSelectBrackets(false).withTable(new Table("mytable"))
+        assertDeparse(new Insert().withTable(new Table("mytable"))
                 .addColumns(new Column("col1"), new Column("col2"), new Column("col3"))
                 .withSelect(new Select().withSelectBody(
                         new PlainSelect().addSelectItems(new AllColumns()).withFromItem(new Table("mytable2")))),
@@ -135,7 +146,6 @@ public class InsertTest {
         Insert insert = (Insert) parserManager.parse(new StringReader(statement));
         assertEquals("TEST", insert.getTable().getName());
         assertEquals(2, insert.getColumns().size());
-        assertTrue(insert.isUseValues());
         assertEquals("ID", insert.getColumns().get(0).getColumnName());
         assertEquals("COUNTER", insert.getColumns().get(1).getColumnName());
         assertEquals(2, ((ExpressionList) insert.getItemsList()).getExpressions().size());
@@ -175,15 +185,24 @@ public class InsertTest {
     public void testInsertMultiRowValue() throws JSQLParserException {
         String statement = "INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e)";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new Insert().withTable(new Table("mytable"))
+
+        MultiExpressionList multiExpressionList = new MultiExpressionList()
+                .addExpressionLists( new ExpressionList().addExpressions(new Column("a")).addExpressions(new Column("b")))
+                .addExpressionLists( new ExpressionList().addExpressions(new Column("d")).addExpressions(new Column("e")));
+
+        Select select = new Select().withSelectBody(new ValuesStatement().withExpressions(multiExpressionList));
+
+        Insert insert = new Insert().withTable(new Table("mytable"))
                 .withColumns(Arrays.asList(new Column("col1"), new Column("col2")))
-                .withItemsList(new MultiExpressionList().addExpressionLists(
-                        new ExpressionList().addExpressions(Arrays.asList(new Column("a"), new Column("b"))),
-                        new ExpressionList(new Column("d"), new Column("e")))),
-                statement);
+                .withSelect(select);
+
+        assertDeparse(insert, statement);
     }
 
     @Test
+    @Disabled
+    //@todo: Clarify, if and why this test is supposed to fail and if it is the Parser's job to decide
+    //What if col1 and col2 are Array Columns?
     public void testInsertMultiRowValueDifferent() throws JSQLParserException {
         try {
             assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e, c)");
@@ -234,8 +253,8 @@ public class InsertTest {
 
     @Test
     public void testInsertWithSelect() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (mycolumn) WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a");
-        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (mycolumn) (WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a)");
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (mycolumn) WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a", true);
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (mycolumn) (WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a)", true);
     }
 
     @Test
@@ -380,5 +399,70 @@ public class InsertTest {
                 + "    ARRAY[20000, 25000, 25000, 25000],\n"
                 + "    ARRAY[['breakfast', 'consulting'], ['meeting', 'lunch']])",
                 true);
+    }
+    
+    @Test
+    public void testKeywordDefaultIssue1470() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2, col3) VALUES (?, 'sadfsd', default)");
+    }
+
+    @Test
+    public void testInsertUnionSelectIssue1491() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "insert into table1 (tf1,tf2,tf2)\n" +
+                        "select sf1,sf2,sf3 from s1\n" +
+                        "union\n" +
+                        "select rf1,rf2,rf2 from r1\n"
+                , true
+        );
+
+        assertSqlCanBeParsedAndDeparsed(
+                "insert into table1 (tf1,tf2,tf2)\n" +
+                        "( select sf1,sf2,sf3 from s1\n" +
+                        "union\n" +
+                        "select rf1,rf2,rf2 from r1\n)"
+                , true
+        );
+
+        assertSqlCanBeParsedAndDeparsed(
+                "insert into table1 (tf1,tf2,tf2)\n" +
+                        "(select sf1,sf2,sf3 from s1)" +
+                        "union " +
+                        "(select rf1,rf2,rf2 from r1)"
+                , true
+        );
+
+        assertSqlCanBeParsedAndDeparsed(
+                "insert into table1 (tf1,tf2,tf2)\n" +
+                        "((select sf1,sf2,sf3 from s1)" +
+                        "union " +
+                        "(select rf1,rf2,rf2 from r1))"
+                , true
+        );
+
+        assertSqlCanBeParsedAndDeparsed(
+                "(with a as (select * from dual) select * from a)"
+                , true
+        );
+    }
+
+    @Test
+    public void testInsertOutputClause() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO dbo.EmployeeSales (LastName, FirstName, CurrentSales)  \n" +
+                        "  OUTPUT INSERTED.EmployeeID,\n" +
+                        "         INSERTED.LastName,   \n" +
+                        "         INSERTED.FirstName,   \n" +
+                        "         INSERTED.CurrentSales,\n" +
+                        "         INSERTED.ProjectedSales\n" +
+                        "  INTO @MyTableVar  \n" +
+                        "    SELECT c.LastName, c.FirstName, sp.SalesYTD  \n" +
+                        "    FROM Sales.SalesPerson AS sp  \n" +
+                        "    INNER JOIN Person.Person AS c  \n" +
+                        "        ON sp.BusinessEntityID = c.BusinessEntityID  \n" +
+                        "    WHERE sp.BusinessEntityID LIKE '2%'  \n" +
+                        "    ORDER BY c.LastName, c.FirstName"
+                , true
+        );
     }
 }

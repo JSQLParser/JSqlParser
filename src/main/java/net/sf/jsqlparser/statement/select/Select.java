@@ -23,6 +23,8 @@ public class Select implements Statement {
     private SelectBody selectBody;
     private List<WithItem> withItemsList;
 
+    private boolean useWithBrackets = false;
+
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
@@ -41,11 +43,27 @@ public class Select implements Statement {
         selectBody = body;
     }
 
+    public void setUsingWithBrackets(boolean useWithBrackets) {
+        this.useWithBrackets = useWithBrackets;
+    }
+
+    public Select withUsingWithBrackets(boolean useWithBrackets) {
+        this.useWithBrackets = useWithBrackets;
+        return this;
+    }
+
+    public boolean isUsingWithBrackets() {
+        return this.useWithBrackets;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder retval = new StringBuilder();
         if (withItemsList != null && !withItemsList.isEmpty()) {
+            if (useWithBrackets) {
+                retval.append("( ");
+            }
             retval.append("WITH ");
             for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
@@ -57,6 +75,9 @@ public class Select implements Statement {
             }
         }
         retval.append(selectBody);
+        if (withItemsList != null && !withItemsList.isEmpty() && useWithBrackets) {
+            retval.append(" )");
+        }
         return retval.toString();
     }
 

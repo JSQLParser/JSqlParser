@@ -216,7 +216,7 @@ public class ExpressionVisitorAdapterTest {
     public void testJsonFunction() throws JSQLParserException {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         CCJSqlParserUtil
-                .parseExpression("JSON_OBJECT( KEY foo VALUE bar, KEY foo VALUE bar)")
+                .parseExpression("JSON_OBJECT( KEY 'foo' VALUE bar, KEY 'foo' VALUE bar)")
                 .accept(adapter);
         CCJSqlParserUtil
                 .parseExpression("JSON_ARRAY( (SELECT * from dual) )")

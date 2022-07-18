@@ -27,12 +27,14 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -268,6 +270,11 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     }
 
     @Override
+    public void visit(Analyze analyze) {
+        getValidator(AnalyzeValidator.class).validate(analyze);
+    }
+
+    @Override
     public void visit(SavepointStatement savepointStatement) {
         //TODO: not yet implemented
     }
@@ -302,5 +309,10 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     @Override
     public void visit(AlterSystemStatement alterSystemStatement) {
         //TODO: not yet implemented
+    }
+
+    @Override
+    public void visit(UnsupportedStatement unsupportedStatement) {
+
     }
 }

@@ -29,12 +29,14 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
@@ -142,6 +144,9 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         expressionDeParser.setBuffer(buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         if (select.getWithItemsList() != null && !select.getWithItemsList().isEmpty()) {
+            if (select.isUsingWithBrackets()) {
+                buffer.append("( ");
+            }
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = select.getWithItemsList().iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
@@ -153,15 +158,27 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
             }
         }
         select.getSelectBody().accept(selectDeParser);
+        if (select.isUsingWithBrackets()) {
+            buffer.append(" )");
+        }
     }
 
     @Override
     public void visit(Truncate truncate) {
-        buffer.append("TRUNCATE TABLE ");
-        buffer.append(truncate.getTable());
-        if (truncate.getCascade()) {
-            buffer.append(" CASCADE");
+        buffer.append("TRUNCATE");
+        if (truncate.isTableToken()) {
+            buffer.append(" TABLE");
         }
+        if (truncate.isOnly()) {
+            buffer.append(" ONLY");
+        }
+        buffer.append(" ");
+        buffer.append(truncate.getTable());
+
+        if (truncate.getCascade()) {
+            buffer.append( " CASCADE");
+        }
+
     }
 
     @Override
@@ -173,6 +190,11 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         selectDeParser.setExpressionVisitor(expressionDeParser);
         updateDeParser.deParse(update);
 
+    }
+
+    public void visit(Analyze analyzer) {
+        buffer.append("ANALYZE ");
+        buffer.append(analyzer.getTable());
     }
 
     @Override
@@ -372,5 +394,10 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     @Override
     public void visit(AlterSystemStatement alterSystemStatement) {
         alterSystemStatement.appendTo(buffer);
+    }
+
+    @Override
+    public void visit(UnsupportedStatement unsupportedStatement) {
+        unsupportedStatement.appendTo(buffer);
     }
 }

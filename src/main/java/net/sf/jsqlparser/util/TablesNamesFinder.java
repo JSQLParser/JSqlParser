@@ -27,6 +27,7 @@ import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
@@ -686,6 +687,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         }
     }
 
+    public void visit(Analyze analyze) {
+        visit(analyze.getTable());
+    }
     @Override
     public void visit(Drop drop) {
         visit(drop.getName());
@@ -1029,6 +1033,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(AlterSystemStatement alterSystemStatement) {
+        // no tables involved in this statement
+    }
+
+    @Override
+    public void visit(UnsupportedStatement unsupportedStatement) {
         // no tables involved in this statement
     }
 

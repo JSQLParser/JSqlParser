@@ -18,4 +18,5 @@ public enum JsonFunctionType {
     OBJECT
     , ARRAY
     , POSTGRES_OBJECT
+    , MYSQL_OBJECT
 }

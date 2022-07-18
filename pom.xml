@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>4.4-SNAPSHOT</version>
+    <version>4.5-SNAPSHOT</version>
     <name>JSQLParser library</name> 
     <inceptionYear>2004</inceptionYear>
     <organization>
@@ -216,7 +216,7 @@
                     <dependency>
                         <groupId>net.java.dev.javacc</groupId>
                         <artifactId>javacc</artifactId>
-                        <version>7.0.10</version>
+                        <version>7.0.11</version>
                     </dependency>
                 </dependencies>
             </plugin>

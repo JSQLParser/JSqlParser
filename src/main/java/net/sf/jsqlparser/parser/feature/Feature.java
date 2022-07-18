@@ -28,6 +28,7 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -394,6 +395,14 @@ public enum Feature {
      */
     alterIndex,
 
+
+    /**
+     * SQL "ANALYZE" statement is allowed
+     *
+     * @see Analyze
+     */
+    analyze,
+
     /**
      * SQL "TRUNCATE" statement is allowed
      *
@@ -725,7 +734,13 @@ public enum Feature {
      * allows complex expression parameters or named parameters for functions
      * will be switched off, when deep nesting of functions is detected
      */
-     allowComplexParsing(true)
+     allowComplexParsing(true),
+
+    /**
+     * allows passing through Unsupported Statements as a plain List of Tokens
+     * needs to be switched off, when VALIDATING statements or parsing blocks
+     */
+    allowUnsupportedStatements(false),
     ;
 
     private Object value;

@@ -14,6 +14,7 @@ import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
@@ -200,6 +201,11 @@ public class StatementVisitorAdapter implements StatementVisitor {
     }
 
     @Override
+    public void visit(Analyze analyze) {
+
+    }
+
+    @Override
     public void visit(SavepointStatement savepointStatement) {
         //@todo: do something usefull here
     }
@@ -233,5 +239,10 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(AlterSystemStatement alterSystemStatement) {
+    }
+
+    @Override
+    public void visit(UnsupportedStatement unsupportedStatement) {
+
     }
 }
