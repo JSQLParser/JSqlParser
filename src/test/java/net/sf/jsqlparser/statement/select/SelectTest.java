@@ -1888,6 +1888,12 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(stmt, false,
                 parser -> parser.withSquareBracketQuotation(true));
     }
+    
+     @Test
+    public void testIssue1595() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT [id] FROM [guest].[12tableName]", false,
+                parser -> parser.withSquareBracketQuotation(true));
+    }
 
     @Test
     public void testBrackets3() throws JSQLParserException {
