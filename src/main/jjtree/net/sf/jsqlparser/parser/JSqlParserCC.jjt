@@ -5991,6 +5991,7 @@ AlterExpression AlterExpression():
                 |
                 (
                     ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
+                    [<K_IF> <K_EXISTS> { alterExp.setUsingIfExists(true); } ]
                     (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setColumnName(tk.image); }
 
                     [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]

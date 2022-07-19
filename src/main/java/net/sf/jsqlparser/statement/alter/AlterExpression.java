@@ -412,6 +412,9 @@ public class AlterExpression {
           if (hasColumn) {
             b.append("COLUMN ");
           }
+          if (usingIfExists) {
+            b.append("IF EXISTS ");
+          }
           if (operation == AlterOperation.RENAME) {
             b.append(columnOldName).append(" TO ");
           }

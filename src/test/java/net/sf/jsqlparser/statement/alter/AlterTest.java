@@ -789,4 +789,18 @@ public class AlterTest {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE a MODIFY (COLUMN b DROP DEFAULT, COLUMN b DROP NOT NULL)", true);
     }
 
+    @Test
+    public void testAlterTableDropColumnIfExists() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test DROP COLUMN IF EXISTS name");
+    }
+
+    @Test
+    public void testAlterTableDropMultipleColumnsIfExists() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test DROP COLUMN IF EXISTS name, DROP COLUMN IF EXISTS surname");
+    }
+
+    @Test
+    public void testAlterTableDropMultipleColumnsIfExistsWithParams() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test DROP COLUMN IF EXISTS name CASCADE, DROP COLUMN IF EXISTS surname CASCADE");
+    }
 }
