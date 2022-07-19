@@ -129,6 +129,16 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
             }
         }
 
+        //@todo: Accept some Visitors for the involved Expressions
+        if (insert.getConflictAction()!=null) {
+            buffer.append(" ON CONFLICT");
+
+            if (insert.getConflictTarget()!=null) {
+                insert.getConflictTarget().appendTo(buffer);
+            }
+            insert.getConflictAction().appendTo(buffer);
+        }
+
         if (insert.getReturningExpressionList() != null) {
             buffer.append(" RETURNING ").append(PlainSelect.
                     getStringList(insert.getReturningExpressionList(), true, false));

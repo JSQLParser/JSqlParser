@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Objects;
 
 public class UpdateSet {
@@ -82,6 +83,57 @@ public class UpdateSet {
 
     public void add(ExpressionList expressionList) {
         expressions.addAll(expressionList.getExpressions());
+    }
+
+    public final static StringBuilder appendUpdateSetsTo(StringBuilder builder, Collection<UpdateSet> updateSets) {
+        builder.append(" SET ");
+
+        int j = 0;
+        for (UpdateSet updateSet : updateSets) {
+            updateSet.appendTo(builder, j);
+            j++;
+        }
+        return builder;
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPath"})
+    StringBuilder appendTo(StringBuilder builder, int j) {
+        if (j > 0) {
+            builder.append(", ");
+        }
+
+        if (usingBracketsForColumns) {
+            builder.append("(");
+        }
+
+        for (int i = 0; i < columns.size(); i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            builder.append(columns.get(i));
+        }
+
+        if (usingBracketsForColumns) {
+            builder.append(")");
+        }
+
+        builder.append(" = ");
+
+        if (usingBracketsForValues) {
+            builder.append("(");
+        }
+
+        for (int i = 0; i < expressions.size(); i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            builder.append(expressions.get(i));
+        }
+        if (usingBracketsForValues) {
+            builder.append(")");
+        }
+
+        return builder;
     }
 
 }
