@@ -229,7 +229,6 @@ public class Update implements Statement {
         return limit;
     }
 
-
     public List<SelectItem> getReturningExpressionList() {
         return returningExpressionList;
     }
@@ -253,7 +252,6 @@ public class Update implements Statement {
     public void setModifierIgnore(boolean modifierIgnore) {
         this.modifierIgnore = modifierIgnore;
     }
-
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.ExcessiveMethodLength"})
@@ -291,7 +289,7 @@ public class Update implements Statement {
 
         UpdateSet.appendUpdateSetsTo(b, updateSets);
 
-        if (outputClause!=null) {
+        if (outputClause != null) {
             outputClause.appendTo(b);
         }
 
@@ -372,7 +370,6 @@ public class Update implements Statement {
         return this;
     }
 
-
     public Update withReturningExpressionList(List<SelectItem> returningExpressionList) {
         this.setReturningExpressionList(returningExpressionList);
         return this;
@@ -393,36 +390,36 @@ public class Update implements Statement {
         return this;
     }
 
-    public Update withModifierPriority(UpdateModifierPriority modifierPriority){
+    public Update withModifierPriority(UpdateModifierPriority modifierPriority) {
         this.setModifierPriority(modifierPriority);
         return this;
     }
 
-    public Update withModifierIgnore(boolean modifierIgnore){
+    public Update withModifierIgnore(boolean modifierIgnore) {
         this.setModifierIgnore(modifierIgnore);
         return this;
     }
 
     public Update addColumns(Column... columns) {
-        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        List<Column> collection = new ArrayList<>(Optional.ofNullable(getColumns()).orElseGet(ArrayList::new));
         Collections.addAll(collection, columns);
         return this.withColumns(collection);
     }
 
     public Update addColumns(Collection<? extends Column> columns) {
-        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+        List<Column> collection = new ArrayList<>(Optional.ofNullable(getColumns()).orElseGet(ArrayList::new));
         collection.addAll(columns);
         return this.withColumns(collection);
     }
 
     public Update addExpressions(Expression... expressions) {
-        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
+        List<Expression> collection = new ArrayList<>(Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new));
         Collections.addAll(collection, expressions);
         return this.withExpressions(collection);
     }
 
     public Update addExpressions(Collection<? extends Expression> expressions) {
-        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
+        List<Expression> collection = new ArrayList<>(Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new));
         collection.addAll(expressions);
         return this.withExpressions(collection);
     }

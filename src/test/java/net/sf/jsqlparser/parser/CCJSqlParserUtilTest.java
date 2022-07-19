@@ -14,6 +14,8 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -29,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 public class CCJSqlParserUtilTest {
 
@@ -269,5 +272,61 @@ public class CCJSqlParserUtilTest {
     public void testCondExpressionIssue1482_2() throws JSQLParserException {
         Expression expr = CCJSqlParserUtil.parseCondExpression("test_table_enum.f1_enum IN ('TEST2'::test.\"test_enum\")", false);
         assertEquals("test_table_enum.f1_enum IN ('TEST2'::test.\"test_enum\")", expr.toString());
+    }
+
+    @Test
+    public void testTimeOutIssue1582() throws InterruptedException {
+        // This statement is INVALID on purpose
+        // There are crafted INTO keywords in order to make it fail but only after a long time (40 seconds plus)
+
+        String sqlStr = "" +
+                "select\n" +
+                "              t0.operatienr\n" +
+                "            , case\n" +
+                "                when\n" +
+                "                    case when (t0.vc_begintijd_operatie is null or lpad((extract('hours' into t0.vc_begintijd_operatie::timestamp))::text,2,'0') ||':'|| lpad(extract('minutes' from t0.vc_begintijd_operatie::timestamp)::text,2,'0') = '00:00') then null\n" +
+                "                         else (greatest(((extract('hours' into (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp))*60 + extract('minutes' from (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp)))/60)::numeric(12,2),0))*60\n" +
+                "                end = 0 then null\n" +
+                "                    else '25. Meer dan 4 uur'\n" +
+                "                end                                                                                                                                                  \n" +
+                "              as snijtijd_interval";
+
+        // With DEFAULT TIMEOUT 6 Seconds, we expect the statement to timeout normally
+        // A TimeoutException wrapped into a Parser Exception should be thrown
+
+        assertThrows(TimeoutException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                try {
+                    CCJSqlParserUtil.parse(sqlStr);
+                } catch (JSQLParserException ex) {
+                    Throwable cause = ((JSQLParserException) ex).getCause();
+                    if (cause!=null) {
+                        throw cause;
+                    } else {
+                        throw ex;
+                    }
+                }
+            }
+        });
+
+        // With custom TIMEOUT 60 Seconds, we expect the statement to not timeout but to fail instead
+        // No TimeoutException wrapped into a Parser Exception must be thrown
+        // Instead we expect a Parser Exception only
+        assertThrows(JSQLParserException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                try {
+                    CCJSqlParserUtil.parse(sqlStr, parser -> parser.withTimeOut(60000));
+                } catch (JSQLParserException ex) {
+                    Throwable cause = ((JSQLParserException) ex).getCause();
+                    if (cause instanceof TimeoutException) {
+                        throw cause;
+                    } else {
+                        throw ex;
+                    }
+                }
+            }
+        });
     }
 }

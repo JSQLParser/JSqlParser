@@ -74,6 +74,8 @@ Additionally, we have fixed many errors and improved the code quality and the te
 * support Postgresql optional **TABLE** in **TRUNCATE**
 * support for `ANALYZE mytable`
 * PostgreSQL `INSERT INTO ... ON CONFLICT ... DO ...` statements
+* Implement Parser Timeout Feature, e. g. `CCJSqlParserUtil.parse(sqlStr, parser -> parser.withTimeOut(60000));`
+* extended support Postgres' `Extract( field FROM source)` where `field` is a String instead of a Keyword
 
 
 ## Building from the sources
