@@ -261,13 +261,13 @@ public class CCJSqlParserUtilTest {
         Statement result = CCJSqlParserUtil.parse("Select test.* from (Select * from sch.PERSON_TABLE // root test\n) as test");
         assertEquals("SELECT test.* FROM (SELECT * FROM sch.PERSON_TABLE) AS test", result.toString());
     }
-    
+
     @Test
     public void testCondExpressionIssue1482() throws JSQLParserException {
         Expression expr = CCJSqlParserUtil.parseCondExpression("test_table_enum.f1_enum IN ('TEST2'::test.test_enum)", false);
         assertEquals("test_table_enum.f1_enum IN ('TEST2'::test.test_enum)", expr.toString());
     }
-    
+
     @Test
     public void testCondExpressionIssue1482_2() throws JSQLParserException {
         Expression expr = CCJSqlParserUtil.parseCondExpression("test_table_enum.f1_enum IN ('TEST2'::test.\"test_enum\")", false);
@@ -279,21 +279,20 @@ public class CCJSqlParserUtilTest {
         // This statement is INVALID on purpose
         // There are crafted INTO keywords in order to make it fail but only after a long time (40 seconds plus)
 
-        String sqlStr = "" +
-                "select\n" +
-                "              t0.operatienr\n" +
-                "            , case\n" +
-                "                when\n" +
-                "                    case when (t0.vc_begintijd_operatie is null or lpad((extract('hours' into t0.vc_begintijd_operatie::timestamp))::text,2,'0') ||':'|| lpad(extract('minutes' from t0.vc_begintijd_operatie::timestamp)::text,2,'0') = '00:00') then null\n" +
-                "                         else (greatest(((extract('hours' into (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp))*60 + extract('minutes' from (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp)))/60)::numeric(12,2),0))*60\n" +
-                "                end = 0 then null\n" +
-                "                    else '25. Meer dan 4 uur'\n" +
-                "                end                                                                                                                                                  \n" +
-                "              as snijtijd_interval";
+        String sqlStr = ""
+                + "select\n"
+                + "              t0.operatienr\n"
+                + "            , case\n"
+                + "                when\n"
+                + "                    case when (t0.vc_begintijd_operatie is null or lpad((extract('hours' into t0.vc_begintijd_operatie::timestamp))::text,2,'0') ||':'|| lpad(extract('minutes' from t0.vc_begintijd_operatie::timestamp)::text,2,'0') = '00:00') then null\n"
+                + "                         else (greatest(((extract('hours' into (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp))*60 + extract('minutes' from (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp)))/60)::numeric(12,2),0))*60\n"
+                + "                end = 0 then null\n"
+                + "                    else '25. Meer dan 4 uur'\n"
+                + "                end                                                                                                                                                  \n"
+                + "              as snijtijd_interval";
 
         // With DEFAULT TIMEOUT 6 Seconds, we expect the statement to timeout normally
         // A TimeoutException wrapped into a Parser Exception should be thrown
-
         assertThrows(TimeoutException.class, new Executable() {
             @Override
             public void execute() throws Throwable {
@@ -301,7 +300,7 @@ public class CCJSqlParserUtilTest {
                     CCJSqlParserUtil.parse(sqlStr);
                 } catch (JSQLParserException ex) {
                     Throwable cause = ((JSQLParserException) ex).getCause();
-                    if (cause!=null) {
+                    if (cause != null) {
                         throw cause;
                     } else {
                         throw ex;
@@ -317,7 +316,10 @@ public class CCJSqlParserUtilTest {
             @Override
             public void execute() throws Throwable {
                 try {
-                    CCJSqlParserUtil.parse(sqlStr, parser -> parser.withTimeOut(60000));
+                    CCJSqlParserUtil.parse(sqlStr, parser -> {
+                        parser.withTimeOut(10000);
+                        parser.withAllowComplexParsing(false);
+                    });
                 } catch (JSQLParserException ex) {
                     Throwable cause = ((JSQLParserException) ex).getCause();
                     if (cause instanceof TimeoutException) {
