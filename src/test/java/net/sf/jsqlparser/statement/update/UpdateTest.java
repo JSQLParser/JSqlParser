@@ -11,12 +11,14 @@ package net.sf.jsqlparser.statement.update;
 
 import java.io.StringReader;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -26,12 +28,12 @@ import org.junit.jupiter.api.Test;
 
 public class UpdateTest {
 
-    private static CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    private static final CCJSqlParserManager PARSER_MANAGER = new CCJSqlParserManager();
 
     @Test
     public void testUpdate() throws JSQLParserException {
         String statement = "UPDATE mytable set col1='as', col2=?, col3=565 Where o >= 3";
-        Update update = (Update) parserManager.parse(new StringReader(statement));
+        Update update = (Update) PARSER_MANAGER.parse(new StringReader(statement));
         assertEquals("mytable", update.getTable().toString());
         assertEquals(3, update.getUpdateSets().size());
         assertEquals("col1", update.getUpdateSets().get(0).getColumns().get(0).getColumnName());
@@ -47,7 +49,7 @@ public class UpdateTest {
     @Test
     public void testUpdateWAlias() throws JSQLParserException {
         String statement = "UPDATE table1 A SET A.columna = 'XXX' WHERE A.cod_table = 'YYY'";
-        Update update = (Update) parserManager.parse(new StringReader(statement));
+        Update update = (Update) PARSER_MANAGER.parse(new StringReader(statement));
     }
 
     @Test
@@ -113,7 +115,7 @@ public class UpdateTest {
     @Test
     public void testUpdateDoesNotAllowLimitOffset() {
         String statement = "UPDATE table1 A SET A.columna = 'XXX' WHERE A.cod_table = 'YYY' LIMIT 3,4";
-        assertThrows(JSQLParserException.class, () -> parserManager.parse(new StringReader(statement)));
+        assertThrows(JSQLParserException.class, () -> PARSER_MANAGER.parse(new StringReader(statement)));
     }
 
     @Test
@@ -275,32 +277,44 @@ public class UpdateTest {
     @Test
     public void testUpdateOutputClause() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "UPDATE /* TOP (10) */ HumanResources.Employee  \n" +
-                        "SET VacationHours = VacationHours * 1.25,  \n" +
-                        "    ModifiedDate = GETDATE()   \n" +
-                        "OUTPUT inserted.BusinessEntityID,  \n" +
-                        "       deleted.VacationHours,  \n" +
-                        "       inserted.VacationHours,  \n" +
-                        "       inserted.ModifiedDate  \n" +
-                        "INTO @MyTableVar"
-                , true
+                "UPDATE /* TOP (10) */ HumanResources.Employee  \n"
+                + "SET VacationHours = VacationHours * 1.25,  \n"
+                + "    ModifiedDate = GETDATE()   \n"
+                + "OUTPUT inserted.BusinessEntityID,  \n"
+                + "       deleted.VacationHours,  \n"
+                + "       inserted.VacationHours,  \n"
+                + "       inserted.ModifiedDate  \n"
+                + "INTO @MyTableVar",
+                 true
         );
 
         assertSqlCanBeParsedAndDeparsed(
-                "UPDATE Production.WorkOrder  \n" +
-                        "SET ScrapReasonID = 4  \n" +
-                        "OUTPUT deleted.ScrapReasonID,  \n" +
-                        "       inserted.ScrapReasonID,   \n" +
-                        "       inserted.WorkOrderID,  \n" +
-                        "       inserted.ProductID,  \n" +
-                        "       p.Name  \n" +
-                        "    INTO @MyTestVar  \n" +
-                        "FROM Production.WorkOrder AS wo  \n" +
-                        "    INNER JOIN Production.Product AS p   \n" +
-                        "    ON wo.ProductID = p.ProductID   \n" +
-                        "    AND wo.ScrapReasonID= 16  \n" +
-                        "    AND p.ProductID = 733"
-                , true
+                "UPDATE Production.WorkOrder  \n"
+                + "SET ScrapReasonID = 4  \n"
+                + "OUTPUT deleted.ScrapReasonID,  \n"
+                + "       inserted.ScrapReasonID,   \n"
+                + "       inserted.WorkOrderID,  \n"
+                + "       inserted.ProductID,  \n"
+                + "       p.Name  \n"
+                + "    INTO @MyTestVar  \n"
+                + "FROM Production.WorkOrder AS wo  \n"
+                + "    INNER JOIN Production.Product AS p   \n"
+                + "    ON wo.ProductID = p.ProductID   \n"
+                + "    AND wo.ScrapReasonID= 16  \n"
+                + "    AND p.ProductID = 733",
+                 true
         );
+    }
+
+    @Test
+    public void testUpdateSetsIssue1590() throws JSQLParserException {
+        Update update = (Update) CCJSqlParserUtil.parse("update mytable set a=5 where b = 2");
+        assertEquals(1, update.getUpdateSets().size());
+        update.addColumns(new Column("y"));
+        update.addExpressions(new DoubleValue("6"));
+        update.getUpdateSets().get(0).setUsingBracketsForColumns(true);
+        update.getUpdateSets().get(0).setUsingBracketsForValues(true);
+
+        assertEquals("UPDATE mytable SET (a, y) = (5, 6) WHERE b = 2", update.toString());
     }
 }
