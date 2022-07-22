@@ -5150,7 +5150,7 @@ CreateTable CreateTable():
                             { idxSpec.clear(); }
                             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                             {
-                                index = new Index().withType(tk.image).withName(sk3).withColumns(colNames).withIndexSpec(idxSpec);
+                                index = new Index().withType(tk.image).withName(sk3).withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
                                 indexes.add(index);
                             }
                     )
@@ -5169,7 +5169,7 @@ CreateTable CreateTable():
                             { idxSpec.clear(); }
                             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                             {
-                                index.withColumns(colNames).withIndexSpec(idxSpec);
+                                index.withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
                                 indexes.add(index);
                             }
                             // reset Token to null forcefullly
@@ -5190,7 +5190,7 @@ CreateTable CreateTable():
                                 .withType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + tk2.image)
                                 .withName(sk3)
                                 .withColumns(colNames)
-                                .withIndexSpec(idxSpec);
+                                .withIndexSpec(new ArrayList<String>(idxSpec));
                                 indexes.add(index);
                             }
                     )
