@@ -28,7 +28,7 @@ public class DeleteValidator extends AbstractValidator<Delete> {
             validateOptionalFeature(c, delete.getJoins(), Feature.deleteJoin);
             validateOptionalFeature(c, delete.getLimit(), Feature.deleteLimit);
             validateOptionalFeature(c, delete.getOrderByElements(), Feature.deleteOrderBy);
-            validateOptionalFeature(c, delete.getReturningExpressionList(), Feature.insertReturningExpressionList);
+            validateOptionalFeature(c, delete.getReturningExpressionList(), Feature.deleteReturningExpressionList);
         }
 
         SelectValidator v = getValidator(SelectValidator.class);

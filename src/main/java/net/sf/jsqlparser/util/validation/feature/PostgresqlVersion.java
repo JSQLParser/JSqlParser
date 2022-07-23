@@ -98,7 +98,7 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-createindex.html
                     Feature.createIndex,
                     // https://www.postgresql.org/docs/current/sql-createtable.html
-                    Feature.createTable, Feature.createTableUnlogged, 
+                    Feature.createTable, Feature.createTableUnlogged,
                     Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
                     Feature.createTableFromSelect, Feature.createTableIfNotExists,
                     // https://www.postgresql.org/docs/current/sql-createview.html
@@ -111,12 +111,14 @@ public enum PostgresqlVersion implements Version {
                     Feature.insertValues,
                     Feature.values,
                     Feature.insertFromSelect,
-                    Feature.insertReturningAll, Feature.insertReturningExpressionList,
+                    Feature.insertReturningAll,
+                    Feature.insertReturningExpressionList,
                     // https://www.postgresql.org/docs/current/sql-update.html
                     Feature.update,
                     Feature.updateReturning,
                     // https://www.postgresql.org/docs/current/sql-delete.html
                     Feature.delete,
+                    Feature.deleteReturningExpressionList,
                     // https://www.postgresql.org/docs/current/sql-truncate.html
                     Feature.truncate,
 
@@ -150,7 +152,10 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-commit.html
                     Feature.commit
                     )),
-    V11("11", V10.copy().getFeatures()), V12("12", V11.copy().getFeatures());
+    V11("11", V10.copy().getFeatures()),
+    V12("12", V11.copy().getFeatures()),
+    V13("13", V12.copy().getFeatures()),
+    V14("14", V13.copy().getFeatures());
 
     private Set<Feature> features;
     private String versionString;
