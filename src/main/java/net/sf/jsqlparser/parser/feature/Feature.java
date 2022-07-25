@@ -327,6 +327,11 @@ public enum Feature {
     updateUseSelect,
     updateOrderBy,
     updateLimit,
+    /**
+     * "RETURNING expr(, expr)*"
+     *
+     * @see SelectExpressionItem
+     */
     updateReturning,
     /**
      * SQL "DELETE" statement is allowed
@@ -350,6 +355,12 @@ public enum Feature {
      * "ORDER BY ..."
      */
     deleteOrderBy,
+    /**
+     * "RETURNING expr(, expr)*"
+     *
+     * @see SelectExpressionItem
+     */
+    deleteReturningExpressionList,
 
     /**
      * SQL "UPSERT" statement is allowed
@@ -501,7 +512,7 @@ public enum Feature {
      */
     createTableRowMovement,
     /**
-     * "CREATE TABLE (colspec) SELECT ... 
+     * "CREATE TABLE (colspec) SELECT ...
      */
     createTableFromSelect,
     /**
@@ -615,7 +626,7 @@ public enum Feature {
     set,
     /**
      * @see ResetStatement
-    */
+     */
     reset,
     /**
      * @see Pivot
@@ -724,17 +735,18 @@ public enum Feature {
     allowSquareBracketQuotation(false),
 
     /**
-       allow parsing of RDBMS specific syntax by switching off SQL Standard Compliant Syntax
-    */
+     * allow parsing of RDBMS specific syntax by switching off SQL Standard
+     * Compliant Syntax
+     */
     allowPostgresSpecificSyntax(false),
 
     // PERFORMANCE
-    
+
     /**
      * allows complex expression parameters or named parameters for functions
      * will be switched off, when deep nesting of functions is detected
      */
-     allowComplexParsing(true),
+    allowComplexParsing(true),
 
     /**
      * allows passing through Unsupported Statements as a plain List of Tokens
