@@ -56,6 +56,8 @@ Any requests for examples or any particular documentation will be most welcome.
 
 ## Extensions in the latest SNAPSHOT version 4.6
 
+* support for named windows in window expressions: `SELECT sum(c) OVER winName FROM mytable WINDOW winName AS (PARTITION BY pcol)`
+
 Additionally, we have fixed many errors and improved the code quality and the test coverage.
 
 ## Extensions of JSqlParser releases

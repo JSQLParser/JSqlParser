@@ -5232,4 +5232,14 @@ public class SelectTest {
                         "FROM table1 as t1\n" +
                         "NATURAL RIGHT JOIN table2 as t2", true);
     }
+    
+    @Test
+    public void testNamedWindowDefinitionIssue1581() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT sum(salary) OVER w, avg(salary) OVER w FROM empsalary WINDOW w AS (PARTITION BY depname ORDER BY salary DESC)");
+    }
+    
+    @Test
+    public void testNamedWindowDefinitionIssue1581_2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT sum(salary) OVER w1, avg(salary) OVER w2 FROM empsalary WINDOW w1 AS (PARTITION BY depname ORDER BY salary DESC), w2 AS (PARTITION BY depname2 ORDER BY salary2)");
+    }
 }

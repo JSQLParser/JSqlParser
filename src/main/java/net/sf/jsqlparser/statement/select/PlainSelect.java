@@ -15,9 +15,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.WindowDefinition;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 
@@ -55,6 +57,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private boolean noWait = false;
     private boolean emitChanges = false;
     private WithIsolation withIsolation;
+    private List<WindowDefinition> windowDefinitions;
 
     public boolean isUseBrackets() {
         return useBrackets;
@@ -230,8 +233,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     /**
-     * A list of {@link Expression}s of the GROUP BY clause. It is null in case
-     * there is no GROUP BY clause
+     * A list of {@link Expression}s of the GROUP BY clause. It is null in case there is no GROUP BY clause
      *
      * @return a list of {@link Expression}s
      */
@@ -331,7 +333,6 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         return emitChanges;
     }
 
-    
     public WithIsolation getWithIsolation() {
         return withIsolation;
     }
@@ -340,8 +341,16 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.withIsolation = withIsolation;
     }
 
+    public List<WindowDefinition> getWindowDefinitions() {
+        return windowDefinitions;
+    }
+
+    public void setWindowDefinitions(List<WindowDefinition> windowDefinitions) {
+        this.windowDefinitions = windowDefinitions;
+    }
+
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity" , "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder sql = new StringBuilder();
         if (useBrackets) {
@@ -418,8 +427,14 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             if (having != null) {
                 sql.append(" HAVING ").append(having);
             }
+
+            if (windowDefinitions != null) {
+                sql.append(" WINDOW ");
+                sql.append(windowDefinitions.stream().map(WindowDefinition::toString).collect(joining(", ")));
+            }
+
             sql.append(orderByToString(oracleSiblings, orderByElements));
-            if (emitChanges){
+            if (emitChanges) {
                 sql.append(" EMIT CHANGES");
             }
             if (limit != null) {
@@ -471,7 +486,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             }
             if (withIsolation != null) {
                 sql.append(withIsolation);
-            }            
+            }
         }
         if (forXmlPath != null) {
             sql.append(" FOR XML PATH(").append(forXmlPath).append(")");
@@ -509,8 +524,8 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     /**
-     * List the toString out put of the objects in the List comma separated. If the
-     * List is null or empty an empty string is returned.
+     * List the toString out put of the objects in the List comma separated. If the List is null or empty an empty
+     * string is returned.
      *
      * The same as getStringList(list, true, false)
      *
@@ -523,11 +538,11 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     /**
-     * List the toString out put of the objects in the List that can be comma
-     * separated. If the List is null or empty an empty string is returned.
+     * List the toString out put of the objects in the List that can be comma separated. If the List is null or empty an
+     * empty string is returned.
      *
-     * @param list        list of objects with toString methods
-     * @param useComma    true if the list has to be comma separated
+     * @param list list of objects with toString methods
+     * @param useComma true if the list has to be comma separated
      * @param useBrackets true if the list has to be enclosed in brackets
      * @return comma separated list of the elements in the list
      */
@@ -536,11 +551,11 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     }
 
     /**
-     * Append the toString out put of the objects in the List (that can be comma
-     * separated). If the List is null or empty an empty string is returned.
+     * Append the toString out put of the objects in the List (that can be comma separated). If the List is null or
+     * empty an empty string is returned.
      *
-     * @param list        list of objects with toString methods
-     * @param useComma    true if the list has to be comma separated
+     * @param list list of objects with toString methods
+     * @param useComma true if the list has to be comma separated
      * @param useBrackets true if the list has to be enclosed in brackets
      * @return comma separated list of the elements in the list
      */
@@ -554,9 +569,9 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
             int size = list.size();
             for (int i = 0; i < size; i++) {
-                builder.append(list.get(i)).append( i < size - 1
+                builder.append(list.get(i)).append(i < size - 1
                         ? comma + " "
-                        : "" );
+                        : "");
             }
 
             if (useBrackets) {

@@ -2007,6 +2007,8 @@ PlainSelect PlainSelect() #PlainSelect:
     Token token;
     KSQLWindow ksqlWindow = null;
     boolean noWait = false;
+    String windowName = null;
+    WindowDefinition winDef;
 }
 {
     <K_SELECT>
@@ -2051,12 +2053,17 @@ PlainSelect PlainSelect() #PlainSelect:
       fromItem=FromItem()
       joins=JoinsList() ]
 
-    [ ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
+    [ LOOKAHEAD(2) ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
     [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); }]
     [ oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
     [ groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
     [ having=Having() { plainSelect.setHaving(having); }]
     [LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
+    [ <K_WINDOW> 
+        windowName = RelObjectName() <K_AS> winDef = windowDefinition() { List<WindowDefinition> winDefs = new ArrayList<WindowDefinition>(); winDefs.add(winDef.withWindowName(windowName)); }
+        ( LOOKAHEAD(2) "," windowName = RelObjectName() <K_AS> winDef = windowDefinition() { winDefs.add(winDef.withWindowName(windowName)); } )*
+        { plainSelect.setWindowDefinitions(winDefs); }
+    ]
     [LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements);    }   ]
     [ <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
     [LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
@@ -4450,27 +4457,40 @@ KeepExpression KeepExpression() : {
 
 
 void windowFun(AnalyticExpression retval):{
-         ExpressionList expressionList = null;
-         List<OrderByElement> olist = null;
-         WindowElement windowElement = null;
-         boolean partitionByBrackets = false;
+         String windowName = null;
+         WindowDefinition winDef;
 } {
     ([<K_IGNORE> <K_NULLS> { retval.setIgnoreNullsOutside(true); } ] <K_OVER> {retval.setType(AnalyticType.OVER);}
         | <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);} )
 
+    (
+        windowName = RelObjectName() { retval.setWindowName(windowName); }
+    |    
+        winDef = windowDefinition() { retval.setWindowDefinition(winDef); }
+    )
+}
+
+WindowDefinition windowDefinition() : {
+    ExpressionList expressionList = null;
+    List<OrderByElement> olist = null;
+    WindowElement windowElement = null;
+    boolean partitionByBrackets = false;
+    WindowDefinition winDef = new WindowDefinition();
+} {
     "("
-        [<K_PARTITION> <K_BY>
-            (LOOKAHEAD(ComplexExpressionList()) expressionList=ComplexExpressionList()
-            | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
-        ]
-        [olist=OrderByElements() ]
-        [windowElement = WindowElement() ]
-        {
-            retval.setPartitionExpressionList(expressionList, partitionByBrackets);
-            retval.setOrderByElements(olist);
-            retval.setWindowElement(windowElement);
-        }
+    [<K_PARTITION> <K_BY>
+        (LOOKAHEAD(ComplexExpressionList()) expressionList=ComplexExpressionList()
+        | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+    ]
+    [olist=OrderByElements() ]
+    [windowElement = WindowElement() ]
+    {
+        winDef.setPartitionExpressionList(expressionList, partitionByBrackets);
+        winDef.setOrderByElements(olist);
+        winDef.setWindowElement(windowElement);
+    }
     ")"
+    { return winDef; }
 }
 
 AnalyticExpression AnalyticExpression(Function function) :

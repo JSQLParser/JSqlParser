@@ -16,17 +16,14 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 /**
- * Analytic function. The name of the function is variable but the parameters following the special
- * analytic function path. e.g. row_number() over (order by test). Additional there can be an
- * expression for an analytical aggregate like sum(col) or the "all collumns" wildcard like
- * count(*).
+ * Analytic function. The name of the function is variable but the parameters following the special analytic function
+ * path. e.g. row_number() over (order by test). Additional there can be an expression for an analytical aggregate like
+ * sum(col) or the "all collumns" wildcard like count(*).
  *
  * @author tw
  */
 public class AnalyticExpression extends ASTNodeAccessImpl implements Expression {
 
-    private final OrderByClause orderBy = new OrderByClause();
-    private final PartitionByClause partitionBy = new PartitionByClause();
     private String name;
     private Expression expression;
     private Expression offset;
@@ -39,8 +36,9 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private boolean ignoreNulls = false;            //IGNORE NULLS inside function parameters
     private boolean ignoreNullsOutside = false;     //IGNORE NULLS outside function parameters
     private Expression filterExpression = null;
-    private WindowElement windowElement = null;
     private List<OrderByElement> funcOrderBy = null;
+    private String windowName = null;               // refers to an external window definition (paritionBy, orderBy, windowElement)
+    private WindowDefinition windowDef = new WindowDefinition();
 
     public AnalyticExpression() {
     }
@@ -76,11 +74,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     public List<OrderByElement> getOrderByElements() {
-        return orderBy.getOrderByElements();
+        return windowDef.orderBy.getOrderByElements();
     }
 
     public void setOrderByElements(List<OrderByElement> orderByElements) {
-        orderBy.setOrderByElements(orderByElements);
+        windowDef.orderBy.setOrderByElements(orderByElements);
     }
 
     public KeepExpression getKeep() {
@@ -92,7 +90,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     public ExpressionList getPartitionExpressionList() {
-        return partitionBy.getPartitionExpressionList();
+        return windowDef.partitionBy.getPartitionExpressionList();
     }
 
     public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
@@ -100,11 +98,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     public void setPartitionExpressionList(ExpressionList partitionExpressionList, boolean brackets) {
-        partitionBy.setPartitionExpressionList(partitionExpressionList, brackets);
+        windowDef.partitionBy.setPartitionExpressionList(partitionExpressionList, brackets);
     }
 
     public boolean isPartitionByBrackets() {
-        return partitionBy.isBrackets();
+        return windowDef.partitionBy.isBrackets();
     }
 
     public String getName() {
@@ -140,11 +138,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     public WindowElement getWindowElement() {
-        return windowElement;
+        return windowDef.windowElement;
     }
 
     public void setWindowElement(WindowElement windowElement) {
-        this.windowElement = windowElement;
+        windowDef.windowElement = windowElement;
     }
 
     public AnalyticType getType() {
@@ -187,6 +185,22 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.ignoreNullsOutside = ignoreNullsOutside;
     }
 
+    public String getWindowName() {
+        return windowName;
+    }
+
+    public void setWindowName(String windowName) {
+        this.windowName = windowName;
+    }
+
+    public WindowDefinition getWindowDefinition() {
+        return windowDef;
+    }
+
+    public void setWindowDefinition(WindowDefinition windowDef) {
+        this.windowDef = windowDef;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.MissingBreakInSwitch"})
     public String toString() {
@@ -210,11 +224,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         if (isIgnoreNulls()) {
             b.append(" IGNORE NULLS");
         }
-        if (funcOrderBy!=null) {
+        if (funcOrderBy != null) {
             b.append(" ORDER BY ");
-            b.append( funcOrderBy.stream().map(OrderByElement::toString).collect(joining(", ")));
+            b.append(funcOrderBy.stream().map(OrderByElement::toString).collect(joining(", ")));
         }
-        
+
         b.append(") ");
         if (keep != null) {
             b.append(keep.toString()).append(" ");
@@ -232,7 +246,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         if (isIgnoreNullsOutside()) {
             b.append("IGNORE NULLS ");
         }
-        
+
         switch (type) {
             case FILTER_ONLY:
                 return b.toString();
@@ -242,19 +256,13 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             default:
                 b.append("OVER");
         }
-        b.append(" (");
 
-        partitionBy.toStringPartitionBy(b);
-        orderBy.toStringOrderByElements(b);
-
-        if (windowElement != null) {
-            if (orderBy.getOrderByElements() != null) {
-                b.append(' ');
-            }
-            b.append(windowElement);
+        if (windowName != null) {
+            b.append(" ").append(windowName);
+        } else {
+            b.append(" ");
+            b.append(windowDef.toString());
         }
-
-        b.append(")");
 
         return b.toString();
     }
