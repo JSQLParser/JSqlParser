@@ -19,9 +19,6 @@ public class RowTypeConstructor extends ASTNodeAccessImpl implements Expression 
     private ArrayList<ColumnDefinition> columnDefinitions = new ArrayList<>();
     private String name = null;
 
-    public RowTypeConstructor() {
-    }
-    
     public ArrayList<ColumnDefinition> getColumnDefinitions() {
         return columnDefinitions;
     }
