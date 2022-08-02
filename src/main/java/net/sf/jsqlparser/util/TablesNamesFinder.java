@@ -190,6 +190,12 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
+    public void visit(OverlapsCondition overlapsCondition) {
+        overlapsCondition.getLeft().accept(this);
+        overlapsCondition.getRight().accept(this);
+    }
+
+    @Override
     public void visit(Column tableColumn) {
         if (allowColumnProcessing && tableColumn.getTable() != null && tableColumn.getTable().getName() != null) {
             visit(tableColumn.getTable());
@@ -754,8 +760,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(RowConstructor rowConstructor) {
-        for (Expression expr : rowConstructor.getExprList().getExpressions()) {
+    public void visit(RowTypeConstructor rowTypeConstructor) {
+        for (Expression expr : rowTypeConstructor.getExprList().getExpressions()) {
             expr.accept(this);
         }
     }

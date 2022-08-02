@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 import java.util.List;
+
 import static java.util.stream.Collectors.joining;
 
 import net.sf.jsqlparser.expression.*;
@@ -108,6 +109,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public void visit(OverlapsCondition overlapsCondition) {
+        buffer.append(overlapsCondition.toString());
+    }
+
+    @Override
     public void visit(EqualsTo equalsTo) {
         visitOldOracleJoinBinaryExpression(equalsTo, " = ");
     }
@@ -126,6 +132,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public void visit(DoubleValue doubleValue) {
         buffer.append(doubleValue.toString());
     }
+
 
     @Override
     public void visit(HexValue hexValue) {
@@ -367,7 +374,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (selectVisitor != null) {
             if (subSelect.getWithItemsList() != null) {
                 buffer.append("WITH ");
-                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.hasNext();) {
+                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.hasNext(); ) {
                     iter.next().accept(selectVisitor);
                     if (iter.hasNext()) {
                         buffer.append(", ");
@@ -463,7 +470,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (expressionList.isUsingBrackets()) {
             buffer.append("(");
         }
-        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
+        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext(); ) {
             Expression expression = iter.next();
             expression.accept(this);
             if (iter.hasNext()) {
@@ -747,7 +754,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(MultiExpressionList multiExprList) {
-        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
+        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext(); ) {
             it.next().accept(this);
             if (it.hasNext()) {
                 buffer.append(", ");
@@ -816,23 +823,23 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public void visit(RowConstructor rowConstructor) {
-        if (rowConstructor.getName() != null) {
-            buffer.append(rowConstructor.getName());
+    public void visit(RowTypeConstructor rowTypeConstructor) {
+        if (rowTypeConstructor.getName() != null) {
+            buffer.append(rowTypeConstructor.getName());
         }
         buffer.append("(");
 
-        if (rowConstructor.getColumnDefinitions().size() > 0) {
+        if (rowTypeConstructor.getColumnDefinitions().size() > 0) {
             buffer.append("(");
             int i = 0;
-            for (ColumnDefinition columnDefinition : rowConstructor.getColumnDefinitions()) {
+            for (ColumnDefinition columnDefinition : rowTypeConstructor.getColumnDefinitions()) {
                 buffer.append(i > 0 ? ", " : "").append(columnDefinition.toString());
                 i++;
             }
             buffer.append(")");
         } else {
             boolean first = true;
-            for (Expression expr : rowConstructor.getExprList().getExpressions()) {
+            for (Expression expr : rowTypeConstructor.getExprList().getExpressions()) {
                 if (first) {
                     first = false;
                 } else {
@@ -937,7 +944,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         buffer.append(")");
         if (expr.getOrderByElements() != null) {
             buffer.append(" ORDER BY ");
-            for (Iterator<OrderByElement> i = expr.getOrderByElements().iterator(); i.hasNext();) {
+            for (Iterator<OrderByElement> i = expr.getOrderByElements().iterator(); i.hasNext(); ) {
                 buffer.append(i.next().toString());
                 if (i.hasNext()) {
                     buffer.append(", ");

@@ -69,7 +69,7 @@ public class ExpressionVisitorAdapterTest {
             }
         });
 
-        assertTrue(exprList.get(0) instanceof RowConstructor);
+        assertTrue(exprList.get(0) instanceof RowTypeConstructor);
         assertTrue(exprList.get(1) instanceof SubSelect);
     }
 

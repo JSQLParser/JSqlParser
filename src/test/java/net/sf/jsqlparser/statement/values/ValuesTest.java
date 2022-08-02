@@ -12,7 +12,7 @@ package net.sf.jsqlparser.statement.values;
 import java.util.Arrays;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.expression.RowConstructor;
+import net.sf.jsqlparser.expression.RowTypeConstructor;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.Statement;
@@ -36,7 +36,7 @@ public class ValuesTest {
                 .addBrackets(Boolean.FALSE).addSelects(
                 new ValuesStatement().withExpressions(
                         new ExpressionList(
-                                new RowConstructor().withExprList(list))
+                                new RowTypeConstructor().withExprList(list))
                                 .withBrackets(false))));
 
         assertDeparse(created, statement);

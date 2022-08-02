@@ -161,6 +161,12 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         expr.getBetweenExpressionEnd().accept(this);
     }
 
+    public void visit(OverlapsCondition overlapsCondition) {
+        overlapsCondition.getLeft().accept(this);
+        overlapsCondition.getRight().accept(this);
+    }
+
+
     @Override
     public void visit(EqualsTo expr) {
         visitBinaryExpression(expr);
@@ -513,13 +519,13 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
     }
 
     @Override
-    public void visit(RowConstructor rowConstructor) {
-        if (rowConstructor.getColumnDefinitions().isEmpty()) {
-            for (Expression expression: rowConstructor.getExprList().getExpressions()) {
+    public void visit(RowTypeConstructor rowTypeConstructor) {
+        if (rowTypeConstructor.getColumnDefinitions().isEmpty()) {
+            for (Expression expression: rowTypeConstructor.getExprList().getExpressions()) {
                 expression.accept(this);
               }
         } else {
-            for (ColumnDefinition columnDefinition : rowConstructor.getColumnDefinitions()) {
+            for (ColumnDefinition columnDefinition : rowTypeConstructor.getColumnDefinitions()) {
                 columnDefinition.accept(this);
             }
         }

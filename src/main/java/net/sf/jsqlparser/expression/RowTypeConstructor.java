@@ -14,12 +14,12 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 
-public class RowConstructor extends ASTNodeAccessImpl implements Expression {
+public class RowTypeConstructor extends ASTNodeAccessImpl implements Expression {
     private ExpressionList exprList;
     private ArrayList<ColumnDefinition> columnDefinitions = new ArrayList<>();
     private String name = null;
 
-    public RowConstructor() {
+    public RowTypeConstructor() {
     }
     
     public ArrayList<ColumnDefinition> getColumnDefinitions() {
@@ -30,6 +30,12 @@ public class RowConstructor extends ASTNodeAccessImpl implements Expression {
         return columnDefinitions.add(columnDefinition);
     }
 
+    public void addExpression( Expression expr) {
+        if (exprList == null ) {
+            exprList = new ExpressionList();
+        }
+        exprList.addExpressions(expr);
+    }
     public ExpressionList getExprList() {
         return exprList;
     }
@@ -67,12 +73,12 @@ public class RowConstructor extends ASTNodeAccessImpl implements Expression {
         return (name != null ? name : "") + exprList.toString();
     }
 
-    public RowConstructor withExprList(ExpressionList exprList) {
+    public RowTypeConstructor withExprList(ExpressionList exprList) {
         this.setExprList(exprList);
         return this;
     }
 
-    public RowConstructor withName(String name) {
+    public RowTypeConstructor withName(String name) {
         this.setName(name);
         return this;
     }

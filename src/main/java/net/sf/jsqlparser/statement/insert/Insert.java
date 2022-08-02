@@ -18,7 +18,7 @@ import java.util.Optional;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.expression.RowConstructor;
+import net.sf.jsqlparser.expression.RowTypeConstructor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
@@ -114,9 +114,9 @@ public class Insert implements Statement {
                         if (valuesStatement.getExpressions() instanceof ExpressionList) {
                             ExpressionList expressionList = (ExpressionList) valuesStatement.getExpressions();
 
-                            if (expressionList.getExpressions().size() == 1 && expressionList.getExpressions().get(0) instanceof RowConstructor) {
-                                RowConstructor rowConstructor = (RowConstructor) expressionList.getExpressions().get(0);
-                                return rowConstructor.getExprList();
+                            if (expressionList.getExpressions().size() == 1 && expressionList.getExpressions().get(0) instanceof RowTypeConstructor) {
+                                RowTypeConstructor rowTypeConstructor = (RowTypeConstructor) expressionList.getExpressions().get(0);
+                                return rowTypeConstructor.getExprList();
                             } else {
                                 return expressionList;
                             }

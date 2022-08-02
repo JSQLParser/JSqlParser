@@ -80,6 +80,14 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     }
 
     @Override
+    public void visit(OverlapsCondition overlapsCondition) {
+        overlapsCondition.getLeft().accept(this);
+        overlapsCondition.getRight().accept( this);
+
+    }
+
+
+    @Override
     public void visit(EqualsTo equalsTo) {
         visitOldOracleJoinBinaryExpression(equalsTo, " = ");
     }
@@ -459,11 +467,11 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     }
 
     @Override
-    public void visit(RowConstructor rowConstructor) {
-        if (rowConstructor.getColumnDefinitions().isEmpty()) {
-            validateOptionalExpressionList(rowConstructor.getExprList());
+    public void visit(RowTypeConstructor rowTypeConstructor) {
+        if (rowTypeConstructor.getColumnDefinitions().isEmpty()) {
+            validateOptionalExpressionList(rowTypeConstructor.getExprList());
         } else {
-            for (ColumnDefinition columnDefinition: rowConstructor.getColumnDefinitions()) {
+            for (ColumnDefinition columnDefinition: rowTypeConstructor.getColumnDefinitions()) {
                 validateName(NamedObject.column, columnDefinition.getColumnName());
             }
         }

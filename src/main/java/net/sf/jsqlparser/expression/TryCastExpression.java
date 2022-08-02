@@ -16,20 +16,20 @@ public class TryCastExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
     private ColDataType type;
-    private RowConstructor rowConstructor;
+    private RowTypeConstructor rowTypeConstructor;
     private boolean useCastKeyword = true;
 
-    public RowConstructor getRowConstructor() {
-        return rowConstructor;
+    public RowTypeConstructor getRowConstructor() {
+        return rowTypeConstructor;
     }
 
-    public void setRowConstructor(RowConstructor rowConstructor) {
-        this.rowConstructor = rowConstructor;
+    public void setRowTypeConstructor(RowTypeConstructor rowTypeConstructor) {
+        this.rowTypeConstructor = rowTypeConstructor;
         this.type = null;
     }
 
-    public TryCastExpression withRowConstructor(RowConstructor rowConstructor) {
-        setRowConstructor(rowConstructor);
+    public TryCastExpression withRowTypeConstructor(RowTypeConstructor rowTypeConstructor) {
+        setRowTypeConstructor(rowTypeConstructor);
         return this;
     }
 
@@ -39,7 +39,7 @@ public class TryCastExpression extends ASTNodeAccessImpl implements Expression {
 
     public void setType(ColDataType type) {
         this.type = type;
-        this.rowConstructor = null;
+        this.rowTypeConstructor = null;
     }
 
     public Expression getLeftExpression() {
@@ -66,8 +66,8 @@ public class TryCastExpression extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         if (useCastKeyword) {
-            return rowConstructor!=null
-              ? "TRY_CAST(" + leftExpression + " AS " + rowConstructor.toString() + ")"
+            return rowTypeConstructor !=null
+              ? "TRY_CAST(" + leftExpression + " AS " + rowTypeConstructor.toString() + ")"
               : "TRY_CAST(" + leftExpression + " AS " + type.toString() + ")";
         } else {
             return leftExpression + "::" + type.toString();

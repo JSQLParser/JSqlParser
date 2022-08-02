@@ -320,6 +320,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_OUTER:"OUTER">
 |   <K_OUTPUT:"OUTPUT">
 |   <K_OVER:"OVER">
+|   <K_OVERLAPS:"OVERLAPS">
 |   <K_OPTIMIZE: "OPTIMIZE" >
 |   <K_PARALLEL:"PARALLEL">
 |   <K_PARTITION:"PARTITION">
@@ -3300,11 +3301,22 @@ Expression Condition():
 {
     [ LOOKAHEAD(2) (<K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; })]
     (
-        LOOKAHEAD(RegularCondition()) result=RegularCondition()
+        LOOKAHEAD(OverlapsCondition()) result=OverlapsCondition()
+        | LOOKAHEAD(RegularCondition()) result=RegularCondition()
         | result=SQLCondition()
     )
 
     { return not?new NotExpression(result, exclamationMarkNot):result; }
+}
+
+Expression OverlapsCondition():{
+   RowValueConstructor left;
+   RowValueConstructor right;
+
+}
+{
+    left = RowValueConstructor()  <K_OVERLAPS> right = RowValueConstructor()
+{return new OverlapsCondition(left, right);}
 }
 
 Expression RegularCondition() #RegularCondition:
@@ -3718,7 +3730,7 @@ Expression ComparisonItem() :
     LOOKAHEAD(3) retval=AnyComparisonExpression()
     | LOOKAHEAD(ValueListExpression()) retval=ValueListExpression()
     | LOOKAHEAD(3) retval=SimpleExpression()
-    | retval=RowConstructor()
+    | retval=RowTypeConstructor()
   )
 
    {
@@ -3986,7 +3998,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval=TryCastExpression()
 
-        //| LOOKAHEAD(2) retval=RowConstructor()
+        //| LOOKAHEAD(2) retval=RowTypeConstructor()
 
         // support timestamp expressions
         | (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
@@ -4019,7 +4031,7 @@ Expression PrimaryExpression() #PrimaryExpression:
                   if (list.getExpressions().size() == 1) {
                       retval = new Parenthesis(list.getExpressions().get(0));
                   } else {
-                      retval = new RowConstructor().withExprList(list);
+                      retval = new RowTypeConstructor().withExprList(list);
                   }
               }
            ["." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); }]
@@ -4579,7 +4591,7 @@ CastExpression CastExpression():
 {
     CastExpression retval = new CastExpression();
     ColDataType type = null;
-    RowConstructor rowConstructor = null;
+    RowTypeConstructor rowTypeConstructor = null;
     Expression expression = null;
     boolean    useCastKeyword;
 }
@@ -4589,7 +4601,7 @@ CastExpression CastExpression():
     expression=SimpleExpression() 
     <K_AS> { retval.setUseCastKeyword(true); } 
     ( 
-        LOOKAHEAD(3) rowConstructor = RowConstructor() { retval.setRowConstructor(rowConstructor); } 
+        LOOKAHEAD(3) rowTypeConstructor = RowTypeConstructor() { retval.setRowTypeConstructor(rowTypeConstructor); }
         | type=ColDataType() { retval.setType(type); } 
     )
     ")" 
@@ -4604,7 +4616,7 @@ TryCastExpression TryCastExpression():
 {
     TryCastExpression retval = new TryCastExpression();
     ColDataType type = null;
-    RowConstructor rowConstructor = null;
+    RowTypeConstructor rowTypeConstructor = null;
     Expression expression = null;
     boolean    useCastKeyword;
 }
@@ -4614,7 +4626,7 @@ TryCastExpression TryCastExpression():
     expression=SimpleExpression()
     <K_AS> { retval.setUseCastKeyword(true); }
     (
-        LOOKAHEAD(3) rowConstructor = RowConstructor() { retval.setRowConstructor(rowConstructor); }
+        LOOKAHEAD(3) rowTypeConstructor = RowTypeConstructor() { retval.setRowTypeConstructor(rowTypeConstructor); }
         | type=ColDataType() { retval.setType(type); }
     )
     ")"
@@ -4670,22 +4682,42 @@ WhenClause WhenThenSearchCondition():
     }
 }
 
-RowConstructor RowConstructor(): {
-    RowConstructor rowConstructor = new RowConstructor();
+
+RowValueConstructor RowValueConstructor(): {
+        RowValueConstructor rowValueConstructor = new RowValueConstructor();
+        Expression expr = null;
+}
+{
+    [ <K_ROW> { rowValueConstructor.setHasRow(true);} ]
+    "(" expr = SimpleExpression() {rowValueConstructor.addExpression(expr); }
+    (
+        ","
+        expr = SimpleExpression() {rowValueConstructor.addExpression(expr); }
+    )*
+    ")"
+    // | ROW ( <row value constructor element list> )
+    // | rowSubQuery
+    {
+        return rowValueConstructor;
+    }
+}
+
+RowTypeConstructor RowTypeConstructor(): {
+    RowTypeConstructor rowTypeConstructor = new RowTypeConstructor();
     ColumnDefinition columnDefinition = null;
 } {
-    [ <K_ROW> { rowConstructor.setName("ROW");} ]
+    [ <K_ROW> { rowTypeConstructor.setName("ROW");} ]
     "("
-     columnDefinition = ColumnDefinition() { rowConstructor.addColumnDefinition(columnDefinition); }
+     columnDefinition = ColumnDefinition() { rowTypeConstructor.addColumnDefinition(columnDefinition); }
      (
          "," 
-         columnDefinition = ColumnDefinition() { rowConstructor.addColumnDefinition(columnDefinition); }
+         columnDefinition = ColumnDefinition() { rowTypeConstructor.addColumnDefinition(columnDefinition); }
      )*  
      ")"
             
 
     {
-        return rowConstructor;
+        return rowTypeConstructor;
     }
 }
 

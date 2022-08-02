@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.builder;
 
 import java.util.List;
 import net.sf.jsqlparser.expression.AnyType;
+import net.sf.jsqlparser.expression.RowTypeConstructor;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperatorType;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.ExplainStatement.OptionType;
@@ -56,7 +57,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.OracleHierarchicalExpression(),
             new net.sf.jsqlparser.expression.OracleHint(), new net.sf.jsqlparser.expression.OrderByClause(),
             new net.sf.jsqlparser.expression.Parenthesis(), new net.sf.jsqlparser.expression.PartitionByClause(),
-            new net.sf.jsqlparser.expression.RowConstructor(), new net.sf.jsqlparser.expression.SQLServerHints(),
+            new RowTypeConstructor(), new net.sf.jsqlparser.expression.SQLServerHints(),
             new net.sf.jsqlparser.expression.SignedExpression(), new net.sf.jsqlparser.expression.StringValue(),
             new net.sf.jsqlparser.expression.TimeKeyExpression(), new net.sf.jsqlparser.expression.TimeValue(),
             new net.sf.jsqlparser.expression.TimestampValue(), new net.sf.jsqlparser.expression.UserVariable(),
