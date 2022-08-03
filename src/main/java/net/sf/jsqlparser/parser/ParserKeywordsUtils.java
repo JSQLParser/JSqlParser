@@ -182,12 +182,6 @@ public class ParserKeywordsUtils {
 
                 , { "NEXTVAL", RESTRICTED_JSQLPARSER }
 
-                //@todo: figure out what those are about
-                , { "RR", RESTRICTED_JSQLPARSER }
-                , { "RS", RESTRICTED_JSQLPARSER }
-                , { "UR", RESTRICTED_JSQLPARSER }
-                , { "CS", RESTRICTED_JSQLPARSER }
-
                 //@todo: Object Names should not start with Hex-Prefix, we shall not find that Token
                 , { "0x", RESTRICTED_JSQLPARSER }
         };
@@ -370,7 +364,8 @@ public class ParserKeywordsUtils {
         builder.append("String RelObjectNameWithoutValue() :\n"
                        + "{    Token tk = null; }\n"
                        + "{\n"
-                       + "    ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME>\n"
+                       //@todo: find a way to avoid those hardcoded compound tokens
+                       + "    ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> \n"
                        + "      ");
 
         for (String keyword: allKeywords) {

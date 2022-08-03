@@ -38,16 +38,18 @@ dependencies {
     testImplementation 'com.h2database:h2:2.1.212'
 
     // for JaCoCo Reports
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.+'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
     testImplementation 'org.mockito:mockito-junit-jupiter:4.5.1'
 
     implementation 'net.java.dev.javacc:javacc:7.0.11'
 
+    testImplementation "org.junit.jupiter:junit-jupiter-params:5.+"
+
     // enforce latest version of JavaCC
-    javacc 'net.java.dev.javacc:javacc:7.0.11'
+    javacc 'net.java.dev.javacc:javacc:7.0.12'
 }
 
 compileJavacc {
