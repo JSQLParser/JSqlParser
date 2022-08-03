@@ -5199,9 +5199,6 @@ public class SelectTest {
         isolation = ((PlainSelect) select.getSelectBody()).getWithIsolation().getIsolation();
         assertEquals("Cs", isolation);
         assertSqlCanBeParsedAndDeparsed(statement);
-
-        statement = "SELECT rs.col, * FROM mytable RS WHERE mytable.col = 9";
-        assertSqlCanBeParsedAndDeparsed(statement);
     }
     
     @Test

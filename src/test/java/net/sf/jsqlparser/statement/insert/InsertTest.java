@@ -35,9 +35,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -207,7 +207,7 @@ public class InsertTest {
     //@todo: Clarify, if and why this test is supposed to fail and if it is the Parser's job to decide
     //What if col1 and col2 are Array Columns?
     public void testInsertMultiRowValueDifferent() throws JSQLParserException {
-        Assertions.assertThrowsExactly(JSQLParserException.class, new Executable() {
+        assertThrowsExactly(JSQLParserException.class, new Executable() {
             @Override
             public void execute() throws Throwable {
                 CCJSqlParserUtil.parse("INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e, c)");

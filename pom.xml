@@ -25,6 +25,13 @@
     </licenses>
 
     <dependencies>
+        <!-- needed for parsing the Keywords via JTree in ParserKeywordsUtils -->
+        <dependency>
+            <groupId>net.java.dev.javacc</groupId>
+            <artifactId>javacc</artifactId>
+            <version>7.0.11</version>
+        </dependency>
+
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -146,6 +153,7 @@
                         <artifactId>pmd-java</artifactId>
                         <version>${pmdVersion}</version>
                     </dependency>
+                    <!-- Do we really need those? What for?
                     <dependency>
                         <groupId>net.sourceforge.pmd</groupId>
                         <artifactId>pmd-javascript</artifactId>
@@ -156,6 +164,7 @@
                         <artifactId>pmd-jsp</artifactId>
                         <version>${pmdVersion}</version>
                     </dependency>
+                    -->
                 </dependencies>
             </plugin>
             <plugin>
@@ -202,15 +211,6 @@
                             <goal>jjtree-javacc</goal>
                         </goals>
                     </execution>
-                    
-                    <!-- execute JJTree explicitely in order to generate the *.jj file needed for JJDoc -->
-                    <execution>
-                        <id>jjtree</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>jjtree</goal>
-                        </goals>
-                    </execution>    
                 </executions>
                 <dependencies>
                     <dependency>
