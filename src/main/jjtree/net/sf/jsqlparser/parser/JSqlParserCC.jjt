@@ -5864,6 +5864,20 @@ AlterExpression AlterExpression():
                             alterExp.addColDropNotNull( alterExpressionColumnDropNotNull);
                          }
                     |
+                    LOOKAHEAD(4) "("
+                                   (  alterExpressionColumnDataType = AlterExpressionColumnDataType() {
+                                        if (alterExp.getOperation()== AlterOperation.ADD ){
+                                           alterExp.addColDataType(alterExpressionColumnDataType);
+                                       } else if(alterExp.getOperation()== AlterOperation.ALTER){
+                                            error_skipto(K_ALTER);
+                                       }else if(alterExp.getOperation()== AlterOperation.MODIFY){
+                                            error_skipto(K_MODIFY);
+                                       }
+                                    }
+                                      (LOOKAHEAD(2) "," alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }) *
+                                    )
+                              ")" {alterExp.useBrackets(true);}
+                    |
                     alterExpressionColumnDropDefault = AlterExpressionColumnDropDefault() {
                             alterExp.addColDropDefault( alterExpressionColumnDropDefault);
                          }

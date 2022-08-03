@@ -65,8 +65,19 @@ public class AlterExpression {
 
   private boolean hasColumn = false;
 
+
+  private  boolean useBrackets=false;
+
   public boolean hasColumn() {
     return hasColumn;
+  }
+
+  public boolean useBrackets() {
+    return useBrackets;
+  }
+
+  public void useBrackets(boolean useBrackets) {
+    this.useBrackets = useBrackets;
   }
 
   public void hasColumn(boolean hasColumn) {
@@ -382,7 +393,7 @@ public class AlterExpression {
   public String toString() {
 
     StringBuilder b = new StringBuilder();
-    
+
     if (operation== AlterOperation.UNSPECIFIC) {
         b.append(optionalSpecifier);
     } else if (operation== AlterOperation.RENAME_TABLE) {
@@ -432,7 +443,13 @@ public class AlterExpression {
               b.append("COLUMN ");
             }
           }
+          if (useBrackets && colDataTypeList.size() == 1){
+            b.append(" ( ");
+          }
           b.append(PlainSelect.getStringList(colDataTypeList));
+          if (useBrackets && colDataTypeList.size() == 1 ){
+            b.append(" ) ");
+          }
           if (colDataTypeList.size() > 1) {
             b.append(")");
           }
