@@ -100,6 +100,7 @@ public enum OracleVersion implements Version {
 
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/DELETE.html
                     Feature.delete,
+                    Feature.deleteReturningExpressionList,
 
                     // https://www.oracletutorial.com/oracle-basics/oracle-truncate-table/
                     Feature.truncate,

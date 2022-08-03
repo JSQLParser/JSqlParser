@@ -24,6 +24,7 @@ options {
     NODE_DEFAULT_VOID = true;
     TRACK_TOKENS = true;
     VISITOR = true;
+    GRAMMAR_ENCODING = "UTF-8";
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -170,6 +171,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_COMMA: ",">
 |   <K_COMMIT:"COMMIT">
 |   <K_COMMENT:"COMMENT">
+|   <K_CONFLICT:"CONFLICT">
 |   <K_CONNECT:"CONNECT">
 |   <K_CONNECT_BY_ROOT: "CONNECT_BY_ROOT"> 
 |   <K_CONSTRAINT:"CONSTRAINT">
@@ -1356,6 +1358,10 @@ Insert Insert( List<WithItem> with ):
     String name = null;
     boolean useAs = false;
     OutputClause outputClause = null;
+
+    UpdateSet updateSet = null;
+    InsertConflictTarget conflictTarget = null;
+    InsertConflictAction conflictAction = null;
 }
 {    
     <K_INSERT> { insert.setOracleHint(getOracleHint()); }
@@ -1390,7 +1396,7 @@ Insert Insert( List<WithItem> with ):
         select = SelectWithWithItems( )
     )
 
-    [ <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
+    [ LOOKAHEAD(2) <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
         { useDuplicate = true; }
       tableColumn=Column() "=" exp=SimpleExpression()
         {
@@ -1403,6 +1409,11 @@ Insert Insert( List<WithItem> with ):
         { duplicateUpdateColumns.add(tableColumn);
         duplicateUpdateExpressionList.add(exp); } )*]
 
+    [
+        <K_ON> <K_CONFLICT>
+        [ conflictTarget = InsertConflictTarget() ]
+        conflictAction = InsertConflictAction() { insert.withConflictTarget(conflictTarget).setConflictAction(conflictAction); }
+    ]
 
     [ <K_RETURNING> returning=SelectItemsList() ]
 
@@ -1423,6 +1434,122 @@ Insert Insert( List<WithItem> with ):
               .withUseSetColumns(setColumns)
               .withSetExpressionList(setExpressionList);
     }
+}
+
+InsertConflictTarget  InsertConflictTarget():
+{
+    String indexColumnName = null;
+    Expression indexExpression = null;
+    Expression whereExpression = null;
+    String constraintName = null ;
+}
+{
+    (
+        (
+           "("
+            indexColumnName = RelObjectNameExt2()
+//            |
+//            (
+//                "(" indexExpression = Expression() ")"
+//            )
+
+            ")"
+            [ whereExpression = WhereClause() ]
+        )
+        |
+        (
+         <K_ON> <K_CONSTRAINT> constraintName = RelObjectNameExt2()
+        )
+    )
+
+    { return new InsertConflictTarget(indexColumnName, indexExpression, whereExpression, constraintName); }
+}
+
+InsertConflictAction InsertConflictAction():
+{
+    InsertConflictAction conflictAction;
+    ArrayList<UpdateSet> updateSets = new ArrayList<UpdateSet>();
+    UpdateSet updateSet = null;
+    Expression whereExpression = null;
+
+    Column tableColumn = null;
+    SubSelect subSelect;
+    Expression valueExpression = null;
+    ExpressionList expressionList;
+}
+{
+    (
+        LOOKAHEAD(2) (
+            <K_DO> <K_NOTHING> { conflictAction = new InsertConflictAction( ConflictActionType.DO_NOTHING ); }
+        )
+        |
+        (
+            <K_DO> <K_UPDATE> <K_SET> { conflictAction = new InsertConflictAction( ConflictActionType.DO_UPDATE ); }
+            (
+                LOOKAHEAD(3) tableColumn=Column()
+                               "=" valueExpression=SimpleExpression() {
+                                                                        updateSet = new UpdateSet();
+                                                                        updateSet.add(tableColumn);
+                                                                        updateSet.add(valueExpression);
+                                                                        updateSets.add(updateSet);
+                                                                        }
+                             (
+                                ","
+                                tableColumn=Column()
+                                "=" valueExpression=SimpleExpression() {
+                                                                        updateSet = new UpdateSet();
+                                                                        updateSet.add(tableColumn);
+                                                                        updateSet.add(valueExpression);
+                                                                        updateSets.add(updateSet);
+                                                                        }
+                            )*
+                |
+                (
+                    { updateSet = new UpdateSet(); updateSets.add(updateSet); }
+
+                    [ LOOKAHEAD(2) "(" { updateSet.setUsingBracketsForColumns(true); } ]
+                    tableColumn=Column() { updateSet.add(tableColumn); }
+                    ( LOOKAHEAD(2) "," tableColumn=Column() { updateSet.add(tableColumn); } )*
+                    [ LOOKAHEAD(2) ")" ]
+
+                    "="
+
+                    (
+                        LOOKAHEAD(3) subSelect=SubSelect() { updateSet.add(subSelect.withUseBrackets(false)); }
+                        |
+                        LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
+                        |
+                        valueExpression = Expression() { updateSet.add(valueExpression); }
+                    )
+
+                    (
+                        ","  { updateSet = new UpdateSet(); updateSets.add(updateSet); }
+
+                        [ LOOKAHEAD(2) "(" { updateSet.setUsingBracketsForColumns(true); } ]
+                        tableColumn=Column() { updateSet.add(tableColumn); }
+                        ( LOOKAHEAD(2) "," tableColumn=Column() { updateSet.add(tableColumn); } )*
+                        [ LOOKAHEAD(2) ")" ]
+
+                        "="
+
+                        (
+                            LOOKAHEAD(3) subSelect=SubSelect() { updateSet.add(subSelect.withUseBrackets(false)); }
+                            |
+                            LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
+                            |
+                            valueExpression = Expression() { updateSet.add(valueExpression); }
+                        )
+                    ) *
+                )
+            )
+
+            [ whereExpression = WhereClause() ]
+        )
+    )
+
+    { return conflictAction
+                .withUpdateSets(updateSets)
+                .withWhereExpression(whereExpression); }
 }
 
 OutputClause OutputClause():
@@ -1727,6 +1854,8 @@ String RelObjectNameWithoutValue() :
       | tk=<K_QUERY>
       | tk=<K_FULLTEXT>
       | tk=<K_TABLESPACE>
+
+      | tk=<K_KEEP>
       )
 
     { return tk.image; }
@@ -1878,6 +2007,8 @@ PlainSelect PlainSelect() #PlainSelect:
     Token token;
     KSQLWindow ksqlWindow = null;
     boolean noWait = false;
+    String windowName = null;
+    WindowDefinition winDef;
 }
 {
     <K_SELECT>
@@ -1922,12 +2053,17 @@ PlainSelect PlainSelect() #PlainSelect:
       fromItem=FromItem()
       joins=JoinsList() ]
 
-    [ ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
+    [ LOOKAHEAD(2) ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
     [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); }]
     [ oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
     [ groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
     [ having=Having() { plainSelect.setHaving(having); }]
     [LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
+    [ <K_WINDOW> 
+        windowName = RelObjectName() <K_AS> winDef = windowDefinition() { List<WindowDefinition> winDefs = new ArrayList<WindowDefinition>(); winDefs.add(winDef.withWindowName(windowName)); }
+        ( LOOKAHEAD(2) "," windowName = RelObjectName() <K_AS> winDef = windowDefinition() { winDefs.add(winDef.withWindowName(windowName)); } )*
+        { plainSelect.setWindowDefinitions(winDefs); }
+    ]
     [LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements);    }   ]
     [ <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
     [LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
@@ -4321,27 +4457,40 @@ KeepExpression KeepExpression() : {
 
 
 void windowFun(AnalyticExpression retval):{
-         ExpressionList expressionList = null;
-         List<OrderByElement> olist = null;
-         WindowElement windowElement = null;
-         boolean partitionByBrackets = false;
+         String windowName = null;
+         WindowDefinition winDef;
 } {
     ([<K_IGNORE> <K_NULLS> { retval.setIgnoreNullsOutside(true); } ] <K_OVER> {retval.setType(AnalyticType.OVER);}
         | <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);} )
 
+    (
+        windowName = RelObjectName() { retval.setWindowName(windowName); }
+    |    
+        winDef = windowDefinition() { retval.setWindowDefinition(winDef); }
+    )
+}
+
+WindowDefinition windowDefinition() : {
+    ExpressionList expressionList = null;
+    List<OrderByElement> olist = null;
+    WindowElement windowElement = null;
+    boolean partitionByBrackets = false;
+    WindowDefinition winDef = new WindowDefinition();
+} {
     "("
-        [<K_PARTITION> <K_BY>
-            (LOOKAHEAD(ComplexExpressionList()) expressionList=ComplexExpressionList()
-            | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
-        ]
-        [olist=OrderByElements() ]
-        [windowElement = WindowElement() ]
-        {
-            retval.setPartitionExpressionList(expressionList, partitionByBrackets);
-            retval.setOrderByElements(olist);
-            retval.setWindowElement(windowElement);
-        }
+    [<K_PARTITION> <K_BY>
+        (LOOKAHEAD(ComplexExpressionList()) expressionList=ComplexExpressionList()
+        | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+    ]
+    [olist=OrderByElements() ]
+    [windowElement = WindowElement() ]
+    {
+        winDef.setPartitionExpressionList(expressionList, partitionByBrackets);
+        winDef.setOrderByElements(olist);
+        winDef.setWindowElement(windowElement);
+    }
     ")"
+    { return winDef; }
 }
 
 AnalyticExpression AnalyticExpression(Function function) :
@@ -4410,13 +4559,14 @@ WindowOffset WindowOffset():
 ExtractExpression ExtractExpression() :
 {
     ExtractExpression retval = new ExtractExpression();
-    String token = null;
+    String fieldName = null;
+    Token token = null;
     Expression expr = null;
 }
 {
     <K_EXTRACT>
     "("
-        token=RelObjectName() { retval.setName(token); }
+        ( fieldName=RelObjectName() { retval.setName(fieldName); } | token=<S_CHAR_LITERAL> { retval.setName(token.image); } )
         <K_FROM>
         expr=SimpleExpression() { retval.setExpression(expr); }
     ")"
@@ -5020,7 +5170,7 @@ CreateTable CreateTable():
                             { idxSpec.clear(); }
                             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                             {
-                                index = new Index().withType(tk.image).withName(sk3).withColumns(colNames).withIndexSpec(idxSpec);
+                                index = new Index().withType(tk.image).withName(sk3).withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
                                 indexes.add(index);
                             }
                     )
@@ -5039,7 +5189,7 @@ CreateTable CreateTable():
                             { idxSpec.clear(); }
                             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                             {
-                                index.withColumns(colNames).withIndexSpec(idxSpec);
+                                index.withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
                                 indexes.add(index);
                             }
                             // reset Token to null forcefullly
@@ -5060,7 +5210,7 @@ CreateTable CreateTable():
                                 .withType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + tk2.image)
                                 .withName(sk3)
                                 .withColumns(colNames)
-                                .withIndexSpec(idxSpec);
+                                .withIndexSpec(new ArrayList<String>(idxSpec));
                                 indexes.add(index);
                             }
                     )
@@ -5714,6 +5864,20 @@ AlterExpression AlterExpression():
                             alterExp.addColDropNotNull( alterExpressionColumnDropNotNull);
                          }
                     |
+                    LOOKAHEAD(4) "("
+                                   (  alterExpressionColumnDataType = AlterExpressionColumnDataType() {
+                                        if (alterExp.getOperation()== AlterOperation.ADD ){
+                                           alterExp.addColDataType(alterExpressionColumnDataType);
+                                       } else if(alterExp.getOperation()== AlterOperation.ALTER){
+                                            error_skipto(K_ALTER);
+                                       }else if(alterExp.getOperation()== AlterOperation.MODIFY){
+                                            error_skipto(K_MODIFY);
+                                       }
+                                    }
+                                      (LOOKAHEAD(2) "," alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }) *
+                                    )
+                              ")" {alterExp.useBrackets(true);}
+                    |
                     alterExpressionColumnDropDefault = AlterExpressionColumnDropDefault() {
                             alterExp.addColDropDefault( alterExpressionColumnDropDefault);
                          }
@@ -5861,6 +6025,7 @@ AlterExpression AlterExpression():
                 |
                 (
                     ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
+                    [<K_IF> <K_EXISTS> { alterExp.setUsingIfExists(true); } ]
                     (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setColumnName(tk.image); }
 
                     [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]

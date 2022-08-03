@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>4.5-SNAPSHOT</version>
+    <version>4.6-SNAPSHOT</version>
     <name>JSQLParser library</name> 
     <inceptionYear>2004</inceptionYear>
     <organization>
@@ -114,7 +114,7 @@
                 <configuration>
                     <rulesets>
                         <!-- Custom local file system rule set -->
-                        <ruleset>${project.basedir}/ruleset.xml</ruleset>
+                        <ruleset>${project.basedir}/config/pmd/ruleset.xml</ruleset>
                     </rulesets>
                     <excludes>
                         <exclude>**/*Bean.java</exclude>
@@ -625,7 +625,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <pmdVersion>6.36.0</pmdVersion>
+        <pmdVersion>6.46.0</pmdVersion>
     </properties>
 
     <description>JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes.

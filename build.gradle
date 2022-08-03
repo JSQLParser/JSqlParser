@@ -45,7 +45,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-junit-jupiter:4.+'
 
     // enforce latest version of JavaCC
-    javacc 'net.java.dev.javacc:javacc:7.0.10'
+    javacc 'net.java.dev.javacc:javacc:7.0.11'
 }
 
 compileJavacc {
@@ -114,7 +114,7 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'LINE'
                 value = 'MISSEDCOUNT'
-                maximum = 5513
+                maximum = 5700
                 }
             excludes = [
                     'net.sf.jsqlparser.util.validation.*',
@@ -164,7 +164,7 @@ spotbugsMain {
 
 spotbugs {
     // fail only on P1 and without the net.sf.jsqlparser.parser.*
-    excludeFilter = file("spotBugsExcludeFilter.xml")
+    excludeFilter = file("config/spotbugs/spotBugsExcludeFilter.xml")
     
     // do not run over the test, although we should do that eventually
      spotbugsTest.enabled = false
@@ -172,7 +172,7 @@ spotbugs {
 
 pmd {
     consoleOutput = false
-    toolVersion = "6.41.0"
+    toolVersion = "6.46.0"
     
     sourceSets = [sourceSets.main]
     
@@ -181,7 +181,7 @@ pmd {
     
     //rulesMinimumPriority = 1
     
-    ruleSetFiles = files("ruleset.xml")
+    ruleSetFiles = files("config/pmd/ruleset.xml")
     
     pmdMain {
         excludes = [
