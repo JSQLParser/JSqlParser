@@ -864,31 +864,45 @@ public class CreateTableTest {
 
     @Test
     public void testCreateTableIssue1488() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE TABLE u_call_record (\n" +
-                 "card_user_id int(11) NOT NULL,\n" +
-                 "device_id int(11) NOT NULL,\n" +
-                 "call_start_at int(11) NOT NULL DEFAULT CURRENT_TIMESTAMP(11),\n" +
-                 "card_user_name varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n" +
-                 "sim_id varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n" +
-                 "called_number varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n" +
-                 "called_nickname varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n" +
-                 "talk_time smallint(8) NULL DEFAULT NULL,\n" +
-                 "area_name varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n" +
-                 "area_service_id int(11) NULL DEFAULT NULL,\n" +
-                 "operator_id int(4) NULL DEFAULT NULL,\n" +
-                 "status tinyint(4) NULL DEFAULT NULL,\n" +
-                 "create_at timestamp NULL DEFAULT NULL,\n" +
-                 "place_user varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n" +
-                 "PRIMARY KEY (card_user_id, device_id, call_start_at) USING BTREE,\n" +
-                 "INDEX ucr_index_area_name(area_name) USING BTREE,\n" +
-                 "INDEX ucr_index_area_service_id(area_service_id) USING BTREE,\n" +
-                 "INDEX ucr_index_called_number(called_number) USING BTREE,\n" +
-                 "INDEX ucr_index_create_at(create_at) USING BTREE,\n" +
-                 "INDEX ucr_index_operator_id(operator_id) USING BTREE,\n" +
-                 "INDEX ucr_index_place_user(place_user) USING BTREE,\n" +
-                 "INDEX ucr_index_sim_id(sim_id) USING BTREE,\n" +
-                 "INDEX ucr_index_status(status) USING BTREE,\n" +
-                 "INDEX ucr_index_talk_time(talk_time) USING BTREE\n" +
-                 ") ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic", true);
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE u_call_record (\n"
+                + "card_user_id int(11) NOT NULL,\n"
+                + "device_id int(11) NOT NULL,\n"
+                + "call_start_at int(11) NOT NULL DEFAULT CURRENT_TIMESTAMP(11),\n"
+                + "card_user_name varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n"
+                + "sim_id varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n"
+                + "called_number varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n"
+                + "called_nickname varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n"
+                + "talk_time smallint(8) NULL DEFAULT NULL,\n"
+                + "area_name varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n"
+                + "area_service_id int(11) NULL DEFAULT NULL,\n"
+                + "operator_id int(4) NULL DEFAULT NULL,\n"
+                + "status tinyint(4) NULL DEFAULT NULL,\n"
+                + "create_at timestamp NULL DEFAULT NULL,\n"
+                + "place_user varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,\n"
+                + "PRIMARY KEY (card_user_id, device_id, call_start_at) USING BTREE,\n"
+                + "INDEX ucr_index_area_name(area_name) USING BTREE,\n"
+                + "INDEX ucr_index_area_service_id(area_service_id) USING BTREE,\n"
+                + "INDEX ucr_index_called_number(called_number) USING BTREE,\n"
+                + "INDEX ucr_index_create_at(create_at) USING BTREE,\n"
+                + "INDEX ucr_index_operator_id(operator_id) USING BTREE,\n"
+                + "INDEX ucr_index_place_user(place_user) USING BTREE,\n"
+                + "INDEX ucr_index_sim_id(sim_id) USING BTREE,\n"
+                + "INDEX ucr_index_status(status) USING BTREE,\n"
+                + "INDEX ucr_index_talk_time(talk_time) USING BTREE\n"
+                + ") ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic", true);
+    }
+
+    @Test
+    public void testCreateTableBinaryIssue1596() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE student2 ("
+                + "id int (10) NOT NULL COMMENT 'ID', "
+                + "name varchar (20) COLLATE utf8mb4_bin DEFAULT NULL, "
+                + "birth year (4) DEFAULT NULL, "
+                + "department varchar (20) COLLATE utf8mb4_bin DEFAULT NULL, "
+                + "address varchar (50) COLLATE utf8mb4_bin DEFAULT NULL, "
+                + "PRIMARY KEY (id), "
+                + "UNIQUE KEY id (id), "
+                + "INDEX name (name) USING BTREE"
+                + ") ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_bin");
     }
 }

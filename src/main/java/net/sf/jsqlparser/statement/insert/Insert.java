@@ -55,11 +55,12 @@ public class Insert implements Statement {
     private List<WithItem> withItemsList;
 
     private OutputClause outputClause;
+    private InsertConflictTarget conflictTarget;
+    private InsertConflictAction conflictAction;
 
     public OutputClause getOutputClause() {
         return outputClause;
     }
-
     public void setOutputClause(OutputClause outputClause) {
         this.outputClause = outputClause;
     }
@@ -228,6 +229,32 @@ public class Insert implements Statement {
         this.withItemsList = withItemsList;
     }
 
+    public InsertConflictTarget getConflictTarget() {
+        return conflictTarget;
+    }
+
+    public void setConflictTarget(InsertConflictTarget conflictTarget) {
+        this.conflictTarget = conflictTarget;
+    }
+
+    public Insert withConflictTarget(InsertConflictTarget conflictTarget) {
+        setConflictTarget(conflictTarget);
+        return this;
+    }
+
+    public InsertConflictAction getConflictAction() {
+        return conflictAction;
+    }
+
+    public void setConflictAction(InsertConflictAction conflictAction) {
+        this.conflictAction = conflictAction;
+    }
+
+    public Insert withConflictAction(InsertConflictAction conflictAction) {
+        setConflictAction(conflictAction);
+        return this;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
@@ -284,6 +311,15 @@ public class Insert implements Statement {
                 sql.append(duplicateUpdateColumns.get(i)).append(" = ");
                 sql.append(duplicateUpdateExpressionList.get(i));
             }
+        }
+
+        if (conflictAction!=null) {
+            sql.append(" ON CONFLICT");
+
+            if (conflictTarget!=null) {
+                conflictTarget.appendTo(sql);
+            }
+            conflictAction.appendTo(sql);
         }
 
         if (getReturningExpressionList() != null) {

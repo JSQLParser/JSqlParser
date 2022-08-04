@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 import java.util.List;
+import static java.util.stream.Collectors.joining;
 
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -182,12 +183,15 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             buffer.append(" HAVING ");
             plainSelect.getHaving().accept(expressionVisitor);
         }
-
+        if (plainSelect.getWindowDefinitions() != null) {
+            buffer.append(" WINDOW ");
+            buffer.append(plainSelect.getWindowDefinitions().stream().map(WindowDefinition::toString).collect(joining(", ")));
+        }
         if (plainSelect.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
                     plainSelect.getOrderByElements());
         }
-        if (plainSelect.isEmitChanges()){
+        if (plainSelect.isEmitChanges()) {
             buffer.append(" EMIT CHANGES");
         }
         if (plainSelect.getLimit() != null) {
@@ -224,7 +228,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (plainSelect.isUseBrackets()) {
             buffer.append(")");
         }
-        
+
     }
 
     @Override
@@ -318,9 +322,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                 .append(showOptions && includeNulls ? " INCLUDE NULLS" : "")
                 .append(showOptions && !includeNulls ? " EXCLUDE NULLS" : "")
                 .append(" (").append(PlainSelect.getStringList(unPivotClause, true,
-                        unPivotClause != null && unPivotClause.size() > 1))
+                unPivotClause != null && unPivotClause.size() > 1))
                 .append(" FOR ").append(PlainSelect.getStringList(unpivotForClause, true,
-                        unpivotForClause != null && unpivotForClause.size() > 1))
+                unpivotForClause != null && unpivotForClause.size() > 1))
                 .append(" IN ").append(PlainSelect.getStringList(unpivot.getUnPivotInClause(), true, true)).append(")");
         if (unpivot.getAlias() != null) {
             buffer.append(unpivot.getAlias().toString());
@@ -443,7 +447,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             buffer.append(" ON ");
             onExpression.accept(expressionVisitor);
         }
-        if (join.getUsingColumns().size()>0) {
+        if (join.getUsingColumns().size() > 0) {
             buffer.append(" USING (");
             for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator.hasNext();) {
                 Column column = iterator.next();
@@ -546,7 +550,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     public void visit(ParenthesisFromItem parenthesis) {
         buffer.append("(");
         parenthesis.getFromItem().accept(this);
-        
+
         buffer.append(")");
         if (parenthesis.getAlias() != null) {
             buffer.append(parenthesis.getAlias().toString());

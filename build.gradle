@@ -168,7 +168,7 @@ spotbugsMain {
 
 spotbugs {
     // fail only on P1 and without the net.sf.jsqlparser.parser.*
-    excludeFilter = file("spotBugsExcludeFilter.xml")
+    excludeFilter = file("config/spotbugs/spotBugsExcludeFilter.xml")
     
     // do not run over the test, although we should do that eventually
      spotbugsTest.enabled = false
@@ -176,7 +176,7 @@ spotbugs {
 
 pmd {
     consoleOutput = false
-    toolVersion = "6.44.0"
+    toolVersion = "6.46.0"
     
     sourceSets = [sourceSets.main]
     
@@ -185,7 +185,7 @@ pmd {
     
     //rulesMinimumPriority = 1
     
-    ruleSetFiles = files("ruleset.xml")
+    ruleSetFiles = files("config/pmd/ruleset.xml")
     
     pmdMain {
         excludes = [

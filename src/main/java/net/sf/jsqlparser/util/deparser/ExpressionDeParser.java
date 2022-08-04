@@ -324,6 +324,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         visitBinaryExpression(orExpression, " OR ");
 
     }
+
     @Override
     public void visit(XorExpression xorExpression) {
         visitBinaryExpression(xorExpression, " XOR ");
@@ -550,7 +551,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public void visit(AnyComparisonExpression anyComparisonExpression) {
         buffer.append(anyComparisonExpression.getAnyType().name()).append(" ( ");
         SubSelect subSelect = anyComparisonExpression.getSubSelect();
-        if (subSelect!=null) {
+        if (subSelect != null) {
             subSelect.accept((ExpressionVisitor) this);
         } else {
             ExpressionList expressionList = (ExpressionList) anyComparisonExpression.getItemsList();
@@ -558,7 +559,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(
                     PlainSelect.getStringList(expressionList.getExpressions(), true, anyComparisonExpression.isUsingBracketsForValues()));
         }
-        buffer.append(" ) ");     
+        buffer.append(" ) ");
     }
 
     @Override
@@ -592,7 +593,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append("CAST(");
             cast.getLeftExpression().accept(this);
             buffer.append(" AS ");
-            buffer.append( cast.getRowConstructor()!=null ? cast.getRowConstructor() : cast.getType() );
+            buffer.append(cast.getRowConstructor() != null ? cast.getRowConstructor() : cast.getType());
             buffer.append(")");
         } else {
             cast.getLeftExpression().accept(this);
@@ -607,7 +608,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append("TRY_CAST(");
             cast.getLeftExpression().accept(this);
             buffer.append(" AS ");
-            buffer.append( cast.getRowConstructor()!=null ? cast.getRowConstructor() : cast.getType() );
+            buffer.append(cast.getRowConstructor() != null ? cast.getRowConstructor() : cast.getType());
             buffer.append(")");
         } else {
             cast.getLeftExpression().accept(this);
@@ -659,9 +660,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
         if (aexpr.getFuncOrderBy() != null) {
             buffer.append(" ORDER BY ");
-            buffer.append( aexpr.getFuncOrderBy().stream().map(OrderByElement::toString).collect(joining(", ")));
+            buffer.append(aexpr.getFuncOrderBy().stream().map(OrderByElement::toString).collect(joining(", ")));
         }
-        
+
         buffer.append(") ");
         if (keep != null) {
             keep.accept(this);
@@ -676,7 +677,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 buffer.append(" ");
             }
         }
-        
+
         if (aexpr.isIgnoreNullsOutside()) {
             buffer.append("IGNORE NULLS ");
         }
@@ -690,45 +691,50 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             default:
                 buffer.append("OVER");
         }
-        buffer.append(" (");
 
-        if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
-            buffer.append("PARTITION BY ");
-            if (aexpr.isPartitionByBrackets()) {
-                buffer.append("(");
-            }
-            List<Expression> expressions = partitionExpressionList.getExpressions();
-            for (int i = 0; i < expressions.size(); i++) {
-                if (i > 0) {
-                    buffer.append(", ");
-                }
-                expressions.get(i).accept(this);
-            }
-            if (aexpr.isPartitionByBrackets()) {
-                buffer.append(")");
-            }
-            buffer.append(" ");
-        }
-        if (orderByElements != null && !orderByElements.isEmpty()) {
-            buffer.append("ORDER BY ");
-            orderByDeParser.setExpressionVisitor(this);
-            orderByDeParser.setBuffer(buffer);
-            for (int i = 0; i < orderByElements.size(); i++) {
-                if (i > 0) {
-                    buffer.append(", ");
-                }
-                orderByDeParser.deParseElement(orderByElements.get(i));
-            }
-        }
+        if (aexpr.getWindowName() != null) {
+            buffer.append(" ").append(aexpr.getWindowName());
+        } else {
+            buffer.append(" (");
 
-        if (windowElement != null) {
+            if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
+                buffer.append("PARTITION BY ");
+                if (aexpr.isPartitionByBrackets()) {
+                    buffer.append("(");
+                }
+                List<Expression> expressions = partitionExpressionList.getExpressions();
+                for (int i = 0; i < expressions.size(); i++) {
+                    if (i > 0) {
+                        buffer.append(", ");
+                    }
+                    expressions.get(i).accept(this);
+                }
+                if (aexpr.isPartitionByBrackets()) {
+                    buffer.append(")");
+                }
+                buffer.append(" ");
+            }
             if (orderByElements != null && !orderByElements.isEmpty()) {
-                buffer.append(' ');
+                buffer.append("ORDER BY ");
+                orderByDeParser.setExpressionVisitor(this);
+                orderByDeParser.setBuffer(buffer);
+                for (int i = 0; i < orderByElements.size(); i++) {
+                    if (i > 0) {
+                        buffer.append(", ");
+                    }
+                    orderByDeParser.deParseElement(orderByElements.get(i));
+                }
             }
-            buffer.append(windowElement);
-        }
 
-        buffer.append(")");
+            if (windowElement != null) {
+                if (orderByElements != null && !orderByElements.isEmpty()) {
+                    buffer.append(' ');
+                }
+                buffer.append(windowElement);
+            }
+
+            buffer.append(")");
+        }
     }
 
     @Override
@@ -815,12 +821,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(rowConstructor.getName());
         }
         buffer.append("(");
-        
-        if (rowConstructor.getColumnDefinitions().size()>0) {
+
+        if (rowConstructor.getColumnDefinitions().size() > 0) {
             buffer.append("(");
             int i = 0;
-            for (ColumnDefinition columnDefinition:rowConstructor.getColumnDefinitions()) {
-                buffer.append(i>0 ? ", " : "").append(columnDefinition.toString());
+            for (ColumnDefinition columnDefinition : rowConstructor.getColumnDefinitions()) {
+                buffer.append(i > 0 ? ", " : "").append(columnDefinition.toString());
                 i++;
             }
             buffer.append(")");
@@ -861,7 +867,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(NextValExpression nextVal) {
-        buffer.append(nextVal.isUsingNextValueFor()  ? "NEXT VALUE FOR " : "NEXTVAL FOR ").append(nextVal.getName());
+        buffer.append(nextVal.isUsingNextValueFor() ? "NEXT VALUE FOR " : "NEXTVAL FOR ").append(nextVal.getName());
     }
 
     @Override
@@ -929,7 +935,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         buffer.append("xmlserialize(xmlagg(xmltext(");
         expr.getExpression().accept(this);
         buffer.append(")");
-        if (expr.getOrderByElements() != null){
+        if (expr.getOrderByElements() != null) {
             buffer.append(" ORDER BY ");
             for (Iterator<OrderByElement> i = expr.getOrderByElements().iterator(); i.hasNext();) {
                 buffer.append(i.next().toString());
@@ -958,9 +964,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(JsonFunction expression) {
-         expression.append(buffer);
+        expression.append(buffer);
     }
-    
+
     @Override
     public void visit(ConnectByRootOperator connectByRootOperator) {
         buffer.append("CONNECT_BY_ROOT ");
@@ -970,9 +976,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
         buffer
-          .append(oracleNamedFunctionParameter.getName())
-          .append(" => ");
-        
+                .append(oracleNamedFunctionParameter.getName())
+                .append(" => ");
+
         oracleNamedFunctionParameter.getExpression().accept(this);
     }
 
@@ -993,9 +999,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(IsDistinctExpression isDistinctExpression) {
-        buffer.append(isDistinctExpression.getLeftExpression() +
-                isDistinctExpression.getStringExpression() +
-                isDistinctExpression.getRightExpression());
+        buffer.append(isDistinctExpression.getLeftExpression()
+                + isDistinctExpression.getStringExpression()
+                + isDistinctExpression.getRightExpression());
     }
 
     @Override

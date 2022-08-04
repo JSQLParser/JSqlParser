@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.insert;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.DoubleValue;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
@@ -23,6 +24,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 import java.io.StringReader;
@@ -31,6 +33,7 @@ import java.util.Arrays;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -466,5 +469,94 @@ public class InsertTest {
                         "    ORDER BY c.LastName, c.FirstName"
                 , true
         );
+    }
+
+    // Samples taken from: https://www.postgresql.org/docs/current/sql-insert.html
+    @Test
+    public void testInsertOnConflictIssue1551() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO distributors (did, dname)\n" +
+                        "    VALUES (5, 'Gizmo Transglobal'), (6, 'Associated Computing, Inc')\n" +
+                        "    ON CONFLICT (did) DO UPDATE SET dname = EXCLUDED.dname\n"
+                , true
+        );
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO distributors (did, dname) VALUES (7, 'Redline GmbH')\n" +
+                        "    ON CONFLICT (did) DO NOTHING"
+                , true
+        );
+
+        assertSqlCanBeParsedAndDeparsed(
+                "-- Don't update existing distributors based in a certain ZIP code\n" +
+                        "INSERT INTO distributors AS d (did, dname) VALUES (8, 'Anvil Distribution')\n" +
+                        "    ON CONFLICT (did) DO UPDATE\n" +
+                        "    SET dname = EXCLUDED.dname || ' (formerly ' || d.dname || ')'\n" +
+                        "    WHERE d.zipcode <> '21201'"
+                , true
+        );
+
+        assertSqlCanBeParsedAndDeparsed(
+                "-- Name a constraint directly in the statement (uses associated\n" +
+                        "-- index to arbitrate taking the DO NOTHING action)\n" +
+                        "INSERT INTO distributors (did, dname) VALUES (9, 'Antwerp Design')\n" +
+                        "    ON CONFLICT ON CONSTRAINT distributors_pkey DO NOTHING"
+                , true
+        );
+
+        assertSqlCanBeParsedAndDeparsed(
+                "-- This statement could infer a partial unique index on \"did\"\n" +
+                        "-- with a predicate of \"WHERE is_active\", but it could also\n" +
+                        "-- just use a regular unique constraint on \"did\"\n" +
+                        "INSERT INTO distributors (did, dname) VALUES (10, 'Conrad International')\n" +
+                        "    ON CONFLICT (did) WHERE is_active DO NOTHING"
+                , true
+        );
+    }
+
+    @Test
+    public void insertOnConflictObjectsTest() throws JSQLParserException {
+        String sqlStr =
+                "WITH a ( a, b , c ) \n" +
+                        "AS (SELECT  1 , 2 , 3 )\n" +
+                        "insert into test\n" +
+                        "select * from a";
+        Insert insert = (Insert) CCJSqlParserUtil.parse( sqlStr );
+
+        Expression whereExpression = CCJSqlParserUtil.parseExpression("a=1", false);
+        Expression valueExpression = CCJSqlParserUtil.parseExpression("b/2", false);
+
+        InsertConflictTarget conflictTarget = new InsertConflictTarget("a", null, null, null);
+        insert.setConflictTarget(conflictTarget);
+
+        InsertConflictAction conflictAction = new InsertConflictAction(ConflictActionType.DO_NOTHING);
+        insert.setConflictAction(conflictAction);
+
+        assertStatementCanBeDeparsedAs(insert, sqlStr + " ON CONFLICT " + conflictTarget.toString() + conflictAction.toString(), true);
+
+        conflictTarget = new InsertConflictTarget(null, null, null, "testConstraint");
+        conflictTarget = conflictTarget.withWhereExpression(whereExpression);
+        assertNotNull(conflictTarget.withConstraintName("a").getConstraintName());
+        conflictTarget.setIndexExpression(valueExpression);
+        assertNotNull(conflictTarget.getIndexExpression());
+        assertNotNull(conflictTarget.withIndexColumnName("b").getIndexColumnName());
+
+        assertNull(conflictTarget.withIndexExpression(valueExpression).getIndexColumnName());
+        assertNotNull(conflictTarget.withWhereExpression(whereExpression).getWhereExpression());
+
+        conflictAction = new InsertConflictAction(ConflictActionType.DO_UPDATE);
+        conflictAction.addUpdateSet(new Column().withColumnName("a"), valueExpression);
+
+        UpdateSet updateSet=new UpdateSet();
+        updateSet.add(new Column().withColumnName("b"));
+        updateSet.add(valueExpression);
+        conflictAction=conflictAction.addUpdateSet(updateSet);
+
+        assertNotNull( conflictAction.withWhereExpression(whereExpression).getWhereExpression() );
+        assertEquals(ConflictActionType.DO_UPDATE, conflictAction.getConflictActionType());
+
+        insert = insert.withConflictTarget(conflictTarget).withConflictAction(conflictAction);
+
+        assertStatementCanBeDeparsedAs(insert, sqlStr + " ON CONFLICT " + conflictTarget.toString() + conflictAction.toString(), true);
+
     }
 }
