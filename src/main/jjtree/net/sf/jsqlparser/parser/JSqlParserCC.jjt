@@ -5849,169 +5849,179 @@ AlterExpression AlterExpression():
 {
 
     (
-        ((<K_ADD>    { alterExp.setOperation(AlterOperation.ADD); } | <K_ALTER>    { alterExp.setOperation(AlterOperation.ALTER); } | <K_MODIFY> { alterExp.setOperation(AlterOperation.MODIFY); })
         (
-                  LOOKAHEAD(2) (
+            (
+                <K_ADD>    { alterExp.setOperation(AlterOperation.ADD); }
+                |
+                <K_ALTER>    { alterExp.setOperation(AlterOperation.ALTER); }
+                |
+                <K_MODIFY> { alterExp.setOperation(AlterOperation.MODIFY); }
+            )
+
+            (
+                LOOKAHEAD(2) (
                       <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); }
-                  ) constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                )
+
+                constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                |
+                LOOKAHEAD(2) (
+                  (tk=<K_KEY> { alterExp.setUk(true); } | tk=<K_INDEX>)
+                  sk3 = RelObjectName()
+                  columnNames = ColumnsNamesList()
+                  {
+                    index = new Index().withType(tk.image).withName(sk3).withColumnsNames(columnNames);
+                    alterExp.setIndex(index);
+                  }
+                  constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                   [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
-                  |
-            LOOKAHEAD(2) (
-              (tk=<K_KEY> { alterExp.setUk(true); } | tk=<K_INDEX>)
-              sk3 = RelObjectName()
-              columnNames = ColumnsNamesList()
-              {
-                index = new Index().withType(tk.image).withName(sk3).withColumnsNames(columnNames);
-                alterExp.setIndex(index);
-              }
-              constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-              [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
-            )
-                    |
-            LOOKAHEAD(3) (
-                ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
+                )
+                |
+                LOOKAHEAD(3) (
+                    ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
 
-                (
-                    LOOKAHEAD(2) alterExpressionColumnDataType = AlterExpressionColumnDataType() {
-                            alterExp.addColDataType(alterExpressionColumnDataType);
-                         }
-                    |
-                    LOOKAHEAD(3) alterExpressionColumnDropNotNull = AlterExpressionColumnDropNotNull() {
-                            alterExp.addColDropNotNull( alterExpressionColumnDropNotNull);
-                         }
-                    |
-                    LOOKAHEAD(4) "("
-                                   (  alterExpressionColumnDataType = AlterExpressionColumnDataType() {
-                                        if (alterExp.getOperation()== AlterOperation.ADD ){
-                                           alterExp.addColDataType(alterExpressionColumnDataType);
-                                       } else if(alterExp.getOperation()== AlterOperation.ALTER){
-                                            error_skipto(K_ALTER);
-                                       }else if(alterExp.getOperation()== AlterOperation.MODIFY){
-                                            error_skipto(K_MODIFY);
-                                       }
-                                    }
-                                      (LOOKAHEAD(2) "," alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }) *
-                                    )
-                              ")" {alterExp.useBrackets(true);}
-                    |
-                    alterExpressionColumnDropDefault = AlterExpressionColumnDropDefault() {
-                            alterExp.addColDropDefault( alterExpressionColumnDropDefault);
-                         }
+                    (
+                        LOOKAHEAD(4) (
+                                "(" { alterExp.useBrackets(true);}
+                                alterExpressionColumnDataType = AlterExpressionColumnDataType() {
+                                    alterExp.addColDataType(alterExpressionColumnDataType);
+                                }
+                                (
+                                    ","
+                                    alterExpressionColumnDataType = AlterExpressionColumnDataType() {
+                                                                alterExp.addColDataType(alterExpressionColumnDataType);
+                                                            }
+                                )*
+                                ")"
+                            )
+                        |
+                        LOOKAHEAD(2) alterExpressionColumnDataType = AlterExpressionColumnDataType() {
+                                alterExp.addColDataType(alterExpressionColumnDataType);
+                             }
+                        |
+                        LOOKAHEAD(3) alterExpressionColumnDropNotNull = AlterExpressionColumnDropNotNull() {
+                                alterExp.addColDropNotNull( alterExpressionColumnDropNotNull);
+                             }
+                        |
+                        alterExpressionColumnDropDefault = AlterExpressionColumnDropDefault() {
+                                alterExp.addColDropDefault( alterExpressionColumnDropDefault);
+                             }
+                    )
                 )
-            )
-            |
-            (
-                "(" alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
-                    ("," alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); } )* ")"
-            )
-            |
-            ( <K_UNIQUE> ((<K_KEY> { alterExp.setUk(true); } | <K_INDEX>) (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } )?
-                columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
-                [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }])
-            |
-    //following two choices regarding foreign keys should be merged
-            ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); columnNames = null; }
-                 /*
-                    <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
-                        { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
-                 */
-                 <K_REFERENCES> fkTable=Table() [ columnNames=ColumnsNamesList() ]
-                    {
-                        alterExp.setFkSourceSchema(fkTable.getSchemaName());
-                        alterExp.setFkSourceTable(fkTable.getName());
-                        alterExp.setFkSourceColumns(columnNames); 
-                    }
-                                
-                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                        		  { alterExp.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
-                                  )]
-                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                        		  { alterExp.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
-                           		  )]
-            )
-            |
-            (
-                <K_CONSTRAINT> sk3=RelObjectName()
+                |
+                (
+                    "(" alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
+                        ("," alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); } )* ")"
+                )
+                |
+                ( <K_UNIQUE> ((<K_KEY> { alterExp.setUk(true); } | <K_INDEX>) (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } )?
+                    columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
+                    [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }])
+                |
+                //following two choices regarding foreign keys should be merged
+                ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); columnNames = null; }
+                     /*
+                        <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
+                            { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
+                     */
+                     <K_REFERENCES> fkTable=Table() [ columnNames=ColumnsNamesList() ]
+                        {
+                            alterExp.setFkSourceSchema(fkTable.getSchemaName());
+                            alterExp.setFkSourceTable(fkTable.getName());
+                            alterExp.setFkSourceColumns(columnNames);
+                        }
 
-                ( ( tk=<K_FOREIGN> tk2=<K_KEY>
-                    columnNames=ColumnsNamesList()
-                    {
-                        fkIndex = new ForeignKeyIndex()
-                        .withName(sk3)
-                        .withType(tk.image + " " + tk2.image)
-                        .withColumnsNames(columnNames);
-                                            columnNames = null;
-                    }
-                    <K_REFERENCES> fkTable=Table() [ columnNames=ColumnsNamesList() ]
-                    {
-                        fkIndex.withTable(fkTable).withReferencedColumnNames(columnNames);
-                        alterExp.setIndex(fkIndex);
-                    }
-                                
-                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                        		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
-                                  )]
-                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                        		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
-                           		  )]
-                    constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                )
-                |
-                ( tk=<K_PRIMARY> tk2=<K_KEY>
-                    columnNames=ColumnsNamesList()
-                    {
-                        index = new NamedConstraint()
-                        .withName(sk3)
-                        .withType(tk.image + " " + tk2.image)
-                        .withColumnsNames(columnNames);
-                        alterExp.setIndex(index);
-                    }
-                    constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                    [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                    [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                                      { alterExp.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                                      )]
+                    [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                                      { alterExp.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                                      )]
                 )
                 |
                 (
-                    <K_CHECK>  {Expression exp = null;} ("(" exp = Expression() ")")* {
-                    CheckConstraint checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
-                    alterExp.setIndex(checkCs);
-                }
-                )
-                |
-                (
-                    tk=<K_UNIQUE> (tk2=<K_KEY> { alterExp.setUk(true); } | tk2=<K_INDEX>)?
-                      columnNames=ColumnsNamesList()
-                      {
-                          index = new NamedConstraint()
+                    <K_CONSTRAINT> sk3=RelObjectName()
+
+                    ( ( tk=<K_FOREIGN> tk2=<K_KEY>
+                        columnNames=ColumnsNamesList()
+                        {
+                            fkIndex = new ForeignKeyIndex()
                             .withName(sk3)
-                          	.withType(tk.image + (tk2!=null?" " + tk2.image:""))
-                          	.withColumnsNames(columnNames);
-                          alterExp.setIndex(index);
-                      }
-                      constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                      [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                            .withType(tk.image + " " + tk2.image)
+                            .withColumnsNames(columnNames);
+                                                columnNames = null;
+                        }
+                        <K_REFERENCES> fkTable=Table() [ columnNames=ColumnsNamesList() ]
+                        {
+                            fkIndex.withTable(fkTable).withReferencedColumnNames(columnNames);
+                            alterExp.setIndex(fkIndex);
+                        }
+
+                    [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                                      { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                                      )]
+                    [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                                      { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
+                                      )]
+                        constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                    )
+                    |
+                    ( tk=<K_PRIMARY> tk2=<K_KEY>
+                        columnNames=ColumnsNamesList()
+                        {
+                            index = new NamedConstraint()
+                            .withName(sk3)
+                            .withType(tk.image + " " + tk2.image)
+                            .withColumnsNames(columnNames);
+                            alterExp.setIndex(index);
+                        }
+                        constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                        [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                    )
+                    |
+                    (
+                        <K_CHECK>  {Expression exp = null;} ("(" exp = Expression() ")")* {
+                        CheckConstraint checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
+                        alterExp.setIndex(checkCs);
+                    }
+                    )
+                    |
+                    (
+                        tk=<K_UNIQUE> (tk2=<K_KEY> { alterExp.setUk(true); } | tk2=<K_INDEX>)?
+                          columnNames=ColumnsNamesList()
+                          {
+                              index = new NamedConstraint()
+                                .withName(sk3)
+                                .withType(tk.image + (tk2!=null?" " + tk2.image:""))
+                                .withColumnsNames(columnNames);
+                              alterExp.setIndex(index);
+                          }
+                          constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                          [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                    )
+                    |
+                    (
+                        tk=<K_KEY>
+                          columnNames=ColumnsNamesList()
+                          {
+                              index = new NamedConstraint()
+                                .withName(sk3)
+                                .withType(tk.image)
+                                .withColumnsNames(columnNames);
+                              alterExp.setIndex(index);
+                          }
+                          constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                    )
+                                 )
                 )
                 |
-                (
-                    tk=<K_KEY>
-                      columnNames=ColumnsNamesList()
-                      {
-                          index = new NamedConstraint()
-                          	.withName(sk3)
-                          	.withType(tk.image)
-							.withColumnsNames(columnNames);
-                          alterExp.setIndex(index);
-                      }
-                      constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                ( sk3=RelObjectName() <K_COMMENT>
+                    tk=<S_CHAR_LITERAL> {
+                        alterExp.withColumnName(sk3).withCommentText(tk.image);
+                    }
                 )
-                             )
-            )
-            |
-            ( sk3=RelObjectName() <K_COMMENT> 
-                tk=<S_CHAR_LITERAL> { 
-                    alterExp.withColumnName(sk3).withCommentText(tk.image); 
-                }
-            )
-          )
+              )
       )
       |
       (
