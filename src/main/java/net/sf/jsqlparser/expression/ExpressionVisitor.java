@@ -69,6 +69,8 @@ public interface ExpressionVisitor {
 
     void visit(Between between);
 
+    void visit (OverlapsCondition overlapsCondition);
+
     void visit(EqualsTo equalsTo);
 
     void visit(GreaterThan greaterThan);

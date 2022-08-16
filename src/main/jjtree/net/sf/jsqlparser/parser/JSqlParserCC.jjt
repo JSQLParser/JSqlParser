@@ -320,6 +320,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_OUTER:"OUTER">
 |   <K_OUTPUT:"OUTPUT">
 |   <K_OVER:"OVER">
+|   <K_OVERLAPS:"OVERLAPS">
 |   <K_OPTIMIZE: "OPTIMIZE" >
 |   <K_PARALLEL:"PARALLEL">
 |   <K_PARTITION:"PARTITION">
@@ -3307,6 +3308,20 @@ Expression Condition():
     { return not?new NotExpression(result, exclamationMarkNot):result; }
 }
 
+Expression OverlapsCondition():{
+    ExpressionList left = new ExpressionList();
+    ExpressionList right = new ExpressionList();
+}
+{
+    //As per the sql2003 standard, we need at least two items in the list if there is not explicit ROW prefix
+    //More than two expression are allowed per the sql2003 grammar.
+    "(" left = SimpleExpressionListAtLeastTwoItems() ")"
+    <K_OVERLAPS>
+    "(" right = SimpleExpressionListAtLeastTwoItems() ")"
+
+    {return new OverlapsCondition(left, right);}
+}
+
 Expression RegularCondition() #RegularCondition:
 {
     Expression result = null;
@@ -3383,6 +3398,7 @@ Expression SQLCondition():
     (
     result=ExistsExpression()
     | LOOKAHEAD(InExpression()) result=InExpression()
+    | LOOKAHEAD(OverlapsCondition()) result=OverlapsCondition()
     | left = SimpleExpression() { result = left; }
         [ LOOKAHEAD(2) ((LOOKAHEAD(2) result=Between(left)
          | LOOKAHEAD(IsNullExpression()) result=IsNullExpression(left)

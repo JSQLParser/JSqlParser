@@ -108,6 +108,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public void visit(OverlapsCondition overlapsCondition) {
+        buffer.append(overlapsCondition.toString());
+    }
+
+    @Override
     public void visit(EqualsTo equalsTo) {
         visitOldOracleJoinBinaryExpression(equalsTo, " = ");
     }
