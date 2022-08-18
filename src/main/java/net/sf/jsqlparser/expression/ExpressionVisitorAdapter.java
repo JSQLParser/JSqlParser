@@ -161,6 +161,12 @@ public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVis
         expr.getBetweenExpressionEnd().accept(this);
     }
 
+    public void visit(OverlapsCondition overlapsCondition) {
+        overlapsCondition.getLeft().accept(this);
+        overlapsCondition.getRight().accept(this);
+    }
+
+
     @Override
     public void visit(EqualsTo expr) {
         visitBinaryExpression(expr);
