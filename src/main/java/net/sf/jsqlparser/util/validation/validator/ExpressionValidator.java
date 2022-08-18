@@ -80,6 +80,13 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     }
 
     @Override
+    public void visit(OverlapsCondition overlapsCondition) {
+        validateOptionalExpressionList(overlapsCondition.getLeft());
+        validateOptionalExpressionList(overlapsCondition.getRight());
+    }
+
+
+    @Override
     public void visit(EqualsTo equalsTo) {
         visitOldOracleJoinBinaryExpression(equalsTo, " = ");
     }
