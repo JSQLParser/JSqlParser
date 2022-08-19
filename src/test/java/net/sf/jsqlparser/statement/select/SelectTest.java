@@ -5244,7 +5244,7 @@ public class SelectTest {
     }
 
     @Test
-    public void testTimestampzzDateTimeLiteral() throws JSQLParserException {
+    public void testTimestamptzDateTimeLiteral() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM table WHERE x >= TIMESTAMPTZ '2021-07-05 00:00:00+00'");
     }
 }
