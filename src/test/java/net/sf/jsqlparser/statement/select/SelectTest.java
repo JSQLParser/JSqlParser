@@ -5242,4 +5242,9 @@ public class SelectTest {
     public void testNamedWindowDefinitionIssue1581_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT sum(salary) OVER w1, avg(salary) OVER w2 FROM empsalary WINDOW w1 AS (PARTITION BY depname ORDER BY salary DESC), w2 AS (PARTITION BY depname2 ORDER BY salary2)");
     }
+
+    @Test
+    public void testTimestampzzDateTimeLiteral() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM table WHERE x >= TIMESTAMPTZ '2021-07-05 00:00:00+00'");
+    }
 }
