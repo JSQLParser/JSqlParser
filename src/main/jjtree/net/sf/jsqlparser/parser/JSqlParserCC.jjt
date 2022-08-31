@@ -182,7 +182,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CYCLE:"CYCLE">
 |   <K_DATABASE:"DATABASE">
 |   <K_DECLARE: "DECLARE">
-|   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP") >
+|   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP" | "TIMESTAMPTZ") >
 |   <K_DATE_LITERAL : ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" ) >
 |   <K_DBA_RECYCLEBIN: "DBA_RECYCLEBIN">
 |   <K_DEFAULT : "DEFAULT">
