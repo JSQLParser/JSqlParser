@@ -162,6 +162,7 @@ public class SpecialOracleTest {
             "insert02.sql",
             "interval02.sql",
             "interval04.sql",
+            "interval05.sql",
             "join01.sql",
             "join02.sql",
             "join03.sql",
