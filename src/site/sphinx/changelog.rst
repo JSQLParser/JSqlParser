@@ -8,6 +8,21 @@ Latest Changes since |VERSION|
 =============================================================
 
 
+  * **test: Document an additional Special Oracle test success**
+    
+    Andreas Reichel, 2022-09-02
+  * **Sphinx Documentation**
+    
+    Andreas Reichel, 2022-09-02
+  * **Support timestamptz dateliteral (#1621)**
+    
+    Todd Pollak, 2022-08-31
+  * **fixes #1617**
+    
+    Tobias Warneke, 2022-08-31
+  * **fixes #419**
+    
+    Tobias Warneke, 2022-08-31
   * **Add AST Visualization**
     
     Andreas Reichel, 2022-08-18
