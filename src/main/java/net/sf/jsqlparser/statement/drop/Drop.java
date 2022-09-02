@@ -84,7 +84,7 @@ public class Drop implements Statement {
         }
 
         if (parameters != null && !parameters.isEmpty()) {
-            sql += " " + PlainSelect.getStringList(parameters);
+            sql += " " + PlainSelect.getStringList(parameters, false, false);
         }
 
         return sql;

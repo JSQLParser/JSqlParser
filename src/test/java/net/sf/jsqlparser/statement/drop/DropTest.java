@@ -46,6 +46,11 @@ public class DropTest {
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }
+    
+    @Test
+    public void testDropIndexOnTable() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP INDEX idx ON abc");
+    }
 
     @Test
     public void testDrop2() throws JSQLParserException {
