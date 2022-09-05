@@ -8,6 +8,12 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **doc: Explain the ``updateKeywords`` Gradle Task**
+    
+    Andreas Reichel, 2022-09-05
+  * **build: Clean-up the Gradle Build**
+    
+    Andreas Reichel, 2022-09-05
   * **build: temporarily reduce the Code Coverage requirements**
     
     Andreas Reichel, 2022-09-02
@@ -47,7 +53,7 @@ Latest Changes since |JSQLPARSER_VERSION|
   * **fixes #1581**
     
     Tobias Warneke, 2022-07-25
-  * **Using own Feature - constant for &quot;delete with returning&quot; #1597 (#1598)**
+  * **Using own Feature - constant for "delete with returning" #1597 (#1598)**
     
     gitmotte, 2022-07-25
   * **[maven-release-plugin] prepare for next development iteration**
@@ -95,7 +101,7 @@ Latest Changes since |JSQLPARSER_VERSION|
   * **Update PMD and rules**
     
     Andreas Reichel, 2022-04-09
-  * **Automate the &#x60;updateKeywords&#x60; Step**
+  * **Automate the `updateKeywords` Step**
     
     Andreas Reichel, 2022-04-07
   * **Add Jupiter Parameters dependency again**
@@ -172,10 +178,10 @@ Version jsqlparser-4.5
   * **fixes #1590**
     
     Tobias Warneke, 2022-07-19
-  * **extended support Postgres&#x27; &#x60;Extract( field FROM source)&#x60; where &#x60;field&#x60; is a String instead of a Keyword (#1591)**
+  * **extended support Postgres' `Extract( field FROM source)` where `field` is a String instead of a Keyword (#1591)**
     
     manticore-projects, 2022-07-19
-  * **Closes #1579. Added ANALYZE &lt;table&gt; support. (#1587)**
+  * **Closes #1579. Added ANALYZE <table> support. (#1587)**
     
     Rob Audenaerde, 2022-07-14
   * **Closes #1583:: Implement Postgresql optional TABLE in TRUNCATE (#1585)**
@@ -241,7 +247,7 @@ Version jsqlparser-4.5
   * **#1516 rename without column keyword (#1533)**
     
     manticore-projects, 2022-05-11
-  * **Add support for &#x60;... ALTER COLUMN ... DROP DEFAULT&#x60; (#1532)**
+  * **Add support for `... ALTER COLUMN ... DROP DEFAULT` (#1532)**
     
     manticore-projects, 2022-05-11
   * **#1527 DELETE ... RETURNING ... (#1528)**
@@ -285,7 +291,7 @@ Version jsqlparser-4.4
   * **fixes #1502**
     
     Tobias Warneke, 2022-04-09
-  * **Issue1500 - Circular References in &#x60;AllColumns&#x60; and &#x60;AllTableColumns&#x60; (#1501)**
+  * **Issue1500 - Circular References in `AllColumns` and `AllTableColumns` (#1501)**
     
     manticore-projects, 2022-04-03
   * **Optimize assertCanBeParsedAndDeparsed (#1389)**
@@ -392,7 +398,7 @@ Version jsqlparser-4.3
   * **Add supported for quoted cast expressions for PostgreSQL (#1411)**
     
     Tomer Shay (Shimshi), 2021-11-19
-  * **added USE SCHEMA &lt;schema&gt; and CREATE OR REPLACE &lt;table&gt; support; things that are allowed in Snowflake SQL (#1409)**
+  * **added USE SCHEMA <schema> and CREATE OR REPLACE <table> support; things that are allowed in Snowflake SQL (#1409)**
     
     Richard Kooijman, 2021-11-19
   * **Issue #420 Like Expression with Escape Expression (#1406)**
@@ -508,10 +514,10 @@ Version jsqlparser-4.2
   * **Add some flexibility to the Alter Statement (#1293)**
     
     manticore-projects, 2021-08-02
-  * **Implement Oracle&#x27;s Alter System (#1288)**
+  * **Implement Oracle's Alter System (#1288)**
     
     manticore-projects, 2021-08-02
-  * **Implement Oracle Named Function Parameters Func( param1 &#x3D;&gt; arg1, ...) (#1283)**
+  * **Implement Oracle Named Function Parameters Func( param1 &#x3D;> arg1, ...) (#1283)**
     
     manticore-projects, 2021-08-02
   * **Implement Gradle Buildsystem (#1271)**
@@ -642,7 +648,7 @@ Version jsqlparser-4.1
   * **Pmd clean up (#1215)**
     
     manticore-projects, 2021-06-02
-  * **Add support for boolean &#x27;XOR&#x27; operator (#1193)**
+  * **Add support for boolean 'XOR' operator (#1193)**
     
     Adaptive Recognition, 2021-06-02
   * **Update README.md**

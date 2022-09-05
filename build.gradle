@@ -268,6 +268,15 @@ Version {{name}}
  {{/issues}}
 {{/tags}}
 """
+    doLast {
+        String unescapedContent = file.getText('UTF-8')
+                .replaceAll(/&#x60;/, "`")
+                .replaceAll(/&quot;/, "\"")
+                .replaceAll(/&#x27;/, "'")
+                .replaceAll(/&lt;/, "<")
+                .replaceAll(/&gt;/, ">")
+        file.write(unescapedContent);
+    }
 }
 
 task sphinx(type: Exec) {
