@@ -66,6 +66,7 @@ repositories {
 
 dependencies {
     testImplementation 'commons-io:commons-io:2.11.0'
+    testImplementation 'org.apache.commons:commons-text:1.9'
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
     testImplementation 'org.mockito:mockito-core:4.7.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:4.7.0'
@@ -268,6 +269,15 @@ Version {{name}}
  {{/issues}}
 {{/tags}}
 """
+    doLast {
+        String unescapedContent = file.getText('UTF-8')
+                .replaceAll(/&#x60;/, "`")
+                .replaceAll(/&quot;/, "\"")
+                .replaceAll(/&#x27;/, "'")
+                .replaceAll(/&lt;/, "<")
+                .replaceAll(/&gt;/, ">")
+        file.write(unescapedContent);
+    }
 }
 
 task sphinx(type: Exec) {
