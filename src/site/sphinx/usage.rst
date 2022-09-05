@@ -49,7 +49,7 @@ Maven Artifacts
 			<dependency>
 				<groupId>com.github.jsqlparser</groupId>
 				<artifactId>jsqlparser</artifactId>
-				<version>|VERSION|</version>
+				<version>|JSQLPARSER_VERSION|</version>
 			</dependency>
 
   .. tab:: Development Snapshot
@@ -69,7 +69,7 @@ Maven Artifacts
 			<dependency>
 				<groupId>com.manticore-projects.jsqlformatter</groupId>
 				<artifactId>jsqlformatter</artifactId>
-				<version>|SNAPSHOT_VERSION|</version>
+				<version>|JSQLPARSER_SNAPSHOT_VERSION|</version>
 			</dependency>
 
 			

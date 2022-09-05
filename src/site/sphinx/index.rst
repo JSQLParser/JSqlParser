@@ -28,9 +28,9 @@ Java SQL Parser Library
 
 **JSQLParser** is a SQL statement parser built from JavaCC. It translates SQLs in a traversable hierarchy of Java classes.
 
-Latest stable release: |STABLE_VERSION_LINK|
+Latest stable release: |JSQLPARSER_STABLE_VERSION_LINK|
 
-Development version: |SNAPSHOT_VERSION_LINK|
+Development version: |JSQLPARSER_SNAPSHOT_VERSION_LINK|
 
 .. sidebar:: Java SQL Object Hierarchy
 

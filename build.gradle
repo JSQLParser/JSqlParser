@@ -66,24 +66,18 @@ repositories {
 
 dependencies {
     testImplementation 'commons-io:commons-io:2.11.0'
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:4.6.1'
+    testImplementation 'org.hamcrest:hamcrest-library:2.2'
+    testImplementation 'org.mockito:mockito-core:4.7.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.7.0'
     testImplementation 'org.assertj:assertj-core:3.23.1'
     testImplementation 'org.apache.commons:commons-lang3:3.12.0'
     testImplementation 'com.h2database:h2:2.1.214'
 
-    // for JaCoCo Reports
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.+'
-
-    // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:4.6.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.0'
 
     implementation 'net.java.dev.javacc:javacc:7.0.12'
-
-    testImplementation "org.junit.jupiter:junit-jupiter-params:5.+"
-
-    // enforce latest version of JavaCC
     javacc 'net.java.dev.javacc:javacc:7.0.12'
 }
 
@@ -97,10 +91,6 @@ java {
 
     spotbugs
     pmd
-}
-
-jacoco {
-    toolVersion = "0.8.7"
 }
 
 test {
@@ -214,7 +204,7 @@ spotbugs {
 
 pmd {
     consoleOutput = false
-    toolVersion = "6.46.0"
+    //toolVersion = "6.46.0"
     
     sourceSets = [sourceSets.main]
     
@@ -233,7 +223,6 @@ pmd {
 }
 
 checkstyle {
-    toolVersion "9.2"
     sourceSets = [sourceSets.main, sourceSets.test]
     configFile =rootProject.file('config/checkstyle/checkstyle.xml')
 }
@@ -259,7 +248,7 @@ Changelog
 
 {{#tags}}
 {{#ifMatches name "^Unreleased.*"}}
-Latest Changes since |VERSION|
+Latest Changes since |JSQLPARSER_VERSION|
 {{/ifMatches}}
 {{#ifMatches name "^(?!Unreleased).*"}}
 Version {{name}}
@@ -285,14 +274,17 @@ task sphinx(type: Exec) {
     dependsOn(gitChangelogTask)
 
     def String PROLOG = """
-.. |EMAIL| replace:: support@manticore-projects.com
-.. |VERSION| replace:: ${getVersion(false)}
-.. |SNAPSHOT_VERSION| replace:: ${getVersion(true)}
-.. |STABLE_VERSION_LINK| raw:: html
+.. |_| unicode:: U+00A0 
+    :trim: 
+
+.. |JSQLPARSER_EMAIL| replace:: support@manticore-projects.com
+.. |JSQLPARSER_VERSION| replace:: ${getVersion(false)}
+.. |JSQLPARSER_SNAPSHOT_VERSION| replace:: ${getVersion(true)}
+.. |JSQLPARSER_STABLE_VERSION_LINK| raw:: html
 
     <a href='http://manticore-projects.com/downloads/jsqlparser-${getVersion(false)}.jar'>jsqlparser-${getVersion(false)}.jar</a>
 
-.. |SNAPSHOT_VERSION_LINK| raw:: html
+.. |JSQLPARSER_SNAPSHOT_VERSION_LINK| raw:: html
 
     <a href='http://manticore-projects.com/downloads/jsqlparser-${getVersion(true)}.jar'>jsqlparser-${getVersion(true)}.jar</a>
 
@@ -328,14 +320,31 @@ task updateKeywords(type: JavaExec) {
             //project(':JSQLParser').file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath
             file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath
     ]
-    mainClass = 'net.sf.jsqlparser.parser.ParserKeywordsUtils'
+    main("net.sf.jsqlparser.parser.ParserKeywordsUtils")
 }
 
 publishing {
     publications {
-        maven(MavenPublication) {
+        mavenJava(MavenPublication) {
             artifactId 'jsqlparser'
             from(components.java)
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('testFixturesRuntimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+        }
+    }
+    repositories {
+
+        maven {
+            // Username and Password are defined in ~/.gradle/gradle.properties
+            name "ossrh"
+            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials(PasswordCredentials)
         }
     }
 }
