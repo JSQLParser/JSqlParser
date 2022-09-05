@@ -8,6 +8,9 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **doc: Cleanup**
+    
+    Andreas Reichel, 2022-09-05
   * **build: Un-escape the Unicode on the changelog file**
     
     Andreas Reichel, 2022-09-05
@@ -523,7 +526,7 @@ Version jsqlparser-4.2
   * **Implement Oracle's Alter System (#1288)**
     
     manticore-projects, 2021-08-02
-  * **Implement Oracle Named Function Parameters Func( param1 &#x3D;> arg1, ...) (#1283)**
+  * **Implement Oracle Named Function Parameters Func( param1 => arg1, ...) (#1283)**
     
     manticore-projects, 2021-08-02
   * **Implement Gradle Buildsystem (#1271)**
