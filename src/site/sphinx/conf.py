@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-import sys, os
-#import sphinx_rtd_theme
-
 
 # General options
 needs_sphinx = '1.0'
@@ -11,13 +8,11 @@ extensions = ['myst_parser', 'sphinx.ext.autodoc', 'sphinx.ext.autosectionlabel'
 
 issues_github_path = "JSQLParser/JSqlParser"
 
-#templates_path = ['templates']
 source_encoding = 'utf-8-sig'
 pygments_style = 'friendly'
 show_sphinx = False
 master_doc = 'index'
 exclude_patterns = ['_themes', '_static/css']
-#sphinx_tabs_disable_css_loading = True
 
 
 # HTML options
@@ -52,7 +47,4 @@ html_context = {
         ]
     }
 }
-
-# PlantUML options
-plantuml = os.getenv('plantuml')
 

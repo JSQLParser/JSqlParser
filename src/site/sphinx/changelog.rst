@@ -8,6 +8,12 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **build: Un-escape the Unicode on the changelog file**
+    
+    Andreas Reichel, 2022-09-05
+  * **build: Un-escape the Unicode on the changelog file**
+    
+    Andreas Reichel, 2022-09-05
   * **doc: Explain the ``updateKeywords`` Gradle Task**
     
     Andreas Reichel, 2022-09-05
