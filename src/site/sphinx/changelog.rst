@@ -8,6 +8,12 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **doc: correctly refer to `RelObjectNameWithoutValue()`**
+    
+    Andreas Reichel, 2022-09-06
+  * **doc: request for `Conventional Commit` messages**
+    
+    Andreas Reichel, 2022-09-06
   * **doc: Properly un-escape the Git Commit message**
     
     Andreas Reichel, 2022-09-05

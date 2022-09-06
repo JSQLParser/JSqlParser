@@ -1,5 +1,7 @@
 import se.bjurr.gitchangelog.plugin.gradle.GitChangelogTask
 
+import java.nio.charset.Charset
+
 plugins {
     id 'java'
     id 'maven-publish'
@@ -283,11 +285,11 @@ task sphinx(type: Exec) {
 .. |JSQLPARSER_SNAPSHOT_VERSION| replace:: ${getVersion(true)}
 .. |JSQLPARSER_STABLE_VERSION_LINK| raw:: html
 
-    <a href='http://manticore-projects.com/downloads/jsqlparser-${getVersion(false)}.jar'>jsqlparser-${getVersion(false)}.jar</a>
+    <a href='http://manticore-projects.com/download/${project.name}-${getVersion(false)}/${project.name}-${getVersion(false)}.jar'>${project.name}-${getVersion(false)}.jar</a>
 
 .. |JSQLPARSER_SNAPSHOT_VERSION_LINK| raw:: html
 
-    <a href='http://manticore-projects.com/downloads/jsqlparser-${getVersion(true)}.jar'>jsqlparser-${getVersion(true)}.jar</a>
+    <a href='http://manticore-projects.com/download/${project.name}-${getVersion(false)}/${project.name}-${getVersion(true)}.jar'>${project.name}-${getVersion(true)}.jar</a>
 
 """
 
@@ -352,4 +354,28 @@ publishing {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+}
+
+task upload(type: Exec) {
+    dependsOn(build, gitChangelogTask)
+
+    def versionStable = getVersion(false)
+
+    // define the USERNAME and HOST properties in ~/.gradle/gradle.properties
+    args = ["sftp://${findProperty("${project.name}.username")}@${findProperty("${project.name}.host")}/download"]
+
+    executable "sftp"
+
+    standardInput = new ByteArrayInputStream("""<<EOF
+                                                mkdir ${project.name}-${versionStable}
+                                                cd ${project.name}-${versionStable}
+                                                put build/libs/*
+                                                quit
+                                                EOF"""
+            .getBytes(Charset.defaultCharset()))
+
+    standardOutput = new ByteArrayOutputStream()
+    ext.output = {
+        return standardOutput.toString()
+    }
 }
