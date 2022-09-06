@@ -32,7 +32,7 @@ Create a new Git Branch
 
 When starting afresh, clone `JSQLParser` from the `GitHub` repository:
 
-.. code:: Bash
+.. code-block:: Bash
 
    git clone https://github.com/JSQLParser/JSqlParser.git
    cd JSqlParser
@@ -40,7 +40,7 @@ When starting afresh, clone `JSQLParser` from the `GitHub` repository:
 
 When having a local repository already, then pull/merge from the `GitHub` repository:
 
-.. code:: Bash
+.. code-block:: Bash
 
    cd JSqlParser
    git pull origin master
@@ -78,13 +78,18 @@ There is a Gradle Task ``updateKeywords`` which will:
     4) Modifies the Grammar Productions ``RelObjectListWithoutName...`` adding all Tokens according to ``White-Listed Keywords``
     5) Run two special Unit Tests to verify parsing of all ``White-Listed Keywords`` (as `Schema`, `Table`, `Column`, `Function` or `Alias`)
 
+.. code-block:: shell
+    :caption: Gradle `updateKeywords` Task
+
+        gradle updateKeywords
+
 Without this Gradle Task, any new Token or Production will become a ``Reserved Keyword`` automatically and can't be used for Object Names without quoting.
 
 
 Commit a Pull Request
 ---------------------------------
 
-.. code:: Bash
+.. code-block:: Bash
 
    cd JSqlParser
    git add -A
@@ -92,3 +97,47 @@ Commit a Pull Request
    git push –set-upstream origin <new-branch>
 
 Follow the advice on `Meaningful Commit Messages <https://www.freecodecamp.org/news/how-to-write-better-git-commit-messages/>`_ and consider using `Commitizen <https://commitizen-tools.github.io/commitizen/>`_ when describing your commits.
+
+Please consider using `Conventional Commits` and structure your commit message as follows:
+
+.. code-block:: text
+    :caption: Conventional Commit Message Structure
+
+    <type>[optional scope]: <description>
+
+    [optional body]
+
+    [BREAKING CHANGE: <change_description>]
+
+    [optional footer(s)]
+
+.. list-table:: Commit Message Types
+   :widths: 15 85
+   :header-rows: 1
+
+   * - Type
+     - Description
+   * - **feat**
+     - introduce a new feature
+   * - **fix**
+     - patches a bug in your codebase (bugfix or hotfix)
+   * - **build**
+     - changes that affect the build system or external dependencies
+   * - **chore**
+     - updates dependencies and does not relate to fix or feat and does not modify src or test files.
+   * - **ci**
+     - changes that affect the continuous integration process
+   * - **docs**
+     - updates the documentation or introduce documentation
+   * - **style**
+     - updates the formatting of code; remove white spaces, add missing spaces, remove unnecessary newlines
+   * - **refactor**
+     - reactors code segments to optimize readability without changing behavior
+   * - **perf**
+     - improve performance
+   * - **test**
+     - add/remove/update tests
+   * - **revert**
+     - reverts one or many previous commits
+
+Please visit `Better Programming <https://betterprogramming.pub/write-better-git-commit-messages-to-increase-your-productivity-89fa773e8375>`_ for more information and guidance.

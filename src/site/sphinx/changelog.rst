@@ -8,6 +8,9 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **doc: Properly un-escape the Git Commit message**
+    
+    Andreas Reichel, 2022-09-05
   * **doc: Cleanup**
     
     Andreas Reichel, 2022-09-05
