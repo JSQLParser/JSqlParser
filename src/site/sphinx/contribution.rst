@@ -68,6 +68,15 @@ Manage Reserved Keywords
 
 Since JSQLParser is built by JavaCC from a Token based Grammar, ``Reserved Keywords`` need a special treatment. All Tokens of the Grammar would become ``Reserved Keywords`` -- unless explicitly allowed and white-listened.
 
+.. code-block:: sql
+    :caption: White-list Keyword example
+
+    -- <K_OVERLAPS:"OVERLAPS"> is a Token, recently defined in the Grammar
+    -- Although it is not restricted by the SQL Standard and could be used for Column, Table and Alias names
+    -- So we must explicitly whitelist OVERLAPS by adding it to the  RelObjectNameWithoutValue() Production
+
+    SELECT overlaps AS overlaps FROM overlaps.overlaps overlaps WHERE overlaps='overlaps';
+
 So we will need to define and white-list any Keywords which may be allowed for Object Names (such as `Schema`, `Table`, `Column`, `Function`, `Alias`). This White-List must be updated whenever the Tokens of the Grammar change (e. |_| g. when adding a new Token or Production).
 
 There is a Gradle Task ``updateKeywords`` which will:

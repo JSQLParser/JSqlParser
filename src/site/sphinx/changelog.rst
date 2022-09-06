@@ -8,6 +8,9 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **build: upload the built files via Excec/SFTP**
+    
+    Andreas Reichel, 2022-09-06
   * **doc: correctly refer to `RelObjectNameWithoutValue()`**
     
     Andreas Reichel, 2022-09-06
