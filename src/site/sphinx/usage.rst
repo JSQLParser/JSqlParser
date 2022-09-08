@@ -67,8 +67,8 @@ Maven Artifacts
 				</repository>
 			</repositories> 
 			<dependency>
-				<groupId>com.manticore-projects.jsqlformatter</groupId>
-				<artifactId>jsqlformatter</artifactId>
+				<groupId>com.github.jsqlparser</groupId>
+				<artifactId>jsqlparser</artifactId>
 				<version>|JSQLPARSER_SNAPSHOT_VERSION|</version>
 			</dependency>
 
