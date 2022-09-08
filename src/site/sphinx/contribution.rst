@@ -73,9 +73,13 @@ Since JSQLParser is built by JavaCC from a Token based Grammar, ``Reserved Keywo
 
     -- <K_OVERLAPS:"OVERLAPS"> is a Token, recently defined in the Grammar
     -- Although it is not restricted by the SQL Standard and could be used for Column, Table and Alias names
-    -- So we must explicitly whitelist OVERLAPS by adding it to the  RelObjectNameWithoutValue() Production
+    -- Explicitly white-listing OVERLAPS by adding it to the  RelObjectNameWithoutValue() Production will allow for parsing the following statement
 
-    SELECT overlaps AS overlaps FROM overlaps.overlaps overlaps WHERE overlaps='overlaps';
+    SELECT Overlaps( overlaps ) AS overlaps
+    FROM overlaps.overlaps overlaps
+    WHERE overlaps = 'overlaps'
+        AND (CURRENT_TIME, INTERVAL '1' HOUR) OVERLAPS (CURRENT_TIME, INTERVAL -'1' HOUR)
+    ;
 
 So we will need to define and white-list any Keywords which may be allowed for Object Names (such as `Schema`, `Table`, `Column`, `Function`, `Alias`). This White-List must be updated whenever the Tokens of the Grammar change (e. |_| g. when adding a new Token or Production).
 
