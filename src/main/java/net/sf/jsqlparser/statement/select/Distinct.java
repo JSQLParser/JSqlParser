@@ -9,13 +9,14 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class Distinct {
+public class Distinct implements Serializable {
 
     private List<SelectItem> onSelectItems;
     private boolean useUnique = false;

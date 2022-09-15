@@ -10,6 +10,8 @@
 package net.sf.jsqlparser.statement.create.table;
 
 import static java.util.stream.Collectors.toList;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-public class Index {
+public class Index implements Serializable {
 
     private String type;
     private String using;
@@ -157,7 +159,7 @@ public class Index {
         return this;
     }
 
-    public static class ColumnParams {
+    public static class ColumnParams implements Serializable {
         public final String columnName;
         public final List<String> params;
 

@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.merge;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +19,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-public class MergeInsert {
+public class MergeInsert implements Serializable {
 
     private List<Column> columns = null;
     private List<Expression> values = null;

@@ -14,6 +14,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,7 +38,7 @@ import java.util.Objects;
  *     | $action
  * </pre>
  */
-public class OutputClause {
+public class OutputClause implements Serializable {
     List<SelectItem> selectItemList;
     UserVariable tableVariable;
     Table outputTable;

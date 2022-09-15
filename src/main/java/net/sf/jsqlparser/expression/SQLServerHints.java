@@ -9,10 +9,11 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SQLServerHints {
+public class SQLServerHints implements Serializable {
 
     private Boolean noLock;
     private String indexName;

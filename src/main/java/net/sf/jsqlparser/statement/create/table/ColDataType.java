@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,7 +18,7 @@ import java.util.Optional;
 import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-public class ColDataType {
+public class ColDataType implements Serializable {
 
     private String dataType;
     private List<String> argumentsStringList;

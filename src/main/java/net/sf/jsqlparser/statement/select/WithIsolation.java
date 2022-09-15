@@ -10,7 +10,9 @@
 package net.sf.jsqlparser.statement.select;
 
 
-public class WithIsolation {
+import java.io.Serializable;
+
+public class WithIsolation implements Serializable {
 
     private String isolation = "UR";
 

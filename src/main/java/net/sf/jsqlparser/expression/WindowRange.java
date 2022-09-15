@@ -9,7 +9,9 @@
  */
 package net.sf.jsqlparser.expression;
 
-public class WindowRange {
+import java.io.Serializable;
+
+public class WindowRange implements Serializable {
 
     private WindowOffset start;
     private WindowOffset end;

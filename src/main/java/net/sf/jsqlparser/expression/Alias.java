@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,7 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
-public class Alias {
+public class Alias implements Serializable {
 
     private String name;
     private boolean useAs = true;
@@ -104,7 +105,7 @@ public class Alias {
         return this.withAliasColumns(collection);
     }
 
-    public static class AliasColumn {
+    public static class AliasColumn implements Serializable {
 
         public final String name;
         public final ColDataType colDataType;

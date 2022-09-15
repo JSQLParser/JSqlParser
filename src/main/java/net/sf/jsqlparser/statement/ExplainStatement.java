@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.select.Select;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
@@ -88,7 +89,7 @@ public class ExplainStatement implements Statement {
         FORMAT
     }
 
-    public static class Option {
+    public static class Option implements Serializable {
 
         private final OptionType type;
         private String value;

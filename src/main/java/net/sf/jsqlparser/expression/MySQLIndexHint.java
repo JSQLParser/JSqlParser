@@ -9,9 +9,10 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class MySQLIndexHint  {
+public class MySQLIndexHint implements Serializable {
 
     private final String action;
     private final String indexQualifier;

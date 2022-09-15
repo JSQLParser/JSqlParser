@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
 
-public class OrderByElement {
+import java.io.Serializable;
+
+public class OrderByElement implements Serializable {
 
     public enum NullOrdering {
         NULLS_FIRST,

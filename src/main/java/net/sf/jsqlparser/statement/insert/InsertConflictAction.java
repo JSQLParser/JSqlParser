@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -31,7 +32,7 @@ import java.util.Objects;
  * </pre>
  */
 
-public class InsertConflictAction {
+public class InsertConflictAction implements Serializable {
     ConflictActionType conflictActionType;
 
     private final ArrayList<UpdateSet> updateSets = new ArrayList<>();

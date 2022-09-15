@@ -11,6 +11,8 @@ package net.sf.jsqlparser.statement.insert;
 
 import net.sf.jsqlparser.expression.Expression;
 
+import java.io.Serializable;
+
 /**
  * https://www.postgresql.org/docs/current/sql-insert.html
  * <pre>
@@ -21,7 +23,7 @@ import net.sf.jsqlparser.expression.Expression;
  * </pre>
  * Currently, COLLATE is not supported yet.
  */
-public class InsertConflictTarget {
+public class InsertConflictTarget implements Serializable {
 
     String indexColumnName;
     Expression indexExpression;

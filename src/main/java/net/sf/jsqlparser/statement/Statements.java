@@ -9,13 +9,14 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class Statements {
+public class Statements implements Serializable {
 
     private List<Statement> statements;
 
