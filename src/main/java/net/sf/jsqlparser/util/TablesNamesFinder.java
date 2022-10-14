@@ -475,6 +475,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
+    public void visit(SafeCastExpression cast) {
+        cast.getLeftExpression().accept(this);
+    }
+
+    @Override
     public void visit(Modulo modulo) {
         visitBinaryExpression(modulo);
     }
