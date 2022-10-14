@@ -12,8 +12,6 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.Model;
 import net.sf.jsqlparser.parser.ASTNodeAccess;
 
-import java.io.Serializable;
-
 public interface Expression extends ASTNodeAccess, Model {
 
     void accept(ExpressionVisitor expressionVisitor);
