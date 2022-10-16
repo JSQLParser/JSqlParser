@@ -103,7 +103,25 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     public String getName() {
-        return getIndex(NAME_IDX);
+        String name = getIndex(NAME_IDX);
+        if (name!=null && name.contains("@")) {
+            int pos = name.lastIndexOf('@');
+            if (pos>0) {
+                name = name.substring(0, pos );
+            }
+        }
+        return name;
+    }
+
+    public String getDBLinkName() {
+        String name = getIndex(NAME_IDX);
+        if (name!=null && name.contains("@")) {
+            int pos = name.lastIndexOf('@');
+            if (pos>0 && name.length()>1) {
+                name = name.substring(pos+1);
+            }
+        }
+        return name;
     }
 
     public Table withName(String name) {
@@ -240,5 +258,9 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     public Table withSqlServerHints(SQLServerHints sqlServerHints) {
         this.setSqlServerHints(sqlServerHints);
         return this;
+    }
+
+    public List<String> getNameParts() {
+        return partItems;
     }
 }
