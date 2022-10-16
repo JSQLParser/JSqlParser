@@ -3738,7 +3738,8 @@ Expression ComparisonItem() :
     LOOKAHEAD(3) retval=AnyComparisonExpression()
     | LOOKAHEAD(ValueListExpression()) retval=ValueListExpression()
     | LOOKAHEAD(3) retval=SimpleExpression()
-    | retval=RowConstructor()
+    | LOOKAHEAD(3) retval=RowConstructor()
+    | retval=PrimaryExpression()
   )
 
    {
