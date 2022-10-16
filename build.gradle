@@ -12,7 +12,7 @@ plugins {
 }
 
 group = 'com.github.jsqlparser'
-version = '4.5-SNAPSHOT'
+version = '4.6-SNAPSHOT'
 description = 'JSQLParser library'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
@@ -42,11 +42,8 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.+'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:4.5.1'
-
-    implementation 'net.java.dev.javacc:javacc:7.0.11'
-
-    testImplementation "org.junit.jupiter:junit-jupiter-params:5.+"
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:+'
 
     // enforce latest version of JavaCC
     javacc 'net.java.dev.javacc:javacc:7.0.12'

@@ -46,6 +46,7 @@ import org.apache.commons.io.IOUtils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -5239,5 +5240,26 @@ public class SelectTest {
     @Test
     public void testTimestamptzDateTimeLiteral() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM table WHERE x >= TIMESTAMPTZ '2021-07-05 00:00:00+00'");
+    }
+
+
+    @Test
+    public void testFunctionComplexExpressionParametersIssue1644() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT test(1=1, 'a', 'b')", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT if(instr('avc','a')=0, 'avc', 'aaa')", true);
+    }
+
+    @Test
+    public void testOracleDBLink() throws JSQLParserException {
+        String sqlStr = "SELECT * from tablename@dblink";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Select select = (Select) CCJSqlParserUtil.parse(sqlStr);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        Table table = (Table) plainSelect.getFromItem();
+
+        assertNotEquals("tablename@dblink", table.getName());
+        assertEquals("tablename", table.getName());
+        assertEquals("dblink", table.getDBLinkName());
     }
 }
