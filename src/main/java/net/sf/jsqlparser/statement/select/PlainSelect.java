@@ -48,6 +48,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
     private boolean oracleSiblings = false;
     private boolean forUpdate = false;
     private Table forUpdateTable = null;
+    private boolean skipLocked;
     private boolean useBrackets = false;
     private Wait wait;
     private boolean mySqlSqlCalcFoundRows = false;
@@ -349,6 +350,14 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
         this.windowDefinitions = windowDefinitions;
     }
 
+    public boolean isSkipLocked() {
+        return skipLocked;
+    }
+
+    public void setSkipLocked(boolean skipLocked) {
+        this.skipLocked = skipLocked;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
     public String toString() {
@@ -464,6 +473,8 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
                 if (isNoWait()) {
                     sql.append(" NOWAIT");
+                } else if (isSkipLocked()) {
+                    sql.append(" SKIP LOCKED");
                 }
             }
             if (optimizeFor != null) {
@@ -717,6 +728,11 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
 
     public PlainSelect withNoWait(boolean noWait) {
         this.setNoWait(noWait);
+        return this;
+    }
+
+    public PlainSelect withSkipLocked(boolean skipLocked) {
+        this.setSkipLocked(skipLocked);
         return this;
     }
 

@@ -86,6 +86,7 @@ public class SelectValidator extends AbstractValidator<SelectItem>
                 validateOptionalFeature(c, plainSelect.getForUpdateTable(), Feature.selectForUpdateOfTable);
                 validateOptionalFeature(c, plainSelect.getWait(), Feature.selectForUpdateWait);
                 validateFeature(c, plainSelect.isNoWait(), Feature.selectForUpdateNoWait);
+                validateFeature(c, plainSelect.isSkipLocked(), Feature.selectForUpdateSkipLocked);
             }
 
             validateOptionalFeature(c, plainSelect.getForXmlPath(), Feature.selectForXmlPath);

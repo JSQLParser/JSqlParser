@@ -274,6 +274,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_LIKE:"LIKE">
 |   <K_LIMIT:"LIMIT">
 |   <K_LOCAL:"LOCAL">
+|   <K_LOCKED:"LOCKED">
 |   <K_LINK:"LINK">
 |   <K_LOG:"LOG">
 |   <K_LOW_PRIORITY : "LOW_PRIORITY">
@@ -2076,7 +2077,8 @@ PlainSelect PlainSelect() #PlainSelect:
     [LOOKAHEAD(2) <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
         [ <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ]
         [ LOOKAHEAD(<K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ]
-        [ <K_NOWAIT> { plainSelect.setNoWait(true); } ] ]
+        [ <K_NOWAIT> { plainSelect.setNoWait(true); }
+           | <K_SKIP> <K_LOCKED> { plainSelect.setSkipLocked(true); } ] ]
 
     [LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
 
