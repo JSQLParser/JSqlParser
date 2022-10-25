@@ -5265,4 +5265,37 @@ public class SelectTest {
         assertEquals("tablename", table.getName());
         assertEquals("dblink", table.getDBLinkName());
     }
+
+    @Test
+    public void testSelectStatementWithForUpdateAndSkipLockedTokens() throws JSQLParserException {
+        String sql = "SELECT * FROM test FOR UPDATE SKIP LOCKED";
+        assertSqlCanBeParsedAndDeparsed(sql);
+
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertTrue(plainSelect.isForUpdate());
+        assertTrue(plainSelect.isSkipLocked());
+    }
+
+    @Test
+    public void testSelectStatementWithForUpdateButWithoutSkipLockedTokens() throws JSQLParserException {
+        String sql = "SELECT * FROM test FOR UPDATE";
+        assertSqlCanBeParsedAndDeparsed(sql);
+
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertTrue(plainSelect.isForUpdate());
+        assertFalse(plainSelect.isSkipLocked());
+    }
+
+    @Test
+    public void testSelectStatementWithoutForUpdateAndSkipLockedTokens() throws JSQLParserException {
+        String sql = "SELECT * FROM test";
+        assertSqlCanBeParsedAndDeparsed(sql);
+
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertFalse(plainSelect.isForUpdate());
+        assertFalse(plainSelect.isSkipLocked());
+    }
 }

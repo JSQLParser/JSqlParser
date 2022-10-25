@@ -76,6 +76,7 @@ public enum PostgresqlVersion implements Version {
                     Feature.selectForUpdate,
                     Feature.selectForUpdateOfTable,
                     Feature.selectForUpdateNoWait,
+                    Feature.selectForUpdateSkipLocked,
 
                     // https://www.postgresql.org/docs/current/queries-union.html
                     Feature.setOperation,
