@@ -5202,9 +5202,6 @@ public class SelectTest {
         isolation = ((PlainSelect) select.getSelectBody()).getWithIsolation().getIsolation();
         assertEquals("Cs", isolation);
         assertSqlCanBeParsedAndDeparsed(statement);
-
-        statement = "SELECT rs.col, * FROM mytable RS WHERE mytable.col = 9";
-        assertSqlCanBeParsedAndDeparsed(statement);
     }
 
     @Test
@@ -5244,7 +5241,6 @@ public class SelectTest {
     public void testTimestamptzDateTimeLiteral() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM table WHERE x >= TIMESTAMPTZ '2021-07-05 00:00:00+00'");
     }
-
 
     @Test
     public void testFunctionComplexExpressionParametersIssue1644() throws JSQLParserException {
