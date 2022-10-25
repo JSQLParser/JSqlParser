@@ -5242,7 +5242,6 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM table WHERE x >= TIMESTAMPTZ '2021-07-05 00:00:00+00'");
     }
 
-
     @Test
     public void testFunctionComplexExpressionParametersIssue1644() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT test(1=1, 'a', 'b')", true);
