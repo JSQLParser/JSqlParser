@@ -217,6 +217,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             }
             if (plainSelect.isNoWait()) {
                 buffer.append(" NOWAIT");
+            } else if (plainSelect.isSkipLocked()) {
+                buffer.append(" SKIP LOCKED");
             }
         }
         if (plainSelect.getOptimizeFor() != null) {
