@@ -370,5 +370,4 @@ public final class CCJSqlParserUtil {
       }
       return maxlevel;
     }
-
 }

@@ -5202,9 +5202,6 @@ public class SelectTest {
         isolation = ((PlainSelect) select.getSelectBody()).getWithIsolation().getIsolation();
         assertEquals("Cs", isolation);
         assertSqlCanBeParsedAndDeparsed(statement);
-
-        statement = "SELECT rs.col, * FROM mytable RS WHERE mytable.col = 9";
-        assertSqlCanBeParsedAndDeparsed(statement);
     }
 
     @Test
@@ -5245,7 +5242,6 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT * FROM table WHERE x >= TIMESTAMPTZ '2021-07-05 00:00:00+00'");
     }
 
-
     @Test
     public void testFunctionComplexExpressionParametersIssue1644() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT test(1=1, 'a', 'b')", true);
@@ -5264,5 +5260,38 @@ public class SelectTest {
         assertNotEquals("tablename@dblink", table.getName());
         assertEquals("tablename", table.getName());
         assertEquals("dblink", table.getDBLinkName());
+    }
+
+    @Test
+    public void testSelectStatementWithForUpdateAndSkipLockedTokens() throws JSQLParserException {
+        String sql = "SELECT * FROM test FOR UPDATE SKIP LOCKED";
+        assertSqlCanBeParsedAndDeparsed(sql);
+
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertTrue(plainSelect.isForUpdate());
+        assertTrue(plainSelect.isSkipLocked());
+    }
+
+    @Test
+    public void testSelectStatementWithForUpdateButWithoutSkipLockedTokens() throws JSQLParserException {
+        String sql = "SELECT * FROM test FOR UPDATE";
+        assertSqlCanBeParsedAndDeparsed(sql);
+
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertTrue(plainSelect.isForUpdate());
+        assertFalse(plainSelect.isSkipLocked());
+    }
+
+    @Test
+    public void testSelectStatementWithoutForUpdateAndSkipLockedTokens() throws JSQLParserException {
+        String sql = "SELECT * FROM test";
+        assertSqlCanBeParsedAndDeparsed(sql);
+
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertFalse(plainSelect.isForUpdate());
+        assertFalse(plainSelect.isSkipLocked());
     }
 }

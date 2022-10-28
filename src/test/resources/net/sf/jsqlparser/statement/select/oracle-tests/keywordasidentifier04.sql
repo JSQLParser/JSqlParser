@@ -13,5 +13,4 @@ union all
 (select null keep, null keep_until
 from v$backup_piece bp)
 
-
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on 3 Jun 2022, 18:48:09

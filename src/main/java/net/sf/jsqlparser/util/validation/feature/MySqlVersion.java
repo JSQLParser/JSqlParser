@@ -33,7 +33,10 @@ public enum MySqlVersion implements Version {
                     Feature.select,
                     Feature.selectGroupBy, Feature.selectHaving,
                     Feature.limit, Feature.limitOffset, Feature.offset, Feature.offsetParam, Feature.orderBy,
-                    Feature.selectForUpdate, Feature.selectForUpdateOfTable, Feature.selectForUpdateNoWait,
+                    Feature.selectForUpdate,
+                    Feature.selectForUpdateOfTable,
+                    Feature.selectForUpdateNoWait,
+                    Feature.selectForUpdateSkipLocked,
                     Feature.distinct,
 
                     Feature.setOperation,

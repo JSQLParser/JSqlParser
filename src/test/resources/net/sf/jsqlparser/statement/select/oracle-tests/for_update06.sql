@@ -12,3 +12,4 @@ select employee_id from (select employee_id+1 as employee_id from employees)
 
 
 --@FAILURE: Encountered unexpected token: "skip" "SKIP" recorded first on Aug 3, 2021, 7:20:08 AM
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Oct 19, 2022, 6:34:12 PM

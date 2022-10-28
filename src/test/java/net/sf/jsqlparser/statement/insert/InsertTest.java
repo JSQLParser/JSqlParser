@@ -26,8 +26,6 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
 import java.util.Arrays;
@@ -40,8 +38,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 public class InsertTest {
 
@@ -208,13 +210,12 @@ public class InsertTest {
     //@todo: Clarify, if and why this test is supposed to fail and if it is the Parser's job to decide
     //What if col1 and col2 are Array Columns?
     public void testInsertMultiRowValueDifferent() throws JSQLParserException {
-        try {
-            assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e, c)");
-        } catch (Exception e) {
-            return;
-        }
-
-        fail("should not work");
+        assertThrowsExactly(JSQLParserException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                CCJSqlParserUtil.parse("INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e, c)");
+            }
+        });
     }
 
     @Test

@@ -35,7 +35,10 @@ public enum MariaDbVersion implements Version {
                     Feature.selectHaving,
                     Feature.limit, Feature.limitOffset, Feature.offset, Feature.offsetParam,
                     Feature.orderBy,
-                    Feature.selectForUpdate, Feature.selectForUpdateWait, Feature.selectForUpdateNoWait,
+                    Feature.selectForUpdate,
+                    Feature.selectForUpdateWait,
+                    Feature.selectForUpdateNoWait,
+                    Feature.selectForUpdateSkipLocked,
 
                     // https://mariadb.com/kb/en/join-syntax/
                     Feature.join, Feature.joinSimple, Feature.joinRight, Feature.joinNatural, Feature.joinLeft,
