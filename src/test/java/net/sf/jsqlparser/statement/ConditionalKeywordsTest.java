@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import org.junit.jupiter.api.Disabled;
 
 /**
  *
