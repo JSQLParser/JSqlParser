@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Disabled;
  *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
-@Disabled
 public class KeywordsTest {
     public final static Logger LOGGER = Logger.getLogger(KeywordsTest.class.getName());
 
