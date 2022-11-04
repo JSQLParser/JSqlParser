@@ -219,13 +219,13 @@ task renderRR() {
         //
         // Hosting at manticore-projects.com is temporary until a better solution is found
         // Please do not use these files without Gunther's permission
-        download {
+        download.run {
             src 'http://manticore-projects.com/download/convert.war'
             dest "$buildDir/rr/convert.war"
             overwrite false
         }
         
-        download {
+        download.run {
             src 'http://manticore-projects.com/download/rr.war'
             dest "$buildDir/rr/rr.war"
             overwrite false
