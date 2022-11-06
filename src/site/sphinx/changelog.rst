@@ -8,6 +8,57 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **chore: Merge Main Branch**
+    
+    Andreas Reichel, 2022-11-06
+  * **removed disabled from Keyword tests and imports**
+    
+    Tobias Warneke, 2022-11-02
+  * **removed disabled from Keyword tests**
+    
+    Tobias Warneke, 2022-11-02
+  * **Keywords2: Update whitelisted Keywords (#1653)**
+    
+    manticore-projects, 2022-11-02
+  * **Enhanced Keywords (#1382)**
+    
+    manticore-projects, 2022-10-25
+  * **#1610 Support for SKIP LOCKED tokens on SELECT statements (#1649)**
+    
+    Lucas Dillmann, 2022-10-25
+  * **Assorted fixes (#1646)**
+    
+    manticore-projects, 2022-10-16
+  * **chore: Make Serializable**
+    
+    Andreas Reichel, 2022-10-14
+  * **doc: Add the "How to Use" java code**
+    
+    Andreas Reichel, 2022-10-14
+  * **actualized multiple dependencies**
+    
+    Tobias Warneke, 2022-09-28
+  * **Bump h2 from 1.4.200 to 2.1.210 (#1639)**
+    
+    dependabot[bot], 2022-09-28
+  * **Support BigQuery SAFE_CAST (#1622) (#1634)**
+    
+    dequn, 2022-09-20
+  * **fix: add missing public Getter (#1632)**
+    
+    manticore-projects, 2022-09-20
+  * **feat: make important Classes Serializable**
+    
+    Andreas Reichel, 2022-09-15
+  * **doc: pronounce the OVERLAPS example more**
+    
+    Andreas Reichel, 2022-09-08
+  * **doc: write the correct Git Repository**
+    
+    Andreas Reichel, 2022-09-08
+  * **doc: Add an example on Token White-listing**
+    
+    Andreas Reichel, 2022-09-06
   * **build: upload the built files via Excec/SFTP**
     
     Andreas Reichel, 2022-09-06
