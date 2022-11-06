@@ -261,6 +261,10 @@ public enum Feature {
      * "FOR UPDATE NOWAIT"
      */
     selectForUpdateNoWait,
+    /**
+     * "FOR UPDATE SKIP LOCKED"
+     */
+    selectForUpdateSkipLocked,
 
 
     /**

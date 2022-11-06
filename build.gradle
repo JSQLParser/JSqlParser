@@ -67,19 +67,23 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'commons-io:commons-io:2.11.0'
-    testImplementation 'org.apache.commons:commons-text:1.9'
-    testImplementation 'org.hamcrest:hamcrest-library:2.2'
-    testImplementation 'org.mockito:mockito-core:4.7.0'
-    testImplementation 'org.mockito:mockito-junit-jupiter:4.7.0'
-    testImplementation 'org.assertj:assertj-core:3.23.1'
-    testImplementation 'org.apache.commons:commons-lang3:3.12.0'
-    testImplementation 'com.h2database:h2:2.1.214'
+    testImplementation 'commons-io:commons-io:2.+'
+    testImplementation 'org.apache.commons:commons-text:+'
+    testImplementation 'org.mockito:mockito-core:4.+'
+    testImplementation 'org.assertj:assertj-core:3.+'
+    testImplementation 'org.hamcrest:hamcrest-core:2.+'
+    testImplementation 'org.apache.commons:commons-lang3:3.+'
+    testImplementation 'com.h2database:h2:2.+'
+    
+    // for JaCoCo Reports
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:+'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.0'
+    // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.+'
 
+    // enforce latest version of JavaCC
     implementation 'net.java.dev.javacc:javacc:7.0.12'
     javacc 'net.java.dev.javacc:javacc:7.0.12'
 }
@@ -325,6 +329,7 @@ task updateKeywords(type: JavaExec) {
     ]
     main("net.sf.jsqlparser.parser.ParserKeywordsUtils")
 }
+  
 
 publishing {
     publications {

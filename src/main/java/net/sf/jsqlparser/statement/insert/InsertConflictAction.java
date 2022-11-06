@@ -36,10 +36,14 @@ public class InsertConflictAction implements Serializable {
     ConflictActionType conflictActionType;
 
     private final ArrayList<UpdateSet> updateSets = new ArrayList<>();
-    Expression whereExpression;
 
+    Expression whereExpression;
     public InsertConflictAction(ConflictActionType conflictActionType) {
         this.conflictActionType = Objects.requireNonNull(conflictActionType, "The Conflict Action Type is mandatory and must not be Null.");
+    }
+
+    public ArrayList<UpdateSet> getUpdateSets() {
+        return updateSets;
     }
 
     public ConflictActionType getConflictActionType() {

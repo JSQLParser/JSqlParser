@@ -119,6 +119,8 @@ public interface ExpressionVisitor {
 
     void visit(TryCastExpression cast);
 
+    void visit(SafeCastExpression cast);
+
     void visit(Modulo modulo);
 
     void visit(AnalyticExpression aexpr);

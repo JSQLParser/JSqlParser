@@ -135,6 +135,7 @@ public class SpecialOracleTest {
             "function05.sql",
             "for_update04.sql",
             "for_update05.sql",
+            "for_update06.sql",
             "for_update08.sql",
             "function01.sql",
             "function02.sql",
