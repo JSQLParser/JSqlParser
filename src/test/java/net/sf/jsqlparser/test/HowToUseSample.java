@@ -25,6 +25,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("PMD")
 public class HowToUseSample {
     /*
      SQL Text
