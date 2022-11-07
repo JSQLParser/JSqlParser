@@ -28,7 +28,7 @@ def getVersion = { boolean considerSnapshot ->
     def commit = ""
     def snapshot =""
     new ByteArrayOutputStream().withStream { os ->
-        def result = exec {
+        exec {
             workingDir "$projectDir"
             args = [
                     "--no-pager"
@@ -53,7 +53,7 @@ def getVersion = { boolean considerSnapshot ->
             snapshot =  "-SNAPSHOT"
         }
     }
-    return "${major}.${minor}${snapshot}";
+    return "${major}.${minor}${snapshot}"
 }
 version = getVersion(true)
 
@@ -245,7 +245,7 @@ tasks.withType(Checkstyle) {
 task gitChangelogTask(type: GitChangelogTask) {
     fromRepo = file("$projectDir")
     file = new File("${projectDir}/src/site/sphinx/changelog.rst")
-    fromRef = "4.0";
+    fromRef = "4.0"
     //toRef = "1.1";
     templateContent ="""
 ************************
@@ -280,7 +280,7 @@ Version {{name}}
 task sphinx(type: Exec) {
     dependsOn(gitChangelogTask)
 
-    def String PROLOG = """
+    String PROLOG = """
 .. |_| unicode:: U+00A0 
     :trim: 
 
@@ -324,10 +324,12 @@ task updateKeywords(type: JavaExec) {
     description = "Run the main class with JavaExecTask"
     classpath = sourceSets.main.runtimeClasspath
     args = [
-            //project(':JSQLParser').file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath
             file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath
+            , file('src/site/sphinx/keywords.rst').absolutePath
     ]
     main("net.sf.jsqlparser.parser.ParserKeywordsUtils")
+
+    dependsOn(compileJava)
 }
   
 
@@ -366,21 +368,31 @@ task upload(type: Exec) {
 
     def versionStable = getVersion(false)
 
-    // define the USERNAME and HOST properties in ~/.gradle/gradle.properties
-    args = ["sftp://${findProperty("${project.name}.username")}@${findProperty("${project.name}.host")}/download"]
+    if( findProperty("${project.name}.host")==null ) {
+        throw new InvalidUserDataException(
+"""
+Property \"${project.name}.host\' not found.
+Please define \"${project.name}.host\" in the Gradle configuration (e. g. \$HOME/.gradle/gradle.properties.
+"""
+        )
+    } else {
 
-    executable "sftp"
+        // define the USERNAME and HOST properties in ~/.gradle/gradle.properties
+        args = ["sftp://${findProperty("${project.name}.username")}@${findProperty("${project.name}.host")}/download"]
 
-    standardInput = new ByteArrayInputStream("""<<EOF
+        executable "sftp"
+
+        standardInput = new ByteArrayInputStream("""<<EOF
                                                 mkdir ${project.name}-${versionStable}
                                                 cd ${project.name}-${versionStable}
                                                 put build/libs/*
                                                 quit
                                                 EOF"""
-            .getBytes(Charset.defaultCharset()))
+                .getBytes(Charset.defaultCharset()))
 
-    standardOutput = new ByteArrayOutputStream()
-    ext.output = {
-        return standardOutput.toString()
+        standardOutput = new ByteArrayOutputStream()
+        ext.output = {
+            return standardOutput.toString()
+        }
     }
 }
