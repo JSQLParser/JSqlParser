@@ -83,18 +83,28 @@ Since JSQLParser is built by JavaCC from a Token based Grammar, ``Reserved Keywo
 
 So we will need to define and white-list any Keywords which may be allowed for Object Names (such as `Schema`, `Table`, `Column`, `Function`, `Alias`). This White-List must be updated whenever the Tokens of the Grammar change (e. |_| g. when adding a new Token or Production).
 
-There is a Gradle Task ``updateKeywords`` which will:
+There is a task ``updateKeywords`` for Gradle and Maven, which will:
 
     1) Parse the Grammar in order to find all Token definitions
     2) Read the list of explicitly ``Reserved Keywords`` from ``net/sf/jsqlparser/parser/ParserKeywordsUtils.java``
     3) Derive the list of ``White-Listed Keywords`` as difference between ``All Tokens`` and ``Reserved Keywords``
     4) Modifies the Grammar Productions ``RelObjectNameWithoutValue...`` adding all Tokens according to ``White-Listed Keywords``
     5) Run two special Unit Tests to verify parsing of all ``White-Listed Keywords`` (as `Schema`, `Table`, `Column`, `Function` or `Alias`)
+    5) Update the web page about the Reserved Keywords
 
-.. code-block:: shell
-    :caption: Gradle `updateKeywords` Task
+.. tabs::
 
-        gradle updateKeywords
+  .. tab:: Gradle
+        .. code-block:: shell
+            :caption: Gradle `updateKeywords` Task
+
+                gradle updateKeywords
+
+  .. tab:: Maven
+        .. code-block:: shell
+            :caption: Maven `updateKeywords` Task
+
+                mvn exec:java
 
 Without this Gradle Task, any new Token or Production will become a ``Reserved Keyword`` automatically and can't be used for Object Names without quoting.
 

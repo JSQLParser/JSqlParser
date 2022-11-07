@@ -8,6 +8,9 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **fix: Non-serializable field in serializable class**
+    
+    Andreas Reichel, 2022-11-06
   * **chore: Merge Main Branch**
     
     Andreas Reichel, 2022-11-06

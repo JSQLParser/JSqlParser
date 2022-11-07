@@ -9,6 +9,7 @@ Java SQL Parser Library
    usage
    contribution
    syntax
+   keywords
    changelog
 
 .. image:: https://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser/badge.svg
