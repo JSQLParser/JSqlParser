@@ -1203,7 +1203,7 @@ Update Update( List<WithItem> with ):
    <K_UPDATE> { update.setOracleHint(getOracleHint()); }
     [ LOOKAHEAD(2) <K_LOW_PRIORITY> { modifierPriority = UpdateModifierPriority.LOW_PRIORITY; }]
     [ LOOKAHEAD(2) <K_IGNORE> { modifierIgnore = true; }]
-    table=TableWithAlias() startJoins=JoinsList()
+    table=TableWithAliasAndMysqlIndexHint() startJoins=JoinsList()
     <K_SET>
     (
         LOOKAHEAD(3) tableColumn=Column() "=" valueExpression=SimpleExpression() { update.addUpdateSet(tableColumn, valueExpression); }
@@ -1911,6 +1911,17 @@ Table TableWithAlias():
 }
 {
     table=Table() [ LOOKAHEAD(2) alias=Alias() { table.setAlias(alias); }]
+    { return table; }
+}
+
+Table TableWithAliasAndMysqlIndexHint():
+{
+    Table table = null;
+    Alias alias = null;
+    MySQLIndexHint indexHint = null;
+}
+{
+    table=Table() [alias=Alias() { table.setAlias(alias); }] [indexHint=MySQLIndexHint() {table.setHint(indexHint);}]
     { return table; }
 }
 
