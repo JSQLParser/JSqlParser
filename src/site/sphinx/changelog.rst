@@ -8,6 +8,18 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **build: avoid PMD/Codacy for Sphinx Documentation**
+    
+    Andreas Reichel, 2022-11-07
+  * **doc: add a page about actually Reserved Keywords**
+    
+    Andreas Reichel, 2022-11-07
+  * **build: add the Keywords Documentation file to the task**
+    
+    Andreas Reichel, 2022-11-07
+  * **build: various fixes to the Maven build file**
+    
+    Andreas Reichel, 2022-11-07
   * **fix: Non-serializable field in serializable class**
     
     Andreas Reichel, 2022-11-06
