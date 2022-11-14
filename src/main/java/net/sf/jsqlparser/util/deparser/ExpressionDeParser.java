@@ -709,13 +709,20 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             case WITHIN_GROUP:
                 buffer.append("WITHIN GROUP");
                 break;
+            case WITHIN_GROUP_OVER:
+                buffer.append("WITHIN GROUP (");
+                aexpr.getWindowDefinition().getOrderBy().toStringOrderByElements(buffer);
+                buffer.append(") OVER (");
+                aexpr.getWindowDefinition().getPartitionBy().toStringPartitionBy(buffer);
+                buffer.append(")");
+                break;
             default:
                 buffer.append("OVER");
         }
 
         if (aexpr.getWindowName() != null) {
             buffer.append(" ").append(aexpr.getWindowName());
-        } else {
+        } else if (aexpr.getType()!=AnalyticType.WITHIN_GROUP_OVER)   {
             buffer.append(" (");
 
             if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {

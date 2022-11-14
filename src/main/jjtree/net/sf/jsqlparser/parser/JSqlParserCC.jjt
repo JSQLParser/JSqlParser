@@ -4443,16 +4443,31 @@ KeepExpression KeepExpression() : {
 
 
 void windowFun(AnalyticExpression retval):{
-         String windowName = null;
-         WindowDefinition winDef;
+     ExpressionList expressionList = null;
+     boolean partitionByBrackets = false;
+     String windowName = null;
+     WindowDefinition winDef;
 } {
-    ([<K_IGNORE> <K_NULLS> { retval.setIgnoreNullsOutside(true); } ] <K_OVER> {retval.setType(AnalyticType.OVER);}
-        | <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);} )
+    (
+        [<K_IGNORE> <K_NULLS> { retval.setIgnoreNullsOutside(true); } ]
+        <K_OVER> {retval.setType(AnalyticType.OVER);}
+        |
+        <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);}
+    )
 
     (
         windowName = RelObjectName() { retval.setWindowName(windowName); }
-    |
+        |
         winDef = windowDefinition() { retval.setWindowDefinition(winDef); }
+
+        [
+            LOOKAHEAD(2) <K_OVER> "("
+            [   <K_PARTITION> <K_BY>
+                    (LOOKAHEAD(ComplexExpressionList()) expressionList=ComplexExpressionList()
+                    | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+            ]
+            ")" { winDef.setPartitionExpressionList(expressionList, partitionByBrackets); retval.setType(AnalyticType.WITHIN_GROUP_OVER); }
+        ]
     )
 }
 
