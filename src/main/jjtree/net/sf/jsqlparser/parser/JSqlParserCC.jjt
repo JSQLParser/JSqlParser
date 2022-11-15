@@ -3975,7 +3975,7 @@ Expression PrimaryExpression() #PrimaryExpression:
         //| LOOKAHEAD(2) retval=RowConstructor()
 
         // support timestamp expressions
-        | (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
+        | LOOKAHEAD(2, {!interrupted}) (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
 
         | LOOKAHEAD(2, {!interrupted}) retval=DateTimeLiteralExpression()
 
