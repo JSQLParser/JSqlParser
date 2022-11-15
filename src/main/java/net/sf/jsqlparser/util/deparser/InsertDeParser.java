@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
+import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
@@ -20,6 +21,7 @@ import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
@@ -93,7 +95,8 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
                 }
                 buffer.append(" ");
             }
-            insert.getSelect().getSelectBody().accept(selectVisitor);
+            SelectBody selectBody = insert.getSelect().getSelectBody();
+            selectBody.accept(selectVisitor);
             if (insert.getSelect().isUsingWithBrackets()) {
                 buffer.append(")");
             }
@@ -147,15 +150,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
 
     @Override
     public void visit(ExpressionList expressionList) {
-        buffer.append(" VALUES (");
-        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
-            Expression expression = iter.next();
-            expression.accept(expressionVisitor);
-            if (iter.hasNext()) {
-                buffer.append(", ");
-            }
-        }
-        buffer.append(")");
+        new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(), true).deParse(expressionList.getExpressions());
     }
 
     @Override
@@ -165,20 +160,15 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
 
     @Override
     public void visit(MultiExpressionList multiExprList) {
-        buffer.append(" VALUES ");
-        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
-            buffer.append("(");
-            for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter.hasNext();) {
-                Expression expression = iter.next();
-                expression.accept(expressionVisitor);
-                if (iter.hasNext()) {
-                    buffer.append(", ");
-                }
-            }
-            buffer.append(")");
-            if (it.hasNext()) {
+        List<ExpressionList> expressionLists = multiExprList.getExpressionLists();
+        int n = expressionLists.size() - 1;
+        int i = 0;
+        for (ExpressionList expressionList : expressionLists) {
+            new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(), true).deParse(expressionList.getExpressions());
+            if (i<n) {
                 buffer.append(", ");
             }
+            i++;
         }
     }
 

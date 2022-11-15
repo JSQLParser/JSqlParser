@@ -465,19 +465,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(ExpressionList expressionList) {
-        if (expressionList.isUsingBrackets()) {
-            buffer.append("(");
-        }
-        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
-            Expression expression = iter.next();
-            expression.accept(this);
-            if (iter.hasNext()) {
-                buffer.append(", ");
-            }
-        }
-        if (expressionList.isUsingBrackets()) {
-            buffer.append(")");
-        }
+        new ExpressionListDeParser(this, buffer, expressionList.isUsingBrackets(), true).deParse(expressionList.getExpressions());
     }
 
     @Override
@@ -840,7 +828,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(ValueListExpression valueList) {
-        buffer.append(valueList.toString());
+        ExpressionList expressionList = valueList.getExpressionList();
+        expressionList.accept(this);
     }
 
     @Override
