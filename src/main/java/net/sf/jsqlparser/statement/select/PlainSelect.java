@@ -572,7 +572,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
      */
     public static StringBuilder appendStringListTo(StringBuilder builder, List<?> list, boolean useComma, boolean useBrackets) {
         if (list != null) {
-            String comma = useComma ? "," : "";
+            String comma = useComma ? ", " : " ";
 
             if (useBrackets) {
                 builder.append("(");
@@ -581,7 +581,7 @@ public class PlainSelect extends ASTNodeAccessImpl implements SelectBody {
             int size = list.size();
             for (int i = 0; i < size; i++) {
                 builder.append(list.get(i)).append(i < size - 1
-                        ? comma + " "
+                        ? comma
                         : "");
             }
 
