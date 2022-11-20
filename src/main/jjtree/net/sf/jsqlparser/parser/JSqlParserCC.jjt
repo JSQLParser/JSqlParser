@@ -3895,6 +3895,7 @@ Expression BitwiseXor():
 }
 
 Expression ArrayExpression(Expression obj): {
+    Expression expr;
     Expression idxExpr = null;
     Expression startExpr = null;
     Expression stopExpr = null;
@@ -3906,7 +3907,18 @@ Expression ArrayExpression(Expression obj): {
           [stopExpr = SimpleExpression()]
         ]
     "]"
-    { return new ArrayExpression(obj, idxExpr, startExpr, stopExpr); }
+    { expr =  new ArrayExpression(obj, idxExpr, startExpr, stopExpr); }
+    (
+        "["
+            [LOOKAHEAD(3) idxExpr = SimpleExpression()]
+            [
+              (":" { startExpr=idxExpr; idxExpr=null; })
+              [stopExpr = SimpleExpression()]
+            ]
+        "]"
+        { expr =  new ArrayExpression(expr, idxExpr, startExpr, stopExpr); }
+    )*
+    { return expr; }
 }
 
 Expression PrimaryExpression() #PrimaryExpression:
