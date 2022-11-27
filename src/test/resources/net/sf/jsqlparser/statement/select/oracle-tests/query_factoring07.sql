@@ -87,6 +87,3 @@ select
 )
 
 --@FAILURE: Encountered unexpected token: "by" "BY" recorded first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: Encountered unexpected token: "(" "(" recorded first on 26 Nov 2022, 17:08:09
---@FAILURE: java.lang.Error: Missing return statement in function recorded first on 26 Nov 2022, 17:21:00
---@FAILURE: Encountered unexpected token: "/" "/" recorded first on 27 Nov 2022, 11:47:11

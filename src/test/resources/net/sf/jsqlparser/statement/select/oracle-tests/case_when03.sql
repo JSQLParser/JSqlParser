@@ -18,4 +18,3 @@ where KID=:B2 and RID=:B1
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: java.lang.Error: Missing return statement in function recorded first on 26 Nov 2022, 17:20:59

@@ -17,4 +17,3 @@ inner join (select * from dual) d on(d.dummy=t1.dummy)
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: java.lang.Error: Missing return statement in function recorded first on 26 Nov 2022, 17:20:59
