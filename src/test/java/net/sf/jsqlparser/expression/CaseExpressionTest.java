@@ -97,13 +97,15 @@ public class CaseExpressionTest {
                         + "        END ) + 1 \n"
                         + "FROM test";
 
-        Statement stmt2 = CCJSqlParserUtil.parse(
-                sqlStr
-                , parser -> parser
-                                    .withAllowComplexParsing(true)
-                                    .withTimeOut(6000)
-        );
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        //TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        sqlStr = "SELECT\n"
+                 + "(CASE WHEN FIELD_A=0 THEN FIELD_B\n"
+                 + "WHEN FIELD_C >FIELD_D  THEN (CASE WHEN FIELD_A>0 THEN\n"
+                 + "(FIELD_B)/(FIELD_A/(DATEDIFF(DAY,:started,:end)+1))\n"
+                 + "ELSE 0 END)-FIELD_D ELSE 0 END)*FIELD_A/(DATEDIFF(DAY,:started,:end)+1)  AS UNNECESSARY_COMPLEX_EXPRESSION\n"
+                 + "FROM TEST";
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
