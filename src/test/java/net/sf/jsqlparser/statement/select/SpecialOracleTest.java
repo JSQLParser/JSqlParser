@@ -55,6 +55,8 @@ public class SpecialOracleTest {
 
     private final List<String> EXPECTED_SUCCESSES = Arrays.asList(
             "aggregate01.sql",
+            "analytic_query04.sql",
+            "analytic_query05.sql",
             "analytic_query06.sql",
             "analytic_query08.sql",
             "analytic_query09.sql",
@@ -218,6 +220,7 @@ public class SpecialOracleTest {
             "query_factoring02.sql",
             "query_factoring03.sql",
             "query_factoring06.sql",
+            "query_factoring07.sql",
             "query_factoring08.sql",
             "query_factoring09.sql",
             "query_factoring11.sql",

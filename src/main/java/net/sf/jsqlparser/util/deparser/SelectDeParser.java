@@ -535,7 +535,32 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public void visit(ValuesList valuesList) {
-        buffer.append(valuesList.toString());
+        buffer.append("(VALUES ");
+        List<ExpressionList> expressionLists = valuesList.getMultiExpressionList().getExpressionLists();
+        int n = expressionLists.size() - 1;
+        int i = 0;
+        for (ExpressionList expressionList : expressionLists) {
+            new ExpressionListDeParser(expressionVisitor, buffer, !valuesList.isNoBrackets(), true).deParse(expressionList.getExpressions());
+            if (i<n) {
+                buffer.append(", ");
+            }
+            i++;
+        }
+        buffer.append(")");
+        if (valuesList.getAlias() != null) {
+            buffer.append(valuesList.getAlias());
+
+            if (valuesList.getColumnNames() != null) {
+                buffer.append("(");
+                for (Iterator<String> it = valuesList.getColumnNames().iterator(); it.hasNext();) {
+                    buffer.append(it.next());
+                    if (it.hasNext()) {
+                        buffer.append(", ");
+                    }
+                }
+                buffer.append(")");
+            }
+        }
     }
 
     @Override
@@ -577,16 +602,41 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public void visit(ExpressionList expressionList) {
-        buffer.append(expressionList.toString());
+        new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(), true).deParse(expressionList.getExpressions());
     }
 
     @Override
     public void visit(NamedExpressionList namedExpressionList) {
         buffer.append(namedExpressionList.toString());
+
+        buffer.append("(");
+        List<Expression> expressions = namedExpressionList.getExpressions();
+        List<String> names = namedExpressionList.getNames();
+        for (int i = 0; i < expressions.size(); i++) {
+            Expression expression = expressions.get(i);
+            String name = names.get(i);
+            if (i > 0) {
+                buffer.append(" ");
+            }
+            if (!name.equals("")) {
+                buffer.append(name).append(" ");
+            }
+            expression.accept(expressionVisitor);
+        }
+        buffer.append(")");
     }
 
     @Override
     public void visit(MultiExpressionList multiExprList) {
-        buffer.append(multiExprList.toString());
+        List<ExpressionList> expressionLists = multiExprList.getExpressionLists();
+        int n = expressionLists.size() - 1;
+        int i = 0;
+        for (ExpressionList expressionList : expressionLists) {
+            new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(), true).deParse(expressionList.getExpressions());
+            if (i<n) {
+                buffer.append(", ");
+            }
+            i++;
+        }
     }
 }

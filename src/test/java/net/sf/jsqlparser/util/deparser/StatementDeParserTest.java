@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -27,6 +29,7 @@ import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -380,5 +383,34 @@ public class StatementDeParserTest {
         Select select = (Select) CCJSqlParserUtil.parse(sqlStr);
         PlainSelect selectBody = (PlainSelect) select.getSelectBody();
         selectBody.accept(new SelectDeParser());
+    }
+
+    @Test
+    public void testIssue1608DeparseValueList() throws JSQLParserException {
+        String providedSql ="INSERT INTO example (num, name, address, tel) VALUES (1, 'name', 'test ', '1234-1234')";
+        String expectedSql ="INSERT INTO example (num, name, address, tel) VALUES (?, ?, ?, ?)";
+
+        net.sf.jsqlparser.statement.Statement statement = CCJSqlParserUtil.parse(providedSql);
+        StringBuilder builder = new StringBuilder();
+        ExpressionDeParser expressionDeParser = new ExpressionDeParser() {
+            @Override
+            public void visit(StringValue stringValue) {
+                buffer.append("?");
+            }
+
+            @Override
+            public void visit(LongValue longValue) {
+                buffer.append("?");
+            }
+        };
+
+        SelectDeParser selectDeParser = new SelectDeParser(expressionDeParser, builder);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(builder);
+
+        StatementDeParser statementDeParser = new StatementDeParser(expressionDeParser, selectDeParser, builder);
+        statement.accept(statementDeParser);
+
+        Assertions.assertEquals(expectedSql, builder.toString());
     }
 }
