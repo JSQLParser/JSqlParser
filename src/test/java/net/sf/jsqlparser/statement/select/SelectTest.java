@@ -5294,4 +5294,9 @@ public class SelectTest {
         assertFalse(plainSelect.isForUpdate());
         assertFalse(plainSelect.isSkipLocked());
     }
+
+    @Test
+    public void testSelectMultidimensionalArrayStatement() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT f1, f2[1][1], f3[1][2][3] FROM test");
+    }
 }

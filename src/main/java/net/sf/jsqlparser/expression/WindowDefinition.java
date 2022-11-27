@@ -15,10 +15,19 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 
 public class WindowDefinition {
 
+
     final OrderByClause orderBy = new OrderByClause();
     final PartitionByClause partitionBy = new PartitionByClause();
     WindowElement windowElement = null;
     private String windowName;
+
+    public OrderByClause getOrderBy() {
+        return orderBy;
+    }
+
+    public PartitionByClause getPartitionBy() {
+        return partitionBy;
+    }
 
     public WindowElement getWindowElement() {
         return windowElement;
