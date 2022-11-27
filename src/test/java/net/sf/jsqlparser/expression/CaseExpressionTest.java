@@ -10,6 +10,8 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -80,5 +82,28 @@ public class CaseExpressionTest {
     @Test
     public void testCaseOrSwitch() throws JSQLParserException {
         TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true OR false WHEN true THEN 1 ELSE 2 END", true);
+    }
+
+    @Test
+    public void testCaseInsideBrackets() throws JSQLParserException {
+        String sqlStr = "SELECT ( CASE\n"
+                        + "            WHEN something\n"
+                        + "                THEN CASE\n"
+                        + "                     WHEN something2\n"
+                        + "                         THEN 1\n"
+                        + "                     ELSE 0\n"
+                        + "                     END + 1\n"
+                        + "            ELSE 0\n"
+                        + "        END ) + 1 \n"
+                        + "FROM test";
+
+        Statement stmt2 = CCJSqlParserUtil.parse(
+                sqlStr
+                , parser -> parser
+                                    .withAllowComplexParsing(true)
+                                    .withTimeOut(6000)
+        );
+
+        //TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

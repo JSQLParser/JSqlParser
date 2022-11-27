@@ -2881,8 +2881,17 @@ GroupByElement GroupByColumnReferences():
             ")"
           )
           |
-          LOOKAHEAD(2) (  
-            list = ComplexExpressionList() { groupBy.setGroupByExpressionList(list.withUsingBrackets(false)); }
+          LOOKAHEAD(2) (
+            LOOKAHEAD(3) (
+                "("
+                list = ComplexExpressionList() { groupBy.setGroupByExpressionList(list.withUsingBrackets(true)); }
+                ")"
+            )
+            |
+            (
+                list = ComplexExpressionList() { groupBy.setGroupByExpressionList(list.withUsingBrackets(false)); }
+            )
+
             (
               LOOKAHEAD(2) (
                 <K_GROUPING> <K_SETS> "("
@@ -3584,6 +3593,7 @@ ExpressionList ComplexExpressionList() #ExpressionList:
 {
     (   
         LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
+        |  LOOKAHEAD(3) expr=CaseWhenExpression()
         | expr=Expression() 
     ) { expressions.add(expr); }
 
@@ -3591,6 +3601,7 @@ ExpressionList ComplexExpressionList() #ExpressionList:
         LOOKAHEAD(2, {!interrupted}) ","
         (
             LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
+            |  LOOKAHEAD(3) expr=CaseWhenExpression()
             | expr=Expression() 
         ) { expressions.add(expr); }
     )*
@@ -3929,6 +3940,8 @@ Expression PrimaryExpression() #PrimaryExpression:
     [sign="+" | sign="-" | sign="~"]
     (
         <K_NULL> { retval = new NullValue(); }
+
+        | LOOKAHEAD("(" retval=CaseWhenExpression() ")", {!interrupted} ) "(" retval=CaseWhenExpression()  ")" { ((CaseExpression) retval).setUsingBrackets(true);}
 
         | LOOKAHEAD(3, {!interrupted}) retval=CaseWhenExpression()
 
@@ -4642,20 +4655,38 @@ Expression CaseWhenExpression() #CaseWhenExpression:
     WhenClause clause;
     List<WhenClause> whenClauses = new ArrayList<WhenClause>();
     Expression elseExp = null;
+    boolean useBrackets = false;
 }
 {
-    <K_CASE> { caseCounter++; }
-    [ switchExp=Expression() ]
-    ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
-    [<K_ELSE> (LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] elseExp=CaseWhenExpression() [")" { ((CaseExpression) elseExp).setUsingBrackets(true); } ] 
-              | elseExp=Expression()
-              )
-    ]
-    <K_END>  { caseCounter--; }
+    (
+        (
+            <K_CASE> { caseCounter++; }
+            [ switchExp=Expression() ]
+            ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
+            [<K_ELSE> (LOOKAHEAD( CaseWhenExpression()  ( <K_WHEN> | <K_ELSE> | <K_END> ) ) elseExp=CaseWhenExpression()
+                      | elseExp=Expression()
+                      )
+            ]
+            <K_END>  { caseCounter--; }
+        )
+        |
+        (
+            "("  <K_CASE> { caseCounter++; }
+            [ switchExp=Expression() ]
+            ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
+            [<K_ELSE> (LOOKAHEAD( CaseWhenExpression() ( <K_WHEN> | <K_ELSE> | <K_END> ) ) elseExp=CaseWhenExpression()
+                      | elseExp=Expression()
+                      )
+            ]
+            <K_END> ")" { useBrackets=true; caseCounter--;}
+        )
+    )
+
     {
         caseExp.setSwitchExpression(switchExp);
         caseExp.setWhenClauses(whenClauses);
         caseExp.setElseExpression(elseExp);
+        caseExp.setUsingBrackets(useBrackets);
         return caseExp;
     }
 }
@@ -4669,7 +4700,7 @@ WhenClause WhenThenSearchCondition():
 {
     <K_WHEN> whenExp=Expression()
     <K_THEN> (
-                LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] thenExp=CaseWhenExpression() [")" { ((CaseExpression) thenExp).setUsingBrackets(true); }]
+                LOOKAHEAD( CaseWhenExpression() ( <K_WHEN> | <K_ELSE> | <K_END> ) ) thenExp=CaseWhenExpression()
                 | 
                 thenExp=Expression()
               )

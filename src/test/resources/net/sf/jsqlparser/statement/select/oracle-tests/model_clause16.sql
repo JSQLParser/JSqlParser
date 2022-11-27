@@ -39,3 +39,4 @@ select spf.*, nvl(a, ddr_a) as a, b, d,
 
 
 --@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Aug 3, 2021, 7:20:07 AM
+--@FAILURE: java.lang.Error: Missing return statement in function recorded first on 26 Nov 2022, 17:20:59

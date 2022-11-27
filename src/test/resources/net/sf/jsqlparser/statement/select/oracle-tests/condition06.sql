@@ -23,3 +23,5 @@ and ( ( t1.scode like 'mmm'  and t2.scode like 'xax' ) )
 
 
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: java.lang.Error: Missing return statement in function recorded first on 26 Nov 2022, 17:20:59
+--@FAILURE: Encountered unexpected token: "and" "AND" recorded first on 27 Nov 2022, 11:47:11
