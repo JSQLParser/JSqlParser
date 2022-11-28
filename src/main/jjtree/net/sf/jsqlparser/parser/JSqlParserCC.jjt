@@ -2686,6 +2686,7 @@ Join JoinerExpression() #JoinerExpression:
 
 }
 {
+    [ <K_GLOBAL> { join.setGlobal(true); } ]
     [ <K_NATURAL> { join.setNatural(true); } ]
 
     [
