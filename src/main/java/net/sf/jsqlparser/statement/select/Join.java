@@ -308,7 +308,7 @@ public class Join extends ASTNodeAccessImpl {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        if(isGlobal()){
+        if ( isGlobal() ) {
             builder.append("GLOBAL ");
         }
 
