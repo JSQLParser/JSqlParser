@@ -513,17 +513,17 @@ Statement Statement() #Statement:
     try {
         (
             <K_IF> condition=Condition() 
-            stm = SingleStatement() {  ifElseStatement = new IfElseStatement(condition, stm); }
+            ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
             [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
             [ LOOKAHEAD(2) 
-                <K_ELSE> stm2 = SingleStatement() {  ifElseStatement.setElseStatement(stm2);  }
+                <K_ELSE> ( stm2 = SingleStatement() | stm2 = Block() ) {  ifElseStatement.setElseStatement(stm2);  }
                 [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForElseStatement(true); }]
             ]
             <EOF>
         )
         |
         (
-            stm = SingleStatement()
+            ( stm = SingleStatement() | stm = Block() )
             [ <ST_SEMICOLON> ]
             <EOF>
         )
@@ -723,7 +723,7 @@ Block Block() #Block : {
         block.setStatements(stmts);
     }
 
-    <K_END> [LOOKAHEAD(2) <ST_SEMICOLON>]
+    <K_END> [LOOKAHEAD(2) <ST_SEMICOLON> { block.setSemicolonAfterEnd(true); } ]
     {
         return block;
     }
@@ -744,10 +744,10 @@ Statements Statements() #Statements : {
         (
             (
                  <K_IF> condition=Condition() 
-                 stm = SingleStatement() {  ifElseStatement = new IfElseStatement(condition, stm); }
+                 ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
                  [ LOOKAHEAD(2) 
                      [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
-                     <K_ELSE> stm2 = SingleStatement() {  ifElseStatement.setElseStatement(stm2);  } 
+                     <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
                  ]
 
                  { list.add( ifElseStatement ); }
@@ -772,10 +772,10 @@ Statements Statements() #Statements : {
             [
                 (
                     <K_IF> condition=Condition()
-                    stm = SingleStatement() {  ifElseStatement = new IfElseStatement(condition, stm); }
+                    ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
                     [ LOOKAHEAD(2)
                         [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
-                        <K_ELSE> stm2 = SingleStatement() {  ifElseStatement.setElseStatement(stm2);  }
+                        <K_ELSE> ( stm2 = SingleStatement() | stm2 = Block() ) {  ifElseStatement.setElseStatement(stm2);  }
                     ]
 
                     { list.add( ifElseStatement ); }

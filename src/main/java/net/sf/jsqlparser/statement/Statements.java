@@ -35,8 +35,8 @@ public class Statements {
     public String toString() {
         StringBuilder b = new StringBuilder();
         for (Statement stmt : statements) {
-            if (stmt instanceof IfElseStatement) {
-                // IfElseStatements print the Semicolons by themselves
+            // IfElseStatements and Blocks control the Semicolons by themselves
+            if (stmt instanceof IfElseStatement || stmt instanceof Block) {
                 b.append(stmt).append("\n");
             } else {
                 b.append(stmt).append(";\n");
