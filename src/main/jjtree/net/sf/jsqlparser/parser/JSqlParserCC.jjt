@@ -861,7 +861,7 @@ DeclareStatement Declare(): {
 
 
 SetStatement Set(): {
-    String name;
+    Object name;
     ArrayList<Expression> expList;
     boolean useEqual = false;
     SetStatement set;
@@ -876,10 +876,11 @@ SetStatement Set(): {
         [LOOKAHEAD(3) (tk = <K_LOCAL> | tk = <K_SESSION>) {effectParameter = tk.image; } ]
         ( LOOKAHEAD(2)
           <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
+        | (name = UserVariable() ["=" { useEqual=true; } ])
         | (name = RelObjectNameExt() ["=" { useEqual=true; } ])
         )
     )
-    exp=SimpleExpression()
+    exp=Expression()
     {expList = new ArrayList<Expression>(); expList.add(exp); }
 
     { set = new SetStatement(name,expList).withUseEqual(useEqual).withEffectParameter(effectParameter); }
@@ -892,12 +893,12 @@ SetStatement Set(): {
                   <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
                 | (name = RelObjectNameExt() ["=" { useEqual=true; } ])
               )
-              exp=SimpleExpression()
+              exp=Expression()
               {expList = new ArrayList<Expression>();
                 expList.add(exp);
                 set.add(name, expList, useEqual);}
             )
-            | exp=SimpleExpression() { expList.add(exp); }
+            | exp=Expression() { expList.add(exp); }
          ))*
     { return set; }
 }

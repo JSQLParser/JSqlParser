@@ -70,4 +70,10 @@ public class SetStatementTest {
 
         assertEquals(0, setStatement.getCount());
     }
+
+    @Test
+    public void testSettingUserVariable() throws JSQLParserException {
+        String sqlStr="set @Flag = 1";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
