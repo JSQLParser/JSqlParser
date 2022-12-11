@@ -149,6 +149,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_AT: "AT">
 |   <K_ASC:"ASC">
 |   <K_AUTHORIZATION:"AUTHORIZATION">
+|   <K_AUTO:"AUTO">
 |   <K_BEGIN:"BEGIN">
 |   <K_BETWEEN:"BETWEEN">
 |   <K_BINARY: "BINARY">
@@ -345,6 +346,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_RECYCLEBIN: "RECYCLEBIN">
 |   <K_RECURSIVE:"RECURSIVE">
 |   <K_REFERENCES:"REFERENCES">
+|   <K_REFRESH:"REFRESH">
 |   <K_REGEXP: "REGEXP">
 |   <K_RLIKE: "RLIKE">
 |   <K_REGISTER: "REGISTER">
@@ -439,6 +441,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_XMLAGG:"XMLAGG">
 |   <K_XMLTEXT:"XMLTEXT">
 |   <K_YAML:"YAML">
+|   <K_YES:"YES">
 |   <K_ZONE:"ZONE">
 }
 
@@ -5406,6 +5409,7 @@ CreateView CreateView():
     Table view = null;
     Select select = null;
     List<String> columnNames = null;
+    Token tk = null;
 }
 {
     <K_CREATE>
@@ -5420,6 +5424,7 @@ CreateView CreateView():
     ]
     [ <K_MATERIALIZED> { createView.setMaterialized(true);} ]
     <K_VIEW> view=Table() { createView.setView(view); }
+    [LOOKAHEAD(3) <K_AUTO> <K_REFRESH> (tk=<K_YES> | tk=<K_NO>) { createView.setAutoRefresh(AutoRefreshOption.valueOf(tk.image)); } ]
     [ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
     <K_AS>
     select=SelectWithWithItems( ) { createView.setSelect(select); }

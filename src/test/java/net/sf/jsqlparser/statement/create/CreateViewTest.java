@@ -10,14 +10,21 @@
 package net.sf.jsqlparser.statement.create;
 
 import java.io.StringReader;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.create.view.AutoRefreshOption;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 
 public class CreateViewTest {
@@ -121,4 +128,59 @@ public class CreateViewTest {
     public void testCreateWithReadOnlyViewIssue838() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE VIEW v14(c1, c2) AS SELECT c1, C2 FROM t1 WITH READ ONLY");
     }
+
+    @Test
+    public void testCreateViewAutoRefreshNone() throws JSQLParserException {
+        String stmt = "CREATE VIEW myview AS SELECT * FROM mytab";
+        CreateView createView = (CreateView) assertSqlCanBeParsedAndDeparsed(stmt);
+        assertEquals(createView.getAutoRefresh(), AutoRefreshOption.NONE);
+    }
+    
+    @Test
+    public void testCreateViewAutoRefreshYes() throws JSQLParserException {
+        String stmt = "CREATE VIEW myview AUTO REFRESH YES AS SELECT * FROM mytab";
+        CreateView createView = (CreateView) assertSqlCanBeParsedAndDeparsed(stmt);
+        assertEquals(createView.getAutoRefresh(), AutoRefreshOption.YES);
+    }
+
+    @Test
+    public void testCreateViewAutoRefreshNo() throws JSQLParserException {
+        String stmt = "CREATE VIEW myview AUTO REFRESH NO AS SELECT * FROM mytab";
+        CreateView createView = (CreateView) assertSqlCanBeParsedAndDeparsed(stmt);
+        assertEquals(createView.getAutoRefresh(), AutoRefreshOption.NO);
+    }
+
+    @Test
+    public void testCreateViewAutoFails() throws JSQLParserException {
+        String stmt = "CREATE VIEW myview AUTO AS SELECT * FROM mytab";
+
+        ThrowingCallable throwingCallable = () -> CCJSqlParserUtil.parse(stmt);
+
+        assertThatThrownBy(throwingCallable).isInstanceOf(JSQLParserException.class)
+        .hasRootCauseInstanceOf(ParseException.class).rootCause()
+        .hasMessageStartingWith("Encountered unexpected token");
+    }
+
+    @Test
+    public void testCreateViewRefreshFails() throws JSQLParserException {
+        String stmt = "CREATE VIEW myview REFRESH AS SELECT * FROM mytab";
+
+        ThrowingCallable throwingCallable = () -> CCJSqlParserUtil.parse(stmt);
+
+        assertThatThrownBy(throwingCallable).isInstanceOf(JSQLParserException.class)
+        .hasRootCauseInstanceOf(ParseException.class).rootCause()
+        .hasMessageStartingWith("Encountered unexpected token");
+    }
+
+    @Test
+    public void testCreateViewAutoRefreshFails() throws JSQLParserException {
+        String stmt = "CREATE VIEW myview AUTO REFRESH AS SELECT * FROM mytab";
+
+        ThrowingCallable throwingCallable = () -> CCJSqlParserUtil.parse(stmt);
+
+        assertThatThrownBy(throwingCallable).isInstanceOf(JSQLParserException.class)
+        .hasRootCauseInstanceOf(ParseException.class).rootCause()
+        .hasMessageStartingWith("Encountered unexpected token");
+    }
+
 }

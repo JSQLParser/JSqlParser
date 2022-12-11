@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.create.view.TemporaryOption;
+import net.sf.jsqlparser.statement.create.view.AutoRefreshOption;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -60,6 +61,10 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
             buffer.append("MATERIALIZED ");
         }
         buffer.append("VIEW ").append(createView.getView().getFullyQualifiedName());
+
+        if (createView.getAutoRefresh() != AutoRefreshOption.NONE) {
+            buffer.append(" AUTO REFRESH ").append(createView.getAutoRefresh().name());
+        }
         if (createView.getColumnNames() != null) {
             buffer.append(PlainSelect.getStringList(createView.getColumnNames(), true, true));
         }

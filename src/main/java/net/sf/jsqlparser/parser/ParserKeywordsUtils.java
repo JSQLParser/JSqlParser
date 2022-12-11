@@ -182,6 +182,11 @@ public class ParserKeywordsUtils {
 
                 , { "NEXTVAL", RESTRICTED_JSQLPARSER }
 
+                , { "AUTO", RESTRICTED_JSQLPARSER }
+                , { "REFRESH", RESTRICTED_JSQLPARSER }
+                , { "YES", RESTRICTED_JSQLPARSER }
+                , { "NO", RESTRICTED_JSQLPARSER }
+
                 //@todo: Object Names should not start with Hex-Prefix, we shall not find that Token
                 , { "0x", RESTRICTED_JSQLPARSER }
         };

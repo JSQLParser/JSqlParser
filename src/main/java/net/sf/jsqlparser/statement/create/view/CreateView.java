@@ -29,6 +29,7 @@ public class CreateView implements Statement {
     private boolean materialized = false;
     private ForceOption force = ForceOption.NONE;
     private TemporaryOption temp = TemporaryOption.NONE;
+    private AutoRefreshOption autoRefresh = AutoRefreshOption.NONE;
     private boolean withReadOnly = false;
 
     @Override
@@ -95,6 +96,14 @@ public class CreateView implements Statement {
         this.temp = temp;
     }
 
+    public AutoRefreshOption getAutoRefresh() {
+        return autoRefresh;
+    }
+
+    public void setAutoRefresh(AutoRefreshOption autoRefresh) {
+        this.autoRefresh = autoRefresh;
+    }
+
     public boolean isWithReadOnly() {
         return withReadOnly;
     }
@@ -129,6 +138,9 @@ public class CreateView implements Statement {
         }
         sql.append("VIEW ");
         sql.append(view);
+        if (autoRefresh != AutoRefreshOption.NONE) {
+            sql.append(" AUTO REFRESH ").append(autoRefresh.name());
+        }
         if (columnNames != null) {
             sql.append(PlainSelect.getStringList(columnNames, true, true));
         }
