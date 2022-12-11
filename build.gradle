@@ -369,7 +369,7 @@ task upload(type: Exec) {
     def versionStable = getVersion(false)
 
     if( findProperty("${project.name}.host")==null ) {
-        throw new InvalidUserDataException(
+        println(
 """
 Property \"${project.name}.host\' not found.
 Please define \"${project.name}.host\" in the Gradle configuration (e. g. \$HOME/.gradle/gradle.properties.
