@@ -18,6 +18,8 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 
 public class CreateViewTest {
@@ -120,5 +122,20 @@ public class CreateViewTest {
     @Test
     public void testCreateWithReadOnlyViewIssue838() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE VIEW v14(c1, c2) AS SELECT c1, C2 FROM t1 WITH READ ONLY");
+    }
+
+    @Test
+    public void testCreateViewIfNotExists() throws JSQLParserException {
+        String stmt = "CREATE VIEW myview IF NOT EXISTS AS SELECT * FROM mytab";
+        CreateView createView = (CreateView) assertSqlCanBeParsedAndDeparsed(stmt);
+        assertTrue(createView.isIfNotExists());
+    }
+    
+    @Test
+    public void testCreateMaterializedViewIfNotExists() throws JSQLParserException {
+        String stmt = "CREATE MATERIALIZED VIEW myview IF NOT EXISTS AS SELECT * FROM mytab";
+        CreateView createView = (CreateView) assertSqlCanBeParsedAndDeparsed(stmt);
+        assertTrue(createView.isMaterialized());
+        assertTrue(createView.isIfNotExists());
     }
 }
