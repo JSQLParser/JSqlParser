@@ -379,7 +379,7 @@ public class ParserKeywordsUtils {
                        + "{    Token tk = null; }\n"
                        + "{\n"
                        //@todo: find a way to avoid those hardcoded compound tokens
-                       + "    ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> \n"
+                       + "    ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> \n"
                        + "      ");
 
         for (String keyword: allKeywords) {

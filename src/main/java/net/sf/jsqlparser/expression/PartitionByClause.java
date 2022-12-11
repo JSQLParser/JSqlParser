@@ -31,7 +31,7 @@ public class PartitionByClause implements Serializable {
         this.brackets = brackets;
     }
 
-    void toStringPartitionBy(StringBuilder b) {
+    public void toStringPartitionBy(StringBuilder b) {
         if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
             b.append("PARTITION BY ");
             b.append(PlainSelect.
