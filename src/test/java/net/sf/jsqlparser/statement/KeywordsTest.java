@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.ParserKeywordsUtils;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -48,6 +49,12 @@ public class KeywordsTest {
     @MethodSource("keyWords")
     public void testRelObjectNameWithoutValue(String keyword) throws JSQLParserException {
         String sqlStr = String.format("SELECT %1$s.%1$s AS %1$s from %1$s.%1$s AS %1$s",  keyword);
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    public void testCombinedTokenKeywords() throws JSQLParserException {
+        String sqlStr = "SELECT current_date(3)";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 

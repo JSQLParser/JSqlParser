@@ -28,7 +28,7 @@ public class OrderByClause implements Serializable {
         this.orderByElements = orderByElements;
     }
 
-    void toStringOrderByElements(StringBuilder b) {
+    public void toStringOrderByElements(StringBuilder b) {
         if (orderByElements != null && !orderByElements.isEmpty()) {
             b.append("ORDER BY ");
             for (int i = 0; i < orderByElements.size(); i++) {

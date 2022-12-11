@@ -253,13 +253,20 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             case WITHIN_GROUP:
                 b.append("WITHIN GROUP");
                 break;
+            case WITHIN_GROUP_OVER:
+                b.append("WITHIN GROUP (");
+                windowDef.orderBy.toStringOrderByElements(b);
+                b.append(") OVER (");
+                windowDef.partitionBy.toStringPartitionBy(b);
+                b.append(")");
+                break;
             default:
                 b.append("OVER");
         }
 
         if (windowName != null) {
             b.append(" ").append(windowName);
-        } else {
+        } else if (type!=AnalyticType.WITHIN_GROUP_OVER)  {
             b.append(" ");
             b.append(windowDef.toString());
         }

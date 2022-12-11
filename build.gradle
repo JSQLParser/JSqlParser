@@ -74,7 +74,7 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest-core:2.+'
     testImplementation 'org.apache.commons:commons-lang3:3.+'
     testImplementation 'com.h2database:h2:2.+'
-    
+
     // for JaCoCo Reports
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.+'
@@ -241,6 +241,49 @@ tasks.withType(Checkstyle) {
     }
 }
 
+task renderRR() {
+    doLast {
+        // these WAR files have been provided as a courtesy by Gunther Rademacher 
+        // and belong to the RR - Railroad Diagram Generator Project
+        // https://github.com/GuntherRademacher/rr
+        //
+        // Hosting at manticore-projects.com is temporary until a better solution is found
+        // Please do not use these files without Gunther's permission
+        download.run {
+            src 'http://manticore-projects.com/download/convert.war'
+            dest "$buildDir/rr/convert.war"
+            overwrite false
+        }
+
+        download.run {
+            src 'http://manticore-projects.com/download/rr.war'
+            dest "$buildDir/rr/rr.war"
+            overwrite false
+        }
+        
+        javaexec { 
+          standardOutput = new FileOutputStream("${buildDir}/rr/JSqlParserCC.ebnf")
+          main="-jar"
+          args = [
+              "$buildDir/rr/convert.war",
+              "$buildDir/generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj"
+            ]
+        }
+        
+        javaexec {
+          main="-jar"
+          args = [
+              "$buildDir/rr/rr.war",
+              "-noepsilon",
+              "-color:#4D88FF",
+              "-offset:0",
+              "-width:800",
+              //"-png",
+              //"-out:${buildDir}/rr/JSqlParserCC.zip",
+              "-out:${buildDir}/rr/JSqlParserCC.xhtml",
+              "${buildDir}/rr/JSqlParserCC.ebnf"
+            ]
+        } 
 
 task gitChangelogTask(type: GitChangelogTask) {
     fromRepo = file("$projectDir")
@@ -331,7 +374,7 @@ task updateKeywords(type: JavaExec) {
 
     dependsOn(compileJava)
 }
-  
+
 
 publishing {
     publications {
