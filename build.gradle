@@ -260,30 +260,32 @@ task renderRR() {
             dest "$buildDir/rr/rr.war"
             overwrite false
         }
-        
-        javaexec { 
-          standardOutput = new FileOutputStream("${buildDir}/rr/JSqlParserCC.ebnf")
-          main="-jar"
-          args = [
-              "$buildDir/rr/convert.war",
-              "$buildDir/generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj"
+
+        javaexec {
+            standardOutput = new FileOutputStream("${buildDir}/rr/JSqlParserCC.ebnf")
+            main = "-jar"
+            args = [
+                    "$buildDir/rr/convert.war",
+                    "$buildDir/generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj"
             ]
         }
-        
+
         javaexec {
-          main="-jar"
-          args = [
-              "$buildDir/rr/rr.war",
-              "-noepsilon",
-              "-color:#4D88FF",
-              "-offset:0",
-              "-width:800",
-              //"-png",
-              //"-out:${buildDir}/rr/JSqlParserCC.zip",
-              "-out:${buildDir}/rr/JSqlParserCC.xhtml",
-              "${buildDir}/rr/JSqlParserCC.ebnf"
+            main = "-jar"
+            args = [
+                    "$buildDir/rr/rr.war",
+                    "-noepsilon",
+                    "-color:#4D88FF",
+                    "-offset:0",
+                    "-width:800",
+                    //"-png",
+                    //"-out:${buildDir}/rr/JSqlParserCC.zip",
+                    "-out:${buildDir}/rr/JSqlParserCC.xhtml",
+                    "${buildDir}/rr/JSqlParserCC.ebnf"
             ]
-        } 
+        }
+    }
+}
 
 task gitChangelogTask(type: GitChangelogTask) {
     fromRepo = file("$projectDir")
