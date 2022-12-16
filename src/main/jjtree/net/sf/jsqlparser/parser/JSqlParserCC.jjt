@@ -3951,11 +3951,11 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(3, {!interrupted}) retval=CaseWhenExpression()
 
-        | retval = SimpleJdbcParameter()
+        | LOOKAHEAD(3) retval = SimpleJdbcParameter()
 
-        | LOOKAHEAD(2, {!interrupted}) retval=JdbcNamedParameter()
+        | LOOKAHEAD(2) retval=JdbcNamedParameter()
 
-        | retval=UserVariable()
+        | LOOKAHEAD(3) retval=UserVariable()
 
         | LOOKAHEAD(2, {!interrupted}) retval=NumericBind()
 
@@ -4178,7 +4178,33 @@ JsonExpression JsonExpression() : {
   CastExpression castExpr = null;
 }
 {
-    expr=Column()
+    (
+        LOOKAHEAD(3, {!interrupted}) expr=CaseWhenExpression()
+        |
+        expr = SimpleJdbcParameter()
+        |
+        LOOKAHEAD(2, {!interrupted}) expr=JdbcNamedParameter()
+        |
+        expr=UserVariable()
+        |
+        LOOKAHEAD(JsonFunction(), {!interrupted}) expr = JsonFunction()
+        |
+        LOOKAHEAD(JsonAggregateFunction(), {!interrupted}) expr = JsonAggregateFunction()
+        |
+        LOOKAHEAD(FullTextSearch(), {!interrupted}) expr = FullTextSearch()
+        /* Do not parse Functions as this will result in a major performance loss
+           The Performance related tests will fail.
+        |
+        LOOKAHEAD(Function(), {!interrupted}) expr=Function()
+        */
+        |
+        LOOKAHEAD(2, {!interrupted}) expr=Column()
+        |
+        token=<S_CHAR_LITERAL> { expr = new StringValue(token.image); }
+        |
+        LOOKAHEAD("(" expr=SubSelect() ")", {!interrupted} ) "(" expr=SubSelect() ")"
+    )
+
     ( "::" type=ColDataType() {
             castExpr = new CastExpression();
             castExpr.setUseCastKeyword(false);

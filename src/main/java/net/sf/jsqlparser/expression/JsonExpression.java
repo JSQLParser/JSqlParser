@@ -15,7 +15,6 @@ import java.util.List;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class JsonExpression extends ASTNodeAccessImpl implements Expression {
-
     private Expression expr;
 
     private List<String> idents = new ArrayList<String>();
@@ -34,24 +33,17 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
         this.expr = expr;
     }
 
-//    public List<String> getIdents() {
-//        return idents;
-//    }
-//
-//    public void setIdents(List<String> idents) {
-//        this.idents = idents;
-//        operators = new ArrayList<String>();
-//        for (String ident : idents) {
-//            operators.add("->");
-//        }
-//    }
-//
-//    public void addIdent(String ident) {
-//        addIdent(ident, "->");
-//    }
     public void addIdent(String ident, String operator) {
         idents.add(ident);
         operators.add(operator);
+    }
+
+    public List<String> getIdents() {
+        return idents;
+    }
+
+    public List<String> getOperators() {
+        return operators;
     }
 
     @Override
