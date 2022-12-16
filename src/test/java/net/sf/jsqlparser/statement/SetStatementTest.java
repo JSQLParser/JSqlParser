@@ -75,5 +75,9 @@ public class SetStatementTest {
     public void testSettingUserVariable() throws JSQLParserException {
         String sqlStr="set @Flag = 1";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        // issue #1237
+        sqlStr="SET @@global.time_zone = '01:00'";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
