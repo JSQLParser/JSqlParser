@@ -84,7 +84,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-junit-jupiter:4.+'
 
     // enforce latest version of JavaCC
-    implementation 'net.java.dev.javacc:javacc:7.0.12'
+    testImplementation 'net.java.dev.javacc:javacc:7.0.12'
     javacc 'net.java.dev.javacc:javacc:7.0.12'
 }
 

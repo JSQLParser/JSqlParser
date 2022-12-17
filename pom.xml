@@ -30,6 +30,7 @@
             <groupId>net.java.dev.javacc</groupId>
             <artifactId>javacc</artifactId>
             <version>7.0.12</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

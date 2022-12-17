@@ -9,26 +9,10 @@
  */
 package net.sf.jsqlparser.parser;
 
-import org.javacc.jjtree.JJTree;
-import org.javacc.parser.JavaCCGlobals;
-import org.javacc.parser.JavaCCParser;
-import org.javacc.parser.RCharacterList;
-import org.javacc.parser.RChoice;
-import org.javacc.parser.RJustName;
-import org.javacc.parser.ROneOrMore;
-import org.javacc.parser.RSequence;
-import org.javacc.parser.RStringLiteral;
-import org.javacc.parser.RZeroOrMore;
-import org.javacc.parser.RZeroOrOne;
-import org.javacc.parser.RegularExpression;
-import org.javacc.parser.Semanticize;
-import org.javacc.parser.Token;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InvalidClassException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
@@ -253,117 +237,6 @@ public class ParserKeywordsUtils {
         return allKeywords;
     }
 
-    private static void addTokenImage(TreeSet<String> allKeywords, RStringLiteral literal) {
-        if (CHARSET_ENCODER.canEncode(literal.image) && literal.image.matches("[A-Za-z]+")) {
-            allKeywords.add(literal.image);
-        }
-    }
-
-    @SuppressWarnings({"PMD.EmptyIfStmt", "PMD.CyclomaticComplexity"})
-    private static void addTokenImage(TreeSet<String> allKeywords, Object o) throws Exception {
-        if (o instanceof RStringLiteral) {
-            RStringLiteral literal = (RStringLiteral) o;
-            addTokenImage(allKeywords, literal);
-        } else  if (o instanceof RChoice) {
-            RChoice choice = (RChoice) o;
-            addTokenImage(allKeywords, choice);
-        } else if (o instanceof RSequence) {
-            RSequence sequence1 = (RSequence) o;
-            addTokenImage(allKeywords, sequence1);
-        } else if (o  instanceof ROneOrMore) {
-            ROneOrMore oneOrMore = (ROneOrMore) o ;
-            addTokenImage(allKeywords, oneOrMore);
-        } else if (o  instanceof RZeroOrMore) {
-            RZeroOrMore zeroOrMore = (RZeroOrMore) o ;
-            addTokenImage(allKeywords, zeroOrMore);
-        } else if (o  instanceof RZeroOrOne) {
-            RZeroOrOne zeroOrOne = (RZeroOrOne) o ;
-            addTokenImage(allKeywords, zeroOrOne);
-        }  else if (o  instanceof RJustName) {
-            RJustName zeroOrOne = (RJustName) o ;
-            addTokenImage(allKeywords, zeroOrOne);
-        } else if (o  instanceof RCharacterList) {
-           // do nothing, we are not interested in those
-        } else {
-            throw new InvalidClassException("Unknown Type: " + o.getClass().getName() + " " + o.toString());
-        }
-    }
-
-    private static void addTokenImage(TreeSet<String> allKeywords, RSequence sequence) throws Exception {
-        for (Object o: sequence.units) {
-            addTokenImage(allKeywords, o);
-        }
-    }
-
-    private static void addTokenImage(TreeSet<String> allKeywords, ROneOrMore oneOrMore) {
-        for (Token token: oneOrMore.lhsTokens) {
-            if (CHARSET_ENCODER.canEncode(token.image)) {
-                allKeywords.add(token.image);
-            }
-        }
-    }
-
-    private static void addTokenImage(TreeSet<String> allKeywords, RZeroOrMore oneOrMore) {
-        for (Token token: oneOrMore.lhsTokens) {
-            if (CHARSET_ENCODER.canEncode(token.image)) {
-                allKeywords.add(token.image);
-            }
-        }
-    }
-
-    private static void addTokenImage(TreeSet<String> allKeywords, RZeroOrOne oneOrMore) {
-        for (Token token: oneOrMore.lhsTokens) {
-            if (CHARSET_ENCODER.canEncode(token.image)) {
-                allKeywords.add(token.image);
-            }
-        }
-    }
-
-    private static void addTokenImage(TreeSet<String> allKeywords, RJustName oneOrMore) {
-        for (Token token: oneOrMore.lhsTokens) {
-            if (CHARSET_ENCODER.canEncode(token.image)) {
-                allKeywords.add(token.image);
-            }
-        }
-    }
-
-    private static void addTokenImage(TreeSet<String> allKeywords, RChoice choice) throws  Exception {
-        for (Object o: choice.getChoices()) {
-            addTokenImage(allKeywords, o);
-        }
-    }
-
-    public static TreeSet<String> getAllKeywordsUsingJavaCC(File file) throws Exception {
-        TreeSet<String> allKeywords = new TreeSet<>();
-
-        Path jjtGrammar = file.toPath();
-        Path jjGrammarOutputDir = Files.createTempDirectory("jjgrammer");
-
-        new JJTree().main(new String[]{
-                "-JDK_VERSION=1.8",
-                "-OUTPUT_DIRECTORY=" + jjGrammarOutputDir.toString(),
-                jjtGrammar.toString()
-        });
-        Path jjGrammarFile = jjGrammarOutputDir.resolve("JSqlParserCC.jj");
-
-        JavaCCParser parser = new JavaCCParser(new java.io.FileInputStream(jjGrammarFile.toFile()));
-        parser.javacc_input();
-
-        // needed for filling JavaCCGlobals
-        Semanticize.start();
-
-        // read all the Token and get the String image
-        for (Map.Entry<Integer, RegularExpression> item : JavaCCGlobals.rexps_of_tokens.entrySet()) {
-            addTokenImage(allKeywords, item.getValue());
-        }
-
-        //clean up
-        if (jjGrammarOutputDir.toFile().exists()) {
-            jjGrammarOutputDir.toFile().delete();
-        }
-
-        return allKeywords;
-    }
 
     public static void buildGrammarForRelObjectNameWithoutValue(File file) throws Exception {
         Pattern methodBlockPattern = Pattern.compile("String\\W*RelObjectNameWithoutValue\\W*\\(\\W*\\)\\W*:\\s*\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}\\s*\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}", Pattern.MULTILINE);
@@ -424,7 +297,7 @@ public class ParserKeywordsUtils {
     }
 
     public static TreeSet<String> getAllKeywords(File file) throws Exception {
-        return getAllKeywordsUsingJavaCC(file);
+        return getAllKeywordsUsingRegex(file);
     }
 
     private static void replaceInFile(File file, Pattern pattern, String replacement) throws IOException {
