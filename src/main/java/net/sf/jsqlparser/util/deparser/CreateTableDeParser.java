@@ -120,6 +120,9 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
                 buffer.append(")");
             }
         }
+        if (createTable.getSpannerInterleaveIn() != null) {
+            buffer.append(", ").append(createTable.getSpannerInterleaveIn());
+        }
     }
 
 }

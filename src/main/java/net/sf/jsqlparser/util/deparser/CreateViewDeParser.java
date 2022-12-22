@@ -61,7 +61,9 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
             buffer.append("MATERIALIZED ");
         }
         buffer.append("VIEW ").append(createView.getView().getFullyQualifiedName());
-
+        if (createView.isIfNotExists()) {
+            buffer.append(" IF NOT EXISTS");
+        }
         if (createView.getAutoRefresh() != AutoRefreshOption.NONE) {
             buffer.append(" AUTO REFRESH ").append(createView.getAutoRefresh().name());
         }

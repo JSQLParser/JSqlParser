@@ -401,6 +401,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void deparseJoin(Join join) {
+        if ( join.isGlobal() ) {
+            buffer.append(" GLOBAL ");
+        }
+
         if (join.isSimple() && join.isOuter()) {
             buffer.append(", OUTER ");
         } else if (join.isSimple()) {

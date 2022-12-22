@@ -25,6 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 
 public class CreateViewTest {
@@ -181,6 +183,21 @@ public class CreateViewTest {
         assertThatThrownBy(throwingCallable).isInstanceOf(JSQLParserException.class)
         .hasRootCauseInstanceOf(ParseException.class).rootCause()
         .hasMessageStartingWith("Encountered unexpected token");
+    }
+
+    @Test
+    public void testCreateViewIfNotExists() throws JSQLParserException {
+        String stmt = "CREATE VIEW myview IF NOT EXISTS AS SELECT * FROM mytab";
+        CreateView createView = (CreateView) assertSqlCanBeParsedAndDeparsed(stmt);
+        assertTrue(createView.isIfNotExists());
+    }
+    
+    @Test
+    public void testCreateMaterializedViewIfNotExists() throws JSQLParserException {
+        String stmt = "CREATE MATERIALIZED VIEW myview IF NOT EXISTS AS SELECT * FROM mytab";
+        CreateView createView = (CreateView) assertSqlCanBeParsedAndDeparsed(stmt);
+        assertTrue(createView.isMaterialized());
+        assertTrue(createView.isIfNotExists());
     }
 
 }

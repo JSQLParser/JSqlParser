@@ -10,7 +10,9 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.test.TestUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PostgresTest {
@@ -40,5 +42,15 @@ public class PostgresTest {
                 "                end                                                                                                                                                  \n" +
                 "              as snijtijd_interval";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    public void testJSonExpressionIssue1696() throws JSQLParserException {
+        String sqlStr="SELECT '{\"key\": \"value\"}'::json -> 'key' AS X";
+        Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        SelectExpressionItem selectExpressionItem = (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+        Assertions.assertEquals("'key'", selectExpressionItem.getExpression(JsonExpression.class).getIdents().get(0));
     }
 }

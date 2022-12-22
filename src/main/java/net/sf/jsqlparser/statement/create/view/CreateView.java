@@ -31,6 +31,7 @@ public class CreateView implements Statement {
     private TemporaryOption temp = TemporaryOption.NONE;
     private AutoRefreshOption autoRefresh = AutoRefreshOption.NONE;
     private boolean withReadOnly = false;
+    private boolean ifNotExists = false;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -112,6 +113,14 @@ public class CreateView implements Statement {
         this.withReadOnly = withReadOnly;
     }
 
+    public boolean isIfNotExists() {
+        return ifNotExists;
+    }
+
+    public void setIfNotExists(boolean ifNotExists) {
+        this.ifNotExists = ifNotExists;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder("CREATE ");
@@ -138,6 +147,9 @@ public class CreateView implements Statement {
         }
         sql.append("VIEW ");
         sql.append(view);
+        if (ifNotExists) {
+            sql.append(" IF NOT EXISTS");
+        }
         if (autoRefresh != AutoRefreshOption.NONE) {
             sql.append(" AUTO REFRESH ").append(autoRefresh.name());
         }
