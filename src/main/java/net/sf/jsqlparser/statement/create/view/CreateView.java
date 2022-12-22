@@ -30,6 +30,7 @@ public class CreateView implements Statement {
     private ForceOption force = ForceOption.NONE;
     private TemporaryOption temp = TemporaryOption.NONE;
     private boolean withReadOnly = false;
+    private boolean ifNotExists = false;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -103,6 +104,14 @@ public class CreateView implements Statement {
         this.withReadOnly = withReadOnly;
     }
 
+    public boolean isIfNotExists() {
+        return ifNotExists;
+    }
+
+    public void setIfNotExists(boolean ifNotExists) {
+        this.ifNotExists = ifNotExists;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder("CREATE ");
@@ -129,6 +138,9 @@ public class CreateView implements Statement {
         }
         sql.append("VIEW ");
         sql.append(view);
+        if (ifNotExists) {
+            sql.append(" IF NOT EXISTS");
+        }
         if (columnNames != null) {
             sql.append(PlainSelect.getStringList(columnNames, true, true));
         }
