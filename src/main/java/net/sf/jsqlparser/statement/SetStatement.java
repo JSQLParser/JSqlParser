@@ -24,11 +24,11 @@ public final class SetStatement implements Statement {
         // empty constructor
     }
 
-    public SetStatement(String name, List<Expression> value) {
+    public SetStatement(Object name, List<Expression> value) {
         add(name, value, true);
     }
 
-    public void add(String name, List<Expression> value, boolean useEqual) {
+    public void add(Object name, List<Expression> value, boolean useEqual) {
         values.add(new NameExpr(name, value, useEqual));
     }
 
@@ -67,11 +67,11 @@ public final class SetStatement implements Statement {
         return setUseEqual(0, useEqual);
     }
 
-    public String getName() {
+    public Object getName() {
         return getName(0);
     }
 
-    public String getName(int idx) {
+    public Object getName(int idx) {
         return values.get(idx).name;
     }
 
@@ -130,11 +130,11 @@ public final class SetStatement implements Statement {
 
     static class NameExpr implements Serializable {
 
-        private String name;
+        private Object name;
         private List<Expression> expressions;
         private boolean useEqual;
 
-        public NameExpr(String name, List<Expression> expressions, boolean useEqual) {
+        public NameExpr(Object name, List<Expression> expressions, boolean useEqual) {
             this.name = name;
             this.expressions = expressions;
             this.useEqual = useEqual;

@@ -294,6 +294,9 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
             }
         }
         buffer.append("END");
+        if (block.hasSemicolonAfterEnd()) {
+            buffer.append(";");
+        }
     }
 
     @Override

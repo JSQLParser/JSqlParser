@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.alter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
@@ -31,6 +32,7 @@ import net.sf.jsqlparser.statement.create.table.Index.ColumnParams;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -287,7 +289,7 @@ public class AlterTest {
         assertEquals("col1", col1DataTypes.get(0).getColumnName());
         assertEquals("timestamp (3)", col1DataTypes.get(0).getColDataType().toString());
 
-        assertEquals(col1Exp.hasColumn(), false);
+        assertFalse(col1Exp.hasColumn());
     }
 
     @Test
@@ -301,7 +303,7 @@ public class AlterTest {
         assertEquals("not", col1Exp.getColDataTypeList().get(0).getColumnSpecs().get(0));
         assertEquals("null", col1Exp.getColDataTypeList().get(0).getColumnSpecs().get(1));
 
-        assertEquals(col1Exp.hasColumn(), true);
+        assertTrue(col1Exp.hasColumn());
     }
 
     @Test
@@ -319,7 +321,7 @@ public class AlterTest {
 
         assertEquals(AlterOperation.MODIFY, alterExpression.getOperation());
 
-        assertEquals(alterExpression.hasColumn(), false);
+        assertFalse(alterExpression.hasColumn());
     }
 
     @Test
@@ -333,7 +335,7 @@ public class AlterTest {
 
         assertEquals(AlterOperation.ALTER, alterExpression.getOperation());
 
-        assertEquals(alterExpression.hasColumn(), true);
+        assertTrue(alterExpression.hasColumn());
     }
 
     @Test
@@ -425,7 +427,7 @@ public class AlterTest {
     }
 
     @Test
-    public void testIssue633() throws JSQLParserException, JSQLParserException, JSQLParserException {
+    public void testIssue633() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE team_phases ADD CONSTRAINT team_phases_id_key UNIQUE (id)");
     }
 
@@ -469,8 +471,9 @@ public class AlterTest {
         Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
         Alter created = new Alter().withUseOnly(true).withTable(new Table("categories")).addAlterExpressions(
                 new AlterExpression().withOperation(AlterOperation.ADD).withIndex(new NamedConstraint()
-                        .withName(Arrays.asList("pk_categories")).withType("PRIMARY KEY")
-                        .addColumns(new ColumnParams("category_id"))));
+                                                                                          .withName(Collections.singletonList(
+                                                                                                  "pk_categories")).withType("PRIMARY KEY")
+                                                                                          .addColumns(new ColumnParams("category_id"))));
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }
@@ -480,6 +483,7 @@ public class AlterTest {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE orders ADD CONSTRAINT fk_orders_customers FOREIGN KEY (customer_id) REFERENCES customers");
     }
 
+    @Test
     public void testAlterTableAlterColumnDropNotNullIssue918() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE \"user_table_t\" ALTER COLUMN name DROP NOT NULL");
     }
@@ -817,5 +821,53 @@ public class AlterTest {
     @Test
     public void testAlterTableDropMultipleColumnsIfExistsWithParams() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE test DROP COLUMN IF EXISTS name CASCADE, DROP COLUMN IF EXISTS surname CASCADE");
+    }
+
+    @Test
+    public void testAlterTableAddColumnSpanner7() throws JSQLParserException {
+        final String sql = "ALTER TABLE ORDER_PATIENT ADD COLUMN FIRST_NAME_UPPERCASE STRING(MAX)" +
+                           " AS (UPPER(FIRST_NAME)) STORED";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertStatementCanBeDeparsedAs(stmt, sql, true);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExps = alter.getAlterExpressions();
+        AlterExpression col1Exp = alterExps.get(0);
+        assertTrue(col1Exp.getColDataTypeList().get(0).toString().endsWith(" STORED"));
+        assertTrue(col1Exp.hasColumn());
+    }
+
+    @Test
+    public void testAlterTableAddColumnSpanner8() throws JSQLParserException {
+        final String sql = "ALTER TABLE ORDER_PATIENT ADD COLUMN NAMES ARRAY<STRING(MAX)>";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertStatementCanBeDeparsedAs(stmt, sql, true);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExps = alter.getAlterExpressions();
+        AlterExpression col1Exp = alterExps.get(0);
+        assertTrue(col1Exp.hasColumn());
+        assertNotNull(col1Exp.getColDataTypeList());
+        assertEquals(1, col1Exp.getColDataTypeList().size());
+        ColumnDataType type = col1Exp.getColDataTypeList().get(0);
+        assertEquals("NAMES", type.getColumnName());
+        assertEquals("ARRAY<STRING (MAX)>", type.getColDataType().toString());
+    }
+
+    @Test
+    public void testAlterColumnSetCommitTimestamp1() throws JSQLParserException {
+        // @todo: properly implement SET OPTIONS, the current hack is terrible
+        //  final String sql = "ALTER TABLE FOCUS_PATIENT ALTER COLUMN UPDATE_DATE_TIME_GMT SET OPTIONS (allow_commit_timestamp=null)";
+
+        final String sql = "ALTER TABLE FOCUS_PATIENT ALTER COLUMN UPDATE_DATE_TIME_GMT SET OPTIONS (allow_commit_timestamp=true)";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertStatementCanBeDeparsedAs(stmt, sql);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExps = alter.getAlterExpressions();
+        AlterExpression col1Exp = alterExps.get(0);
+        assertTrue(col1Exp.hasColumn());
+        assertNotNull(col1Exp.getColDataTypeList());
+        assertEquals(1, col1Exp.getColDataTypeList().size());
+        ColumnDataType type = col1Exp.getColDataTypeList().get(0);
+        assertEquals("UPDATE_DATE_TIME_GMT", type.getColumnName());
+        assertEquals("UPDATE_DATE_TIME_GMT SET OPTIONS (allow_commit_timestamp=true)", type.toString());
     }
 }

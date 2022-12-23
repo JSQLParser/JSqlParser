@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import net.sf.jsqlparser.expression.SpannerInterleaveIn;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -37,6 +38,8 @@ public class CreateTable implements Statement {
     private boolean orReplace = false;
 
     private RowMovement rowMovement;
+
+    private SpannerInterleaveIn interleaveIn = null;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -199,6 +202,9 @@ public class CreateTable implements Statement {
         if (likeTable != null) {
             sql += " LIKE " + (selectParenthesis ? "(" : "") + likeTable.toString() + (selectParenthesis ? ")" : "");
         }
+        if (interleaveIn != null) {
+            sql += ", " + interleaveIn;
+        }
         return sql;
     }
 
@@ -298,5 +304,18 @@ public class CreateTable implements Statement {
         List<Index> collection = Optional.ofNullable(getIndexes()).orElseGet(ArrayList::new);
         collection.addAll(indexes);
         return this.withIndexes(collection);
+    }
+
+    public SpannerInterleaveIn getSpannerInterleaveIn() {
+        return interleaveIn;
+    }
+
+    public void setSpannerInterleaveIn(SpannerInterleaveIn spannerInterleaveIn) {
+        this.interleaveIn = spannerInterleaveIn;
+    }
+
+    public CreateTable withSpannerInterleaveIn(SpannerInterleaveIn spannerInterleaveIn) {
+        this.interleaveIn = spannerInterleaveIn;
+        return this;
     }
 }

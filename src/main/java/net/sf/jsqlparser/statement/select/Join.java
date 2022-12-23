@@ -21,6 +21,7 @@ public class Join extends ASTNodeAccessImpl {
     private boolean right = false;
     private boolean left = false;
     private boolean natural = false;
+    private boolean global = false;
     private boolean full = false;
     private boolean inner = false;
     private boolean simple = false;
@@ -166,6 +167,10 @@ public class Join extends ASTNodeAccessImpl {
         return natural;
     }
 
+    public boolean isGlobal() {
+        return global;
+    }
+
     public Join withNatural(boolean b) {
         this.setNatural(b);
         return this;
@@ -173,6 +178,10 @@ public class Join extends ASTNodeAccessImpl {
 
     public void setNatural(boolean b) {
         natural = b;
+    }
+
+    public void setGlobal(boolean b) {
+        global = b;
     }
 
     /**
@@ -298,6 +307,10 @@ public class Join extends ASTNodeAccessImpl {
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder builder = new StringBuilder();
+
+        if ( isGlobal() ) {
+            builder.append("GLOBAL ");
+        }
 
         if (isSimple() && isOuter()) {
             builder.append("OUTER ").append(rightItem);
