@@ -8,6 +8,42 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **choir: Merge Master and resolve conflict**
+    
+    Andreas Reichel, 2022-12-23
+  * **Fix #1686: add support for creating views with "IF NOT EXISTS" clause (#1690)**
+    
+    Tomasz Zarna, 2022-12-22
+  * **Assorted Fixes #4 (#1676)**
+    
+    manticore-projects, 2022-12-22
+  * **fix: remove JavaCC dependency**
+    
+    Andreas Reichel, 2022-12-17
+  * **fix: fix a merge error, brackets**
+    
+    Andreas Reichel, 2022-12-12
+  * **Choir: Merge Master and resolve conflict**
+    
+    Andreas Reichel, 2022-12-11
+  * **Choir: Merge Master and resolve conflict**
+    
+    Andreas Reichel, 2022-12-11
+  * **build: Add Sphinx GitHub Action**
+    
+    Andreas Reichel, 2022-12-11
+  * **Fixed download war script in the renderRR task (#1659)**
+    
+    haha1903, 2022-12-10
+  * **Assorted fixes (#1666)**
+    
+    manticore-projects, 2022-11-20
+  * **Fix parsing statements with multidimensional array PR2 (#1665)**
+    
+    manticore-projects, 2022-11-20
+  * **update Changelog**
+    
+    Andreas Reichel, 2022-11-14
   * **build: avoid PMD/Codacy for Sphinx Documentation**
     
     Andreas Reichel, 2022-11-07

@@ -129,7 +129,7 @@ And this is the dependency declaration in your pom:
 <dependency>
 	<groupId>com.github.jsqlparser</groupId>
 	<artifactId>jsqlparser</artifactId>
-	<version>4.4</version>
+	<version>4.5</version>
 </dependency>
 ```
 
