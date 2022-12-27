@@ -315,7 +315,7 @@ public class ParserKeywordsUtils {
                 .replace(' ', ch);
     }
 
-    public static void writeKeywordsDocumentationFile(File file) {
+    public static void writeKeywordsDocumentationFile(File file) throws IOException {
         StringBuilder builder = new StringBuilder();
         builder.append("***********************\n");
         builder.append("Restricted Keywords\n");
@@ -347,9 +347,6 @@ public class ParserKeywordsUtils {
         try (FileWriter fileWriter = new FileWriter(file)) {
             fileWriter.append(builder);
             fileWriter.flush();
-        } catch (Exception ignore) {
-            // nothing will ever happen to us
-            // throw new RuntimeException(e);
         }
     }
 }
