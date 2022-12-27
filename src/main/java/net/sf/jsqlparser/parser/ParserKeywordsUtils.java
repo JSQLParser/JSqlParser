@@ -347,8 +347,9 @@ public class ParserKeywordsUtils {
         try (FileWriter fileWriter = new FileWriter(file)) {
             fileWriter.append(builder);
             fileWriter.flush();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (Exception ignore) {
+            // nothing will ever happen to us
+            // throw new RuntimeException(e);
         }
     }
 }
