@@ -59,6 +59,7 @@ import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.ValuesList;
+import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
@@ -590,6 +591,10 @@ public enum Feature {
      * @see ShowColumnsStatement
      */
     showColumns,
+    /**
+     * @see ShowIndexStatement
+     */
+    showIndex,
     /**
      * @see UseStatement
      */

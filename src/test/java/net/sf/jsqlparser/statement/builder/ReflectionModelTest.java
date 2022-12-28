@@ -115,6 +115,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.ExplainStatement.Option(OptionType.COSTS),
             new net.sf.jsqlparser.statement.SetStatement("name", null),
             new net.sf.jsqlparser.statement.ShowColumnsStatement(),
+            new net.sf.jsqlparser.statement.show.ShowIndexStatement(),
             new net.sf.jsqlparser.statement.ShowStatement(), new net.sf.jsqlparser.statement.Statements(),
             new net.sf.jsqlparser.statement.UseStatement(),
             new net.sf.jsqlparser.statement.alter.Alter(),
