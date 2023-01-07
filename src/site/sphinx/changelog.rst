@@ -8,6 +8,18 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **style: Avoid throwing raw exception types.**
+    
+    Andreas Reichel, 2022-12-27
+  * **style: Avoid throwing raw exception types.**
+    
+    Andreas Reichel, 2022-12-27
+  * **doc: Fix Maven Artifact Version**
+    
+    Andreas Reichel, 2022-12-27
+  * **Update README.md**
+    
+    Tobias, 2022-12-27
   * **choir: Merge Master and resolve conflict**
     
     Andreas Reichel, 2022-12-23

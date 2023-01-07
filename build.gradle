@@ -242,6 +242,7 @@ tasks.withType(Checkstyle) {
 }
 
 task renderRR() {
+    dependsOn(compileJavacc)
     doLast {
         // these WAR files have been provided as a courtesy by Gunther Rademacher 
         // and belong to the RR - Railroad Diagram Generator Project
@@ -284,6 +285,11 @@ task renderRR() {
                     "${buildDir}/rr/JSqlParserCC.ebnf"
             ]
         }
+
+        //@todo: a Java based solution may be more appropriate here
+        exec {
+            commandLine "sh", "-c", "xsltproc src/main/resources/rr/xhtml2rst.xsl $buildDir/rr/JSqlParserCC.xhtml > src/site/sphinx/syntax.rst"
+        }
     }
 }
 
@@ -322,8 +328,21 @@ Version {{name}}
 """
 }
 
+task updateKeywords(type: JavaExec) {
+    group = "Execution"
+    description = "Run the main class with JavaExecTask"
+    classpath = sourceSets.main.runtimeClasspath
+    args = [
+            file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath
+            , file('src/site/sphinx/keywords.rst').absolutePath
+    ]
+    main("net.sf.jsqlparser.parser.ParserKeywordsUtils")
+
+    dependsOn(compileJava)
+}
+
 task sphinx(type: Exec) {
-    dependsOn(gitChangelogTask)
+    dependsOn(gitChangelogTask, renderRR, updateKeywords)
 
     String PROLOG = """
 .. |_| unicode:: U+00A0 
@@ -362,21 +381,6 @@ task sphinx(type: Exec) {
         return standardOutput.toString()
     }
 }
-
-
-task updateKeywords(type: JavaExec) {
-    group = "Execution"
-    description = "Run the main class with JavaExecTask"
-    classpath = sourceSets.main.runtimeClasspath
-    args = [
-            file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath
-            , file('src/site/sphinx/keywords.rst').absolutePath
-    ]
-    main("net.sf.jsqlparser.parser.ParserKeywordsUtils")
-
-    dependsOn(compileJava)
-}
-
 
 publishing {
     publications {

@@ -14,37 +14,26 @@ show_sphinx = False
 master_doc = 'index'
 exclude_patterns = ['_themes', '_static/css']
 
-
 # HTML options
-html_theme = "manticore_sphinx_theme"
+html_theme = "sphinx_book_theme"
 html_theme_path = ["_themes"]
 html_short_title = "JSQLParser"
 htmlhelp_basename = "JSQLParser" + '-doc'
 html_use_index = True
 html_show_sourcelink = False
 html_static_path = ['_static']
-html_logo = '_static/manticore_logo.png'
-html_css_files = ["css/theme.css"]
+#html_logo = '_static/logo.svg'
+html_css_files = ["svg.css"]
 
 
 html_theme_options = {
-    'canonical_url': '',
-    'analytics_id': 'UA-XXXXXXX-1',
-    'style_external_links': True,
-    'collapse_navigation': True,
-    'sticky_navigation': True,
-    'navigation_depth': 4,
-    'includehidden': True,
-    'titles_only': False,
+    'path_to_docs': 'site/sphinx',
+    'repository_url': 'https://github.com/JSQLParser/JSqlParser',
+    'repository_branch': 'master',
+    'use_issues_button': True,
+    'use_download_button': True,
+    'use_fullscreen_button': True,
+    'use_repository_button': True,
 }
 
-
-html_context = {
-    'landing_page': {
-        'menu': [
-            {'title': 'Online Demo', 'url': 'http://217.160.215.75:8080/jsqlformatter/demo.html'},
-            {'title': 'Issue Tracker', 'url': 'https://github.com/JSQLParser/JSqlParser/issues'}
-        ]
-    }
-}
 

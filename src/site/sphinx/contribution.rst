@@ -90,7 +90,7 @@ There is a task ``updateKeywords`` for Gradle and Maven, which will:
     3) Derive the list of ``White-Listed Keywords`` as difference between ``All Tokens`` and ``Reserved Keywords``
     4) Modifies the Grammar Productions ``RelObjectNameWithoutValue...`` adding all Tokens according to ``White-Listed Keywords``
     5) Run two special Unit Tests to verify parsing of all ``White-Listed Keywords`` (as `Schema`, `Table`, `Column`, `Function` or `Alias`)
-    5) Update the web page about the Reserved Keywords
+    6) Update the web page about the Reserved Keywords
 
 .. tabs::
 

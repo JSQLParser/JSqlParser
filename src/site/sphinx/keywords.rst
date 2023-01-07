@@ -2,7 +2,7 @@
 Restricted Keywords
 ***********************
 
-The following Keywords are **restricted** in |JSQLPARSER_VERSION| and must not be used for **Naming Objects**: 
+The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and must not be used for **Naming Objects**: 
 
 +----------------------+-------------+-----------+
 | **Keyword**          | JSQL Parser | SQL:2016  |

@@ -322,7 +322,7 @@ public class ParserKeywordsUtils {
         builder.append("***********************\n");
         builder.append("\n");
 
-        builder.append("The following Keywords are **restricted** in |JSQLPARSER_VERSION| and must not be used for **Naming Objects**: \n");
+        builder.append("The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and must not be used for **Naming Objects**: \n");
         builder.append("\n");
 
         builder.append("+----------------------+-------------+-----------+\n");
