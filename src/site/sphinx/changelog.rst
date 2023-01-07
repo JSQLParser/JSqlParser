@@ -8,6 +8,9 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **doc: Better integration of the RR diagrams**
+    
+    Andreas Reichel, 2023-01-07
   * **style: Avoid throwing raw exception types.**
     
     Andreas Reichel, 2022-12-27
@@ -56,6 +59,9 @@ Latest Changes since |JSQLPARSER_VERSION|
   * **update Changelog**
     
     Andreas Reichel, 2022-11-14
+  * **fix: Whitelist LOCKED keyword**
+    
+    Andreas Reichel, 2022-11-13
   * **build: avoid PMD/Codacy for Sphinx Documentation**
     
     Andreas Reichel, 2022-11-07
@@ -83,6 +89,9 @@ Latest Changes since |JSQLPARSER_VERSION|
   * **Keywords2: Update whitelisted Keywords (#1653)**
     
     manticore-projects, 2022-11-02
+  * **Fix parsing statements with multidimensional array**
+    
+    Andrei Lisouski, 2022-11-02
   * **Enhanced Keywords (#1382)**
     
     manticore-projects, 2022-10-25
@@ -110,6 +119,9 @@ Latest Changes since |JSQLPARSER_VERSION|
   * **fix: add missing public Getter (#1632)**
     
     manticore-projects, 2022-09-20
+  * **fix: add missing public Getter**
+    
+    Andreas Reichel, 2022-09-15
   * **feat: make important Classes Serializable**
     
     Andreas Reichel, 2022-09-15
@@ -173,6 +185,9 @@ Latest Changes since |JSQLPARSER_VERSION|
   * **Add AST Visualization**
     
     Andreas Reichel, 2022-08-18
+  * **support clickhouse global keyword in join**
+    
+    Zhang Zhongliang, 2022-08-16
   * **Closes #1604, added simple OVERLAPS support (#1611)**
     
     Rob Audenaerde, 2022-08-16
