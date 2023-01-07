@@ -95,9 +95,6 @@ compileJavacc {
 java {
     withSourcesJar()
     withJavadocJar()
-
-    spotbugs
-    pmd
 }
 
 test {
@@ -113,8 +110,7 @@ test {
             '-Djunit.jupiter.execution.parallel.mode.default=concurrent'
     ]
 
-    finalizedBy jacocoTestReport // report is always generated after tests run
-    finalizedBy jacocoTestCoverageVerification
+    finalizedBy check
 }
 
 jacocoTestReport {
