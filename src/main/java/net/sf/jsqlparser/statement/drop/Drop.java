@@ -28,6 +28,7 @@ public class Drop implements Statement {
     private List<String> parameters;
     private Map<String, List<String>> typeToParameters = new HashMap<>();
     private boolean ifExists = false;
+    private boolean materialized = false;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -66,6 +67,14 @@ public class Drop implements Statement {
         this.ifExists = ifExists;
     }
 
+    public boolean isMaterialized() {
+        return materialized;
+    }
+
+    public void setMaterialized(boolean materialized) {
+        this.materialized = materialized;
+    }
+
     public Map<String, List<String>> getTypeToParameters() {
         return typeToParameters;
     }
@@ -76,7 +85,9 @@ public class Drop implements Statement {
 
     @Override
     public String toString() {
-        String sql = "DROP " + type + " "
+        String sql = "DROP " 
+                + (materialized ? "MATERIALIZED " : "")
+                + type + " "
                 + (ifExists ? "IF EXISTS " : "") + name.toString();
 
         if (type.equals("FUNCTION")) {
@@ -103,6 +114,11 @@ public class Drop implements Statement {
 
     public Drop withIfExists(boolean ifExists) {
         this.setIfExists(ifExists);
+        return this;
+    }
+
+    public Drop withMaterialized(boolean materialized) {
+        this.setMaterialized(materialized);
         return this;
     }
 

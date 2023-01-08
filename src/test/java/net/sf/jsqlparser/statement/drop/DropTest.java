@@ -88,6 +88,11 @@ public class DropTest {
     }
 
     @Test
+    public void testDropMaterializedView() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP MATERIALIZED VIEW myview");
+    }
+
+    @Test
     public void testDropSchemaIssue855() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP SCHEMA myschema");
     }
