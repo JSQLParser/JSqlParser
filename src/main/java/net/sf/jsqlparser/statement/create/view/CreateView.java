@@ -127,16 +127,7 @@ public class CreateView implements Statement {
         if (isOrReplace()) {
             sql.append("OR REPLACE ");
         }
-        switch (force) {
-            case FORCE:
-                sql.append("FORCE ");
-                break;
-            case NO_FORCE:
-                sql.append("NO FORCE ");
-                break;
-            default:
-                // nothing
-        }
+        appendForceOptionIfApplicable(sql);
 
         if (temp != TemporaryOption.NONE) {
             sql.append(temp.name()).append(" ");
@@ -161,6 +152,19 @@ public class CreateView implements Statement {
             sql.append(" WITH READ ONLY");
         }
         return sql.toString();
+    }
+
+    private void appendForceOptionIfApplicable(StringBuilder sql) {
+        switch (force) {
+        case FORCE:
+            sql.append("FORCE ");
+            break;
+        case NO_FORCE:
+            sql.append("NO FORCE ");
+            break;
+        default:
+            // nothing
+        }
     }
 
     public CreateView withView(Table view) {
