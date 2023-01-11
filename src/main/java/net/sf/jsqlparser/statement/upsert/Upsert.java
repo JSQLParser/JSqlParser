@@ -159,9 +159,6 @@ public class Upsert implements Statement {
         StringBuilder sb = new StringBuilder();
 
         switch (upsertType) {
-            case UPSERT:
-                sb.append("UPSERT ");
-                break;
             case REPLACE:
             case REPLACE_SET:
                 sb.append("REPLACE ");
@@ -181,6 +178,9 @@ public class Upsert implements Statement {
             case INSERT_OR_ROLLBACK:
                 sb.append("INSERT OR ROLLBACK ");
                 break;
+            case UPSERT:
+            default:
+                sb.append("UPSERT ");
         }
         
         if (isUsingInto) {

@@ -180,15 +180,12 @@ spotbugs {
 
 pmd {
     consoleOutput = false
-    toolVersion = "6.46.0"
-    
     sourceSets = [sourceSets.main]
     
     // clear the ruleset in order to use configured rules only
     ruleSets = []
     
     //rulesMinimumPriority = 1
-    
     ruleSetFiles = files("config/pmd/ruleset.xml")
     
     pmdMain {

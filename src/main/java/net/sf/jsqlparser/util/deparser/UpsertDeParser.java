@@ -41,9 +41,6 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
     @SuppressWarnings("PMD.CyclomaticComplexity")
     public void deParse(Upsert upsert) {
         switch (upsert.getUpsertType()) {
-            case UPSERT:
-                buffer.append("UPSERT ");
-                break;
             case REPLACE:
             case REPLACE_SET:
                 buffer.append("REPLACE ");
@@ -63,6 +60,9 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
             case INSERT_OR_ROLLBACK:
                 buffer.append("INSERT OR ROLLBACK ");
                 break;
+            case UPSERT:
+            default:
+                buffer.append("UPSERT ");
         }
 
         if (upsert.isUsingInto()) {
