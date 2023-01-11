@@ -9,12 +9,8 @@
  */
 package net.sf.jsqlparser.statement.upsert;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -22,6 +18,12 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 public class Upsert implements Statement {
 
@@ -35,9 +37,39 @@ public class Upsert implements Statement {
     private List<Column> duplicateUpdateColumns;
     private List<Expression> duplicateUpdateExpressionList;
 
+    private UpsertType upsertType = UpsertType.UPSERT;
+
+    private boolean isUsingInto;
+
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this); 
+    }
+
+    public UpsertType getUpsertType() {
+        return upsertType;
+    }
+
+    public void setUpsertType(UpsertType upsertType) {
+        this.upsertType=upsertType;
+    }
+
+    public Upsert withUpsertType(UpsertType upsertType) {
+        setUpsertType(upsertType);
+        return this;
+    }
+
+    public boolean isUsingInto() {
+        return isUsingInto;
+    }
+
+    public void setUsingInto(boolean useInto) {
+        this.isUsingInto = useInto;
+    }
+
+    public Upsert withUsingInto(boolean useInto) {
+        setUsingInto(useInto);
+        return this;
     }
     
     public void setTable(Table name) {
@@ -62,6 +94,15 @@ public class Upsert implements Statement {
     
     public ItemsList getItemsList() {
         return itemsList;
+    }
+
+    public List<Expression> getSetExpressions() {
+        List<Expression> expressions = null;
+        if (itemsList instanceof ExpressionList) {
+            ExpressionList expressionList = (ExpressionList) itemsList;
+            expressions= expressionList.getExpressions();
+        }
+        return  expressions;
     }
     
     public void setUseValues(boolean useValues) {
@@ -116,27 +157,67 @@ public class Upsert implements Statement {
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public String toString() {
         StringBuilder sb = new StringBuilder();
+
+        switch (upsertType) {
+            case UPSERT:
+                sb.append("UPSERT ");
+                break;
+            case REPLACE:
+            case REPLACE_SET:
+                sb.append("REPLACE ");
+                break;
+            case INSERT_OR_ABORT:
+                sb.append("INSERT OR ABORT ");
+                break;
+            case INSERT_OR_FAIL:
+                sb.append("INSERT OR FAIL ");
+                break;
+            case INSERT_OR_IGNORE:
+                sb.append("INSERT OR IGNORE ");
+                break;
+            case INSERT_OR_REPLACE:
+                sb.append("INSERT OR REPLACE ");
+                break;
+            case INSERT_OR_ROLLBACK:
+                sb.append("INSERT OR ROLLBACK ");
+                break;
+        }
         
-        sb.append("UPSERT INTO ");
+        if (isUsingInto) {
+            sb.append("INTO ");
+        }
         sb.append(table).append(" ");
-        if (columns != null) {
-            sb.append(PlainSelect.getStringList(columns, true, true)).append(" ");
-        }
-        if (useValues) {
-            sb.append("VALUES ");
-        }
-        
-        if (itemsList != null) {
-            sb.append(itemsList);
+
+        if (upsertType==UpsertType.REPLACE_SET) {
+            sb.append("SET ");
+            // each element from expressions match up with a column from columns.
+            List<Expression> expressions = getSetExpressions();
+            for (int i = 0, s = columns.size(); i < s; i++) {
+                sb.append(columns.get(i)).append("=").append(expressions.get(i));
+                sb.append( i < s - 1
+                            ? ", "
+                            : "" );
+            }
         } else {
-            if (useSelectBrackets) {
-                sb.append("(");
+            if (columns != null) {
+                sb.append(PlainSelect.getStringList(columns, true, true)).append(" ");
             }
-            if (select != null) {
-                sb.append(select);
+            if (useValues) {
+                sb.append("VALUES ");
             }
-            if (useSelectBrackets) {
-                sb.append(")");
+
+            if (itemsList != null) {
+                sb.append(itemsList);
+            } else {
+                if (useSelectBrackets) {
+                    sb.append("(");
+                }
+                if (select != null) {
+                    sb.append(select);
+                }
+                if (useSelectBrackets) {
+                    sb.append(")");
+                }
             }
         }
 

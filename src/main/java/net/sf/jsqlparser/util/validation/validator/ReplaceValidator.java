@@ -9,25 +9,10 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.statement.replace.Replace;
-import net.sf.jsqlparser.util.validation.ValidationCapability;
-
+@Deprecated
 /**
  * @author gitmotte
  */
-public class ReplaceValidator extends AbstractValidator<Replace> {
-
-
-    @Override
-    public void validate(Replace replace) {
-        for (ValidationCapability c : getCapabilities()) {
-            validateFeature(c, Feature.replace);
-        }
-        validateOptionalFromItem(replace.getTable());
-        validateOptionalItemsList(replace.getItemsList());
-        validateOptionalExpressions(replace.getExpressions());
-        validateOptionalExpressions(replace.getColumns());
-    }
+public class ReplaceValidator extends UpsertValidator {
 
 }

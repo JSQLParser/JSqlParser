@@ -9,10 +9,11 @@
  */
 package net.sf.jsqlparser.util.validation.feature;
 
+import net.sf.jsqlparser.parser.feature.Feature;
+
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-import net.sf.jsqlparser.parser.feature.Feature;
 
 /**
  * Please add Features supported and place a link to public documentation
@@ -65,7 +66,7 @@ public enum MySqlVersion implements Version {
                     Feature.update, Feature.updateJoins, Feature.updateOrderBy, Feature.updateLimit,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/replace.html
-                    Feature.replace,
+                    Feature.upsert,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/delete.html
                     Feature.delete, Feature.deleteJoin, Feature.deleteTables, Feature.deleteLimit,
