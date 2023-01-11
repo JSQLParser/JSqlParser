@@ -5754,13 +5754,16 @@ Drop Drop():
     Table name;
     List<String> dropArgs = new ArrayList<String>();
     List<String> funcArgs = null;
+    boolean useTemporary = false;
 }
 {
     <K_DROP>
     (
         tk=<S_IDENTIFIER>
         |
-        tk=<K_TABLE>
+        (
+            [ <K_TEMPORARY> {useTemporary=true;} ] tk=<K_TABLE>
+        )
         |
         tk=<K_INDEX>
         |
@@ -5787,6 +5790,8 @@ Drop Drop():
         if (drop.getType().equals("FUNCTION")) {
             drop.getTypeToParameters().put("FUNCTION", funcArgs);
         }
+
+        drop.setUsingTemporary(useTemporary);
 
         return drop;
     }

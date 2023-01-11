@@ -21,6 +21,9 @@ public class DropDeParser extends AbstractDeParser<Drop> {
     @Override
     public void deParse(Drop drop) {
         buffer.append("DROP ");
+        if (drop.isUsingTemporary()) {
+            buffer.append("TEMPORARY ");
+        }
         buffer.append(drop.getType());
         if (drop.isIfExists()) {
             buffer.append(" IF EXISTS");

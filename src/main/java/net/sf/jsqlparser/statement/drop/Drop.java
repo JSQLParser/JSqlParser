@@ -29,6 +29,8 @@ public class Drop implements Statement {
     private Map<String, List<String>> typeToParameters = new HashMap<>();
     private boolean ifExists = false;
 
+    private boolean isUsingTemporary;
+
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
@@ -66,6 +68,19 @@ public class Drop implements Statement {
         this.ifExists = ifExists;
     }
 
+    public boolean isUsingTemporary() {
+        return isUsingTemporary;
+    }
+
+    public void setUsingTemporary(boolean useTemporary) {
+        this.isUsingTemporary=useTemporary;
+    }
+
+    public Drop withUsingTemporary(boolean useTemporary) {
+        setUsingTemporary(useTemporary);
+        return this;
+    }
+
     public Map<String, List<String>> getTypeToParameters() {
         return typeToParameters;
     }
@@ -76,7 +91,7 @@ public class Drop implements Statement {
 
     @Override
     public String toString() {
-        String sql = "DROP " + type + " "
+        String sql = "DROP " + ( isUsingTemporary? "TEMPORARY " : "") + type + " "
                 + (ifExists ? "IF EXISTS " : "") + name.toString();
 
         if (type.equals("FUNCTION")) {
