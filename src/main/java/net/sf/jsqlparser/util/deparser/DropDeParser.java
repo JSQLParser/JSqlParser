@@ -24,6 +24,9 @@ public class DropDeParser extends AbstractDeParser<Drop> {
         if (drop.isUsingTemporary()) {
             buffer.append("TEMPORARY ");
         }
+        if (drop.isMaterialized()) {
+            buffer.append("MATERIALIZED ");
+        }
         buffer.append(drop.getType());
         if (drop.isIfExists()) {
             buffer.append(" IF EXISTS");

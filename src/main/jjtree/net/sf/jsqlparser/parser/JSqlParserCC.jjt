@@ -5758,6 +5758,7 @@ Drop Drop():
 }
 {
     <K_DROP>
+    [ <K_MATERIALIZED> { drop.setMaterialized(true);} ]
     (
         tk=<S_IDENTIFIER>
         |
