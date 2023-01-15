@@ -520,21 +520,13 @@ TOKEN:
 | < #ESC: "\\" ["n","t","b","r","f","\\","\""] >
 | < S_CHAR_LITERAL: (["U","E","N","R","B"]|"RB"|"_utf8")? (("'" ( <ESC> | <SPECIAL_ESC> | ~["'", "\\", "\n", "\r"] )* "'") | ("'" ("''" | ~["'"])* "'")) >
     {
-        // <S_CHAR_LITERAL> contains the <QUOTED_BACKSLASH> definition and always the longest match is returned
+        // <S_CHAR_LITERAL> contains the <SPECIAL_ESC> token and always the longest match is returned
         // So when Backslash is explicitly not allowed as an Escape Character and a <S_CHAR_LITERAL> is found
-        // which starts with a Backslash, then we will need to
-        // 1) break off <QUOTED_BACKSLASH> and
-        // 2) continue tokenizing after that <QUOTED_BACKSLASH> in order to allow reading a single quoted backslash character
-        /*if ( !configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter) && matchedToken.image.startsWith("'\\'") ) {
-            matchedToken.image = "'\\'";
-            for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
-                if ( CCJSqlParserConstants.tokenImage[i].equals("<QUOTED_BACKSLASH>") ) {
-                    matchedToken.kind = i;
-                }
-            }
-            input_stream.backup(image.length() - matchedToken.image.length() - 1);
-        } else*/ if ( !configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter) && matchedToken.image.contains("\\'") ) {
-            matchedToken.image = image.substring(0, image.indexOf("\\'")+1) + "'";
+        // which contains the <SPECIAL_ESC>, then we will need to
+        // 1) break the <S_CHAR_LITERAL> at <SPECIAL_ESC> close it with a "'"
+        // 2) continue tokenizing after that <SPECIAL_ESC> with a new <S_CHAR_LITERAL> or any other Token
+        if ( !configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter) && matchedToken.image.contains("\\'") ) {
+            matchedToken.image = image.substring( 0, image.indexOf("\\'") + 1 ) + "'";
             for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
               if ( CCJSqlParserConstants.tokenImage[i].equals("<S_CHAR_LITERAL>") ) {
                   matchedToken.kind = i;
