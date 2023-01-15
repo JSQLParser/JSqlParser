@@ -516,19 +516,45 @@ TOKEN:
 | <#Nd: ["0"-"9","٠"-"٩","۰"-"۹","߀"-"߉","०"-"९","০"-"৯","੦"-"੯","૦"-"૯","୦"-"୯","௦"-"௯","౦"-"౯","೦"-"೯","൦"-"൯","෦"-"෯","๐"-"๙","໐"-"໙","༠"-"༩","၀"-"၉","႐"-"႙","០"-"៩","᠐"-"᠙","᥆"-"᥏","᧐"-"᧙","᪀"-"᪉","᪐"-"᪙","᭐"-"᭙","᮰"-"᮹","᱀"-"᱉","᱐"-"᱙","꘠"-"꘩","꣐"-"꣙","꤀"-"꤉","꧐"-"꧙","꧰"-"꧹","꩐"-"꩙","꯰"-"꯹","０"-"９"]>
 | <#Pc: ["‿"-"⁀","⁔","︳"-"︴","﹍"-"﹏","＿"]>
 
-|   < S_CHAR_LITERAL: (["U","E","N","R","B"]|"RB"|"_utf8")? (("'" ( <ESC> | ~["'", "\\", "\n", "\r"] )* "'") | ("'" ("''" | ~["'"])* "'")) >
-|   < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" | "$$" (~["\n","\r","\""])* "$$" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
-    { if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation) && matchedToken.image.charAt(0) == '[' ) {
-         matchedToken.image = "[";
-         for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
-            if (CCJSqlParserConstants.tokenImage[i].equals("\"[\"")) {
-                matchedToken.kind = i;
+| < #SPECIAL_ESC: "\\'" > /* Allowing this will break LIKE ... ESCAPE ...  */
+| < #ESC: "\\" ["n","t","b","r","f","\\","\""] >
+| < S_CHAR_LITERAL: (["U","E","N","R","B"]|"RB"|"_utf8")? (("'" ( <ESC> | <SPECIAL_ESC> | ~["'", "\\", "\n", "\r"] )* "'") | ("'" ("''" | ~["'"])* "'")) >
+    {
+        // <S_CHAR_LITERAL> contains the <QUOTED_BACKSLASH> definition and always the longest match is returned
+        // So when Backslash is explicitly not allowed as an Escape Character and a <S_CHAR_LITERAL> is found
+        // which starts with a Backslash, then we will need to
+        // 1) break off <QUOTED_BACKSLASH> and
+        // 2) continue tokenizing after that <QUOTED_BACKSLASH> in order to allow reading a single quoted backslash character
+        /*if ( !configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter) && matchedToken.image.startsWith("'\\'") ) {
+            matchedToken.image = "'\\'";
+            for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
+                if ( CCJSqlParserConstants.tokenImage[i].equals("<QUOTED_BACKSLASH>") ) {
+                    matchedToken.kind = i;
+                }
             }
-         }
-         input_stream.backup(image.length() - 1);
-       }
+            input_stream.backup(image.length() - matchedToken.image.length() - 1);
+        } else*/ if ( !configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter) && matchedToken.image.contains("\\'") ) {
+            matchedToken.image = image.substring(0, image.indexOf("\\'")+1) + "'";
+            for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
+              if ( CCJSqlParserConstants.tokenImage[i].equals("<S_CHAR_LITERAL>") ) {
+                  matchedToken.kind = i;
+              }
+            }
+            input_stream.backup(image.length() - matchedToken.image.length() );
+        }
     }
-|   < #ESC: "\\" ["n","t","b","r","f","\\","'","\""] >
+| < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" | "$$" (~["\n","\r","\""])* "$$" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
+    {
+        if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation) && matchedToken.image.charAt(0) == '[' ) {
+            matchedToken.image = "[";
+            for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
+                if (CCJSqlParserConstants.tokenImage[i].equals("\"[\"")) {
+                    matchedToken.kind = i;
+                }
+            }
+            input_stream.backup(image.length() - 1);
+        }
+    }
 }
 
 
@@ -3452,10 +3478,17 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
     LikeExpression result = new LikeExpression();
     Expression rightExpression = null;
     Expression escape;
+    Token token;
 }
 {
     [<K_NOT> { result.setNot(true); } ] ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
-    [ LOOKAHEAD(2) <K_ESCAPE> escape=Expression() { result.setEscape(escape); }]
+    [ LOOKAHEAD(2) <K_ESCAPE>
+        (
+            LOOKAHEAD(2)  token = <S_CHAR_LITERAL> { result.setEscape( new StringValue( token.image ) ); }
+            |
+            escape=Expression() { result.setEscape(escape); }
+        )
+    ]
     {
         result.setLeftExpression(leftExpression);
         result.setRightExpression(rightExpression);
@@ -4141,7 +4174,7 @@ DateTimeLiteralExpression DateTimeLiteralExpression() : {
     t=<S_CHAR_LITERAL> { expr.setValue(t.image); return expr; }
 }
 
-ArrayConstructor ArrayConstructor(final boolean arrayKeyword) : {
+ArrayConstructor ArrayConstructor(boolean arrayKeyword) : {
     ArrayList<Expression> expList = new ArrayList();
     ArrayConstructor array = new ArrayConstructor(expList, arrayKeyword);
     Expression exp = null;

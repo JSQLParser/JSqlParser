@@ -41,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -309,7 +310,12 @@ public class InsertTest {
 
     @Test
     public void testIssue223() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("INSERT INTO user VALUES (2001, '\\'Clark\\'', 'Kent')");
+        String sqlStr="INSERT INTO user VALUES (2001, '\\'Clark\\'', 'Kent')";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                sqlStr
+                , true
+                , parser -> parser.withBackslashEscapeCharacter(true)
+        );
     }
 
     @Test

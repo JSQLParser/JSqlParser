@@ -759,7 +759,12 @@ public enum Feature {
      */
     allowUnsupportedStatements(false),
 
-    timeOut( 6000)
+    timeOut( 6000),
+
+    /**
+     * allows Backslash '\' as Escape Character
+     */
+    allowBackslashEscapeCharacter(false),
     ;
 
     private Object value;
