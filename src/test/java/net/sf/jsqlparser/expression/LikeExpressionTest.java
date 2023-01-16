@@ -110,4 +110,35 @@ public class LikeExpressionTest {
                 , parser -> parser.withBackslashEscapeCharacter(false)
         );
     }
+
+    @Test
+    public void testEscapingIssue875() throws JSQLParserException {
+        String sqlStr="insert into standard_table(gmt_create, gmt_modified, config_name, standard_code) values (now(), now(), null, 'if \n"
+                      + "@fac.sql_type in \n"
+                      + "[ ''UPDATE'', ''DELETE'', ''INSERT'', ''INSERT_SELECT''] \n"
+                      + "then \n"
+                      + "@act.allow_submit \n"
+                      + "end \n"
+                      + "')"
+                      ;
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                sqlStr
+                , true
+                , parser -> parser.withBackslashEscapeCharacter(false)
+        );
+
+        sqlStr="insert into standard_table(gmt_create, gmt_modified, config_name, standard_code) values (now(), now(), null, 'if \n"
+                      + "@fac.sql_type in \n"
+                      + "[ \\'UPDATE\\', \\'DELETE\\', \\'INSERT\\', \\'INSERT_SELECT\\'] \n"
+                      + "then \n"
+                      + "@act.allow_submit \n"
+                      + "end \n"
+                      + "')"
+                ;
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                sqlStr
+                , true
+                , parser -> parser.withBackslashEscapeCharacter(true)
+        );
+    }
 }
