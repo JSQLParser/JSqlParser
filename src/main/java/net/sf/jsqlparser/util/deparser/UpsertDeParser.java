@@ -38,7 +38,7 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
     }
 
     @Override
-    @SuppressWarnings("PMD.CyclomaticComplexity")
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(Upsert upsert) {
         switch (upsert.getUpsertType()) {
             case REPLACE:

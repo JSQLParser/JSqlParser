@@ -311,7 +311,7 @@ public class InsertTest {
     @Test
     public void testIssue223() throws JSQLParserException {
         String sqlStr="INSERT INTO user VALUES (2001, '\\'Clark\\'', 'Kent')";
-        TestUtils.assertSqlCanBeParsedAndDeparsed(
+        assertSqlCanBeParsedAndDeparsed(
                 sqlStr
                 , true
                 , parser -> parser.withBackslashEscapeCharacter(true)

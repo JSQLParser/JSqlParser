@@ -154,7 +154,7 @@ public class Upsert implements Statement {
     }
     
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder sb = new StringBuilder();
 

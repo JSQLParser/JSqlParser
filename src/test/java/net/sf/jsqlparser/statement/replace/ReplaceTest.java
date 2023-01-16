@@ -13,7 +13,6 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.test.TestUtils;
@@ -24,9 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ReplaceTest {
-
-    private static final CCJSqlParserManager PARSER_MANAGER = new CCJSqlParserManager();
-
     @Test
     public void testReplaceSyntax1() throws JSQLParserException {
         String statement = "REPLACE mytable SET col1='as', col2=?, col3=565";
@@ -40,7 +36,6 @@ public class ReplaceTest {
         assertTrue( upsert.getSetExpressions().get(1) instanceof JdbcParameter);
         assertEquals(565, ((LongValue) upsert.getSetExpressions().get(2)).getValue());
         assertEquals(statement, "" + upsert);
-
     }
 
     @Test
