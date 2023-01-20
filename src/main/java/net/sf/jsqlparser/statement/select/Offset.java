@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
 
-public class Offset {
+import java.io.Serializable;
+
+public class Offset implements Serializable {
     private Expression offsetExpression = null;
     private String offsetParam = null;
 

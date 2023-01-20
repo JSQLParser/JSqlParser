@@ -10,6 +10,7 @@
 
 package net.sf.jsqlparser.expression;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -17,7 +18,7 @@ import java.util.Objects;
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 
-public class JsonKeyValuePair {
+public class JsonKeyValuePair implements Serializable {
   private final String key;
   private boolean usingKeyKeyword = false;
   private final Object value;

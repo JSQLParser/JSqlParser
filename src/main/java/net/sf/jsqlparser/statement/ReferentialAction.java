@@ -9,7 +9,9 @@
  */
 package net.sf.jsqlparser.statement;
 
-public class ReferentialAction {
+import java.io.Serializable;
+
+public class ReferentialAction implements Serializable {
 
     private Type type;
     private Action action;

@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.io.Serializable;
+
 /**
  * A optimize for clause.
  */
-public class OptimizeFor {
+public class OptimizeFor implements Serializable {
 
     private long rowCount;
 

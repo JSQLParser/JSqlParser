@@ -30,6 +30,7 @@
             <groupId>net.java.dev.javacc</groupId>
             <artifactId>javacc</artifactId>
             <version>7.0.12</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -125,6 +126,7 @@
                     <mainClass>net.sf.jsqlparser.parser.ParserKeywordsUtils</mainClass>
                     <arguments>
                         <argument>src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt</argument>
+                        <argument>src/site/sphinx/keywords.rst</argument>
                     </arguments>
                 </configuration>
             </plugin>
@@ -165,6 +167,16 @@
                     <dependency>
                         <groupId>net.sourceforge.pmd</groupId>
                         <artifactId>pmd-java</artifactId>
+                        <version>${pmdVersion}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>net.sourceforge.pmd</groupId>
+                        <artifactId>pmd-javascript</artifactId>
+                        <version>${pmdVersion}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>net.sourceforge.pmd</groupId>
+                        <artifactId>pmd-jsp</artifactId>
                         <version>${pmdVersion}</version>
                     </dependency>
                 </dependencies>
@@ -250,6 +262,9 @@
                     <canUpdateDescription>false</canUpdateDescription>
                     <licenseName>dual_lgpl_ap2</licenseName>
                     <licenseResolver>${project.baseUri}/src/license</licenseResolver>
+                    <excludes>
+                        <exclude>site/sphinx/**</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -299,8 +314,8 @@
                     <execution>
                         <id>attach-javadocs</id>
                         <configuration>
-                            <additionalparam>${javadoc.opts}</additionalparam>
-                            <excludePackageNames>net.sf.jsqlparser.parser</excludePackageNames> 
+                            <additionalOptions>${javadoc.opts}</additionalOptions>
+                            <excludePackageNames>net.sf.jsqlparser.parser</excludePackageNames>
                         </configuration>
                         <goals>
                             <goal>jar</goal>

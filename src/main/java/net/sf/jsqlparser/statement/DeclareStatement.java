@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -189,7 +190,7 @@ public final class DeclareStatement implements Statement {
         return this.withColumnDefinitions(collection);
     }
 
-    public static class TypeDefExpr {
+    public static class TypeDefExpr implements Serializable {
 
         public final UserVariable userVariable;
         public final ColDataType colDataType;

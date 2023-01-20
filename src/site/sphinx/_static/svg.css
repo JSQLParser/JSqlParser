@@ -1,0 +1,34 @@
+div .ebnf
+{
+  display: block;
+  padding: 2pt;
+  margin-bottom: 22pt;
+  font:10px 'Roboto-Mono',monospace;
+}
+
+@namespace "http://www.w3.org/2000/svg";
+    .line                 {fill: none; stroke: #001133; stroke-width: 1;}
+    .bold-line            {stroke: #000714; shape-rendering: crispEdges; stroke-width: 2;}
+    .thin-line            {stroke: #000A1F; shape-rendering: crispEdges;}
+    .filled               {fill: #001133; stroke: none;}
+    text.terminal         {font-family: Roboto, Sans-serif;
+                            font-size: 10px;
+                            fill: #000714;
+                            font-weight: bold;
+                          }
+    text.nonterminal      {font-family: Roboto, Sans-serif;
+                            font-size: 10px;
+                            fill: #00091A;
+                            font-weight: normal;
+                          }
+    text.regexp           {font-family: Roboto, Sans-serif;
+                            font-size: 10px;
+                            fill: #000A1F;
+                            font-weight: normal;
+                          }
+    rect, circle, polygon {fill: #001133; stroke: #001133;}
+    rect.terminal         {fill: #4D88FF; stroke: #001133; stroke-width: 1;}
+    rect.nonterminal      {fill: #9EBFFF; stroke: #001133; stroke-width: 1;}
+    rect.text             {fill: none; stroke: none;}
+    polygon.regexp        {fill: #C7DAFF; stroke: #001133; stroke-width: 1;}
+  

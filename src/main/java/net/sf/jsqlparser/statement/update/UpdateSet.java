@@ -13,11 +13,12 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
-public class UpdateSet {
+public class UpdateSet implements Serializable {
     protected boolean usingBracketsForColumns = false;
     protected boolean usingBracketsForValues = false;
     protected ArrayList<Column> columns = new ArrayList<>();

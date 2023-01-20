@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.JdbcParameter;
 
-public class Fetch {
+import java.io.Serializable;
+
+public class Fetch implements Serializable {
 
     private long rowCount;
     private JdbcParameter fetchJdbcParameter = null;

@@ -9,11 +9,12 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.io.Serializable;
 import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
-public class WindowDefinition {
+public class WindowDefinition implements Serializable {
 
 
     final OrderByClause orderBy = new OrderByClause();

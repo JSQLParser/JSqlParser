@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.JdbcParameter;
 
-public class First {
+import java.io.Serializable;
+
+public class First implements Serializable {
 
     public enum Keyword {
         FIRST,
