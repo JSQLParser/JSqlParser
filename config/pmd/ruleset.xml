@@ -48,8 +48,8 @@ under the License.
 	<rule ref="category/java/codestyle.xml/UnnecessaryReturn" />
 	<rule ref="category/java/codestyle.xml/UselessParentheses" />
 	<rule ref="category/java/codestyle.xml/UselessQualifiedThis" />
-    
-		<!-- for Codazy -->
+
+	<!-- for Codazy -->
 	<rule ref="category/java/codestyle.xml/MethodNamingConventions">
 		<properties>
 			<property name="methodPattern" value="[a-z][a-zA-Z0-9]*" />

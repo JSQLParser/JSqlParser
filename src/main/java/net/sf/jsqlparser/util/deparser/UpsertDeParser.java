@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.Iterator;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -22,6 +20,10 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.upsert.UpsertType;
+
+import java.util.Iterator;
+import java.util.List;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsListVisitor {
@@ -36,26 +38,69 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(Upsert upsert) {
-        buffer.append("UPSERT INTO ");
+        switch (upsert.getUpsertType()) {
+            case REPLACE:
+            case REPLACE_SET:
+                buffer.append("REPLACE ");
+                break;
+            case INSERT_OR_ABORT:
+                buffer.append("INSERT OR ABORT ");
+                break;
+            case INSERT_OR_FAIL:
+                buffer.append("INSERT OR FAIL ");
+                break;
+            case INSERT_OR_IGNORE:
+                buffer.append("INSERT OR IGNORE ");
+                break;
+            case INSERT_OR_REPLACE:
+                buffer.append("INSERT OR REPLACE ");
+                break;
+            case INSERT_OR_ROLLBACK:
+                buffer.append("INSERT OR ROLLBACK ");
+                break;
+            case UPSERT:
+            default:
+                buffer.append("UPSERT ");
+        }
 
+        if (upsert.isUsingInto()) {
+            buffer.append("INTO ");
+        }
         buffer.append(upsert.getTable().getFullyQualifiedName());
-        if (upsert.getColumns() != null) {
-            appendColumns(upsert);
-        }
 
-        if (upsert.getItemsList() != null) {
-            upsert.getItemsList().accept(this);
-        }
+        if (upsert.getUpsertType() == UpsertType.REPLACE_SET) {
+            appendReplaceSetClause(upsert);
+        } else {
+            if (upsert.getColumns() != null) {
+                appendColumns(upsert);
+            }
 
-        if (upsert.getSelect() != null) {
-            appendSelect(upsert);
-        }
+            if (upsert.getItemsList() != null) {
+                upsert.getItemsList().accept(this);
+            }
 
-        if (upsert.isUseDuplicate()) {
-            appendDuplicate(upsert);
-        }
+            if (upsert.getSelect() != null) {
+                appendSelect(upsert);
+            }
 
+            if (upsert.isUseDuplicate()) {
+                appendDuplicate(upsert);
+            }
+        }
+    }
+
+    private void appendReplaceSetClause(Upsert upsert) {
+        buffer.append(" SET ");
+        // each element from expressions match up with a column from columns.
+        List<Expression> expressions = upsert.getSetExpressions();
+        for (int i = 0, s = upsert.getColumns().size(); i < s; i++) {
+            buffer.append(upsert.getColumns().get(i)).append("=").append(expressions.get(i));
+            buffer.append( i < s - 1
+                       ? ", "
+                       : "" );
+        }
     }
 
     private void appendColumns(Upsert upsert) {

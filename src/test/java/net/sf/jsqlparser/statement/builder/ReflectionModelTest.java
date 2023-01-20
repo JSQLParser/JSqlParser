@@ -9,16 +9,18 @@
  */
 package net.sf.jsqlparser.statement.builder;
 
-import java.util.List;
 import net.sf.jsqlparser.expression.AnyType;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperatorType;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.ExplainStatement.OptionType;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.select.SubSelect;
-import static net.sf.jsqlparser.test.TestUtils.*;
 import net.sf.jsqlparser.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static net.sf.jsqlparser.test.TestUtils.asList;
 
 /**
  * Testing of setters, getters, with-/add-methods by calling them with random parameter-values
@@ -148,7 +150,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.drop.Drop(),
             new net.sf.jsqlparser.statement.execute.Execute(), new net.sf.jsqlparser.statement.grant.Grant(),
             new net.sf.jsqlparser.statement.insert.Insert(), new net.sf.jsqlparser.statement.merge.Merge(),
-            new net.sf.jsqlparser.statement.merge.MergeUpdate(), new net.sf.jsqlparser.statement.replace.Replace(),
+            new net.sf.jsqlparser.statement.merge.MergeUpdate(),
             new net.sf.jsqlparser.statement.select.AllColumns(),
             new net.sf.jsqlparser.statement.select.AllTableColumns(),
             new net.sf.jsqlparser.statement.select.Distinct(), new net.sf.jsqlparser.statement.select.ExceptOp(),

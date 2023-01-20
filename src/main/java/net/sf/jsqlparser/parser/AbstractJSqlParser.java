@@ -36,6 +36,10 @@ public abstract class AbstractJSqlParser<P> {
     public P withTimeOut(int timeOutMillSeconds) {
         return withFeature(Feature.timeOut, timeOutMillSeconds);
     }
+
+    public P withBackslashEscapeCharacter(boolean allowBackslashEscapeCharacter) {
+        return withFeature(Feature.allowBackslashEscapeCharacter, allowBackslashEscapeCharacter);
+    }
     
     public P withFeature(Feature f, boolean enabled) {
         getConfiguration().setValue(f, enabled);

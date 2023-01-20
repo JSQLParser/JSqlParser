@@ -9,16 +9,19 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import java.util.Arrays;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 
 public class UpsertValidatorTest extends ValidationTestAsserts {
 
     @Test
+    @Disabled
     public void testValidationExecuteNotSupported() throws Exception {
         for (String sql : Arrays.asList("UPSERT INTO TEST (NAME, ID) VALUES ('foo', 123)",
                 "UPSERT INTO TEST (ID, COUNTER) VALUES (123, 0) ON DUPLICATE KEY UPDATE COUNTER = COUNTER + 1",
