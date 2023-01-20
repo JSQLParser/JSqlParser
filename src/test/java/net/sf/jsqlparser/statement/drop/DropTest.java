@@ -132,4 +132,10 @@ public class DropTest {
     public void testDropFunctionWithNameAndParameterizedType() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP FUNCTION myFunc(amount integer, name varchar(255))");
     }
+
+    @Test
+    void dropTemporaryTableTestIssue1712() throws JSQLParserException {
+        String sqlStr="drop temporary table if exists tmp_MwYT8N0z";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

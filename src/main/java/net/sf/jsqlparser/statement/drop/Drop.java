@@ -30,6 +30,8 @@ public class Drop implements Statement {
     private boolean ifExists = false;
     private boolean materialized = false;
 
+    private boolean isUsingTemporary;
+
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
@@ -67,6 +69,19 @@ public class Drop implements Statement {
         this.ifExists = ifExists;
     }
 
+    public boolean isUsingTemporary() {
+        return isUsingTemporary;
+    }
+
+    public void setUsingTemporary(boolean useTemporary) {
+        this.isUsingTemporary=useTemporary;
+    }
+
+    public Drop withUsingTemporary(boolean useTemporary) {
+        setUsingTemporary(useTemporary);
+        return this;
+    }
+
     public boolean isMaterialized() {
         return materialized;
     }
@@ -85,7 +100,8 @@ public class Drop implements Statement {
 
     @Override
     public String toString() {
-        String sql = "DROP " 
+        String sql = "DROP "
+                + (isUsingTemporary ? "TEMPORARY " : "")
                 + (materialized ? "MATERIALIZED " : "")
                 + type + " "
                 + (ifExists ? "IF EXISTS " : "") + name.toString();
