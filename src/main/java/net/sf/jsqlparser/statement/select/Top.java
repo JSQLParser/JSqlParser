@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
 
-public class Top {
+import java.io.Serializable;
+
+public class Top implements Serializable {
 
     private boolean hasParenthesis = false;
     private boolean isPercentage = false;

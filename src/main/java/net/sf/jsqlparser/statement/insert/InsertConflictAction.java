@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -31,9 +32,11 @@ import java.util.Objects;
  * </pre>
  */
 
-public class InsertConflictAction {
-    private final ArrayList<UpdateSet> updateSets = new ArrayList<>();
+public class InsertConflictAction implements Serializable {
     ConflictActionType conflictActionType;
+
+    private final ArrayList<UpdateSet> updateSets = new ArrayList<>();
+
     Expression whereExpression;
     public InsertConflictAction(ConflictActionType conflictActionType) {
         this.conflictActionType = Objects.requireNonNull(conflictActionType, "The Conflict Action Type is mandatory and must not be Null.");

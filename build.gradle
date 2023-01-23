@@ -1,3 +1,7 @@
+import se.bjurr.gitchangelog.plugin.gradle.GitChangelogTask
+
+import java.nio.charset.Charset
+
 plugins {
     id 'java'
     id 'maven-publish'
@@ -9,47 +13,78 @@ plugins {
     
     // download the RR tools which have no Maven Repository
     id "de.undercouch.download" version "latest.release"
+
+    id "se.bjurr.gitchangelog.git-changelog-gradle-plugin" version "latest.release"
 }
 
+
+
 group = 'com.github.jsqlparser'
-version = '4.6-SNAPSHOT'
+
+def getVersion = { boolean considerSnapshot ->
+    def major = 0
+    def minor = 0
+    def patch = 0
+    def commit = ""
+    def snapshot =""
+    new ByteArrayOutputStream().withStream { os ->
+        exec {
+            workingDir "$projectDir"
+            args = [
+                    "--no-pager"
+                    , "describe"
+                    , "--tags"
+                    , "--always"
+                    , "--dirty=-SNAPSHOT"
+            ]
+            executable "git"
+            standardOutput = os
+        }
+        def matcher = os.toString() =~ /jsqlparser-(\d*)\.(\d*)-(\d*)-([a-zA-Z\d]*)/
+        matcher.find()
+
+        major = matcher[0][1]
+        minor = matcher[0][2]
+        patch = matcher[0][3]
+        commit = matcher[0][4]
+
+        if (considerSnapshot && os.toString().trim().endsWith("-SNAPSHOT")) {
+            minor++
+            snapshot =  "-SNAPSHOT"
+        }
+    }
+    return "${major}.${minor}${snapshot}"
+}
+version = getVersion(true)
+
 description = 'JSQLParser library'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
-	gradlePluginPortal()
+    gradlePluginPortal()
     mavenLocal()
     mavenCentral()
-    maven {
-        url = uri('https://repo.maven.apache.org/maven2/')
-    }
-
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
 }
 
 dependencies {
-    testImplementation 'commons-io:commons-io:2.11.0'
-
-    // This is needed for the Validation Framework tests
-    testImplementation 'org.hamcrest:hamcrest-library:+'
-
-    testImplementation 'org.mockito:mockito-core:+'
-    testImplementation 'org.assertj:assertj-core:+'
-    testImplementation 'org.apache.commons:commons-lang3:+'
+    testImplementation 'commons-io:commons-io:2.+'
+    testImplementation 'org.apache.commons:commons-text:+'
+    testImplementation 'org.mockito:mockito-core:4.+'
+    testImplementation 'org.assertj:assertj-core:3.+'
+    testImplementation 'org.hamcrest:hamcrest-core:2.+'
+    testImplementation 'org.apache.commons:commons-lang3:3.+'
     testImplementation 'com.h2database:h2:2.+'
 
     // for JaCoCo Reports
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:+'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
     testImplementation 'org.mockito:mockito-junit-jupiter:4.+'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:+'
 
     // enforce latest version of JavaCC
-    implementation 'net.java.dev.javacc:javacc:7.0.12'
+    testImplementation 'net.java.dev.javacc:javacc:7.0.12'
     javacc 'net.java.dev.javacc:javacc:7.0.12'
 }
 
@@ -60,13 +95,6 @@ compileJavacc {
 java {
     withSourcesJar()
     withJavadocJar()
-
-    spotbugs
-    pmd
-}
-
-jacoco {
-    toolVersion = "0.8.7"
 }
 
 test {
@@ -82,8 +110,7 @@ test {
             '-Djunit.jupiter.execution.parallel.mode.default=concurrent'
     ]
 
-    finalizedBy jacocoTestReport // report is always generated after tests run
-    finalizedBy jacocoTestCoverageVerification
+    finalizedBy check
 }
 
 jacocoTestReport {
@@ -180,7 +207,7 @@ spotbugs {
 
 pmd {
     consoleOutput = false
-    toolVersion = "6.46.0"
+    //toolVersion = "6.46.0"
     
     sourceSets = [sourceSets.main]
     
@@ -188,7 +215,6 @@ pmd {
     ruleSets = []
     
     //rulesMinimumPriority = 1
-    
     ruleSetFiles = files("config/pmd/ruleset.xml")
     
     pmdMain {
@@ -199,7 +225,6 @@ pmd {
 }
 
 checkstyle {
-    toolVersion "9.2"
     sourceSets = [sourceSets.main, sourceSets.test]
     configFile =rootProject.file('config/checkstyle/checkstyle.xml')
 }
@@ -212,6 +237,7 @@ tasks.withType(Checkstyle) {
 }
 
 task renderRR() {
+    dependsOn(compileJavacc)
     doLast {
         // these WAR files have been provided as a courtesy by Gunther Rademacher 
         // and belong to the RR - Railroad Diagram Generator Project
@@ -224,37 +250,77 @@ task renderRR() {
             dest "$buildDir/rr/convert.war"
             overwrite false
         }
-        
+
         download.run {
             src 'http://manticore-projects.com/download/rr.war'
             dest "$buildDir/rr/rr.war"
             overwrite false
         }
-        
-        javaexec { 
-          standardOutput = new FileOutputStream("${buildDir}/rr/JSqlParserCC.ebnf")
-          main="-jar"
-          args = [
-              "$buildDir/rr/convert.war",
-              "$buildDir/generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj"
+
+        javaexec {
+            standardOutput = new FileOutputStream("${buildDir}/rr/JSqlParserCC.ebnf")
+            main = "-jar"
+            args = [
+                    "$buildDir/rr/convert.war",
+                    "$buildDir/generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj"
             ]
         }
-        
+
         javaexec {
-          main="-jar"
-          args = [
-              "$buildDir/rr/rr.war",
-              "-noepsilon",
-              "-color:#4D88FF",
-              "-offset:0",
-              "-width:800",
-              //"-png",
-              //"-out:${buildDir}/rr/JSqlParserCC.zip",
-              "-out:${buildDir}/rr/JSqlParserCC.xhtml",
-              "${buildDir}/rr/JSqlParserCC.ebnf"
+            main = "-jar"
+            args = [
+                    "$buildDir/rr/rr.war",
+                    "-noepsilon",
+                    "-color:#4D88FF",
+                    "-offset:0",
+                    "-width:800",
+                    //"-png",
+                    //"-out:${buildDir}/rr/JSqlParserCC.zip",
+                    "-out:${buildDir}/rr/JSqlParserCC.xhtml",
+                    "${buildDir}/rr/JSqlParserCC.ebnf"
             ]
-        } 
+        }
+
+        //@todo: a Java based solution may be more appropriate here
+        exec {
+            commandLine "sh", "-c", "xsltproc src/main/resources/rr/xhtml2rst.xsl $buildDir/rr/JSqlParserCC.xhtml > src/site/sphinx/syntax.rst"
+        }
     }
+}
+
+task gitChangelogTask(type: GitChangelogTask) {
+    fromRepo = file("$projectDir")
+    file = new File("${projectDir}/src/site/sphinx/changelog.rst")
+    fromRef = "4.0"
+    //toRef = "1.1";
+    templateContent ="""
+************************
+Changelog
+************************
+
+
+{{#tags}}
+{{#ifMatches name "^Unreleased.*"}}
+Latest Changes since |JSQLPARSER_VERSION|
+{{/ifMatches}}
+{{#ifMatches name "^(?!Unreleased).*"}}
+Version {{name}}
+{{/ifMatches}}
+=============================================================
+
+ {{#issues}}
+
+  {{#commits}}
+   {{#ifMatches messageTitle "^(?!Merge).*"}}
+  * **{{{messageTitle}}}**
+    
+    {{authorName}}, {{commitDate}}
+   {{/ifMatches}}
+  {{/commits}}
+
+ {{/issues}}
+{{/tags}}
+"""
 }
 
 task updateKeywords(type: JavaExec) {
@@ -262,21 +328,115 @@ task updateKeywords(type: JavaExec) {
     description = "Run the main class with JavaExecTask"
     classpath = sourceSets.main.runtimeClasspath
     args = [
-            //project(':JSQLParser').file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath
             file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath
+            , file('src/site/sphinx/keywords.rst').absolutePath
     ]
-    mainClass = 'net.sf.jsqlparser.parser.ParserKeywordsUtils'
+    main("net.sf.jsqlparser.parser.ParserKeywordsUtils")
+
+    dependsOn(compileJava)
+}
+
+task sphinx(type: Exec) {
+    dependsOn(gitChangelogTask, renderRR, updateKeywords)
+
+    String PROLOG = """
+.. |_| unicode:: U+00A0 
+    :trim: 
+
+.. |JSQLPARSER_EMAIL| replace:: support@manticore-projects.com
+.. |JSQLPARSER_VERSION| replace:: ${getVersion(false)}
+.. |JSQLPARSER_SNAPSHOT_VERSION| replace:: ${getVersion(true)}
+.. |JSQLPARSER_STABLE_VERSION_LINK| raw:: html
+
+    <a href='http://manticore-projects.com/download/${project.name}-${getVersion(false)}/${project.name}-${getVersion(false)}.jar'>${project.name}-${getVersion(false)}.jar</a>
+
+.. |JSQLPARSER_SNAPSHOT_VERSION_LINK| raw:: html
+
+    <a href='http://manticore-projects.com/download/${project.name}-${getVersion(false)}/${project.name}-${getVersion(true)}.jar'>${project.name}-${getVersion(true)}.jar</a>
+
+"""
+
+    args = [
+            "-Dproject=JSQLParser"
+            , "-Dcopyright=Tobias Warnecke, 2022"
+            , "-Dauthor=Tobias Warnecke"
+            , "-Drelease=${getVersion(false)}"
+            , "-Drst_prolog=$PROLOG"
+            , "${projectDir}/src/site/sphinx"
+            , "${project.buildDir}/sphinx"
+    ]
+
+    executable "sphinx-build"
+
+    //store the output instead of printing to the console:
+    standardOutput = new ByteArrayOutputStream()
+
+    //extension method stopTomcat.output() can be used to obtain the output:
+    ext.output = {
+        return standardOutput.toString()
+    }
 }
 
 publishing {
     publications {
-        maven(MavenPublication) {
+        mavenJava(MavenPublication) {
             artifactId 'jsqlparser'
             from(components.java)
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('testFixturesRuntimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+        }
+    }
+    repositories {
+
+        maven {
+            // Username and Password are defined in ~/.gradle/gradle.properties
+            name "ossrh"
+            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials(PasswordCredentials)
         }
     }
 }
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+}
+
+task upload(type: Exec) {
+    dependsOn(build, gitChangelogTask)
+
+    def versionStable = getVersion(false)
+
+    if( findProperty("${project.name}.host")==null ) {
+        println(
+"""
+Property \"${project.name}.host\' not found.
+Please define \"${project.name}.host\" in the Gradle configuration (e. g. \$HOME/.gradle/gradle.properties.
+"""
+        )
+    } else {
+
+        // define the USERNAME and HOST properties in ~/.gradle/gradle.properties
+        args = ["sftp://${findProperty("${project.name}.username")}@${findProperty("${project.name}.host")}/download"]
+
+        executable "sftp"
+
+        standardInput = new ByteArrayInputStream("""<<EOF
+                                                mkdir ${project.name}-${versionStable}
+                                                cd ${project.name}-${versionStable}
+                                                put build/libs/*
+                                                quit
+                                                EOF"""
+                .getBytes(Charset.defaultCharset()))
+
+        standardOutput = new ByteArrayOutputStream()
+        ext.output = {
+            return standardOutput.toString()
+        }
+    }
 }

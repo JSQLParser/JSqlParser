@@ -88,6 +88,11 @@ public class DropTest {
     }
 
     @Test
+    public void testDropMaterializedView() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP MATERIALIZED VIEW myview");
+    }
+
+    @Test
     public void testDropSchemaIssue855() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP SCHEMA myschema");
     }
@@ -126,5 +131,11 @@ public class DropTest {
     @Test
     public void testDropFunctionWithNameAndParameterizedType() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP FUNCTION myFunc(amount integer, name varchar(255))");
+    }
+
+    @Test
+    void dropTemporaryTableTestIssue1712() throws JSQLParserException {
+        String sqlStr="drop temporary table if exists tmp_MwYT8N0z";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

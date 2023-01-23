@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,7 +18,7 @@ import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.schema.Column;
 
-public class Pivot {
+public class Pivot implements Serializable {
 
     private List<FunctionItem> functionItems;
     private List<Column> forColumns;

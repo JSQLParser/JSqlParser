@@ -15,3 +15,4 @@ insert
 select object_id, created from all_objects
 
 --@FAILURE: Encountered unexpected token: "when" "WHEN" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered unexpected token: "insert" "INSERT" recorded first on 11 Jan 2023, 21:07:10

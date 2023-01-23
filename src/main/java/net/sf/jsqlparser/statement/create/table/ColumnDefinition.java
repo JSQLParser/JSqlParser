@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,7 +21,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 /**
  * Globally used definition class for columns.
  */
-public class ColumnDefinition {
+public class ColumnDefinition implements Serializable {
 
     private String columnName;
     private ColDataType colDataType;

@@ -12,9 +12,10 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.schema.Column;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class UnPivot {
+public class UnPivot implements Serializable {
 
     private boolean includeNulls = false;
     private boolean includeNullsSpecified = false;

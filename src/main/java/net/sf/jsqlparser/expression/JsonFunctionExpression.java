@@ -10,6 +10,7 @@
 
 package net.sf.jsqlparser.expression;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -17,7 +18,7 @@ import java.util.Objects;
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 
-public class JsonFunctionExpression {
+public class JsonFunctionExpression implements Serializable {
     private final Expression expression;
 
     private boolean usingFormatJson = false;

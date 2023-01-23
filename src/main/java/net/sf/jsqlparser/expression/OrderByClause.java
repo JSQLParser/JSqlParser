@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
-public class OrderByClause {
+public class OrderByClause implements Serializable {
     private List<OrderByElement> orderByElements;
 
     public List<OrderByElement> getOrderByElements() {

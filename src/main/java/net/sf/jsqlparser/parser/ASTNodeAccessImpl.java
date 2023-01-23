@@ -11,7 +11,7 @@ package net.sf.jsqlparser.parser;
 
 public class ASTNodeAccessImpl implements ASTNodeAccess {
 
-    private SimpleNode node;
+    private transient SimpleNode node;
 
     @Override
     public SimpleNode getASTNode() {

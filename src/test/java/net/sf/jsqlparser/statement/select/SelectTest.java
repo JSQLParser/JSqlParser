@@ -42,6 +42,7 @@ import net.sf.jsqlparser.statement.Statements;
 import static net.sf.jsqlparser.test.TestUtils.*;
 
 import net.sf.jsqlparser.test.MemoryLeakVerifier;
+import net.sf.jsqlparser.test.TestUtils;
 import org.apache.commons.io.IOUtils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -3066,29 +3067,53 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT @@SPID AS ID, SYSTEM_USER AS \"Login Name\", USER AS \"User Name\"");
     }
 
-    @Test
-    public void testIssue167_singleQuoteEscape() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT 'a'");
-        assertSqlCanBeParsedAndDeparsed("SELECT ''''");
-        assertSqlCanBeParsedAndDeparsed("SELECT '\\''");
-        assertSqlCanBeParsedAndDeparsed("SELECT 'ab''ab'");
-        assertSqlCanBeParsedAndDeparsed("SELECT 'ab\\'ab'");
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT 'a'"
+            , "SELECT ''''"
+            , "SELECT '\\''"
+            , "SELECT 'ab''ab'"
+            , "SELECT 'ab\\'ab'"
+    })
+    public void testIssue167_singleQuoteEscape(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                sqlStr
+                , true
+                , parser -> parser.withBackslashEscapeCharacter(true)
+        );
     }
 
-    @Test
-    public void testIssue167_singleQuoteEscape2() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT '\\'''");
-        assertSqlCanBeParsedAndDeparsed("SELECT '\\\\\\''");
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT '\\'''"
+            , "SELECT '\\\\\\''"
+    })
+    public void testIssue167_singleQuoteEscape2(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                sqlStr
+                , true
+                , parser -> parser.withBackslashEscapeCharacter(true)
+        );
     }
 
     @Test
     public void testIssue77_singleQuoteEscape2() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT 'test\\'' FROM dual");
+        String sqlStr ="SELECT 'test\\'' FROM dual";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                sqlStr
+                , true
+                , parser -> parser.withBackslashEscapeCharacter(true)
+        );
     }
 
     @Test
     public void testIssue223_singleQuoteEscape() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT '\\'test\\''");
+        String sqlStr = "SELECT '\\'test\\''";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                sqlStr
+                , true
+                , parser -> parser.withBackslashEscapeCharacter(true)
+        );
     }
 
     @Test

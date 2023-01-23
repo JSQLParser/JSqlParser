@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
@@ -127,7 +128,7 @@ public final class SetStatement implements Statement {
         statementVisitor.visit(this);
     }
 
-    static class NameExpr {
+    static class NameExpr implements Serializable {
 
         private Object name;
         private List<Expression> expressions;

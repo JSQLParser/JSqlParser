@@ -12,7 +12,9 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
-public class ExpressionListItem {
+import java.io.Serializable;
+
+public class ExpressionListItem implements Serializable {
 
     private ExpressionList expressionList;
     private Alias alias;

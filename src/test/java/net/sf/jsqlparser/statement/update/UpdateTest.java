@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 
 public class UpdateTest {
@@ -79,7 +80,13 @@ public class UpdateTest {
 
     @Test
     public void testUpdateIssue167_SingleQuotes() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("UPDATE tablename SET NAME = 'Customer 2', ADDRESS = 'Address \\' ddad2', AUTH_KEY = 'samplekey' WHERE ID = 2");
+        String sqlStr = "UPDATE tablename SET NAME = 'Customer 2', ADDRESS = 'Address \\' ddad2', AUTH_KEY = 'samplekey' WHERE ID = 2";
+
+        assertSqlCanBeParsedAndDeparsed(
+                sqlStr
+                , true
+                , parser -> parser.withBackslashEscapeCharacter(true)
+        );
     }
 
     @Test

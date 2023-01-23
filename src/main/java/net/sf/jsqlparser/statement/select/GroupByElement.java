@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,7 +18,7 @@ import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
-public class GroupByElement {
+public class GroupByElement implements Serializable {
     // ExpressionList has 'usingBrackets = true' and so we need to switch it off explicitly
     private ExpressionList groupByExpressions = new ExpressionList().withUsingBrackets(false);
     private List groupingSets = new ArrayList();

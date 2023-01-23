@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -28,7 +29,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
-public class AlterExpression {
+public class AlterExpression implements Serializable {
 
   private AlterOperation operation;
   private String optionalSpecifier;
@@ -724,7 +725,7 @@ public class AlterExpression {
     }
   }
 
-  public static final class ColumnDropNotNull {
+  public static final class ColumnDropNotNull implements Serializable {
 
     private final String columnName;
     private final boolean withNot;
@@ -752,7 +753,7 @@ public class AlterExpression {
     }
   }
 
-  public static final class ColumnDropDefault {
+  public static final class ColumnDropDefault implements Serializable {
 
     private final String columnName;
 

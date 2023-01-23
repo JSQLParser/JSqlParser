@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.JdbcParameter;
 
-public class Skip {
+import java.io.Serializable;
+
+public class Skip implements Serializable {
 
     private Long rowCount;
     private JdbcParameter jdbcParameter;

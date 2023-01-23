@@ -9,7 +9,9 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-public class Wait {
+import java.io.Serializable;
+
+public class Wait implements Serializable {
 
     private long timeout;
 

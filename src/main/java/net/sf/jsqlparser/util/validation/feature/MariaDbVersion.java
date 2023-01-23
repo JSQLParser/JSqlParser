@@ -9,11 +9,11 @@
  */
 package net.sf.jsqlparser.util.validation.feature;
 
+import net.sf.jsqlparser.parser.feature.Feature;
+
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-
-import net.sf.jsqlparser.parser.feature.Feature;
 
 /**
  * Please add Features supported and place a link to public documentation
@@ -99,7 +99,7 @@ public enum MariaDbVersion implements Version {
                     Feature.dropViewIfExists, Feature.dropSchemaIfExists, Feature.dropSequenceIfExists,
 
                     // https://mariadb.com/kb/en/replace/
-                    Feature.replace,
+                    Feature.upsert,
 
                     // https://mariadb.com/kb/en/alter/
                     Feature.alterTable,

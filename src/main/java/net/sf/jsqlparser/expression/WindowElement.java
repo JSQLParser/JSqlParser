@@ -9,7 +9,9 @@
  */
 package net.sf.jsqlparser.expression;
 
-public class WindowElement {
+import java.io.Serializable;
+
+public class WindowElement implements Serializable {
 
     public enum Type {
 
