@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  #%L
+  JSQLParser library
+  %%
+  Copyright (C) 2004 - 2023 JSQLParser
+  %%
+  Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+  #L%
+  -->
+
 <xsl:stylesheet version="1.1"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:xhtml="http://www.w3.org/1999/xhtml"

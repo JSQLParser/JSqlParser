@@ -106,10 +106,6 @@ There is a task ``updateKeywords`` for Gradle and Maven, which will:
 
                 mvn exec:java
 
-.. code-block:: shell
-    :caption: Gradle `updateKeywords` Task
-
-        gradle updateKeywords
 
 Without this Gradle Task, any new Token or Production will become a ``Reserved Keyword`` automatically and can't be used for Object Names without quoting.
 

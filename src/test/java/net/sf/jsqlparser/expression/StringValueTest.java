@@ -10,6 +10,9 @@
 package net.sf.jsqlparser.expression;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import net.sf.jsqlparser.*;
+import net.sf.jsqlparser.test.*;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -62,5 +65,26 @@ public class StringValueTest {
     public void testIssue1566EmptyStringValue() {
         StringValue v = new StringValue("'");
         assertEquals("'", v.getValue());
+    }
+
+    @Test
+    public void testOracleAlternativeQuoting() throws JSQLParserException {
+        String sqlStr="COMMENT ON COLUMN EMP.NAME IS q'{Na'm\\e}'";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr="COMMENT ON COLUMN EMP.NAME IS q'(Na'm\\e)'";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr="COMMENT ON COLUMN EMP.NAME IS q'[Na'm\\e]'";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr="COMMENT ON COLUMN EMP.NAME IS q''Na'm\\e]''";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr="select q'{Its good!}' from dual";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr="select q'{It's good!}' from dual";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

@@ -23,7 +23,7 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
     private String value = "";
     private String prefix = null;
 
-    public static final List<String> ALLOWED_PREFIXES = Arrays.asList("N", "U", "E", "R", "B", "RB", "_utf8");
+    public static final List<String> ALLOWED_PREFIXES = Arrays.asList("N", "U", "E", "R", "B", "RB", "_utf8", "Q");
 
     public StringValue() {
         // empty constructor
