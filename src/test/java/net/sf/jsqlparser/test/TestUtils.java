@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.logging.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -155,8 +156,8 @@ public class TestUtils {
                     IOUtils.write("\n;", fileWriter);
                 }
                 IOUtils.write("\n\n", fileWriter);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } catch (IOException ex) {
+                Logger.getLogger(TestUtils.class.getName()).log(Level.SEVERE, "Writing SQL to file failed.", ex);
             }
         }
     }
