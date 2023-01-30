@@ -157,7 +157,8 @@ public class TestUtils {
                 }
                 IOUtils.write("\n\n", fileWriter);
             } catch (IOException ex) {
-                Logger.getLogger(TestUtils.class.getName()).log(Level.SEVERE, "Writing SQL to file failed.", ex);
+                Logger.getLogger(TestUtils.class.getName()).log(Level.SEVERE,
+                        "Writing SQL to file failed.", ex);
             }
         }
     }

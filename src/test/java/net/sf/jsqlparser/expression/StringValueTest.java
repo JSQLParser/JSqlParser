@@ -60,7 +60,7 @@ public class StringValueTest {
         assertEquals(expectedValue, v.getValue());
         assertEquals(expectedPrefix, v.getPrefix());
     }
-    
+
     @Test
     public void testIssue1566EmptyStringValue() {
         StringValue v = new StringValue("'");
@@ -69,22 +69,22 @@ public class StringValueTest {
 
     @Test
     public void testOracleAlternativeQuoting() throws JSQLParserException {
-        String sqlStr="COMMENT ON COLUMN EMP.NAME IS q'{Na'm\\e}'";
+        String sqlStr = "COMMENT ON COLUMN EMP.NAME IS q'{Na'm\\e}'";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        sqlStr="COMMENT ON COLUMN EMP.NAME IS q'(Na'm\\e)'";
+        sqlStr = "COMMENT ON COLUMN EMP.NAME IS q'(Na'm\\e)'";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        sqlStr="COMMENT ON COLUMN EMP.NAME IS q'[Na'm\\e]'";
+        sqlStr = "COMMENT ON COLUMN EMP.NAME IS q'[Na'm\\e]'";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        sqlStr="COMMENT ON COLUMN EMP.NAME IS q''Na'm\\e]''";
+        sqlStr = "COMMENT ON COLUMN EMP.NAME IS q''Na'm\\e]''";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        sqlStr="select q'{Its good!}' from dual";
+        sqlStr = "select q'{Its good!}' from dual";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        sqlStr="select q'{It's good!}' from dual";
+        sqlStr = "select q'{It's good!}' from dual";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
