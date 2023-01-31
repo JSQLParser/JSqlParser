@@ -2251,9 +2251,16 @@ SelectExpressionItem SelectExpressionItem():
     Alias alias = null;
 }
 {
-      expression=Expression() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
+      (
+        LOOKAHEAD( Condition() ) expression = Condition()
+        |
+        LOOKAHEAD( 3 ) expression = ConcatExpression()
+        |
+        expression=Expression()
+      ) { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
       [ LOOKAHEAD(2) alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
 }
+
 
 SelectItem SelectItem() #SelectItem:
 {
