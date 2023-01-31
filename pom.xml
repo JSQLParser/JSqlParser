@@ -316,6 +316,7 @@
                         <configuration>
                             <additionalOptions>${javadoc.opts}</additionalOptions>
                             <excludePackageNames>net.sf.jsqlparser.parser</excludePackageNames>
+                            <doclint>none</doclint>
                         </configuration>
                         <goals>
                             <goal>jar</goal>
