@@ -49,7 +49,7 @@ def getVersion = { boolean considerSnapshot ->
         patch = matcher[0][3]
         commit = matcher[0][4]
 
-        if (considerSnapshot && os.toString().trim().endsWith("-SNAPSHOT")) {
+        if (considerSnapshot) {
             minor++
             snapshot =  "-SNAPSHOT"
         }
@@ -314,6 +314,9 @@ task gitChangelogTask(type: GitChangelogTask) {
     file = new File("${projectDir}/src/site/sphinx/changelog.rst")
     fromRef = "4.0"
     //toRef = "1.1";
+
+    // switch off the formatter since the indentation matters for Mark-down
+    // @formatter:off
     templateContent ="""
 ************************
 Changelog
@@ -342,6 +345,7 @@ Version {{name}}
  {{/issues}}
 {{/tags}}
 """
+    // @formatter:on
 }
 
 task updateKeywords(type: JavaExec) {
