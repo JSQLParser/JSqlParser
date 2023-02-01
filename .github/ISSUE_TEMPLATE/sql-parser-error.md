@@ -1,13 +1,13 @@
 ---
 name: SQL Parser Error
-about: Create a report to help us improve
+about: Report a Parser Error
 title: "[BUG] JSQLParser Version : RDBMS : failing feature description"
 labels: ''
 assignees: ''
 
 ---
 
-Note: Please search to see if an issue already exists for the bug you encountered.
+Always check against the **Latest SNAPSHOT of JSQLParser** and the [Syntax Diagram](https://jsqlparser.github.io/JSqlParser/syntax.html)
 
 ### Failing SQL Feature:
 - Brief description of the failing SQL feature
@@ -15,11 +15,11 @@ Note: Please search to see if an issue already exists for the bug you encountere
 
 ### SQL Example:
 - Simplified Query Example, focusing on the failing feature
-```sql
--- Replace with your ACTUAL example
-select 1
-from dual
-```
+    ```sql
+    -- Replace with your ACTUAL example
+    select 1
+    from dual
+    ```
 
 ### Software Information:
 - JSqlParser version
