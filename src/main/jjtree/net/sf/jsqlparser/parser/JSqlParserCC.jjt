@@ -450,9 +450,9 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ZONE:"ZONE">
 }
 
-TOKEN : /* Stuff */
+TOKEN : /* Statement Separators */
 {
-    <ST_SEMICOLON : ";" >
+    <ST_SEMICOLON : ( ";" | ("\n\n\n") | "\n/\n" | "\ngo"  ) >
 }
 
 TOKEN : /* Operators */
@@ -6248,7 +6248,7 @@ AlterExpression AlterExpression():
                     int i=0;
 
                     for (String s: tokens) 
-                        if (!s.equals(";")) {
+                        if (! (s.equals(";") || s.equals("\n\n\n")) ) {
                             if (i>0)
                                 optionalSpecifier.append( " " );
                             optionalSpecifier.append( s );

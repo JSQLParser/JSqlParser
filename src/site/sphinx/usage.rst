@@ -12,6 +12,8 @@ How to use it
 
     4) Oracle Alternative Quoting is partially supported for common brackets such as ``q'{...}'``, ``q'[...]'``, ``q'(...)'`` and ``q''...''``.
 
+    5) Supported Statement Separators are Semicolon ``\;``, ``GO``, Slash ``\/`` or 2 empty lines.
+
 
 Compile from Source Code
 ==============================

@@ -9,10 +9,6 @@
  */
 package net.sf.jsqlparser.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -47,6 +43,8 @@ import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -326,7 +324,18 @@ public class TestUtils {
 
             // assure spacing around Syntax Characters
             sanitizedSqlStr = SQL_SANITATION_PATTERN2.matcher(sanitizedSqlStr).replaceAll("$1");
-            return sanitizedSqlStr.trim().toLowerCase();
+
+            sanitizedSqlStr = sanitizedSqlStr.trim().toLowerCase();
+
+            // Rewrite statement separators "/" and "GO"
+            if (sanitizedSqlStr.endsWith("/")) {
+                sanitizedSqlStr = sanitizedSqlStr.substring(0, sanitizedSqlStr.length() - 1) + ";";
+            } else if (sanitizedSqlStr.endsWith("go")) {
+                sanitizedSqlStr = sanitizedSqlStr.substring(0, sanitizedSqlStr.length() - 2) + ";";
+            }
+
+            return sanitizedSqlStr;
+
         } else {
             // remove comments only
             return SQL_COMMENT_PATTERN.matcher(originalSql).replaceAll("");
