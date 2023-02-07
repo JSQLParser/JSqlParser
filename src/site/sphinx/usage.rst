@@ -2,12 +2,17 @@
 How to use it
 ******************************
 
-.. warning::
+.. hint::
 
-    1) Parsing **T-SQL on MS SQL Server** or Sybase depends on ``Squared Bracket Quotation`` as shown in section :ref:`Define the Parser Features` below.
+    1) **Quoting:** Double Quotes ``".."`` are used for quoting identifiers. Parsing T-SQL on **MS SQL Server** or **Sybase** with Squared Brackets ``[..]`` depends on ``Squared Bracket Quotation`` as shown in section :ref:`Define the Parser Features` below.
 
     2) JSQLParser uses a more restrictive list of ``Reserved Keywords`` and such keywords will **need to be quoted**.
 
+    3) **Escaping:** JSQLParser pre-defines standard compliant **Single Quote** ``'..`` **Escape Character**. Additional Back-slash ``\..`` Escaping needs to be activated by setting the ``BackSlashEscapeCharacter`` parser feature. See section :ref:`Define the Parser Features` below for details.
+
+    4) Oracle Alternative Quoting is partially supported for common brackets such as ``q'{...}'``, ``q'[...]'``, ``q'(...)'`` and ``q''...''``.
+
+    5) Supported Statement Separators are Semicolon ``\;``, ``GO``, Slash ``\/`` or 2 empty lines.
 
 
 Compile from Source Code
@@ -190,10 +195,47 @@ Traverse the Java Object Tree using the Visitor Patterns:
     stmt.accept(statementVisitor);
 
 
+Build a SQL Statements
+==============================
+
+Build any SQL Statement from Java Code using a fluent API:
+
+.. code-block:: java
+
+    String expectedSQLStr = "SELECT 1 FROM dual t WHERE a = b";
+
+    // Step 1: generate the Java Object Hierarchy for
+    SelectExpressionItem selectExpressionItem =
+            new SelectExpressionItem().withExpression(new LongValue().withValue(1));
+
+    Table table = new Table().withName("dual").withAlias(new Alias("t", false));
+
+    Column columnA = new Column().withColumnName("a");
+    Column columnB = new Column().withColumnName("b");
+    Expression whereExpression =
+            new EqualsTo().withLeftExpression(columnA).withRightExpression(columnB);
+
+    PlainSelect plainSelect = new PlainSelect().addSelectItems(selectExpressionItem)
+            .withFromItem(table).withWhere(whereExpression);
+    Select select = new Select().withSelectBody(plainSelect);
+
+    // Step 2a: Print into a SQL Statement
+    Assertions.assertEquals(expectedSQLStr, select.toString());
+
+    // Step 2b: De-Parse into a SQL Statement
+    StringBuilder builder = new StringBuilder();
+    StatementDeParser deParser = new StatementDeParser(builder);
+    deParser.visit(select);
+
+    Assertions.assertEquals(expectedSQLStr, builder.toString());
+
+
 Define the Parser Features
 ==============================
 
 JSQLParser interprets Squared Brackets ``[..]`` as Arrays, which does not work with MS SQL Server and T-SQL. Please use the Parser Features to instruct JSQLParser to read Squared Brackets as Quotes instead.
+
+JSQLParser allows for standard compliant Single Quote ``'..`` Escaping. Additional Back-slash ``\..`` Escaping needs to be activated by setting the ``BackSlashEscapeCharacter`` parser feature.
 
 Additionally there are Features to control the Parser's effort at the cost of the performance.
 
@@ -223,4 +265,12 @@ Additionally there are Features to control the Parser's effort at the cost of th
                 .withSquareBracketQuotation(true)
                 .withAllowComplexParsing(true)
                 .withTimeOut(6000)
+    );
+
+    // Allow Back-slash escaping
+    sqlStr="SELECT ('\\'Clark\\'', 'Kent')";
+    Statement stmt2 = CCJSqlParserUtil.parse(
+            sqlStr
+            , parser -> parser
+                .withBackslashEscapeCharacter(true)
     );

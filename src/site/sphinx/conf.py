@@ -13,6 +13,7 @@ pygments_style = 'friendly'
 show_sphinx = False
 master_doc = 'index'
 exclude_patterns = ['_themes', '_static/css']
+logo_only = True
 
 # HTML options
 html_theme = "sphinx_book_theme"
@@ -22,7 +23,8 @@ htmlhelp_basename = "JSQLParser" + '-doc'
 html_use_index = True
 html_show_sourcelink = False
 html_static_path = ['_static']
-#html_logo = '_static/logo.svg'
+html_logo = '_images/logo-no-background.svg'
+html_favicon = '_images/favicon.svg'
 html_css_files = ["svg.css"]
 
 

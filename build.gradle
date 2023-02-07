@@ -8,9 +8,10 @@ plugins {
     id "ca.coglinc2.javacc" version "latest.release"
     id 'jacoco'
     id "com.github.spotbugs" version "latest.release"
+    id "com.diffplug.spotless" version "latest.release"
     id 'pmd'
     id 'checkstyle'
-    
+
     // download the RR tools which have no Maven Repository
     id "de.undercouch.download" version "latest.release"
 
@@ -48,7 +49,7 @@ def getVersion = { boolean considerSnapshot ->
         patch = matcher[0][3]
         commit = matcher[0][4]
 
-        if (considerSnapshot && os.toString().trim().endsWith("-SNAPSHOT")) {
+        if (considerSnapshot) {
             minor++
             snapshot =  "-SNAPSHOT"
         }
@@ -98,6 +99,7 @@ java {
 }
 
 test {
+    environment = [ 'EXPORT_TEST_TO_FILE': 'True' ]
     useJUnitPlatform()
 
     // set heap size for the test JVM(s)
@@ -200,23 +202,23 @@ spotbugsMain {
 spotbugs {
     // fail only on P1 and without the net.sf.jsqlparser.parser.*
     excludeFilter = file("config/spotbugs/spotBugsExcludeFilter.xml")
-    
+
     // do not run over the test, although we should do that eventually
-     spotbugsTest.enabled = false
+    spotbugsTest.enabled = false
 }
 
 pmd {
     consoleOutput = false
     //toolVersion = "6.46.0"
-    
+
     sourceSets = [sourceSets.main]
-    
+
     // clear the ruleset in order to use configured rules only
     ruleSets = []
-    
+
     //rulesMinimumPriority = 1
     ruleSetFiles = files("config/pmd/ruleset.xml")
-    
+
     pmdMain {
         excludes = [
                 "build/generated/*"
@@ -229,6 +231,25 @@ checkstyle {
     configFile =rootProject.file('config/checkstyle/checkstyle.xml')
 }
 
+spotless {
+    // optional: limit format enforcement to just the files changed by this feature branch
+    ratchetFrom 'origin/master'
+
+    format 'misc', {
+        // define the files to apply `misc` to
+        target '*.gradle', '*.md', '.gitignore'
+
+        // define the steps to apply to those files
+        trimTrailingWhitespace()
+        indentWithSpaces(4) // or spaces. Takes an integer argument if you don't like 4
+        endWithNewline()
+    }
+    java {
+        indentWithSpaces(4)
+        eclipse().configFile('config/formatter/eclipse-java-google-style.xml')
+    }
+}
+
 tasks.withType(Checkstyle) {
     reports {
         xml.required = false
@@ -239,7 +260,7 @@ tasks.withType(Checkstyle) {
 task renderRR() {
     dependsOn(compileJavacc)
     doLast {
-        // these WAR files have been provided as a courtesy by Gunther Rademacher 
+        // these WAR files have been provided as a courtesy by Gunther Rademacher
         // and belong to the RR - Railroad Diagram Generator Project
         // https://github.com/GuntherRademacher/rr
         //
@@ -293,6 +314,9 @@ task gitChangelogTask(type: GitChangelogTask) {
     file = new File("${projectDir}/src/site/sphinx/changelog.rst")
     fromRef = "4.0"
     //toRef = "1.1";
+
+    // switch off the formatter since the indentation matters for Mark-down
+    // @formatter:off
     templateContent ="""
 ************************
 Changelog
@@ -321,6 +345,7 @@ Version {{name}}
  {{/issues}}
 {{/tags}}
 """
+    // @formatter:on
 }
 
 task updateKeywords(type: JavaExec) {
@@ -340,8 +365,8 @@ task sphinx(type: Exec) {
     dependsOn(gitChangelogTask, renderRR, updateKeywords)
 
     String PROLOG = """
-.. |_| unicode:: U+00A0 
-    :trim: 
+.. |_| unicode:: U+00A0
+    :trim:
 
 .. |JSQLPARSER_EMAIL| replace:: support@manticore-projects.com
 .. |JSQLPARSER_VERSION| replace:: ${getVersion(false)}
