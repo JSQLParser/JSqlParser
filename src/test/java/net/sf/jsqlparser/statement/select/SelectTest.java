@@ -2273,6 +2273,19 @@ public class SelectTest {
     }
 
     @Test
+    public void testNotNullInFilter() throws JSQLParserException {
+        assertEquals(
+                "SELECT count(*) FILTER (WHERE i NOT ISNULL) AS filtered FROM tasks",
+                CCJSqlParserUtil.parse("SELECT count(*) FILTER (WHERE i NOTNULL) AS filtered FROM tasks").toString());
+    }
+
+    @Test
+    public void testNotIsNullInFilter() throws JSQLParserException {
+        String stmt = "SELECT count(*) FILTER (WHERE i NOT ISNULL) AS filtered FROM tasks";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testExtractFrom1() throws JSQLParserException {
         String stmt = "SELECT EXTRACT(month FROM datecolumn) FROM testtable";
         assertSqlCanBeParsedAndDeparsed(stmt);
