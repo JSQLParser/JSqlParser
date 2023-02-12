@@ -23,7 +23,8 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
     private String value = "";
     private String prefix = null;
 
-    public static final List<String> ALLOWED_PREFIXES = Arrays.asList("N", "U", "E", "R", "B", "RB", "_utf8");
+    public static final List<String> ALLOWED_PREFIXES =
+            Arrays.asList("N", "U", "E", "R", "B", "RB", "_utf8", "Q");
 
     public StringValue() {
         // empty constructor
@@ -31,14 +32,16 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
     public StringValue(String escapedValue) {
         // removing "'" at the start and at the end
-        if (escapedValue.length() >= 2 && escapedValue.startsWith("'") && escapedValue.endsWith("'")) {
+        if (escapedValue.length() >= 2 && escapedValue.startsWith("'")
+                && escapedValue.endsWith("'")) {
             value = escapedValue.substring(1, escapedValue.length() - 1);
             return;
         }
 
         if (escapedValue.length() > 2) {
             for (String p : ALLOWED_PREFIXES) {
-                if (escapedValue.length() > p.length() && escapedValue.substring(0, p.length()).equalsIgnoreCase(p)
+                if (escapedValue.length() > p.length()
+                        && escapedValue.substring(0, p.length()).equalsIgnoreCase(p)
                         && escapedValue.charAt(p.length()) == '\'') {
                     this.prefix = p;
                     value = escapedValue.substring(p.length() + 1, escapedValue.length() - 1);

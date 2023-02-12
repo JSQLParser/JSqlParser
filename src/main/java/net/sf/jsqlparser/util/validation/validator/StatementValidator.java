@@ -53,6 +53,7 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
@@ -182,7 +183,12 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     public void visit(ShowColumnsStatement show) {
         getValidator(ShowColumnsStatementValidator.class).validate(show);
     }
-
+    
+    @Override
+    public void visit(ShowIndexStatement show) {
+        getValidator(ShowIndexStatementValidator.class).validate(show);
+    }
+    
     @Override
     public void visit(ShowTablesStatement showTables) {
         getValidator(ShowTablesStatementValidator.class).validate(showTables);

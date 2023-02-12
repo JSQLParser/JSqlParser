@@ -29,6 +29,7 @@ public class CreateView implements Statement {
     private boolean materialized = false;
     private ForceOption force = ForceOption.NONE;
     private TemporaryOption temp = TemporaryOption.NONE;
+    private AutoRefreshOption autoRefresh = AutoRefreshOption.NONE;
     private boolean withReadOnly = false;
     private boolean ifNotExists = false;
 
@@ -96,6 +97,14 @@ public class CreateView implements Statement {
         this.temp = temp;
     }
 
+    public AutoRefreshOption getAutoRefresh() {
+        return autoRefresh;
+    }
+
+    public void setAutoRefresh(AutoRefreshOption autoRefresh) {
+        this.autoRefresh = autoRefresh;
+    }
+
     public boolean isWithReadOnly() {
         return withReadOnly;
     }
@@ -118,16 +127,7 @@ public class CreateView implements Statement {
         if (isOrReplace()) {
             sql.append("OR REPLACE ");
         }
-        switch (force) {
-            case FORCE:
-                sql.append("FORCE ");
-                break;
-            case NO_FORCE:
-                sql.append("NO FORCE ");
-                break;
-            default:
-                // nothing
-        }
+        appendForceOptionIfApplicable(sql);
 
         if (temp != TemporaryOption.NONE) {
             sql.append(temp.name()).append(" ");
@@ -141,6 +141,9 @@ public class CreateView implements Statement {
         if (ifNotExists) {
             sql.append(" IF NOT EXISTS");
         }
+        if (autoRefresh != AutoRefreshOption.NONE) {
+            sql.append(" AUTO REFRESH ").append(autoRefresh.name());
+        }
         if (columnNames != null) {
             sql.append(PlainSelect.getStringList(columnNames, true, true));
         }
@@ -149,6 +152,19 @@ public class CreateView implements Statement {
             sql.append(" WITH READ ONLY");
         }
         return sql.toString();
+    }
+
+    private void appendForceOptionIfApplicable(StringBuilder sql) {
+        switch (force) {
+            case FORCE:
+                sql.append("FORCE ");
+                break;
+            case NO_FORCE:
+                sql.append("NO FORCE ");
+                break;
+            default:
+                // nothing
+        }
     }
 
     public CreateView withView(Table view) {
