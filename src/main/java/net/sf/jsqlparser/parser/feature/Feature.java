@@ -592,6 +592,10 @@ public enum Feature {
      */
     showColumns,
     /**
+     * @see ShowIndexStatement
+     */
+    showIndex,
+    /**
      * @see UseStatement
      */
     use,
