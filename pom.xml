@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>4.6</version>
+    <version>4.7-SNAPSHOT</version>
     <name>JSQLParser library</name> 
     <inceptionYear>2004</inceptionYear>
     <organization>
@@ -107,7 +107,7 @@
         <connection>scm:git:https://github.com/JSQLParser/JSqlParser.git</connection>
         <developerConnection>scm:git:ssh://git@github.com:JSQLParser/JSqlParser.git</developerConnection>
         <url>https://github.com/JSQLParser/JSqlParser.git</url>
-        <tag>jsqlparser-4.6</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
