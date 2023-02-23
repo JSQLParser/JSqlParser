@@ -58,6 +58,9 @@ if (statement instanceof Select) {
 
 **JSqlParser** can also be used to create SQL Statements from Java Code with a fluent API (see [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#build-a-sql-statements)).
 
+## Alternatives to JSqlParser?
+[**General SQL Parser**](http://www.sqlparser.com/features/introduce.php?utm_source=github-jsqlparser&utm_medium=text-general) looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
+
 ## [Documentation](https://jsqlparser.github.io/JSqlParser)
 
 ### [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#parse-a-sql-statements)

@@ -383,8 +383,8 @@ task sphinx(type: Exec) {
 
     args = [
             "-Dproject=JSQLParser"
-            , "-Dcopyright=Tobias Warnecke, 2022"
-            , "-Dauthor=Tobias Warnecke"
+            , "-Dcopyright=Tobias Warneke, 2022"
+            , "-Dauthor=Tobias Warneke"
             , "-Drelease=${getVersion(false)}"
             , "-Drst_prolog=$PROLOG"
             , "${projectDir}/src/site/sphinx"
