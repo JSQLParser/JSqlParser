@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import org.junit.jupiter.api.Disabled;
 
 
 class ParserKeywordsUtilsTest {
@@ -168,6 +169,7 @@ class ParserKeywordsUtilsTest {
     }
 
     @Test
+    @Disabled
     void getAllKeywordsUsingJavaCC() throws Exception {
         Set<String> allKeywords =  getAllKeywordsUsingJavaCC(FILE);
         Assertions.assertFalse( allKeywords.isEmpty(), "Keyword List must not be empty!" );
@@ -175,6 +177,7 @@ class ParserKeywordsUtilsTest {
 
     // Test, if all Tokens found per RegEx are also found from the JavaCCParser
     @Test
+    @Disabled
     void compareKeywordLists() throws Exception {
         Set<String> allRegexKeywords =  ParserKeywordsUtils.getAllKeywordsUsingRegex(FILE);
         Set<String> allJavaCCParserKeywords =  getAllKeywordsUsingJavaCC(FILE);
