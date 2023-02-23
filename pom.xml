@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>4.6-SNAPSHOT</version>
+    <version>4.6</version>
     <name>JSQLParser library</name> 
     <inceptionYear>2004</inceptionYear>
     <organization>
@@ -107,7 +107,7 @@
         <connection>scm:git:https://github.com/JSQLParser/JSqlParser.git</connection>
         <developerConnection>scm:git:ssh://git@github.com:JSQLParser/JSqlParser.git</developerConnection>
         <url>https://github.com/JSQLParser/JSqlParser.git</url>
-        <tag>HEAD</tag>
+        <tag>jsqlparser-4.6</tag>
     </scm>
 
     <issueManagement>
@@ -359,7 +359,7 @@
                             <exclude>net/sf/jsqlparser/JSQLParserException.class</exclude>
                         </excludes>
                     </instrumentation>
-                    <check/>
+                    <check />
                 </configuration>
             </plugin>
             <plugin>
@@ -411,8 +411,8 @@
                                 <include>.gitignore</include>
                             </includes>
                             <!-- define the steps to apply to those files -->
-                            <trimTrailingWhitespace/>
-                            <endWithNewline/>
+                            <trimTrailingWhitespace />
+                            <endWithNewline />
                             <indent>
                                 <tabs>true</tabs>
                                 <spacesPerTab>4</spacesPerTab>
