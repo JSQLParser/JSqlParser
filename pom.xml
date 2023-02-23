@@ -279,12 +279,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>3.0.0-M6</version>
+                <version>3.0.0-M7</version>
                 <configuration>
                     <localCheckout>true</localCheckout>
                     <pushChanges>false</pushChanges>
                     <mavenExecutorId>forked-path</mavenExecutorId>
+                    <releaseProfiles>sign-release-artifacts</releaseProfiles>
                 </configuration>
+                <!-- 
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.scm</groupId>
@@ -292,6 +294,7 @@
                         <version>1.9.5</version>
                     </dependency>
                 </dependencies>
+                -->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
