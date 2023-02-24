@@ -1,4 +1,4 @@
-# [JSqlParser (4.5 Stable or 4.6 Snapshot)](https://jsqlparser.github.io/JSqlParser) <img src="src/site/sphinx/_images/logo-no-background.svg" alt="drawing" width="200" align="right"/>
+# [JSqlParser (4.6 Stable or 4.7 Snapshot)](https://jsqlparser.github.io/JSqlParser) <img src="src/site/sphinx/_images/logo-no-background.svg" alt="drawing" width="200" align="right"/>
 
 ![Build Status](https://github.com/JSQLParser/JSqlParser/actions/workflows/maven.yml/badge.svg)
 
@@ -57,6 +57,9 @@ if (statement instanceof Select) {
 
 
 **JSqlParser** can also be used to create SQL Statements from Java Code with a fluent API (see [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#build-a-sql-statements)).
+
+## Alternatives to JSqlParser?
+[**General SQL Parser**](http://www.sqlparser.com/features/introduce.php?utm_source=github-jsqlparser&utm_medium=text-general) looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
 
 ## [Documentation](https://jsqlparser.github.io/JSqlParser)
 
