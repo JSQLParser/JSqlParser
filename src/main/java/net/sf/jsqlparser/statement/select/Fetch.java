@@ -25,7 +25,7 @@ public class Fetch implements Serializable {
 
     @Deprecated
     public void setRowCount(long l) {
-        setExpression( new LongValue(l));
+        setExpression(new LongValue(l));
     }
 
     public Expression getExpression() {
@@ -69,8 +69,8 @@ public class Fetch implements Serializable {
 
     @Override
     public String toString() {
-        return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " " 
-                + expression.toString() + " " + fetchParam + " ONLY";
+        return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " " + expression.toString()
+                + " " + fetchParam + " ONLY";
     }
 
     public Fetch withRowCount(long rowCount) {
