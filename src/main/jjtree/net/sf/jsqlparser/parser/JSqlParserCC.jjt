@@ -3079,19 +3079,15 @@ Fetch Fetch():
 {
     Fetch fetch = new Fetch();
     Token token = null;
-    JdbcParameter jdbc;
+    Expression expression;
 }
 {
     (
-            // sqlserver-oracle-> FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
-             <K_FETCH>
-                  (<K_FIRST> { fetch.setFetchParamFirst(true); } | <K_NEXT>)
-                 (token=<S_LONG> { fetch.setRowCount(Long.parseLong(token.image)); }
-                 | jdbc = SimpleJdbcParameter() { fetch.setFetchJdbcParameter(jdbc); } ) /* "?" { fetch.setFetchJdbcParameter(true); } ) */
-                 (<K_ROWS> { fetch.setFetchParam("ROWS"); } | <K_ROW>)
-                 <K_ONLY>
-
-        )
+        // sqlserver-oracle-> FETCH (FIRST | NEXT) expression (ROW | ROWS) ONLY
+        <K_FETCH> (<K_FIRST> { fetch.setFetchParamFirst(true); } | <K_NEXT>)
+        expression = Expression() { fetch.setExpression(expression); }
+        (<K_ROWS> { fetch.setFetchParam("ROWS"); } | <K_ROW>) <K_ONLY>
+    )
     {
         return fetch;
     }

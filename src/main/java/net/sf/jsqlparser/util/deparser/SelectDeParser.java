@@ -198,10 +198,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             new LimitDeparser(buffer).deParse(plainSelect.getLimit());
         }
         if (plainSelect.getOffset() != null) {
-            deparseOffset(plainSelect.getOffset());
+            visit(plainSelect.getOffset());
         }
         if (plainSelect.getFetch() != null) {
-            deparseFetch(plainSelect.getFetch());
+            visit(plainSelect.getFetch());
         }
         if (plainSelect.getWithIsolation() != null) {
             buffer.append(plainSelect.getWithIsolation().toString());
@@ -349,18 +349,18 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         buffer.append("))");
     }
 
-    public void deparseOffset(Offset offset) {
+    public void visit(Offset offset) {
         // OFFSET offset
         // or OFFSET offset (ROW | ROWS)
         buffer.append(" OFFSET ");
-        buffer.append(offset.getOffset());
+        offset.getOffset().accept(expressionVisitor);
         if (offset.getOffsetParam() != null) {
             buffer.append(" ").append(offset.getOffsetParam());
         }
 
     }
 
-    public void deparseFetch(Fetch fetch) {
+    public void visit(Fetch fetch) {
         // FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
         buffer.append(" FETCH ");
         if (fetch.isFetchParamFirst()) {
@@ -368,11 +368,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         } else {
             buffer.append("NEXT ");
         }
-        if (fetch.getFetchJdbcParameter() != null) {
-            buffer.append(fetch.getFetchJdbcParameter().toString());
-        } else {
-            buffer.append(fetch.getRowCount());
-        }
+        fetch.getExpression().accept(expressionVisitor);
         buffer.append(" ").append(fetch.getFetchParam()).append(" ONLY");
 
     }
@@ -490,10 +486,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             new LimitDeparser(buffer).deParse(list.getLimit());
         }
         if (list.getOffset() != null) {
-            deparseOffset(list.getOffset());
+            visit(list.getOffset());
         }
         if (list.getFetch() != null) {
-            deparseFetch(list.getFetch());
+            visit(list.getFetch());
         }
         if (list.getWithIsolation() != null) {
             buffer.append(list.getWithIsolation().toString());
