@@ -61,7 +61,8 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  * @author gitmotte
  */
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
-public class ExpressionValidator extends AbstractValidator<Expression> implements ExpressionVisitor {
+public class ExpressionValidator extends AbstractValidator<Expression>
+        implements ExpressionVisitor {
     @Override
     public void visit(Addition addition) {
         visitBinaryExpression(addition, " + ");
@@ -126,14 +127,16 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         visitBinaryExpression(expr, " << ");
     }
 
-    public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
+    public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression,
+            String operator) {
         for (ValidationCapability c : getCapabilities()) {
             validateOptionalExpression(expression.getLeftExpression(), this);
             if (expression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
                 validateFeature(c, Feature.oracleOldJoinSyntax);
             }
             validateOptionalExpression(expression.getRightExpression(), this);
-            if (expression.getOraclePriorPosition() != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
+            if (expression
+                    .getOraclePriorPosition() != SupportsOldOracleJoinSyntax.NO_ORACLE_PRIOR) {
                 validateFeature(c, Feature.oraclePriorPosition);
             }
         }
@@ -154,7 +157,8 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     public void visit(InExpression inExpression) {
         for (ValidationCapability c : getCapabilities()) {
             validateOptionalExpression(inExpression.getLeftExpression(), this);
-            if (inExpression.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
+            if (inExpression
+                    .getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
                 validateFeature(c, Feature.oracleOldJoinSyntax);
             }
         }
@@ -190,8 +194,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     @Override
     public void visit(LikeExpression likeExpression) {
         validateFeature(Feature.exprLike);
-        visitBinaryExpression(likeExpression,
-                (likeExpression.isNot() ? " NOT" : "")
+        visitBinaryExpression(likeExpression, (likeExpression.isNot() ? " NOT" : "")
                 + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
     }
 
@@ -225,7 +228,8 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
     @Override
     public void visit(NotEqualsTo notEqualsTo) {
-        visitOldOracleJoinBinaryExpression(notEqualsTo, " " + notEqualsTo.getStringExpression() + " ");
+        visitOldOracleJoinBinaryExpression(notEqualsTo,
+                " " + notEqualsTo.getStringExpression() + " ");
     }
 
     @Override
@@ -281,7 +285,12 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
 
         validateOptionalItemsList(function.getNamedParameters());
         validateOptionalItemsList(function.getParameters());
-        validateOptionalExpression(function.getAttribute(), this);
+
+        Object attribute = function.getAttribute();
+        if (attribute instanceof Expression) {
+            validateOptionalExpression((Expression) attribute, this);
+        }
+
         validateOptionalExpression(function.getKeep(), this);
         validateOptionalOrderByElements(function.getOrderByElements());
     }
@@ -476,7 +485,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
         if (rowConstructor.getColumnDefinitions().isEmpty()) {
             validateOptionalExpressionList(rowConstructor.getExprList());
         } else {
-            for (ColumnDefinition columnDefinition: rowConstructor.getColumnDefinitions()) {
+            for (ColumnDefinition columnDefinition : rowConstructor.getColumnDefinitions()) {
                 validateName(NamedObject.column, columnDefinition.getColumnName());
             }
         }
@@ -496,6 +505,7 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     public void visit(TimeKeyExpression timeKeyExpression) {
         // nothing to validate
     }
+
     @Override
     public void visit(DateTimeLiteralExpression literal) {
         // nothing to validate
@@ -575,19 +585,17 @@ public class ExpressionValidator extends AbstractValidator<Expression> implement
     public void visit(ConnectByRootOperator connectByRootOperator) {
         connectByRootOperator.getColumn().accept(this);
     }
-    
+
     @Override
     public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
         oracleNamedFunctionParameter.getExpression().accept(this);
     }
 
     @Override
-    public void visit(AllColumns allColumns) {
-    }
+    public void visit(AllColumns allColumns) {}
 
     @Override
-    public void visit(AllTableColumns allTableColumns) {
-    }
+    public void visit(AllTableColumns allTableColumns) {}
 
     @Override
     public void visit(AllValue allValue) {

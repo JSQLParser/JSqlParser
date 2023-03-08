@@ -14,6 +14,7 @@ import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -29,8 +30,8 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private boolean distinct = false;
     private boolean unique = false;
     private boolean isEscaped = false;
-    private Expression attribute;
-    private String attributeName;
+    private Expression attributeExpression;
+    private Column attributeColumn = null;
     private List<OrderByElement> orderByElements;
     private KeepExpression keep = null;
     private boolean ignoreNulls = false;
@@ -43,7 +44,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     public String getName() {
         return nameparts == null ? null : String.join(".", nameparts);
     }
-    
+
     public List<String> getMultipartName() {
         return nameparts;
     }
@@ -51,12 +52,12 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     public void setName(String string) {
         nameparts = Arrays.asList(string);
     }
-    
+
     public Function withName(String name) {
         this.setName(name);
         return this;
     }
-    
+
     public void setName(List<String> string) {
         nameparts = string;
     }
@@ -148,20 +149,35 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         this.isEscaped = isEscaped;
     }
 
-    public Expression getAttribute() {
-        return attribute;
+    public Object getAttribute() {
+        return attributeExpression != null ? attributeExpression : attributeColumn;
     }
 
-    public void setAttribute(Expression attribute) {
-        this.attribute = attribute;
+    public void setAttribute(Expression attributeExpression) {
+        this.attributeExpression = attributeExpression;
     }
 
+    @Deprecated
     public String getAttributeName() {
-        return attributeName;
+        return attributeColumn.toString();
     }
 
     public void setAttributeName(String attributeName) {
-        this.attributeName = attributeName;
+        this.attributeColumn = new Column().withColumnName(attributeName);
+    }
+
+    public Column getAttributeColumn() {
+        return attributeColumn;
+    }
+
+    public void setAttribute(Column attributeColumn) {
+        attributeExpression = null;
+        this.attributeColumn = attributeColumn;
+    }
+
+    public Function withAttribute(Column attributeColumn) {
+        setAttribute(attributeColumn);
+        return this;
     }
 
     public KeepExpression getKeep() {
@@ -213,14 +229,14 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
         String ans = getName() + params;
 
-        if (attribute != null) {
-            ans += "." + attribute.toString();
-        } else if (attributeName != null) {
-            ans += "." + attributeName;
+        if (attributeExpression != null) {
+            ans += "." + attributeExpression;
+        } else if (attributeColumn != null) {
+            ans += "." + attributeColumn;
         }
 
         if (keep != null) {
-            ans += " " + keep.toString();
+            ans += " " + keep;
         }
 
         if (isEscaped) {
@@ -235,6 +251,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
+    @Deprecated
     public Function withAttributeName(String attributeName) {
         this.setAttributeName(attributeName);
         return this;

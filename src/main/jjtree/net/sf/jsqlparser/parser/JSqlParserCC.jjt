@@ -4929,7 +4929,7 @@ Function SpecialStringFunctionWithNamedParameters() :
 Function InternalFunction(Function retval) :
 {
     List<String> funcName;
-    String tmp = null;
+    Expression allColumnsExpression = null;
     List<Expression> expressions = new ArrayList<Expression>();
     ExpressionList expressionList = null;
     NamedExpressionList namedExpressionList = null;
@@ -4937,7 +4937,8 @@ Function InternalFunction(Function retval) :
     SubSelect expr = null;
     Token tk1 = null;
     Token tk2 = null;
-    Expression expr1 = null;
+    Expression attributeExpression = null;
+    Column attributeColumn = null;
     List<OrderByElement> orderByList;
     boolean ignoreNulls = false;
 }
@@ -4946,9 +4947,9 @@ Function InternalFunction(Function retval) :
 
     "(" [ LOOKAHEAD(2) [ LOOKAHEAD(2)(<K_DISTINCT> { retval.setDistinct(true); } | <K_ALL> { retval.setAllColumns(true); } | <K_UNIQUE> { retval.setUnique(true); }) ]
         ( LOOKAHEAD(4)
-            "*" { expr1 = new AllColumns(); expressionList = new ExpressionList(expr1).withUsingBrackets(false); }
+            "*" { allColumnsExpression = new AllColumns(); expressionList = new ExpressionList(allColumnsExpression).withUsingBrackets(false); }
             |
-            LOOKAHEAD(AllTableColumns()) expr1=AllTableColumns() { expressionList = new ExpressionList(expr1).withUsingBrackets(false); }
+            LOOKAHEAD(AllTableColumns()) allColumnsExpression=AllTableColumns() { expressionList = new ExpressionList(allColumnsExpression).withUsingBrackets(false); }
             |
             LOOKAHEAD(3, { getAsBoolean(Feature.allowComplexParsing) }) (expressionList=ComplexExpressionList() {expressionList.setUsingBrackets(false);} [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
@@ -4961,8 +4962,12 @@ Function InternalFunction(Function retval) :
         ")"
 
     [ "." (
-            LOOKAHEAD(2) expr1=Function() { retval.setAttribute(expr1); }
-            | tmp=RelObjectName() { retval.setAttributeName(tmp); }
+            // tricky lookahead since we do need to support the following constructs
+            // schema.f1().f2() - Function with Function Column
+            // schema.f1().f2.f3 - Function with Attribute Column
+            LOOKAHEAD( Function() ) attributeExpression=Function() { retval.setAttribute(attributeExpression); }
+            |
+            attributeColumn=Column() { retval.setAttribute(attributeColumn); }
           )
     ]
 

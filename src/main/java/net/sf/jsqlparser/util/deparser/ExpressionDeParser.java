@@ -77,7 +77,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         this(selectVisitor, buffer, new OrderByDeParser());
     }
 
-    ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer, OrderByDeParser orderByDeParser) {
+    ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer,
+            OrderByDeParser orderByDeParser) {
         super(buffer);
         this.selectVisitor = selectVisitor;
         this.orderByDeParser = orderByDeParser;
@@ -157,10 +158,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         visitBinaryExpression(expr, " << ");
     }
 
-    public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression, String operator) {
-//        if (expression.isNot()) {
-//            buffer.append(NOT);
-//        }
+    public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression,
+            String operator) {
+        // if (expression.isNot()) {
+        // buffer.append(NOT);
+        // }
         expression.getLeftExpression().accept(this);
         if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_RIGHT) {
             buffer.append("(+)");
@@ -186,7 +188,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(InExpression inExpression) {
         inExpression.getLeftExpression().accept(this);
-        if (inExpression.getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
+        if (inExpression
+                .getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
             buffer.append("(+)");
         }
         if (inExpression.isNot()) {
@@ -212,8 +215,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 columnsListCommaSeperated += ",";
             }
         }
-        buffer.append("MATCH (" + columnsListCommaSeperated + ") AGAINST (" + fullTextSearch.getAgainstValue()
-                + (fullTextSearch.getSearchModifier() != null ? " " + fullTextSearch.getSearchModifier() : "") + ")");
+        buffer.append("MATCH (" + columnsListCommaSeperated + ") AGAINST ("
+                + fullTextSearch.getAgainstValue()
+                + (fullTextSearch.getSearchModifier() != null
+                        ? " " + fullTextSearch.getSearchModifier()
+                        : "")
+                + ")");
     }
 
     @Override
@@ -269,8 +276,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(LikeExpression likeExpression) {
-        visitBinaryExpression(likeExpression,
-                (likeExpression.isNot() ? " NOT" : "") + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
+        visitBinaryExpression(likeExpression, (likeExpression.isNot() ? " NOT" : "")
+                + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
         Expression escape = likeExpression.getEscape();
         if (escape != null) {
             buffer.append(" ESCAPE ");
@@ -314,7 +321,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(NotEqualsTo notEqualsTo) {
-        visitOldOracleJoinBinaryExpression(notEqualsTo, " " + notEqualsTo.getStringExpression() + " ");
+        visitOldOracleJoinBinaryExpression(notEqualsTo,
+                " " + notEqualsTo.getStringExpression() + " ");
 
     }
 
@@ -372,7 +380,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (selectVisitor != null) {
             if (subSelect.getWithItemsList() != null) {
                 buffer.append("WITH ");
-                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter.hasNext();) {
+                for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter
+                        .hasNext();) {
                     iter.next().accept(selectVisitor);
                     if (iter.hasNext()) {
                         buffer.append(", ");
@@ -451,8 +460,6 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
         if (function.getAttribute() != null) {
             buffer.append(".").append(function.getAttribute());
-        } else if (function.getAttributeName() != null) {
-            buffer.append(".").append(function.getAttributeName());
         }
         if (function.getKeep() != null) {
             buffer.append(" ").append(function.getKeep());
@@ -465,7 +472,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(ExpressionList expressionList) {
-        new ExpressionListDeParser(this, buffer, expressionList.isUsingBrackets(), true).deParse(expressionList.getExpressions());
+        new ExpressionListDeParser(this, buffer, expressionList.isUsingBrackets(), true)
+                .deParse(expressionList.getExpressions());
     }
 
     @Override
@@ -549,8 +557,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         } else {
             ExpressionList expressionList = (ExpressionList) anyComparisonExpression.getItemsList();
             buffer.append("VALUES ");
-            buffer.append(
-                    PlainSelect.getStringList(expressionList.getExpressions(), true, anyComparisonExpression.isUsingBracketsForValues()));
+            buffer.append(PlainSelect.getStringList(expressionList.getExpressions(), true,
+                    anyComparisonExpression.isUsingBracketsForValues()));
         }
         buffer.append(" ) ");
     }
@@ -586,7 +594,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append("CAST(");
             cast.getLeftExpression().accept(this);
             buffer.append(" AS ");
-            buffer.append(cast.getRowConstructor() != null ? cast.getRowConstructor() : cast.getType());
+            buffer.append(
+                    cast.getRowConstructor() != null ? cast.getRowConstructor() : cast.getType());
             buffer.append(")");
         } else {
             cast.getLeftExpression().accept(this);
@@ -601,7 +610,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append("TRY_CAST(");
             cast.getLeftExpression().accept(this);
             buffer.append(" AS ");
-            buffer.append(cast.getRowConstructor() != null ? cast.getRowConstructor() : cast.getType());
+            buffer.append(
+                    cast.getRowConstructor() != null ? cast.getRowConstructor() : cast.getType());
             buffer.append(")");
         } else {
             cast.getLeftExpression().accept(this);
@@ -616,7 +626,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append("SAFE_CAST(");
             cast.getLeftExpression().accept(this);
             buffer.append(" AS ");
-            buffer.append(cast.getRowConstructor() != null ? cast.getRowConstructor() : cast.getType());
+            buffer.append(
+                    cast.getRowConstructor() != null ? cast.getRowConstructor() : cast.getType());
             buffer.append(")");
         } else {
             cast.getLeftExpression().accept(this);
@@ -632,7 +643,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength", "PMD.MissingBreakInSwitch"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
+            "PMD.MissingBreakInSwitch"})
     public void visit(AnalyticExpression aexpr) {
         String name = aexpr.getName();
         Expression expression = aexpr.getExpression();
@@ -669,7 +681,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
         if (aexpr.getFuncOrderBy() != null) {
             buffer.append(" ORDER BY ");
-            buffer.append(aexpr.getFuncOrderBy().stream().map(OrderByElement::toString).collect(joining(", ")));
+            buffer.append(aexpr.getFuncOrderBy().stream().map(OrderByElement::toString)
+                    .collect(joining(", ")));
         }
 
         buffer.append(") ");
@@ -710,10 +723,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
         if (aexpr.getWindowName() != null) {
             buffer.append(" ").append(aexpr.getWindowName());
-        } else if (aexpr.getType()!=AnalyticType.WITHIN_GROUP_OVER)   {
+        } else if (aexpr.getType() != AnalyticType.WITHIN_GROUP_OVER) {
             buffer.append(" (");
 
-            if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
+            if (partitionExpressionList != null
+                    && !partitionExpressionList.getExpressions().isEmpty()) {
                 buffer.append("PARTITION BY ");
                 if (aexpr.isPartitionByBrackets()) {
                     buffer.append("(");
@@ -884,12 +898,14 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(NextValExpression nextVal) {
-        buffer.append(nextVal.isUsingNextValueFor() ? "NEXT VALUE FOR " : "NEXTVAL FOR ").append(nextVal.getName());
+        buffer.append(nextVal.isUsingNextValueFor() ? "NEXT VALUE FOR " : "NEXTVAL FOR ")
+                .append(nextVal.getName());
     }
 
     @Override
     public void visit(CollateExpression col) {
-        buffer.append(col.getLeftExpression().toString()).append(" COLLATE ").append(col.getCollate());
+        buffer.append(col.getLeftExpression().toString()).append(" COLLATE ")
+                .append(col.getCollate());
     }
 
     @Override
@@ -948,7 +964,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(XMLSerializeExpr expr) {
-        //xmlserialize(xmlagg(xmltext(COMMENT_LINE) ORDER BY COMMENT_SEQUENCE) as varchar(1024))
+        // xmlserialize(xmlagg(xmltext(COMMENT_LINE) ORDER BY COMMENT_SEQUENCE) as varchar(1024))
         buffer.append("xmlserialize(xmlagg(xmltext(");
         expr.getExpression().accept(this);
         buffer.append(")");
@@ -992,9 +1008,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
-        buffer
-                .append(oracleNamedFunctionParameter.getName())
-                .append(" => ");
+        buffer.append(oracleNamedFunctionParameter.getName()).append(" => ");
 
         oracleNamedFunctionParameter.getExpression().accept(this);
     }
@@ -1023,6 +1037,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(GeometryDistance geometryDistance) {
-        visitOldOracleJoinBinaryExpression(geometryDistance, " " + geometryDistance.getStringExpression() + " ");
+        visitOldOracleJoinBinaryExpression(geometryDistance,
+                " " + geometryDistance.getStringExpression() + " ");
     }
 }
