@@ -106,12 +106,6 @@ test {
     minHeapSize = "128m"
     maxHeapSize = "1G"
 
-    jvmArgs << [
-            '-Djunit.jupiter.execution.parallel.enabled=true',
-            '-Djunit.jupiter.execution.parallel.config.strategy=dynamic',
-            '-Djunit.jupiter.execution.parallel.mode.default=concurrent'
-    ]
-
     finalizedBy check
 }
 

@@ -9,27 +9,41 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.*;
 
 import java.io.Serializable;
 
 public class Fetch implements Serializable {
-
-    private long rowCount;
-    private JdbcParameter fetchJdbcParameter = null;
+    private Expression expression = null;
     private boolean isFetchParamFirst = false;
     private String fetchParam = "ROW";
 
+    @Deprecated
     public long getRowCount() {
-        return rowCount;
+        return expression instanceof LongValue ? ((LongValue) expression).getValue() : null;
     }
 
+    @Deprecated
     public void setRowCount(long l) {
-        rowCount = l;
+        setExpression(new LongValue(l));
     }
 
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
+
+    public Fetch withExpression(Expression expression) {
+        this.setExpression(expression);
+        return this;
+    }
+
+    @Deprecated
     public JdbcParameter getFetchJdbcParameter() {
-        return fetchJdbcParameter;
+        return expression instanceof JdbcParameter ? (JdbcParameter) expression : null;
     }
 
     public String getFetchParam() {
@@ -40,8 +54,9 @@ public class Fetch implements Serializable {
         return isFetchParamFirst;
     }
 
+    @Deprecated
     public void setFetchJdbcParameter(JdbcParameter jdbc) {
-        fetchJdbcParameter = jdbc;
+        this.setExpression(jdbc);
     }
 
     public void setFetchParam(String s) {
@@ -54,9 +69,8 @@ public class Fetch implements Serializable {
 
     @Override
     public String toString() {
-        return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " " 
-                + (fetchJdbcParameter!=null ? fetchJdbcParameter.toString() : 
-                    Long.toString(rowCount)) + " " + fetchParam + " ONLY";
+        return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " " + expression.toString()
+                + " " + fetchParam + " ONLY";
     }
 
     public Fetch withRowCount(long rowCount) {
