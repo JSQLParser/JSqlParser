@@ -92,12 +92,12 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
     <xsl:template match="xhtml:a">
         <li>
             <a>
-                <xsl:attribute name="href">
+                <xsl:attributeExpression name="href">
                     <xsl:value-of select="@href" />
-                </xsl:attribute>
-                <xsl:attribute name="title">
+                </xsl:attributeExpression>
+                <xsl:attributeExpression name="title">
                     <xsl:value-of select="@title" />
-                </xsl:attribute>
+                </xsl:attributeExpression>
                 <xsl:value-of select="text()"/>
             </a>
         </li>

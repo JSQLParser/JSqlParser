@@ -123,7 +123,7 @@
     <property name="format" value="^ \* .+(Type|Default value|Validation type) is \{@code "/>
     <property name="minimum" value="0"/>
     <property name="maximum" value="0"/>
-    <property name="message" value="Property attribute should be on new javadoc line"/>
+    <property name="message" value="Property attributeExpression should be on new javadoc line"/>
   </module>
   <module name="RegexpSingleline">
     <property name="id" value="commentFirstSentenceSingleline"/>
@@ -410,7 +410,7 @@
       <property name="query" value="//METHOD_DEF/MODIFIERS//
             ANNOTATION[./IDENT[@text='Test']]/ANNOTATION_MEMBER_VALUE_PAIR
             [./IDENT[@text='expected']]"/>
-      <message key="matchxpath.match" value="Avoid using 'expected' attribute in Test annotation."/>
+      <message key="matchxpath.match" value="Avoid using 'expected' attributeExpression in Test annotation."/>
     </module>
     <module name="MatchXpath">
       <property name="query" value="//ANNOTATION[./IDENT[@text='Issue']]"/>
