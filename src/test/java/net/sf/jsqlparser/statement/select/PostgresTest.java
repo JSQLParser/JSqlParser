@@ -57,6 +57,6 @@ public class PostgresTest {
     public void testJSonOperatorIssue1571() throws JSQLParserException {
         String sqlStr =
                 "select visit_hour,json_array_elements(into_sex_json)->>'name',json_array_elements(into_sex_json)->>'value' from period_market";
-        Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
