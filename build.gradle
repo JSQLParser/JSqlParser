@@ -85,8 +85,8 @@ dependencies {
     testImplementation 'org.mockito:mockito-junit-jupiter:4.+'
 
     // enforce latest version of JavaCC
-    testImplementation 'net.java.dev.javacc:javacc:7.0.12'
-    javacc 'net.java.dev.javacc:javacc:7.0.12'
+    testImplementation 'net.java.dev.javacc:javacc:+'
+    javacc 'net.java.dev.javacc:javacc:+'
 }
 
 compileJavacc {
@@ -96,6 +96,11 @@ compileJavacc {
 java {
     withSourcesJar()
     withJavadocJar()
+}
+
+javadoc {
+    options.addBooleanOption('html5', true)
+    options.addBooleanOption("Xdoclint:none", true)
 }
 
 test {
@@ -231,7 +236,7 @@ spotless {
 
     format 'misc', {
         // define the files to apply `misc` to
-        target '*.gradle', '*.md', '.gitignore'
+        target '*.rst', '*.md', '.gitignore'
 
         // define the steps to apply to those files
         trimTrailingWhitespace()
