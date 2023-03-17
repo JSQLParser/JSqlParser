@@ -520,7 +520,7 @@ TOKEN:
 | <#Pc: ["‿"-"⁀","⁔","︳"-"︴","﹍"-"﹏","＿"]>
 
 // CJK Unified Ideographs block according to https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_(Unicode_block)
-| <#CJK: ["\u4E00"-"\u9FFF"]>
+| <#CJK: ["\uAC00"-"\uD7A3", "\u4E00"-"\u9FFF"]>
 
 | < #SPECIAL_ESC: "\\'" > /* Allowing this will break LIKE ... ESCAPE ...  */
 | < #ESC: "\\" ["n","t","b","r","f","\\","\""] >
