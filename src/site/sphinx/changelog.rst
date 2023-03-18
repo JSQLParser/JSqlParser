@@ -8,6 +8,27 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **feat: `ConflictTarget` allows multiple `IndexColumnNames`**
+    
+    Andreas Reichel, 2023-03-18
+  * **style: Appease PMD/Codacy**
+    
+    Andreas Reichel, 2023-03-17
+  * **style: expose `SetStatement` key-value list**
+    
+    Andreas Reichel, 2023-03-17
+  * **feat: Add support for Hangul "\uAC00"-"\uD7A3"**
+    
+    Andreas Reichel, 2023-03-17
+  * **style: Remove unused variable**
+    
+    Andreas Reichel, 2023-03-14
+  * **style: Reformat changed files and headers**
+    
+    Andreas Reichel, 2023-03-14
+  * **fix: JSon Operator can use Simple Function**
+    
+    Andreas Reichel, 2023-03-14
   * **Assorted Fixes #6 (#1740)**
     
     manticore-projects, 2023-03-09
