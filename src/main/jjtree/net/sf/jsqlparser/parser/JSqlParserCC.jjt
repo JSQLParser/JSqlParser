@@ -1458,7 +1458,8 @@ Insert Insert( List<WithItem> with ):
 
 InsertConflictTarget  InsertConflictTarget():
 {
-    String indexColumnName = null;
+    String indexColumnName;
+    ArrayList<String> indexColumnNames = new ArrayList<String>();
     Expression indexExpression = null;
     Expression whereExpression = null;
     String constraintName = null ;
@@ -1466,8 +1467,9 @@ InsertConflictTarget  InsertConflictTarget():
 {
     (
         (
-           "("
-            indexColumnName = RelObjectNameExt2()
+            "("
+            indexColumnName = RelObjectNameExt2() { indexColumnNames.add(indexColumnName); }
+            ( "," indexColumnName = RelObjectNameExt2() { indexColumnNames.add(indexColumnName); } )*
 //            |
 //            (
 //                "(" indexExpression = Expression() ")"
@@ -1482,7 +1484,7 @@ InsertConflictTarget  InsertConflictTarget():
         )
     )
 
-    { return new InsertConflictTarget(indexColumnName, indexExpression, whereExpression, constraintName); }
+    { return new InsertConflictTarget(indexColumnNames, indexExpression, whereExpression, constraintName); }
 }
 
 InsertConflictAction InsertConflictAction():
