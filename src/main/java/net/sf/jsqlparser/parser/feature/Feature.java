@@ -59,7 +59,7 @@ import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.ValuesList;
-import net.sf.jsqlparser.statement.show.ShowTablesStatement;
+import net.sf.jsqlparser.statement.show.*;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -771,8 +771,8 @@ public enum Feature {
     allowBackslashEscapeCharacter(false),
     ;
 
-    private Object value;
-    private boolean configurable;
+    private final Object value;
+    private final boolean configurable;
 
     /**
      * a feature which can't configured within the parser
@@ -785,7 +785,7 @@ public enum Feature {
     /**
      * a feature which can be configured by {@link FeatureConfiguration}
      *
-     * @param value
+     * @param value The Value Object of the Parameter.
      */
     Feature(Object value) {
         this.value = value;
