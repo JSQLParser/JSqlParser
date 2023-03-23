@@ -11,7 +11,7 @@
 options {
     IGNORE_CASE = true;
     STATIC = false;
-    DEBUG_PARSER = false;
+    DEBUG_PARSER = true;
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
     CACHE_TOKENS = false;
@@ -2091,7 +2091,7 @@ PlainSelect PlainSelect() #PlainSelect:
         ( LOOKAHEAD(2) "," windowName = RelObjectName() <K_AS> winDef = windowDefinition() { winDefs.add(winDef.withWindowName(windowName)); } )*
         { plainSelect.setWindowDefinitions(winDefs); }
     ]
-    [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements);    }   ]
+    [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements); } ]
     [ LOOKAHEAD(2) <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
     [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
     [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
@@ -2952,11 +2952,11 @@ OrderByElement OrderByElement():
     columnReference = Expression()
     [ LOOKAHEAD(2) ( <K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )) { orderByElement.setAscDescPresent(true); }  ]
     [ LOOKAHEAD(2) <K_NULLS>
-//        LOOKAHEAD(2) [
-//        LOOKAHEAD(2) <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }
-//        |
-//        <K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  }
-//        ]
+        [
+            <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }
+            |
+            <K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  }
+        ]
     ]
     {
         orderByElement.setExpression(columnReference);
