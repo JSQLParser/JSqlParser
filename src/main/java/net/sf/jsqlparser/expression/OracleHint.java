@@ -9,9 +9,13 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectBody;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Oracle Hint Expression
@@ -83,5 +87,16 @@ public class OracleHint extends ASTNodeAccessImpl implements Expression {
     public OracleHint withSingleLine(boolean singleLine) {
         this.setSingleLine(singleLine);
         return this;
+    }
+
+    public static OracleHint getHintFromSelectBody(SelectBody selectBody) {
+
+        if (selectBody instanceof PlainSelect) {
+            return ((PlainSelect) selectBody).getOracleHint();
+        } else if (selectBody instanceof ParenthesedSelectBody) {
+            return getHintFromSelectBody( ((ParenthesedSelectBody) selectBody).getSelectBody() );
+        } else {
+            return null;
+        }
     }
 }
