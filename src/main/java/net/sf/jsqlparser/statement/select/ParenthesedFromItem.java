@@ -16,17 +16,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class ParenthesisFromItem implements FromItem {
+public class ParenthesedFromItem implements FromItem {
     private FromItem fromItem;
     private List<Join> joins;
     private Alias alias;
     private Pivot pivot;
     private UnPivot unPivot;
 
-    public ParenthesisFromItem() {
+    public ParenthesedFromItem() {
     }
 
-    public ParenthesisFromItem(FromItem fromItem) {
+    public ParenthesedFromItem(FromItem fromItem) {
         setFromItem(fromItem);
     }
 
@@ -118,13 +118,13 @@ public class ParenthesisFromItem implements FromItem {
         this.unPivot = unpivot;
     }
 
-    public ParenthesisFromItem withFromItem(FromItem fromItem) {
+    public ParenthesedFromItem withFromItem(FromItem fromItem) {
         this.setFromItem(fromItem);
         return this;
     }
 
     @Override
-    public ParenthesisFromItem withAlias(Alias alias) {
+    public ParenthesedFromItem withAlias(Alias alias) {
         this.setAlias(alias);
         return this;
     }

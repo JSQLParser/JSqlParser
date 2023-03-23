@@ -299,7 +299,7 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     }
 
     @Override
-    public void visit(ParenthesisFromItem parenthesis) {
+    public void visit(ParenthesedFromItem parenthesis) {
         validateOptional(parenthesis.getFromItem(), e -> e.accept(this));
     }
 

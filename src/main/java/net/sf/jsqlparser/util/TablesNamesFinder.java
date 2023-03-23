@@ -938,7 +938,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(ParenthesisFromItem parenthesis) {
+    public void visit(ParenthesedFromItem parenthesis) {
         parenthesis.getFromItem().accept(this);
     }
 

@@ -35,7 +35,7 @@ import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.OptimizeFor;
 import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
-import net.sf.jsqlparser.statement.select.ParenthesisFromItem;
+import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
@@ -595,7 +595,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
     @Override
-    public void visit(ParenthesisFromItem parenthesis) {
+    public void visit(ParenthesedFromItem parenthesis) {
         buffer.append("(");
         parenthesis.getFromItem().accept(this);
         List<Join> joins = parenthesis.getJoins();

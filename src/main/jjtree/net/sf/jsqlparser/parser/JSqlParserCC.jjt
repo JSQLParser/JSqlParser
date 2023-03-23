@@ -2548,7 +2548,7 @@ List<Table> IntoClause():
 
 FromItem ParenthesedFromItem():
 {
-    ParenthesisFromItem parenthesisFromItem = new ParenthesisFromItem();
+    ParenthesedFromItem ParenthesedFromItem = new ParenthesedFromItem();
     FromItem fromItem;
     List<Join> joins = null;
 }
@@ -2559,7 +2559,7 @@ FromItem ParenthesedFromItem():
     ")"
 
     {
-        return parenthesisFromItem.withFromItem(fromItem).withJoins(joins);
+        return ParenthesedFromItem.withFromItem(fromItem).withJoins(joins);
     }
 }
 
@@ -2586,9 +2586,6 @@ FromItem FromItem():
                 |
                 LOOKAHEAD( ParenthesedFromItem() ) fromItem = ParenthesedFromItem()
                 |
-                //@todo: this is a very expenise LOOKAHEAD
-                // which is needed only for Tablenames in many brackets
-                // e. g. SELECT * FROM (((tableName)))
                 LOOKAHEAD(3) (
                     selectBody=ParenthesedSelectBody() { fromItem = new SubSelect().withSelectBody(selectBody).withUseBrackets(false); }
                     [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
