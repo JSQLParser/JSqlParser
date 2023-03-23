@@ -41,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -52,7 +53,8 @@ public class InsertTest {
     @Test
     public void testRegularInsert() throws JSQLParserException {
         String statement = "INSERT INTO mytable (col1, col2, col3) VALUES (?, 'sadfsd', 234)";
-        Insert insert = (Insert) parserManager.parse(new StringReader(statement));
+        Insert insert = (Insert) TestUtils.assertSqlCanBeParsedAndDeparsed(statement, true);
+
         assertEquals("mytable", insert.getTable().getName());
         assertEquals(3, insert.getColumns().size());
         assertEquals("col1", insert.getColumns().get(0).getColumnName());

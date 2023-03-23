@@ -16,33 +16,7 @@ import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.ExceptOp;
-import net.sf.jsqlparser.statement.select.Fetch;
-import net.sf.jsqlparser.statement.select.FromItemVisitor;
-import net.sf.jsqlparser.statement.select.IntersectOp;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.LateralSubSelect;
-import net.sf.jsqlparser.statement.select.MinusOp;
-import net.sf.jsqlparser.statement.select.Offset;
-import net.sf.jsqlparser.statement.select.ParenthesisFromItem;
-import net.sf.jsqlparser.statement.select.Pivot;
-import net.sf.jsqlparser.statement.select.PivotVisitor;
-import net.sf.jsqlparser.statement.select.PivotXml;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SelectItemVisitor;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.SubJoin;
-import net.sf.jsqlparser.statement.select.SubSelect;
-import net.sf.jsqlparser.statement.select.TableFunction;
-import net.sf.jsqlparser.statement.select.UnPivot;
-import net.sf.jsqlparser.statement.select.UnionOp;
-import net.sf.jsqlparser.statement.select.ValuesList;
-import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationUtil;
@@ -53,6 +27,11 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  */
 public class SelectValidator extends AbstractValidator<SelectItem>
         implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
+
+    @Override
+    public void visit(ParenthesedSelectBody parenthesedSelectBody) {
+        parenthesedSelectBody.getSelectBody().accept(this);
+    }
 
     @Override
     public void visit(PlainSelect plainSelect) {

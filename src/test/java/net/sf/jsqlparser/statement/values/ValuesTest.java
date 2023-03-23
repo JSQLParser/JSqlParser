@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.statement.values;
 
-import java.util.Arrays;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.RowConstructor;
@@ -19,8 +18,15 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SetOperationList;
-import static net.sf.jsqlparser.test.TestUtils.*;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+
+import static net.sf.jsqlparser.test.TestUtils.asList;
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertEqualsObjectTree;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.toReflectionString;
 
 public class ValuesTest {
 
@@ -33,7 +39,7 @@ public class ValuesTest {
                 .addExpressions(asList(new LongValue(2), new StringValue("test"))).withBrackets(true);
 
         Select created = new Select().withSelectBody(new SetOperationList()
-                .addBrackets(Boolean.FALSE).addSelects(
+                .addSelects(
                 new ValuesStatement().withExpressions(
                         new ExpressionList(
                                 new RowConstructor().withExprList(list))

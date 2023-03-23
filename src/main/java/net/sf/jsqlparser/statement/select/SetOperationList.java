@@ -18,7 +18,6 @@ import java.util.Optional;
 public class SetOperationList implements SelectBody {
 
     private List<SelectBody> selects;
-    private List<Boolean> brackets;
     private List<SetOperation> operations;
     private List<OrderByElement> orderByElements;
     private Limit limit;
@@ -51,26 +50,15 @@ public class SetOperationList implements SelectBody {
         return operations;
     }
 
-    public List<Boolean> getBrackets() {
-        return brackets;
-    }
 
-    public void setBrackets(List<Boolean> brackets) {
-        this.brackets = brackets;
-    }
 
     public void setOrderByElements(List<OrderByElement> orderByElements) {
         this.orderByElements = orderByElements;
     }
 
-    public void setBracketsOpsAndSelects(List<Boolean> brackets, List<SelectBody> select, List<SetOperation> ops) {
+    public void setBracketsOpsAndSelects(List<SelectBody> select, List<SetOperation> ops) {
         selects = select;
         operations = ops;
-        this.brackets = brackets;
-
-        if (select.size() - 1 != ops.size() || select.size() != brackets.size()) {
-            throw new IllegalArgumentException("list sizes are not valid");
-        }
     }
 
     public Limit getLimit() {
@@ -114,27 +102,23 @@ public class SetOperationList implements SelectBody {
             if (i != 0) {
                 buffer.append(" ").append(operations.get(i - 1).toString()).append(" ");
             }
-            if (brackets == null || brackets.get(i)) {
-                buffer.append("(").append(selects.get(i).toString()).append(")");
-            } else {
-                buffer.append(selects.get(i).toString());
-            }
+            buffer.append(selects.get(i).toString());
         }
 
         if (orderByElements != null) {
             buffer.append(PlainSelect.orderByToString(orderByElements));
         }
         if (limit != null) {
-            buffer.append(limit.toString());
+            buffer.append(limit);
         }
         if (offset != null) {
-            buffer.append(offset.toString());
+            buffer.append(offset);
         }
         if (fetch != null) {
-            buffer.append(fetch.toString());
+            buffer.append(fetch);
         }
         if (withIsolation != null) {
-            buffer.append(withIsolation.toString());
+            buffer.append(withIsolation);
         }
         return buffer.toString();
     }
@@ -146,11 +130,6 @@ public class SetOperationList implements SelectBody {
 
     public SetOperationList withSelects(List<SelectBody> selects) {
         setSelects(selects);
-        return this;
-    }
-
-    public SetOperationList withBrackets(List<Boolean> brackets) {
-        this.setBrackets(brackets);
         return this;
     }
 
@@ -196,18 +175,6 @@ public class SetOperationList implements SelectBody {
         List<SetOperation> collection = Optional.ofNullable(getOperations()).orElseGet(ArrayList::new);
         collection.addAll(operationList);
         return this.withOperations(collection);
-    }
-
-    public SetOperationList addBrackets(Boolean... brackets) {
-        List<Boolean> collection = Optional.ofNullable(getBrackets()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, brackets);
-        return this.withBrackets(collection);
-    }
-
-    public SetOperationList addBrackets(Collection<Boolean> brackets) {
-        List<Boolean> collection = Optional.ofNullable(getBrackets()).orElseGet(ArrayList::new);
-        collection.addAll(brackets);
-        return this.withBrackets(collection);
     }
 
     public SetOperationList addOrderByElements(OrderByElement... orderByElements) {

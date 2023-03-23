@@ -1277,7 +1277,7 @@ Update Update( List<WithItem> with ):
    <K_UPDATE> { update.setOracleHint(getOracleHint()); }
     [ LOOKAHEAD(2) <K_LOW_PRIORITY> { modifierPriority = UpdateModifierPriority.LOW_PRIORITY; }]
     [ LOOKAHEAD(2) <K_IGNORE> { modifierIgnore = true; }]
-    table=TableWithAlias() startJoins=JoinsList()
+    table=TableWithAlias() [ startJoins=JoinsList() ]
     <K_SET>
     (
         LOOKAHEAD(3) tableColumn=Column() "=" valueExpression=SimpleExpression() { update.addUpdateSet(tableColumn, valueExpression); }
@@ -1326,7 +1326,7 @@ Update Update( List<WithItem> with ):
 
     [ <K_FROM>
       fromItem=FromItem()
-      joins=JoinsList() ]
+      [ joins=JoinsList() ] ]
 
     [ where=WhereClause() { update.setWhere(where); } ]
 
@@ -1729,7 +1729,7 @@ Delete Delete( List<WithItem> with ):
     [ outputClause = OutputClause() {delete.setOutputClause(outputClause); } ]
     <K_FROM> | <K_FROM>) { hasFrom = true; }]
 
-    [ LOOKAHEAD(3) table=TableWithAlias()  joins=JoinsList() ]
+    [ LOOKAHEAD(3) table=TableWithAlias() [ joins=JoinsList() ] ]
     [ <K_USING> usingTable=TableWithAlias() { usingList.add(usingTable); }
           ("," usingTable=TableWithAlias() { usingList.add(usingTable); } )*]
     [where=WhereClause() { delete.setWhere(where); } ]
@@ -1983,8 +1983,32 @@ Select Select( List<WithItem> with ):
 SelectBody SelectBody():
 { SelectBody selectBody = null; }
 {
-    selectBody = SetOperationList()
+    (
+
+        LOOKAHEAD( SetOperationList() ) selectBody = SetOperationList()
+        |
+        selectBody = PlainSelect()
+        |
+        selectBody = Values()
+        |
+        selectBody = ParenthesedSelectBody()
+    )
+
     { return selectBody; }
+}
+
+ParenthesedSelectBody ParenthesedSelectBody():
+{
+    ParenthesedSelectBody parenthesedSelectBody = new ParenthesedSelectBody();
+    SelectBody selectBody;
+}
+{
+    "("
+    selectBody = SelectBody()
+    ")"
+    {
+        return parenthesedSelectBody.withSelectBody(selectBody);
+    }
 }
 
 PlainSelect PlainSelect() #PlainSelect:
@@ -2004,8 +2028,8 @@ PlainSelect PlainSelect() #PlainSelect:
     WithIsolation withIsolation = null;
     OptimizeFor optimize = null;
     Top top = null;
-        Skip skip = null;
-        First first = null;
+    Skip skip = null;
+    First first = null;
     OracleHierarchicalExpression oracleHierarchicalQueryClause = null;
     List<Table> intoTables = null;
     Table updateTable = null;
@@ -2020,34 +2044,30 @@ PlainSelect PlainSelect() #PlainSelect:
 {
     <K_SELECT>
 
-    [ LOOKAHEAD(2) <K_STRAIGHT> { plainSelect.setMySqlHintStraightJoin(true); } ]
+    [ <K_STRAIGHT> { plainSelect.setMySqlHintStraightJoin(true); } ]
 
     { plainSelect.setOracleHint(getOracleHint()); }
 
-    [ LOOKAHEAD(2) skip = Skip() { plainSelect.setSkip(skip);    } ]
+    [ LOOKAHEAD(2) skip = Skip() { plainSelect.setSkip(skip); } ]
 
     [ LOOKAHEAD(2) first = First() { plainSelect.setFirst(first); } ]
 
     [ LOOKAHEAD(2)
-        ( <K_ALL>
+        (
+        <K_ALL>
         |
-            (
-                <K_DISTINCT> { Distinct distinct = new Distinct(); plainSelect.setDistinct(distinct); }
-                    [ LOOKAHEAD(2) "ON" "(" distinctOn=SelectItemsList()  { plainSelect.getDistinct().setOnSelectItems(distinctOn); } ")" ]
-            )
+        (
+            <K_DISTINCT> { Distinct distinct = new Distinct(); plainSelect.setDistinct(distinct); }
+            [ LOOKAHEAD(2) "ON" "(" distinctOn=SelectItemsList() { plainSelect.getDistinct().setOnSelectItems(distinctOn); } ")" ]
+        )
         |
-            (
-                <K_UNIQUE> { Distinct distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
-            )
+        <K_UNIQUE> { Distinct distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
         |
-            (
-                <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(true); }
-            )
+        <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(true); }
         |
-            (
-                <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_NO_CACHE); }
-                | <K_SQL_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_CACHE); }
-            )
+        <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_NO_CACHE); }
+        |
+        <K_SQL_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_CACHE); }
         )
     ]
 
@@ -2056,37 +2076,38 @@ PlainSelect PlainSelect() #PlainSelect:
     selectItems=SelectItemsList()
 
     [intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); } ]
-    [ LOOKAHEAD(2) <K_FROM>
-      fromItem=FromItem()
-      joins=JoinsList() ]
+    [ LOOKAHEAD(2) <K_FROM> fromItem=FromItem()
+      [ LOOKAHEAD(2) joins=JoinsList() ]
+    ]
 
     [ LOOKAHEAD(2) ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
     [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); }]
-    [ oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
-    [ groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
-    [ having=Having() { plainSelect.setHaving(having); }]
-    [LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
-    [ <K_WINDOW>
+    [ LOOKAHEAD(2) oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
+    [ LOOKAHEAD(2) groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
+    [ LOOKAHEAD(2) having=Having() { plainSelect.setHaving(having); }]
+    [ LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
+    [ LOOKAHEAD(2) <K_WINDOW>
         windowName = RelObjectName() <K_AS> winDef = windowDefinition() { List<WindowDefinition> winDefs = new ArrayList<WindowDefinition>(); winDefs.add(winDef.withWindowName(windowName)); }
         ( LOOKAHEAD(2) "," windowName = RelObjectName() <K_AS> winDef = windowDefinition() { winDefs.add(winDef.withWindowName(windowName)); } )*
         { plainSelect.setWindowDefinitions(winDefs); }
     ]
-    [LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements);    }   ]
-    [ <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
-    [LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
-    [LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
-	[LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
-    [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
-    [LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { plainSelect.setWithIsolation(withIsolation);    } ]
-    [LOOKAHEAD(2) <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
-        [ <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ]
+    [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements);    }   ]
+    [ LOOKAHEAD(2) <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
+    [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
+    [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
+	[ LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
+    [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
+    [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { plainSelect.setWithIsolation(withIsolation);    } ]
+    [ LOOKAHEAD(2) <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
+        [ LOOKAHEAD(2) <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ]
         [ LOOKAHEAD(<K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ]
-        [ <K_NOWAIT> { plainSelect.setNoWait(true); }
-           | <K_SKIP> <K_LOCKED> { plainSelect.setSkipLocked(true); } ] ]
+        [ LOOKAHEAD(2) <K_NOWAIT> { plainSelect.setNoWait(true); }
+               | <K_SKIP> <K_LOCKED> { plainSelect.setSkipLocked(true); } ]
+    ]
 
-    [LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
+    [ LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
 
-    [LOOKAHEAD(3) <K_FOR> <K_XML> <K_PATH> "(" token = <S_CHAR_LITERAL> ")" { plainSelect.setForXmlPath(token.image); } ]
+    [ LOOKAHEAD(3) <K_FOR> <K_XML> <K_PATH> "(" token = <S_CHAR_LITERAL> ")" { plainSelect.setForXmlPath(token.image); } ]
 
     {
         plainSelect.setSelectItems(selectItems);
@@ -2108,107 +2129,72 @@ SelectBody SetOperationList() #SetOperationList: {
     SelectBody select = null;
     List<SelectBody> selects = new ArrayList<SelectBody>();
     List<SetOperation> operations = new ArrayList<SetOperation>();
-    List<Boolean> brackets = new ArrayList<Boolean>();
-    boolean bracket = false;
 }
 {
-    (("(" select=SelectBody() ")" { bracket=true;} )
-                    | ( select=PlainSelect() | select=Values() ) { bracket=false;} ) {selects.add(select);brackets.add(bracket); }   
-    ( LOOKAHEAD(2)
-        ((<K_UNION> { UnionOp union = new UnionOp();linkAST(union,jjtThis);operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
-        | <K_INTERSECT> { operations.add(new IntersectOp()); }
-        | <K_MINUS> { operations.add(new MinusOp()); }
-        | <K_EXCEPT> { operations.add(new ExceptOp()); }
-        )
 
-        (("(" select=SelectBody() ")" { bracket=true;} ) | ( select=PlainSelect() | select=Values() ) { bracket=false;} ) {selects.add(select);brackets.add(bracket);}
-    )*
-
-
-    [ LOOKAHEAD(2) orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
-    [LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {list.setLimit(limit);} ]
-    [LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);} ]
-    [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);} ]
-    [LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { list.setWithIsolation(withIsolation);} ]
-
+    (
+        select = PlainSelect()
+        |
+        select = Values()
+        |
+        select = ParenthesedSelectBody()
+    )
     {
-        if (selects.size()==1 && selects.get(0) instanceof PlainSelect && orderByElements==null) {
-            if (brackets.get(0)) {
-                if (limit==null && offset==null && fetch==null && withIsolation==null)
-                    ((PlainSelect)selects.get(0)).setUseBrackets(true);
-                else {
-                    list.setBracketsOpsAndSelects(brackets,selects,operations);
-                    return list;    //brackets with outside limit, offset
-                }
-            }
-            return selects.get(0);
-        } else {
-            if (selects.size()>1 && selects.get(selects.size()-1) instanceof PlainSelect && !brackets.get(brackets.size() - 1)) {
-                PlainSelect ps = (PlainSelect)selects.get(selects.size()-1);
-                if (ps.getOrderByElements() != null) {
-                    list.setOrderByElements(ps.getOrderByElements());
-                    list.setLimit(ps.getLimit());
-                    list.setOffset(ps.getOffset());
-                    ps.setOrderByElements(null);
-                    ps.setLimit(null);
-                    ps.setOffset(null);
-                }
-                if (ps.getFetch() != null) {
-                    list.setFetch(ps.getFetch());
-                    ps.setFetch(null);
-                }
-                if (ps.getWithIsolation() != null) {
-                    list.setWithIsolation(ps.getWithIsolation());
-                    ps.setWithIsolation(null);
-                }
-            }
-            list.setBracketsOpsAndSelects(brackets,selects,operations);
-            return list;
-        }
-    }
-}
-
-SelectBody SetOperationListWithoutIntialSelect(FromItem fromItem) #SetOperationList:
-{
-    SetOperationList list = new SetOperationList();
-    List<OrderByElement> orderByElements = null;
-    Limit limit = null;
-    Offset offset = null;
-    Fetch fetch = null;
-    WithIsolation withIsolation = null;
-    SelectBody select;
-    List<SelectBody> selects = new ArrayList<SelectBody>();
-    List<SetOperation> operations = new ArrayList<SetOperation>();
-    List<Boolean> brackets = new ArrayList<Boolean>();
-    boolean bracket = false;
-}
-{
-    {
-        while (fromItem instanceof ParenthesisFromItem) {
-            fromItem = ((ParenthesisFromItem)fromItem).getFromItem();
-        }
-
-        if (fromItem instanceof SubSelect) {
-            select = ((SubSelect)fromItem).getSelectBody();
-        } else {
-            throw new IllegalArgumentException("this type of set operation is not allowed");
-        }
-
         selects.add(select);
-        brackets.add(true);
-    } 
-    ( LOOKAHEAD(2) 
-        ((<K_UNION> { UnionOp union = new UnionOp();linkAST(union,jjtThis);operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
-        | <K_INTERSECT> { operations.add(new IntersectOp()); }
-        | <K_MINUS> { operations.add(new MinusOp()); }
-        | <K_EXCEPT> { operations.add(new ExceptOp()); }
+    }
+
+    ( LOOKAHEAD(2) (
+            (
+                <K_UNION> { UnionOp union = new UnionOp(); linkAST(union,jjtThis); operations.add(union); }
+                [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ]
+            )
+            |
+            <K_INTERSECT> { operations.add(new IntersectOp()); }
+            |
+            <K_MINUS> { operations.add(new MinusOp()); }
+            |
+            <K_EXCEPT> { operations.add(new ExceptOp()); }
         )
 
-        "(" select=SelectBody() ")" { bracket=true;}  {selects.add(select);brackets.add(bracket);}
+        (
+            select = PlainSelect()
+            |
+            select = Values()
+            |
+            select = ParenthesedSelectBody()
+        )
+        {
+            selects.add(select);
+        }
     )+
 
+    [ LOOKAHEAD(2) orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
+    [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {list.setLimit(limit);} ]
+    [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);} ]
+    [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);} ]
+    [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { list.setWithIsolation(withIsolation);} ]
+
     {
-        list.setBracketsOpsAndSelects(brackets,selects,operations);
+        if ( selects.get(selects.size()-1) instanceof PlainSelect ) {
+            PlainSelect ps = (PlainSelect)selects.get(selects.size()-1);
+            if (ps.getOrderByElements() != null) {
+                list.setOrderByElements(ps.getOrderByElements());
+                list.setLimit(ps.getLimit());
+                list.setOffset(ps.getOffset());
+                ps.setOrderByElements(null);
+                ps.setLimit(null);
+                ps.setOffset(null);
+            }
+            if (ps.getFetch() != null) {
+                list.setFetch(ps.getFetch());
+                ps.setFetch(null);
+            }
+            if (ps.getWithIsolation() != null) {
+                list.setWithIsolation(ps.getWithIsolation());
+                ps.setWithIsolation(null);
+            }
+        }
+        list.setBracketsOpsAndSelects(selects,operations);
         return list;
     }
 }
@@ -2560,6 +2546,23 @@ List<Table> IntoClause():
     }
 }
 
+FromItem ParenthesedFromItem():
+{
+    ParenthesisFromItem parenthesisFromItem = new ParenthesisFromItem();
+    FromItem fromItem;
+    List<Join> joins = null;
+}
+{
+    "("
+        fromItem = FromItem()
+        [ joins=JoinsList() ]
+    ")"
+
+    {
+        return parenthesisFromItem.withFromItem(fromItem).withJoins(joins);
+    }
+}
+
 FromItem FromItem():
 {
     FromItem fromItem = null;
@@ -2573,42 +2576,34 @@ FromItem FromItem():
 }
 {
     (
-        LOOKAHEAD(ValuesList()) fromItem=ValuesList()
+        LOOKAHEAD( ValuesList() ) fromItem=ValuesList()
         |
         (
             (
-                (
-                    "("
-                        (
-                        LOOKAHEAD(3) fromItem2=FromItem()
-                          { fromItem = new ParenthesisFromItem(fromItem2); }
-                        [ fromItem = SubJoin(fromItem2) ]
-                        /* LOOKAHEAD(SubJoin())
-                        fromItem=SubJoin() */
-                        | 
-                        fromItem=SubSelect()
-                        )
-                        [ selectBody = SetOperationListWithoutIntialSelect(fromItem) 
-                            {   
-                                if (!(selectBody instanceof PlainSelect)) {
-                                    fromItem = new SubSelect().withSelectBody(selectBody); 
-                                }
-                            }
-                        ]
-                    ")"
+                LOOKAHEAD( TableFunction() ) fromItem=TableFunction()
+                |
+                LOOKAHEAD(3) fromItem=Table()
+                |
+                LOOKAHEAD( ParenthesedFromItem() ) fromItem = ParenthesedFromItem()
+                |
+                //@todo: this is a very expenise LOOKAHEAD
+                // which is needed only for Tablenames in many brackets
+                // e. g. SELECT * FROM (((tableName)))
+                LOOKAHEAD(3) (
+                    selectBody=ParenthesedSelectBody() { fromItem = new SubSelect().withSelectBody(selectBody).withUseBrackets(false); }
                     [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
                 )
                 |
-                LOOKAHEAD(TableFunction())
-                fromItem=TableFunction()
-                |
-                fromItem=Table()
+                LOOKAHEAD(3) (
+                    "(" fromItem=SubSelect() ")"
+                )
                 |
                 fromItem=LateralSubSelect()
             )
+
             [ LOOKAHEAD(2) alias=Alias() { fromItem.setAlias(alias); } ]
 			[ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
-			[(LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot()) { fromItem.setPivot(pivot); } ]
+			[ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
             [
                 LOOKAHEAD(2)
                 (
@@ -2658,7 +2653,7 @@ FromItem ValuesList():
 
     [ LOOKAHEAD(2) alias=Alias() { valuesList.setAlias(alias); }
 
-        [ "("
+        [ LOOKAHEAD(2) "("
             colName = RelObjectName() { colNames = new ArrayList<String>(); colNames.add(colName); }
             ( "," colName = RelObjectName() { colNames.add(colName); } )*
             ")" { valuesList.setColumnNames(colNames); } ]
@@ -2685,40 +2680,16 @@ LateralSubSelect LateralSubSelect():
     }
 }
 
-FromItem SubJoin(FromItem fromItem):
-{
-    Join join = null;
-    List<Join> joinList = null;
-}
-{
-    joinList=SubJoinsList()
-    {
-        SubJoin subJoin = new SubJoin();
-        subJoin.setLeft(fromItem);
-        subJoin.setJoinList(joinList);
-        return subJoin;
-    }
-}
-
 List<Join> JoinsList():
 {
     List<Join> joinsList = new ArrayList<Join>();
     Join join = null;
 }
 {
-    ( LOOKAHEAD(2) join=JoinerExpression() { joinsList.add(join); })*
-    { return joinsList; }
-}
-
-List<Join> SubJoinsList():
-{
-    List<Join> joinsList = new ArrayList<Join>();
-    Join join = null;
-}
-{
-
-    (join=JoinerExpression() { joinsList.add(join); })+
-    { return joinsList; }
+    ( LOOKAHEAD(2) join=JoinerExpression() { joinsList.add(join); } )+
+    {
+        return joinsList;
+    }
 }
 
 
@@ -2884,7 +2855,7 @@ OracleHierarchicalExpression OracleHierarchicalQueryClause():
                     result.setConnectExpression(expr);
                     result.setConnectFirst(true);
                 }
-                [ <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);} ]
+                [ LOOKAHEAD( <K_START> <K_WITH> )  expr=AndExpression() {result.setStartExpression(expr);} ]
     )
     {
         return result;
@@ -2982,11 +2953,13 @@ OrderByElement OrderByElement():
 }
 {
     columnReference = Expression()
-    [ ( <K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )) { orderByElement.setAscDescPresent(true); }  ]
-    [<K_NULLS> (
-        <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }  |
-        <K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  }
-        )?
+    [ LOOKAHEAD(2) ( <K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )) { orderByElement.setAscDescPresent(true); }  ]
+    [ LOOKAHEAD(2) <K_NULLS>
+//        LOOKAHEAD(2) [
+//        LOOKAHEAD(2) <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }
+//        |
+//        <K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  }
+//        ]
     ]
     {
         orderByElement.setExpression(columnReference);
@@ -3072,7 +3045,7 @@ Offset Offset():
              <K_OFFSET>
              offsetExpression=Expression() { offset.setOffset( offsetExpression ); }
 
-             [(<K_ROWS> { offset.setOffsetParam("ROWS"); } | <K_ROW> { offset.setOffsetParam("ROW"); })]
+             [ LOOKAHEAD(2) (<K_ROWS> { offset.setOffsetParam("ROWS"); } | <K_ROW> { offset.setOffsetParam("ROW"); })]
 
         )
     {
@@ -3201,14 +3174,17 @@ First First():
     JdbcParameter jdbc;
 }
 {
-    ( <K_FIRST>                                 { first.setKeyword(First.Keyword.FIRST); }
-            |  <K_LIMIT>                            { first.setKeyword(First.Keyword.LIMIT); }
-        )
     (
-         token=<S_LONG>                      { first.setRowCount(Long.parseLong(token.image)); }
-                | token=<S_IDENTIFIER>              { first.setVariable(token.image); }
-                | jdbc = SimpleJdbcParameter() { first.setJdbcParameter(jdbc); }
-                    /* "?" { first.setJdbcParameter(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { first.getJdbcParameter().setUseFixedIndex(true); first.getJdbcParameter().setIndex(Integer.valueOf(token.image)); } ] */
+        <K_FIRST> { first.setKeyword(First.Keyword.FIRST); }
+        |
+        <K_LIMIT> { first.setKeyword(First.Keyword.LIMIT); }
+    )
+    (
+        token=<S_LONG> { first.setRowCount(Long.parseLong(token.image)); }
+        |
+        token=<S_IDENTIFIER> { first.setVariable(token.image); }
+        |
+        jdbc = SimpleJdbcParameter() { first.setJdbcParameter(jdbc); }
     )
     {
         return first;

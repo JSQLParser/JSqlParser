@@ -9,13 +9,6 @@
  */
 package net.sf.jsqlparser.statement.insert;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.RowConstructor;
@@ -30,9 +23,15 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class Insert implements Statement {
@@ -103,27 +102,19 @@ public class Insert implements Statement {
     public ItemsList getItemsList() {
         if (select!=null) {
             SelectBody selectBody = select.getSelectBody();
-            if (selectBody instanceof SetOperationList) {
-                SetOperationList setOperationList = (SetOperationList) selectBody;
-                List<SelectBody> selects = setOperationList.getSelects();
+            if (selectBody instanceof ValuesStatement) {
+                ValuesStatement valuesStatement = (ValuesStatement) selectBody;
+                if (valuesStatement.getExpressions() instanceof ExpressionList) {
+                    ExpressionList expressionList = (ExpressionList) valuesStatement.getExpressions();
 
-                if (selects.size() == 1) {
-                    SelectBody selectBody1 = selects.get(0);
-                    if (selectBody1 instanceof ValuesStatement) {
-                        ValuesStatement valuesStatement = (ValuesStatement) selectBody1;
-                        if (valuesStatement.getExpressions() instanceof ExpressionList) {
-                            ExpressionList expressionList = (ExpressionList) valuesStatement.getExpressions();
-
-                            if (expressionList.getExpressions().size() == 1 && expressionList.getExpressions().get(0) instanceof RowConstructor) {
-                                RowConstructor rowConstructor = (RowConstructor) expressionList.getExpressions().get(0);
-                                return rowConstructor.getExprList();
-                            } else {
-                                return expressionList;
-                            }
-                        } else {
-                            return valuesStatement.getExpressions();
-                        }
+                    if (expressionList.getExpressions().size() == 1 && expressionList.getExpressions().get(0) instanceof RowConstructor) {
+                        RowConstructor rowConstructor = (RowConstructor) expressionList.getExpressions().get(0);
+                        return rowConstructor.getExprList();
+                    } else {
+                        return expressionList;
                     }
+                } else {
+                    return valuesStatement.getExpressions();
                 }
             }
         }

@@ -113,6 +113,7 @@ public enum Feature {
     limitOffset,
     /**
      * "OFFSET offset"
+     * 
      * @see Offset
      */
     offset,
@@ -129,12 +130,12 @@ public enum Feature {
     fetch,
     /**
      * "FETCH FIRST row_count (ROW | ROWS) ONLY"
+     * 
      * @see Fetch#isFetchParamFirst()
      */
     fetchFirst,
     /**
-     * "FETCH NEXT row_count (ROW | ROWS) ONLY"
-     * if not {@link #fetchFirst}
+     * "FETCH NEXT row_count (ROW | ROWS) ONLY" if not {@link #fetchFirst}
      *
      * @see Fetch#isFetchParamFirst()
      */
@@ -193,8 +194,7 @@ public enum Feature {
      */
     joinApply,
 
-    joinWindow,
-    joinUsingColumns,
+    joinWindow, joinUsingColumns,
 
     /**
      * "SKIP variable" | "SKIP ?" | "SKIP rowCount"
@@ -203,9 +203,7 @@ public enum Feature {
      */
     skip,
     /**
-     * "FIRST" \?|[0-9]+|variable
-     * or
-     * "LIMIT" \?|[0-9]+|variable
+     * "FIRST" \?|[0-9]+|variable or "LIMIT" \?|[0-9]+|variable
      *
      * @see First
      */
@@ -328,9 +326,7 @@ public enum Feature {
     /**
      * UPDATE table SET (col, ...) = (SELECT col, ... )"
      */
-    updateUseSelect,
-    updateOrderBy,
-    updateLimit,
+    updateUseSelect, updateOrderBy, updateLimit,
     /**
      * "RETURNING expr(, expr)*"
      *
@@ -429,8 +425,7 @@ public enum Feature {
      *
      * @see Execute
      */
-    execute,
-    executeExec, executeCall, executeExecute,
+    execute, executeExec, executeCall, executeExecute,
 
     /**
      * SQL "EXECUTE" statement is allowed
@@ -454,13 +449,7 @@ public enum Feature {
      *
      * @see Drop
      */
-    drop,
-    dropTable,
-    dropIndex,
-    dropView,
-    dropSchema,
-    dropSequence,
-    dropTableIfExists, dropIndexIfExists, dropViewIfExists, dropSchemaIfExists, dropSequenceIfExists,
+    drop, dropTable, dropIndex, dropView, dropSchema, dropSequence, dropTableIfExists, dropIndexIfExists, dropViewIfExists, dropSchemaIfExists, dropSequenceIfExists,
 
     /**
      * SQL "CREATE SCHEMA" statement is allowed
@@ -650,17 +639,12 @@ public enum Feature {
      */
     pivotXml,
 
-    setOperation,
-    setOperationUnion,
-    setOperationIntersect,
-    setOperationExcept,
-    setOperationMinus,
+    setOperation, setOperationUnion, setOperationIntersect, setOperationExcept, setOperationMinus,
 
     /**
      * "WITH name query"
      */
-    withItem,
-    withItemRecursive,
+    withItem, withItemRecursive,
 
     lateralSubSelect,
     /**
@@ -722,14 +706,11 @@ public enum Feature {
      *
      * @see OracleHierarchicalExpression
      */
-    oracleHierarchicalExpression,
-    oracleOrderBySiblings,
+    oracleHierarchicalExpression, oracleOrderBySiblings,
 
     // MYSQL
 
-    mySqlHintStraightJoin,
-    mysqlSqlCacheFlag,
-    mysqlCalcFoundRows,
+    mySqlHintStraightJoin, mysqlSqlCacheFlag, mysqlCalcFoundRows,
 
     // SQLSERVER
 
@@ -744,32 +725,30 @@ public enum Feature {
     allowSquareBracketQuotation(false),
 
     /**
-     * allow parsing of RDBMS specific syntax by switching off SQL Standard
-     * Compliant Syntax
+     * allow parsing of RDBMS specific syntax by switching off SQL Standard Compliant Syntax
      */
     allowPostgresSpecificSyntax(false),
 
     // PERFORMANCE
 
     /**
-     * allows complex expression parameters or named parameters for functions
-     * will be switched off, when deep nesting of functions is detected
+     * allows complex expression parameters or named parameters for functions will be switched off,
+     * when deep nesting of functions is detected
      */
     allowComplexParsing(true),
 
     /**
-     * allows passing through Unsupported Statements as a plain List of Tokens
-     * needs to be switched off, when VALIDATING statements or parsing blocks
+     * allows passing through Unsupported Statements as a plain List of Tokens needs to be switched
+     * off, when VALIDATING statements or parsing blocks
      */
     allowUnsupportedStatements(false),
 
-    timeOut( 6000),
+    timeOut(6000),
 
     /**
      * allows Backslash '\' as Escape Character
      */
-    allowBackslashEscapeCharacter(false),
-    ;
+    allowBackslashEscapeCharacter(false),;
 
     private final Object value;
     private final boolean configurable;

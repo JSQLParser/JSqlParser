@@ -37,6 +37,11 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
     protected abstract BinaryExpression createBinaryExpression();
 
     @Override
+    public void visit(ParenthesedSelectBody parenthesedSelectBody) {
+        parenthesedSelectBody.getSelectBody().accept(this);
+    }
+
+    @Override
     public void visit(PlainSelect plainSelect) {
         for (SelectItem item : plainSelect.getSelectItems()) {
             item.accept(this);

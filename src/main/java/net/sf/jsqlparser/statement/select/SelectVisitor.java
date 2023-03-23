@@ -13,6 +13,8 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public interface SelectVisitor {
 
+    void visit(ParenthesedSelectBody parenthesedSelectBody);
+
     void visit(PlainSelect plainSelect);
 
     void visit(SetOperationList setOpList);

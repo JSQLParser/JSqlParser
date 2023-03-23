@@ -3676,7 +3676,20 @@ public class SelectTest {
     @Test
     public void testProblemIssue375Simplified() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "select * from (((pg_catalog.pg_class c inner join pg_catalog.pg_namespace n on n.oid = c.relnamespace and c.relname = 'business' and n.nspname = 'public') inner join pg_catalog.pg_attribute a on (not a.attisdropped) and a.attnum > 0 and a.attrelid = c.oid) inner join pg_catalog.pg_type t on t.oid = a.atttypid) left outer join pg_attrdef d on a.atthasdef and d.adrelid = a.attrelid and d.adnum = a.attnum order by n.nspname, c.relname, attnum",
+                "select * " +
+                        "from (((pg_catalog.pg_class c " +
+                        "   inner join pg_catalog.pg_namespace n " +
+                        "       on n.oid = c.relnamespace " +
+                        "           and c.relname = 'business' and n.nspname = 'public') " +
+                        "   inner join pg_catalog.pg_attribute a " +
+                        "       on (not a.attisdropped) " +
+                        "           and a.attnum > 0 and a.attrelid = c.oid) " +
+                        "   inner join pg_catalog.pg_type t " +
+                        "       on t.oid = a.atttypid) " +
+                        "   left outer join pg_attrdef d " +
+                        "       on a.atthasdef and d.adrelid = a.attrelid " +
+                        "           and d.adnum = a.attnum " +
+                        "order by n.nspname, c.relname, attnum",
                 true);
     }
 
@@ -4969,29 +4982,20 @@ public class SelectTest {
 
     @Test
     public void testSetOperationWithParenthesisIssue1094_2() throws JSQLParserException {
-        Statement stmt = CCJSqlParserUtil.parse(
-                "SELECT * FROM (((SELECT A FROM tbl)) UNION DISTINCT (SELECT B FROM tbl2)) AS union1");
-        assertEquals(
-                "SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT (SELECT B FROM tbl2)) AS union1",
-                stmt.toString());
+        String sqlStr = "SELECT * FROM (((SELECT A FROM tbl)) UNION DISTINCT (SELECT B FROM tbl2)) AS union1";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
     @Test
     public void testSetOperationWithParenthesisIssue1094_3() throws JSQLParserException {
-        Statement stmt = CCJSqlParserUtil.parse(
-                "SELECT * FROM (((SELECT A FROM tbl)) UNION DISTINCT ((SELECT B FROM tbl2))) AS union1");
-        assertEquals(
-                "SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT ((SELECT B FROM tbl2))) AS union1",
-                stmt.toString());
+        String sqlStr = "SELECT * FROM (((SELECT A FROM tbl)) UNION DISTINCT ((SELECT B FROM tbl2))) AS union1";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
     @Test
     public void testSetOperationWithParenthesisIssue1094_4() throws JSQLParserException {
-        Statement stmt = CCJSqlParserUtil.parse(
-                "SELECT * FROM (((((SELECT A FROM tbl)))) UNION DISTINCT (((((((SELECT B FROM tbl2)))))))) AS union1");
-        assertEquals(
-                "SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT ((SELECT B FROM tbl2))) AS union1",
-                stmt.toString());
+        String sqlStr = "SELECT * FROM (((((SELECT A FROM tbl)))) UNION DISTINCT (((((((SELECT B FROM tbl2)))))))) AS union1";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
     @Test
@@ -5602,5 +5606,43 @@ public class SelectTest {
     @Test
     public void testSelectMultidimensionalArrayStatement() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT f1, f2[1][1], f3[1][2][3] FROM test");
+    }
+
+    @Test
+    void testSetOperationListWithBracketsIssue1737() throws JSQLParserException {
+        String sqlStr="(SELECT z)\n" +
+                "         UNION ALL\n" +
+                "         (SELECT z)\n" +
+                "         ORDER BY z";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+
+        sqlStr="SELECT z\n" +
+                              "FROM (\n" +
+                              "         (SELECT z)\n" +
+                              "         UNION ALL\n" +
+                              "         (SELECT z)\n" +
+                              "         ORDER BY z\n" +
+                              "     )\n" +
+                              //"GROUP BY z\n" +
+                              "ORDER BY z\n";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr="SELECT z\n" +
+                       "FROM (\n" +
+                       "         (SELECT z)\n" +
+                       "         UNION ALL\n" +
+                       "         (SELECT z)\n" +
+                       "         ORDER BY z\n" +
+                       "     )\n" +
+                       "GROUP BY z\n" +
+                       "ORDER BY z";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void subJoinTest() throws JSQLParserException {
+        String sqlStr = "SELECT * from a inner join (b inner join c using (d)) using (e)";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

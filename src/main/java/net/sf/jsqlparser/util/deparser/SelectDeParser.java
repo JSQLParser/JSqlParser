@@ -9,11 +9,14 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.Iterator;
-import java.util.List;
-import static java.util.stream.Collectors.joining;
-
-import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.expression.MySQLIndexHint;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.SQLServerHints;
+import net.sf.jsqlparser.expression.WindowDefinition;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
@@ -31,6 +34,7 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.OptimizeFor;
+import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
 import net.sf.jsqlparser.statement.select.ParenthesisFromItem;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
@@ -51,6 +55,11 @@ import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
+import java.util.Iterator;
+import java.util.List;
+
+import static java.util.stream.Collectors.joining;
+
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class SelectDeParser extends AbstractDeParser<PlainSelect> implements SelectVisitor,
         SelectItemVisitor, FromItemVisitor, PivotVisitor, ItemsListVisitor {
@@ -68,6 +77,13 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     public SelectDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
+    }
+
+    @Override
+    public void visit(ParenthesedSelectBody parenthesedSelectBody) {
+        buffer.append("(");
+        parenthesedSelectBody.getSelectBody().accept(this);
+        buffer.append(")");
     }
 
     @Override
@@ -478,14 +494,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             if (i != 0) {
                 buffer.append(' ').append(list.getOperations().get(i - 1)).append(' ');
             }
-            boolean brackets = list.getBrackets() == null || list.getBrackets().get(i);
-            if (brackets) {
-                buffer.append("(");
-            }
             list.getSelects().get(i).accept(this);
-            if (brackets) {
-                buffer.append(")");
-            }
         }
         if (list.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(list.getOrderByElements());
@@ -589,8 +598,18 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     public void visit(ParenthesisFromItem parenthesis) {
         buffer.append("(");
         parenthesis.getFromItem().accept(this);
-
+        List<Join> joins = parenthesis.getJoins();
+        if (joins != null) {
+            for (Join join : joins) {
+                if (join.isSimple()) {
+                    buffer.append(", ").append(join);
+                } else {
+                    buffer.append(" ").append(join);
+                }
+            }
+        }
         buffer.append(")");
+
         if (parenthesis.getAlias() != null) {
             buffer.append(parenthesis.getAlias().toString());
         }

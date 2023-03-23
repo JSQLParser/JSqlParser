@@ -15,6 +15,11 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 public class SelectVisitorAdapter implements SelectVisitor {
 
     @Override
+    public void visit(ParenthesedSelectBody parenthesedSelectBody) {
+        parenthesedSelectBody.getSelectBody().accept(this);
+    }
+
+    @Override
     public void visit(PlainSelect plainSelect) {
 
     }

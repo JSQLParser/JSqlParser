@@ -33,7 +33,8 @@ import static net.sf.jsqlparser.test.TestUtils.asList;
  */
 public class ReflectionModelTest {
 
-    private static final List<Object> MODEL_OBJECTS = asList(new net.sf.jsqlparser.expression.Alias("a"),
+    private static final List<Object> MODEL_OBJECTS = asList(
+            new net.sf.jsqlparser.expression.Alias("a"),
             new net.sf.jsqlparser.expression.Alias.AliasColumn("a", new ColDataType("varchar")),
             new net.sf.jsqlparser.expression.AnalyticExpression(),
             new net.sf.jsqlparser.expression.AnyComparisonExpression(AnyType.ANY, new SubSelect()),
@@ -167,7 +168,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.select.MinusOp(),
             new net.sf.jsqlparser.statement.select.Offset(), new net.sf.jsqlparser.statement.select.OptimizeFor(2L),
             new net.sf.jsqlparser.statement.select.OrderByElement(),
-            new net.sf.jsqlparser.statement.select.ParenthesisFromItem(),
+            //new net.sf.jsqlparser.statement.select.ParenthesisFromItem().getFromItem(),
             new net.sf.jsqlparser.statement.select.Pivot(),
             new net.sf.jsqlparser.statement.select.PivotXml(), new net.sf.jsqlparser.statement.select.PlainSelect(),
             new net.sf.jsqlparser.statement.select.Select(),
