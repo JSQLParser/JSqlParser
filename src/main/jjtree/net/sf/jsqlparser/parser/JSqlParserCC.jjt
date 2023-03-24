@@ -11,7 +11,7 @@
 options {
     IGNORE_CASE = true;
     STATIC = false;
-    DEBUG_PARSER = true;
+    DEBUG_PARSER = false;
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
     CACHE_TOKENS = false;
@@ -1984,14 +1984,14 @@ SelectBody SelectBody():
 { SelectBody selectBody = null; }
 {
     (
-
-        LOOKAHEAD( SetOperationList() ) selectBody = SetOperationList()
-        |
-        selectBody = PlainSelect()
-        |
-        selectBody = Values()
-        |
-        selectBody = ParenthesedSelectBody()
+        (
+            LOOKAHEAD(3) selectBody = PlainSelect()
+            |
+            LOOKAHEAD(3) selectBody = Values()
+            |
+            LOOKAHEAD(3) selectBody = ParenthesedSelectBody()
+        )
+        [ selectBody = SetOperationList(selectBody) ]
     )
 
     { return selectBody; }
@@ -2119,26 +2119,19 @@ PlainSelect PlainSelect() #PlainSelect:
     }
 }
 
-SelectBody SetOperationList() #SetOperationList: {
+SelectBody SetOperationList(SelectBody select) #SetOperationList: {
     SetOperationList list = new SetOperationList();
     List<OrderByElement> orderByElements = null;
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
     WithIsolation withIsolation = null;
-    SelectBody select = null;
+    //SelectBody select = null;
     List<SelectBody> selects = new ArrayList<SelectBody>();
     List<SetOperation> operations = new ArrayList<SetOperation>();
 }
 {
 
-    (
-        select = PlainSelect()
-        |
-        select = Values()
-        |
-        select = ParenthesedSelectBody()
-    )
     {
         selects.add(select);
     }

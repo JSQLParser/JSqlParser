@@ -115,6 +115,7 @@ public class SpecialOracleTest {
             "condition10.sql",
             "condition12.sql",
             "condition14.sql",
+            "condition15.sql",
             "condition19.sql",
             "condition20.sql",
             "connect_by01.sql",
