@@ -27,3 +27,4 @@ from
 where scn > :2
 
 --@FAILURE: Encountered unexpected token: "group" "GROUP" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered unexpected token: "minus" "MINUS" recorded first on Mar 25, 2023, 9:30:55 AM

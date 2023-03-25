@@ -53,7 +53,7 @@ public class InsertTest {
     @Test
     public void testRegularInsert() throws JSQLParserException {
         String statement = "INSERT INTO mytable (col1, col2, col3) VALUES (?, 'sadfsd', 234)";
-        Insert insert = (Insert) TestUtils.assertSqlCanBeParsedAndDeparsed(statement, true);
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(statement, true);
 
         assertEquals("mytable", insert.getTable().getName());
         assertEquals(3, insert.getColumns().size());

@@ -26,6 +26,9 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class NestedBracketsPerformanceTest {
 
+    private static final Logger LOG =
+            Logger.getLogger(NestedBracketsPerformanceTest.class.getName());
+
     @Test
     @Timeout(2000)
     public void testIssue766() throws JSQLParserException {
@@ -120,7 +123,7 @@ public class NestedBracketsPerformanceTest {
     }
 
     // maxDepth = 10 collides with the Parser Timeout = 6 seconds
-    // temporarily restrict it to maxDepth = 6 for the moment
+    // temporarily restrict it to maxDepth = 8 for the moment
     // @todo: implement methods to set the Parser Timeout explicitly and on demand
     @Test
     public void testRecursiveBracketExpressionIssue1019_2() throws JSQLParserException {
@@ -156,11 +159,8 @@ public class NestedBracketsPerformanceTest {
         assertSqlCanBeParsedAndDeparsed(sql);
     }
 
-    private static final Logger LOG =
-            Logger.getLogger(NestedBracketsPerformanceTest.class.getName());
-
     /**
-     * Try to avoid or border exceptionally big parsing time increments by adding more bracket
+     * Try to avoid or border huge parsing time increments by adding more bracket
      * constructs.
      *
      * @throws JSQLParserException
