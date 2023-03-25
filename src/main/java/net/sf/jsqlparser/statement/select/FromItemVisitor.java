@@ -17,8 +17,6 @@ public interface FromItemVisitor {
 
     void visit(SubSelect subSelect);
 
-    void visit(SubJoin subjoin);
-
     void visit(LateralSubSelect lateralSubSelect);
 
     void visit(ValuesList valuesList);

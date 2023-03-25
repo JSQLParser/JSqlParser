@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.statement.values;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
@@ -19,7 +17,10 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 
-public class ValuesStatement implements Statement, SelectBody {
+import java.util.ArrayList;
+import java.util.Collection;
+
+public class ValuesStatement extends SelectBody implements Statement {
 
     private ItemsList expressions;
 

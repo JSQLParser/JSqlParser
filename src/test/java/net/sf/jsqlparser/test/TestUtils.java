@@ -375,13 +375,14 @@ public class TestUtils {
         if (statement instanceof Select) {
             Select stmt = (Select) statement;
             if (stmt.getSelectBody() instanceof PlainSelect) {
-                OracleHint hint = OracleHint.getHintFromSelectBody( stmt.getSelectBody() );
+                OracleHint hint = OracleHint.getHintFromSelectBody(stmt.getSelectBody());
                 assertNotNull(hint);
                 assertEquals(hints[0], hint.getValue());
             } else if (stmt.getSelectBody() instanceof SetOperationList) {
                 SetOperationList setOperationList = (SetOperationList) stmt.getSelectBody();
                 for (int i = 0; i < setOperationList.getSelects().size(); i++) {
-                    OracleHint hint = OracleHint.getHintFromSelectBody( setOperationList.getSelects().get(i) );
+                    OracleHint hint =
+                            OracleHint.getHintFromSelectBody(setOperationList.getSelects().get(i));
                     if (hints[i] == null) {
                         assertNull(hint);
                     } else {

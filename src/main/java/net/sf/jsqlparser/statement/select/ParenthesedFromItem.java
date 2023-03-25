@@ -23,8 +23,7 @@ public class ParenthesedFromItem implements FromItem {
     private Pivot pivot;
     private UnPivot unPivot;
 
-    public ParenthesedFromItem() {
-    }
+    public ParenthesedFromItem() {}
 
     public ParenthesedFromItem(FromItem fromItem) {
         setFromItem(fromItem);
@@ -76,8 +75,16 @@ public class ParenthesedFromItem implements FromItem {
         }
         builder.append(")");
 
-        if (alias!=null) {
+        if (alias != null) {
             builder.append(alias);
+        }
+
+        if (pivot != null) {
+            builder.append(pivot);
+        }
+
+        if (unPivot != null) {
+            builder.append(unPivot);
         }
 
         return builder;

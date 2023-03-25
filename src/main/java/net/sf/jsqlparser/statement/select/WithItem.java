@@ -9,15 +9,16 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 
-public class WithItem implements SelectBody {
+public class WithItem extends SelectBody {
 
     private String name;
     private List<SelectItem> withItemList;
@@ -116,14 +117,15 @@ public class WithItem implements SelectBody {
         builder.append(recursive ? "RECURSIVE " : "");
         builder.append(name);
         builder.append(
-                (withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "");
+                (withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true)
+                        : "");
         builder.append(" AS ");
 
         if (useValues) {
             builder.append("(VALUES ");
             ExpressionList expressionList = (ExpressionList) itemsList;
-            builder.append(
-                    PlainSelect.getStringList(expressionList.getExpressions(), true, useBracketsForValues));
+            builder.append(PlainSelect.getStringList(expressionList.getExpressions(), true,
+                    useBracketsForValues));
             builder.append(")");
         } else {
             builder.append(subSelect.isUseBrackets() ? "" : "(");
@@ -160,13 +162,15 @@ public class WithItem implements SelectBody {
     }
 
     public WithItem addWithItemList(SelectItem... withItemList) {
-        List<SelectItem> collection = Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
+        List<SelectItem> collection =
+                Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, withItemList);
         return this.withWithItemList(collection);
     }
 
     public WithItem addWithItemList(Collection<? extends SelectItem> withItemList) {
-        List<SelectItem> collection = Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
+        List<SelectItem> collection =
+                Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
         collection.addAll(withItemList);
         return this.withWithItemList(collection);
     }

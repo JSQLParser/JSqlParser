@@ -1981,7 +1981,14 @@ Select Select( List<WithItem> with ):
 }
 
 SelectBody SelectBody():
-{ SelectBody selectBody = null; }
+{
+    SelectBody selectBody = null;
+    List<OrderByElement> orderByElements = null;
+    Limit limit = null;
+    Offset offset = null;
+    Fetch fetch = null;
+    WithIsolation withIsolation = null;
+}
 {
     (
         (
@@ -1992,6 +1999,13 @@ SelectBody SelectBody():
             LOOKAHEAD(3) selectBody = ParenthesedSelectBody()
         )
         [ selectBody = SetOperationList(selectBody) ]
+
+        [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { selectBody.setOrderByElements(orderByElements); } ]
+
+        [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {selectBody.setLimit(limit);} ]
+        [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { selectBody.setOffset(offset);} ]
+        [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { selectBody.setFetch(fetch);} ]
+        [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { selectBody.setIsolation(withIsolation);} ]
     )
 
     { return selectBody; }
@@ -2097,7 +2111,7 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
 	[ LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
     [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
-    [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { plainSelect.setWithIsolation(withIsolation);    } ]
+    [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { plainSelect.setIsolation(withIsolation); } ]
     [ LOOKAHEAD(2) <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
         [ LOOKAHEAD(2) <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ]
         [ LOOKAHEAD(<K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ]
@@ -2162,10 +2176,11 @@ SelectBody SetOperationList(SelectBody select) #SetOperationList: {
     )+
 
     [ LOOKAHEAD(2) orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
-    [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {list.setLimit(limit);} ]
-    [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);} ]
-    [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);} ]
-    [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { list.setWithIsolation(withIsolation);} ]
+    [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { list.setLimit(limit);    } ]
+    [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);    } ]
+    [ LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { list.setLimit(limit);    } ]
+    [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);    } ]
+    [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { list.setIsolation(withIsolation);    } ]
 
     {
         if ( selects.get(selects.size()-1) instanceof PlainSelect ) {
@@ -2182,9 +2197,9 @@ SelectBody SetOperationList(SelectBody select) #SetOperationList: {
                 list.setFetch(ps.getFetch());
                 ps.setFetch(null);
             }
-            if (ps.getWithIsolation() != null) {
-                list.setWithIsolation(ps.getWithIsolation());
-                ps.setWithIsolation(null);
+            if (ps.getIsolation() != null) {
+                list.setIsolation(ps.getIsolation());
+                ps.setIsolation(null);
             }
         }
         list.setBracketsOpsAndSelects(selects,operations);
@@ -2217,14 +2232,14 @@ WithItem WithItem() #WithItem:
      [ "(" selectItems=SelectItemsList() ")" { with.setWithItemList(selectItems); } ]
      <K_AS>
     // if the next block looks alike an ExpressionList without Brackets, then parse as List
-    ( LOOKAHEAD( "(" <K_VALUES> SimpleExpressionList(true) ")" ) 
+    ( LOOKAHEAD( "(" <K_VALUES> SimpleExpressionList(true) ")" )
         "(" <K_VALUES>
             simpleExpressionList = SimpleExpressionList(true) { with.withUseBracketsForValues(false).setItemsList(simpleExpressionList); }
         ")"
 
     // Otherwise parse it as a SubSelect
         | "(" select = SubSelect() { with.setSubSelect(select.withUseBrackets(false)); with.setUseValues(false); } ")"
-            
+
     )
      { return with; }
 }
@@ -2581,6 +2596,7 @@ FromItem FromItem():
                 |
                 LOOKAHEAD(3) (
                     selectBody=ParenthesedSelectBody() { fromItem = new SubSelect().withSelectBody(selectBody).withUseBrackets(false); }
+                    [ LOOKAHEAD(2) pivot=Pivot() { fromItem.setPivot(pivot); } ]
                     [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
                 )
                 |
@@ -2836,16 +2852,22 @@ OracleHierarchicalExpression OracleHierarchicalQueryClause():
 }
 {
     (
-                <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);}
-                <K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
-                { result.setConnectExpression(expr); }
-            |
-                <K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
-                {
-                    result.setConnectExpression(expr);
-                    result.setConnectFirst(true);
-                }
-                [ LOOKAHEAD( <K_START> <K_WITH> )  expr=AndExpression() {result.setStartExpression(expr);} ]
+        (
+            <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);}
+            <K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
+            {
+                result.setConnectExpression(expr);
+            }
+        )
+        |
+        (
+            <K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
+            {
+                result.setConnectExpression(expr);
+                result.setConnectFirst(true);
+            }
+            [ <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);} ]
+        )
     )
     {
         return result;
@@ -2878,7 +2900,7 @@ GroupByElement GroupByColumnReferences():
               )?
           )
           |
-          LOOKAHEAD(2) ( 
+          LOOKAHEAD(2) (
             <K_GROUPING> <K_SETS> "("
                 ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }
                     | LOOKAHEAD(3) "(" list = SimpleExpressionList(true) ")" { groupBy.addGroupingSet(list); }
@@ -2890,7 +2912,7 @@ GroupByElement GroupByColumnReferences():
             ")"
           )
           |
-          LOOKAHEAD(2) (  
+          LOOKAHEAD(2) (
             list = ComplexExpressionList() { groupBy.setGroupByExpressionList(list.withUsingBrackets(false)); }
             (
               LOOKAHEAD(2) (

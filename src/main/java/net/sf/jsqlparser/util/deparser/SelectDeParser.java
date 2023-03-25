@@ -46,7 +46,6 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.Skip;
-import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.Top;
@@ -84,15 +83,30 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         buffer.append("(");
         parenthesedSelectBody.getSelectBody().accept(this);
         buffer.append(")");
+
+        if (parenthesedSelectBody.getOrderByElements() != null) {
+            new OrderByDeParser(expressionVisitor, buffer).deParse(
+                    parenthesedSelectBody.isOracleSiblings(),
+                    parenthesedSelectBody.getOrderByElements());
+        }
+        if (parenthesedSelectBody.getLimit() != null) {
+            new LimitDeparser(buffer).deParse(parenthesedSelectBody.getLimit());
+        }
+        if (parenthesedSelectBody.getOffset() != null) {
+            visit(parenthesedSelectBody.getOffset());
+        }
+        if (parenthesedSelectBody.getFetch() != null) {
+            visit(parenthesedSelectBody.getFetch());
+        }
+        if (parenthesedSelectBody.getIsolation() != null) {
+            buffer.append(parenthesedSelectBody.getIsolation().toString());
+        }
     }
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
             "PMD.NPathComplexity"})
     public void visit(PlainSelect plainSelect) {
-        if (plainSelect.isUseBrackets()) {
-            buffer.append("(");
-        }
         buffer.append("SELECT ");
 
         if (plainSelect.getMySqlHintStraightJoin()) {
@@ -205,6 +219,21 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(plainSelect.getWindowDefinitions().stream()
                     .map(WindowDefinition::toString).collect(joining(", ")));
         }
+        if (plainSelect.isForUpdate()) {
+            buffer.append(" FOR UPDATE");
+            if (plainSelect.getForUpdateTable() != null) {
+                buffer.append(" OF ").append(plainSelect.getForUpdateTable());
+            }
+            if (plainSelect.getWait() != null) {
+                // wait's toString will do the formatting for us
+                buffer.append(plainSelect.getWait());
+            }
+            if (plainSelect.isNoWait()) {
+                buffer.append(" NOWAIT");
+            } else if (plainSelect.isSkipLocked()) {
+                buffer.append(" SKIP LOCKED");
+            }
+        }
         if (plainSelect.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
                     plainSelect.getOrderByElements());
@@ -221,32 +250,14 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (plainSelect.getFetch() != null) {
             visit(plainSelect.getFetch());
         }
-        if (plainSelect.getWithIsolation() != null) {
-            buffer.append(plainSelect.getWithIsolation().toString());
-        }
-        if (plainSelect.isForUpdate()) {
-            buffer.append(" FOR UPDATE");
-            if (plainSelect.getForUpdateTable() != null) {
-                buffer.append(" OF ").append(plainSelect.getForUpdateTable());
-            }
-            if (plainSelect.getWait() != null) {
-                // wait's toString will do the formatting for us
-                buffer.append(plainSelect.getWait());
-            }
-            if (plainSelect.isNoWait()) {
-                buffer.append(" NOWAIT");
-            } else if (plainSelect.isSkipLocked()) {
-                buffer.append(" SKIP LOCKED");
-            }
+        if (plainSelect.getIsolation() != null) {
+            buffer.append(plainSelect.getIsolation().toString());
         }
         if (plainSelect.getOptimizeFor() != null) {
             deparseOptimizeFor(plainSelect.getOptimizeFor());
         }
         if (plainSelect.getForXmlPath() != null) {
             buffer.append(" FOR XML PATH(").append(plainSelect.getForXmlPath()).append(")");
-        }
-        if (plainSelect.isUseBrackets()) {
-            buffer.append(")");
         }
 
     }
@@ -405,20 +416,6 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         expressionVisitor = visitor;
     }
 
-    @Override
-    public void visit(SubJoin subjoin) {
-        buffer.append("(");
-        subjoin.getLeft().accept(this);
-        for (Join join : subjoin.getJoinList()) {
-            deparseJoin(join);
-        }
-        buffer.append(")");
-
-        if (subjoin.getPivot() != null) {
-            subjoin.getPivot().accept(this);
-        }
-    }
-
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void deparseJoin(Join join) {
         if (join.isGlobal()) {
@@ -509,8 +506,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (list.getFetch() != null) {
             visit(list.getFetch());
         }
-        if (list.getWithIsolation() != null) {
-            buffer.append(list.getWithIsolation().toString());
+        if (list.getIsolation() != null) {
+            buffer.append(list.getIsolation().toString());
         }
     }
 
@@ -612,6 +609,14 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
         if (parenthesis.getAlias() != null) {
             buffer.append(parenthesis.getAlias().toString());
+        }
+
+        if (parenthesis.getPivot() != null) {
+            visit(parenthesis.getPivot());
+        }
+
+        if (parenthesis.getUnPivot() != null) {
+            visit(parenthesis.getUnPivot());
         }
     }
 

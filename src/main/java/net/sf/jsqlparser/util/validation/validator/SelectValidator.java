@@ -9,18 +9,44 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import java.util.List;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.ExceptOp;
+import net.sf.jsqlparser.statement.select.Fetch;
+import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.IntersectOp;
+import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.MinusOp;
+import net.sf.jsqlparser.statement.select.Offset;
+import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
+import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.Pivot;
+import net.sf.jsqlparser.statement.select.PivotVisitor;
+import net.sf.jsqlparser.statement.select.PivotXml;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.SelectItemVisitor;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.TableFunction;
+import net.sf.jsqlparser.statement.select.UnPivot;
+import net.sf.jsqlparser.statement.select.UnionOp;
+import net.sf.jsqlparser.statement.select.ValuesList;
+import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationUtil;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
+
+import java.util.List;
 
 /**
  * @author gitmotte
@@ -38,7 +64,8 @@ public class SelectValidator extends AbstractValidator<SelectItem>
 
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.select);
-            validateFeature(c, plainSelect.getMySqlHintStraightJoin(), Feature.mySqlHintStraightJoin);
+            validateFeature(c, plainSelect.getMySqlHintStraightJoin(),
+                    Feature.mySqlHintStraightJoin);
             validateOptionalFeature(c, plainSelect.getOracleHint(), Feature.oracleHint);
             validateOptionalFeature(c, plainSelect.getSkip(), Feature.skip);
             validateOptionalFeature(c, plainSelect.getFirst(), Feature.first);
@@ -49,20 +76,24 @@ public class SelectValidator extends AbstractValidator<SelectItem>
                 } else {
                     validateFeature(c, Feature.distinct);
                 }
-                validateOptionalFeature(c, plainSelect.getDistinct().getOnSelectItems(), Feature.distinctOn);
+                validateOptionalFeature(c, plainSelect.getDistinct().getOnSelectItems(),
+                        Feature.distinctOn);
             }
 
             validateOptionalFeature(c, plainSelect.getTop(), Feature.top);
-            validateFeature(c, plainSelect.getMySqlSqlCacheFlag() != null, Feature.mysqlSqlCacheFlag);
+            validateFeature(c, plainSelect.getMySqlSqlCacheFlag() != null,
+                    Feature.mysqlSqlCacheFlag);
             validateFeature(c, plainSelect.getMySqlSqlCalcFoundRows(), Feature.mysqlCalcFoundRows);
             validateOptionalFeature(c, plainSelect.getIntoTables(), Feature.selectInto);
             validateOptionalFeature(c, plainSelect.getKsqlWindow(), Feature.kSqlWindow);
-            validateFeature(c, isNotEmpty(plainSelect.getOrderByElements()) && plainSelect.isOracleSiblings(),
+            validateFeature(c,
+                    isNotEmpty(plainSelect.getOrderByElements()) && plainSelect.isOracleSiblings(),
                     Feature.oracleOrderBySiblings);
 
             if (plainSelect.isForUpdate()) {
                 validateFeature(c, Feature.selectForUpdate);
-                validateOptionalFeature(c, plainSelect.getForUpdateTable(), Feature.selectForUpdateOfTable);
+                validateOptionalFeature(c, plainSelect.getForUpdateTable(),
+                        Feature.selectForUpdateOfTable);
                 validateOptionalFeature(c, plainSelect.getWait(), Feature.selectForUpdateWait);
                 validateFeature(c, plainSelect.isNoWait(), Feature.selectForUpdateNoWait);
                 validateFeature(c, plainSelect.isSkipLocked(), Feature.selectForUpdateSkipLocked);
@@ -75,10 +106,10 @@ public class SelectValidator extends AbstractValidator<SelectItem>
         validateOptionalFromItem(plainSelect.getFromItem());
         validateOptionalFromItems(plainSelect.getIntoTables());
         validateOptionalJoins(plainSelect.getJoins());
-        
+
         // to correctly recognize aliased tables
         validateOptionalList(plainSelect.getSelectItems(), () -> this, (e, v) -> e.accept(v));
-        
+
         validateOptionalExpression(plainSelect.getWhere());
         validateOptionalExpression(plainSelect.getOracleHierarchical());
 
@@ -190,13 +221,6 @@ public class SelectValidator extends AbstractValidator<SelectItem>
         validateOptionalExpression(fetch.getFetchJdbcParameter());
     }
 
-    @Override
-    public void visit(SubJoin subjoin) {
-        validateOptionalFromItem(subjoin.getLeft());
-        validateOptionalJoins(subjoin.getJoinList());
-        validateOptional(subjoin.getPivot(), e -> e.accept(this));
-    }
-
     public void validateOptionalJoins(List<Join> joins) {
         if (joins != null) {
             for (Join join : joins) {
@@ -235,13 +259,17 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     public void visit(SetOperationList setOperation) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.setOperation);
-            validateFeature(c, setOperation.getOperations().stream().anyMatch(o -> o instanceof UnionOp),
+            validateFeature(c,
+                    setOperation.getOperations().stream().anyMatch(o -> o instanceof UnionOp),
                     Feature.setOperationUnion);
-            validateFeature(c, setOperation.getOperations().stream().anyMatch(o -> o instanceof IntersectOp),
+            validateFeature(c,
+                    setOperation.getOperations().stream().anyMatch(o -> o instanceof IntersectOp),
                     Feature.setOperationIntersect);
-            validateFeature(c, setOperation.getOperations().stream().anyMatch(o -> o instanceof ExceptOp),
+            validateFeature(c,
+                    setOperation.getOperations().stream().anyMatch(o -> o instanceof ExceptOp),
                     Feature.setOperationExcept);
-            validateFeature(c, setOperation.getOperations().stream().anyMatch(o -> o instanceof MinusOp),
+            validateFeature(c,
+                    setOperation.getOperations().stream().anyMatch(o -> o instanceof MinusOp),
                     Feature.setOperationMinus);
         }
 

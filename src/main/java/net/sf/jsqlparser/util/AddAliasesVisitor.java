@@ -104,16 +104,22 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
     @Override
     public void visit(WithItem withItem) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); // To change body of generated
+                                                                    // methods, choose Tools |
+                                                                    // Templates.
     }
 
     @Override
     public void visit(AllColumns allColumns) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); // To change body of generated
+                                                                    // methods, choose Tools |
+                                                                    // Templates.
     }
 
     @Override
     public void visit(ValuesStatement aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of
+                                                                       // generated methods, choose
+                                                                       // Tools | Templates.
     }
 }

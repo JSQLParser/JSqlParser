@@ -1,6 +1,6 @@
 package net.sf.jsqlparser.statement.select;
 
-public class ParenthesedSelectBody implements SelectBody {
+public class ParenthesedSelectBody extends SelectBody {
     private SelectBody selectBody;
 
     public SelectBody getSelectBody() {
@@ -21,7 +21,16 @@ public class ParenthesedSelectBody implements SelectBody {
         selectVisitor.visit(this);
     }
 
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("(").append(selectBody).append(")");
+
+        // limit, offset, fetch, isolation
+        super.appendTo(builder);
+
+        return builder;
+    }
+
     public String toString() {
-        return "(" + selectBody + ")";
+        return appendTo(new StringBuilder()).toString();
     }
 }

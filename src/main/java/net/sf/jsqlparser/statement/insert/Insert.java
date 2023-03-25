@@ -47,7 +47,7 @@ public class Insert implements Statement {
     private boolean modifierIgnore = false;
 
     private List<SelectItem> returningExpressionList = null;
-    
+
     private boolean useSet = false;
     private List<Column> setColumns;
     private List<Expression> setExpressionList;
@@ -60,6 +60,7 @@ public class Insert implements Statement {
     public OutputClause getOutputClause() {
         return outputClause;
     }
+
     public void setOutputClause(OutputClause outputClause) {
         this.outputClause = outputClause;
     }
@@ -76,7 +77,7 @@ public class Insert implements Statement {
     public void setTable(Table name) {
         table = name;
     }
-    
+
     public OracleHint getOracleHint() {
         return oracleHint;
     }
@@ -100,15 +101,18 @@ public class Insert implements Statement {
      */
     @Deprecated
     public ItemsList getItemsList() {
-        if (select!=null) {
+        if (select != null) {
             SelectBody selectBody = select.getSelectBody();
             if (selectBody instanceof ValuesStatement) {
                 ValuesStatement valuesStatement = (ValuesStatement) selectBody;
                 if (valuesStatement.getExpressions() instanceof ExpressionList) {
-                    ExpressionList expressionList = (ExpressionList) valuesStatement.getExpressions();
+                    ExpressionList expressionList =
+                            (ExpressionList) valuesStatement.getExpressions();
 
-                    if (expressionList.getExpressions().size() == 1 && expressionList.getExpressions().get(0) instanceof RowConstructor) {
-                        RowConstructor rowConstructor = (RowConstructor) expressionList.getExpressions().get(0);
+                    if (expressionList.getExpressions().size() == 1
+                            && expressionList.getExpressions().get(0) instanceof RowConstructor) {
+                        RowConstructor rowConstructor =
+                                (RowConstructor) expressionList.getExpressions().get(0);
                         return rowConstructor.getExprList();
                     } else {
                         return expressionList;
@@ -124,7 +128,7 @@ public class Insert implements Statement {
 
     @Deprecated
     public boolean isUseValues() {
-        return select!=null && select.getSelectBody() instanceof ValuesStatement;
+        return select != null && select.getSelectBody() instanceof ValuesStatement;
     }
 
     public List<SelectItem> getReturningExpressionList() {
@@ -273,8 +277,8 @@ public class Insert implements Statement {
         if (columns != null) {
             sql.append(PlainSelect.getStringList(columns, true, true)).append(" ");
         }
-        
-        if (outputClause !=null) {
+
+        if (outputClause != null) {
             sql.append(outputClause.toString());
         }
 
@@ -304,23 +308,23 @@ public class Insert implements Statement {
             }
         }
 
-        if (conflictAction!=null) {
+        if (conflictAction != null) {
             sql.append(" ON CONFLICT");
 
-            if (conflictTarget!=null) {
+            if (conflictTarget != null) {
                 conflictTarget.appendTo(sql);
             }
             conflictAction.appendTo(sql);
         }
 
         if (getReturningExpressionList() != null) {
-            sql.append(" RETURNING ").append(PlainSelect.
-                    getStringList(getReturningExpressionList(), true, false));
+            sql.append(" RETURNING ")
+                    .append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
         }
 
         return sql.toString();
     }
-    
+
     public Insert withWithItemsList(List<WithItem> withList) {
         this.withItemsList = withList;
         return this;
@@ -341,7 +345,8 @@ public class Insert implements Statement {
         return this;
     }
 
-    public Insert withDuplicateUpdateExpressionList(List<Expression> duplicateUpdateExpressionList) {
+    public Insert withDuplicateUpdateExpressionList(
+            List<Expression> duplicateUpdateExpressionList) {
         this.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
         return this;
     }
@@ -404,37 +409,45 @@ public class Insert implements Statement {
     }
 
     public Insert addDuplicateUpdateColumns(Column... duplicateUpdateColumns) {
-        List<Column> collection = Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
+        List<Column> collection =
+                Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, duplicateUpdateColumns);
         return this.withDuplicateUpdateColumns(collection);
     }
 
     public Insert addDuplicateUpdateColumns(Collection<? extends Column> duplicateUpdateColumns) {
-        List<Column> collection = Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
+        List<Column> collection =
+                Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
         collection.addAll(duplicateUpdateColumns);
         return this.withDuplicateUpdateColumns(collection);
     }
 
     public Insert addDuplicateUpdateExpressionList(Expression... duplicateUpdateExpressionList) {
-        List<Expression> collection = Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
+        List<Expression> collection =
+                Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, duplicateUpdateExpressionList);
         return this.withDuplicateUpdateExpressionList(collection);
     }
 
-    public Insert addDuplicateUpdateExpressionList(Collection<? extends Expression> duplicateUpdateExpressionList) {
-        List<Expression> collection = Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
+    public Insert addDuplicateUpdateExpressionList(
+            Collection<? extends Expression> duplicateUpdateExpressionList) {
+        List<Expression> collection =
+                Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(duplicateUpdateExpressionList);
         return this.withDuplicateUpdateExpressionList(collection);
     }
 
     public Insert addReturningExpressionList(SelectItem... returningExpressionList) {
-        List<SelectItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+        List<SelectItem> collection =
+                Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, returningExpressionList);
         return this.withReturningExpressionList(collection);
     }
 
-    public Insert addReturningExpressionList(Collection<? extends SelectItem> returningExpressionList) {
-        List<SelectItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+    public Insert addReturningExpressionList(
+            Collection<? extends SelectItem> returningExpressionList) {
+        List<SelectItem> collection =
+                Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(returningExpressionList);
         return this.withReturningExpressionList(collection);
     }
@@ -452,13 +465,15 @@ public class Insert implements Statement {
     }
 
     public Insert addSetExpressionList(Expression... setExpressionList) {
-        List<Expression> collection = Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
+        List<Expression> collection =
+                Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, setExpressionList);
         return this.withSetExpressionList(collection);
     }
 
     public Insert addSetExpressionList(Collection<? extends Expression> setExpressionList) {
-        List<Expression> collection = Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
+        List<Expression> collection =
+                Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(setExpressionList);
         return this.withSetExpressionList(collection);
     }

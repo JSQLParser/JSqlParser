@@ -25,11 +25,6 @@ public class FromItemVisitorAdapter implements FromItemVisitor {
     }
 
     @Override
-    public void visit(SubJoin subjoin) {
-
-    }
-
-    @Override
     public void visit(LateralSubSelect lateralSubSelect) {
 
     }
@@ -46,6 +41,6 @@ public class FromItemVisitorAdapter implements FromItemVisitor {
 
     @Override
     public void visit(ParenthesedFromItem aThis) {
-        
+
     }
 }

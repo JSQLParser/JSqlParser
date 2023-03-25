@@ -78,9 +78,10 @@ public class CreateViewTest {
         assertFalse(createView.isOrReplace());
         assertEquals("myview", createView.getView().getName());
 
-        ParenthesedSelectBody parenthesedSelectBody = (ParenthesedSelectBody) createView.getSelect().getSelectBody();
+        ParenthesedSelectBody parenthesedSelectBody =
+                (ParenthesedSelectBody) createView.getSelect().getSelectBody();
         PlainSelect plainSelect = (PlainSelect) parenthesedSelectBody.getSelectBody();
-        Table table =(Table) plainSelect.getFromItem();
+        Table table = (Table) plainSelect.getFromItem();
         assertEquals("mytab", table.getName());
         assertEquals(statement, createView.toString());
     }
