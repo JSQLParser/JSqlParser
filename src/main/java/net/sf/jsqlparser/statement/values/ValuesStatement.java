@@ -46,11 +46,10 @@ public class ValuesStatement extends SelectBody implements Statement {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sql = new StringBuilder();
-        sql.append("VALUES ");
-        sql.append(expressions.toString());
-        return sql.toString();
+    public StringBuilder appendSelectBodyTo(StringBuilder builder) {
+        builder.append("VALUES ");
+        builder.append(expressions.toString());
+        return builder;
     }
 
     @Override

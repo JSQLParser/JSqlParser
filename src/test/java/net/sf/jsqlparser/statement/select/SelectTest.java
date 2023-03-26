@@ -5312,7 +5312,7 @@ public class SelectTest {
     @Test
     public void testCanCallSubSelectOnWithItemEvenIfNotSetIssue1369() {
         WithItem item = new WithItem();
-        assertThat(item.getSubSelect()).isNull();
+        assertThat(item.getSelectBody()).isNull();
     }
 
     @Test
@@ -5612,6 +5612,13 @@ public class SelectTest {
         String sqlStr =
                 "select su.d\n" + "from sku su\n" + "for update of su.up\n" + "order by su.d";
 
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testNestedWithItems() throws JSQLParserException {
+        String sqlStr =
+                "with a as ( with b as ( with c as (select 1) select c.* from c) select b.* from b) select a.* from a";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.Iterator;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -19,8 +17,10 @@ import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.replace.Replace;
+import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.SubSelect;
+
+import java.util.Iterator;
 
 public class ReplaceDeParser extends AbstractDeParser<Replace> implements ItemsListVisitor {
 
@@ -31,7 +31,8 @@ public class ReplaceDeParser extends AbstractDeParser<Replace> implements ItemsL
         super(new StringBuilder());
     }
 
-    public ReplaceDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
+    public ReplaceDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.selectVisitor = selectVisitor;
@@ -84,7 +85,8 @@ public class ReplaceDeParser extends AbstractDeParser<Replace> implements ItemsL
     @Override
     public void visit(ExpressionList expressionList) {
         buffer.append("VALUES (");
-        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
+        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter
+                .hasNext();) {
             Expression expression = iter.next();
             expression.accept(expressionVisitor);
             if (iter.hasNext()) {
@@ -100,8 +102,8 @@ public class ReplaceDeParser extends AbstractDeParser<Replace> implements ItemsL
     }
 
     @Override
-    public void visit(SubSelect subSelect) {
-        subSelect.getSelectBody().accept(selectVisitor);
+    public void visit(ParenthesedSelectBody selectBody) {
+        selectBody.accept(selectVisitor);
     }
 
     public ExpressionVisitor getExpressionVisitor() {
@@ -125,7 +127,8 @@ public class ReplaceDeParser extends AbstractDeParser<Replace> implements ItemsL
         buffer.append("VALUES ");
         for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
             buffer.append("(");
-            for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter.hasNext();) {
+            for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter
+                    .hasNext();) {
                 Expression expression = iter.next();
                 expression.accept(expressionVisitor);
                 if (iter.hasNext()) {

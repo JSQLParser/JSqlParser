@@ -9,10 +9,10 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.*;
-import net.sf.jsqlparser.statement.*;
-import net.sf.jsqlparser.test.*;
-import org.junit.jupiter.api.*;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.test.TestUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class FetchTest {
     @Test
@@ -29,6 +29,6 @@ class FetchTest {
         Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
         Fetch fetch = plainSelect.getFetch();
-        Assertions.assertInstanceOf(SubSelect.class, fetch.getExpression());
+        Assertions.assertInstanceOf(ParenthesedSelectBody.class, fetch.getExpression());
     }
 }

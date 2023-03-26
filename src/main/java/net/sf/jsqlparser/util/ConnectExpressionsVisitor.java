@@ -9,10 +9,24 @@
  */
 package net.sf.jsqlparser.util;
 
-import java.util.*;
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.SelectItemVisitor;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Connect all selected expressions with a binary expression. Out of select a,b from table one gets
@@ -38,6 +52,11 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
     @Override
     public void visit(ParenthesedSelectBody parenthesedSelectBody) {
         parenthesedSelectBody.getSelectBody().accept(this);
+    }
+
+    @Override
+    public void visit(LateralSubSelect lateralSubSelect) {
+        lateralSubSelect.getSelectBody().accept(this);
     }
 
     @Override

@@ -9,12 +9,6 @@
  */
 package net.sf.jsqlparser.statement.update;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Column;
@@ -22,7 +16,22 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.WithItem;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class Update implements Statement {
@@ -74,13 +83,15 @@ public class Update implements Statement {
     }
 
     public Update addWithItemsList(WithItem... withItemsList) {
-        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        List<WithItem> collection =
+                Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, withItemsList);
         return this.withWithItemsList(collection);
     }
 
     public Update addWithItemsList(Collection<? extends WithItem> withItemsList) {
-        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        List<WithItem> collection =
+                Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         collection.addAll(withItemsList);
         return this.withWithItemsList(collection);
     }
@@ -169,9 +180,9 @@ public class Update implements Statement {
     @Deprecated
     public Select getSelect() {
         Select select = null;
-        if (updateSets.get(0).expressions.get(0) instanceof SubSelect) {
-            SubSelect subSelect = (SubSelect) updateSets.get(0).expressions.get(0);
-            select = new Select().withWithItemsList(subSelect.getWithItemsList()).withSelectBody(subSelect.getSelectBody());
+        if (updateSets.get(0).expressions.get(0) instanceof SelectBody) {
+            SelectBody selectBody = (SelectBody) updateSets.get(0).expressions.get(0);
+            select = new Select().withSelectBody(selectBody);
         }
 
         return select;
@@ -180,15 +191,10 @@ public class Update implements Statement {
     @Deprecated
     public void setSelect(Select select) {
         if (select != null) {
-            SubSelect subSelect = new SubSelect().withSelectBody(select.getSelectBody());
-            if (select.getWithItemsList() != null && select.getWithItemsList().size() > 0) {
-                subSelect.setWithItemsList(select.getWithItemsList());
-            }
-
             if (updateSets.get(0).expressions.isEmpty()) {
-                updateSets.get(0).expressions.add(subSelect);
+                updateSets.get(0).expressions.add(select.getSelectBody());
             } else {
-                updateSets.get(0).expressions.set(0, subSelect);
+                updateSets.get(0).expressions.set(0, select.getSelectBody());
             }
         }
     }
@@ -205,12 +211,12 @@ public class Update implements Statement {
 
     @Deprecated
     public boolean isUseSelect() {
-        return updateSets.get(0).expressions.get(0) instanceof SubSelect;
+        return false;
     }
 
     @Deprecated
     public void setUseSelect(boolean useSelect) {
-        //todo
+        // todo
     }
 
     public void setOrderByElements(List<OrderByElement> orderByElements) {
@@ -254,7 +260,8 @@ public class Update implements Statement {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.ExcessiveMethodLength"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
+            "PMD.ExcessiveMethodLength"})
     public String toString() {
         StringBuilder b = new StringBuilder();
 
@@ -318,8 +325,8 @@ public class Update implements Statement {
         }
 
         if (getReturningExpressionList() != null) {
-            b.append(" RETURNING ").append(PlainSelect.
-                    getStringList(getReturningExpressionList(), true, false));
+            b.append(" RETURNING ")
+                    .append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
         }
 
         return b.toString();
@@ -401,25 +408,29 @@ public class Update implements Statement {
     }
 
     public Update addColumns(Column... columns) {
-        List<Column> collection = new ArrayList<>(Optional.ofNullable(getColumns()).orElseGet(ArrayList::new));
+        List<Column> collection =
+                new ArrayList<>(Optional.ofNullable(getColumns()).orElseGet(ArrayList::new));
         Collections.addAll(collection, columns);
         return this.withColumns(collection);
     }
 
     public Update addColumns(Collection<? extends Column> columns) {
-        List<Column> collection = new ArrayList<>(Optional.ofNullable(getColumns()).orElseGet(ArrayList::new));
+        List<Column> collection =
+                new ArrayList<>(Optional.ofNullable(getColumns()).orElseGet(ArrayList::new));
         collection.addAll(columns);
         return this.withColumns(collection);
     }
 
     public Update addExpressions(Expression... expressions) {
-        List<Expression> collection = new ArrayList<>(Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new));
+        List<Expression> collection =
+                new ArrayList<>(Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new));
         Collections.addAll(collection, expressions);
         return this.withExpressions(collection);
     }
 
     public Update addExpressions(Collection<? extends Expression> expressions) {
-        List<Expression> collection = new ArrayList<>(Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new));
+        List<Expression> collection =
+                new ArrayList<>(Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new));
         collection.addAll(expressions);
         return this.withExpressions(collection);
     }
@@ -449,25 +460,30 @@ public class Update implements Statement {
     }
 
     public Update addOrderByElements(OrderByElement... orderByElements) {
-        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        List<OrderByElement> collection =
+                Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         Collections.addAll(collection, orderByElements);
         return this.withOrderByElements(collection);
     }
 
     public Update addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
-        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        List<OrderByElement> collection =
+                Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         collection.addAll(orderByElements);
         return this.withOrderByElements(collection);
     }
 
     public Update addReturningExpressionList(SelectItem... returningExpressionList) {
-        List<SelectItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+        List<SelectItem> collection =
+                Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, returningExpressionList);
         return this.withReturningExpressionList(collection);
     }
 
-    public Update addReturningExpressionList(Collection<? extends SelectItem> returningExpressionList) {
-        List<SelectItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+    public Update addReturningExpressionList(
+            Collection<? extends SelectItem> returningExpressionList) {
+        List<SelectItem> collection =
+                Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(returningExpressionList);
         return this.withReturningExpressionList(collection);
     }

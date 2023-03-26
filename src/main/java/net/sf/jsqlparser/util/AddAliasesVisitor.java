@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectBody;
@@ -121,5 +122,10 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
         throw new UnsupportedOperationException("Not supported yet."); // To change body of
                                                                        // generated methods, choose
                                                                        // Tools | Templates.
+    }
+
+    @Override
+    public void visit(LateralSubSelect lateralSubSelect) {
+        lateralSubSelect.getSelectBody().accept(this);
     }
 }

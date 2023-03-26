@@ -160,8 +160,7 @@ public class NestedBracketsPerformanceTest {
     }
 
     /**
-     * Try to avoid or border huge parsing time increments by adding more bracket
-     * constructs.
+     * Try to avoid or border huge parsing time increments by adding more bracket constructs.
      *
      * @throws JSQLParserException
      */

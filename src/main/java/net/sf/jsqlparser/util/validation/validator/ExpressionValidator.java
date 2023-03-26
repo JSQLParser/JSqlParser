@@ -53,7 +53,8 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
@@ -270,8 +271,8 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
-    public void visit(SubSelect subSelect) {
-        validateOptionalFromItem(subSelect);
+    public void visit(ParenthesedSelectBody selectBody) {
+        validateOptionalFromItem(selectBody);
     }
 
     @Override
@@ -611,5 +612,10 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public void visit(GeometryDistance geometryDistance) {
         visitOldOracleJoinBinaryExpression(geometryDistance, " <-> ");
+    }
+
+    @Override
+    public void visit(SelectBody selectBody) {
+
     }
 }

@@ -137,7 +137,6 @@ public class PlainSelect extends SelectBody {
         selectVisitor.visit(this);
     }
 
-
     public OptimizeFor getOptimizeFor() {
         return optimizeFor;
     }
@@ -304,129 +303,129 @@ public class PlainSelect extends SelectBody {
         this.skipLocked = skipLocked;
     }
 
-    @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
             "PMD.NPathComplexity"})
-    public String toString() {
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT ");
+    public StringBuilder appendSelectBodyTo(StringBuilder builder) {
+        builder.append("SELECT ");
 
         if (this.mySqlHintStraightJoin) {
-            sql.append("STRAIGHT_JOIN ");
+            builder.append("STRAIGHT_JOIN ");
         }
 
         if (oracleHint != null) {
-            sql.append(oracleHint).append(" ");
+            builder.append(oracleHint).append(" ");
         }
 
         if (skip != null) {
-            sql.append(skip).append(" ");
+            builder.append(skip).append(" ");
         }
 
         if (first != null) {
-            sql.append(first).append(" ");
+            builder.append(first).append(" ");
         }
 
         if (distinct != null) {
-            sql.append(distinct).append(" ");
+            builder.append(distinct).append(" ");
         }
         if (top != null) {
-            sql.append(top).append(" ");
+            builder.append(top).append(" ");
         }
         if (mySqlCacheFlag != null) {
-            sql.append(mySqlCacheFlag.name()).append(" ");
+            builder.append(mySqlCacheFlag.name()).append(" ");
         }
         if (mySqlSqlCalcFoundRows) {
-            sql.append("SQL_CALC_FOUND_ROWS").append(" ");
+            builder.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
-        sql.append(getStringList(selectItems));
+        builder.append(getStringList(selectItems));
 
         if (intoTables != null) {
-            sql.append(" INTO ");
+            builder.append(" INTO ");
             for (Iterator<Table> iter = intoTables.iterator(); iter.hasNext();) {
-                sql.append(iter.next().toString());
+                builder.append(iter.next().toString());
                 if (iter.hasNext()) {
-                    sql.append(", ");
+                    builder.append(", ");
                 }
             }
         }
 
         if (fromItem != null) {
-            sql.append(" FROM ").append(fromItem);
+            builder.append(" FROM ").append(fromItem);
             if (joins != null) {
-                Iterator<Join> it = joins.iterator();
-                while (it.hasNext()) {
-                    Join join = it.next();
+                for (Join join : joins) {
                     if (join.isSimple()) {
-                        sql.append(", ").append(join);
+                        builder.append(", ").append(join);
                     } else {
-                        sql.append(" ").append(join);
+                        builder.append(" ").append(join);
                     }
                 }
             }
 
             if (ksqlWindow != null) {
-                sql.append(" WINDOW ").append(ksqlWindow.toString());
+                builder.append(" WINDOW ").append(ksqlWindow);
             }
             if (where != null) {
-                sql.append(" WHERE ").append(where);
+                builder.append(" WHERE ").append(where);
             }
             if (oracleHierarchical != null) {
-                sql.append(oracleHierarchical.toString());
+                builder.append(oracleHierarchical);
             }
             if (groupBy != null) {
-                sql.append(" ").append(groupBy.toString());
+                builder.append(" ").append(groupBy);
             }
             if (having != null) {
-                sql.append(" HAVING ").append(having);
+                builder.append(" HAVING ").append(having);
             }
-
             if (windowDefinitions != null) {
-                sql.append(" WINDOW ");
-                sql.append(windowDefinitions.stream().map(WindowDefinition::toString)
+                builder.append(" WINDOW ");
+                builder.append(windowDefinitions.stream().map(WindowDefinition::toString)
                         .collect(joining(", ")));
             }
-
             if (emitChanges) {
-                sql.append(" EMIT CHANGES");
+                builder.append(" EMIT CHANGES");
             }
             if (isForUpdate()) {
-                sql.append(" FOR UPDATE");
+                builder.append(" FOR UPDATE");
 
                 if (forUpdateTable != null) {
-                    sql.append(" OF ").append(forUpdateTable);
+                    builder.append(" OF ").append(forUpdateTable);
                 }
 
                 if (wait != null) {
                     // Wait's toString will do the formatting for us
-                    sql.append(wait);
+                    builder.append(wait);
                 }
 
                 if (isNoWait()) {
-                    sql.append(" NOWAIT");
+                    builder.append(" NOWAIT");
                 } else if (isSkipLocked()) {
-                    sql.append(" SKIP LOCKED");
+                    builder.append(" SKIP LOCKED");
                 }
-            }
-            // limit, offset, fetch, isolation
-            super.appendTo(sql);
-
-            if (optimizeFor != null) {
-                sql.append(optimizeFor);
             }
         } else {
             // without from
             if (where != null) {
-                sql.append(" WHERE ").append(where);
+                builder.append(" WHERE ").append(where);
             }
+        }
+        return builder;
+    }
 
-            // limit, offset, fetch, isolation
-            super.appendTo(sql);
+    @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
+            "PMD.NPathComplexity"})
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        super.appendTo(builder);
+
+        if (optimizeFor != null) {
+            builder.append(optimizeFor);
         }
+
         if (forXmlPath != null) {
-            sql.append(" FOR XML PATH(").append(forXmlPath).append(")");
+            builder.append(" FOR XML PATH(").append(forXmlPath).append(")");
         }
-        return sql.toString();
+
+        return builder.toString();
     }
 
     public PlainSelect withMySqlSqlCalcFoundRows(boolean mySqlCalcFoundRows) {
@@ -475,11 +474,6 @@ public class PlainSelect extends SelectBody {
 
     public PlainSelect withWhere(Expression where) {
         this.setWhere(where);
-        return this;
-    }
-
-    public PlainSelect withOrderByElements(List<OrderByElement> orderByElements) {
-        this.setOrderByElements(orderByElements);
         return this;
     }
 
@@ -586,20 +580,6 @@ public class PlainSelect extends SelectBody {
         List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
         collection.addAll(joins);
         return this.withJoins(collection);
-    }
-
-    public PlainSelect addOrderByElements(OrderByElement... orderByElements) {
-        List<OrderByElement> collection =
-                Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, orderByElements);
-        return this.withOrderByElements(collection);
-    }
-
-    public PlainSelect addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
-        List<OrderByElement> collection =
-                Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
-        collection.addAll(orderByElements);
-        return this.withOrderByElements(collection);
     }
 
     public <E extends FromItem> E getFromItem(Class<E> type) {

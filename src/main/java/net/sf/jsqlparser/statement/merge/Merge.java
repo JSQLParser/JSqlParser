@@ -9,29 +9,29 @@
  */
 package net.sf.jsqlparser.statement.merge;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
 import net.sf.jsqlparser.statement.select.WithItem;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 
 public class Merge implements Statement {
 
     private List<WithItem> withItemsList;
     private Table table;
     private OracleHint oracleHint = null;
-    private Table usingTable;
-    private SubSelect usingSelect;
-    private Alias usingAlias;
+    private FromItem fromItem;
     private Expression onCondition;
     private MergeInsert mergeInsert;
     private MergeUpdate mergeUpdate;
@@ -51,13 +51,15 @@ public class Merge implements Statement {
     }
 
     public Merge addWithItemsList(WithItem... withItemsList) {
-        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        List<WithItem> collection =
+                Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, withItemsList);
         return this.withWithItemsList(collection);
     }
 
     public Merge addWithItemsList(Collection<? extends WithItem> withItemsList) {
-        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        List<WithItem> collection =
+                Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         collection.addAll(withItemsList);
         return this.withWithItemsList(collection);
     }
@@ -78,31 +80,42 @@ public class Merge implements Statement {
         this.oracleHint = oracleHint;
     }
 
+    @Deprecated
     public Table getUsingTable() {
-        return usingTable;
+        return fromItem instanceof Table ? (Table) fromItem : null;
     }
 
+    @Deprecated
     public void setUsingTable(Table usingTable) {
-        this.usingTable = usingTable;
+        this.fromItem = usingTable;
     }
 
-    public SubSelect getUsingSelect() {
-        return usingSelect;
+    @Deprecated
+    public void setUsingSelect(ParenthesedSelectBody usingSelect) {
+        this.fromItem = usingSelect;
     }
 
-    public void setUsingSelect(SubSelect usingSelect) {
-        this.usingSelect = usingSelect;
-        if (this.usingSelect != null) {
-            this.usingSelect.setUseBrackets(false);
-        }
-    }
-
+    @Deprecated
     public Alias getUsingAlias() {
-        return usingAlias;
+        return fromItem.getAlias();
     }
 
+    @Deprecated
     public void setUsingAlias(Alias usingAlias) {
-        this.usingAlias = usingAlias;
+        this.fromItem.setAlias(usingAlias);
+    }
+
+    public FromItem getFromItem() {
+        return fromItem;
+    }
+
+    public void setFromItem(FromItem fromItem) {
+        this.fromItem = fromItem;
+    }
+
+    public Merge withFromItem(FromItem fromItem) {
+        this.setFromItem(fromItem);
+        return this;
     }
 
     public Expression getOnCondition() {
@@ -160,44 +173,39 @@ public class Merge implements Statement {
         b.append("MERGE INTO ");
         b.append(table);
         b.append(" USING ");
-        if (usingTable != null) {
-            b.append(usingTable.toString());
-        } else if (usingSelect != null) {
-            b.append("(").append(usingSelect.toString()).append(")");
-        }
-
-        if (usingAlias != null) {
-            b.append(usingAlias.toString());
-        }
+        b.append(fromItem);
         b.append(" ON (");
         b.append(onCondition);
         b.append(")");
 
         if (insertFirst && mergeInsert != null) {
-            b.append(mergeInsert.toString());
+            b.append(mergeInsert);
         }
 
         if (mergeUpdate != null) {
-            b.append(mergeUpdate.toString());
+            b.append(mergeUpdate);
         }
 
         if (!insertFirst && mergeInsert != null) {
-            b.append(mergeInsert.toString());
+            b.append(mergeInsert);
         }
 
         return b.toString();
     }
 
+    @Deprecated
     public Merge withUsingTable(Table usingTable) {
         this.setUsingTable(usingTable);
         return this;
     }
 
-    public Merge withUsingSelect(SubSelect usingSelect) {
+    @Deprecated
+    public Merge withUsingSelect(ParenthesedSelectBody usingSelect) {
         this.setUsingSelect(usingSelect);
         return this;
     }
 
+    @Deprecated
     public Merge withUsingAlias(Alias usingAlias) {
         this.setUsingAlias(usingAlias);
         return this;

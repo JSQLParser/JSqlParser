@@ -25,7 +25,7 @@ public class MergeValidator extends AbstractValidator<Merge> {
             validateFeature(c, Feature.merge);
         }
         validateOptionalExpression(merge.getOnCondition());
-        validateOptionalExpression(merge.getUsingSelect());
+        // validateOptionalExpression(merge.getFromItem());
         if (merge.getMergeInsert() != null) {
             validateOptionalExpressions(merge.getMergeInsert().getColumns());
             validateOptionalExpressions(merge.getMergeInsert().getValues());
@@ -36,7 +36,8 @@ public class MergeValidator extends AbstractValidator<Merge> {
             validateOptionalExpression(merge.getMergeUpdate().getDeleteWhereCondition());
             validateOptionalExpression(merge.getMergeUpdate().getWhereCondition());
         }
-        validateOptionalFromItems(merge.getTable(), merge.getUsingTable(), merge.getUsingSelect());
+        // validateOptionalFromItems(merge.getTable(), merge.getUsingTable(),
+        // merge.getUsingSelect());
     }
 
 }

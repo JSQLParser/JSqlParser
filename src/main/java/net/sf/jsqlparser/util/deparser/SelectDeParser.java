@@ -18,7 +18,6 @@ import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.expression.WindowDefinition;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
@@ -34,8 +33,8 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.OptimizeFor;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
+import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
@@ -46,7 +45,6 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.Skip;
-import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.UnPivot;
@@ -79,27 +77,49 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
     @Override
-    public void visit(ParenthesedSelectBody parenthesedSelectBody) {
+    public void visit(ParenthesedSelectBody selectBody) {
+        List<WithItem> withItemsList = selectBody.getWithItemsList();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            buffer.append("WITH ");
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+                iter.next().accept((SelectVisitor) this);
+                buffer.append(" ");
+            }
+        }
+
         buffer.append("(");
-        parenthesedSelectBody.getSelectBody().accept(this);
+        selectBody.getSelectBody().accept((SelectVisitor) this);
         buffer.append(")");
 
-        if (parenthesedSelectBody.getOrderByElements() != null) {
-            new OrderByDeParser(expressionVisitor, buffer).deParse(
-                    parenthesedSelectBody.isOracleSiblings(),
-                    parenthesedSelectBody.getOrderByElements());
+        if (selectBody.getOrderByElements() != null) {
+            new OrderByDeParser(expressionVisitor, buffer).deParse(selectBody.isOracleSiblings(),
+                    selectBody.getOrderByElements());
         }
-        if (parenthesedSelectBody.getLimit() != null) {
-            new LimitDeparser(buffer).deParse(parenthesedSelectBody.getLimit());
+
+        Alias alias = selectBody.getAlias();
+        if (alias != null) {
+            buffer.append(alias);
         }
-        if (parenthesedSelectBody.getOffset() != null) {
-            visit(parenthesedSelectBody.getOffset());
+        Pivot pivot = selectBody.getPivot();
+        if (pivot != null) {
+            pivot.accept(this);
         }
-        if (parenthesedSelectBody.getFetch() != null) {
-            visit(parenthesedSelectBody.getFetch());
+        UnPivot unpivot = selectBody.getUnPivot();
+        if (unpivot != null) {
+            unpivot.accept(this);
         }
-        if (parenthesedSelectBody.getIsolation() != null) {
-            buffer.append(parenthesedSelectBody.getIsolation().toString());
+
+        if (selectBody.getLimit() != null) {
+            new LimitDeparser(buffer).deParse(selectBody.getLimit());
+        }
+        if (selectBody.getOffset() != null) {
+            visit(selectBody.getOffset());
+        }
+        if (selectBody.getFetch() != null) {
+            visit(selectBody.getFetch());
+        }
+        if (selectBody.getIsolation() != null) {
+            buffer.append(selectBody.getIsolation().toString());
         }
     }
 
@@ -107,6 +127,18 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
             "PMD.NPathComplexity"})
     public void visit(PlainSelect plainSelect) {
+        List<WithItem> withItemsList = plainSelect.getWithItemsList();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            buffer.append("WITH ");
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+                iter.next().accept((SelectVisitor) this);
+                if (iter.hasNext()) {
+                    buffer.append(",");
+                }
+                buffer.append(" ");
+            }
+        }
+
         buffer.append("SELECT ");
 
         if (plainSelect.getMySqlHintStraightJoin()) {
@@ -275,37 +307,6 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
     }
 
-    @Override
-    public void visit(SubSelect subSelect) {
-        buffer.append(subSelect.isUseBrackets() ? "(" : "");
-        if (subSelect.getWithItemsList() != null && !subSelect.getWithItemsList().isEmpty()) {
-            buffer.append("WITH ");
-            for (Iterator<WithItem> iter = subSelect.getWithItemsList().iterator(); iter
-                    .hasNext();) {
-                WithItem withItem = iter.next();
-                withItem.accept(this);
-                if (iter.hasNext()) {
-                    buffer.append(",");
-                }
-                buffer.append(" ");
-            }
-        }
-        subSelect.getSelectBody().accept(this);
-        buffer.append(subSelect.isUseBrackets() ? ")" : "");
-        Alias alias = subSelect.getAlias();
-        if (alias != null) {
-            buffer.append(alias);
-        }
-        Pivot pivot = subSelect.getPivot();
-        if (pivot != null) {
-            pivot.accept(this);
-        }
-
-        UnPivot unPivot = subSelect.getUnPivot();
-        if (unPivot != null) {
-            unPivot.accept(this);
-        }
-    }
 
     @Override
     public void visit(Table tableName) {
@@ -487,6 +488,18 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
     @Override
     public void visit(SetOperationList list) {
+        List<WithItem> withItemsList = list.getWithItemsList();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            buffer.append("WITH ");
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+                iter.next().accept((SelectVisitor) this);
+                if (iter.hasNext()) {
+                    buffer.append(",");
+                }
+                buffer.append(" ");
+            }
+        }
+
         for (int i = 0; i < list.getSelects().size(); i++) {
             if (i != 0) {
                 buffer.append(' ').append(list.getOperations().get(i - 1)).append(' ');
@@ -516,37 +529,19 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (withItem.isRecursive()) {
             buffer.append("RECURSIVE ");
         }
-        buffer.append(withItem.getName());
+        buffer.append(withItem.getAlias().getName());
         if (withItem.getWithItemList() != null) {
             buffer.append(" ")
                     .append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
         }
         buffer.append(" AS ");
-
-        if (withItem.isUseValues()) {
-            ItemsList itemsList = withItem.getItemsList();
-            boolean useBracketsForValues = withItem.isUsingBracketsForValues();
-            buffer.append("(VALUES ");
-
-            ExpressionList expressionList = (ExpressionList) itemsList;
-            buffer.append(PlainSelect.getStringList(expressionList.getExpressions(), true,
-                    useBracketsForValues));
-            buffer.append(")");
-        } else {
-            SubSelect subSelect = withItem.getSubSelect();
-            if (!subSelect.isUseBrackets()) {
-                buffer.append("(");
-            }
-            subSelect.accept((FromItemVisitor) this);
-            if (!subSelect.isUseBrackets()) {
-                buffer.append(")");
-            }
-        }
+        withItem.getSelectBody().accept(this);
     }
 
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
-        buffer.append(lateralSubSelect.toString());
+        buffer.append(lateralSubSelect.getPrefix());
+        visit((ParenthesedSelectBody) lateralSubSelect);
     }
 
     @Override
@@ -592,10 +587,11 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
     @Override
-    public void visit(ParenthesedFromItem parenthesis) {
+    public void visit(ParenthesedFromItem fromItem) {
+
         buffer.append("(");
-        parenthesis.getFromItem().accept(this);
-        List<Join> joins = parenthesis.getJoins();
+        fromItem.getFromItem().accept(this);
+        List<Join> joins = fromItem.getJoins();
         if (joins != null) {
             for (Join join : joins) {
                 if (join.isSimple()) {
@@ -607,16 +603,16 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
         buffer.append(")");
 
-        if (parenthesis.getAlias() != null) {
-            buffer.append(parenthesis.getAlias().toString());
+        if (fromItem.getAlias() != null) {
+            buffer.append(fromItem.getAlias().toString());
         }
 
-        if (parenthesis.getPivot() != null) {
-            visit(parenthesis.getPivot());
+        if (fromItem.getPivot() != null) {
+            visit(fromItem.getPivot());
         }
 
-        if (parenthesis.getUnPivot() != null) {
-            visit(parenthesis.getUnPivot());
+        if (fromItem.getUnPivot() != null) {
+            visit(fromItem.getUnPivot());
         }
     }
 
@@ -633,7 +629,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
     @Override
     void deParse(PlainSelect statement) {
-        statement.accept(this);
+        statement.accept((SelectVisitor) this);
     }
 
     @Override

@@ -16,11 +16,11 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
-import net.sf.jsqlparser.statement.PurgeStatement;
 import net.sf.jsqlparser.statement.IfElseStatement;
+import net.sf.jsqlparser.statement.PurgeStatement;
+import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
-import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
@@ -112,9 +112,6 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
         validateFeature(Feature.select);
 
         SelectValidator selectValidator = getValidator(SelectValidator.class);
-        if (select.getWithItemsList() != null) {
-            select.getWithItemsList().forEach(wi -> wi.accept(selectValidator));
-        }
         select.getSelectBody().accept(selectValidator);
     }
 
@@ -183,12 +180,12 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     public void visit(ShowColumnsStatement show) {
         getValidator(ShowColumnsStatementValidator.class).validate(show);
     }
-    
+
     @Override
     public void visit(ShowIndexStatement show) {
         getValidator(ShowIndexStatementValidator.class).validate(show);
     }
-    
+
     @Override
     public void visit(ShowTablesStatement showTables) {
         getValidator(ShowTablesStatementValidator.class).validate(showTables);
@@ -282,39 +279,39 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
 
     @Override
     public void visit(SavepointStatement savepointStatement) {
-        //TODO: not yet implemented
+        // TODO: not yet implemented
     }
 
     @Override
     public void visit(RollbackStatement rollbackStatement) {
-        //TODO: not yet implemented
+        // TODO: not yet implemented
     }
-    
+
     @Override
     public void visit(AlterSession alterSession) {
-        //TODO: not yet implemented
+        // TODO: not yet implemented
     }
 
     @Override
     public void visit(IfElseStatement ifElseStatement) {
         ifElseStatement.getIfStatement().accept(this);
-        if (ifElseStatement.getElseStatement()!=null) {
+        if (ifElseStatement.getElseStatement() != null) {
             ifElseStatement.getElseStatement().accept(this);
         }
     }
 
     public void visit(RenameTableStatement renameTableStatement) {
-        //TODO: not yet implemented
+        // TODO: not yet implemented
     }
 
     @Override
     public void visit(PurgeStatement purgeStatement) {
-        //TODO: not yet implemented
+        // TODO: not yet implemented
     }
 
     @Override
     public void visit(AlterSystemStatement alterSystemStatement) {
-        //TODO: not yet implemented
+        // TODO: not yet implemented
     }
 
     @Override

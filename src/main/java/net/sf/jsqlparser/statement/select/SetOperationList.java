@@ -58,23 +58,18 @@ public class SetOperationList extends SelectBody {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
-    public String toString() {
-        StringBuilder buffer = new StringBuilder();
-
+    public StringBuilder appendSelectBodyTo(StringBuilder builder) {
         for (int i = 0; i < selects.size(); i++) {
             if (i != 0) {
-                buffer.append(" ").append(operations.get(i - 1).toString()).append(" ");
+                builder.append(" ").append(operations.get(i - 1).toString()).append(" ");
             }
-            buffer.append(selects.get(i).toString());
+            builder.append(selects.get(i).toString());
         }
 
         if (orderByElements != null) {
-            buffer.append(PlainSelect.orderByToString(orderByElements));
+            builder.append(PlainSelect.orderByToString(orderByElements));
         }
-        super.appendTo(buffer);
-
-        return buffer.toString();
+        return builder;
     }
 
     public SetOperationList withOperations(List<SetOperation> operationList) {
@@ -84,11 +79,6 @@ public class SetOperationList extends SelectBody {
 
     public SetOperationList withSelects(List<SelectBody> selects) {
         setSelects(selects);
-        return this;
-    }
-
-    public SetOperationList withOrderByElements(List<OrderByElement> orderByElements) {
-        this.setOrderByElements(orderByElements);
         return this;
     }
 
@@ -116,21 +106,6 @@ public class SetOperationList extends SelectBody {
                 Optional.ofNullable(getOperations()).orElseGet(ArrayList::new);
         collection.addAll(operationList);
         return this.withOperations(collection);
-    }
-
-    public SetOperationList addOrderByElements(OrderByElement... orderByElements) {
-        List<OrderByElement> collection =
-                Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, orderByElements);
-        return this.withOrderByElements(collection);
-    }
-
-    public SetOperationList addOrderByElements(
-            Collection<? extends OrderByElement> orderByElements) {
-        List<OrderByElement> collection =
-                Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
-        collection.addAll(orderByElements);
-        return this.withOrderByElements(collection);
     }
 
     public enum SetOperationType {

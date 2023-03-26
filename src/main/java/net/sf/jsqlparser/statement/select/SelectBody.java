@@ -9,18 +9,25 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.Model;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
-public abstract class SelectBody extends ASTNodeAccessImpl implements Model {
-    private Limit limit;
-    private Offset offset;
-    private Fetch fetch;
-    private WithIsolation isolation;
-    private boolean oracleSiblings = false;
-    private List<OrderByElement> orderByElements;
+public abstract class SelectBody extends ASTNodeAccessImpl implements Expression {
+    List<WithItem> withItemsList;
+    Limit limit;
+    Offset offset;
+    Fetch fetch;
+    WithIsolation isolation;
+    boolean oracleSiblings = false;
+    List<OrderByElement> orderByElements;
 
     public static String orderByToString(List<OrderByElement> orderByElements) {
         return orderByToString(false, orderByElements);
@@ -107,6 +114,30 @@ public abstract class SelectBody extends ASTNodeAccessImpl implements Model {
         return builder;
     }
 
+    public List<WithItem> getWithItemsList() {
+        return withItemsList;
+    }
+
+    public void setWithItemsList(List<WithItem> withItemsList) {
+        this.withItemsList = withItemsList;
+    }
+
+    public SelectBody withWithItemsList(List<WithItem> withItemsList) {
+        this.setWithItemsList(withItemsList);
+        return this;
+    }
+
+    public SelectBody addWithItemsList(Collection<? extends WithItem> withItemsList) {
+        List<WithItem> collection =
+                Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        collection.addAll(withItemsList);
+        return this.withWithItemsList(collection);
+    }
+
+    public SelectBody addWithItemsList(WithItem... withItemsList) {
+        return addWithItemsList(Arrays.asList(withItemsList));
+    }
+
     public boolean isOracleSiblings() {
         return oracleSiblings;
     }
@@ -131,6 +162,17 @@ public abstract class SelectBody extends ASTNodeAccessImpl implements Model {
     public SelectBody withOrderByElements(List<OrderByElement> orderByElements) {
         this.setOrderByElements(orderByElements);
         return this;
+    }
+
+    public SelectBody addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
+        List<OrderByElement> collection =
+                Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        collection.addAll(orderByElements);
+        return this.withOrderByElements(collection);
+    }
+
+    public SelectBody addOrderByElements(OrderByElement... orderByElements) {
+        return addOrderByElements(Arrays.asList(orderByElements));
     }
 
     public Limit getLimit() {
@@ -185,7 +227,23 @@ public abstract class SelectBody extends ASTNodeAccessImpl implements Model {
         return this;
     }
 
+    public abstract StringBuilder appendSelectBodyTo(StringBuilder builder);
+
     public StringBuilder appendTo(StringBuilder builder) {
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            builder.append("WITH ");
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+                WithItem withItem = iter.next();
+                builder.append(withItem);
+                if (iter.hasNext()) {
+                    builder.append(",");
+                }
+                builder.append(" ");
+            }
+        }
+
+        appendSelectBodyTo(builder);
+
         builder.append(orderByToString(oracleSiblings, orderByElements));
 
         if (limit != null) {
@@ -204,5 +262,16 @@ public abstract class SelectBody extends ASTNodeAccessImpl implements Model {
         return builder;
     }
 
+    @Override
+    public String toString() {
+        return appendTo(new StringBuilder()).toString();
+    }
+
     public abstract void accept(SelectVisitor selectVisitor);
+
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
+
 }

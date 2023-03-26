@@ -9,8 +9,12 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import net.sf.jsqlparser.expression.operators.relational.*;
-import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
+import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
+import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
+import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
 
 /**
  * @author gitmotte
@@ -18,8 +22,8 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 public class ItemsListValidator extends AbstractValidator<ItemsList> implements ItemsListVisitor {
 
     @Override
-    public void visit(SubSelect subSelect) {
-        validateOptionalFromItem(subSelect);
+    public void visit(ParenthesedSelectBody selectBody) {
+        validateOptionalFromItem(selectBody);
     }
 
     @Override

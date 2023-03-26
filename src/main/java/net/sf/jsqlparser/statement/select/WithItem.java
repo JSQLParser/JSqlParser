@@ -9,77 +9,17 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsList;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class WithItem extends SelectBody {
+public class WithItem extends ParenthesedSelectBody {
 
-    private String name;
     private List<SelectItem> withItemList;
-    private ItemsList itemsList;
-    private boolean useValues = true;
-    private boolean useBracketsForValues = false;
 
-    private SubSelect subSelect;
-    private boolean recursive;
-
-    /**
-     * Get the values (as VALUES (...) or SELECT)
-     *
-     * @return the values of the insert
-     */
-    public ItemsList getItemsList() {
-        return itemsList;
-    }
-
-    public void setItemsList(ItemsList list) {
-        itemsList = list;
-    }
-
-    public boolean isUseValues() {
-        return useValues;
-    }
-
-    public void setUseValues(boolean useValues) {
-        this.useValues = useValues;
-    }
-
-    public WithItem withItemsList(ItemsList itemsList) {
-        this.setItemsList(itemsList);
-        return this;
-    }
-
-    public WithItem withUseValues(boolean useValues) {
-        this.setUseValues(useValues);
-        return this;
-    }
-
-    public boolean isUsingBracketsForValues() {
-        return useBracketsForValues;
-    }
-
-    public void setUseBracketsForValues(boolean useBracketsForValues) {
-        this.useBracketsForValues = useBracketsForValues;
-    }
-
-    public WithItem withUseBracketsForValues(boolean useBracketsForValues) {
-        this.setUseBracketsForValues(useBracketsForValues);
-        return this;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    private boolean recursive = false;
 
     public boolean isRecursive() {
         return recursive;
@@ -89,13 +29,6 @@ public class WithItem extends SelectBody {
         this.recursive = recursive;
     }
 
-    public SubSelect getSubSelect() {
-        return subSelect;
-    }
-
-    public void setSubSelect(SubSelect subSelect) {
-        this.subSelect = subSelect.withUseBrackets(false);
-    }
 
     /**
      * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH mywith (A,B,C) AS ...")
@@ -112,28 +45,17 @@ public class WithItem extends SelectBody {
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
+    public StringBuilder appendSelectBodyTo(StringBuilder builder) {
         builder.append(recursive ? "RECURSIVE " : "");
-        builder.append(name);
+        builder.append(alias.getName());
         builder.append(
                 (withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true)
                         : "");
         builder.append(" AS ");
 
-        if (useValues) {
-            builder.append("(VALUES ");
-            ExpressionList expressionList = (ExpressionList) itemsList;
-            builder.append(PlainSelect.getStringList(expressionList.getExpressions(), true,
-                    useBracketsForValues));
-            builder.append(")");
-        } else {
-            builder.append(subSelect.isUseBrackets() ? "" : "(");
-            builder.append(subSelect);
+        selectBody.appendTo(builder);
 
-            builder.append(subSelect.isUseBrackets() ? "" : ")");
-        }
-        return builder.toString();
+        return builder;
     }
 
     @Override
@@ -141,18 +63,9 @@ public class WithItem extends SelectBody {
         visitor.visit(this);
     }
 
-    public WithItem withName(String name) {
-        this.setName(name);
-        return this;
-    }
 
     public WithItem withWithItemList(List<SelectItem> withItemList) {
         this.setWithItemList(withItemList);
-        return this;
-    }
-
-    public WithItem withSubSelect(SubSelect subSelect) {
-        this.setSubSelect(subSelect);
         return this;
     }
 

@@ -35,7 +35,6 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.UnionOp;
@@ -54,13 +53,13 @@ import java.util.List;
 public class SelectValidator extends AbstractValidator<SelectItem>
         implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
-    @Override
-    public void visit(ParenthesedSelectBody parenthesedSelectBody) {
-        parenthesedSelectBody.getSelectBody().accept(this);
-    }
-
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     @Override
     public void visit(PlainSelect plainSelect) {
+        if (isNotEmpty(plainSelect.getWithItemsList())) {
+            plainSelect.getWithItemsList()
+                    .forEach(withItem -> withItem.accept((SelectVisitor) this));
+        }
 
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.select);
@@ -151,12 +150,13 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     }
 
     @Override
-    public void visit(SubSelect subSelect) {
-        if (isNotEmpty(subSelect.getWithItemsList())) {
-            subSelect.getWithItemsList().forEach(withItem -> withItem.accept(this));
+    public void visit(ParenthesedSelectBody selectBody) {
+        if (isNotEmpty(selectBody.getWithItemsList())) {
+            selectBody.getWithItemsList()
+                    .forEach(withItem -> withItem.accept((SelectVisitor) this));
         }
-        subSelect.getSelectBody().accept(this);
-        validateOptional(subSelect.getPivot(), p -> p.accept(this));
+        selectBody.getSelectBody().accept(this);
+        validateOptional(selectBody.getPivot(), p -> p.accept(this));
     }
 
     @Override
@@ -257,6 +257,10 @@ public class SelectValidator extends AbstractValidator<SelectItem>
 
     @Override
     public void visit(SetOperationList setOperation) {
+        if (isNotEmpty(setOperation.getWithItemsList())) {
+            setOperation.getWithItemsList()
+                    .forEach(withItem -> withItem.accept((SelectVisitor) this));
+        }
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.setOperation);
             validateFeature(c,
@@ -301,15 +305,20 @@ public class SelectValidator extends AbstractValidator<SelectItem>
         if (isNotEmpty(withItem.getWithItemList())) {
             withItem.getWithItemList().forEach(wi -> wi.accept(this));
         }
-        withItem.getSubSelect().accept(this);
+        withItem.getSelectBody().accept(this);
     }
 
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
+        if (isNotEmpty(lateralSubSelect.getWithItemsList())) {
+            lateralSubSelect.getWithItemsList()
+                    .forEach(withItem -> withItem.accept((SelectVisitor) this));
+        }
+
         validateFeature(Feature.lateralSubSelect);
         validateOptional(lateralSubSelect.getPivot(), p -> p.accept(this));
         validateOptional(lateralSubSelect.getUnPivot(), up -> up.accept(this));
-        validateOptional(lateralSubSelect.getSubSelect(), e -> e.accept(this));
+        validateOptional(lateralSubSelect.getSelectBody(), e -> e.accept(this));
     }
 
     @Override

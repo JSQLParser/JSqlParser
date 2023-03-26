@@ -15,7 +15,7 @@ public interface FromItemVisitor {
 
     void visit(Table tableName);
 
-    void visit(SubSelect subSelect);
+    void visit(ParenthesedSelectBody selectBody);
 
     void visit(LateralSubSelect lateralSubSelect);
 

@@ -9,11 +9,11 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
-import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
 
 public interface ItemsListVisitor {
 
-    void visit(SubSelect subSelect);
+    void visit(ParenthesedSelectBody selectBody);
 
     void visit(ExpressionList expressionList);
 
