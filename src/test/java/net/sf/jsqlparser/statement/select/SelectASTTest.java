@@ -18,7 +18,6 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.SimpleNode;
 import net.sf.jsqlparser.parser.Token;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.Statement;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.assertj.core.api.Assertions.assertThat;
