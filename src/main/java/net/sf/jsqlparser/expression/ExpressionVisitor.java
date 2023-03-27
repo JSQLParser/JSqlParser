@@ -47,8 +47,8 @@ import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
-import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
+import net.sf.jsqlparser.statement.select.Select;
 
 public interface ExpressionVisitor {
 
@@ -124,7 +124,7 @@ public interface ExpressionVisitor {
 
     void visit(NotEqualsTo notEqualsTo);
 
-    void visit(ParenthesedSelectBody selectBody);
+    void visit(ParenthesedSelect selectBody);
 
     void visit(Column tableColumn);
 
@@ -226,5 +226,5 @@ public interface ExpressionVisitor {
 
     void visit(GeometryDistance geometryDistance);
 
-    void visit(SelectBody selectBody);
+    void visit(Select selectBody);
 }

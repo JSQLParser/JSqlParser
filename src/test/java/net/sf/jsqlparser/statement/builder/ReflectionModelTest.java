@@ -14,7 +14,7 @@ import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperatorType
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.ExplainStatement.OptionType;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -38,11 +38,11 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.Alias.AliasColumn("a", new ColDataType("varchar")),
             new net.sf.jsqlparser.expression.AnalyticExpression(),
             new net.sf.jsqlparser.expression.AnyComparisonExpression(AnyType.ANY,
-                    new ParenthesedSelectBody()),
+                    new ParenthesedSelect()),
             new net.sf.jsqlparser.expression.AnyComparisonExpression(AnyType.ALL,
-                    new ParenthesedSelectBody()),
+                    new ParenthesedSelect()),
             new net.sf.jsqlparser.expression.AnyComparisonExpression(AnyType.SOME,
-                    new ParenthesedSelectBody()),
+                    new ParenthesedSelect()),
             new net.sf.jsqlparser.expression.ArrayExpression(),
             new net.sf.jsqlparser.expression.CaseExpression(),
             new net.sf.jsqlparser.expression.CastExpression(),
@@ -198,7 +198,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.select.SelectExpressionItem(),
             // new net.sf.jsqlparser.statement.select.SetOperationList(),
             new net.sf.jsqlparser.statement.select.Skip(),
-            // new net.sf.jsqlparser.statement.select.ParenthesedSelectBody(),
+            // new net.sf.jsqlparser.statement.select.ParenthesedSelect(),
             new net.sf.jsqlparser.statement.select.TableFunction(),
             new net.sf.jsqlparser.statement.select.Top(),
             new net.sf.jsqlparser.statement.select.UnPivot(),

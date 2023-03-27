@@ -17,7 +17,7 @@ import net.sf.jsqlparser.schema.Column;
 
 public class PivotXml extends Pivot {
 
-    private SelectBody inSelect;
+    private Select inSelect;
     private boolean inAny = false;
 
     @Override
@@ -25,11 +25,11 @@ public class PivotXml extends Pivot {
         pivotVisitor.visit(this);
     }
 
-    public SelectBody getInSelect() {
+    public Select getInSelect() {
         return inSelect;
     }
 
-    public void setInSelect(SelectBody inSelect) {
+    public void setInSelect(Select inSelect) {
         this.inSelect = inSelect;
     }
 
@@ -44,16 +44,17 @@ public class PivotXml extends Pivot {
     @Override
     public String toString() {
         List<Column> forColumns = getForColumns();
-        String in = inAny ? "ANY" : inSelect == null ? PlainSelect.getStringList(getInItems()) : inSelect.
-                toString();
+        String in = inAny ? "ANY"
+                : inSelect == null ? PlainSelect.getStringList(getInItems()) : inSelect.toString();
         return "PIVOT XML ("
                 + PlainSelect.getStringList(getFunctionItems())
-                + " FOR " + PlainSelect.
-                        getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)
+                + " FOR "
+                + PlainSelect.getStringList(forColumns, true,
+                        forColumns != null && forColumns.size() > 1)
                 + " IN (" + in + "))";
     }
 
-    public PivotXml withInSelect(SelectBody inSelect) {
+    public PivotXml withInSelect(Select inSelect) {
         this.setInSelect(inSelect);
         return this;
     }
@@ -63,7 +64,7 @@ public class PivotXml extends Pivot {
         return this;
     }
 
-    public <E extends SelectBody> E getInSelect(Class<E> type) {
+    public <E extends Select> E getInSelect(Class<E> type) {
         return type.cast(getInSelect());
     }
 

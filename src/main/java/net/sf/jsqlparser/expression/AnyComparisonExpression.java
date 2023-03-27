@@ -11,7 +11,7 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 
 /**
  * Combines ANY and SOME expressions.
@@ -22,10 +22,10 @@ public class AnyComparisonExpression extends ASTNodeAccessImpl implements Expres
 
     private final ItemsList itemsList;
     private boolean useBracketsForValues = false;
-    private final ParenthesedSelectBody subSelect;
+    private final ParenthesedSelect subSelect;
     private final AnyType anyType;
 
-    public AnyComparisonExpression(AnyType anyType, ParenthesedSelectBody subSelect) {
+    public AnyComparisonExpression(AnyType anyType, ParenthesedSelect subSelect) {
         this.anyType = anyType;
         this.subSelect = subSelect;
         this.itemsList = null;
@@ -37,7 +37,7 @@ public class AnyComparisonExpression extends ASTNodeAccessImpl implements Expres
         this.subSelect = null;
     }
 
-    public ParenthesedSelectBody getSubSelect() {
+    public ParenthesedSelect getSubSelect() {
         return subSelect;
     }
 

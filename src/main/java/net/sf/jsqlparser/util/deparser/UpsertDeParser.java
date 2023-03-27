@@ -16,7 +16,7 @@ import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.upsert.UpsertType;
@@ -115,7 +115,7 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
 
     private void appendSelect(Upsert upsert) {
         buffer.append(" ");
-        upsert.getSelect().getSelectBody().accept(selectVisitor);
+        upsert.getSelect().accept(selectVisitor);
     }
 
     private void appendDuplicate(Upsert upsert) {
@@ -171,8 +171,8 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
     }
 
     @Override
-    public void visit(ParenthesedSelectBody selectBody) {
-        selectBody.getSelectBody().accept(selectVisitor);
+    public void visit(ParenthesedSelect selectBody) {
+        selectBody.getSelect().accept(selectVisitor);
     }
 
     public ExpressionVisitor getExpressionVisitor() {

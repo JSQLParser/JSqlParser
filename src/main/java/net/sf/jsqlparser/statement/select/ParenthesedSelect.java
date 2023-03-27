@@ -2,11 +2,11 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
 
-public class ParenthesedSelectBody extends SelectBody implements FromItem {
+public class ParenthesedSelect extends Select implements FromItem {
     Alias alias;
     Pivot pivot;
     UnPivot unPivot;
-    SelectBody selectBody;
+    Select select;
 
     @Override
     public Alias getAlias() {
@@ -18,7 +18,7 @@ public class ParenthesedSelectBody extends SelectBody implements FromItem {
         this.alias = alias;
     }
 
-    public ParenthesedSelectBody withAlias(Alias alias) {
+    public ParenthesedSelect withAlias(Alias alias) {
         this.setAlias(alias);
         return this;
     }
@@ -41,16 +41,16 @@ public class ParenthesedSelectBody extends SelectBody implements FromItem {
         this.unPivot = unPivot;
     }
 
-    public SelectBody getSelectBody() {
-        return selectBody;
+    public Select getSelect() {
+        return select;
     }
 
-    public void setSelectBody(SelectBody selectBody) {
-        this.selectBody = selectBody;
+    public void setSelect(Select select) {
+        this.select = select;
     }
 
-    public ParenthesedSelectBody withSelectBody(SelectBody selectBody) {
-        setSelectBody(selectBody);
+    public ParenthesedSelect withSelect(Select selectBody) {
+        setSelect(selectBody);
         return this;
     }
 
@@ -65,7 +65,7 @@ public class ParenthesedSelectBody extends SelectBody implements FromItem {
     }
 
     public StringBuilder appendSelectBodyTo(StringBuilder builder) {
-        builder.append("(").append(selectBody).append(")");
+        builder.append("(").append(select).append(")");
         if (alias != null) {
             builder.append(alias);
         }

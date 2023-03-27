@@ -14,6 +14,8 @@ import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
 class FetchTest {
     @Test
     void testParser() throws JSQLParserException {
@@ -26,9 +28,8 @@ class FetchTest {
     void getExpression() throws JSQLParserException {
         String sqlStr = "SELECT table_schema \n" + "FROM information_schema.tables \n"
                 + "fetch next (SELECT 1 FROM DUAL) rows only";
-        Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         Fetch fetch = plainSelect.getFetch();
-        Assertions.assertInstanceOf(ParenthesedSelectBody.class, fetch.getExpression());
+        Assertions.assertInstanceOf(ParenthesedSelect.class, fetch.getExpression());
     }
 }

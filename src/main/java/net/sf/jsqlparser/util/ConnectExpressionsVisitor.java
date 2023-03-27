@@ -14,9 +14,9 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
@@ -50,13 +50,13 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
     protected abstract BinaryExpression createBinaryExpression();
 
     @Override
-    public void visit(ParenthesedSelectBody parenthesedSelectBody) {
-        parenthesedSelectBody.getSelectBody().accept(this);
+    public void visit(ParenthesedSelect parenthesedSelect) {
+        parenthesedSelect.getSelect().accept(this);
     }
 
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
-        lateralSubSelect.getSelectBody().accept(this);
+        lateralSubSelect.getSelect().accept(this);
     }
 
     @Override
@@ -88,7 +88,7 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
 
     @Override
     public void visit(SetOperationList setOpList) {
-        for (SelectBody select : setOpList.getSelects()) {
+        for (Select select : setOpList.getSelects()) {
             select.accept(this);
         }
     }

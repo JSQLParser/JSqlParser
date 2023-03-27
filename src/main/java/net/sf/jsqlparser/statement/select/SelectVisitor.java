@@ -11,7 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 public interface SelectVisitor {
 
-    void visit(ParenthesedSelectBody parenthesedSelectBody);
+    void visit(ParenthesedSelect parenthesedSelect);
 
     void visit(PlainSelect plainSelect);
 

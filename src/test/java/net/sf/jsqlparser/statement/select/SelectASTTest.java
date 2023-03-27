@@ -19,6 +19,8 @@ import net.sf.jsqlparser.parser.SimpleNode;
 import net.sf.jsqlparser.parser.Token;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
+
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -34,17 +36,15 @@ public class SelectASTTest {
     public void testSelectASTColumn() throws JSQLParserException {
         String sql = "SELECT  a,  b FROM  mytable  order by   b,  c";
         StringBuilder b = new StringBuilder(sql);
-        Statement stmt = CCJSqlParserUtil.parse(sql);
-        Select select = (Select) stmt;
-        PlainSelect ps = (PlainSelect) select.getSelectBody();
-        for (SelectItem item : ps.getSelectItems()) {
+        PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        for (SelectItem item : plainSelect.getSelectItems()) {
             SelectExpressionItem sei = (SelectExpressionItem) item;
             Column c = sei.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().beginColumn - 1, '*');
         }
-        for (OrderByElement item : ps.getOrderByElements()) {
+        for (OrderByElement item : plainSelect.getOrderByElements()) {
             Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
@@ -93,17 +93,15 @@ public class SelectASTTest {
     public void testSelectASTColumnLF() throws JSQLParserException {
         String sql = "SELECT  a,  b FROM  mytable \n order by   b,  c";
         StringBuilder b = new StringBuilder(sql);
-        Statement stmt = CCJSqlParserUtil.parse(sql);
-        Select select = (Select) stmt;
-        PlainSelect ps = (PlainSelect) select.getSelectBody();
-        for (SelectItem item : ps.getSelectItems()) {
+        PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        for (SelectItem item : plainSelect.getSelectItems()) {
             SelectExpressionItem sei = (SelectExpressionItem) item;
             Column c = sei.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '*');
         }
-        for (OrderByElement item : ps.getOrderByElements()) {
+        for (OrderByElement item : plainSelect.getOrderByElements()) {
             Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
@@ -117,17 +115,15 @@ public class SelectASTTest {
         String sql =
                 "SELECT  /* testcomment */ \n a,  b FROM  -- testcomment2 \n mytable \n order by   b,  c";
         StringBuilder b = new StringBuilder(sql);
-        Statement stmt = CCJSqlParserUtil.parse(sql);
-        Select select = (Select) stmt;
-        PlainSelect ps = (PlainSelect) select.getSelectBody();
-        for (SelectItem item : ps.getSelectItems()) {
+        PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        for (SelectItem item : plainSelect.getSelectItems()) {
             SelectExpressionItem sei = (SelectExpressionItem) item;
             Column c = sei.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '*');
         }
-        for (OrderByElement item : ps.getOrderByElements()) {
+        for (OrderByElement item : plainSelect.getOrderByElements()) {
             Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
@@ -143,17 +139,15 @@ public class SelectASTTest {
         String sql =
                 "SELECT  /* testcomment */ \r\n a,  b FROM  -- testcomment2 \r\n mytable \r\n order by   b,  c";
         StringBuilder b = new StringBuilder(sql);
-        Statement stmt = CCJSqlParserUtil.parse(sql);
-        Select select = (Select) stmt;
-        PlainSelect ps = (PlainSelect) select.getSelectBody();
-        for (SelectItem item : ps.getSelectItems()) {
+        PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        for (SelectItem item : plainSelect.getSelectItems()) {
             SelectExpressionItem sei = (SelectExpressionItem) item;
             Column c = sei.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '*');
         }
-        for (OrderByElement item : ps.getOrderByElements()) {
+        for (OrderByElement item : plainSelect.getOrderByElements()) {
             Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);

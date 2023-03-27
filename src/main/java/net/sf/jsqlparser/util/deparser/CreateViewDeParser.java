@@ -72,7 +72,7 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
         buffer.append(" AS ");
 
         Select select = createView.getSelect();
-        select.getSelectBody().accept(selectVisitor);
+        select.accept(selectVisitor);
         if (createView.isWithReadOnly()) {
             buffer.append(" WITH READ ONLY");
         }

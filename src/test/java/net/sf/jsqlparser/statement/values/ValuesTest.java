@@ -13,7 +13,6 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
-import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.Values;
 import org.junit.jupiter.api.Test;
 
@@ -31,9 +30,7 @@ public class ValuesTest {
 
         Values values = new Values().addExpressions(new LongValue(1),
                 new LongValue(2), new StringValue("test"));
-        Select created = new Select().withSelectBody(values);
-
-        assertDeparse(created, statement);
+        assertDeparse(values, statement);
 
         // this test does not make much sense, since the Object Tree is not distinct
         // there are several different ways to build the statement above

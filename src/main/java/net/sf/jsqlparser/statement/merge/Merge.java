@@ -16,7 +16,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 import java.util.ArrayList;
@@ -91,7 +91,7 @@ public class Merge implements Statement {
     }
 
     @Deprecated
-    public void setUsingSelect(ParenthesedSelectBody usingSelect) {
+    public void setUsingSelect(ParenthesedSelect usingSelect) {
         this.fromItem = usingSelect;
     }
 
@@ -200,7 +200,7 @@ public class Merge implements Statement {
     }
 
     @Deprecated
-    public Merge withUsingSelect(ParenthesedSelectBody usingSelect) {
+    public Merge withUsingSelect(ParenthesedSelect usingSelect) {
         this.setUsingSelect(usingSelect);
         return this;
     }

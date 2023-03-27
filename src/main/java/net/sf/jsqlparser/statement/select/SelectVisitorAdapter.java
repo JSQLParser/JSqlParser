@@ -13,8 +13,8 @@ package net.sf.jsqlparser.statement.select;
 public class SelectVisitorAdapter implements SelectVisitor {
 
     @Override
-    public void visit(ParenthesedSelectBody parenthesedSelectBody) {
-        parenthesedSelectBody.getSelectBody().accept(this);
+    public void visit(ParenthesedSelect parenthesedSelect) {
+        parenthesedSelect.getSelect().accept(this);
     }
 
     @Override

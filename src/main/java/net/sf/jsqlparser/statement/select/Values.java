@@ -16,7 +16,7 @@ import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class Values extends SelectBody {
+public class Values extends Select {
 
     private ItemsList expressions;
 

@@ -21,7 +21,6 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.select.Values;
@@ -101,25 +100,22 @@ public class Insert implements Statement {
      */
     @Deprecated
     public ItemsList getItemsList() {
-        if (select != null) {
-            SelectBody selectBody = select.getSelectBody();
-            if (selectBody instanceof Values) {
-                Values valuesStatement = (Values) selectBody;
-                if (valuesStatement.getExpressions() instanceof ExpressionList) {
-                    ExpressionList expressionList =
-                            (ExpressionList) valuesStatement.getExpressions();
+        if (select instanceof Values) {
+            Values valuesStatement = (Values) select;
+            if (valuesStatement.getExpressions() instanceof ExpressionList) {
+                ExpressionList expressionList =
+                        (ExpressionList) valuesStatement.getExpressions();
 
-                    if (expressionList.getExpressions().size() == 1
-                            && expressionList.getExpressions().get(0) instanceof RowConstructor) {
-                        RowConstructor rowConstructor =
-                                (RowConstructor) expressionList.getExpressions().get(0);
-                        return rowConstructor.getExprList();
-                    } else {
-                        return expressionList;
-                    }
+                if (expressionList.getExpressions().size() == 1
+                        && expressionList.getExpressions().get(0) instanceof RowConstructor) {
+                    RowConstructor rowConstructor =
+                            (RowConstructor) expressionList.getExpressions().get(0);
+                    return rowConstructor.getExprList();
                 } else {
-                    return valuesStatement.getExpressions();
+                    return expressionList;
                 }
+            } else {
+                return valuesStatement.getExpressions();
             }
         }
         return null;
@@ -128,7 +124,7 @@ public class Insert implements Statement {
 
     @Deprecated
     public boolean isUseValues() {
-        return select != null && select.getSelectBody() instanceof Values;
+        return select != null && select instanceof Values;
     }
 
     public List<SelectItem> getReturningExpressionList() {

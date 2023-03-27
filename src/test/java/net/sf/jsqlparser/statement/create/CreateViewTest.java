@@ -18,7 +18,7 @@ import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.view.AutoRefreshOption;
 import net.sf.jsqlparser.statement.create.view.CreateView;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,7 +41,7 @@ public class CreateViewTest {
         assertFalse(createView.isOrReplace());
         assertEquals("myview", createView.getView().getName());
         assertEquals("mytab",
-                ((Table) ((PlainSelect) createView.getSelect().getSelectBody()).getFromItem())
+                ((Table) ((PlainSelect) createView.getSelect()).getFromItem())
                         .getName());
         assertEquals(statement, createView.toString());
     }
@@ -78,9 +78,9 @@ public class CreateViewTest {
         assertFalse(createView.isOrReplace());
         assertEquals("myview", createView.getView().getName());
 
-        ParenthesedSelectBody parenthesedSelectBody =
-                (ParenthesedSelectBody) createView.getSelect().getSelectBody();
-        PlainSelect plainSelect = (PlainSelect) parenthesedSelectBody.getSelectBody();
+        ParenthesedSelect parenthesedSelect =
+                (ParenthesedSelect) createView.getSelect();
+        PlainSelect plainSelect = (PlainSelect) parenthesedSelect.getSelect();
         Table table = (Table) plainSelect.getFromItem();
         assertEquals("mytab", table.getName());
         assertEquals(statement, createView.toString());

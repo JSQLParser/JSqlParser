@@ -17,9 +17,9 @@ import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
 
@@ -87,8 +87,8 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
 
         if (insert.getSelect() != null) {
             buffer.append(" ");
-            SelectBody selectBody = insert.getSelect().getSelectBody();
-            selectBody.accept(selectVisitor);
+            Select select = insert.getSelect();
+            select.accept(selectVisitor);
         }
 
         if (insert.isUseSet()) {
@@ -164,7 +164,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
     }
 
     @Override
-    public void visit(ParenthesedSelectBody selectBody) {
+    public void visit(ParenthesedSelect selectBody) {
         selectBody.accept(selectVisitor);
     }
 

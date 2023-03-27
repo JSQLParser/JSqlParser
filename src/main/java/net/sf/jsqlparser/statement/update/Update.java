@@ -22,7 +22,6 @@ import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 
@@ -180,9 +179,8 @@ public class Update implements Statement {
     @Deprecated
     public Select getSelect() {
         Select select = null;
-        if (updateSets.get(0).expressions.get(0) instanceof SelectBody) {
-            SelectBody selectBody = (SelectBody) updateSets.get(0).expressions.get(0);
-            select = new Select().withSelectBody(selectBody);
+        if (updateSets.get(0).expressions.get(0) instanceof Select) {
+            select = (Select) updateSets.get(0).expressions.get(0);
         }
 
         return select;
@@ -192,9 +190,9 @@ public class Update implements Statement {
     public void setSelect(Select select) {
         if (select != null) {
             if (updateSets.get(0).expressions.isEmpty()) {
-                updateSets.get(0).expressions.add(select.getSelectBody());
+                updateSets.get(0).expressions.add(select);
             } else {
-                updateSets.get(0).expressions.set(0, select.getSelectBody());
+                updateSets.get(0).expressions.set(0, select);
             }
         }
     }

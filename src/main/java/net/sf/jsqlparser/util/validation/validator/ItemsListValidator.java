@@ -14,7 +14,7 @@ import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 
 /**
  * @author gitmotte
@@ -22,7 +22,7 @@ import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
 public class ItemsListValidator extends AbstractValidator<ItemsList> implements ItemsListVisitor {
 
     @Override
-    public void visit(ParenthesedSelectBody selectBody) {
+    public void visit(ParenthesedSelect selectBody) {
         validateOptionalFromItem(selectBody);
     }
 

@@ -374,12 +374,12 @@ public class TestUtils {
         Statement statement = CCJSqlParserUtil.parse(sql);
         if (statement instanceof Select) {
             Select stmt = (Select) statement;
-            if (stmt.getSelectBody() instanceof PlainSelect) {
-                OracleHint hint = OracleHint.getHintFromSelectBody(stmt.getSelectBody());
+            if (stmt instanceof PlainSelect) {
+                OracleHint hint = OracleHint.getHintFromSelectBody(stmt);
                 assertNotNull(hint);
                 assertEquals(hints[0], hint.getValue());
-            } else if (stmt.getSelectBody() instanceof SetOperationList) {
-                SetOperationList setOperationList = (SetOperationList) stmt.getSelectBody();
+            } else if (stmt instanceof SetOperationList) {
+                SetOperationList setOperationList = (SetOperationList) stmt;
                 for (int i = 0; i < setOperationList.getSelects().size(); i++) {
                     OracleHint hint =
                             OracleHint.getHintFromSelectBody(setOperationList.getSelects().get(i));

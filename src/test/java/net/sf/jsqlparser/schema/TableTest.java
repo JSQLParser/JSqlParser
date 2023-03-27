@@ -15,9 +15,10 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
+import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -27,7 +28,8 @@ public class TableTest {
 
     @Test
     public void tableIndexException() {
-        Table table = new Table().withName("bla").withDatabase(new Database(new Server("server", "instance"), "db"));
+        Table table = new Table().withName("bla")
+                .withDatabase(new Database(new Server("server", "instance"), "db"));
     }
 
     @Test
@@ -41,8 +43,9 @@ public class TableTest {
 
     @Test
     public void tableSetDatabaseIssue812() throws JSQLParserException {
-        String sql = "SELECT * FROM MY_TABLE1 as T1, MY_TABLE2, (SELECT * FROM MY_DB.TABLE3) LEFT OUTER JOIN MY_TABLE4 "
-                + " WHERE ID = (SELECT MAX(ID) FROM MY_TABLE5) AND ID2 IN (SELECT * FROM MY_TABLE6)";
+        String sql =
+                "SELECT * FROM MY_TABLE1 as T1, MY_TABLE2, (SELECT * FROM MY_DB.TABLE3) LEFT OUTER JOIN MY_TABLE4 "
+                        + " WHERE ID = (SELECT MAX(ID) FROM MY_TABLE5) AND ID2 IN (SELECT * FROM MY_TABLE6)";
 
         Select select = (Select) CCJSqlParserUtil.parse(sql);
         StringBuilder buffer = new StringBuilder();
@@ -58,7 +61,7 @@ public class TableTest {
             }
         };
 
-        deparser.visit((PlainSelect) select.getSelectBody());
+        deparser.visit((PlainSelect) select);
 
     }
 

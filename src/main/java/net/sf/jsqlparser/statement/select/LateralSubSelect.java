@@ -14,7 +14,7 @@ package net.sf.jsqlparser.statement.select;
  * 
  * @author tobens
  */
-public class LateralSubSelect extends ParenthesedSelectBody {
+public class LateralSubSelect extends ParenthesedSelect {
     private String prefix;
 
     public LateralSubSelect() {
@@ -38,8 +38,8 @@ public class LateralSubSelect extends ParenthesedSelectBody {
         return this;
     }
 
-    public LateralSubSelect withSelectBody(SelectBody selectBody) {
-        setSelectBody(selectBody);
+    public LateralSubSelect withSelect(Select select) {
+        setSelect(select);
         return this;
     }
 

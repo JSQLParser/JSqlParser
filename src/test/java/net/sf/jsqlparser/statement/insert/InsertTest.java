@@ -72,8 +72,7 @@ public class InsertTest {
         ExpressionList expressionList = new ExpressionList(new JdbcParameter(),
                 new StringValue("sadfsd"), new LongValue().withValue(234));
 
-        Select select =
-                new Select().withSelectBody(new Values().withExpressions(expressionList));
+        Select select = new Values().withExpressions(expressionList);
 
         Insert insert2 = new Insert().withTable(new Table("mytable"))
                 .withColumns(
@@ -121,7 +120,7 @@ public class InsertTest {
         assertNull(insert.getItemsList());
         assertNotNull(insert.getSelect());
         assertEquals("mytable2",
-                ((Table) ((PlainSelect) insert.getSelect().getSelectBody()).getFromItem())
+                ((Table) ((PlainSelect) insert.getSelect()).getFromItem())
                         .getName());
 
         // toString uses brackets
@@ -130,8 +129,8 @@ public class InsertTest {
 
         assertDeparse(new Insert().withTable(new Table("mytable"))
                 .addColumns(new Column("col1"), new Column("col2"), new Column("col3"))
-                .withSelect(new Select().withSelectBody(new PlainSelect()
-                        .addSelectItems(new AllColumns()).withFromItem(new Table("mytable2")))),
+                .withSelect(new PlainSelect()
+                        .addSelectItems(new AllColumns()).withFromItem(new Table("mytable2"))),
                 statement);
     }
 
@@ -204,8 +203,7 @@ public class InsertTest {
                 .addExpressionLists(new ExpressionList().addExpressions(new Column("d"))
                         .addExpressions(new Column("e")));
 
-        Select select = new Select()
-                .withSelectBody(new Values().withExpressions(multiExpressionList));
+        Select select = new Values().withExpressions(multiExpressionList);
 
         Insert insert = new Insert().withTable(new Table("mytable"))
                 .withColumns(Arrays.asList(new Column("col1"), new Column("col2")))

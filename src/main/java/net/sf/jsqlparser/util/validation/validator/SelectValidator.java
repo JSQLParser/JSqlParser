@@ -25,7 +25,7 @@ import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.MinusOp;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
@@ -149,12 +149,12 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     }
 
     @Override
-    public void visit(ParenthesedSelectBody selectBody) {
+    public void visit(ParenthesedSelect selectBody) {
         if (isNotEmpty(selectBody.getWithItemsList())) {
             selectBody.getWithItemsList()
                     .forEach(withItem -> withItem.accept((SelectVisitor) this));
         }
-        selectBody.getSelectBody().accept(this);
+        selectBody.getSelect().accept(this);
         validateOptional(selectBody.getPivot(), p -> p.accept(this));
     }
 
@@ -304,7 +304,7 @@ public class SelectValidator extends AbstractValidator<SelectItem>
         if (isNotEmpty(withItem.getWithItemList())) {
             withItem.getWithItemList().forEach(wi -> wi.accept(this));
         }
-        withItem.getSelectBody().accept(this);
+        withItem.getSelect().accept(this);
     }
 
     @Override
@@ -317,7 +317,7 @@ public class SelectValidator extends AbstractValidator<SelectItem>
         validateFeature(Feature.lateralSubSelect);
         validateOptional(lateralSubSelect.getPivot(), p -> p.accept(this));
         validateOptional(lateralSubSelect.getUnPivot(), up -> up.accept(this));
-        validateOptional(lateralSubSelect.getSelectBody(), e -> e.accept(this));
+        validateOptional(lateralSubSelect.getSelect(), e -> e.accept(this));
     }
 
     @Override

@@ -15,9 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class SetOperationList extends SelectBody {
+public class SetOperationList extends Select {
 
-    private List<SelectBody> selects;
+    private List<Select> selects;
     private List<SetOperation> operations;
     private List<OrderByElement> orderByElements;
 
@@ -30,11 +30,11 @@ public class SetOperationList extends SelectBody {
         return orderByElements;
     }
 
-    public List<SelectBody> getSelects() {
+    public List<Select> getSelects() {
         return selects;
     }
 
-    public void setSelects(List<SelectBody> selects) {
+    public void setSelects(List<Select> selects) {
         this.selects = selects;
     }
 
@@ -52,7 +52,7 @@ public class SetOperationList extends SelectBody {
         this.orderByElements = orderByElements;
     }
 
-    public void setBracketsOpsAndSelects(List<SelectBody> select, List<SetOperation> ops) {
+    public void setBracketsOpsAndSelects(List<Select> select, List<SetOperation> ops) {
         selects = select;
         operations = ops;
     }
@@ -77,19 +77,19 @@ public class SetOperationList extends SelectBody {
         return this;
     }
 
-    public SetOperationList withSelects(List<SelectBody> selects) {
+    public SetOperationList withSelects(List<Select> selects) {
         setSelects(selects);
         return this;
     }
 
-    public SetOperationList addSelects(SelectBody... selects) {
-        List<SelectBody> collection = Optional.ofNullable(getSelects()).orElseGet(ArrayList::new);
+    public SetOperationList addSelects(Select... selects) {
+        List<Select> collection = Optional.ofNullable(getSelects()).orElseGet(ArrayList::new);
         Collections.addAll(collection, selects);
         return this.withSelects(collection);
     }
 
-    public SetOperationList addSelects(Collection<? extends SelectBody> selects) {
-        List<SelectBody> collection = Optional.ofNullable(getSelects()).orElseGet(ArrayList::new);
+    public SetOperationList addSelects(Collection<? extends Select> selects) {
+        List<Select> collection = Optional.ofNullable(getSelects()).orElseGet(ArrayList::new);
         collection.addAll(selects);
         return this.withSelects(collection);
     }

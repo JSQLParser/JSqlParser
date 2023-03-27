@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class WithItem extends ParenthesedSelectBody {
+public class WithItem extends ParenthesedSelect {
 
     private List<SelectItem> withItemList;
 
@@ -53,7 +53,7 @@ public class WithItem extends ParenthesedSelectBody {
                         : "");
         builder.append(" AS ");
 
-        selectBody.appendTo(builder);
+        select.appendTo(builder);
 
         return builder;
     }

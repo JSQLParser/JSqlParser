@@ -34,7 +34,7 @@ import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.OptimizeFor;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
@@ -76,7 +76,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
     @Override
-    public void visit(ParenthesedSelectBody selectBody) {
+    public void visit(ParenthesedSelect selectBody) {
         List<WithItem> withItemsList = selectBody.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             buffer.append("WITH ");
@@ -87,7 +87,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
 
         buffer.append("(");
-        selectBody.getSelectBody().accept((SelectVisitor) this);
+        selectBody.getSelect().accept((SelectVisitor) this);
         buffer.append(")");
 
         if (selectBody.getOrderByElements() != null) {
@@ -534,13 +534,13 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
                     .append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
         }
         buffer.append(" AS ");
-        withItem.getSelectBody().accept(this);
+        withItem.getSelect().accept(this);
     }
 
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
         buffer.append(lateralSubSelect.getPrefix());
-        visit((ParenthesedSelectBody) lateralSubSelect);
+        visit((ParenthesedSelect) lateralSubSelect);
     }
 
     @Override

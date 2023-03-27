@@ -10,9 +10,9 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.Select;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -88,12 +88,12 @@ public class OracleHint extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
-    public static OracleHint getHintFromSelectBody(SelectBody selectBody) {
+    public static OracleHint getHintFromSelectBody(Select selectBody) {
 
         if (selectBody instanceof PlainSelect) {
             return ((PlainSelect) selectBody).getOracleHint();
-        } else if (selectBody instanceof ParenthesedSelectBody) {
-            return getHintFromSelectBody(((ParenthesedSelectBody) selectBody).getSelectBody());
+        } else if (selectBody instanceof ParenthesedSelect) {
+            return getHintFromSelectBody(((ParenthesedSelect) selectBody).getSelect());
         } else {
             return null;
         }

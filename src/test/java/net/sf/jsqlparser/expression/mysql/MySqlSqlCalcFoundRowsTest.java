@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.expression.mysql;
 
-import java.util.Arrays;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
@@ -19,12 +18,15 @@ import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertEqualsObjectTree;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
 
 /**
  * @author sam
@@ -45,8 +47,8 @@ public class MySqlSqlCalcFoundRowsTest {
 
         Statement parsed = assertSqlCanBeParsedAndDeparsed(sqlCalcFoundRowsContainingSql);
         assertSqlCanBeParsedAndDeparsed(generalSql);
-        Select created = new Select().withSelectBody(new PlainSelect().addSelectItems(Arrays.asList(new AllColumns()))
-                .withMySqlSqlCalcFoundRows(true).withFromItem(new Table("TABLE")));
+        Select created = new PlainSelect().addSelectItems(Arrays.asList(new AllColumns()))
+                .withMySqlSqlCalcFoundRows(true).withFromItem(new Table("TABLE"));
         assertDeparse(created, sqlCalcFoundRowsContainingSql);
         assertEqualsObjectTree(parsed, created);
     }
@@ -55,7 +57,7 @@ public class MySqlSqlCalcFoundRowsTest {
         statement.accept(new StatementVisitorAdapter() {
             @Override
             public void visit(Select select) {
-                select.getSelectBody().accept(new SelectVisitorAdapter() {
+                select.accept(new SelectVisitorAdapter() {
                     @Override
                     public void visit(PlainSelect plainSelect) {
                         ref.sqlCalcFoundRows = plainSelect.getMySqlSqlCalcFoundRows();
@@ -66,6 +68,7 @@ public class MySqlSqlCalcFoundRowsTest {
         });
     }
 }
+
 
 class MySqlSqlCalcFoundRowRef {
 

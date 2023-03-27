@@ -53,8 +53,8 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
-import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
@@ -271,7 +271,7 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
-    public void visit(ParenthesedSelectBody selectBody) {
+    public void visit(ParenthesedSelect selectBody) {
         validateOptionalFromItem(selectBody);
     }
 
@@ -615,7 +615,7 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
-    public void visit(SelectBody selectBody) {
+    public void visit(Select selectBody) {
 
     }
 }

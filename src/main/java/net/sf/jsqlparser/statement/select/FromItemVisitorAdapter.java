@@ -20,7 +20,7 @@ public class FromItemVisitorAdapter implements FromItemVisitor {
     }
 
     @Override
-    public void visit(ParenthesedSelectBody selectBody) {
+    public void visit(ParenthesedSelect selectBody) {
 
     }
 

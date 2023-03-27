@@ -9,13 +9,13 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class ItemsListVisitorAdapter implements ItemsListVisitor {
 
     @Override
-    public void visit(ParenthesedSelectBody subSelect) {
+    public void visit(ParenthesedSelect subSelect) {
 
     }
 

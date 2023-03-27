@@ -149,10 +149,9 @@ import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
@@ -195,7 +194,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(Select select) {
-        select.getSelectBody().accept((SelectVisitor) this);
+        List<WithItem> withItemsList = select.getWithItemsList();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            for (WithItem withItem : withItemsList) {
+                withItem.accept((SelectVisitor) this);
+            }
+        }
+        select.accept((SelectVisitor) this);
     }
 
     /**
@@ -210,18 +215,18 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(WithItem withItem) {
         otherItemNames.add(withItem.getAlias().getName().toLowerCase());
-        withItem.getSelectBody().accept((SelectVisitor) this);
+        withItem.getSelect().accept((SelectVisitor) this);
     }
 
     @Override
-    public void visit(ParenthesedSelectBody selectBody) {
+    public void visit(ParenthesedSelect selectBody) {
         List<WithItem> withItemsList = selectBody.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             for (WithItem withItem : withItemsList) {
                 withItem.accept((SelectVisitor) this);
             }
         }
-        selectBody.getSelectBody().accept((SelectVisitor) this);
+        selectBody.getSelect().accept((SelectVisitor) this);
     }
 
     @Override
@@ -538,7 +543,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(AnyComparisonExpression anyComparisonExpression) {
-        anyComparisonExpression.getSubSelect().getSelectBody().accept((SelectVisitor) this);
+        anyComparisonExpression.getSubSelect().getSelect().accept((SelectVisitor) this);
     }
 
     @Override
@@ -599,7 +604,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
                 withItem.accept((SelectVisitor) this);
             }
         }
-        for (SelectBody selectBody : list.getSelects()) {
+        for (Select selectBody : list.getSelects()) {
             selectBody.accept((SelectVisitor) this);
         }
     }
@@ -611,7 +616,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
-        lateralSubSelect.getSelectBody().accept((SelectVisitor) this);
+        lateralSubSelect.getSelect().accept((SelectVisitor) this);
     }
 
     @Override
@@ -829,7 +834,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(CreateTable create) {
         visit(create.getTable());
         if (create.getSelect() != null) {
-            create.getSelect().accept(this);
+            create.getSelect().accept((SelectVisitor) this);
         }
     }
 
@@ -982,7 +987,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(ExplainStatement explain) {
-        explain.getStatement().accept(this);
+        explain.getStatement().accept((StatementVisitor) this);
     }
 
     @Override
@@ -1166,14 +1171,4 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         visitBinaryExpression(geometryDistance);
     }
 
-    @Override
-    public void visit(SelectBody selectBody) {
-        List<WithItem> withItemsList = selectBody.getWithItemsList();
-        if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem withItem : withItemsList) {
-                withItem.accept((SelectVisitor) this);
-            }
-        }
-        selectBody.accept((SelectVisitor) this);
-    }
 }

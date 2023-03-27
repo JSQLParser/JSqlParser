@@ -55,11 +55,11 @@ import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.ExpressionListItem;
 import net.sf.jsqlparser.statement.select.FunctionItem;
 import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
-import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -273,7 +273,7 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(ParenthesedSelectBody selectBody) {
+    public void visit(ParenthesedSelect selectBody) {
         if (selectVisitor != null) {
             if (selectBody.getWithItemsList() != null) {
                 for (WithItem item : selectBody.getWithItemsList()) {
@@ -680,7 +680,7 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(SelectBody selectBody) {
+    public void visit(Select selectBody) {
 
     }
 

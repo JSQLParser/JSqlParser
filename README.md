@@ -19,22 +19,20 @@ SELECT 1 FROM dual WHERE a = b
 
 ```text
  SQL Text
-  └─Statements: net.sf.jsqlparser.statement.select.Select
-     └─selectBody: net.sf.jsqlparser.statement.select.PlainSelect
-        ├─selectItems -> Collection<SelectExpressionItem>
-        │  └─selectItems: net.sf.jsqlparser.statement.select.SelectExpressionItem
-        │     └─LongValue: 1
-        ├─Table: dual
-        └─where: net.sf.jsqlparser.expression.operators.relational.EqualsTo
-           ├─Column: a
-           └─Column: b
+  └─Statements: net.sf.jsqlparser.statement.select.PlainSelect
+      ├─selectItems -> Collection<SelectExpressionItem>
+      │  └─selectItems: net.sf.jsqlparser.statement.select.SelectExpressionItem
+      │     └─LongValue: 1
+      ├─Table: dual
+      └─where: net.sf.jsqlparser.expression.operators.relational.EqualsTo
+         ├─Column: a
+         └─Column: b
 ```
 
 ```java
 Statement statement = CCJSqlParserUtil.parse(sqlStr);
-if (statement instanceof Select) {
-    Select select = (Select) statement;
-    PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+if (statement instanceof PlainSelect) {
+    PlainSelect plainSelect = (PlainSelect) statement;
 
     SelectExpressionItem selectExpressionItem =
             (SelectExpressionItem) plainSelect.getSelectItems().get(0);

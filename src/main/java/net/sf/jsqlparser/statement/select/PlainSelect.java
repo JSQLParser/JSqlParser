@@ -25,7 +25,7 @@ import java.util.Optional;
 import static java.util.stream.Collectors.joining;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
-public class PlainSelect extends SelectBody {
+public class PlainSelect extends Select {
 
     private Distinct distinct = null;
     private List<SelectItem> selectItems;

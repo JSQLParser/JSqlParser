@@ -109,9 +109,9 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.ParenthesedSelectBody;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
 
@@ -433,7 +433,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public void visit(SelectBody selectBody) {
+    public void visit(Select selectBody) {
         if (selectVisitor != null) {
             if (selectBody.getWithItemsList() != null) {
                 buffer.append("WITH ");
@@ -525,8 +525,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public void visit(ParenthesedSelectBody selectBody) {
-        selectBody.getSelectBody().accept(this);
+    public void visit(ParenthesedSelect selectBody) {
+        selectBody.getSelect().accept(this);
     }
 
     @Override
@@ -610,7 +610,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(AnyComparisonExpression anyComparisonExpression) {
         buffer.append(anyComparisonExpression.getAnyType().name()).append(" ( ");
-        ParenthesedSelectBody subSelect = anyComparisonExpression.getSubSelect();
+        ParenthesedSelect subSelect = anyComparisonExpression.getSubSelect();
         if (subSelect != null) {
             subSelect.accept((ExpressionVisitor) this);
         } else {

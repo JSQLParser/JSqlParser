@@ -52,7 +52,6 @@ import net.sf.jsqlparser.statement.merge.MergeInsert;
 import net.sf.jsqlparser.statement.merge.MergeUpdate;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
@@ -149,7 +148,7 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         expressionDeParser.setSelectVisitor(selectDeParser);
         expressionDeParser.setBuffer(buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
-        select.getSelectBody().accept(selectDeParser);
+        select.accept(selectDeParser);
     }
 
     @Override
@@ -434,14 +433,5 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     @Override
     public void visit(UnsupportedStatement unsupportedStatement) {
         unsupportedStatement.appendTo(buffer);
-    }
-
-    @Override
-    public void visit(SelectBody selectBody) {
-        selectDeParser.setBuffer(buffer);
-        expressionDeParser.setSelectVisitor(selectDeParser);
-        expressionDeParser.setBuffer(buffer);
-        selectDeParser.setExpressionVisitor(expressionDeParser);
-        selectBody.accept(selectDeParser);
     }
 }

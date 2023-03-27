@@ -1237,7 +1237,7 @@ Update Update( List<WithItem> with ):
 
     UpdateSet updateSet = null;
     Column tableColumn = null;
-    ParenthesedSelectBody subSelect;
+    ParenthesedSelect subSelect;
     Expression valueExpression = null;
     ExpressionList expressionList;
     Expression where = null;
@@ -1274,7 +1274,7 @@ Update Update( List<WithItem> with ):
             "="
 
             (
-                LOOKAHEAD(3) subSelect=ParenthesedSelectBody() { updateSet.add(subSelect); }
+                LOOKAHEAD(3) subSelect=ParenthesedSelect() { updateSet.add(subSelect); }
                 |
                 LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
                 |
@@ -1292,7 +1292,7 @@ Update Update( List<WithItem> with ):
                 "="
 
                 (
-                    LOOKAHEAD(3) subSelect=ParenthesedSelectBody() { updateSet.add(subSelect); }
+                    LOOKAHEAD(3) subSelect=ParenthesedSelect() { updateSet.add(subSelect); }
                     |
                     LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
                     |
@@ -1464,7 +1464,7 @@ InsertConflictAction InsertConflictAction():
     Expression whereExpression = null;
 
     Column tableColumn = null;
-    ParenthesedSelectBody subSelect;
+    ParenthesedSelect subSelect;
     Expression valueExpression = null;
     ExpressionList expressionList;
 }
@@ -1506,7 +1506,7 @@ InsertConflictAction InsertConflictAction():
                     "="
 
                     (
-                        LOOKAHEAD(3) subSelect=ParenthesedSelectBody() { updateSet.add(subSelect); }
+                        LOOKAHEAD(3) subSelect=ParenthesedSelect() { updateSet.add(subSelect); }
                         |
                         LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
                         |
@@ -1524,7 +1524,7 @@ InsertConflictAction InsertConflictAction():
                         "="
 
                         (
-                            LOOKAHEAD(3) subSelect=ParenthesedSelectBody() { updateSet.add(subSelect); }
+                            LOOKAHEAD(3) subSelect=ParenthesedSelect() { updateSet.add(subSelect); }
                             |
                             LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
                             |
@@ -1911,31 +1911,18 @@ Table TableWithAlias():
 
 Select SelectWithWithItems( List<WithItem> withItems):
 {
-    Select select = new Select();
-    SelectBody selectBody;
+    Select select;
 }
 {
-    selectBody = SelectBody() { selectBody.setWithItemsList( withItems ); }
+    select = Select() { select.setWithItemsList( withItems ); }
     {
-        return select.withSelectBody( selectBody );
+        return select;
     }
 }
 
-Select Select():
+Select Select() #Select:
 {
-    Select select = new Select();
-    SelectBody selectBody;
-}
-{
-    selectBody = SelectBody()
-    {
-        return select.withSelectBody(selectBody);
-    }
-}
-
-SelectBody SelectBody()#SelectBody:
-{
-    SelectBody selectBody = null;
+    Select select = null;
     List<WithItem> with = null;
     List<OrderByElement> orderByElements = null;
     Limit limit = null;
@@ -1947,40 +1934,40 @@ SelectBody SelectBody()#SelectBody:
     (
         [ with=WithList() ]
         (
-            LOOKAHEAD(3) selectBody = PlainSelect()
+            LOOKAHEAD(3) select = PlainSelect()
             |
-            LOOKAHEAD(3) selectBody = Values()
+            LOOKAHEAD(3) select = Values()
             |
-            LOOKAHEAD(3) selectBody = ParenthesedSelectBody()
+            LOOKAHEAD(3) select = ParenthesedSelect()
         )
-        [ selectBody = SetOperationList(selectBody) ]
+        [ select = SetOperationList(select) ]
 
-        [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { selectBody.setOrderByElements(orderByElements); } ]
+        [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { select.setOrderByElements(orderByElements); } ]
 
-        [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {selectBody.setLimit(limit);} ]
-        [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { selectBody.setOffset(offset);} ]
-        [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { selectBody.setFetch(fetch);} ]
-        [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { selectBody.setIsolation(withIsolation);} ]
+        [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {select.setLimit(limit);} ]
+        [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { select.setOffset(offset);} ]
+        [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { select.setFetch(fetch);} ]
+        [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { select.setIsolation(withIsolation);} ]
     )
 
     {
-        linkAST(selectBody, jjtThis);
-        return selectBody.withWithItemsList(with);
+        linkAST(select, jjtThis);
+        return select.withWithItemsList(with);
     }
 }
 
-ParenthesedSelectBody ParenthesedSelectBody() #ParenthesedSelectBody:
+ParenthesedSelect ParenthesedSelect() #ParenthesedSelect:
 {
-    ParenthesedSelectBody parenthesedSelectBody = new ParenthesedSelectBody();
-    SelectBody selectBody;
+    ParenthesedSelect parenthesedSelect = new ParenthesedSelect();
+    Select select;
 }
 {
     "("
-    selectBody = SelectBody()
+    select = Select()
     ")"
     {
-        linkAST(parenthesedSelectBody,jjtThis);
-        return parenthesedSelectBody.withSelectBody(selectBody);
+        linkAST(parenthesedSelect,jjtThis);
+        return parenthesedSelect.withSelect(select);
     }
 }
 
@@ -1988,10 +1975,10 @@ ParenthesedSelectBody ParenthesedSelectBody() #ParenthesedSelectBody:
 LateralSubSelect LateralSubSelect() #LateralSubSelect:
 {
     LateralSubSelect lateralSubSelect = new LateralSubSelect();;
-    SelectBody selectBody;
+    Select select;
 }
 {
-    <K_LATERAL> "(" selectBody = SelectBody()  ")" { lateralSubSelect.withSelectBody(selectBody).setPrefix("LATERAL"); }
+    <K_LATERAL> "(" select = Select()  ")" { lateralSubSelect.withSelect(select).setPrefix("LATERAL"); }
     {
         linkAST(lateralSubSelect,jjtThis);
         return lateralSubSelect;
@@ -2106,15 +2093,15 @@ PlainSelect PlainSelect() #PlainSelect:
     }
 }
 
-SelectBody SetOperationList(SelectBody select) #SetOperationList: {
+Select SetOperationList(Select select) #SetOperationList: {
     SetOperationList list = new SetOperationList();
     List<OrderByElement> orderByElements = null;
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
     WithIsolation withIsolation = null;
-    //SelectBody select = null;
-    List<SelectBody> selects = new ArrayList<SelectBody>();
+    //Select select = null;
+    List<Select> selects = new ArrayList<Select>();
     List<SetOperation> operations = new ArrayList<SetOperation>();
 }
 {
@@ -2141,7 +2128,7 @@ SelectBody SetOperationList(SelectBody select) #SetOperationList: {
             |
             select = Values()
             |
-            select = ParenthesedSelectBody()
+            select = ParenthesedSelect()
         )
         {
             selects.add(select);
@@ -2196,13 +2183,13 @@ WithItem WithItem() #WithItem:
     WithItem withItem = new WithItem();
     String name;
     List<SelectItem> selectItems;
-    SelectBody selectBody;
+    Select select;
 }
 {
      [ <K_RECURSIVE>  { withItem.setRecursive(true); }   ]
      name=RelObjectName()  { withItem.setAlias( new Alias( name, false)); }
      [ "(" selectItems=SelectItemsList() ")" { withItem.setWithItemList(selectItems); } ]
-     <K_AS> selectBody = ParenthesedSelectBody()  { withItem.setSelectBody(selectBody); }
+     <K_AS> select = ParenthesedSelect()  { withItem.setSelect(select); }
      {
         return withItem;
      }
@@ -2454,7 +2441,7 @@ PivotXml PivotXml():
     List<Column> forColumns;
     List<SelectExpressionItem> singleInItems = null;
     List<ExpressionListItem> multiInItems = null;
-    SelectBody inSelect = null;
+    Select inSelect = null;
 }
 {
     <K_PIVOT> <K_XML> "(" functionItems = PivotFunctionItems() <K_FOR>
@@ -2462,7 +2449,7 @@ PivotXml PivotXml():
     <K_IN> "("
     (
         LOOKAHEAD(2) <K_ANY> { retval.setInAny(true); } |
-        LOOKAHEAD(1) inSelect = SelectBody() |
+        LOOKAHEAD(1) inSelect = Select() |
         LOOKAHEAD(2) singleInItems = PivotSingleInItems() |
         multiInItems = PivotMultiInItems()
     )
@@ -2544,7 +2531,7 @@ FromItem FromItem():
     Alias alias = null;
     MySQLIndexHint indexHint = null;
     SQLServerHints sqlServerHints = null;
-    SelectBody selectBody;
+    Select select;
 }
 {
     (
@@ -2557,7 +2544,7 @@ FromItem FromItem():
             LOOKAHEAD( ParenthesedFromItem() ) fromItem = ParenthesedFromItem()
             |
             LOOKAHEAD(3) (
-                fromItem=ParenthesedSelectBody()
+                fromItem=ParenthesedSelect()
                 [ LOOKAHEAD(2) pivot=Pivot() { fromItem.setPivot(pivot); } ]
                 [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
             )
@@ -2936,7 +2923,7 @@ Limit PlainLimit() #PlainLimit:
     <K_LIMIT>
      (
         (
-            LOOKAHEAD(3) "(" rowCountExpression = ParenthesedSelectBody() ")"
+            LOOKAHEAD(3) "(" rowCountExpression = ParenthesedSelect() ")"
             |
             rowCountExpression = Expression()
         ) { limit.setRowCount(rowCountExpression); }
@@ -3332,7 +3319,7 @@ Expression InExpression() #InExpression :
       LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  result.setRightExpression(new StringValue(token.image)); }
       | LOOKAHEAD(3) rightExpression = Function() {  result.setRightExpression(rightExpression); }
       | LOOKAHEAD( "(" ComplexExpressionList() ")" ) "(" rightItemsList=ComplexExpressionList() { result.setRightItemsList(rightItemsList.withBrackets(true) ); } ")"
-      | LOOKAHEAD(3) rightExpression = ParenthesedSelectBody() {  result.setRightExpression( rightExpression ); }
+      | LOOKAHEAD(3) rightExpression = ParenthesedSelect() {  result.setRightExpression( rightExpression ); }
       | LOOKAHEAD(2) rightExpression = SimpleExpression() {  result.setRightExpression(rightExpression); }
     )
     {
@@ -3612,7 +3599,7 @@ Expression AnyComparisonExpression() :
 {
     AnyComparisonExpression anyComparisonExpr = null;
     AnyType anyType;
-    ParenthesedSelectBody subSelect;
+    ParenthesedSelect subSelect;
     ItemsList simpleExpressionList;
 }
 {
@@ -3626,8 +3613,8 @@ Expression AnyComparisonExpression() :
             <K_VALUES>
             simpleExpressionList = SimpleExpressionList(false) { anyComparisonExpr=new AnyComparisonExpression(anyType, simpleExpressionList).withUseBracketsForValues(false); }
         )
-         // Otherwise parse it as a ParenthesedSelectBody
-        | subSelect = ParenthesedSelectBody() { anyComparisonExpr=new AnyComparisonExpression(anyType, subSelect).withUseBracketsForValues(false); }
+         // Otherwise parse it as a ParenthesedSelect
+        | subSelect = ParenthesedSelect() { anyComparisonExpr=new AnyComparisonExpression(anyType, subSelect).withUseBracketsForValues(false); }
             
     )
     ")"
@@ -3907,7 +3894,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
-        | LOOKAHEAD( ParenthesedSelectBody() , {!interrupted} ) retval=ParenthesedSelectBody()
+        | LOOKAHEAD( ParenthesedSelect() , {!interrupted} ) retval=ParenthesedSelect()
 
         | (
              "(" ( LOOKAHEAD( { getAsBoolean(Feature.allowComplexParsing) && !interrupted } ) list = ComplexExpressionList() |  list = SimpleExpressionList(true) ) ")"
@@ -4090,7 +4077,7 @@ JsonExpression JsonExpression() : {
         |
         token=<S_CHAR_LITERAL> { expr = new StringValue(token.image); }
         |
-        LOOKAHEAD( {!interrupted} ) "(" expr=ParenthesedSelectBody() ")"
+        LOOKAHEAD( {!interrupted} ) "(" expr=ParenthesedSelect() ")"
     )
 
     ( "::" type=ColDataType() {
@@ -4780,7 +4767,7 @@ Function InternalFunction(Function retval) :
     ExpressionList expressionList = null;
     NamedExpressionList namedExpressionList = null;
     KeepExpression keep = null;
-    SelectBody expr = null;
+    Select expr = null;
     Token tk1 = null;
     Token tk2 = null;
     Expression attributeExpression = null;
@@ -4801,7 +4788,7 @@ Function InternalFunction(Function retval) :
             |
             LOOKAHEAD(3) (expressionList=SimpleExpressionList(false) [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
-            expr = SelectBody() { expressionList = new ExpressionList(expr).withUsingBrackets(false); }
+            expr = Select() { expressionList = new ExpressionList(expr).withUsingBrackets(false); }
 
         )]
         [  <K_IGNORE> <K_NULLS> {retval.setIgnoreNulls(true); }]
@@ -5438,7 +5425,7 @@ AlterView AlterView():
 {
     AlterView alterView = new AlterView();
     Table view = null;
-    SelectBody select = null;
+    Select select = null;
     List<String> columnNames = null;
 }
 {
@@ -5446,7 +5433,7 @@ AlterView AlterView():
     <K_VIEW> view=Table() { alterView.setView(view); }
     [ columnNames = ColumnsNamesList() { alterView.setColumnNames(columnNames); } ]
     <K_AS>
-    select=SelectBody() { alterView.setSelectBody(select); }
+    select=Select() { alterView.setSelect(select); }
     { return alterView; }
 }
 
