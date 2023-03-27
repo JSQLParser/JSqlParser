@@ -30,6 +30,7 @@ public class TableTest {
     public void tableIndexException() {
         Table table = new Table().withName("bla")
                 .withDatabase(new Database(new Server("server", "instance"), "db"));
+        assertEquals("[server\\instance].db..bla", table.toString());
     }
 
     @Test

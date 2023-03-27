@@ -22,7 +22,6 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class SpeedTest {
@@ -86,7 +85,7 @@ public class SpeedTest {
         }
         in.close();
 
-        String statement = "";
+        String statement;
         int numTests = 0;
         // it seems that the very first parsing takes a while, so I put it aside
         Statement parsedStm =
@@ -98,9 +97,8 @@ public class SpeedTest {
         // measure the time to parse NUM_REPS times all statements in the 2 files
         for (int i = 0; i < NUM_REPS_500; i++) {
             try {
-                Iterator<String> iter = statementsList.iterator();
-                while (iter.hasNext()) {
-                    statement = iter.next();
+                for (String s : statementsList) {
+                    statement = s;
                     parsedStm = parserManager.parse(new StringReader(statement));
                     numTests++;
                     if (parsedStm instanceof Select) {
@@ -113,7 +111,7 @@ public class SpeedTest {
             }
         }
         long elapsedTime = System.currentTimeMillis() - time;
-        long statementsPerSecond = numTests * 1000 / elapsedTime;
+        long statementsPerSecond = numTests * 1000L / elapsedTime;
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(7);
         df.setMinimumFractionDigits(4);
@@ -124,16 +122,14 @@ public class SpeedTest {
         numTests = 0;
         time = System.currentTimeMillis();
         // measure the time to get the tables names from all the SELECTs parsed before
-        Iterator<Select> iter = parsedSelects.iterator();
-        while (iter.hasNext()) {
-            Select select = iter.next();
-            if (select != null) {
+        for (Select select : parsedSelects) {
+            if (select!=null) {
                 numTests++;
-                List<String> tableListRetr = tablesNamesFinder.getTableList((Statement) select);
+                tablesNamesFinder.getTableList((Statement) select);
             }
         }
         elapsedTime = System.currentTimeMillis() - time;
-        statementsPerSecond = numTests * 1000 / elapsedTime;
+        statementsPerSecond = numTests * 1000L / elapsedTime;
         System.out.println(numTests + " select scans for table name executed in " + elapsedTime
                 + " milliseconds");
         System.out.println(" (" + statementsPerSecond + " select scans for table name per second,  "
