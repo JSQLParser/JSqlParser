@@ -20,7 +20,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.*;
@@ -3494,7 +3493,7 @@ public class SelectTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testWhereIssue240_notBoolean() {
         Assertions.assertThrows(JSQLParserException.class, new Executable() {
             @Override
