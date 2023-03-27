@@ -56,7 +56,7 @@ import java.util.List;
 
 import static java.util.stream.Collectors.joining;
 
-@SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPath"})
+@SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
 public class SelectDeParser extends AbstractDeParser<PlainSelect> implements SelectVisitor,
         SelectItemVisitor, FromItemVisitor, PivotVisitor, ItemsListVisitor {
 

@@ -1326,17 +1326,6 @@ Update Update( List<WithItem> with ):
     }
 }
 
-List<SelectExpressionItem> ListExpressionItem():
-{
-   List<SelectExpressionItem> retval = new ArrayList<SelectExpressionItem>();
-   SelectExpressionItem item;
-}
-{
-   item = SelectExpressionItem() {retval.add(item);}
-   (<K_COMMA> item = SelectExpressionItem() {retval.add(item);} )*
-   { return retval; }
-}
-
 Insert Insert( List<WithItem> with ):
 {
     Insert insert = new Insert();
@@ -3352,35 +3341,6 @@ Expression InExpression() #InExpression :
     }
 }
 
-MultiExpressionList MultiInExpressions():
-{
-   MultiExpressionList multiExpressionList = null;
-   ExpressionList expressionList = null;
-}
-{
-  "(" "("
-   expressionList=SimpleExpressionList(true) {
-       if(multiExpressionList == null) {
-         multiExpressionList = new MultiExpressionList();
-       }
-       multiExpressionList.addExpressionList(expressionList);
-   }
-   // potentially additional expression lists
-   ( LOOKAHEAD(3)
-     ")" "," "(" expressionList=SimpleExpressionList(true)
-     {
-       if(multiExpressionList == null) {
-          multiExpressionList = new MultiExpressionList();
-       }
-       multiExpressionList.addExpressionList(expressionList);
-     }
-   )*
-   ")" ")"
-  {
-    return multiExpressionList;
-  }
-}
-
 Expression Between(Expression leftExpression) :
 {
     Between result = new Between();
@@ -3495,20 +3455,6 @@ Expression ExistsExpression():
     {
         result.setRightExpression(rightExpression);
         return result;
-    }
-}
-
-ExpressionList SQLExpressionList():
-{
-    ExpressionList retval = new ExpressionList();
-    List<Expression> expressions = new ArrayList<Expression>();
-    Expression expr = null;
-}
-{
-    expr=Expression() { expressions.add(expr); } ("," expr=Expression() { expressions.add(expr); })*
-    {
-        retval.setExpressions(expressions);
-        return retval;
     }
 }
 
