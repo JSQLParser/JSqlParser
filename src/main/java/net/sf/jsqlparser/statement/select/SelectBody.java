@@ -12,6 +12,8 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.StatementVisitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class SelectBody extends ASTNodeAccessImpl implements Expression {
+public abstract class SelectBody extends ASTNodeAccessImpl implements Statement, Expression {
     List<WithItem> withItemsList;
     Limit limit;
     Offset offset;
@@ -268,6 +270,10 @@ public abstract class SelectBody extends ASTNodeAccessImpl implements Expression
     }
 
     public abstract void accept(SelectVisitor selectVisitor);
+
+    public void accept(StatementVisitor statementVisitor) {
+        statementVisitor.visit(this);
+    }
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {

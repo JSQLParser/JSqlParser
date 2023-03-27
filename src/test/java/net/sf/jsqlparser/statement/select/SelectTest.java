@@ -5595,9 +5595,12 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
 
-        sqlStr = "SELECT z\n" + "FROM (\n" + "         (SELECT z)\n" + "         UNION ALL\n"
-                + "         (SELECT z)\n" + "         ORDER BY z\n" + "     )\n" +
-                // "GROUP BY z\n" +
+        sqlStr = "SELECT z\n" + "FROM (\n"
+                + "         (SELECT z)\n"
+                + "         UNION ALL\n"
+                + "         (SELECT z)\n"
+                + "         ORDER BY z\n" + "     )\n"
+                + // "GROUP BY z\n" +
                 "ORDER BY z\n";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 

@@ -19,8 +19,6 @@ public interface FromItemVisitor {
 
     void visit(LateralSubSelect lateralSubSelect);
 
-    void visit(ValuesList valuesList);
-
     void visit(TableFunction tableFunction);
 
     void visit(ParenthesedFromItem aThis);

@@ -65,7 +65,6 @@ import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
 import net.sf.jsqlparser.statement.upsert.*;
 import net.sf.jsqlparser.statement.merge.*;
-import net.sf.jsqlparser.statement.values.*;
 import net.sf.jsqlparser.statement.grant.*;
 import java.util.*;
 
@@ -1218,7 +1217,7 @@ ShowStatement Show(): {
     }
 }
 
-ValuesStatement Values(): {
+Values Values(): {
     ItemsList itemsList;
 } {
     ( <K_VALUES> | <K_VALUE> )
@@ -1226,7 +1225,7 @@ ValuesStatement Values(): {
     itemsList = SimpleExpressionList(false)
 
     {
-        return new ValuesStatement(itemsList);
+        return new Values(itemsList);
     }
 }
 
@@ -2560,91 +2559,43 @@ FromItem FromItem():
 }
 {
     (
-        LOOKAHEAD( ValuesList() ) fromItem=ValuesList()
-        |
-        (
-            (
-                LOOKAHEAD( TableFunction() ) fromItem=TableFunction()
-                |
-                LOOKAHEAD(3) fromItem=Table()
-                |
-                LOOKAHEAD( ParenthesedFromItem() ) fromItem = ParenthesedFromItem()
-                |
-                LOOKAHEAD(3) (
-                    fromItem=ParenthesedSelectBody() /*{ fromItem = new ParenthesedSelectBody().withSelectBody(selectBody).withUseBrackets(false); }*/
-                    [ LOOKAHEAD(2) pivot=Pivot() { fromItem.setPivot(pivot); } ]
-                    [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
-                )
-//                |
-//                LOOKAHEAD(3) (
-//                    "(" fromItem=ParenthesedSelectBody() ")"
-//                )
-                |
-                fromItem=LateralSubSelect()
-            )
 
-            [ LOOKAHEAD(2) alias=Alias() { fromItem.setAlias(alias); } ]
-			[ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
-			[ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
-            [
-                LOOKAHEAD(2)
-                (
-                    indexHint = MySQLIndexHint() {
-                        if (fromItem instanceof Table)
-                            ((Table) fromItem).setHint(indexHint);
-                    }
-                    |
-                    sqlServerHints = SQLServerHints() {
-                        if (fromItem instanceof Table)
-                            ((Table) fromItem).setSqlServerHints(sqlServerHints);
-                    }
-                )
-            ]
+        (
+            LOOKAHEAD( TableFunction() ) fromItem=TableFunction()
+            |
+            LOOKAHEAD(3) fromItem=Table()
+            |
+            LOOKAHEAD( ParenthesedFromItem() ) fromItem = ParenthesedFromItem()
+            |
+            LOOKAHEAD(3) (
+                fromItem=ParenthesedSelectBody()
+                [ LOOKAHEAD(2) pivot=Pivot() { fromItem.setPivot(pivot); } ]
+                [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
+            )
+            |
+            fromItem=LateralSubSelect()
         )
+
+        [ LOOKAHEAD(2) alias=Alias() { fromItem.setAlias(alias); } ]
+        [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
+        [ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
+        [
+            LOOKAHEAD(2)
+            (
+                indexHint = MySQLIndexHint() {
+                    if (fromItem instanceof Table)
+                        ((Table) fromItem).setHint(indexHint);
+                }
+                |
+                sqlServerHints = SQLServerHints() {
+                    if (fromItem instanceof Table)
+                        ((Table) fromItem).setSqlServerHints(sqlServerHints);
+                }
+            )
+        ]
     )
     {
         return fromItem;
-    }
-}
-
-FromItem ValuesList():
-{
-    MultiExpressionList exprList = new MultiExpressionList();
-    List<Expression> primaryExpList = new ArrayList<Expression>();
-    ValuesList valuesList = new ValuesList();
-    Expression exp = null;
-    List<String> colNames = null;
-    String colName;
-    Alias alias;
-}
-{
-    "("
-    <K_VALUES>
-    (LOOKAHEAD(3) ("(" exp=SimpleExpression() { primaryExpList.add(exp); }
-            ("," exp=SimpleExpression()  { primaryExpList.add(exp); } )* ")" { exprList.addExpressionList(primaryExpList); }
-
-            ("," "(" exp=SimpleExpression() {
-                    primaryExpList = new ArrayList<Expression>();
-                    primaryExpList.add(exp); }
-                ("," exp=SimpleExpression() { primaryExpList.add(exp); } )* ")" { exprList.addExpressionList(primaryExpList); } )*)
-    |
-    ( exp=SimpleExpression() { exprList.addExpressionList(exp); valuesList.setNoBrackets(true); }
-        ("," exp=SimpleExpression()  { exprList.addExpressionList(exp);} )*
-    ))
-    ")"
-
-    [ LOOKAHEAD(2) alias=Alias() { valuesList.setAlias(alias); }
-
-        [ LOOKAHEAD(2) "("
-            colName = RelObjectName() { colNames = new ArrayList<String>(); colNames.add(colName); }
-            ( "," colName = RelObjectName() { colNames.add(colName); } )*
-            ")" { valuesList.setColumnNames(colNames); } ]
-
-    ]
-
-    {
-        valuesList.setMultiExpressionList(exprList);
-        return valuesList;
     }
 }
 

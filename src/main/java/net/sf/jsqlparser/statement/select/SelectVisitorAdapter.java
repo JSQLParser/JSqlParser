@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.statement.values.ValuesStatement;
-
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class SelectVisitorAdapter implements SelectVisitor {
 
@@ -35,7 +33,7 @@ public class SelectVisitorAdapter implements SelectVisitor {
     }
 
     @Override
-    public void visit(ValuesStatement aThis) {
+    public void visit(Values aThis) {
 
     }
 

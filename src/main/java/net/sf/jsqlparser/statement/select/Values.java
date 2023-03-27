@@ -7,34 +7,25 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.statement.values;
+package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class ValuesStatement extends SelectBody implements Statement {
+public class Values extends SelectBody {
 
     private ItemsList expressions;
 
-    public ValuesStatement() {
+    public Values() {
         // empty constructor
     }
 
-    public ValuesStatement(ItemsList expressions) {
+    public Values(ItemsList expressions) {
         this.expressions = expressions;
-    }
-
-    @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
     }
 
     public ItemsList getExpressions() {
@@ -57,12 +48,12 @@ public class ValuesStatement extends SelectBody implements Statement {
         selectVisitor.visit(this);
     }
 
-    public ValuesStatement withExpressions(ItemsList expressions) {
+    public Values withExpressions(ItemsList expressions) {
         this.setExpressions(expressions);
         return this;
     }
 
-    public ValuesStatement addExpressions(Expression... addExpressions) {
+    public Values addExpressions(Expression... addExpressions) {
         if (expressions != null && expressions instanceof ExpressionList) {
             ((ExpressionList) expressions).addExpressions(addExpressions);
             return this;
@@ -71,7 +62,7 @@ public class ValuesStatement extends SelectBody implements Statement {
         }
     }
 
-    public ValuesStatement addExpressions(Collection<? extends Expression> addExpressions) {
+    public Values addExpressions(Collection<? extends Expression> addExpressions) {
         if (expressions != null && expressions instanceof ExpressionList) {
             ((ExpressionList) expressions).addExpressions(addExpressions);
             return this;

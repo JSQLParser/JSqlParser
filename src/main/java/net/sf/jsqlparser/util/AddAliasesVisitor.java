@@ -22,7 +22,7 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.WithItem;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.statement.select.Values;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -118,7 +118,7 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
     }
 
     @Override
-    public void visit(ValuesStatement aThis) {
+    public void visit(Values aThis) {
         throw new UnsupportedOperationException("Not supported yet."); // To change body of
                                                                        // generated methods, choose
                                                                        // Tools | Templates.

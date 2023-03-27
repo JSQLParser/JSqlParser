@@ -30,11 +30,6 @@ public class FromItemVisitorAdapter implements FromItemVisitor {
     }
 
     @Override
-    public void visit(ValuesList valuesList) {
-
-    }
-
-    @Override
     public void visit(TableFunction valuesList) {
 
     }

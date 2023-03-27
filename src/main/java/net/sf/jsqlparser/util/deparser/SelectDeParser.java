@@ -48,16 +48,15 @@ import net.sf.jsqlparser.statement.select.Skip;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.UnPivot;
-import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.statement.select.Values;
 
 import java.util.Iterator;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
 
-@SuppressWarnings({"PMD.CyclomaticComplexity"})
+@SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPath"})
 public class SelectDeParser extends AbstractDeParser<PlainSelect> implements SelectVisitor,
         SelectItemVisitor, FromItemVisitor, PivotVisitor, ItemsListVisitor {
 
@@ -545,38 +544,6 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
     @Override
-    public void visit(ValuesList valuesList) {
-        buffer.append("(VALUES ");
-        List<ExpressionList> expressionLists =
-                valuesList.getMultiExpressionList().getExpressionLists();
-        int n = expressionLists.size() - 1;
-        int i = 0;
-        for (ExpressionList expressionList : expressionLists) {
-            new ExpressionListDeParser(expressionVisitor, buffer, !valuesList.isNoBrackets(), true)
-                    .deParse(expressionList.getExpressions());
-            if (i < n) {
-                buffer.append(", ");
-            }
-            i++;
-        }
-        buffer.append(")");
-        if (valuesList.getAlias() != null) {
-            buffer.append(valuesList.getAlias());
-
-            if (valuesList.getColumnNames() != null) {
-                buffer.append("(");
-                for (Iterator<String> it = valuesList.getColumnNames().iterator(); it.hasNext();) {
-                    buffer.append(it.next());
-                    if (it.hasNext()) {
-                        buffer.append(", ");
-                    }
-                }
-                buffer.append(")");
-            }
-        }
-    }
-
-    @Override
     public void visit(AllColumns allColumns) {
         buffer.append('*');
     }
@@ -617,7 +584,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
     @Override
-    public void visit(ValuesStatement values) {
+    public void visit(Values values) {
         new ValuesStatementDeParser(this, buffer).deParse(values);
     }
 

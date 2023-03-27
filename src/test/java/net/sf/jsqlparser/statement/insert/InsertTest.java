@@ -25,7 +25,7 @@ import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.update.UpdateSet;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.statement.select.Values;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -73,7 +73,7 @@ public class InsertTest {
                 new StringValue("sadfsd"), new LongValue().withValue(234));
 
         Select select =
-                new Select().withSelectBody(new ValuesStatement().withExpressions(expressionList));
+                new Select().withSelectBody(new Values().withExpressions(expressionList));
 
         Insert insert2 = new Insert().withTable(new Table("mytable"))
                 .withColumns(
@@ -205,7 +205,7 @@ public class InsertTest {
                         .addExpressions(new Column("e")));
 
         Select select = new Select()
-                .withSelectBody(new ValuesStatement().withExpressions(multiExpressionList));
+                .withSelectBody(new Values().withExpressions(multiExpressionList));
 
         Insert insert = new Insert().withTable(new Table("mytable"))
                 .withColumns(Arrays.asList(new Column("col1"), new Column("col2")))

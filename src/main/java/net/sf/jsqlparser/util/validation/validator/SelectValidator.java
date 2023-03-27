@@ -38,9 +38,8 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.UnionOp;
-import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationUtil;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
@@ -322,12 +321,6 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     }
 
     @Override
-    public void visit(ValuesList valuesList) {
-        validateFeature(Feature.valuesList);
-        validateOptionalMultiExpressionList(valuesList.getMultiExpressionList());
-    }
-
-    @Override
     public void visit(TableFunction tableFunction) {
         validateFeature(Feature.tableFunction);
 
@@ -341,7 +334,7 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     }
 
     @Override
-    public void visit(ValuesStatement values) {
+    public void visit(Values values) {
         getValidator(ValuesStatementValidator.class).validate(values);
     }
 

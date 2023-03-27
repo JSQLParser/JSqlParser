@@ -10,9 +10,9 @@
 package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.statement.select.Values;
 
-public class ValuesStatementDeParser extends AbstractDeParser<ValuesStatement> {
+public class ValuesStatementDeParser extends AbstractDeParser<Values> {
 
     private final ItemsListVisitor expressionVisitor;
 
@@ -22,7 +22,7 @@ public class ValuesStatementDeParser extends AbstractDeParser<ValuesStatement> {
     }
 
     @Override
-    public void deParse(ValuesStatement values) {
+    public void deParse(Values values) {
         buffer.append("VALUES ");
         values.getExpressions().accept(expressionVisitor);
     }

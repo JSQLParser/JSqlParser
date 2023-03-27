@@ -203,13 +203,12 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.select.Top(),
             new net.sf.jsqlparser.statement.select.UnPivot(),
             new net.sf.jsqlparser.statement.select.UnionOp(),
-            new net.sf.jsqlparser.statement.select.ValuesList(),
             new net.sf.jsqlparser.statement.select.Wait(),
             // new net.sf.jsqlparser.statement.select.WithItem(),
             new net.sf.jsqlparser.statement.truncate.Truncate(),
             new net.sf.jsqlparser.statement.update.Update(),
             new net.sf.jsqlparser.statement.upsert.Upsert(),
-            // new net.sf.jsqlparser.statement.values.ValuesStatement(),
+            // new net.sf.jsqlparser.statement.select.ValuesStatement(),
             new net.sf.jsqlparser.statement.DeclareStatement.TypeDefExpr(new ColDataType("varchar"),
                     null));
 

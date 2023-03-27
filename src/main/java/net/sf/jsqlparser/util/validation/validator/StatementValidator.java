@@ -53,12 +53,12 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
@@ -207,12 +207,6 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
         }
     }
 
-
-    @Override
-    public void visit(ValuesStatement values) {
-        getValidator(ValuesStatementValidator.class).validate(values);
-    }
-
     @Override
     public void visit(DescribeStatement describe) {
         validateFeature(Feature.describe);
@@ -317,5 +311,13 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     @Override
     public void visit(UnsupportedStatement unsupportedStatement) {
 
+    }
+
+    @Override
+    public void visit(SelectBody selectBody) {
+        validateFeature(Feature.select);
+
+        SelectValidator selectValidator = getValidator(SelectValidator.class);
+        selectBody.accept(selectValidator);
     }
 }

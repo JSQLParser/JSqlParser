@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
+@Deprecated
 public class Select implements Statement {
 
     private SelectBody selectBody;
@@ -37,9 +38,7 @@ public class Select implements Statement {
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append(selectBody);
-        return builder.toString();
+        return selectBody.toString();
     }
 
 

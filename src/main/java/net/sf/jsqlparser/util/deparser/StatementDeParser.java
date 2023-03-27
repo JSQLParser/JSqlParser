@@ -52,13 +52,13 @@ import net.sf.jsqlparser.statement.merge.MergeInsert;
 import net.sf.jsqlparser.statement.merge.MergeUpdate;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 import java.util.Iterator;
 import java.util.List;
@@ -343,12 +343,6 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     }
 
     @Override
-    public void visit(ValuesStatement values) {
-        expressionDeParser.setBuffer(buffer);
-        new ValuesStatementDeParser(expressionDeParser, buffer).deParse(values);
-    }
-
-    @Override
     public void visit(DescribeStatement describe) {
         buffer.append("DESCRIBE ");
         buffer.append(describe.getTable());
@@ -440,5 +434,14 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     @Override
     public void visit(UnsupportedStatement unsupportedStatement) {
         unsupportedStatement.appendTo(buffer);
+    }
+
+    @Override
+    public void visit(SelectBody selectBody) {
+        selectDeParser.setBuffer(buffer);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        expressionDeParser.setBuffer(buffer);
+        selectDeParser.setExpressionVisitor(expressionDeParser);
+        selectBody.accept(selectDeParser);
     }
 }

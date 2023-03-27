@@ -58,12 +58,10 @@ import net.sf.jsqlparser.statement.select.Skip;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.UnPivot;
-import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.show.*;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public enum Feature {
 
@@ -305,7 +303,7 @@ public enum Feature {
      */
     insertValues,
     /**
-     * @see ValuesStatement
+     * @see net.sf.jsqlparser.statement.select.Values
      */
     values,
 

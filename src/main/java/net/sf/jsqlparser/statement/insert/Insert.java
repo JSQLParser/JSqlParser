@@ -24,7 +24,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.statement.select.Values;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -103,8 +103,8 @@ public class Insert implements Statement {
     public ItemsList getItemsList() {
         if (select != null) {
             SelectBody selectBody = select.getSelectBody();
-            if (selectBody instanceof ValuesStatement) {
-                ValuesStatement valuesStatement = (ValuesStatement) selectBody;
+            if (selectBody instanceof Values) {
+                Values valuesStatement = (Values) selectBody;
                 if (valuesStatement.getExpressions() instanceof ExpressionList) {
                     ExpressionList expressionList =
                             (ExpressionList) valuesStatement.getExpressions();
@@ -128,7 +128,7 @@ public class Insert implements Statement {
 
     @Deprecated
     public boolean isUseValues() {
-        return select != null && select.getSelectBody() instanceof ValuesStatement;
+        return select != null && select.getSelectBody() instanceof Values;
     }
 
     public List<SelectItem> getReturningExpressionList() {

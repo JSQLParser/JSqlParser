@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.statement.values.ValuesStatement;
-
 public interface SelectVisitor {
 
     void visit(ParenthesedSelectBody parenthesedSelectBody);
@@ -21,7 +19,7 @@ public interface SelectVisitor {
 
     void visit(WithItem withItem);
 
-    void visit(ValuesStatement aThis);
+    void visit(Values aThis);
 
     void visit(LateralSubSelect lateralSubSelect);
 }

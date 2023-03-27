@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.Values;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -28,7 +29,7 @@ public class ValuesTest {
         String statement = "VALUES (1, 2, 'test')";
         assertSqlCanBeParsedAndDeparsed(statement);
 
-        ValuesStatement values = new ValuesStatement().addExpressions(new LongValue(1),
+        Values values = new Values().addExpressions(new LongValue(1),
                 new LongValue(2), new StringValue("test"));
         Select created = new Select().withSelectBody(values);
 
@@ -47,8 +48,8 @@ public class ValuesTest {
 
     @Test
     public void testObject() {
-        ValuesStatement valuesStatement =
-                new ValuesStatement().addExpressions(new StringValue("1"), new StringValue("2"));
+        Values valuesStatement =
+                new Values().addExpressions(new StringValue("1"), new StringValue("2"));
         valuesStatement.addExpressions(Arrays.asList(new StringValue("3"), new StringValue("4")));
 
         valuesStatement.accept(new StatementVisitorAdapter());

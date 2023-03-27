@@ -31,12 +31,12 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class StatementVisitorAdapter implements StatementVisitor {
@@ -92,8 +92,7 @@ public class StatementVisitorAdapter implements StatementVisitor {
     }
 
     @Override
-    public void visit(CreateSchema aThis) {
-    }
+    public void visit(CreateSchema aThis) {}
 
     @Override
     public void visit(CreateTable createTable) {
@@ -138,72 +137,52 @@ public class StatementVisitorAdapter implements StatementVisitor {
     }
 
     @Override
-    public void visit(AlterView alterView) {
-    }
+    public void visit(AlterView alterView) {}
 
     @Override
-    public void visit(Upsert upsert) {
-    }
+    public void visit(Upsert upsert) {}
 
     @Override
-    public void visit(UseStatement use) {
-    }
+    public void visit(UseStatement use) {}
 
     @Override
-    public void visit(Block block) {
-    }
+    public void visit(Block block) {}
 
     @Override
-    public void visit(ValuesStatement values) {
-    }
+    public void visit(DescribeStatement describe) {}
 
     @Override
-    public void visit(DescribeStatement describe) {
-    }
+    public void visit(ExplainStatement aThis) {}
 
     @Override
-    public void visit(ExplainStatement aThis) {
-    }
+    public void visit(ShowStatement aThis) {}
 
     @Override
-    public void visit(ShowStatement aThis) {
-    }
+    public void visit(ShowColumnsStatement set) {}
 
     @Override
-    public void visit(ShowColumnsStatement set) {
-    }
+    public void visit(ShowIndexStatement set) {}
 
     @Override
-    public void visit(ShowIndexStatement set) {
-    }
+    public void visit(ShowTablesStatement showTables) {}
 
     @Override
-    public void visit(ShowTablesStatement showTables) {
-    }
+    public void visit(DeclareStatement aThis) {}
 
     @Override
-    public void visit(DeclareStatement aThis) {
-    }
+    public void visit(Grant grant) {}
 
     @Override
-    public void visit(Grant grant) {
-    }
+    public void visit(CreateSequence createSequence) {}
 
     @Override
-    public void visit(CreateSequence createSequence) {
-    }
+    public void visit(AlterSequence alterSequence) {}
 
     @Override
-    public void visit(AlterSequence alterSequence) {
-    }
+    public void visit(CreateFunctionalStatement createFunctionalStatement) {}
 
     @Override
-    public void visit(CreateFunctionalStatement createFunctionalStatement) {
-    }
-
-    @Override
-    public void visit(CreateSynonym createSynonym) {
-    }
+    public void visit(CreateSynonym createSynonym) {}
 
     @Override
     public void visit(Analyze analyze) {
@@ -212,42 +191,47 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(SavepointStatement savepointStatement) {
-        //@todo: do something usefull here
+        // @todo: do something usefull here
     }
 
     @Override
     public void visit(RollbackStatement rollbackStatement) {
-        //@todo: do something usefull here
+        // @todo: do something usefull here
     }
+
     @Override
     public void visit(AlterSession alterSession) {
-       //@todo: do something usefull here
+        // @todo: do something usefull here
     }
 
     @Override
     public void visit(IfElseStatement ifElseStatement) {
         ifElseStatement.getIfStatement().accept(this);
-        if (ifElseStatement.getElseStatement()!=null) {
+        if (ifElseStatement.getElseStatement() != null) {
             ifElseStatement.getElseStatement().accept(this);
-          }
-      }
-        
+        }
+    }
+
     @Override
     public void visit(RenameTableStatement renameTableStatement) {
-        //@todo: do something usefull here
+        // @todo: do something usefull here
     }
 
     @Override
     public void visit(PurgeStatement purgeStatement) {
-        //@todo: do something usefull here
+        // @todo: do something usefull here
     }
 
     @Override
-    public void visit(AlterSystemStatement alterSystemStatement) {
-    }
+    public void visit(AlterSystemStatement alterSystemStatement) {}
 
     @Override
     public void visit(UnsupportedStatement unsupportedStatement) {
+
+    }
+
+    @Override
+    public void visit(SelectBody selectBody) {
 
     }
 }

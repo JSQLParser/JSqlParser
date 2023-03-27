@@ -159,14 +159,13 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.TableFunction;
-import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.statement.select.Values;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -622,11 +621,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         }
     }
 
-    @Override
-    public void visit(ValuesList valuesList) {
-
-    }
-
     /**
      * Initializes table names collector. Important is the usage of Column instances to find table
      * names. This is only allowed for expression parsing, where a better place for tablenames could
@@ -977,7 +971,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(ValuesStatement values) {
+    public void visit(Values values) {
         values.getExpressions().accept(this);
     }
 
