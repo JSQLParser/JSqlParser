@@ -23,4 +23,11 @@ public class UnicodeTest {
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testCJKSetIssue1747() throws JSQLParserException {
+        String sqlStr = "SELECT 가 FROM 나";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+    }
 }

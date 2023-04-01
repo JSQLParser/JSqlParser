@@ -106,7 +106,7 @@ Build Dependencies
             }
 
 
-Parse a SQL Statements
+Parse a SQL Statement
 ==============================			
 
 Parse the SQL Text into Java Objects:
@@ -195,7 +195,7 @@ Traverse the Java Object Tree using the Visitor Patterns:
     stmt.accept(statementVisitor);
 
 
-Build a SQL Statements
+Build a SQL Statement
 ==============================
 
 Build any SQL Statement from Java Code using a fluent API:

@@ -520,7 +520,7 @@ TOKEN:
 | <#Pc: ["‿"-"⁀","⁔","︳"-"︴","﹍"-"﹏","＿"]>
 
 // CJK Unified Ideographs block according to https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_(Unicode_block)
-| <#CJK: ["\u4E00"-"\u9FFF"]>
+| <#CJK: ["\uAC00"-"\uD7A3", "\u4E00"-"\u9FFF"]>
 
 | < #SPECIAL_ESC: "\\'" > /* Allowing this will break LIKE ... ESCAPE ...  */
 | < #ESC: "\\" ["n","t","b","r","f","\\","\""] >
@@ -1458,7 +1458,8 @@ Insert Insert( List<WithItem> with ):
 
 InsertConflictTarget  InsertConflictTarget():
 {
-    String indexColumnName = null;
+    String indexColumnName;
+    ArrayList<String> indexColumnNames = new ArrayList<String>();
     Expression indexExpression = null;
     Expression whereExpression = null;
     String constraintName = null ;
@@ -1466,8 +1467,9 @@ InsertConflictTarget  InsertConflictTarget():
 {
     (
         (
-           "("
-            indexColumnName = RelObjectNameExt2()
+            "("
+            indexColumnName = RelObjectNameExt2() { indexColumnNames.add(indexColumnName); }
+            ( "," indexColumnName = RelObjectNameExt2() { indexColumnNames.add(indexColumnName); } )*
 //            |
 //            (
 //                "(" indexExpression = Expression() ")"
@@ -1482,7 +1484,7 @@ InsertConflictTarget  InsertConflictTarget():
         )
     )
 
-    { return new InsertConflictTarget(indexColumnName, indexExpression, whereExpression, constraintName); }
+    { return new InsertConflictTarget(indexColumnNames, indexExpression, whereExpression, constraintName); }
 }
 
 InsertConflictAction InsertConflictAction():
@@ -4234,17 +4236,14 @@ JsonExpression JsonExpression() : {
         LOOKAHEAD(JsonAggregateFunction(), {!interrupted}) expr = JsonAggregateFunction()
         |
         LOOKAHEAD(FullTextSearch(), {!interrupted}) expr = FullTextSearch()
-        /* Do not parse Functions as this will result in a major performance loss
-           The Performance related tests will fail.
         |
-        LOOKAHEAD(Function(), {!interrupted}) expr=Function()
-        */
+        LOOKAHEAD( 3 , {!interrupted && getAsBoolean(Feature.allowComplexParsing) } ) expr=SimpleFunction()
         |
-        LOOKAHEAD(2, {!interrupted}) expr=Column()
+        LOOKAHEAD( 2, {!interrupted} ) expr=Column()
         |
         token=<S_CHAR_LITERAL> { expr = new StringValue(token.image); }
         |
-        LOOKAHEAD("(" expr=SubSelect() ")", {!interrupted} ) "(" expr=SubSelect() ")"
+        LOOKAHEAD( {!interrupted} ) "(" expr=SubSelect() ")"
     )
 
     ( "::" type=ColDataType() {
@@ -4977,6 +4976,47 @@ Function InternalFunction(Function retval) :
         retval.setParameters(expressionList);
         retval.setName(funcName);
         retval.setKeep(keep);
+        return retval;
+    }
+}
+
+Function SimpleFunction() #SimpleFunction :
+{
+    Function retval = new Function();
+    List<String> funcName;
+    Expression allColumnsExpression = null;
+    ExpressionList expressionList = null;
+    KeepExpression keep = null;
+    List<OrderByElement> orderByList;
+    boolean ignoreNulls = false;
+}
+{
+    funcName = RelObjectNameList()
+
+    "("
+    [
+        LOOKAHEAD(2)
+        [
+            LOOKAHEAD(2)(<K_DISTINCT> { retval.setDistinct(true); }
+            | <K_ALL> { retval.setAllColumns(true); }
+            | <K_UNIQUE> { retval.setUnique(true); })
+        ]
+        (
+            LOOKAHEAD(4) "*" { allColumnsExpression = new AllColumns(); expressionList = new ExpressionList(allColumnsExpression).withUsingBrackets(false); }
+            |
+            LOOKAHEAD(AllTableColumns()) allColumnsExpression=AllTableColumns() { expressionList = new ExpressionList(allColumnsExpression).withUsingBrackets(false); }
+            |
+            (expressionList=SimpleExpressionList(false) [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
+        )
+    ]
+    [  <K_IGNORE> <K_NULLS> {retval.setIgnoreNulls(true); } ]
+    ")"
+
+    [ LOOKAHEAD(2) keep = KeepExpression() ]
+
+    {
+        retval.setParameters(expressionList);
+        retval.setName(funcName);
         return retval;
     }
 }

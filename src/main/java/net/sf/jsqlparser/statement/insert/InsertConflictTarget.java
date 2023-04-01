@@ -12,45 +12,74 @@ package net.sf.jsqlparser.statement.insert;
 import net.sf.jsqlparser.expression.Expression;
 
 import java.io.Serializable;
+import java.util.*;
 
 /**
  * https://www.postgresql.org/docs/current/sql-insert.html
+ * 
  * <pre>
  * conflict_target can be one of:
  *
  *     ( { index_column_name | ( index_expression ) } [ COLLATE collation ] [ opclass ] [, ...] ) [ WHERE index_predicate ]
  *     ON CONSTRAINT constraint_name
  * </pre>
+ * 
  * Currently, COLLATE is not supported yet.
  */
 public class InsertConflictTarget implements Serializable {
 
-    String indexColumnName;
+    ArrayList<String> indexColumnNames = new ArrayList<>();
     Expression indexExpression;
     Expression whereExpression;
     String constraintName;
 
-    public InsertConflictTarget(String indexColumnName, Expression indexExpression, Expression whereExpression, String constraintName) {
-        this.indexColumnName = indexColumnName;
+    public InsertConflictTarget(String indexColumnName, Expression indexExpression,
+            Expression whereExpression, String constraintName) {
+        this.indexColumnNames.add(indexColumnName);
         this.indexExpression = indexExpression;
 
         this.whereExpression = whereExpression;
         this.constraintName = constraintName;
     }
 
-    public String getIndexColumnName() {
-        return indexColumnName;
+    public InsertConflictTarget(Collection<String> indexColumnName, Expression indexExpression,
+            Expression whereExpression, String constraintName) {
+        this.indexColumnNames.addAll(indexColumnName);
+        this.indexExpression = indexExpression;
+
+        this.whereExpression = whereExpression;
+        this.constraintName = constraintName;
     }
 
-    public void setIndexColumnName(String indexColumnName) {
-        this.indexColumnName = indexColumnName;
+    public List<String> getIndexColumnNames() {
+        return indexColumnNames;
+    }
+
+    @Deprecated
+    public String getIndexColumnName() {
+        return indexColumnNames.isEmpty() ? null : indexColumnNames.get(0);
+    }
+
+    public String getIndexColumnName(int index) {
+        return indexColumnNames.size() > index ? indexColumnNames.get(index) : null;
+    }
+
+    public boolean addIndexColumnName(String indexColumnName) {
         this.indexExpression = null;
+        return this.indexColumnNames.add(indexColumnName);
     }
 
     public InsertConflictTarget withIndexColumnName(String indexColumnName) {
-        setIndexColumnName(indexColumnName);
+        this.indexExpression = null;
+        this.indexColumnNames.add(indexColumnName);
         return this;
     }
+
+    public boolean addAllIndexColumnNames(Collection<String> indexColumnName) {
+        this.indexExpression = null;
+        return this.indexColumnNames.addAll(indexColumnName);
+    }
+
 
     public Expression getIndexExpression() {
         return indexExpression;
@@ -58,7 +87,7 @@ public class InsertConflictTarget implements Serializable {
 
     public void setIndexExpression(Expression indexExpression) {
         this.indexExpression = indexExpression;
-        this.indexColumnName = null;
+        this.indexColumnNames.clear();
     }
 
     public InsertConflictTarget withIndexExpression(Expression indexExpression) {
@@ -93,18 +122,22 @@ public class InsertConflictTarget implements Serializable {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
-        if (constraintName==null) {
+        if (constraintName == null) {
             builder.append(" ( ");
 
-            //@todo: Index Expression is not supported yet
-            //if (indexColumnName != null) {
-                builder.append(indexColumnName);
-            //} else {
-            //    builder.append(" ( ").append(indexExpression).append(" )");
-            //}
+            // @todo: Index Expression is not supported yet
+            if (!indexColumnNames.isEmpty()) {
+                boolean insertComma = false;
+                for (String s : indexColumnNames) {
+                    builder.append(insertComma ? ", " : " ").append(s);
+                    insertComma |= true;
+                }
+            } else {
+                builder.append(" ( ").append(indexExpression).append(" )");
+            }
             builder.append(" ");
 
-            //@todo: Collate is not supported yet
+            // @todo: Collate is not supported yet
 
             builder.append(") ");
 
