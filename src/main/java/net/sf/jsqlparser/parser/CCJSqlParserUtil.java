@@ -255,7 +255,7 @@ public final class CCJSqlParserUtil {
             });
             executorService.shutdown();
 
-            statement = future.get( parser.getConfiguration().getAsInteger(Feature.timeOut), TimeUnit.MILLISECONDS);
+            statement = future.get( parser.getConfiguration().getAsLong(Feature.timeOut), TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             parser.interrupted = true;
             throw new JSQLParserException("Time out occurred.", ex);
@@ -319,7 +319,7 @@ public final class CCJSqlParserUtil {
             });
             executorService.shutdown();
 
-            statements = future.get( parser.getConfiguration().getAsInteger(Feature.timeOut) , TimeUnit.MILLISECONDS);
+            statements = future.get( parser.getConfiguration().getAsLong(Feature.timeOut) , TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             parser.interrupted = true;
             throw new JSQLParserException("Time out occurred.", ex);

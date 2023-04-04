@@ -61,8 +61,8 @@ public class FeatureConfiguration {
         return Boolean.parseBoolean(String.valueOf(getValue(f)));
     }
 
-    public Integer getAsInteger(Feature f) {
-        return Integer.valueOf(String.valueOf(getValue(f)));
+    public Long getAsLong(Feature f) {
+        return Long.valueOf(String.valueOf(getValue(f)));
     }
 
     public String getAsString(Feature f) {
