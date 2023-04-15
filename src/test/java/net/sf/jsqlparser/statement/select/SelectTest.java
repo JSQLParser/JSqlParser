@@ -5621,4 +5621,16 @@ public class SelectTest {
                 "with a as ( with b as ( with c as (select 1) select c.* from c) select b.* from b) select a.* from a";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testSubSelectParsing() throws JSQLParserException {
+        String sqlStr = "(SELECT id FROM table1 WHERE find_in_set(100, ancestors))";
+        Select select = (Select) CCJSqlParserUtil.parse(sqlStr);
+
+        InExpression inExpression = new InExpression();
+        inExpression.setLeftExpression(new Column("id"));
+        inExpression.setRightExpression(select);
+
+        Assertions.assertEquals("id IN " + sqlStr, inExpression.toString());
+    }
 }

@@ -123,7 +123,7 @@ public class SpeedTest {
         time = System.currentTimeMillis();
         // measure the time to get the tables names from all the SELECTs parsed before
         for (Select select : parsedSelects) {
-            if (select!=null) {
+            if (select != null) {
                 numTests++;
                 tablesNamesFinder.getTableList((Statement) select);
             }
