@@ -8,6 +8,48 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **feat: Refactor SelectBody implementations**
+    
+    Andreas Reichel, 2023-03-27
+  * **feat: Refactor SelectBody implementations**
+    
+    Andreas Reichel, 2023-03-26
+  * **style: Appease PMD/Codacy**
+    
+    Andreas Reichel, 2023-03-25
+  * **style: Appease PMD/Codacy**
+    
+    Andreas Reichel, 2023-03-25
+  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    
+    Andreas Reichel, 2023-03-25
+  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    
+    Andreas Reichel, 2023-03-24
+  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    
+    Andreas Reichel, 2023-03-23
+  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    
+    Andreas Reichel, 2023-03-23
+  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    
+    Andreas Reichel, 2023-03-23
+  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    
+    Andreas Reichel, 2023-03-23
+  * **Assorted Fixes #7 (#1745)**
+    
+    manticore-projects, 2023-03-21
+  * **disable xml report (#1748)**
+    
+    optimizing-ci-builds, 2023-03-21
+  * **build: better Upload Groovy Task**
+    
+    Andreas Reichel, 2023-03-18
+  * **doc: fix reference in the Java Doc**
+    
+    Andreas Reichel, 2023-03-18
   * **feat: `ConflictTarget` allows multiple `IndexColumnNames`**
     
     Andreas Reichel, 2023-03-18

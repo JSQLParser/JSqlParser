@@ -9,10 +9,13 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.statement.values.ValuesStatement;
-
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class SelectVisitorAdapter implements SelectVisitor {
+
+    @Override
+    public void visit(ParenthesedSelect parenthesedSelect) {
+        parenthesedSelect.getSelect().accept(this);
+    }
 
     @Override
     public void visit(PlainSelect plainSelect) {
@@ -30,7 +33,12 @@ public class SelectVisitorAdapter implements SelectVisitor {
     }
 
     @Override
-    public void visit(ValuesStatement aThis) {
+    public void visit(Values aThis) {
+
+    }
+
+    @Override
+    public void visit(LateralSubSelect lateralSubSelect) {
 
     }
 }

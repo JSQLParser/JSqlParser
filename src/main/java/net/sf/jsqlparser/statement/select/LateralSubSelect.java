@@ -9,41 +9,50 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.Alias;
-
 /**
  * lateral sub select
+ * 
  * @author tobens
  */
-public class LateralSubSelect extends SpecialSubSelect {
-    
+public class LateralSubSelect extends ParenthesedSelect {
+    private String prefix;
+
     public LateralSubSelect() {
-        super("LATERAL");
+        this("LATERAL");
     }
-    
+
+    public LateralSubSelect(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public LateralSubSelect withPrefix(String prefix) {
+        this.setPrefix(prefix);
+        return this;
+    }
+
+    public LateralSubSelect withSelect(Select select) {
+        setSelect(select);
+        return this;
+    }
+
+    public String toString() {
+        return prefix + super.toString();
+    }
+
+    public void accept(SelectVisitor selectVisitor) {
+        selectVisitor.visit(this);
+    }
+
     @Override
     public void accept(FromItemVisitor fromItemVisitor) {
         fromItemVisitor.visit(this);
     }
-
-    @Override
-    public LateralSubSelect withPivot(Pivot pivot) {
-        return (LateralSubSelect) super.withPivot(pivot);
-    }
-
-    @Override
-    public LateralSubSelect withAlias(Alias alias) {
-        return (LateralSubSelect) super.withAlias(alias);
-    }
-
-    @Override
-    public LateralSubSelect withSubSelect(SubSelect subSelect) {
-        return (LateralSubSelect) super.withSubSelect(subSelect);
-    }
-
-    @Override
-    public LateralSubSelect withUnPivot(UnPivot unpivot) {
-        return (LateralSubSelect) super.withUnPivot(unpivot);
-    }
-
 }

@@ -10,15 +10,15 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.statement.select.Values;
 
 /**
  * @author gitmotte
  */
-public class ValuesStatementValidator extends AbstractValidator<ValuesStatement> {
+public class ValuesStatementValidator extends AbstractValidator<Values> {
 
     @Override
-    public void validate(ValuesStatement values) {
+    public void validate(Values values) {
         validateFeature(Feature.values);
         validateOptionalItemsList(values.getExpressions());
     }

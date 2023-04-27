@@ -24,8 +24,7 @@ public final class SelectUtils {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
 
-    private SelectUtils() {
-    }
+    private SelectUtils() {}
 
     public static Select buildSelectFromTableAndExpressions(Table table, Expression... expr) {
         SelectItem[] list = new SelectItem[expr.length];
@@ -35,7 +34,8 @@ public final class SelectUtils {
         return buildSelectFromTableAndSelectItems(table, list);
     }
 
-    public static Select buildSelectFromTableAndExpressions(Table table, String... expr) throws JSQLParserException {
+    public static Select buildSelectFromTableAndExpressions(Table table, String... expr)
+            throws JSQLParserException {
         SelectItem[] list = new SelectItem[expr.length];
         for (int i = 0; i < expr.length; i++) {
             list[i] = new SelectExpressionItem(CCJSqlParserUtil.parseExpression(expr[i]));
@@ -43,9 +43,10 @@ public final class SelectUtils {
         return buildSelectFromTableAndSelectItems(table, list);
     }
 
-    public static Select buildSelectFromTableAndSelectItems(Table table, SelectItem... selectItems) {
-        PlainSelect body = new PlainSelect().addSelectItems(selectItems).withFromItem(table);
-        return new Select().withSelectBody(body);
+    public static Select buildSelectFromTableAndSelectItems(Table table,
+            SelectItem... selectItems) {
+        PlainSelect select = new PlainSelect().addSelectItems(selectItems).withFromItem(table);
+        return select;
     }
 
     /**
@@ -65,8 +66,8 @@ public final class SelectUtils {
      * @param expr
      */
     public static void addExpression(Select select, final Expression expr) {
-        if (select.getSelectBody() instanceof PlainSelect) {
-            select.getSelectBody(PlainSelect.class).getSelectItems().add(new SelectExpressionItem(expr));
+        if (select instanceof PlainSelect) {
+            ((PlainSelect) select).getSelectItems().add(new SelectExpressionItem(expr));
         } else {
             throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
         }
@@ -82,9 +83,9 @@ public final class SelectUtils {
      * @return
      */
     public static Join addJoin(Select select, final Table table, final Expression onExpression) {
-        if (select.getSelectBody() instanceof PlainSelect) {
+        if (select instanceof PlainSelect) {
             Join join = new Join().withRightItem(table).addOnExpression(onExpression);
-            select.getSelectBody(PlainSelect.class).addJoins(join);
+            ((PlainSelect) select).addJoins(join);
             return join;
         } else {
             throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
@@ -98,8 +99,8 @@ public final class SelectUtils {
      * @param expr
      */
     public static void addGroupBy(Select select, final Expression expr) {
-        if (select.getSelectBody() instanceof PlainSelect) {
-            select.getSelectBody(PlainSelect.class).addGroupByColumnReference(expr);
+        if (select instanceof PlainSelect) {
+            ((PlainSelect) select).addGroupByColumnReference(expr);
         } else {
             throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
         }
