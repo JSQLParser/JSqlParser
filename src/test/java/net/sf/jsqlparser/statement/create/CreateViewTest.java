@@ -18,6 +18,7 @@ import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.view.AutoRefreshOption;
 import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -31,7 +32,7 @@ import org.junit.jupiter.api.Test;
 
 public class CreateViewTest {
 
-    private CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     @Test
     public void testCreateView() throws JSQLParserException {
@@ -40,7 +41,7 @@ public class CreateViewTest {
         assertFalse(createView.isOrReplace());
         assertEquals("myview", createView.getView().getName());
         assertEquals("mytab",
-                ((Table) ((PlainSelect) createView.getSelect().getSelectBody()).getFromItem())
+                ((Table) ((PlainSelect) createView.getSelect()).getFromItem())
                         .getName());
         assertEquals(statement, createView.toString());
     }
@@ -73,14 +74,16 @@ public class CreateViewTest {
     @Test
     public void testCreateView5() throws JSQLParserException {
         String statement = "CREATE VIEW myview AS (SELECT * FROM mytab)";
-        String statement2 = "CREATE VIEW myview AS (SELECT * FROM mytab)";
         CreateView createView = (CreateView) parserManager.parse(new StringReader(statement));
         assertFalse(createView.isOrReplace());
         assertEquals("myview", createView.getView().getName());
-        assertEquals("mytab",
-                ((Table) ((PlainSelect) createView.getSelect().getSelectBody()).getFromItem())
-                        .getName());
-        assertEquals(statement2, createView.toString());
+
+        ParenthesedSelect parenthesedSelect =
+                (ParenthesedSelect) createView.getSelect();
+        PlainSelect plainSelect = (PlainSelect) parenthesedSelect.getSelect();
+        Table table = (Table) plainSelect.getFromItem();
+        assertEquals("mytab", table.getName());
+        assertEquals(statement, createView.toString());
     }
 
     @Test
@@ -162,7 +165,7 @@ public class CreateViewTest {
     }
 
     @Test
-    public void testCreateViewAutoFails() throws JSQLParserException {
+    public void testCreateViewAutoFails() {
         String stmt = "CREATE VIEW myview AUTO AS SELECT * FROM mytab";
 
         ThrowingCallable throwingCallable = () -> CCJSqlParserUtil.parse(stmt);
@@ -173,7 +176,7 @@ public class CreateViewTest {
     }
 
     @Test
-    public void testCreateViewRefreshFails() throws JSQLParserException {
+    public void testCreateViewRefreshFails() {
         String stmt = "CREATE VIEW myview REFRESH AS SELECT * FROM mytab";
 
         ThrowingCallable throwingCallable = () -> CCJSqlParserUtil.parse(stmt);
@@ -184,7 +187,7 @@ public class CreateViewTest {
     }
 
     @Test
-    public void testCreateViewAutoRefreshFails() throws JSQLParserException {
+    public void testCreateViewAutoRefreshFails() {
         String stmt = "CREATE VIEW myview AUTO REFRESH AS SELECT * FROM mytab";
 
         ThrowingCallable throwingCallable = () -> CCJSqlParserUtil.parse(stmt);

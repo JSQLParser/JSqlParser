@@ -36,14 +36,13 @@ import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public interface StatementVisitor {
 
     void visit(Analyze analyze);
 
     void visit(SavepointStatement savepointStatement);
-    
+
     void visit(RollbackStatement rollbackStatement);
 
     void visit(Comment comment);
@@ -83,9 +82,9 @@ public interface StatementVisitor {
     void visit(ResetStatement reset);
 
     void visit(ShowColumnsStatement set);
-    
+
     void visit(ShowIndexStatement showIndex);
-    
+
     void visit(ShowTablesStatement showTables);
 
     void visit(Merge merge);
@@ -97,8 +96,6 @@ public interface StatementVisitor {
     void visit(UseStatement use);
 
     void visit(Block block);
-
-    void visit(ValuesStatement values);
 
     void visit(DescribeStatement describe);
 
@@ -121,6 +118,7 @@ public interface StatementVisitor {
     void visit(AlterSession alterSession);
 
     void visit(IfElseStatement aThis);
+
     void visit(RenameTableStatement renameTableStatement);
 
     void visit(PurgeStatement purgeStatement);

@@ -16,9 +16,8 @@ import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.SubSelect;
-import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.upsert.UpsertType;
 
@@ -31,7 +30,8 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
 
-    public UpsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
+    public UpsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.selectVisitor = selectVisitor;
@@ -97,9 +97,7 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
         List<Expression> expressions = upsert.getSetExpressions();
         for (int i = 0, s = upsert.getColumns().size(); i < s; i++) {
             buffer.append(upsert.getColumns().get(i)).append("=").append(expressions.get(i));
-            buffer.append( i < s - 1
-                       ? ", "
-                       : "" );
+            buffer.append(i < s - 1 ? ", " : "");
         }
     }
 
@@ -117,20 +115,7 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
 
     private void appendSelect(Upsert upsert) {
         buffer.append(" ");
-        if (upsert.isUseSelectBrackets()) {
-            buffer.append("(");
-        }
-        if (upsert.getSelect().getWithItemsList() != null) {
-            buffer.append("WITH ");
-            for (WithItem with : upsert.getSelect().getWithItemsList()) {
-                with.accept(selectVisitor);
-            }
-            buffer.append(" ");
-        }
-        upsert.getSelect().getSelectBody().accept(selectVisitor);
-        if (upsert.isUseSelectBrackets()) {
-            buffer.append(")");
-        }
+        upsert.getSelect().accept(selectVisitor);
     }
 
     private void appendDuplicate(Upsert upsert) {
@@ -150,7 +135,8 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
     @Override
     public void visit(ExpressionList expressionList) {
         buffer.append(" VALUES (");
-        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext();) {
+        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter
+                .hasNext();) {
             Expression expression = iter.next();
             expression.accept(expressionVisitor);
             if (iter.hasNext()) {
@@ -160,17 +146,17 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
         buffer.append(")");
     }
 
-// not used by top-level upsert
+    // not used by top-level upsert
     @Override
-    public void visit(NamedExpressionList namedExpressionList) {
-    }
+    public void visit(NamedExpressionList namedExpressionList) {}
 
     @Override
     public void visit(MultiExpressionList multiExprList) {
         buffer.append(" VALUES ");
         for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
             buffer.append("(");
-            for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter.hasNext();) {
+            for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter
+                    .hasNext();) {
                 Expression expression = iter.next();
                 expression.accept(expressionVisitor);
                 if (iter.hasNext()) {
@@ -185,8 +171,8 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
     }
 
     @Override
-    public void visit(SubSelect subSelect) {
-        subSelect.getSelectBody().accept(selectVisitor);
+    public void visit(ParenthesedSelect selectBody) {
+        selectBody.getSelect().accept(selectVisitor);
     }
 
     public ExpressionVisitor getExpressionVisitor() {

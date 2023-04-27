@@ -20,12 +20,7 @@ public class FromItemVisitorAdapter implements FromItemVisitor {
     }
 
     @Override
-    public void visit(SubSelect subSelect) {
-
-    }
-
-    @Override
-    public void visit(SubJoin subjoin) {
+    public void visit(ParenthesedSelect selectBody) {
 
     }
 
@@ -35,17 +30,12 @@ public class FromItemVisitorAdapter implements FromItemVisitor {
     }
 
     @Override
-    public void visit(ValuesList valuesList) {
-
-    }
-
-    @Override
     public void visit(TableFunction valuesList) {
 
     }
 
     @Override
-    public void visit(ParenthesisFromItem aThis) {
-        
+    public void visit(ParenthesedFromItem aThis) {
+
     }
 }

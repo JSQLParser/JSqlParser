@@ -43,7 +43,7 @@ public class AlterViewDeParser extends AbstractDeParser<AlterView> {
         }
         buffer.append(" AS ");
 
-        alterView.getSelectBody().accept(selectVisitor);
+        alterView.getSelect().accept(selectVisitor);
     }
 
 }

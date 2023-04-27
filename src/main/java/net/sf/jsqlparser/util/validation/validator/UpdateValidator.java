@@ -28,7 +28,8 @@ public class UpdateValidator extends AbstractValidator<Update> {
             validateFeature(c, update.isUseSelect(), Feature.updateUseSelect);
             validateOptionalFeature(c, update.getOrderByElements(), Feature.updateOrderBy);
             validateOptionalFeature(c, update.getLimit(), Feature.updateLimit);
-            validateOptionalFeature(c, update.getReturningExpressionList(), Feature.updateReturning);
+            validateOptionalFeature(c, update.getReturningExpressionList(),
+                    Feature.updateReturning);
         }
 
         validateOptionalFromItem(update.getTable());
@@ -38,7 +39,8 @@ public class UpdateValidator extends AbstractValidator<Update> {
 
         if (update.isUseSelect()) {
             validateOptionalExpressions(update.getColumns());
-            validateOptional(update.getSelect(), e -> e.getSelectBody().accept(getValidator(SelectValidator.class)));
+            validateOptional(update.getSelect(),
+                    e -> e.accept(getValidator(SelectValidator.class)));
         } else {
             validateOptionalExpressions(update.getColumns());
             validateOptionalExpressions(update.getExpressions());

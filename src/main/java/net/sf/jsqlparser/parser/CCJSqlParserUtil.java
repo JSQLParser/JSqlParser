@@ -35,8 +35,7 @@ import net.sf.jsqlparser.statement.Statements;
 public final class CCJSqlParserUtil {
     public final static int ALLOWED_NESTING_DEPTH = 10;
 
-    private CCJSqlParserUtil() {
-    }
+    private CCJSqlParserUtil() {}
 
     public static Statement parse(Reader statementReader) throws JSQLParserException {
         CCJSqlParser parser = new CCJSqlParser(new StreamProvider(statementReader));
@@ -48,8 +47,7 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * Parses an sql statement while allowing via consumer to configure the used
-     * parser before.
+     * Parses an sql statement while allowing via consumer to configure the used parser before.
      *
      * For instance to activate SQLServer bracket quotation on could use:
      *
@@ -62,7 +60,8 @@ public final class CCJSqlParserUtil {
      * @return
      * @throws JSQLParserException
      */
-    public static Statement parse(String sql, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+    public static Statement parse(String sql, Consumer<CCJSqlParser> consumer)
+            throws JSQLParserException {
         Statement statement = null;
 
         // first, try to parse fast and simple
@@ -73,12 +72,14 @@ public final class CCJSqlParserUtil {
             }
             statement = parseStatement(parser);
         } catch (JSQLParserException ex) {
-            if (getNestingDepth(sql)<=ALLOWED_NESTING_DEPTH) {
+            if (getNestingDepth(sql) <= ALLOWED_NESTING_DEPTH) {
                 CCJSqlParser parser = newParser(sql).withAllowComplexParsing(true);
                 if (consumer != null) {
                     consumer.accept(parser);
                 }
                 statement = parseStatement(parser);
+            } else {
+                throw ex;
             }
         }
         return statement;
@@ -128,13 +129,15 @@ public final class CCJSqlParserUtil {
         return parseExpression(expression, true);
     }
 
-    public static Expression parseExpression(String expression, boolean allowPartialParse) throws JSQLParserException {
+    public static Expression parseExpression(String expression, boolean allowPartialParse)
+            throws JSQLParserException {
         return parseExpression(expression, allowPartialParse, p -> {
         });
     }
 
     @SuppressWarnings("PMD.CyclomaticComplexity")
-    public static Expression parseExpression(String expressionStr, boolean allowPartialParse, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+    public static Expression parseExpression(String expressionStr, boolean allowPartialParse,
+            Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         Expression expression = null;
 
         // first, try to parse fast and simple
@@ -146,22 +149,26 @@ public final class CCJSqlParserUtil {
             try {
                 expression = parser.Expression();
                 if (parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
-                    throw new JSQLParserException("could only parse partial expression " + expression.toString());
+                    throw new JSQLParserException(
+                            "could only parse partial expression " + expression.toString());
                 }
             } catch (ParseException ex) {
                 throw new JSQLParserException(ex);
             }
         } catch (JSQLParserException ex1) {
-            // when fast simple parsing fails, try complex parsing but only if it has a chance to succeed
-            if (getNestingDepth(expressionStr)<=ALLOWED_NESTING_DEPTH) {
+            // when fast simple parsing fails, try complex parsing but only if it has a chance to
+            // succeed
+            if (getNestingDepth(expressionStr) <= ALLOWED_NESTING_DEPTH) {
                 CCJSqlParser parser = newParser(expressionStr).withAllowComplexParsing(true);
                 if (consumer != null) {
                     consumer.accept(parser);
                 }
                 try {
                     expression = parser.Expression();
-                    if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
-                        throw new JSQLParserException("could only parse partial expression " + expression.toString());
+                    if (!allowPartialParse
+                            && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
+                        throw new JSQLParserException(
+                                "could only parse partial expression " + expression.toString());
                     }
                 } catch (JSQLParserException ex) {
                     throw ex;
@@ -174,8 +181,8 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * Parse an conditional expression. This is the expression after a where
-     * clause. Partial parsing is enabled.
+     * Parse an conditional expression. This is the expression after a where clause. Partial parsing
+     * is enabled.
      *
      * @param condExpr
      * @return the expression parsed
@@ -186,47 +193,53 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * Parse an conditional expression. This is the expression after a where
-     * clause.
+     * Parse an conditional expression. This is the expression after a where clause.
      *
      * @param condExpr
      * @param allowPartialParse false: needs the whole string to be processed.
      * @return the expression parsed
      * @see #parseCondExpression(String)
      */
-    public static Expression parseCondExpression(String condExpr, boolean allowPartialParse) throws JSQLParserException {
+    public static Expression parseCondExpression(String condExpr, boolean allowPartialParse)
+            throws JSQLParserException {
         return parseCondExpression(condExpr, allowPartialParse, p -> {
         });
     }
 
     @SuppressWarnings("PMD.CyclomaticComplexity")
-    public static Expression parseCondExpression(String conditionalExpressionStr, boolean allowPartialParse, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+    public static Expression parseCondExpression(String conditionalExpressionStr,
+            boolean allowPartialParse, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
         Expression expression = null;
 
         // first, try to parse fast and simple
         try {
-            CCJSqlParser parser = newParser(conditionalExpressionStr).withAllowComplexParsing(false);
+            CCJSqlParser parser =
+                    newParser(conditionalExpressionStr).withAllowComplexParsing(false);
             if (consumer != null) {
                 consumer.accept(parser);
             }
             try {
                 expression = parser.Expression();
                 if (parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
-                    throw new JSQLParserException("could only parse partial expression " + expression.toString());
+                    throw new JSQLParserException(
+                            "could only parse partial expression " + expression.toString());
                 }
             } catch (ParseException ex) {
                 throw new JSQLParserException(ex);
             }
-        }  catch (JSQLParserException ex1) {
-            if (getNestingDepth(conditionalExpressionStr)<=ALLOWED_NESTING_DEPTH) {
-                CCJSqlParser parser = newParser(conditionalExpressionStr).withAllowComplexParsing(true);
+        } catch (JSQLParserException ex1) {
+            if (getNestingDepth(conditionalExpressionStr) <= ALLOWED_NESTING_DEPTH) {
+                CCJSqlParser parser =
+                        newParser(conditionalExpressionStr).withAllowComplexParsing(true);
                 if (consumer != null) {
                     consumer.accept(parser);
                 }
                 try {
                     expression = parser.Expression();
-                    if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
-                        throw new JSQLParserException("could only parse partial expression " + expression.toString());
+                    if (!allowPartialParse
+                            && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
+                        throw new JSQLParserException(
+                                "could only parse partial expression " + expression.toString());
                     }
                 } catch (JSQLParserException ex) {
                     throw ex;
@@ -256,6 +269,7 @@ public final class CCJSqlParserUtil {
             executorService.shutdown();
 
             statement = future.get( parser.getConfiguration().getAsLong(Feature.timeOut), TimeUnit.MILLISECONDS);
+
         } catch (TimeoutException ex) {
             parser.interrupted = true;
             throw new JSQLParserException("Time out occurred.", ex);
@@ -279,7 +293,8 @@ public final class CCJSqlParserUtil {
      *
      * @return the statements parsed
      */
-    public static Statements parseStatements(String sqls, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+    public static Statements parseStatements(String sqls, Consumer<CCJSqlParser> consumer)
+            throws JSQLParserException {
         Statements statements = null;
 
         // first, try to parse fast and simple
@@ -290,8 +305,9 @@ public final class CCJSqlParserUtil {
             }
             statements = parseStatements(parser);
         } catch (JSQLParserException ex) {
-            // when fast simple parsing fails, try complex parsing but only if it has a chance to succeed
-            if (getNestingDepth(sqls)<=ALLOWED_NESTING_DEPTH) {
+            // when fast simple parsing fails, try complex parsing but only if it has a chance to
+            // succeed
+            if (getNestingDepth(sqls) <= ALLOWED_NESTING_DEPTH) {
                 CCJSqlParser parser = newParser(sqls).withAllowComplexParsing(true);
                 if (consumer != null) {
                     consumer.accept(parser);
@@ -320,6 +336,7 @@ public final class CCJSqlParserUtil {
             executorService.shutdown();
 
             statements = future.get( parser.getConfiguration().getAsLong(Feature.timeOut) , TimeUnit.MILLISECONDS);
+
         } catch (TimeoutException ex) {
             parser.interrupted = true;
             throw new JSQLParserException("Time out occurred.", ex);
@@ -329,7 +346,8 @@ public final class CCJSqlParserUtil {
         return statements;
     }
 
-    public static void streamStatements(StatementListener listener, InputStream is, String encoding) throws JSQLParserException {
+    public static void streamStatements(StatementListener listener, InputStream is, String encoding)
+            throws JSQLParserException {
         try {
             CCJSqlParser parser = newParser(is, encoding);
             while (true) {
@@ -347,27 +365,27 @@ public final class CCJSqlParserUtil {
             throw new JSQLParserException(ex);
         }
     }
-    
+
     public static int getNestingDepth(String sql) {
-      int maxlevel=0;  
-      int level=0;
-      
-      char[] chars = sql.toCharArray();
-      for (char c:chars) {
-          switch(c) {
-              case '(':
-                level++;
-                break;
-              case ')':
-                if (maxlevel<level) {
-                    maxlevel = level;
-                }
-                level--;
-                break;
-              default:
-                // Codazy/PMD insists in a Default statement
-          }
-      }
-      return maxlevel;
+        int maxlevel = 0;
+        int level = 0;
+
+        char[] chars = sql.toCharArray();
+        for (char c : chars) {
+            switch (c) {
+                case '(':
+                    level++;
+                    break;
+                case ')':
+                    if (maxlevel < level) {
+                        maxlevel = level;
+                    }
+                    level--;
+                    break;
+                default:
+                    // Codazy/PMD insists in a Default statement
+            }
+        }
+        return maxlevel;
     }
 }

@@ -9,11 +9,16 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import java.util.*;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 
 public class Join extends ASTNodeAccessImpl {
 
@@ -288,7 +293,8 @@ public class Join extends ASTNodeAccessImpl {
 
     /**
      * Return the "WITHIN" join window (if any)
-     * @return 
+     * 
+     * @return
      */
     public KSQLJoinWindow getJoinWindow() {
         return joinWindow;
@@ -308,7 +314,7 @@ public class Join extends ASTNodeAccessImpl {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        if ( isGlobal() ) {
+        if (isGlobal()) {
             builder.append("GLOBAL ");
         }
 
@@ -350,11 +356,11 @@ public class Join extends ASTNodeAccessImpl {
             builder.append(rightItem).append((joinWindow != null) ? " WITHIN " + joinWindow : "");
         }
 
-        for (Expression onExpression: onExpressions) {
+        for (Expression onExpression : onExpressions) {
             builder.append(" ON ").append(onExpression);
         }
-        if (usingColumns.size()>0) {
-            builder.append(PlainSelect.getFormatedList(usingColumns, "USING", true, true));
+        if (usingColumns.size() > 0) {
+            builder.append(PlainSelect.getFormattedList(usingColumns, "USING", true, true));
         }
 
         return builder.toString();
