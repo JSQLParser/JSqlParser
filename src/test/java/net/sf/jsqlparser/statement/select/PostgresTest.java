@@ -15,6 +15,8 @@ import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
 public class PostgresTest {
     @Test
     public void testExtractFunction() throws JSQLParserException {
@@ -44,9 +46,7 @@ public class PostgresTest {
     @Test
     public void testJSonExpressionIssue1696() throws JSQLParserException {
         String sqlStr = "SELECT '{\"key\": \"value\"}'::json -> 'key' AS X";
-        Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         SelectExpressionItem selectExpressionItem =
                 (SelectExpressionItem) plainSelect.getSelectItems().get(0);
         Assertions.assertEquals("'key'",

@@ -27,18 +27,16 @@ public class CreateViewValidator extends AbstractValidator<CreateView> {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.createView);
             validateFeature(c, createView.isOrReplace(), Feature.createOrReplaceView);
-            validateFeature(c, !ForceOption.NONE.equals(createView.getForce()), Feature.createViewForce);
-            validateFeature(c, !TemporaryOption.NONE.equals(createView.getTemporary()), Feature.createViewTemporary);
+            validateFeature(c, !ForceOption.NONE.equals(createView.getForce()),
+                    Feature.createViewForce);
+            validateFeature(c, !TemporaryOption.NONE.equals(createView.getTemporary()),
+                    Feature.createViewTemporary);
             validateFeature(c, createView.isMaterialized(), Feature.createViewMaterialized);
             validateName(c, NamedObject.view, createView.getView().getFullyQualifiedName(), false);
         }
         SelectValidator v = getValidator(SelectValidator.class);
         Select select = createView.getSelect();
-        if (isNotEmpty(select.getWithItemsList())) {
-            select.getWithItemsList().forEach(wi -> wi.accept(v));
-        }
-        select.getSelectBody().accept(v);
-
+        select.accept(v);
     }
 
 }

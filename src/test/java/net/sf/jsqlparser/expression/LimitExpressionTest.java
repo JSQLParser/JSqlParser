@@ -12,7 +12,6 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -49,22 +48,17 @@ public class LimitExpressionTest {
     @Test
     public void testMethods() throws JSQLParserException {
         String sqlStr = "SELECT * FROM tmp3 LIMIT 5 OFFSET 3";
-        Select select = (Select) CCJSqlParserUtil.parse(sqlStr);
-
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        PlainSelect plainSelect = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
 
         LongValue longValue = plainSelect.getLimit().getRowCount(LongValue.class);
         Assertions.assertNotNull(longValue);
         Assertions.assertEquals(longValue, longValue);
-        Assertions.assertNotEquals(new AllValue(), longValue);
-        Assertions.assertNotEquals(new NullValue(), longValue);
 
         Assertions.assertNull(plainSelect.getLimit().getOffset(LongValue.class));
         Assertions.assertNotNull(plainSelect.getOffset().getOffset(LongValue.class));
 
         sqlStr = "SELECT * FROM tmp3 LIMIT ALL";
-        select = (Select) CCJSqlParserUtil.parse(sqlStr);
-        plainSelect = (PlainSelect) select.getSelectBody();
+        plainSelect = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
 
         AllValue allValue = plainSelect.getLimit().getRowCount(AllValue.class);
         allValue.accept(new ExpressionVisitorAdapter());

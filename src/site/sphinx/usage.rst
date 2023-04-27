@@ -142,7 +142,7 @@ For guidance with the API, use `JSQLFormatter <http://jsqlformatter.manticore-pr
     <pre>
     SQL Text
      └─<font color="#739FCF"><b>Statements</b></font>: <font color="#836B00">net.sf.jsqlparser.statement.select.Select</font>
-        └─<font color="#739FCF"><b>selectBody</b></font>: <font color="#836B00">net.sf.jsqlparser.statement.select.PlainSelect</font>
+        └─<font color="#739FCF"><b>select</b></font>: <font color="#836B00">net.sf.jsqlparser.statement.select.PlainSelect</font>
            ├─<font color="#739FCF"><b>selectItems</b></font> -&gt; Collection&lt;<font color="#836B00">SelectExpressionItem</font>&gt;
            │  └─<font color="#739FCF"><b>selectItems</b></font>: <font color="#836B00">net.sf.jsqlparser.statement.select.SelectExpressionItem</font>
            │     └─<font color="#739FCF"><b>LongValue</b></font>: <font color="#836B00">1</font>

@@ -9,21 +9,22 @@
  */
 package net.sf.jsqlparser.statement.create.view;
 
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectBody;
 
 public class AlterView implements Statement {
 
     private Table view;
-    private SelectBody selectBody;
+    private Select select;
     private boolean useReplace = false;
     private List<String> columnNames = null;
 
@@ -40,12 +41,12 @@ public class AlterView implements Statement {
         this.view = view;
     }
 
-    public SelectBody getSelectBody() {
-        return selectBody;
+    public Select getSelect() {
+        return select;
     }
 
-    public void setSelectBody(SelectBody selectBody) {
-        this.selectBody = selectBody;
+    public void setSelect(Select select) {
+        this.select = select;
     }
 
     public List<String> getColumnNames() {
@@ -77,7 +78,7 @@ public class AlterView implements Statement {
         if (columnNames != null) {
             sql.append(PlainSelect.getStringList(columnNames, true, true));
         }
-        sql.append(" AS ").append(selectBody);
+        sql.append(" AS ").append(select);
         return sql.toString();
     }
 
@@ -86,8 +87,8 @@ public class AlterView implements Statement {
         return this;
     }
 
-    public AlterView withSelectBody(SelectBody selectBody) {
-        this.setSelectBody(selectBody);
+    public AlterView withSelect(Select select) {
+        this.setSelect(select);
         return this;
     }
 
@@ -113,7 +114,7 @@ public class AlterView implements Statement {
         return this.withColumnNames(collection);
     }
 
-    public <E extends SelectBody> E getSelectBody(Class<E> type) {
-        return type.cast(getSelectBody());
+    public <E extends Select> E getSelectBody(Class<E> type) {
+        return type.cast(getSelect());
     }
 }

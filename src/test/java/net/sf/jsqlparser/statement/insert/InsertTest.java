@@ -25,7 +25,10 @@ import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.update.UpdateSet;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.statement.select.Values;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import java.io.StringReader;
 import java.util.Arrays;
@@ -41,10 +44,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
-
 public class InsertTest {
 
     private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
@@ -52,7 +51,8 @@ public class InsertTest {
     @Test
     public void testRegularInsert() throws JSQLParserException {
         String statement = "INSERT INTO mytable (col1, col2, col3) VALUES (?, 'sadfsd', 234)";
-        Insert insert = (Insert) parserManager.parse(new StringReader(statement));
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(statement, true);
+
         assertEquals("mytable", insert.getTable().getName());
         assertEquals(3, insert.getColumns().size());
         assertEquals("col1", insert.getColumns().get(0).getColumnName());
@@ -72,8 +72,7 @@ public class InsertTest {
         ExpressionList expressionList = new ExpressionList(new JdbcParameter(),
                 new StringValue("sadfsd"), new LongValue().withValue(234));
 
-        Select select =
-                new Select().withSelectBody(new ValuesStatement().withExpressions(expressionList));
+        Select select = new Values().withExpressions(expressionList);
 
         Insert insert2 = new Insert().withTable(new Table("mytable"))
                 .withColumns(
@@ -121,7 +120,7 @@ public class InsertTest {
         assertNull(insert.getItemsList());
         assertNotNull(insert.getSelect());
         assertEquals("mytable2",
-                ((Table) ((PlainSelect) insert.getSelect().getSelectBody()).getFromItem())
+                ((Table) ((PlainSelect) insert.getSelect()).getFromItem())
                         .getName());
 
         // toString uses brackets
@@ -130,8 +129,8 @@ public class InsertTest {
 
         assertDeparse(new Insert().withTable(new Table("mytable"))
                 .addColumns(new Column("col1"), new Column("col2"), new Column("col3"))
-                .withSelect(new Select().withSelectBody(new PlainSelect()
-                        .addSelectItems(new AllColumns()).withFromItem(new Table("mytable2")))),
+                .withSelect(new PlainSelect()
+                        .addSelectItems(new AllColumns()).withFromItem(new Table("mytable2"))),
                 statement);
     }
 
@@ -204,8 +203,7 @@ public class InsertTest {
                 .addExpressionLists(new ExpressionList().addExpressions(new Column("d"))
                         .addExpressions(new Column("e")));
 
-        Select select = new Select()
-                .withSelectBody(new ValuesStatement().withExpressions(multiExpressionList));
+        Select select = new Values().withExpressions(multiExpressionList);
 
         Insert insert = new Insert().withTable(new Table("mytable"))
                 .withColumns(Arrays.asList(new Column("col1"), new Column("col2")))

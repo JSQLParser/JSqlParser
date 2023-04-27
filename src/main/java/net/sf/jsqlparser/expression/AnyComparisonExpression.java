@@ -11,7 +11,7 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 
 /**
  * Combines ANY and SOME expressions.
@@ -22,10 +22,10 @@ public class AnyComparisonExpression extends ASTNodeAccessImpl implements Expres
 
     private final ItemsList itemsList;
     private boolean useBracketsForValues = false;
-    private final SubSelect subSelect;
+    private final ParenthesedSelect subSelect;
     private final AnyType anyType;
 
-    public AnyComparisonExpression(AnyType anyType, SubSelect subSelect) {
+    public AnyComparisonExpression(AnyType anyType, ParenthesedSelect subSelect) {
         this.anyType = anyType;
         this.subSelect = subSelect;
         this.itemsList = null;
@@ -37,7 +37,7 @@ public class AnyComparisonExpression extends ASTNodeAccessImpl implements Expres
         this.subSelect = null;
     }
 
-    public SubSelect getSubSelect() {
+    public ParenthesedSelect getSubSelect() {
         return subSelect;
     }
 
@@ -46,13 +46,13 @@ public class AnyComparisonExpression extends ASTNodeAccessImpl implements Expres
     }
 
     public boolean isUsingItemsList() {
-        return itemsList!=null;
+        return itemsList != null;
     }
 
     public boolean isUsingSubSelect() {
-        return subSelect!=null;
+        return subSelect != null;
     }
-    
+
     public boolean isUsingBracketsForValues() {
         return useBracketsForValues;
     }
@@ -77,11 +77,8 @@ public class AnyComparisonExpression extends ASTNodeAccessImpl implements Expres
 
     @Override
     public String toString() {
-        String s = anyType.name() 
-                + " (" 
-                + ( subSelect!=null 
-                    ? subSelect.toString()
-                    : "VALUES " + itemsList.toString())
+        String s = anyType.name() + " ("
+                + (subSelect != null ? subSelect.toString() : "VALUES " + itemsList.toString())
                 + " )";
         return s;
     }
