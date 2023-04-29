@@ -9,14 +9,15 @@
  */
 package net.sf.jsqlparser.expression;
 
-import java.util.Arrays;
-import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.schema.*;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A function as MAX,COUNT...
@@ -269,6 +270,12 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public Function withParameters(ExpressionList parameters) {
         this.setParameters(parameters);
+        return this;
+    }
+
+    public Function withParameters(Expression... parameters) {
+        ExpressionList expressionList = new ExpressionList(parameters).withUsingBrackets(false);
+        this.setParameters(expressionList);
         return this;
     }
 

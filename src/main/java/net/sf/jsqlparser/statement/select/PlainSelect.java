@@ -31,6 +31,7 @@ public class PlainSelect extends Select {
     private List<SelectItem> selectItems;
     private List<Table> intoTables;
     private FromItem fromItem;
+    private List<LateralView> lateralViews;
     private List<Join> joins;
     private Expression where;
     private GroupByElement groupBy;
@@ -106,6 +107,38 @@ public class PlainSelect extends Select {
 
     public void setWhere(Expression where) {
         this.where = where;
+    }
+
+    public List<LateralView> getLateralViews() {
+        return lateralViews;
+    }
+
+    public void setLateralViews(Collection<LateralView> lateralViews) {
+        if (this.lateralViews == null && lateralViews != null) {
+            this.lateralViews = new ArrayList<>();
+        } else {
+            this.lateralViews.clear();
+        }
+
+        if (lateralViews != null) {
+            this.lateralViews.addAll(lateralViews);
+        } else {
+            this.lateralViews = null;
+        }
+    }
+
+    public PlainSelect addLateralView(LateralView lateralView) {
+        if (this.lateralViews == null) {
+            this.lateralViews = new ArrayList<>();
+        }
+
+        this.lateralViews.add(lateralView);
+        return this;
+    }
+
+    public PlainSelect withLateralViews(Collection<LateralView> lateralViews) {
+        this.setLateralViews(lateralViews);
+        return this;
     }
 
     /**
@@ -350,6 +383,11 @@ public class PlainSelect extends Select {
 
         if (fromItem != null) {
             builder.append(" FROM ").append(fromItem);
+            if (lateralViews != null) {
+                for (LateralView lateralView : lateralViews) {
+                    builder.append(" ").append(lateralView);
+                }
+            }
             if (joins != null) {
                 for (Join join : joins) {
                     if (join.isSimple()) {

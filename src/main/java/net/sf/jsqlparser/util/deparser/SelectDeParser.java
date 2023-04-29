@@ -31,6 +31,7 @@ import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.LateralView;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.OptimizeFor;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
@@ -214,6 +215,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (plainSelect.getFromItem() != null) {
             buffer.append(" FROM ");
             plainSelect.getFromItem().accept(this);
+        }
+
+        if (plainSelect.getLateralViews() != null) {
+            for (LateralView lateralView : plainSelect.getLateralViews()) {
+                deparseLateralView(lateralView);
+            }
         }
 
         if (plainSelect.getJoins() != null) {
@@ -483,6 +490,23 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(")");
         }
 
+    }
+
+    public void deparseLateralView(LateralView lateralView) {
+        buffer.append(" LATERAL VIEW");
+
+        if (lateralView.isUsingOuter()) {
+            buffer.append(" OUTER");
+        }
+
+        buffer.append(" ");
+        lateralView.getGeneratorFunction().accept(expressionVisitor);
+
+        if (lateralView.getTableAlias() != null) {
+            buffer.append(" ").append(lateralView.getTableAlias());
+        }
+
+        buffer.append(" ").append(lateralView.getColumnAlias());
     }
 
     @Override

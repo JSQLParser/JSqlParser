@@ -1971,6 +1971,49 @@ ParenthesedSelect ParenthesedSelect() #ParenthesedSelect:
     }
 }
 
+LateralView LateralView() #LateralView:
+{
+    boolean useOuter = false;
+    Function generatorFunction = null;
+    String tableName = null;
+    String columnName = null;
+    Alias tableAlias = null;
+    Alias columnAlias = null;
+}
+{
+    <K_LATERAL> <K_VIEW> [ <K_OUTER> { useOuter=true; } ]
+    generatorFunction = Function()
+    [ LOOKAHEAD(2)
+        tableName=RelObjectNameWithoutStart()
+        {
+            tableAlias = new Alias(tableName, false);
+        }
+    ]
+    <K_AS> columnName = RelObjectNameWithoutStart()
+    {
+        columnAlias = new Alias(columnName, true);
+        return new LateralView(
+            useOuter
+            , generatorFunction
+            , tableAlias
+            , columnAlias
+        );
+    }
+}
+
+List<LateralView> LateralViews():
+{
+    ArrayList<LateralView> lateralViews = new ArrayList<LateralView>();
+    LateralView lateralView = null;
+}
+{
+    lateralView = LateralView() { lateralViews.add(lateralView); }
+    ( lateralView = LateralView() { lateralViews.add(lateralView); } )*
+
+    {
+        return lateralViews;
+    }
+}
 
 LateralSubSelect LateralSubSelect() #LateralSubSelect:
 {
@@ -1990,6 +2033,7 @@ PlainSelect PlainSelect() #PlainSelect:
     PlainSelect plainSelect = new PlainSelect();
     List<SelectItem> selectItems = null;
     FromItem fromItem = null;
+    List<LateralView> lateralViews = null;
     List<Join> joins = null;
     List<SelectItem> distinctOn = null;
     Expression where = null;
@@ -2051,7 +2095,8 @@ PlainSelect PlainSelect() #PlainSelect:
 
     [intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); } ]
     [ LOOKAHEAD(2) <K_FROM> fromItem=FromItem()
-      [ LOOKAHEAD(2) joins=JoinsList() ]
+        [ lateralViews=LateralViews() ]
+        [ LOOKAHEAD(2) joins=JoinsList() ]
     ]
 
     [ LOOKAHEAD(2) ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
@@ -2086,8 +2131,12 @@ PlainSelect PlainSelect() #PlainSelect:
     {
         plainSelect.setSelectItems(selectItems);
         plainSelect.setFromItem(fromItem);
-        if (joins != null && joins.size() > 0)
-            plainSelect.setJoins(joins);
+        if ( lateralViews!=null && lateralViews.size()>0 ) {
+            plainSelect.setLateralViews( lateralViews );
+        }
+        if ( joins!=null && joins.size()>0 ) {
+            plainSelect.setJoins( joins );
+        }
         linkAST(plainSelect,jjtThis);
         return plainSelect;
     }

@@ -9,6 +9,55 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.AllValue;
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.DoubleValue;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.IntervalExpression;
+import net.sf.jsqlparser.expression.JdbcNamedParameter;
+import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.NotExpression;
+import net.sf.jsqlparser.expression.NullValue;
+import net.sf.jsqlparser.expression.SignedExpression;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.TimeValue;
+import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
+import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
+import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.parser.CCJSqlParser;
+import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Database;
+import net.sf.jsqlparser.schema.Server;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.StatementVisitorAdapter;
+import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.test.MemoryLeakVerifier;
+import net.sf.jsqlparser.test.TestUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
@@ -20,31 +69,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import net.sf.jsqlparser.parser.CCJSqlParser;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
-import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
-import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
-import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
-import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
-import net.sf.jsqlparser.expression.operators.relational.InExpression;
-import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.schema.Database;
-import net.sf.jsqlparser.schema.Server;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.StatementVisitorAdapter;
-import net.sf.jsqlparser.statement.Statements;
-import static net.sf.jsqlparser.test.TestUtils.*;
-
-import net.sf.jsqlparser.test.MemoryLeakVerifier;
-import net.sf.jsqlparser.test.TestUtils;
-import org.apache.commons.io.IOUtils;
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertExpressionCanBeDeparsedAs;
+import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -54,16 +83,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.function.Executable;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 @Execution(ExecutionMode.CONCURRENT)
 public class SelectTest {
@@ -5632,5 +5651,53 @@ public class SelectTest {
         inExpression.setRightExpression(select);
 
         Assertions.assertEquals("id IN " + sqlStr, inExpression.toString());
+    }
+
+    @Test
+    void testLateralView() throws JSQLParserException {
+        String sqlStr1 =
+                "SELECT * FROM person\n"
+                        + "    LATERAL VIEW EXPLODE(ARRAY(30, 60)) tableName AS c_age\n"
+                        + "    LATERAL VIEW EXPLODE(ARRAY(40, 80)) AS d_age";
+
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr1, true);
+        Assertions.assertEquals(2, select.getLateralViews().size());
+
+        String sqlStr2 =
+                "SELECT * FROM person\n"
+                        + "    LATERAL VIEW OUTER EXPLODE(ARRAY(30, 60)) AS c_age";
+
+        select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr2, true);
+        Assertions.assertEquals(1, select.getLateralViews().size());
+
+        Function function = new Function()
+                .withName("Explode")
+                .withParameters(new Function()
+                        .withName("Array")
+                        .withParameters(
+                                new LongValue(30), new LongValue(60)));
+        LateralView lateralView1 = new LateralView(
+                true, function, null, new Alias("c_age", true));
+
+
+        select = new PlainSelect()
+                .addSelectItems(new AllColumns())
+                .withFromItem(new Table("person"))
+                .addLateralView(lateralView1);
+        assertStatementCanBeDeparsedAs(select, sqlStr2, true);
+
+        Function function2 = new Function()
+                                    .withName("Explode")
+                                    .withParameters(new Function()
+                                                            .withName("Array")
+                                                            .withParameters(
+                                                                    new LongValue(40), new LongValue(80)));
+        LateralView lateralView2 = SerializationUtils.clone(lateralView1.withOuter(false).withTableAlias( new Alias("tableName")) )
+                                                     .withOuter(false)
+                                                     .withGeneratorFunction(function2)
+                                                     .withTableAlias( null )
+                                                     .withColumnAlias( new Alias("d_age", true));
+        select.addLateralView(lateralView2);
+        assertStatementCanBeDeparsedAs(select, sqlStr1, true);
     }
 }
