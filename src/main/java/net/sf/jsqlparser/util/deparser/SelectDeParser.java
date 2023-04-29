@@ -229,6 +229,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             }
         }
 
+        if (plainSelect.isUsingFinal()) {
+            buffer.append(" FINAL");
+        }
+
         if (plainSelect.getKsqlWindow() != null) {
             buffer.append(" WINDOW ");
             buffer.append(plainSelect.getKsqlWindow().toString());

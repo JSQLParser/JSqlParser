@@ -66,6 +66,7 @@ public class ParserKeywordsUtils {
             ,  { "EXCEPT" , RESTRICTED_SQL2016 }
             ,  { "EXISTS" , RESTRICTED_SQL2016 }
             ,  { "FETCH" , RESTRICTED_SQL2016 }
+            ,  { "FINAL" , RESTRICTED_JSQLPARSER }
             ,  { "FOR" , RESTRICTED_SQL2016 }
             ,  { "FORCE" , RESTRICTED_SQL2016 }
             ,  { "FOREIGN" , RESTRICTED_SQL2016 }

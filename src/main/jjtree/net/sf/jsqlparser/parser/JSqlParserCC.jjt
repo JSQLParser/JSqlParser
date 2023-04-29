@@ -224,6 +224,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_FETCH:"FETCH">
 |   <K_ISOLATION:("UR" | "RS" | "RR" | "CS")>
 |   <K_FILTER: "FILTER">
+|   <K_FINAL: "FINAL">
 |   <K_FIRST: "FIRST">
 |   <K_FALSE: "FALSE">
 |   <K_FLUSH: "FLUSH">
@@ -2108,6 +2109,9 @@ PlainSelect PlainSelect() #PlainSelect:
         [ lateralViews=LateralViews() ]
         [ LOOKAHEAD(2) joins=JoinsList() ]
     ]
+
+    // Clickhouse FINAL as shown at https://clickhouse.com/docs/en/operations/settings/settings#final
+    [ <K_FINAL> { plainSelect.setUsingFinal(true); } ]
 
     [ LOOKAHEAD(2) ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
     [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); }]

@@ -56,6 +56,11 @@ public class PlainSelect extends Select {
 
     private List<WindowDefinition> windowDefinitions;
 
+    /**
+     * @see <a href='https://clickhouse.com/docs/en/sql-reference/statements/select/from#final-modifier'>Clickhouse FINAL</a>
+      */
+    private boolean isUsingFinal = false;
+
     @Deprecated
     public boolean isUseBrackets() {
         return false;
@@ -163,6 +168,19 @@ public class PlainSelect extends Select {
 
     public void setJoins(List<Join> list) {
         joins = list;
+    }
+
+    public boolean isUsingFinal() {
+        return isUsingFinal;
+    }
+
+    public void setUsingFinal(boolean usingFinal) {
+        this.isUsingFinal = usingFinal;
+    }
+
+    public PlainSelect withUsingFinal(boolean usingFinal) {
+        this.setUsingFinal(usingFinal);
+        return this;
     }
 
     @Override
@@ -396,6 +414,10 @@ public class PlainSelect extends Select {
                         builder.append(" ").append(join);
                     }
                 }
+            }
+
+            if (isUsingFinal) {
+                builder.append(" FINAL");
             }
 
             if (ksqlWindow != null) {

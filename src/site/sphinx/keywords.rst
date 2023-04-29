@@ -49,6 +49,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | FETCH                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| FINAL                | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | FOR                  | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | FORCE                | Yes         | Yes       | 
