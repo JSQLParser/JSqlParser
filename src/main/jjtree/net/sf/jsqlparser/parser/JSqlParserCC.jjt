@@ -904,6 +904,7 @@ DeclareStatement Declare(): {
 
 
 SetStatement Set(): {
+    String namePart;
     Object name;
     ArrayList<Expression> expList;
     boolean useEqual = false;
@@ -917,10 +918,19 @@ SetStatement Set(): {
     (
 
         [LOOKAHEAD(3) (tk = <K_LOCAL> | tk = <K_SESSION>) {effectParameter = tk.image; } ]
-        ( LOOKAHEAD(2)
-          <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
-        | (name = UserVariable() ["=" { useEqual=true; } ])
-        | (name = RelObjectNameExt() ["=" { useEqual=true; } ])
+        (
+            LOOKAHEAD(2)
+            <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
+            |
+            (
+                name = UserVariable() ["=" { useEqual=true; } ]
+            )
+            |
+            (
+                name = RelObjectNameExt()
+                ( "." namePart=RelObjectNameExt2() { name+="." + namePart; } )*
+                ["=" { useEqual=true; } ]
+            )
         )
     )
     exp=Expression()
@@ -4027,10 +4037,14 @@ NextValExpression NextValExpression() : {
 JdbcNamedParameter JdbcNamedParameter() : {
     JdbcNamedParameter parameter = new JdbcNamedParameter();
     String name;
+    String namePart;
 }
 {
-    ":" (name=RelObjectNameExt2() { parameter.setName(name); })
+    ":"
+    name=RelObjectNameExt2()
+    ( "." namePart=RelObjectNameExt2() { name+="." + namePart; } )*
     {
+        parameter.setName(name);
         return parameter;
     }
 }

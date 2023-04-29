@@ -9,14 +9,16 @@
  */
 package net.sf.jsqlparser.statement;
 
-import java.util.*;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
+
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -91,6 +93,12 @@ public class SetStatementTest {
 
         // issue #1237
         sqlStr = "SET @@global.time_zone = '01:00'";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    public void testMultiPartVariables() throws JSQLParserException {
+        String sqlStr = "set a.b.c=false";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

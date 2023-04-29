@@ -5710,4 +5710,16 @@ public class SelectTest {
         Assertions.assertEquals("count(*) > 1", select.getHaving().toString());
         Assertions.assertEquals("GROUP BY id", select.getGroupBy().toString());
     }
+
+    @Test
+    void testParameterMultiPartName() throws JSQLParserException {
+        String sqlStr = "SELECT 1 FROM dual WHERE a = :paramMap.aValue";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        assertTrue(select
+                .getWhere(EqualsTo.class)
+                .getRightExpression(JdbcNamedParameter.class)
+                .getName()
+                .equals("paramMap.aValue"));
+    }
 }
