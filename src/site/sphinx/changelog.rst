@@ -8,6 +8,72 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **feat: Refactor SelectBody implementations**
+    
+    Andreas Reichel, 2023-03-27
+  * **feat: Refactor SelectBody implementations**
+    
+    Andreas Reichel, 2023-03-26
+  * **style: Appease PMD/Codacy**
+    
+    Andreas Reichel, 2023-03-25
+  * **style: Appease PMD/Codacy**
+    
+    Andreas Reichel, 2023-03-25
+  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    
+    Andreas Reichel, 2023-03-25
+  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    
+    Andreas Reichel, 2023-03-24
+  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    
+    Andreas Reichel, 2023-03-23
+  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    
+    Andreas Reichel, 2023-03-23
+  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    
+    Andreas Reichel, 2023-03-23
+  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    
+    Andreas Reichel, 2023-03-23
+  * **Assorted Fixes #7 (#1745)**
+    
+    manticore-projects, 2023-03-21
+  * **disable xml report (#1748)**
+    
+    optimizing-ci-builds, 2023-03-21
+  * **build: better Upload Groovy Task**
+    
+    Andreas Reichel, 2023-03-18
+  * **doc: fix reference in the Java Doc**
+    
+    Andreas Reichel, 2023-03-18
+  * **feat: `ConflictTarget` allows multiple `IndexColumnNames`**
+    
+    Andreas Reichel, 2023-03-18
+  * **style: Appease PMD/Codacy**
+    
+    Andreas Reichel, 2023-03-17
+  * **style: expose `SetStatement` key-value list**
+    
+    Andreas Reichel, 2023-03-17
+  * **feat: Add support for Hangul "\uAC00"-"\uD7A3"**
+    
+    Andreas Reichel, 2023-03-17
+  * **style: Remove unused variable**
+    
+    Andreas Reichel, 2023-03-14
+  * **style: Reformat changed files and headers**
+    
+    Andreas Reichel, 2023-03-14
+  * **fix: JSon Operator can use Simple Function**
+    
+    Andreas Reichel, 2023-03-14
+  * **Assorted Fixes #6 (#1740)**
+    
+    manticore-projects, 2023-03-09
   * **test: commit missing test**
     
     Andreas Reichel, 2023-03-07
@@ -23,6 +89,9 @@ Latest Changes since |JSQLPARSER_VERSION|
   * **[maven-release-plugin] prepare for next development iteration**
     
     Tobias Warneke, 2023-02-23
+  * **Oracle Alternative Quoting (#1722)**
+    
+    manticore-projects, 2023-02-07
   * **feat: Support more Statement Separators**
     
     Andreas Reichel, 2023-02-02
@@ -35,6 +104,12 @@ Latest Changes since |JSQLPARSER_VERSION|
   * **doc: fix the issue template**
     
     Andreas Reichel, 2023-02-01
+  * **Issue1673 case within brackets (#1675)**
+    
+    manticore-projects, 2023-01-31
+  * **Added support for SHOW INDEX from table (#1704)**
+    
+    Jayant Kumar Yadav, 2023-01-31
   * **feat: CREATE VIEW ... REFRESH AUTO...**
     
     Andreas Reichel, 2023-01-30
@@ -89,41 +164,6 @@ Latest Changes since |JSQLPARSER_VERSION|
   * **Do not mark SpeedTest for concurrent execution**
     
     Andreas Reichel, 2023-01-21
-  * **Reduce cyclomatic complexity in CreateView.toString**
-    
-    zaza, 2023-01-08
-  * **Fixes #1684: Support CREATE MATERIALIZED VIEW with AUTO REFRESH**
-    
-    zaza, 2022-12-11
-
-Version jsqlparser-4.6
-=============================================================
-
-
-  * **[maven-release-plugin] prepare release jsqlparser-4.6**
-    
-    Tobias Warneke, 2023-02-23
-  * **actualized release plugin**
-    
-    Tobias Warneke, 2023-02-23
-  * **actualized release plugin**
-    
-    Tobias Warneke, 2023-02-23
-  * **Update build.gradle**
-    
-    Tobias, 2023-02-17
-  * **Update README.md**
-    
-    Tobias, 2023-02-17
-  * **Oracle Alternative Quoting (#1722)**
-    
-    manticore-projects, 2023-02-07
-  * **Issue1673 case within brackets (#1675)**
-    
-    manticore-projects, 2023-01-31
-  * **Added support for SHOW INDEX from table (#1704)**
-    
-    Jayant Kumar Yadav, 2023-01-31
   * **Sphinx Website (#1624)**
     
     manticore-projects, 2023-01-20
@@ -133,6 +173,9 @@ Version jsqlparser-4.6
   * **Support DROP MATERIALIZED VIEW statements (#1711)**
     
     Tomasz Zarna, 2023-01-12
+  * **Reduce cyclomatic complexity in CreateView.toString**
+    
+    zaza, 2023-01-08
   * **corrected readme**
     
     Tobias Warneke, 2023-01-04
@@ -145,6 +188,9 @@ Version jsqlparser-4.6
   * **Assorted Fixes #4 (#1676)**
     
     manticore-projects, 2022-12-22
+  * **Fixes #1684: Support CREATE MATERIALIZED VIEW with AUTO REFRESH**
+    
+    zaza, 2022-12-11
   * **Fixed download war script in the renderRR task (#1659)**
     
     haha1903, 2022-12-10
@@ -211,6 +257,26 @@ Version jsqlparser-4.6
   * **[maven-release-plugin] prepare for next development iteration**
     
     Tobias Warneke, 2022-07-22
+
+Version jsqlparser-4.6
+=============================================================
+
+
+  * **[maven-release-plugin] prepare release jsqlparser-4.6**
+    
+    Tobias Warneke, 2023-02-23
+  * **actualized release plugin**
+    
+    Tobias Warneke, 2023-02-23
+  * **actualized release plugin**
+    
+    Tobias Warneke, 2023-02-23
+  * **Update build.gradle**
+    
+    Tobias, 2023-02-17
+  * **Update README.md**
+    
+    Tobias, 2023-02-17
 
 Version jsqlparser-4.5
 =============================================================

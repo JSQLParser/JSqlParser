@@ -65,7 +65,6 @@ import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
 import net.sf.jsqlparser.statement.upsert.*;
 import net.sf.jsqlparser.statement.merge.*;
-import net.sf.jsqlparser.statement.values.*;
 import net.sf.jsqlparser.statement.grant.*;
 import java.util.*;
 
@@ -520,7 +519,7 @@ TOKEN:
 | <#Pc: ["‿"-"⁀","⁔","︳"-"︴","﹍"-"﹏","＿"]>
 
 // CJK Unified Ideographs block according to https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_(Unicode_block)
-| <#CJK: ["\u4E00"-"\u9FFF"]>
+| <#CJK: ["\uAC00"-"\uD7A3", "\u4E00"-"\u9FFF"]>
 
 | < #SPECIAL_ESC: "\\'" > /* Allowing this will break LIKE ... ESCAPE ...  */
 | < #ESC: "\\" ["n","t","b","r","f","\\","\""] >
@@ -614,31 +613,10 @@ Statement SingleStatement() :
 {
     try {
         (
-            LOOKAHEAD(2) (
-                "(" with=WithList()
+           LOOKAHEAD(3) (
+                [ LOOKAHEAD(2) with=WithList() ]
                 (
-                    stm = Select( with ) { ( (Select) stm).setUsingWithBrackets(true); }
-
-                    /* @todo: unsure, if we need to implement those
-                              since DMLs in brackets do not really make any sense
-                    |
-                    stm = Insert( with ) { ( (Insert) stm).setUsingWithBrackets(true); }
-                    |
-                    stm = Update( with ) { ( (Update) stm).setUsingWithBrackets(true); }
-                    |
-                    stm = Delete( with ) { ( (Delete) stm).setUsingWithBrackets(true); }
-                    |
-                    stm = Merge( with ) { ( (Merge) stm).setUsingWithBrackets(true); }
-
-                     */
-                )
-                ")"
-            )
-            |
-            LOOKAHEAD(2) (
-                [ with=WithList() ]
-                (
-                    stm = Select( with )
+                    stm = SelectWithWithItems( with )
                     |
                     stm = Insert( with )
                     |
@@ -649,6 +627,8 @@ Statement SingleStatement() :
                     stm = Merge( with)
                 )
             )
+            |
+            stm = Select()
             |
             LOOKAHEAD(3) stm = Upsert()
             |
@@ -1064,7 +1044,7 @@ ExplainStatement Explain(): {
 } {
     <K_EXPLAIN>
     options=ExplainStatementOptions()
-    select = SelectWithWithItems( )
+    select = Select( )
     {
        ExplainStatement es = new ExplainStatement(select);
        if(options != null && !options.isEmpty()) {
@@ -1237,7 +1217,7 @@ ShowStatement Show(): {
     }
 }
 
-ValuesStatement Values(): {
+Values Values(): {
     ItemsList itemsList;
 } {
     ( <K_VALUES> | <K_VALUE> )
@@ -1245,7 +1225,7 @@ ValuesStatement Values(): {
     itemsList = SimpleExpressionList(false)
 
     {
-        return new ValuesStatement(itemsList);
+        return new Values(itemsList);
     }
 }
 
@@ -1257,7 +1237,7 @@ Update Update( List<WithItem> with ):
 
     UpdateSet updateSet = null;
     Column tableColumn = null;
-    SubSelect subSelect;
+    ParenthesedSelect subSelect;
     Expression valueExpression = null;
     ExpressionList expressionList;
     Expression where = null;
@@ -1277,7 +1257,7 @@ Update Update( List<WithItem> with ):
    <K_UPDATE> { update.setOracleHint(getOracleHint()); }
     [ LOOKAHEAD(2) <K_LOW_PRIORITY> { modifierPriority = UpdateModifierPriority.LOW_PRIORITY; }]
     [ LOOKAHEAD(2) <K_IGNORE> { modifierIgnore = true; }]
-    table=TableWithAlias() startJoins=JoinsList()
+    table=TableWithAlias() [ startJoins=JoinsList() ]
     <K_SET>
     (
         LOOKAHEAD(3) tableColumn=Column() "=" valueExpression=SimpleExpression() { update.addUpdateSet(tableColumn, valueExpression); }
@@ -1294,7 +1274,7 @@ Update Update( List<WithItem> with ):
             "="
 
             (
-                LOOKAHEAD(3) subSelect=SubSelect() { updateSet.add(subSelect.withUseBrackets(false)); }
+                LOOKAHEAD(3) subSelect=ParenthesedSelect() { updateSet.add(subSelect); }
                 |
                 LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
                 |
@@ -1312,7 +1292,7 @@ Update Update( List<WithItem> with ):
                 "="
 
                 (
-                    LOOKAHEAD(3) subSelect=SubSelect() { updateSet.add(subSelect.withUseBrackets(false)); }
+                    LOOKAHEAD(3) subSelect=ParenthesedSelect() { updateSet.add(subSelect); }
                     |
                     LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
                     |
@@ -1326,7 +1306,7 @@ Update Update( List<WithItem> with ):
 
     [ <K_FROM>
       fromItem=FromItem()
-      joins=JoinsList() ]
+      [ joins=JoinsList() ] ]
 
     [ where=WhereClause() { update.setWhere(where); } ]
 
@@ -1344,17 +1324,6 @@ Update Update( List<WithItem> with ):
               .withModifierIgnore(modifierIgnore)
               .withReturningExpressionList(returning);
     }
-}
-
-List<SelectExpressionItem> ListExpressionItem():
-{
-   List<SelectExpressionItem> retval = new ArrayList<SelectExpressionItem>();
-   SelectExpressionItem item;
-}
-{
-   item = SelectExpressionItem() {retval.add(item);}
-   (<K_COMMA> item = SelectExpressionItem() {retval.add(item);} )*
-   { return retval; }
 }
 
 Insert Insert( List<WithItem> with ):
@@ -1413,7 +1382,7 @@ Insert Insert( List<WithItem> with ):
                 setExpressionList.add(exp); } )*
         )
         |
-        select = SelectWithWithItems( )
+        select = Select()
     )
 
     [ LOOKAHEAD(2) <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
@@ -1458,7 +1427,8 @@ Insert Insert( List<WithItem> with ):
 
 InsertConflictTarget  InsertConflictTarget():
 {
-    String indexColumnName = null;
+    String indexColumnName;
+    ArrayList<String> indexColumnNames = new ArrayList<String>();
     Expression indexExpression = null;
     Expression whereExpression = null;
     String constraintName = null ;
@@ -1466,8 +1436,9 @@ InsertConflictTarget  InsertConflictTarget():
 {
     (
         (
-           "("
-            indexColumnName = RelObjectNameExt2()
+            "("
+            indexColumnName = RelObjectNameExt2() { indexColumnNames.add(indexColumnName); }
+            ( "," indexColumnName = RelObjectNameExt2() { indexColumnNames.add(indexColumnName); } )*
 //            |
 //            (
 //                "(" indexExpression = Expression() ")"
@@ -1482,7 +1453,7 @@ InsertConflictTarget  InsertConflictTarget():
         )
     )
 
-    { return new InsertConflictTarget(indexColumnName, indexExpression, whereExpression, constraintName); }
+    { return new InsertConflictTarget(indexColumnNames, indexExpression, whereExpression, constraintName); }
 }
 
 InsertConflictAction InsertConflictAction():
@@ -1493,7 +1464,7 @@ InsertConflictAction InsertConflictAction():
     Expression whereExpression = null;
 
     Column tableColumn = null;
-    SubSelect subSelect;
+    ParenthesedSelect subSelect;
     Expression valueExpression = null;
     ExpressionList expressionList;
 }
@@ -1535,7 +1506,7 @@ InsertConflictAction InsertConflictAction():
                     "="
 
                     (
-                        LOOKAHEAD(3) subSelect=SubSelect() { updateSet.add(subSelect.withUseBrackets(false)); }
+                        LOOKAHEAD(3) subSelect=ParenthesedSelect() { updateSet.add(subSelect); }
                         |
                         LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
                         |
@@ -1553,7 +1524,7 @@ InsertConflictAction InsertConflictAction():
                         "="
 
                         (
-                            LOOKAHEAD(3) subSelect=SubSelect() { updateSet.add(subSelect.withUseBrackets(false)); }
+                            LOOKAHEAD(3) subSelect=ParenthesedSelect() { updateSet.add(subSelect); }
                             |
                             LOOKAHEAD(3) "(" expressionList = ComplexExpressionList() { updateSet.setUsingBracketsForValues(true); updateSet.add(expressionList); } ")"
                             |
@@ -1660,13 +1631,8 @@ Upsert Upsert():
         )*
         |
         (
-            LOOKAHEAD(2) "(" { useSelectBrackets = true; }
-                { upsert.setUseValues(false); }
-                select = SelectWithWithItems( )
-            ")"
-            |
             { upsert.setUseValues(false); }
-            select = SelectWithWithItems( )
+            select = Select()
         )
     )
 
@@ -1727,7 +1693,7 @@ Delete Delete( List<WithItem> with ):
     [ outputClause = OutputClause() {delete.setOutputClause(outputClause); } ]
     <K_FROM> | <K_FROM>) { hasFrom = true; }]
 
-    [ LOOKAHEAD(3) table=TableWithAlias()  joins=JoinsList() ]
+    [ LOOKAHEAD(3) table=TableWithAlias() [ joins=JoinsList() ] ]
     [ <K_USING> usingTable=TableWithAlias() { usingList.add(usingTable); }
           ("," usingTable=TableWithAlias() { usingList.add(usingTable); } )*]
     [where=WhereClause() { delete.setWhere(where); } ]
@@ -1754,19 +1720,15 @@ Delete Delete( List<WithItem> with ):
 Statement Merge( List<WithItem> with ) : {
     Merge merge = new Merge();
     Table table;
-    SubSelect select;
-    Alias alias;
+    FromItem fromItem;
     Expression condition;
     MergeUpdate update;
     MergeInsert insert;
 }
 {
     <K_MERGE> { merge.setOracleHint(getOracleHint()); } <K_INTO> table=TableWithAlias() { merge.setTable(table); }
-    <K_USING>
-        ( table=Table() { merge.setUsingTable(table); }
-            | "(" select=SubSelect() { merge.setUsingSelect(select); } ")" )
-     [ alias = Alias() { merge.setUsingAlias(alias); } ] <K_ON>
-       "(" condition = Expression() { merge.setOnCondition(condition); } ")"
+    <K_USING> fromItem = FromItem() { merge.setFromItem(fromItem); }
+    <K_ON> "(" condition = Expression() { merge.setOnCondition(condition); } ")"
 
     [
         ( LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); }
@@ -1775,11 +1737,6 @@ Statement Merge( List<WithItem> with ) : {
           [ update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
         )
     ]
-
-
-    /*[ LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
-
-    [ insert = MergeInsertClause() { merge.setMergeInsert(insert); } ]*/
 
     { return merge.withWithItemsList(with); }
 }
@@ -1952,37 +1909,80 @@ Table TableWithAlias():
     { return table; }
 }
 
-Select SelectWithWithItems( ):
+Select SelectWithWithItems( List<WithItem> withItems):
 {
     Select select;
+}
+{
+    select = Select() { select.setWithItemsList( withItems ); }
+    {
+        return select;
+    }
+}
+
+Select Select() #Select:
+{
+    Select select = null;
     List<WithItem> with = null;
+    List<OrderByElement> orderByElements = null;
+    Limit limit = null;
+    Offset offset = null;
+    Fetch fetch = null;
+    WithIsolation withIsolation = null;
 }
 {
-    (LOOKAHEAD(2) (  "(" with=WithList()  select = Select( with ) ")" { select.withUsingWithBrackets(true); }   )
-    |
-    (  [with=WithList()] select = Select( with )  ))
+    (
+        [ with=WithList() ]
+        (
+            LOOKAHEAD(3) select = PlainSelect()
+            |
+            LOOKAHEAD(3) select = Values()
+            |
+            LOOKAHEAD(3) select = ParenthesedSelect()
+        )
+        [ select = SetOperationList(select) ]
+
+        [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { select.setOrderByElements(orderByElements); } ]
+
+        [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {select.setLimit(limit);} ]
+        [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { select.setOffset(offset);} ]
+        [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { select.setFetch(fetch);} ]
+        [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { select.setIsolation(withIsolation);} ]
+    )
+
     {
-            return select;
+        linkAST(select, jjtThis);
+        return select.withWithItemsList(with);
     }
 }
 
-Select Select( List<WithItem> with ):
+ParenthesedSelect ParenthesedSelect() #ParenthesedSelect:
 {
-    Select select = new Select();
-    SelectBody selectBody = null;
+    ParenthesedSelect parenthesedSelect = new ParenthesedSelect();
+    Select select;
 }
 {
-    selectBody = SelectBody()
+    "("
+    select = Select()
+    ")"
     {
-        return select.withWithItemsList(with).withSelectBody(selectBody);
+        linkAST(parenthesedSelect,jjtThis);
+        return parenthesedSelect.withSelect(select);
     }
 }
 
-SelectBody SelectBody():
-{ SelectBody selectBody = null; }
+
+LateralSubSelect LateralSubSelect() #LateralSubSelect:
 {
-    selectBody = SetOperationList()
-    { return selectBody; }
+    LateralSubSelect lateralSubSelect = new LateralSubSelect();;
+    Select select;
+}
+{
+    <K_LATERAL> "(" select = Select()  ")" { lateralSubSelect.withSelect(select).setPrefix("LATERAL"); }
+    {
+        linkAST(lateralSubSelect,jjtThis);
+        return lateralSubSelect;
+    }
 }
 
 PlainSelect PlainSelect() #PlainSelect:
@@ -2002,8 +2002,8 @@ PlainSelect PlainSelect() #PlainSelect:
     WithIsolation withIsolation = null;
     OptimizeFor optimize = null;
     Top top = null;
-        Skip skip = null;
-        First first = null;
+    Skip skip = null;
+    First first = null;
     OracleHierarchicalExpression oracleHierarchicalQueryClause = null;
     List<Table> intoTables = null;
     Table updateTable = null;
@@ -2018,34 +2018,30 @@ PlainSelect PlainSelect() #PlainSelect:
 {
     <K_SELECT>
 
-    [ LOOKAHEAD(2) <K_STRAIGHT> { plainSelect.setMySqlHintStraightJoin(true); } ]
+    [ <K_STRAIGHT> { plainSelect.setMySqlHintStraightJoin(true); } ]
 
     { plainSelect.setOracleHint(getOracleHint()); }
 
-    [ LOOKAHEAD(2) skip = Skip() { plainSelect.setSkip(skip);    } ]
+    [ LOOKAHEAD(2) skip = Skip() { plainSelect.setSkip(skip); } ]
 
     [ LOOKAHEAD(2) first = First() { plainSelect.setFirst(first); } ]
 
     [ LOOKAHEAD(2)
-        ( <K_ALL>
+        (
+        <K_ALL>
         |
-            (
-                <K_DISTINCT> { Distinct distinct = new Distinct(); plainSelect.setDistinct(distinct); }
-                    [ LOOKAHEAD(2) "ON" "(" distinctOn=SelectItemsList()  { plainSelect.getDistinct().setOnSelectItems(distinctOn); } ")" ]
-            )
+        (
+            <K_DISTINCT> { Distinct distinct = new Distinct(); plainSelect.setDistinct(distinct); }
+            [ LOOKAHEAD(2) "ON" "(" distinctOn=SelectItemsList() { plainSelect.getDistinct().setOnSelectItems(distinctOn); } ")" ]
+        )
         |
-            (
-                <K_UNIQUE> { Distinct distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
-            )
+        <K_UNIQUE> { Distinct distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
         |
-            (
-                <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(true); }
-            )
+        <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(true); }
         |
-            (
-                <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_NO_CACHE); }
-                | <K_SQL_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_CACHE); }
-            )
+        <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_NO_CACHE); }
+        |
+        <K_SQL_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_CACHE); }
         )
     ]
 
@@ -2054,37 +2050,38 @@ PlainSelect PlainSelect() #PlainSelect:
     selectItems=SelectItemsList()
 
     [intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); } ]
-    [ LOOKAHEAD(2) <K_FROM>
-      fromItem=FromItem()
-      joins=JoinsList() ]
+    [ LOOKAHEAD(2) <K_FROM> fromItem=FromItem()
+      [ LOOKAHEAD(2) joins=JoinsList() ]
+    ]
 
     [ LOOKAHEAD(2) ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
     [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); }]
-    [ oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
-    [ groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
-    [ having=Having() { plainSelect.setHaving(having); }]
-    [LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
-    [ <K_WINDOW>
+    [ LOOKAHEAD(2) oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
+    [ LOOKAHEAD(2) groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
+    [ LOOKAHEAD(2) having=Having() { plainSelect.setHaving(having); }]
+    [ LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
+    [ LOOKAHEAD(2) <K_WINDOW>
         windowName = RelObjectName() <K_AS> winDef = windowDefinition() { List<WindowDefinition> winDefs = new ArrayList<WindowDefinition>(); winDefs.add(winDef.withWindowName(windowName)); }
         ( LOOKAHEAD(2) "," windowName = RelObjectName() <K_AS> winDef = windowDefinition() { winDefs.add(winDef.withWindowName(windowName)); } )*
         { plainSelect.setWindowDefinitions(winDefs); }
     ]
-    [LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements);    }   ]
-    [ <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
-    [LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
-    [LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
-	[LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
-    [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
-    [LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { plainSelect.setWithIsolation(withIsolation);    } ]
-    [LOOKAHEAD(2) <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
-        [ <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ]
+    [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements); } ]
+    [ LOOKAHEAD(2) <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
+    [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
+    [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
+	[ LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
+    [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
+    [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { plainSelect.setIsolation(withIsolation); } ]
+    [ LOOKAHEAD(2) <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
+        [ LOOKAHEAD(2) <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ]
         [ LOOKAHEAD(<K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ]
-        [ <K_NOWAIT> { plainSelect.setNoWait(true); }
-           | <K_SKIP> <K_LOCKED> { plainSelect.setSkipLocked(true); } ] ]
+        [ LOOKAHEAD(2) <K_NOWAIT> { plainSelect.setNoWait(true); }
+               | <K_SKIP> <K_LOCKED> { plainSelect.setSkipLocked(true); } ]
+    ]
 
-    [LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
+    [ LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
 
-    [LOOKAHEAD(3) <K_FOR> <K_XML> <K_PATH> "(" token = <S_CHAR_LITERAL> ")" { plainSelect.setForXmlPath(token.image); } ]
+    [ LOOKAHEAD(3) <K_FOR> <K_XML> <K_PATH> "(" token = <S_CHAR_LITERAL> ")" { plainSelect.setForXmlPath(token.image); } ]
 
     {
         plainSelect.setSelectItems(selectItems);
@@ -2096,117 +2093,76 @@ PlainSelect PlainSelect() #PlainSelect:
     }
 }
 
-SelectBody SetOperationList() #SetOperationList: {
+Select SetOperationList(Select select) #SetOperationList: {
     SetOperationList list = new SetOperationList();
     List<OrderByElement> orderByElements = null;
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
     WithIsolation withIsolation = null;
-    SelectBody select = null;
-    List<SelectBody> selects = new ArrayList<SelectBody>();
+    //Select select = null;
+    List<Select> selects = new ArrayList<Select>();
     List<SetOperation> operations = new ArrayList<SetOperation>();
-    List<Boolean> brackets = new ArrayList<Boolean>();
-    boolean bracket = false;
 }
 {
-    (("(" select=SelectBody() ")" { bracket=true;} )
-                    | ( select=PlainSelect() | select=Values() ) { bracket=false;} ) {selects.add(select);brackets.add(bracket); }   
-    ( LOOKAHEAD(2)
-        ((<K_UNION> { UnionOp union = new UnionOp();linkAST(union,jjtThis);operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
-        | <K_INTERSECT> { operations.add(new IntersectOp()); }
-        | <K_MINUS> { operations.add(new MinusOp()); }
-        | <K_EXCEPT> { operations.add(new ExceptOp()); }
-        )
-
-        (("(" select=SelectBody() ")" { bracket=true;} ) | ( select=PlainSelect() | select=Values() ) { bracket=false;} ) {selects.add(select);brackets.add(bracket);}
-    )*
-
-
-    [ LOOKAHEAD(2) orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
-    [LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {list.setLimit(limit);} ]
-    [LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);} ]
-    [LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);} ]
-    [LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { list.setWithIsolation(withIsolation);} ]
 
     {
-        if (selects.size()==1 && selects.get(0) instanceof PlainSelect && orderByElements==null) {
-            if (brackets.get(0)) {
-                if (limit==null && offset==null && fetch==null && withIsolation==null)
-                    ((PlainSelect)selects.get(0)).setUseBrackets(true);
-                else {
-                    list.setBracketsOpsAndSelects(brackets,selects,operations);
-                    return list;    //brackets with outside limit, offset
-                }
-            }
-            return selects.get(0);
-        } else {
-            if (selects.size()>1 && selects.get(selects.size()-1) instanceof PlainSelect && !brackets.get(brackets.size() - 1)) {
-                PlainSelect ps = (PlainSelect)selects.get(selects.size()-1);
-                if (ps.getOrderByElements() != null) {
-                    list.setOrderByElements(ps.getOrderByElements());
-                    list.setLimit(ps.getLimit());
-                    list.setOffset(ps.getOffset());
-                    ps.setOrderByElements(null);
-                    ps.setLimit(null);
-                    ps.setOffset(null);
-                }
-                if (ps.getFetch() != null) {
-                    list.setFetch(ps.getFetch());
-                    ps.setFetch(null);
-                }
-                if (ps.getWithIsolation() != null) {
-                    list.setWithIsolation(ps.getWithIsolation());
-                    ps.setWithIsolation(null);
-                }
-            }
-            list.setBracketsOpsAndSelects(brackets,selects,operations);
-            return list;
-        }
-    }
-}
-
-SelectBody SetOperationListWithoutIntialSelect(FromItem fromItem) #SetOperationList:
-{
-    SetOperationList list = new SetOperationList();
-    List<OrderByElement> orderByElements = null;
-    Limit limit = null;
-    Offset offset = null;
-    Fetch fetch = null;
-    WithIsolation withIsolation = null;
-    SelectBody select;
-    List<SelectBody> selects = new ArrayList<SelectBody>();
-    List<SetOperation> operations = new ArrayList<SetOperation>();
-    List<Boolean> brackets = new ArrayList<Boolean>();
-    boolean bracket = false;
-}
-{
-    {
-        while (fromItem instanceof ParenthesisFromItem) {
-            fromItem = ((ParenthesisFromItem)fromItem).getFromItem();
-        }
-
-        if (fromItem instanceof SubSelect) {
-            select = ((SubSelect)fromItem).getSelectBody();
-        } else {
-            throw new IllegalArgumentException("this type of set operation is not allowed");
-        }
-
         selects.add(select);
-        brackets.add(true);
-    } 
-    ( LOOKAHEAD(2) 
-        ((<K_UNION> { UnionOp union = new UnionOp();linkAST(union,jjtThis);operations.add(union); } [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ])
-        | <K_INTERSECT> { operations.add(new IntersectOp()); }
-        | <K_MINUS> { operations.add(new MinusOp()); }
-        | <K_EXCEPT> { operations.add(new ExceptOp()); }
+    }
+
+    ( LOOKAHEAD(2) (
+            (
+                <K_UNION> { UnionOp union = new UnionOp(); linkAST(union,jjtThis); operations.add(union); }
+                [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ]
+            )
+            |
+            <K_INTERSECT> { operations.add(new IntersectOp()); }
+            |
+            <K_MINUS> { operations.add(new MinusOp()); }
+            |
+            <K_EXCEPT> { operations.add(new ExceptOp()); }
         )
 
-        "(" select=SelectBody() ")" { bracket=true;}  {selects.add(select);brackets.add(bracket);}
+        (
+            select = PlainSelect()
+            |
+            select = Values()
+            |
+            select = ParenthesedSelect()
+        )
+        {
+            selects.add(select);
+        }
     )+
 
+    [ LOOKAHEAD(2) orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
+    [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { list.setLimit(limit);    } ]
+    [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);    } ]
+    [ LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { list.setLimit(limit);    } ]
+    [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { list.setFetch(fetch);    } ]
+    [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { list.setIsolation(withIsolation);    } ]
+
     {
-        list.setBracketsOpsAndSelects(brackets,selects,operations);
+        if ( selects.get(selects.size()-1) instanceof PlainSelect ) {
+            PlainSelect ps = (PlainSelect)selects.get(selects.size()-1);
+            if (ps.getOrderByElements() != null) {
+                list.setOrderByElements(ps.getOrderByElements());
+                list.setLimit(ps.getLimit());
+                list.setOffset(ps.getOffset());
+                ps.setOrderByElements(null);
+                ps.setLimit(null);
+                ps.setOffset(null);
+            }
+            if (ps.getFetch() != null) {
+                list.setFetch(ps.getFetch());
+                ps.setFetch(null);
+            }
+            if (ps.getIsolation() != null) {
+                list.setIsolation(ps.getIsolation());
+                ps.setIsolation(null);
+            }
+        }
+        list.setBracketsOpsAndSelects(selects,operations);
         return list;
     }
 }
@@ -2224,28 +2180,19 @@ List<WithItem> WithList():
 
 WithItem WithItem() #WithItem:
 {
-    WithItem with = new WithItem();
-    String name = null;
-    List<SelectItem> selectItems = null;
-    SubSelect select = null;
-
-    ExpressionList simpleExpressionList;
+    WithItem withItem = new WithItem();
+    String name;
+    List<SelectItem> selectItems;
+    Select select;
 }
 {
-     [ <K_RECURSIVE> { with.setRecursive(true); } ] name=RelObjectName() { with.setName(name); }
-     [ "(" selectItems=SelectItemsList() ")" { with.setWithItemList(selectItems); } ]
-     <K_AS>
-    // if the next block looks alike an ExpressionList without Brackets, then parse as List
-    ( LOOKAHEAD( "(" <K_VALUES> SimpleExpressionList(true) ")" ) 
-        "(" <K_VALUES>
-            simpleExpressionList = SimpleExpressionList(true) { with.withUseBracketsForValues(false).setItemsList(simpleExpressionList); }
-        ")"
-
-    // Otherwise parse it as a SubSelect
-        | "(" select = SubSelect() { with.setSubSelect(select.withUseBrackets(false)); with.setUseValues(false); } ")"
-            
-    )
-     { return with; }
+     [ <K_RECURSIVE>  { withItem.setRecursive(true); }   ]
+     name=RelObjectName()  { withItem.setAlias( new Alias( name, false)); }
+     [ "(" selectItems=SelectItemsList() ")" { withItem.setWithItemList(selectItems); } ]
+     <K_AS> select = ParenthesedSelect()  { withItem.setSelect(select); }
+     {
+        return withItem;
+     }
 }
 
 List<SelectItem> SelectItemsList():
@@ -2494,7 +2441,7 @@ PivotXml PivotXml():
     List<Column> forColumns;
     List<SelectExpressionItem> singleInItems = null;
     List<ExpressionListItem> multiInItems = null;
-    SelectBody inSelect = null;
+    Select inSelect = null;
 }
 {
     <K_PIVOT> <K_XML> "(" functionItems = PivotFunctionItems() <K_FOR>
@@ -2502,7 +2449,7 @@ PivotXml PivotXml():
     <K_IN> "("
     (
         LOOKAHEAD(2) <K_ANY> { retval.setInAny(true); } |
-        LOOKAHEAD(1) inSelect = SelectBody() |
+        LOOKAHEAD(1) inSelect = Select() |
         LOOKAHEAD(2) singleInItems = PivotSingleInItems() |
         multiInItems = PivotMultiInItems()
     )
@@ -2558,6 +2505,23 @@ List<Table> IntoClause():
     }
 }
 
+FromItem ParenthesedFromItem():
+{
+    ParenthesedFromItem ParenthesedFromItem = new ParenthesedFromItem();
+    FromItem fromItem;
+    List<Join> joins = null;
+}
+{
+    "("
+        fromItem = FromItem()
+        [ joins=JoinsList() ]
+    ")"
+
+    {
+        return ParenthesedFromItem.withFromItem(fromItem).withJoins(joins);
+    }
+}
+
 FromItem FromItem():
 {
     FromItem fromItem = null;
@@ -2567,134 +2531,47 @@ FromItem FromItem():
     Alias alias = null;
     MySQLIndexHint indexHint = null;
     SQLServerHints sqlServerHints = null;
-    SelectBody selectBody;
+    Select select;
 }
 {
     (
-        LOOKAHEAD(ValuesList()) fromItem=ValuesList()
-        |
+
         (
-            (
-                (
-                    "("
-                        (
-                        LOOKAHEAD(3) fromItem2=FromItem()
-                          { fromItem = new ParenthesisFromItem(fromItem2); }
-                        [ fromItem = SubJoin(fromItem2) ]
-                        /* LOOKAHEAD(SubJoin())
-                        fromItem=SubJoin() */
-                        | 
-                        fromItem=SubSelect()
-                        )
-                        [ selectBody = SetOperationListWithoutIntialSelect(fromItem) 
-                            {   
-                                if (!(selectBody instanceof PlainSelect)) {
-                                    fromItem = new SubSelect().withSelectBody(selectBody); 
-                                }
-                            }
-                        ]
-                    ")"
-                    [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
-                )
-                |
-                LOOKAHEAD(TableFunction())
-                fromItem=TableFunction()
-                |
-                fromItem=Table()
-                |
-                fromItem=LateralSubSelect()
+            LOOKAHEAD( TableFunction() ) fromItem=TableFunction()
+            |
+            LOOKAHEAD(3) fromItem=Table()
+            |
+            LOOKAHEAD( ParenthesedFromItem() ) fromItem = ParenthesedFromItem()
+            |
+            LOOKAHEAD(3) (
+                fromItem=ParenthesedSelect()
+                [ LOOKAHEAD(2) pivot=Pivot() { fromItem.setPivot(pivot); } ]
+                [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
             )
-            [ LOOKAHEAD(2) alias=Alias() { fromItem.setAlias(alias); } ]
-			[ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
-			[(LOOKAHEAD(2) pivot=PivotXml()|pivot=Pivot()) { fromItem.setPivot(pivot); } ]
-            [
-                LOOKAHEAD(2)
-                (
-                    indexHint = MySQLIndexHint() {
-                        if (fromItem instanceof Table)
-                            ((Table) fromItem).setHint(indexHint);
-                    }
-                    |
-                    sqlServerHints = SQLServerHints() {
-                        if (fromItem instanceof Table)
-                            ((Table) fromItem).setSqlServerHints(sqlServerHints);
-                    }
-                )
-            ]
+            |
+            fromItem=LateralSubSelect()
         )
+
+        [ LOOKAHEAD(2) alias=Alias() { fromItem.setAlias(alias); } ]
+        [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
+        [ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
+        [
+            LOOKAHEAD(2)
+            (
+                indexHint = MySQLIndexHint() {
+                    if (fromItem instanceof Table)
+                        ((Table) fromItem).setHint(indexHint);
+                }
+                |
+                sqlServerHints = SQLServerHints() {
+                    if (fromItem instanceof Table)
+                        ((Table) fromItem).setSqlServerHints(sqlServerHints);
+                }
+            )
+        ]
     )
     {
         return fromItem;
-    }
-}
-
-FromItem ValuesList():
-{
-    MultiExpressionList exprList = new MultiExpressionList();
-    List<Expression> primaryExpList = new ArrayList<Expression>();
-    ValuesList valuesList = new ValuesList();
-    Expression exp = null;
-    List<String> colNames = null;
-    String colName;
-    Alias alias;
-}
-{
-    "("
-    <K_VALUES>
-    (LOOKAHEAD(3) ("(" exp=SimpleExpression() { primaryExpList.add(exp); }
-            ("," exp=SimpleExpression()  { primaryExpList.add(exp); } )* ")" { exprList.addExpressionList(primaryExpList); }
-
-            ("," "(" exp=SimpleExpression() {
-                    primaryExpList = new ArrayList<Expression>();
-                    primaryExpList.add(exp); }
-                ("," exp=SimpleExpression() { primaryExpList.add(exp); } )* ")" { exprList.addExpressionList(primaryExpList); } )*)
-    |
-    ( exp=SimpleExpression() { exprList.addExpressionList(exp); valuesList.setNoBrackets(true); }
-        ("," exp=SimpleExpression()  { exprList.addExpressionList(exp);} )*
-    ))
-    ")"
-
-    [ LOOKAHEAD(2) alias=Alias() { valuesList.setAlias(alias); }
-
-        [ "("
-            colName = RelObjectName() { colNames = new ArrayList<String>(); colNames.add(colName); }
-            ( "," colName = RelObjectName() { colNames.add(colName); } )*
-            ")" { valuesList.setColumnNames(colNames); } ]
-
-    ]
-
-    {
-        valuesList.setMultiExpressionList(exprList);
-        return valuesList;
-    }
-}
-
-LateralSubSelect LateralSubSelect():
-{
-    LateralSubSelect specialSubSelect;
-    SubSelect subSelect = null;
-}
-{
-    <K_LATERAL> { specialSubSelect = new LateralSubSelect(); }
-     "(" subSelect=SubSelect() ")"
-    {
-        specialSubSelect.setSubSelect(subSelect);
-        return specialSubSelect;
-    }
-}
-
-FromItem SubJoin(FromItem fromItem):
-{
-    Join join = null;
-    List<Join> joinList = null;
-}
-{
-    joinList=SubJoinsList()
-    {
-        SubJoin subJoin = new SubJoin();
-        subJoin.setLeft(fromItem);
-        subJoin.setJoinList(joinList);
-        return subJoin;
     }
 }
 
@@ -2704,19 +2581,10 @@ List<Join> JoinsList():
     Join join = null;
 }
 {
-    ( LOOKAHEAD(2) join=JoinerExpression() { joinsList.add(join); })*
-    { return joinsList; }
-}
-
-List<Join> SubJoinsList():
-{
-    List<Join> joinsList = new ArrayList<Join>();
-    Join join = null;
-}
-{
-
-    (join=JoinerExpression() { joinsList.add(join); })+
-    { return joinsList; }
+    ( LOOKAHEAD(2) join=JoinerExpression() { joinsList.add(join); } )+
+    {
+        return joinsList;
+    }
 }
 
 
@@ -2873,16 +2741,22 @@ OracleHierarchicalExpression OracleHierarchicalQueryClause():
 }
 {
     (
-                <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);}
-                <K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
-                { result.setConnectExpression(expr); }
-            |
-                <K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
-                {
-                    result.setConnectExpression(expr);
-                    result.setConnectFirst(true);
-                }
-                [ <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);} ]
+        (
+            <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);}
+            <K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
+            {
+                result.setConnectExpression(expr);
+            }
+        )
+        |
+        (
+            <K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
+            {
+                result.setConnectExpression(expr);
+                result.setConnectFirst(true);
+            }
+            [ <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);} ]
+        )
     )
     {
         return result;
@@ -2915,7 +2789,7 @@ GroupByElement GroupByColumnReferences():
               )?
           )
           |
-          LOOKAHEAD(2) ( 
+          LOOKAHEAD(2) (
             <K_GROUPING> <K_SETS> "("
                 ( LOOKAHEAD(2) "(" ")" { groupBy.addGroupingSet(new ExpressionList()); }
                     | LOOKAHEAD(3) "(" list = SimpleExpressionList(true) ")" { groupBy.addGroupingSet(list); }
@@ -2927,7 +2801,7 @@ GroupByElement GroupByColumnReferences():
             ")"
           )
           |
-          LOOKAHEAD(2) (  
+          LOOKAHEAD(2) (
             list = ComplexExpressionList() { groupBy.setGroupByExpressionList(list.withUsingBrackets(false)); }
             (
               LOOKAHEAD(2) (
@@ -2980,11 +2854,13 @@ OrderByElement OrderByElement():
 }
 {
     columnReference = Expression()
-    [ ( <K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )) { orderByElement.setAscDescPresent(true); }  ]
-    [<K_NULLS> (
-        <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }  |
-        <K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  }
-        )?
+    [ LOOKAHEAD(2) ( <K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )) { orderByElement.setAscDescPresent(true); }  ]
+    [ LOOKAHEAD(2) <K_NULLS>
+        [
+            <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }
+            |
+            <K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  }
+        ]
     ]
     {
         orderByElement.setExpression(columnReference);
@@ -3047,7 +2923,7 @@ Limit PlainLimit() #PlainLimit:
     <K_LIMIT>
      (
         (
-            LOOKAHEAD(3) "(" rowCountExpression = SubSelect() ")"
+            LOOKAHEAD(3) "(" rowCountExpression = ParenthesedSelect() ")"
             |
             rowCountExpression = Expression()
         ) { limit.setRowCount(rowCountExpression); }
@@ -3070,7 +2946,7 @@ Offset Offset():
              <K_OFFSET>
              offsetExpression=Expression() { offset.setOffset( offsetExpression ); }
 
-             [(<K_ROWS> { offset.setOffsetParam("ROWS"); } | <K_ROW> { offset.setOffsetParam("ROW"); })]
+             [ LOOKAHEAD(2) (<K_ROWS> { offset.setOffsetParam("ROWS"); } | <K_ROW> { offset.setOffsetParam("ROW"); })]
 
         )
     {
@@ -3199,14 +3075,17 @@ First First():
     JdbcParameter jdbc;
 }
 {
-    ( <K_FIRST>                                 { first.setKeyword(First.Keyword.FIRST); }
-            |  <K_LIMIT>                            { first.setKeyword(First.Keyword.LIMIT); }
-        )
     (
-         token=<S_LONG>                      { first.setRowCount(Long.parseLong(token.image)); }
-                | token=<S_IDENTIFIER>              { first.setVariable(token.image); }
-                | jdbc = SimpleJdbcParameter() { first.setJdbcParameter(jdbc); }
-                    /* "?" { first.setJdbcParameter(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { first.getJdbcParameter().setUseFixedIndex(true); first.getJdbcParameter().setIndex(Integer.valueOf(token.image)); } ] */
+        <K_FIRST> { first.setKeyword(First.Keyword.FIRST); }
+        |
+        <K_LIMIT> { first.setKeyword(First.Keyword.LIMIT); }
+    )
+    (
+        token=<S_LONG> { first.setRowCount(Long.parseLong(token.image)); }
+        |
+        token=<S_IDENTIFIER> { first.setVariable(token.image); }
+        |
+        jdbc = SimpleJdbcParameter() { first.setJdbcParameter(jdbc); }
     )
     {
         return first;
@@ -3440,42 +3319,13 @@ Expression InExpression() #InExpression :
       LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  result.setRightExpression(new StringValue(token.image)); }
       | LOOKAHEAD(3) rightExpression = Function() {  result.setRightExpression(rightExpression); }
       | LOOKAHEAD( "(" ComplexExpressionList() ")" ) "(" rightItemsList=ComplexExpressionList() { result.setRightItemsList(rightItemsList.withBrackets(true) ); } ")"
-      | LOOKAHEAD(3) "(" rightExpression = SubSelect() {  result.setRightExpression( ((SubSelect) rightExpression).withUseBrackets(true) ); } ")"
+      | LOOKAHEAD(3) rightExpression = ParenthesedSelect() {  result.setRightExpression( rightExpression ); }
       | LOOKAHEAD(2) rightExpression = SimpleExpression() {  result.setRightExpression(rightExpression); }
     )
     {
         linkAST(result,jjtThis);
         return result;
     }
-}
-
-MultiExpressionList MultiInExpressions():
-{
-   MultiExpressionList multiExpressionList = null;
-   ExpressionList expressionList = null;
-}
-{
-  "(" "("
-   expressionList=SimpleExpressionList(true) {
-       if(multiExpressionList == null) {
-         multiExpressionList = new MultiExpressionList();
-       }
-       multiExpressionList.addExpressionList(expressionList);
-   }
-   // potentially additional expression lists
-   ( LOOKAHEAD(3)
-     ")" "," "(" expressionList=SimpleExpressionList(true)
-     {
-       if(multiExpressionList == null) {
-          multiExpressionList = new MultiExpressionList();
-       }
-       multiExpressionList.addExpressionList(expressionList);
-     }
-   )*
-   ")" ")"
-  {
-    return multiExpressionList;
-  }
 }
 
 Expression Between(Expression leftExpression) :
@@ -3592,20 +3442,6 @@ Expression ExistsExpression():
     {
         result.setRightExpression(rightExpression);
         return result;
-    }
-}
-
-ExpressionList SQLExpressionList():
-{
-    ExpressionList retval = new ExpressionList();
-    List<Expression> expressions = new ArrayList<Expression>();
-    Expression expr = null;
-}
-{
-    expr=Expression() { expressions.add(expr); } ("," expr=Expression() { expressions.add(expr); })*
-    {
-        retval.setExpressions(expressions);
-        return retval;
     }
 }
 
@@ -3763,7 +3599,7 @@ Expression AnyComparisonExpression() :
 {
     AnyComparisonExpression anyComparisonExpr = null;
     AnyType anyType;
-    SubSelect subSelect;
+    ParenthesedSelect subSelect;
     ItemsList simpleExpressionList;
 }
 {
@@ -3777,8 +3613,8 @@ Expression AnyComparisonExpression() :
             <K_VALUES>
             simpleExpressionList = SimpleExpressionList(false) { anyComparisonExpr=new AnyComparisonExpression(anyType, simpleExpressionList).withUseBracketsForValues(false); }
         )
-         // Otherwise parse it as a SubSelect
-        | subSelect = SubSelect() { anyComparisonExpr=new AnyComparisonExpression(anyType, subSelect.withUseBrackets(false)).withUseBracketsForValues(false); }
+         // Otherwise parse it as a ParenthesedSelect
+        | subSelect = ParenthesedSelect() { anyComparisonExpr=new AnyComparisonExpression(anyType, subSelect).withUseBracketsForValues(false); }
             
     )
     ")"
@@ -4058,7 +3894,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
-        | LOOKAHEAD("(" retval=SubSelect() ")", {!interrupted} ) "(" retval=SubSelect() ")"
+        | LOOKAHEAD( ParenthesedSelect() , {!interrupted} ) retval=ParenthesedSelect()
 
         | (
              "(" ( LOOKAHEAD( { getAsBoolean(Feature.allowComplexParsing) && !interrupted } ) list = ComplexExpressionList() |  list = SimpleExpressionList(true) ) ")"
@@ -4234,17 +4070,14 @@ JsonExpression JsonExpression() : {
         LOOKAHEAD(JsonAggregateFunction(), {!interrupted}) expr = JsonAggregateFunction()
         |
         LOOKAHEAD(FullTextSearch(), {!interrupted}) expr = FullTextSearch()
-        /* Do not parse Functions as this will result in a major performance loss
-           The Performance related tests will fail.
         |
-        LOOKAHEAD(Function(), {!interrupted}) expr=Function()
-        */
+        LOOKAHEAD( 3 , {!interrupted && getAsBoolean(Feature.allowComplexParsing) } ) expr=SimpleFunction()
         |
-        LOOKAHEAD(2, {!interrupted}) expr=Column()
+        LOOKAHEAD( 2, {!interrupted} ) expr=Column()
         |
         token=<S_CHAR_LITERAL> { expr = new StringValue(token.image); }
         |
-        LOOKAHEAD("(" expr=SubSelect() ")", {!interrupted} ) "(" expr=SubSelect() ")"
+        LOOKAHEAD( {!interrupted} ) "(" expr=ParenthesedSelect() ")"
     )
 
     ( "::" type=ColDataType() {
@@ -4934,7 +4767,7 @@ Function InternalFunction(Function retval) :
     ExpressionList expressionList = null;
     NamedExpressionList namedExpressionList = null;
     KeepExpression keep = null;
-    SubSelect expr = null;
+    Select expr = null;
     Token tk1 = null;
     Token tk2 = null;
     Expression attributeExpression = null;
@@ -4955,7 +4788,7 @@ Function InternalFunction(Function retval) :
             |
             LOOKAHEAD(3) (expressionList=SimpleExpressionList(false) [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
             |
-            expr = SubSelect() { expr.setUseBrackets(false); expressionList = new ExpressionList(expr).withUsingBrackets(false); }
+            expr = Select() { expressionList = new ExpressionList(expr).withUsingBrackets(false); }
 
         )]
         [  <K_IGNORE> <K_NULLS> {retval.setIgnoreNulls(true); }]
@@ -4977,6 +4810,47 @@ Function InternalFunction(Function retval) :
         retval.setParameters(expressionList);
         retval.setName(funcName);
         retval.setKeep(keep);
+        return retval;
+    }
+}
+
+Function SimpleFunction() #SimpleFunction :
+{
+    Function retval = new Function();
+    List<String> funcName;
+    Expression allColumnsExpression = null;
+    ExpressionList expressionList = null;
+    KeepExpression keep = null;
+    List<OrderByElement> orderByList;
+    boolean ignoreNulls = false;
+}
+{
+    funcName = RelObjectNameList()
+
+    "("
+    [
+        LOOKAHEAD(2)
+        [
+            LOOKAHEAD(2)(<K_DISTINCT> { retval.setDistinct(true); }
+            | <K_ALL> { retval.setAllColumns(true); }
+            | <K_UNIQUE> { retval.setUnique(true); })
+        ]
+        (
+            LOOKAHEAD(4) "*" { allColumnsExpression = new AllColumns(); expressionList = new ExpressionList(allColumnsExpression).withUsingBrackets(false); }
+            |
+            LOOKAHEAD(AllTableColumns()) allColumnsExpression=AllTableColumns() { expressionList = new ExpressionList(allColumnsExpression).withUsingBrackets(false); }
+            |
+            (expressionList=SimpleExpressionList(false) [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ])
+        )
+    ]
+    [  <K_IGNORE> <K_NULLS> {retval.setIgnoreNulls(true); } ]
+    ")"
+
+    [ LOOKAHEAD(2) keep = KeepExpression() ]
+
+    {
+        retval.setParameters(expressionList);
+        retval.setName(funcName);
         return retval;
     }
 }
@@ -5049,22 +4923,6 @@ TableFunction TableFunction():
     }
              [LOOKAHEAD(2) alias=Alias() { functionItem.setAlias(alias); }]
     { return functionItem; }
-}
-
-SubSelect SubSelect() #SubSelect:
-{
-    SelectBody selectBody = null;
-    SubSelect subSelect = new SubSelect();
-    List<WithItem> with = null;
-}
-{
-    [ with=WithList() { subSelect.setWithItemsList(with); } ]
-    selectBody=SelectBody()
-    {
-        subSelect.setSelectBody(selectBody);
-        linkAST(subSelect,jjtThis);
-        return subSelect;
-    }
 }
 
 List<Index.ColumnParams> ColumnNamesWithParamsList() : {
@@ -5410,7 +5268,7 @@ CreateTable CreateTable():
     // see https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2126725
     // table properties , all these are optional
     [ rowMovement = RowMovement() { createTable.setRowMovement(rowMovement); }]
-    [ <K_AS> select = SelectWithWithItems( ) { createTable.setSelect(select, false); }]
+    [ <K_AS> select = Select() { createTable.setSelect(select, false); }]
     [
     <K_LIKE> ( LOOKAHEAD("(" Table() ")") "(" likeTable=Table() { createTable.setLikeTable(likeTable, true); } ")"
                  | likeTable=Table() { createTable.setLikeTable(likeTable, false); } )
@@ -5538,7 +5396,7 @@ CreateView CreateView():
     [LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> {createView.setIfNotExists(true);}]
     [ columnNames = ColumnsNamesList() { createView.setColumnNames(columnNames); } ]
     <K_AS>
-    select=SelectWithWithItems( ) { createView.setSelect(select); }
+    select=Select( ) { createView.setSelect(select); }
     [ <K_WITH> <K_READ> <K_ONLY> { createView.setWithReadOnly(true); } ]
     { return createView; }
 }
@@ -5567,7 +5425,7 @@ AlterView AlterView():
 {
     AlterView alterView = new AlterView();
     Table view = null;
-    SelectBody select = null;
+    Select select = null;
     List<String> columnNames = null;
 }
 {
@@ -5575,7 +5433,7 @@ AlterView AlterView():
     <K_VIEW> view=Table() { alterView.setView(view); }
     [ columnNames = ColumnsNamesList() { alterView.setColumnNames(columnNames); } ]
     <K_AS>
-    select=SelectBody() { alterView.setSelectBody(select); }
+    select=Select() { alterView.setSelect(select); }
     { return alterView; }
 }
 

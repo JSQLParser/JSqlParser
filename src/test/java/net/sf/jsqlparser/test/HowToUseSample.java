@@ -31,14 +31,13 @@ public class HowToUseSample {
     /*
      SQL Text
       └─Statements: net.sf.jsqlparser.statement.select.Select
-         └─selectBody: net.sf.jsqlparser.statement.select.PlainSelect
-            ├─selectItems -> Collection<SelectExpressionItem>
-            │  └─selectItems: net.sf.jsqlparser.statement.select.SelectExpressionItem
-            │     └─LongValue: 1
-            ├─Table: dual
-            └─where: net.sf.jsqlparser.expression.operators.relational.EqualsTo
-               ├─Column: a
-               └─Column: b
+          ├─selectItems -> Collection<SelectExpressionItem>
+          │  └─selectItems: net.sf.jsqlparser.statement.select.SelectExpressionItem
+          │     └─LongValue: 1
+          ├─Table: dual
+          └─where: net.sf.jsqlparser.expression.operators.relational.EqualsTo
+             ├─Column: a
+             └─Column: b
      */
     //@formatter:on
 
@@ -57,9 +56,8 @@ public class HowToUseSample {
         Expression whereExpression =
                 new EqualsTo().withLeftExpression(columnA).withRightExpression(columnB);
 
-        PlainSelect plainSelect = new PlainSelect().addSelectItems(selectExpressionItem)
+        PlainSelect select = new PlainSelect().addSelectItems(selectExpressionItem)
                 .withFromItem(table).withWhere(whereExpression);
-        Select select = new Select().withSelectBody(plainSelect);
 
         // Step 2a: Print into a SQL Statement
         Assertions.assertEquals(expectedSQLStr, select.toString());
@@ -73,13 +71,32 @@ public class HowToUseSample {
     }
 
     @Test
-    public void howToParseStatement() throws JSQLParserException {
+    public void howToParseStatementDeprecated() throws JSQLParserException {
         String sqlStr = "select 1 from dual where a=b";
 
         Statement statement = CCJSqlParserUtil.parse(sqlStr);
         if (statement instanceof Select) {
             Select select = (Select) statement;
             PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+
+            SelectExpressionItem selectExpressionItem =
+                    (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+
+            Table table = (Table) plainSelect.getFromItem();
+
+            EqualsTo equalsTo = (EqualsTo) plainSelect.getWhere();
+            Column a = (Column) equalsTo.getLeftExpression();
+            Column b = (Column) equalsTo.getRightExpression();
+        }
+    }
+
+    @Test
+    public void howToParseStatement() throws JSQLParserException {
+        String sqlStr = "select 1 from dual where a=b";
+
+        Statement statement = CCJSqlParserUtil.parse(sqlStr);
+        if (statement instanceof Select) {
+            PlainSelect plainSelect = (PlainSelect) statement;
 
             SelectExpressionItem selectExpressionItem =
                     (SelectExpressionItem) plainSelect.getSelectItems().get(0);
@@ -124,7 +141,7 @@ public class HowToUseSample {
         // Define a Statement Visitor for dispatching the Statements
         StatementVisitorAdapter statementVisitor = new StatementVisitorAdapter() {
             public void visit(Select select) {
-                select.getSelectBody().accept(selectVisitorAdapter);
+                select.accept(selectVisitorAdapter);
             }
         };
 

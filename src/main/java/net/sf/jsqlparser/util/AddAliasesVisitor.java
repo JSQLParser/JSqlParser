@@ -9,10 +9,23 @@
  */
 package net.sf.jsqlparser.util;
 
-import java.util.*;
-import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.statement.select.*;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.SelectItemVisitor;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.select.Values;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Add aliases to every column and expression selected by a select - statement. Existing aliases are
@@ -30,6 +43,11 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
     private String prefix = "A";
 
     @Override
+    public void visit(ParenthesedSelect parenthesedSelect) {
+        parenthesedSelect.getSelect().accept(this);
+    }
+
+    @Override
     public void visit(PlainSelect plainSelect) {
         firstRun = true;
         counter = 0;
@@ -45,7 +63,7 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
     @Override
     public void visit(SetOperationList setOpList) {
-        for (SelectBody select : setOpList.getSelects()) {
+        for (Select select : setOpList.getSelects()) {
             select.accept(this);
         }
     }
@@ -87,16 +105,27 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
     @Override
     public void visit(WithItem withItem) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); // To change body of generated
+                                                                    // methods, choose Tools |
+                                                                    // Templates.
     }
 
     @Override
     public void visit(AllColumns allColumns) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); // To change body of generated
+                                                                    // methods, choose Tools |
+                                                                    // Templates.
     }
 
     @Override
-    public void visit(ValuesStatement aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void visit(Values aThis) {
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of
+                                                                       // generated methods, choose
+                                                                       // Tools | Templates.
+    }
+
+    @Override
+    public void visit(LateralSubSelect lateralSubSelect) {
+        lateralSubSelect.getSelect().accept(this);
     }
 }

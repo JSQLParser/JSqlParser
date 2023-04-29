@@ -31,9 +31,7 @@ import net.sf.jsqlparser.parser.Node;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
@@ -376,16 +374,15 @@ public class TestUtils {
         Statement statement = CCJSqlParserUtil.parse(sql);
         if (statement instanceof Select) {
             Select stmt = (Select) statement;
-            if (stmt.getSelectBody() instanceof PlainSelect) {
-                PlainSelect ps = (PlainSelect) stmt.getSelectBody();
-                OracleHint hint = ps.getOracleHint();
+            if (stmt instanceof PlainSelect) {
+                OracleHint hint = OracleHint.getHintFromSelectBody(stmt);
                 assertNotNull(hint);
                 assertEquals(hints[0], hint.getValue());
-            } else if (stmt.getSelectBody() instanceof SetOperationList) {
-                SetOperationList setop = (SetOperationList) stmt.getSelectBody();
-                for (int i = 0; i < setop.getSelects().size(); i++) {
-                    PlainSelect pselect = (PlainSelect) setop.getSelects().get(i);
-                    OracleHint hint = pselect.getOracleHint();
+            } else if (stmt instanceof SetOperationList) {
+                SetOperationList setOperationList = (SetOperationList) stmt;
+                for (int i = 0; i < setOperationList.getSelects().size(); i++) {
+                    OracleHint hint =
+                            OracleHint.getHintFromSelectBody(setOperationList.getSelects().get(i));
                     if (hints[i] == null) {
                         assertNull(hint);
                     } else {

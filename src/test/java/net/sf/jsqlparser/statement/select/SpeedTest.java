@@ -9,13 +9,6 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
@@ -23,6 +16,13 @@ import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.junit.jupiter.api.Test;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SpeedTest {
 
@@ -32,8 +32,8 @@ public class SpeedTest {
     @Test
     public void testSpeed() throws Exception {
         // all the statements in testfiles/simple_parsing.txt
-        BufferedReader in = new BufferedReader(new InputStreamReader(SpeedTest.class.
-                getResourceAsStream("/simple_parsing.txt")));
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(SpeedTest.class.getResourceAsStream("/simple_parsing.txt")));
         CCJSqlParserManagerTest d;
         List<String> statementsList = new ArrayList<>();
 
@@ -45,8 +45,8 @@ public class SpeedTest {
             statementsList.add(statement);
         }
         in.close();
-        in = new BufferedReader(new InputStreamReader(SpeedTest.class.
-                getResourceAsStream("/RUBiS-select-requests.txt")));
+        in = new BufferedReader(new InputStreamReader(
+                SpeedTest.class.getResourceAsStream("/RUBiS-select-requests.txt")));
 
         // all the statements in testfiles/RUBiS-select-requests.txt
         while (true) {
@@ -85,11 +85,11 @@ public class SpeedTest {
         }
         in.close();
 
-        String statement = "";
+        String statement;
         int numTests = 0;
         // it seems that the very first parsing takes a while, so I put it aside
-        Statement parsedStm = parserManager.
-                parse(new StringReader(statement = statementsList.get(0)));
+        Statement parsedStm =
+                parserManager.parse(new StringReader(statement = statementsList.get(0)));
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
         List<Select> parsedSelects = new ArrayList<>(NUM_REPS_500 * statementsList.size());
         long time = System.currentTimeMillis();
@@ -97,9 +97,8 @@ public class SpeedTest {
         // measure the time to parse NUM_REPS times all statements in the 2 files
         for (int i = 0; i < NUM_REPS_500; i++) {
             try {
-                Iterator<String> iter = statementsList.iterator();
-                while (iter.hasNext()) {
-                    statement = iter.next();
+                for (String s : statementsList) {
+                    statement = s;
                     parsedStm = parserManager.parse(new StringReader(statement));
                     numTests++;
                     if (parsedStm instanceof Select) {
@@ -112,7 +111,7 @@ public class SpeedTest {
             }
         }
         long elapsedTime = System.currentTimeMillis() - time;
-        long statementsPerSecond = numTests * 1000 / elapsedTime;
+        long statementsPerSecond = numTests * 1000L / elapsedTime;
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(7);
         df.setMinimumFractionDigits(4);
@@ -123,20 +122,19 @@ public class SpeedTest {
         numTests = 0;
         time = System.currentTimeMillis();
         // measure the time to get the tables names from all the SELECTs parsed before
-        Iterator<Select> iter = parsedSelects.iterator();
-        while (iter.hasNext()) {
-            Select select = iter.next();
+        for (Select select : parsedSelects) {
             if (select != null) {
                 numTests++;
-                List<String> tableListRetr = tablesNamesFinder.getTableList(select);
+                tablesNamesFinder.getTableList((Statement) select);
             }
         }
         elapsedTime = System.currentTimeMillis() - time;
-        statementsPerSecond = numTests * 1000 / elapsedTime;
-        System.out.
-                println(numTests + " select scans for table name executed in " + elapsedTime + " milliseconds");
+        statementsPerSecond = numTests * 1000L / elapsedTime;
+        System.out.println(numTests + " select scans for table name executed in " + elapsedTime
+                + " milliseconds");
         System.out.println(" (" + statementsPerSecond + " select scans for table name per second,  "
-                + df.format(1.0 / statementsPerSecond) + " seconds per select scans for table name)");
+                + df.format(1.0 / statementsPerSecond)
+                + " seconds per select scans for table name)");
 
     }
 }

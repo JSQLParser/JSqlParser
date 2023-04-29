@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.expression;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -20,12 +18,15 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
-import net.sf.jsqlparser.statement.select.SubSelect;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import org.junit.jupiter.api.Test;
 
 /**
  * @author tw
@@ -35,8 +36,8 @@ public class ExpressionVisitorAdapterTest {
     @Test
     public void testInExpressionProblem() throws JSQLParserException {
         final List<Object> exprList = new ArrayList<>();
-        Select select = (Select) CCJSqlParserUtil.parse("select * from foo where x in (?,?,?)");
-        PlainSelect plainSelect = select.getSelectBody(PlainSelect.class);
+        PlainSelect plainSelect =
+                (PlainSelect) CCJSqlParserUtil.parse("select * from foo where x in (?,?,?)");
         Expression where = plainSelect.getWhere();
         where.accept(new ExpressionVisitorAdapter() {
 
@@ -55,9 +56,8 @@ public class ExpressionVisitorAdapterTest {
     @Test
     public void testInExpression() throws JSQLParserException {
         final List<Object> exprList = new ArrayList<>();
-        Select select = (Select) CCJSqlParserUtil.
-                parse("select * from foo where (a,b) in (select a,b from foo2)");
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        PlainSelect plainSelect = (PlainSelect) CCJSqlParserUtil
+                .parse("select * from foo where (a,b) in (select a,b from foo2)");
         Expression where = plainSelect.getWhere();
         where.accept(new ExpressionVisitorAdapter() {
 
@@ -70,15 +70,14 @@ public class ExpressionVisitorAdapterTest {
         });
 
         assertTrue(exprList.get(0) instanceof RowConstructor);
-        assertTrue(exprList.get(1) instanceof SubSelect);
+        assertTrue(exprList.get(1) instanceof Select);
     }
 
     @Test
     public void testXorExpression() throws JSQLParserException {
         final List<Expression> exprList = new ArrayList<>();
-        Select select = (Select) CCJSqlParserUtil.
-                parse("SELECT * FROM table WHERE foo XOR bar");
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        PlainSelect plainSelect =
+                (PlainSelect) CCJSqlParserUtil.parse("SELECT * FROM table WHERE foo XOR bar");
         Expression where = plainSelect.getWhere();
         where.accept(new ExpressionVisitorAdapter() {
 
@@ -103,9 +102,9 @@ public class ExpressionVisitorAdapterTest {
         testOracleHintExpression("select /*+ MYHINT */ * from foo", "MYHINT", false);
     }
 
-    public static void testOracleHintExpression(String sql, String hint, boolean singleLine) throws JSQLParserException {
-        Select select = (Select) CCJSqlParserUtil.parse(sql);
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+    public static void testOracleHintExpression(String sql, String hint, boolean singleLine)
+            throws JSQLParserException {
+        PlainSelect plainSelect = (PlainSelect) CCJSqlParserUtil.parse(sql);
         final OracleHint[] holder = new OracleHint[1];
         assertNotNull(plainSelect.getOracleHint());
         plainSelect.getOracleHint().accept(new ExpressionVisitorAdapter() {
@@ -125,9 +124,8 @@ public class ExpressionVisitorAdapterTest {
     @Test
     public void testCurrentTimestampExpression() throws JSQLParserException {
         final List<String> columnList = new ArrayList<String>();
-        Select select = (Select) CCJSqlParserUtil.
-                parse("select * from foo where bar < CURRENT_TIMESTAMP");
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        PlainSelect plainSelect = (PlainSelect) CCJSqlParserUtil
+                .parse("select * from foo where bar < CURRENT_TIMESTAMP");
         Expression where = plainSelect.getWhere();
         where.accept(new ExpressionVisitorAdapter() {
 
@@ -145,9 +143,8 @@ public class ExpressionVisitorAdapterTest {
     @Test
     public void testCurrentDateExpression() throws JSQLParserException {
         final List<String> columnList = new ArrayList<String>();
-        Select select = (Select) CCJSqlParserUtil.
-                parse("select * from foo where bar < CURRENT_DATE");
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        PlainSelect plainSelect =
+                (PlainSelect) CCJSqlParserUtil.parse("select * from foo where bar < CURRENT_DATE");
         Expression where = plainSelect.getWhere();
         where.accept(new ExpressionVisitorAdapter() {
 
@@ -164,9 +161,8 @@ public class ExpressionVisitorAdapterTest {
 
     @Test
     public void testSubSelectExpressionProblem() throws JSQLParserException {
-        Select select = (Select) CCJSqlParserUtil.
-                parse("SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE t2.col2 = t1.col1)");
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        PlainSelect plainSelect = (PlainSelect) CCJSqlParserUtil
+                .parse("SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE t2.col2 = t1.col1)");
         Expression where = plainSelect.getWhere();
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         adapter.setSelectVisitor(new SelectVisitorAdapter());
@@ -207,7 +203,8 @@ public class ExpressionVisitorAdapterTest {
 
     @Test
     public void testAtTimeZoneExpression() throws JSQLParserException {
-        Expression expr = CCJSqlParserUtil.parseExpression("DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney')");
+        Expression expr = CCJSqlParserUtil
+                .parseExpression("DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney')");
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         expr.accept(adapter);
     }
@@ -215,38 +212,33 @@ public class ExpressionVisitorAdapterTest {
     @Test
     public void testJsonFunction() throws JSQLParserException {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
-        CCJSqlParserUtil
-                .parseExpression("JSON_OBJECT( KEY 'foo' VALUE bar, KEY 'foo' VALUE bar)")
+        CCJSqlParserUtil.parseExpression("JSON_OBJECT( KEY 'foo' VALUE bar, KEY 'foo' VALUE bar)")
                 .accept(adapter);
-        CCJSqlParserUtil
-                .parseExpression("JSON_ARRAY( (SELECT * from dual) )")
-                .accept(adapter);
+        CCJSqlParserUtil.parseExpression("JSON_ARRAY( (SELECT * from dual) )").accept(adapter);
     }
 
     @Test
     public void testJsonAggregateFunction() throws JSQLParserException {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
-        CCJSqlParserUtil
-                .parseExpression("JSON_OBJECTAGG( KEY foo VALUE bar NULL ON NULL WITH UNIQUE KEYS ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name )")
+        CCJSqlParserUtil.parseExpression(
+                "JSON_OBJECTAGG( KEY foo VALUE bar NULL ON NULL WITH UNIQUE KEYS ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name )")
                 .accept(adapter);
-        CCJSqlParserUtil
-                .parseExpression("JSON_ARRAYAGG( a FORMAT JSON ABSENT ON NULL ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name )")
+        CCJSqlParserUtil.parseExpression(
+                "JSON_ARRAYAGG( a FORMAT JSON ABSENT ON NULL ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name )")
                 .accept(adapter);
     }
 
     @Test
     public void testConnectedByRootExpression() throws JSQLParserException {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
-        CCJSqlParserUtil
-                .parseExpression("CONNECT_BY_ROOT last_name as name")
-                .accept(adapter);
+        CCJSqlParserUtil.parseExpression("CONNECT_BY_ROOT last_name as name").accept(adapter);
     }
 
     @Test
     public void testRowConstructor() throws JSQLParserException {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
-        CCJSqlParserUtil
-                .parseExpression("CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))")
+        CCJSqlParserUtil.parseExpression(
+                "CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))")
                 .accept(adapter);
     }
 }

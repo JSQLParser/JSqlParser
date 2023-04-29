@@ -13,3 +13,4 @@ select varchar2_ntt('a','b','c')
      from   dual
 
 --@FAILURE: Encountered unexpected token: "except" "EXCEPT" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered unexpected token: "varchar2_ntt" <S_IDENTIFIER> recorded first on Mar 25, 2023, 9:18:30 AM
