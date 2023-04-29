@@ -55,7 +55,7 @@ public class LateralView implements Serializable {
 
     public LateralView withTableAlias(Alias tableAlias) {
         // "AS" is not allowed here, so overwrite hard
-        this.setTableAlias( tableAlias !=null ? tableAlias.withUseAs(false) : null);
+        this.setTableAlias(tableAlias != null ? tableAlias.withUseAs(false) : null);
         return this;
     }
 
@@ -68,7 +68,7 @@ public class LateralView implements Serializable {
     }
 
     public LateralView withColumnAlias(Alias columnAlias) {
-        //"AS" is required here, so overwrite
+        // "AS" is required here, so overwrite
         this.setColumnAlias(columnAlias.withUseAs(true));
         return this;
     }

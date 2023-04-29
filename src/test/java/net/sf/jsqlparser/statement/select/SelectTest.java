@@ -5687,17 +5687,27 @@ public class SelectTest {
         assertStatementCanBeDeparsedAs(select, sqlStr2, true);
 
         Function function2 = new Function()
-                                    .withName("Explode")
-                                    .withParameters(new Function()
-                                                            .withName("Array")
-                                                            .withParameters(
-                                                                    new LongValue(40), new LongValue(80)));
-        LateralView lateralView2 = SerializationUtils.clone(lateralView1.withOuter(false).withTableAlias( new Alias("tableName")) )
-                                                     .withOuter(false)
-                                                     .withGeneratorFunction(function2)
-                                                     .withTableAlias( null )
-                                                     .withColumnAlias( new Alias("d_age", true));
+                .withName("Explode")
+                .withParameters(new Function()
+                        .withName("Array")
+                        .withParameters(
+                                new LongValue(40), new LongValue(80)));
+        LateralView lateralView2 = SerializationUtils
+                .clone(lateralView1.withOuter(false).withTableAlias(new Alias("tableName")))
+                .withOuter(false)
+                .withGeneratorFunction(function2)
+                .withTableAlias(null)
+                .withColumnAlias(new Alias("d_age", true));
         select.addLateralView(lateralView2);
         assertStatementCanBeDeparsedAs(select, sqlStr1, true);
+    }
+
+    @Test
+    void testOracleHavingBeforeGroupBy() throws JSQLParserException {
+        String sqlStr = "SELECT id from a having count(*) > 1 group by id";
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+
+        Assertions.assertEquals("count(*) > 1", select.getHaving().toString());
+        Assertions.assertEquals("GROUP BY id", select.getGroupBy().toString());
     }
 }

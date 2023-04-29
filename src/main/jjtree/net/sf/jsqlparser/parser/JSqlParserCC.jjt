@@ -2102,6 +2102,8 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
     [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); }]
     [ LOOKAHEAD(2) oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
+    // Oracle supports "HAVING" before "GROUP BY", we will simply parse that but won't pay special attention to the order
+    [ LOOKAHEAD(2) having=Having() { plainSelect.setHaving(having); }]
     [ LOOKAHEAD(2) groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
     [ LOOKAHEAD(2) having=Having() { plainSelect.setHaving(having); }]
     [ LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
