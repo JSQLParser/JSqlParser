@@ -684,6 +684,16 @@ public class ExpressionVisitorAdapter
 
     }
 
+    @Override
+    public void visit(TranscodingFunction transcodingFunction) {
+
+    }
+
+    @Override
+    public void visit(TrimFunction trimFunction) {
+
+    }
+
     public void visit(ColumnDefinition columnDefinition) {
         columnDefinition.accept(this);
     }

@@ -55,6 +55,8 @@ import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.TimezoneExpression;
+import net.sf.jsqlparser.expression.TranscodingFunction;
+import net.sf.jsqlparser.expression.TrimFunction;
 import net.sf.jsqlparser.expression.TryCastExpression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
@@ -450,6 +452,34 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
             selectBody.accept(selectVisitor);
         }
+    }
+
+    @Override
+    public void visit(TranscodingFunction transcodingFunction) {
+        buffer.append("CONVERT( ");
+        transcodingFunction.getExpression().accept(this);
+        buffer.append(" USING ")
+                .append(transcodingFunction.getTranscodingName())
+                .append(" )");
+    }
+
+    public void visit(TrimFunction trimFunction) {
+        buffer.append("Trim(");
+
+        if (trimFunction.getTrimSpecification() != null) {
+            buffer.append(" ").append(trimFunction.getTrimSpecification());
+        }
+
+        if (trimFunction.getExpression() != null) {
+            buffer.append(" ");
+            trimFunction.getExpression().accept(this);
+        }
+
+        if (trimFunction.getFromExpression() != null) {
+            buffer.append(trimFunction.isUsingFromKeyword() ? " FROM " : ", ");
+            trimFunction.getFromExpression().accept(this);
+        }
+        buffer.append(" )");
     }
 
     @Override

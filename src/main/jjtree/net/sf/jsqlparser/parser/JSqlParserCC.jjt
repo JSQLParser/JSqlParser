@@ -181,6 +181,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CONNECT:"CONNECT">
 |   <K_CONNECT_BY_ROOT: "CONNECT_BY_ROOT"> 
 |   <K_CONSTRAINT:"CONSTRAINT">
+|   <K_CONVERT:"CONVERT">
 |   <K_COSTS: "COSTS">
 |   <K_CREATE:"CREATE">
 |   <K_CROSS:"CROSS">
@@ -400,6 +401,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
                          | ("CURRENT" ( "_" | (" ")+ ) "DATE")
                        ) ( "()" )?>
 |   <K_TIMEOUT:"TIMEOUT">
+|   <K_TRIM:"TRIM">
 |   <K_TO:"TO">
 |   <K_TOP:"TOP">
 |   <K_TRAILING:"TRAILING">
@@ -928,8 +930,7 @@ SetStatement Set(): {
             )
             |
             (
-                name = RelObjectNameExt()
-                ( "." namePart=RelObjectNameExt2() { name+="." + namePart; } )*
+                name = IdentifierChain()
                 ["=" { useEqual=true; } ]
             )
         )
@@ -1833,7 +1834,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> 
-       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BINARY" | tk="BIT" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONFLICT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATABASE" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GUARD" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGISTER" | tk="RENAME" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TO" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLTEXT" | tk="YAML" | tk="YES" | tk="ZONE" )
+       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BINARY" | tk="BIT" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONFLICT" | tk="CONVERT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATABASE" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GUARD" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGISTER" | tk="RENAME" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TO" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLTEXT" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
 
@@ -3551,38 +3552,10 @@ ExpressionList ComplexExpressionList() #ExpressionList:
     }
 }
 
-// trim( [leading|trailing|both] expr from expr)
-// The [leading|trailing|both] token has already been consumed
-NamedExpressionList NamedExpressionList1():
-{
-    NamedExpressionList retval = new NamedExpressionList();
-    List<Expression> expressions = new ArrayList<Expression>();
-    List<String> names = new ArrayList<String>();
-    Expression expr1 = null;
-    Expression expr2 = null;
-	String name = "";
-    Token tk1 = null;
-    Token tk2 = null;
-}
-{
-    (
-		(tk1=<K_BOTH>|tk1=<K_LEADING>|tk1=<K_TRAILING>) { names.add(tk1.image); }
-		expr1=SimpleExpression()
-		(tk2=<K_FROM>|tk2=<K_IN>|tk2=<K_PLACING>)
-		expr2=SimpleExpression()
-		{ expressions.add(expr1); names.add(tk2.image); expressions.add(expr2);}
-    )
-
-    {
-        retval.setNames(names);
-        retval.setExpressions(expressions);
-        return retval;
-    }
-}
-
+// @Todo: Refactor this with proper SQL:2016 functions according to https://manticore-projects.com/SQL2016Parser/syntax.html#character-value-function
 // substring(expr1 from expr2)
 // substring(expr1 from expr2 for expr3)
-// trim(expr1 from expr2)
+// trim(expr1 from expr2)   <-- Superceded by TrimFunction() below
 // position(expr1 in expr2)
 // overlay(expr1 placing expr2 from expr3)
 // overlay(expr1 placing expr2 from expr3 for expr4)
@@ -3934,7 +3907,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval=SafeCastExpression()
 
-        //| LOOKAHEAD(2) retval=RowConstructor()
+        | LOOKAHEAD(2, {!interrupted}) retval=CharacterPrimary()
 
         // support timestamp expressions
         | LOOKAHEAD(2, {!interrupted}) (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
@@ -4045,8 +4018,7 @@ JdbcNamedParameter JdbcNamedParameter() : {
 }
 {
     ":"
-    name=RelObjectNameExt2()
-    ( "." namePart=RelObjectNameExt2() { name+="." + namePart; } )*
+    name=IdentifierChain()
     {
         parameter.setName(name);
         return parameter;
@@ -4073,8 +4045,7 @@ UserVariable UserVariable() : {
 }
 {
     ("@" | "@@" { var.setDoubleAdd(true);} )
-    varName=RelObjectNameExt2()
-    ( "." var2=RelObjectNameExt2() { varName+="." + var2; } )*
+    varName=IdentifierChain()
     {
         var.setName(varName);
         return var;
@@ -4813,8 +4784,6 @@ Function SpecialStringFunctionWithNamedParameters() :
 
         "(" 
         (
-            LOOKAHEAD(NamedExpressionList1()) namedExpressionList=NamedExpressionList1()
-            |
             LOOKAHEAD(NamedExpressionListExprFirst(), { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
             |
             LOOKAHEAD(3, { getAsBoolean(Feature.allowComplexParsing) }) expressionList=ComplexExpressionList() {expressionList.setUsingBrackets(false);}
@@ -6787,4 +6756,95 @@ List<String> captureUnsupportedStatementDeclaration() {
     tok = getNextToken();
   }
   return tokens;
+}
+
+String IdentifierChain():
+{
+    String identifierChain;
+    String part;
+}
+{
+    identifierChain=RelObjectNameExt2()
+    ( "." part=RelObjectNameExt2() { identifierChain += "." + part; }  )*
+
+    {
+        return identifierChain;
+    }
+}
+
+Expression CharacterPrimary():
+{
+    Expression expression;
+}
+{
+    (
+        expression = TranscodingFunction()
+        |
+        expression = TrimFunction()
+    )
+    // @todo
+    // @see https://manticore-projects.com/SQL2016Parser/syntax.html#character-value-function
+    //  | character_substring_function
+    //  | regular_expression_substring_function
+    //  | regex_substring_function
+    //  | fold
+    //  | character_transliteration
+    //  | regex_transliteration
+    //  | character_overlay_function
+    //  | normalize_function
+    //  | specific_type_method
+
+    {
+        return expression;
+    }
+}
+
+TranscodingFunction TranscodingFunction():
+{
+    Expression expression;
+    String transcodingName;
+}
+{
+    <K_CONVERT> "(" expression = Expression() <K_USING> transcodingName=IdentifierChain() ")"
+
+    {
+        return new TranscodingFunction(expression, transcodingName);
+    }
+}
+
+TrimFunction TrimFunction():
+{
+    TrimFunction.TrimSpecification trimSpecification=null;
+    Expression expression = null;
+    boolean usesFrom = false;
+    Expression fromExpression = null;
+}
+{
+    <K_TRIM> "("
+    [
+        LOOKAHEAD(2) (
+            <K_LEADING> { trimSpecification = TrimFunction.TrimSpecification.LEADING; }
+            |
+            <K_TRAILING> { trimSpecification = TrimFunction.TrimSpecification.TRAILING; }
+            |
+            <K_BOTH> { trimSpecification = TrimFunction.TrimSpecification.BOTH; }
+        )
+    ]
+
+    // This is not SQL:2016 compliant, but Postgres supports it
+    [ expression = Expression() ]
+
+    [
+        (
+            ","
+            |
+            <K_FROM> { usesFrom = true; }
+        )
+        fromExpression = Expression()
+    ]
+    ")"
+
+    {
+        return new TrimFunction(trimSpecification, expression, fromExpression, usesFrom);
+    }
 }

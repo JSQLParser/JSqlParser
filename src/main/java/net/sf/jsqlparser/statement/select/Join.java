@@ -52,10 +52,6 @@ public class Join extends ASTNodeAccessImpl {
         simple = b;
     }
 
-    private static void switchOff(boolean feature, boolean... contradictingFeatures) {
-
-    }
-
     /**
      * A JOIN means INNER when the INNER keyword is set or when no other qualifier has been set.
      *
@@ -65,15 +61,14 @@ public class Join extends ASTNodeAccessImpl {
     public boolean isInnerJoin() {
         return inner
                 || !(
-                        /* Qualified Joins */
-                        left || right || full || outer
+                /* Qualified Joins */
+                left || right || full || outer
 
-                        /* Cross Join */
+                /* Cross Join */
                         || cross
 
                         /* Natural Join */
-                        || natural
-                );
+                        || natural);
     }
 
     /**

@@ -57,8 +57,10 @@ public class PlainSelect extends Select {
     private List<WindowDefinition> windowDefinitions;
 
     /**
-     * @see <a href='https://clickhouse.com/docs/en/sql-reference/statements/select/from#final-modifier'>Clickhouse FINAL</a>
-      */
+     * @see <a href=
+     *      'https://clickhouse.com/docs/en/sql-reference/statements/select/from#final-modifier'>Clickhouse
+     *      FINAL</a>
+     */
     private boolean isUsingFinal = false;
 
     @Deprecated

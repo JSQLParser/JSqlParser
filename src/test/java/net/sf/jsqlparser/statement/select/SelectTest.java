@@ -1186,7 +1186,7 @@ public class SelectTest {
         statement =
                 "SELECT substring(id, 2, 3), substring(id from 2 for 3), substring(id from 2), trim(BOTH ' ' from 'foo bar '), trim(LEADING ' ' from 'foo bar '), trim(TRAILING ' ' from 'foo bar '), trim(' ' from 'foo bar '), position('foo' in 'bar'), overlay('foo' placing 'bar' from 1), overlay('foo' placing 'bar' from 1 for 2) FROM my table";
         select = (Select) parserManager.parse(new StringReader(statement));
-        assertStatementCanBeDeparsedAs(select, statement);
+        assertStatementCanBeDeparsedAs(select, statement, true);
 
         statement =
                 "SELECT MAX(id), AVG(pro) AS myavg FROM mytable WHERE mytable.col = 9 GROUP BY pro";
@@ -1253,7 +1253,8 @@ public class SelectTest {
     @Test
     public void testNamedParametersPR702() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "SELECT substring(id, 2, 3), substring(id from 2 for 3), substring(id from 2), trim(BOTH ' ' from 'foo bar '), trim(LEADING ' ' from 'foo bar '), trim(TRAILING ' ' from 'foo bar '), trim(' ' from 'foo bar '), position('foo' in 'bar'), overlay('foo' placing 'bar' from 1), overlay('foo' placing 'bar' from 1 for 2) FROM my table");
+                "SELECT substring(id, 2, 3), substring(id from 2 for 3), substring(id from 2), trim(BOTH ' ' from 'foo bar '), trim(LEADING ' ' from 'foo bar '), trim(TRAILING ' ' from 'foo bar '), trim(' ' from 'foo bar '), position('foo' in 'bar'), overlay('foo' placing 'bar' from 1), overlay('foo' placing 'bar' from 1 for 2) FROM my table",
+                true);
     }
 
     @Test
@@ -2610,7 +2611,7 @@ public class SelectTest {
     public void testMultiValueIn2() throws JSQLParserException {
         String stmt =
                 "SELECT * FROM mytable WHERE (trim(a), trim(b)) IN (SELECT a, b FROM mytable2)";
-        assertSqlCanBeParsedAndDeparsed(stmt);
+        assertSqlCanBeParsedAndDeparsed(stmt, true);
     }
 
     @Test

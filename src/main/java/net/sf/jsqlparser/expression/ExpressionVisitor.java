@@ -227,4 +227,8 @@ public interface ExpressionVisitor {
     void visit(GeometryDistance geometryDistance);
 
     void visit(Select selectBody);
+
+    void visit(TranscodingFunction transcodingFunction);
+
+    void visit(TrimFunction trimFunction);
 }
