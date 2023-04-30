@@ -2052,6 +2052,7 @@ PlainSelect PlainSelect() #PlainSelect:
     List<OrderByElement> orderByElements;
     GroupByElement groupBy = null;
     Expression having = null;
+    Limit limitBy = null;
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
@@ -2129,6 +2130,7 @@ PlainSelect PlainSelect() #PlainSelect:
     ]
     [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements); } ]
     [ LOOKAHEAD(2) <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
+    [ LOOKAHEAD(LimitBy()) limit = LimitBy() { plainSelect.setLimitBy(limit);  } ]
     [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
     [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
 	[ LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
@@ -2989,13 +2991,30 @@ Limit PlainLimit() #PlainLimit:
     <K_LIMIT>
      (
         (
-            LOOKAHEAD(3) "(" rowCountExpression = ParenthesedSelect() ")"
+            LOOKAHEAD(3) rowCountExpression = ParenthesedSelect()
             |
             rowCountExpression = Expression()
         ) { limit.setRowCount(rowCountExpression); }
      )
     {
         linkAST(limit,jjtThis);
+        return limit;
+    }
+}
+
+/**
+ * Clickhouse LIMIT BY
+ * @see <a href='https://clickhouse.com/docs/en/sql-reference/statements/select'>SELECT Query</a>
+ */
+Limit LimitBy():
+{
+    Limit limit;
+    List<Expression> byExpressions;
+}
+{
+    limit = LimitWithOffset()
+    <K_BY> byExpressions = Expressions()  { limit.setByExpressions(byExpressions); }
+    {
         return limit;
     }
 }
@@ -3508,6 +3527,22 @@ Expression ExistsExpression():
     {
         result.setRightExpression(rightExpression);
         return result;
+    }
+}
+
+List<Expression> Expressions():
+{
+    ArrayList<Expression> expressions = new ArrayList<Expression>();
+    Expression expression;
+}
+{
+    expression = Expression() { expressions.add(expression); }
+    (
+       LOOKAHEAD(2) "," expression = Expression() { expressions.add(expression); }
+    )*
+
+    {
+        return expressions;
     }
 }
 

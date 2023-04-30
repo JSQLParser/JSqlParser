@@ -48,4 +48,22 @@ public class ClickHouseTest {
         Assertions.assertTrue(select.isUsingFinal());
         Assertions.assertFalse(select.withUsingFinal(false).toString().contains("FINAL"));
     }
+
+    @Test
+    public void testLimitBy() throws JSQLParserException {
+        String sqlStr ="SELECT * FROM limit_by ORDER BY id, val LIMIT 1, 2 BY id";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr ="SELECT\n"
+                + "    domainWithoutWWW(URL) AS domain,\n"
+                + "    domainWithoutWWW(REFERRER_URL) AS referrer,\n"
+                + "    device_type,\n"
+                + "    count() cnt\n"
+                + "FROM hits\n"
+                + "GROUP BY domain, referrer, device_type\n"
+                + "ORDER BY cnt DESC\n"
+                + "LIMIT 5 BY domain, device_type\n"
+                + "LIMIT 100";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

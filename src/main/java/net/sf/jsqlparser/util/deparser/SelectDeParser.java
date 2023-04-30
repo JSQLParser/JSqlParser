@@ -110,7 +110,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
 
         if (selectBody.getLimit() != null) {
-            new LimitDeparser(buffer).deParse(selectBody.getLimit());
+            new LimitDeparser(expressionVisitor, buffer).deParse(selectBody.getLimit());
         }
         if (selectBody.getOffset() != null) {
             visit(selectBody.getOffset());
@@ -283,8 +283,11 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (plainSelect.isEmitChanges()) {
             buffer.append(" EMIT CHANGES");
         }
+        if (plainSelect.getLimitBy() != null) {
+            new LimitDeparser(expressionVisitor, buffer).deParse(plainSelect.getLimitBy());
+        }
         if (plainSelect.getLimit() != null) {
-            new LimitDeparser(buffer).deParse(plainSelect.getLimit());
+            new LimitDeparser(expressionVisitor, buffer).deParse(plainSelect.getLimit());
         }
         if (plainSelect.getOffset() != null) {
             visit(plainSelect.getOffset());
@@ -538,7 +541,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
 
         if (list.getLimit() != null) {
-            new LimitDeparser(buffer).deParse(list.getLimit());
+            new LimitDeparser(expressionVisitor, buffer).deParse(list.getLimit());
         }
         if (list.getOffset() != null) {
             visit(list.getOffset());

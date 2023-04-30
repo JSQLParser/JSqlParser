@@ -24,6 +24,7 @@ import java.util.Optional;
 
 public abstract class Select extends ASTNodeAccessImpl implements Statement, Expression {
     List<WithItem> withItemsList;
+    Limit limitBy;
     Limit limit;
     Offset offset;
     Fetch fetch;
@@ -190,6 +191,19 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         return this;
     }
 
+    public Limit getLimitBy() {
+        return limitBy;
+    }
+
+    public void setLimitBy(Limit limitBy) {
+        this.limitBy = limitBy;
+    }
+
+    public <E extends Select> E withLimitBy(Class<E> type, Limit limitBy) {
+        this.setLimitBy(limitBy);
+        return type.cast(this);
+    }
+
     public Offset getOffset() {
         return offset;
     }
@@ -248,6 +262,9 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
         builder.append(orderByToString(oracleSiblings, orderByElements));
 
+        if (limitBy != null) {
+            builder.append(limitBy);
+        }
         if (limit != null) {
             builder.append(limit);
         }

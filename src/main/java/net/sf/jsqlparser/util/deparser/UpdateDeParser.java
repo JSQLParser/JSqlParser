@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.Iterator;
-
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.statement.select.Join;
@@ -20,6 +18,8 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
+
+import java.util.Iterator;
 
 public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByVisitor {
 
@@ -129,7 +129,7 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
             new OrderByDeParser(expressionVisitor, buffer).deParse(update.getOrderByElements());
         }
         if (update.getLimit() != null) {
-            new LimitDeparser(buffer).deParse(update.getLimit());
+            new LimitDeparser(expressionVisitor, buffer).deParse(update.getLimit());
         }
 
         if (update.getReturningExpressionList() != null) {

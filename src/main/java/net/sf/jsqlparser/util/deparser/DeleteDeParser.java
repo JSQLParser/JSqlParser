@@ -9,9 +9,6 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.Iterator;
-import static java.util.stream.Collectors.joining;
-
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.schema.Table;
@@ -19,6 +16,10 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
+
+import java.util.Iterator;
+
+import static java.util.stream.Collectors.joining;
 
 public class DeleteDeParser extends AbstractDeParser<Delete> {
 
@@ -94,7 +95,7 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
             new OrderByDeParser(expressionVisitor, buffer).deParse(delete.getOrderByElements());
         }
         if (delete.getLimit() != null) {
-            new LimitDeparser(buffer).deParse(delete.getLimit());
+            new LimitDeparser(expressionVisitor, buffer).deParse(delete.getLimit());
         }
 
         if (delete.getReturningExpressionList() != null) {

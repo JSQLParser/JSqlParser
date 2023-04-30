@@ -14,10 +14,20 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class Limit extends ASTNodeAccessImpl {
 
     private Expression rowCount;
     private Expression offset;
+
+    /**
+     * A query with the LIMIT n BY expressions clause selects the first n rows for each distinct value of expressions. The key for LIMIT BY can contain any number of expressions.
+     * @see <a href='https://clickhouse.com/docs/en/sql-reference/statements/select/limit-by'>ClickHouse LIMIT BY Clause</a>
+     */
+    private List<Expression> byExpressions;
 
     public Expression getOffset() {
         return offset;
@@ -75,6 +85,14 @@ public class Limit extends ASTNodeAccessImpl {
             }
         }
 
+        if (byExpressions!=null && !byExpressions.isEmpty()) {
+            retVal += " BY";
+            int i=0;
+            for (Expression expression: byExpressions) {
+                retVal += ( i++ > 0 ? ", " : " ") + expression.toString();
+            }
+        }
+
         return retVal;
     }
 
@@ -106,5 +124,34 @@ public class Limit extends ASTNodeAccessImpl {
 
     public <E extends Expression> E getRowCount(Class<E> type) {
         return type.cast(getRowCount());
+    }
+
+    public List<Expression> getByExpressions() {
+        return byExpressions;
+    }
+
+    public void setByExpressions(List<Expression> byExpressions) {
+        this.byExpressions = byExpressions;
+    }
+
+    public void setByExpressions(Expression... byExpressions) {
+        this.setByExpressions(Arrays.asList(byExpressions));
+    }
+
+    public void addByExpression(Expression byExpression) {
+        if (byExpression==null) {
+            byExpressions = new ArrayList<>();
+        }
+        byExpressions.add(byExpression);
+    }
+
+    public Limit withByExpressions(List<Expression> byExpressions) {
+        this.setByExpressions(byExpressions);
+        return this;
+    }
+
+    public Limit withByExpressions(Expression... byExpressions) {
+        this.setByExpressions(byExpressions);
+        return this;
     }
 }
