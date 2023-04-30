@@ -5733,6 +5733,7 @@ public class SelectTest {
         assertTrue(join.isInnerJoin());
         assertTrue(join.withInner(false).isInnerJoin());
         assertFalse(join.withLeft(true).isInnerJoin());
-        assertFalse(join.withLeft(false).withRight(true).isInnerJoin());
+        assertFalse(join.withRight(true).isInnerJoin());
+        assertFalse(join.withInner(true).isRight());
     }
 }
