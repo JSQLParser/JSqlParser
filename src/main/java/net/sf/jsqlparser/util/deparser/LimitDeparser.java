@@ -17,6 +17,7 @@ import java.util.List;
 
 public class LimitDeparser extends AbstractDeParser<Limit> {
     private ExpressionVisitor expressionVisitor;
+
     public LimitDeparser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
@@ -37,17 +38,17 @@ public class LimitDeparser extends AbstractDeParser<Limit> {
                 }
 
                 if (null != limit.getRowCount()) {
-                   limit.getRowCount().accept(expressionVisitor);
+                    limit.getRowCount().accept(expressionVisitor);
                 }
             }
         }
 
         final List<Expression> byExpressions = limit.getByExpressions();
-        if (byExpressions!=null && !byExpressions.isEmpty()) {
+        if (byExpressions != null && !byExpressions.isEmpty()) {
             buffer.append(" BY");
-            int i=0;
-            for (Expression expression: byExpressions) {
-                buffer.append( i++ > 0 ? ", " : " ");
+            int i = 0;
+            for (Expression expression : byExpressions) {
+                buffer.append(i++ > 0 ? ", " : " ");
                 expression.accept(expressionVisitor);
             }
         }

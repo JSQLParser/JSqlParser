@@ -35,9 +35,10 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.ExcessiveMethodLength"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
+            "PMD.ExcessiveMethodLength"})
     public void deParse(Update update) {
-         if (update.getWithItemsList() != null && !update.getWithItemsList().isEmpty()) {
+        if (update.getWithItemsList() != null && !update.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = update.getWithItemsList().iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
@@ -67,8 +68,8 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         }
         buffer.append(" SET ");
 
-        int j=0;
-        for (UpdateSet updateSet:update.getUpdateSets()) {
+        int j = 0;
+        for (UpdateSet updateSet : update.getUpdateSets()) {
             if (j > 0) {
                 buffer.append(", ");
             }
@@ -104,7 +105,7 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
             j++;
         }
 
-        if (update.getOutputClause()!=null) {
+        if (update.getOutputClause() != null) {
             update.getOutputClause().appendTo(buffer);
         }
 
@@ -133,8 +134,8 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         }
 
         if (update.getReturningExpressionList() != null) {
-            buffer.append(" RETURNING ").append(PlainSelect.
-                    getStringList(update.getReturningExpressionList(), true, false));
+            buffer.append(" RETURNING ").append(
+                    PlainSelect.getStringList(update.getReturningExpressionList(), true, false));
         }
     }
 
@@ -156,7 +157,8 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         }
         if (orderBy.getNullOrdering() != null) {
             buffer.append(' ');
-            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST"
+            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST
+                    ? "NULLS FIRST"
                     : "NULLS LAST");
         }
     }

@@ -51,10 +51,10 @@ public class ClickHouseTest {
 
     @Test
     public void testLimitBy() throws JSQLParserException {
-        String sqlStr ="SELECT * FROM limit_by ORDER BY id, val LIMIT 1, 2 BY id";
+        String sqlStr = "SELECT * FROM limit_by ORDER BY id, val LIMIT 1, 2 BY id";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        sqlStr ="SELECT\n"
+        sqlStr = "SELECT\n"
                 + "    domainWithoutWWW(URL) AS domain,\n"
                 + "    domainWithoutWWW(REFERRER_URL) AS referrer,\n"
                 + "    device_type,\n"

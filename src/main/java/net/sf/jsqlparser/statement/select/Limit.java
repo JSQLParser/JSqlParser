@@ -24,8 +24,12 @@ public class Limit extends ASTNodeAccessImpl {
     private Expression offset;
 
     /**
-     * A query with the LIMIT n BY expressions clause selects the first n rows for each distinct value of expressions. The key for LIMIT BY can contain any number of expressions.
-     * @see <a href='https://clickhouse.com/docs/en/sql-reference/statements/select/limit-by'>ClickHouse LIMIT BY Clause</a>
+     * A query with the LIMIT n BY expressions clause selects the first n rows for each distinct
+     * value of expressions. The key for LIMIT BY can contain any number of expressions.
+     * 
+     * @see <a href=
+     *      'https://clickhouse.com/docs/en/sql-reference/statements/select/limit-by'>ClickHouse
+     *      LIMIT BY Clause</a>
      */
     private List<Expression> byExpressions;
 
@@ -85,11 +89,11 @@ public class Limit extends ASTNodeAccessImpl {
             }
         }
 
-        if (byExpressions!=null && !byExpressions.isEmpty()) {
+        if (byExpressions != null && !byExpressions.isEmpty()) {
             retVal += " BY";
-            int i=0;
-            for (Expression expression: byExpressions) {
-                retVal += ( i++ > 0 ? ", " : " ") + expression.toString();
+            int i = 0;
+            for (Expression expression : byExpressions) {
+                retVal += (i++ > 0 ? ", " : " ") + expression.toString();
             }
         }
 
@@ -139,7 +143,7 @@ public class Limit extends ASTNodeAccessImpl {
     }
 
     public void addByExpression(Expression byExpression) {
-        if (byExpression==null) {
+        if (byExpression == null) {
             byExpressions = new ArrayList<>();
         }
         byExpressions.add(byExpression);

@@ -20,4 +20,15 @@ class TranscodingFunctionTest {
         assertEquals(functionStr, transcodingFunction.toString());
     }
 
+    @Test
+    void testIssue644() throws JSQLParserException {
+        String sqlStr = "SELECT CONVERT(int, a) FROM A";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testIssue688() throws JSQLParserException {
+        String sqlStr = "select * from a order by convert(a.name using gbk) desc";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
