@@ -52,6 +52,26 @@ public class Join extends ASTNodeAccessImpl {
         simple = b;
     }
 
+    /**
+     * A JOIN means INNER when the INNER keyword is set or when no other qualifier has been set.
+     *
+     * @return Tells, if a JOIN means a qualified INNER JOIN.
+     *
+     */
+    public boolean isInnerJoin() {
+        return inner
+                || !(
+                        /* Qualified Joins */
+                        left || right || full || outer
+
+                        /* Cross Join */
+                        || cross
+
+                        /* Natural Join */
+                        || natural
+                );
+    }
+
     public boolean isInner() {
         return inner;
     }

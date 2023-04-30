@@ -5722,4 +5722,17 @@ public class SelectTest {
                 .getName()
                 .equals("paramMap.aValue"));
     }
+
+    @Test
+    void testInnerJoin() throws JSQLParserException {
+        String sqlStr = "SELECT 1 from a inner join b on a.id=b.id";
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+
+        Join join = select.getJoins().get(0);
+
+        assertTrue(join.isInnerJoin());
+        assertTrue(join.withInner(false).isInnerJoin());
+        assertFalse(join.withLeft(true).isInnerJoin());
+        assertFalse(join.withLeft(false).withRight(true).isInnerJoin());
+    }
 }
