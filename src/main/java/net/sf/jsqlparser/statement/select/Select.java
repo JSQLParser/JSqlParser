@@ -245,6 +245,7 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
     public abstract StringBuilder appendSelectBodyTo(StringBuilder builder);
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public StringBuilder appendTo(StringBuilder builder) {
         if (withItemsList != null && !withItemsList.isEmpty()) {
             builder.append("WITH ");

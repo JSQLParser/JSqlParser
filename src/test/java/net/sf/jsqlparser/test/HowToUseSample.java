@@ -34,9 +34,8 @@ public class HowToUseSample {
     /*
      SQL Text
       └─Statements: net.sf.jsqlparser.statement.select.Select
-          ├─selectItems -> Collection<SelectExpressionItem>
-          │  └─selectItems: net.sf.jsqlparser.statement.select.SelectExpressionItem
-          │     └─LongValue: 1
+          ├─selectItems -> Collection<SelectItem>
+          │  └─LongValue: 1
           ├─Table: dual
           └─where: net.sf.jsqlparser.expression.operators.relational.EqualsTo
              ├─Column: a
@@ -49,9 +48,6 @@ public class HowToUseSample {
         String expectedSQLStr = "SELECT 1 FROM dual t WHERE a = b";
 
         // Step 1: generate the Java Object Hierarchy for
-        SelectItem selectItem =
-                new SelectItem(new LongValue().withValue(1));
-
         Table table = new Table().withName("dual").withAlias(new Alias("t", false));
 
         Column columnA = new Column().withColumnName("a");
@@ -59,7 +55,7 @@ public class HowToUseSample {
         Expression whereExpression =
                 new EqualsTo().withLeftExpression(columnA).withRightExpression(columnB);
 
-        PlainSelect select = new PlainSelect().addSelectItems(selectItem)
+        PlainSelect select = new PlainSelect().addSelectItem(new LongValue(1))
                 .withFromItem(table).withWhere(whereExpression);
 
         // Step 2a: Print into a SQL Statement
@@ -97,23 +93,22 @@ public class HowToUseSample {
     public void howToParseStatement() throws JSQLParserException {
         String sqlStr = "select 1 from dual where a=b";
 
-        Statement statement = CCJSqlParserUtil.parse(sqlStr);
-        if (statement instanceof Select) {
-            PlainSelect plainSelect = (PlainSelect) statement;
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
 
-            SelectItem selectExpressionItem =
-                    (SelectItem) plainSelect.getSelectItems().get(0);
-            Assertions.assertEquals(new LongValue(1), selectExpressionItem.getExpression());
+        SelectItem selectItem =
+                select.getSelectItems().get(0);
+        Assertions.assertEquals(
+                new LongValue(1)
+                , selectItem.getExpression());
 
-            Table table = (Table) plainSelect.getFromItem();
-            Assertions.assertEquals("dual", table.getName());
+        Table table = (Table) select.getFromItem();
+        Assertions.assertEquals("dual", table.getName());
 
-            EqualsTo equalsTo = (EqualsTo) plainSelect.getWhere();
-            Column a = (Column) equalsTo.getLeftExpression();
-            Column b = (Column) equalsTo.getRightExpression();
-            Assertions.assertEquals("a", a.getColumnName());
-            Assertions.assertEquals("b", b.getColumnName());
-        }
+        EqualsTo equalsTo = (EqualsTo) select.getWhere();
+        Column a = (Column) equalsTo.getLeftExpression();
+        Column b = (Column) equalsTo.getRightExpression();
+        Assertions.assertEquals("a", a.getColumnName());
+        Assertions.assertEquals("b", b.getColumnName());
     }
 
     @Test
