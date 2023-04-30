@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -16,6 +17,7 @@ import net.sf.jsqlparser.expression.WindowDefinition;
 import net.sf.jsqlparser.schema.Table;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -107,9 +109,27 @@ public class PlainSelect extends Select {
     }
 
     public PlainSelect addSelectItems(SelectItem... items) {
-        List<SelectItem> list = Optional.ofNullable(getSelectItems()).orElseGet(ArrayList::new);
-        Collections.addAll(list, items);
-        return withSelectItems(list);
+        selectItems = Optional.ofNullable(selectItems).orElseGet(ArrayList::new);
+        selectItems.addAll(Arrays.asList(items));
+        return this;
+    }
+
+    public PlainSelect addSelectItems(Expression... expressions) {
+        selectItems = Optional.ofNullable(selectItems).orElseGet(ArrayList::new);
+        for (Expression expression : expressions) {
+            selectItems.add(SelectItem.from(expression));
+        }
+        return this;
+    }
+
+    public PlainSelect addSelectItem(Expression expression, Alias alias) {
+        selectItems = Optional.ofNullable(selectItems).orElseGet(ArrayList::new);
+        selectItems.add(new SelectItem(expression, alias));
+        return this;
+    }
+
+    public PlainSelect addSelectItem(Expression expression) {
+        return addSelectItem(expression, null);
     }
 
     public void setWhere(Expression where) {

@@ -9,11 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import java.util.Collection;
-import java.util.List;
-
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.schema.Column;
+
+import java.util.Collection;
+import java.util.List;
 
 public class PivotXml extends Pivot {
 
@@ -84,7 +84,7 @@ public class PivotXml extends Pivot {
     }
 
     @Override
-    public PivotXml withSingleInItems(List<SelectExpressionItem> singleInItems) {
+    public PivotXml withSingleInItems(List<SelectItem> singleInItems) {
         return (PivotXml) super.withSingleInItems(singleInItems);
     }
 
@@ -114,12 +114,12 @@ public class PivotXml extends Pivot {
     }
 
     @Override
-    public PivotXml addSingleInItems(Collection<? extends SelectExpressionItem> singleInItems) {
+    public PivotXml addSingleInItems(Collection<? extends SelectItem> singleInItems) {
         return (PivotXml) super.addSingleInItems(singleInItems);
     }
 
     @Override
-    public PivotXml addSingleInItems(SelectExpressionItem... singleInItems) {
+    public PivotXml addSingleInItems(SelectItem... singleInItems) {
         return (PivotXml) super.addSingleInItems(singleInItems);
     }
 

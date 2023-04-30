@@ -98,8 +98,8 @@ public class SelectTest {
                 parser -> parser.withSquareBracketQuotation(true));
         assertDeparse(
                 new PlainSelect()
-                        .addSelectItems(
-                                new SelectExpressionItem(new Column().withColumnName("columnName")))
+                        .addSelectItem(
+                                new Column().withColumnName("columnName"))
                         .withFromItem(new Table()
                                 .withDatabase(new Database("databaseName")
                                         .withServer(new Server("[server-name\\server-instance]")))
@@ -115,7 +115,7 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(statement, false,
                 parser -> parser.withSquareBracketQuotation(true));
         assertDeparse(new PlainSelect()
-                .addSelectItems(new SelectExpressionItem(new Column().withColumnName("columnName")))
+                .addSelectItem(new Column().withColumnName("columnName"))
                 .withFromItem(new Table()
                         .withDatabase(new Database("databaseName")
                                 .withServer(new Server("[server-name\\server-instance]")))
@@ -255,7 +255,7 @@ public class SelectTest {
     }
 
     void checkMultipartIdentifier(Select select, String fullColumnName) {
-        final Expression expr = ((SelectExpressionItem) ((PlainSelect) select)
+        final Expression expr = (((PlainSelect) select)
                 .getSelectItems().get(0)).getExpression();
         assertTrue(expr instanceof Column);
         Column col = (Column) expr;
@@ -270,7 +270,7 @@ public class SelectTest {
 
         assertStatementCanBeDeparsedAs(select, statement);
         assertTrue(select.getSelectItems()
-                .get(0) instanceof AllTableColumns);
+                .get(0).getExpression() instanceof AllTableColumns);
 
         Table t = new Table("tableName");
         assertDeparse(
@@ -912,21 +912,25 @@ public class SelectTest {
         PlainSelect plainSelect = (PlainSelect) select;
 
         final List<SelectItem> selectItems = plainSelect.getSelectItems();
-        assertEquals("MYID", ((SelectExpressionItem) selectItems.get(0)).getAlias().getName());
-        assertEquals("mycol", ((Column) ((SelectExpressionItem) selectItems.get(1)).getExpression())
+        assertEquals("MYID", selectItems.get(0).getAlias().getName());
+        assertEquals("mycol", ((Column) (selectItems.get(1)).getExpression())
                 .getColumnName());
-        assertEquals("tab", ((AllTableColumns) selectItems.get(2)).getTable().getName());
-        assertEquals("schema", ((AllTableColumns) selectItems.get(3)).getTable().getSchemaName());
+        assertEquals("tab",
+                ((AllTableColumns) selectItems.get(2).getExpression()).getTable().getName());
+        assertEquals("schema",
+                ((AllTableColumns) selectItems.get(3).getExpression()).getTable().getSchemaName());
         assertEquals("schema.tab",
-                ((AllTableColumns) selectItems.get(3)).getTable().getFullyQualifiedName());
+                ((AllTableColumns) selectItems.get(3).getExpression()).getTable()
+                        .getFullyQualifiedName());
         assertEquals("mytab.mycol2",
-                ((Column) ((SelectExpressionItem) selectItems.get(4)).getExpression())
+                ((Column) (selectItems.get(4)).getExpression())
                         .getFullyQualifiedName());
         assertEquals("myschema.mytab.mycol",
-                ((Column) ((SelectExpressionItem) selectItems.get(5)).getExpression())
+                ((Column) (selectItems.get(5)).getExpression())
                         .getFullyQualifiedName());
         assertEquals("myschema.mytab",
-                ((AllTableColumns) selectItems.get(6)).getTable().getFullyQualifiedName());
+                ((AllTableColumns) selectItems.get(6).getExpression()).getTable()
+                        .getFullyQualifiedName());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement =
@@ -934,14 +938,14 @@ public class SelectTest {
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select;
         assertEquals("myalias",
-                ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).getAlias().getName());
+                (plainSelect.getSelectItems().get(1)).getAlias().getName());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT (myid + myid2) AS MYID FROM mytable WHERE mytable.col = 9";
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select;
         assertEquals("MYID",
-                ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias().getName());
+                (plainSelect.getSelectItems().get(0)).getAlias().getName());
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -1040,9 +1044,9 @@ public class SelectTest {
         Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(statement, true);
 
         PlainSelect plainSelect = (PlainSelect) select;
-        assertEquals("myid", ((Column) ((SelectExpressionItem) plainSelect.getDistinct()
+        assertEquals("myid", ((Column) (plainSelect.getDistinct()
                 .getOnSelectItems().get(0)).getExpression()).getColumnName());
-        assertEquals("mycol", ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(1))
+        assertEquals("mycol", ((Column) (plainSelect.getSelectItems().get(1))
                 .getExpression()).getColumnName());
     }
 
@@ -1063,9 +1067,9 @@ public class SelectTest {
         String statement = "SELECT DISTINCT TOP 5 myid, mycol FROM mytable WHERE mytable.col = 9";
         Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(statement, true);
         PlainSelect plainSelect = (PlainSelect) select;
-        assertEquals("myid", ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(0))
+        assertEquals("myid", ((Column) (plainSelect.getSelectItems().get(0))
                 .getExpression()).getColumnName());
-        assertEquals("mycol", ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(1))
+        assertEquals("mycol", ((Column) (plainSelect.getSelectItems().get(1))
                 .getExpression()).getColumnName());
         assertNotNull(plainSelect.getTop());
     }
@@ -1180,7 +1184,7 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statement));
         PlainSelect plainSelect = (PlainSelect) select;
         assertEquals("max",
-                ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias().getName());
+                (plainSelect.getSelectItems().get(0)).getAlias().getName());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement =
@@ -1193,43 +1197,43 @@ public class SelectTest {
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select;
         assertEquals("myavg",
-                ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).getAlias().getName());
+                (plainSelect.getSelectItems().get(1)).getAlias().getName());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT MAX(a, b, c), COUNT(*), D FROM tab1 GROUP BY D";
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select;
-        Function fun = (Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(0))
+        Function fun = (Function) (plainSelect.getSelectItems().get(0))
                 .getExpression();
         assertEquals("MAX", fun.getName());
         assertEquals("b",
                 ((Column) fun.getParameters().getExpressions().get(1)).getFullyQualifiedName());
-        assertTrue(((Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(1))
+        assertTrue(((Function) (plainSelect.getSelectItems().get(1))
                 .getExpression()).getParameters().getExpressions().get(0) instanceof AllColumns);
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT {fn MAX(a, b, c)}, COUNT(*), D FROM tab1 GROUP BY D";
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select;
-        fun = (Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(0))
+        fun = (Function) (plainSelect.getSelectItems().get(0))
                 .getExpression();
         assertTrue(fun.isEscaped());
         assertEquals("MAX", fun.getName());
         assertEquals("b",
                 ((Column) fun.getParameters().getExpressions().get(1)).getFullyQualifiedName());
-        assertTrue(((Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(1))
+        assertTrue(((Function) (plainSelect.getSelectItems().get(1))
                 .getExpression()).getParameters().getExpressions().get(0) instanceof AllColumns);
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT ab.MAX(a, b, c), cd.COUNT(*), D FROM tab1 GROUP BY D";
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select;
-        fun = (Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(0))
+        fun = (Function) (plainSelect.getSelectItems().get(0))
                 .getExpression();
         assertEquals("ab.MAX", fun.getName());
         assertEquals("b",
                 ((Column) fun.getParameters().getExpressions().get(1)).getFullyQualifiedName());
-        fun = (Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(1))
+        fun = (Function) (plainSelect.getSelectItems().get(1))
                 .getExpression();
         assertEquals("cd.COUNT", fun.getName());
         assertTrue(fun.getParameters().getExpressions().get(0) instanceof AllColumns);
@@ -1549,7 +1553,7 @@ public class SelectTest {
 
         assertEquals(1, plainSelect.getSelectItems().size());
         Expression expression =
-                ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getExpression();
+                (plainSelect.getSelectItems().get(0)).getExpression();
         assertTrue(expression instanceof Function);
         Function func = (Function) expression;
         assertEquals("REPLACE", func.getName());
@@ -1624,10 +1628,8 @@ public class SelectTest {
         String statement = "SELECT 1e2, * FROM mytable WHERE mytable.col = 9";
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(1e2,
-                ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select)
-                        .getSelectItems().get(0)).getExpression()).getValue(),
-                0);
+        assertEquals(1e2, ((DoubleValue) ((PlainSelect) select)
+                .getSelectItems().get(0).getExpression()).getValue(), 0);
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT * FROM mytable WHERE mytable.col = 1.e2";
@@ -1660,8 +1662,8 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
         assertEquals(1e22,
-                ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select)
-                        .getSelectItems().get(0)).getExpression()).getValue(),
+                ((DoubleValue) ((PlainSelect) select)
+                        .getSelectItems().get(0).getExpression()).getValue(),
                 0);
     }
 
@@ -1671,7 +1673,7 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
         assertEquals(1.0,
-                ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select)
+                ((DoubleValue) (((PlainSelect) select)
                         .getSelectItems().get(0)).getExpression()).getValue(),
                 0);
     }
@@ -1682,7 +1684,7 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
         assertEquals(1.2e22,
-                ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select)
+                ((DoubleValue) (((PlainSelect) select)
                         .getSelectItems().get(0)).getExpression()).getValue(),
                 0);
     }
@@ -2424,8 +2426,7 @@ public class SelectTest {
         Statement parsed = CCJSqlParserUtil.parse(stmt);
         Select select = (Select) parsed;
         PlainSelect plainSelect = (PlainSelect) select;
-        SelectItem get = plainSelect.getSelectItems().get(0);
-        SelectExpressionItem item = (SelectExpressionItem) get;
+        SelectItem item = plainSelect.getSelectItems().get(0);
         assertTrue(item.getExpression() instanceof Function);
         assertEquals("test", ((Function) item.getExpression()).getName());
     }
@@ -2562,7 +2563,7 @@ public class SelectTest {
         PlainSelect plainSelect = (PlainSelect) select;
 
         assertEquals(1, plainSelect.getSelectItems().size());
-        SelectExpressionItem item = (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+        SelectItem item = (SelectItem) plainSelect.getSelectItems().get(0);
         Function function = (Function) item.getExpression();
 
         assertEquals("to_timestamp", function.getName());
@@ -4359,8 +4360,8 @@ public class SelectTest {
         });
 
         assertEquals(1, list.size());
-        assertTrue(list.get(0) instanceof SelectExpressionItem);
-        SelectExpressionItem item = (SelectExpressionItem) list.get(0);
+        assertTrue(list.get(0) instanceof SelectItem);
+        SelectItem item = list.get(0);
         assertTrue(item.getExpression() instanceof Addition);
         Addition add = (Addition) item.getExpression();
 
@@ -4388,8 +4389,8 @@ public class SelectTest {
         });
 
         assertEquals(1, list.size());
-        assertTrue(list.get(0) instanceof SelectExpressionItem);
-        SelectExpressionItem item = (SelectExpressionItem) list.get(0);
+        assertTrue(list.get(0) instanceof SelectItem);
+        SelectItem item = list.get(0);
         assertTrue(item.getExpression() instanceof IntervalExpression);
         IntervalExpression interval = (IntervalExpression) item.getExpression();
         assertEquals("INTERVAL 5 MONTH", interval.toString());
@@ -4408,8 +4409,8 @@ public class SelectTest {
                 select.accept(new SelectVisitorAdapter() {
                     @Override
                     public void visit(PlainSelect plainSelect) {
-                        SelectExpressionItem typedExpression =
-                                (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+                        SelectItem typedExpression =
+                                (SelectItem) plainSelect.getSelectItems().get(0);
                         assertNotNull(typedExpression);
                         assertNull(typedExpression.getAlias());
                         StringValue value = (StringValue) typedExpression.getExpression();
@@ -4780,8 +4781,7 @@ public class SelectTest {
         String statement = "SELECT * FROM mytable WHERE 1 = 2 && 2 = 3";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(
-
-                new PlainSelect().addSelectItems(Collections.singleton(new AllColumns()))
+                new PlainSelect().addSelectItem(new AllColumns())
                         .withFromItem(new Table("mytable"))
                         .withWhere(new AndExpression().withUseOperator(true)
                                 .withLeftExpression(

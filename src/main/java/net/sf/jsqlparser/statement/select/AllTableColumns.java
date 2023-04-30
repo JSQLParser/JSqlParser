@@ -14,12 +14,11 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.*;
 
-public class AllTableColumns extends ASTNodeAccessImpl implements SelectItem, Expression {
+public class AllTableColumns extends ASTNodeAccessImpl implements Expression {
 
     private Table table;
 
-    public AllTableColumns() {
-    }
+    public AllTableColumns() {}
 
     public AllTableColumns(Table tableName) {
         this.table = tableName;
@@ -31,11 +30,6 @@ public class AllTableColumns extends ASTNodeAccessImpl implements SelectItem, Ex
 
     public void setTable(Table table) {
         this.table = table;
-    }
-
-    @Override
-    public void accept(SelectItemVisitor selectItemVisitor) {
-        selectItemVisitor.visit(this);
     }
 
     @Override

@@ -1591,7 +1591,7 @@ Upsert Upsert():
     ItemsList itemsList = null;
     Expression exp = null;
     MultiExpressionList multiExpr = null;
-    List<SelectExpressionItem> returning = null;
+    List<SelectItem> returning = null;
     Select select = null;
     boolean useSelectBrackets = false;
     boolean useDuplicate = false;
@@ -2274,35 +2274,27 @@ List<SelectItem> SelectItemsList():
     { return selectItemsList; }
 }
 
-SelectExpressionItem SelectExpressionItem():
+
+SelectItem SelectItem() #SelectItem:
 {
-    SelectExpressionItem selectExpressionItem = null;
-    Expression expression = null;
+    Expression expression;
     Alias alias = null;
 }
 {
-      (
+    (
+        "*" { expression = new AllColumns(); }
+        |
+        LOOKAHEAD(AllTableColumns()) expression = AllTableColumns()
+        |
         LOOKAHEAD( Condition() ) expression = Condition()
         |
         LOOKAHEAD( 3 ) expression = ConcatExpression()
         |
         expression=Expression()
-      ) { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
-      [ LOOKAHEAD(2) alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
-}
-
-
-SelectItem SelectItem() #SelectItem:
-{
-    SelectItem selectItem = null;
-}
-{   ("*" { selectItem = new AllColumns(); }
-    |
-    LOOKAHEAD(AllTableColumns()) selectItem=AllTableColumns()
-    |
-    selectItem=SelectExpressionItem()
     )
+    [ LOOKAHEAD(2) alias=Alias() ]
     {
+        SelectItem selectItem = new SelectItem(expression, alias);
         linkAST(selectItem,jjtThis);
         return selectItem;
     }
@@ -2389,11 +2381,11 @@ MySQLIndexHint MySQLIndexHint():
 	}
 }
 
- FunctionItem FunctionItem():
+FunctionItem FunctionItem():
 {
     Alias alias = null;
     Function function;
-     FunctionItem functionItem;
+    FunctionItem functionItem;
 }
 {
     function=Function() { functionItem = new FunctionItem(); functionItem.setFunction(function); }
@@ -2427,28 +2419,6 @@ List<FunctionItem> PivotFunctionItems():
     { return functionItems; }
 }
 
-List<SelectExpressionItem> PivotSingleInItems():
-{
-   List<SelectExpressionItem> retval = new ArrayList<SelectExpressionItem>();
-   SelectExpressionItem item;
-}
-{
-   item = PivotSelectExprItem() {retval.add(item);}
-   ("," item = PivotSelectExprItem() {retval.add(item);} )*
-   { return retval; }
-}
-
-SelectExpressionItem PivotSelectExprItem():
-{
-    SelectExpressionItem selectExpressionItem = null;
-    Expression expression = null;
-    Alias alias = null;
-}
-{
-      expression=SimpleExpression() { selectExpressionItem = new SelectExpressionItem(); selectExpressionItem.setExpression(expression); }
-             [alias=Alias() { selectExpressionItem.setAlias(alias); }] { return selectExpressionItem; }
-}
-
 ExpressionListItem ExpressionListItem():
 {
     ExpressionListItem expressionListItem = null;
@@ -2479,7 +2449,7 @@ Pivot Pivot():
     Pivot retval = new Pivot();
     List<FunctionItem> functionItems;
     List<Column> forColumns;
-    List<SelectExpressionItem> singleInItems = null;
+    List<SelectItem> singleInItems = null;
     List<ExpressionListItem> multiInItems = null;
     Alias alias = null;
 }
@@ -2487,7 +2457,7 @@ Pivot Pivot():
     <K_PIVOT> "(" functionItems = PivotFunctionItems() <K_FOR>
     forColumns = PivotForColumns()
     <K_IN> "("
-    (LOOKAHEAD(3) singleInItems = PivotSingleInItems()
+    (LOOKAHEAD(3) singleInItems = SelectItemsList()
     | multiInItems = PivotMultiInItems() )
     ")"
     ")"
@@ -2507,7 +2477,7 @@ PivotXml PivotXml():
     PivotXml retval = new PivotXml();
     List<FunctionItem> functionItems;
     List<Column> forColumns;
-    List<SelectExpressionItem> singleInItems = null;
+    List<SelectItem> singleInItems = null;
     List<ExpressionListItem> multiInItems = null;
     Select inSelect = null;
 }
@@ -2518,7 +2488,7 @@ PivotXml PivotXml():
     (
         LOOKAHEAD(2) <K_ANY> { retval.setInAny(true); } |
         LOOKAHEAD(1) inSelect = Select() |
-        LOOKAHEAD(2) singleInItems = PivotSingleInItems() |
+        LOOKAHEAD(2) singleInItems =SelectItemsList() |
         multiInItems = PivotMultiInItems()
     )
     ")"
@@ -2538,7 +2508,7 @@ UnPivot UnPivot():
     UnPivot retval = new UnPivot();
     List<Column> unpivotClause;
     List<Column> unpivotForClause;
-    List<SelectExpressionItem> unpivotInClause;
+    List<SelectItem> unpivotInClause;
     Alias alias = null;
 }
 {
@@ -2548,7 +2518,7 @@ UnPivot UnPivot():
     "(" unpivotClause = PivotForColumns() <K_FOR>
     unpivotForClause = PivotForColumns()
     <K_IN> "("
-    unpivotInClause = PivotSingleInItems()
+    unpivotInClause = SelectItemsList()
     ")"
     ")"
     [ LOOKAHEAD(2) alias = Alias() ]

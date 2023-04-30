@@ -195,7 +195,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.select.PivotXml(),
             // new net.sf.jsqlparser.statement.select.PlainSelect(),
             // new net.sf.jsqlparser.statement.select.Select(),
-            new net.sf.jsqlparser.statement.select.SelectExpressionItem(),
+            new net.sf.jsqlparser.statement.select.SelectItem(),
             // new net.sf.jsqlparser.statement.select.SetOperationList(),
             new net.sf.jsqlparser.statement.select.Skip(),
             // new net.sf.jsqlparser.statement.select.ParenthesedSelect(),

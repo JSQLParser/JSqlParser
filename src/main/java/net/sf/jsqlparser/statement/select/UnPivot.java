@@ -21,7 +21,7 @@ public class UnPivot implements Serializable {
     private boolean includeNullsSpecified = false;
     private List<Column> unpivotClause;
     private List<Column> unpivotForClause;
-    private List<SelectExpressionItem> unpivotInClause;
+    private List<SelectItem> unpivotInClause;
     private Alias alias;
 
     public void accept(PivotVisitor pivotVisitor) {
@@ -57,11 +57,11 @@ public class UnPivot implements Serializable {
         this.unpivotForClause = forColumns;
     }
 
-    public List<SelectExpressionItem> getUnPivotInClause() {
+    public List<SelectItem> getUnPivotInClause() {
         return unpivotInClause;
     }
 
-    public void setUnPivotInClause(List<SelectExpressionItem> unpivotInClause) {
+    public void setUnPivotInClause(List<SelectItem> unpivotInClause) {
         this.unpivotInClause = unpivotInClause;
     }
 
@@ -70,10 +70,14 @@ public class UnPivot implements Serializable {
         return "UNPIVOT"
                 + (includeNullsSpecified && includeNulls ? " INCLUDE NULLS" : "")
                 + (includeNullsSpecified && !includeNulls ? " EXCLUDE NULLS" : "")
-                + " (" + PlainSelect.getStringList(unpivotClause, true, unpivotClause != null && unpivotClause.size() > 1)
-                + " FOR " + PlainSelect.getStringList(unpivotForClause, true, unpivotForClause != null && unpivotForClause.size() > 1)
+                + " ("
+                + PlainSelect.getStringList(unpivotClause, true,
+                        unpivotClause != null && unpivotClause.size() > 1)
+                + " FOR "
+                + PlainSelect.getStringList(unpivotForClause, true,
+                        unpivotForClause != null && unpivotForClause.size() > 1)
                 + " IN " + PlainSelect.getStringList(unpivotInClause, true, true) + ")"
-                + (alias!=null ? alias.toString() : "");
+                + (alias != null ? alias.toString() : "");
     }
 
     public UnPivot withIncludeNulls(boolean includeNulls) {

@@ -37,7 +37,7 @@ public class SelectASTTest {
         StringBuilder b = new StringBuilder(sql);
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
         for (SelectItem item : plainSelect.getSelectItems()) {
-            SelectExpressionItem sei = (SelectExpressionItem) item;
+            SelectItem sei = (SelectItem) item;
             Column c = sei.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
@@ -94,8 +94,7 @@ public class SelectASTTest {
         StringBuilder b = new StringBuilder(sql);
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
         for (SelectItem item : plainSelect.getSelectItems()) {
-            SelectExpressionItem sei = (SelectExpressionItem) item;
-            Column c = sei.getExpression(Column.class);
+            Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '*');
@@ -116,8 +115,7 @@ public class SelectASTTest {
         StringBuilder b = new StringBuilder(sql);
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
         for (SelectItem item : plainSelect.getSelectItems()) {
-            SelectExpressionItem sei = (SelectExpressionItem) item;
-            Column c = sei.getExpression(Column.class);
+            Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '*');
@@ -140,8 +138,7 @@ public class SelectASTTest {
         StringBuilder b = new StringBuilder(sql);
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
         for (SelectItem item : plainSelect.getSelectItems()) {
-            SelectExpressionItem sei = (SelectExpressionItem) item;
-            Column c = sei.getExpression(Column.class);
+            Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '*');

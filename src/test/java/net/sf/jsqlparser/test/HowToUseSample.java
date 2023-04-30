@@ -10,7 +10,10 @@
 package net.sf.jsqlparser.test;
 
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -19,9 +22,9 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
-import net.sf.jsqlparser.util.deparser.*;
+import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -46,8 +49,8 @@ public class HowToUseSample {
         String expectedSQLStr = "SELECT 1 FROM dual t WHERE a = b";
 
         // Step 1: generate the Java Object Hierarchy for
-        SelectExpressionItem selectExpressionItem =
-                new SelectExpressionItem().withExpression(new LongValue().withValue(1));
+        SelectItem selectItem =
+                new SelectItem(new LongValue().withValue(1));
 
         Table table = new Table().withName("dual").withAlias(new Alias("t", false));
 
@@ -56,7 +59,7 @@ public class HowToUseSample {
         Expression whereExpression =
                 new EqualsTo().withLeftExpression(columnA).withRightExpression(columnB);
 
-        PlainSelect select = new PlainSelect().addSelectItems(selectExpressionItem)
+        PlainSelect select = new PlainSelect().addSelectItems(selectItem)
                 .withFromItem(table).withWhere(whereExpression);
 
         // Step 2a: Print into a SQL Statement
@@ -79,8 +82,8 @@ public class HowToUseSample {
             Select select = (Select) statement;
             PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
 
-            SelectExpressionItem selectExpressionItem =
-                    (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+            SelectItem selectItem =
+                    (SelectItem) plainSelect.getSelectItems().get(0);
 
             Table table = (Table) plainSelect.getFromItem();
 
@@ -98,8 +101,8 @@ public class HowToUseSample {
         if (statement instanceof Select) {
             PlainSelect plainSelect = (PlainSelect) statement;
 
-            SelectExpressionItem selectExpressionItem =
-                    (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+            SelectItem selectExpressionItem =
+                    (SelectItem) plainSelect.getSelectItems().get(0);
             Assertions.assertEquals(new LongValue(1), selectExpressionItem.getExpression());
 
             Table table = (Table) plainSelect.getFromItem();

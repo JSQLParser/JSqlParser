@@ -60,7 +60,7 @@ import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.UnPivot;
@@ -506,8 +506,8 @@ public class ExpressionVisitorAdapter
             col.accept(this);
         }
         if (pivot.getSingleInItems() != null) {
-            for (SelectExpressionItem item : pivot.getSingleInItems()) {
-                item.accept(this);
+            for (SelectItem item : pivot.getSingleInItems()) {
+                item.getExpression().accept(this);
             }
         }
 
@@ -551,7 +551,7 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(SelectExpressionItem selectExpressionItem) {
+    public void visit(SelectItem selectExpressionItem) {
         selectExpressionItem.getExpression().accept(this);
     }
 

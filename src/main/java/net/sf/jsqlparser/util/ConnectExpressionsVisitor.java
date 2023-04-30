@@ -11,19 +11,16 @@ package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.BinaryExpression;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.select.Values;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -39,7 +36,7 @@ import java.util.List;
 public abstract class ConnectExpressionsVisitor implements SelectVisitor, SelectItemVisitor {
 
     private String alias = "expr";
-    private final List<SelectExpressionItem> itemsExpr = new LinkedList<SelectExpressionItem>();
+    private final List<SelectItem> itemsExpr = new LinkedList<SelectItem>();
 
     public ConnectExpressionsVisitor() {}
 
@@ -76,14 +73,14 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
             }
             binExpr.setRightExpression(itemsExpr.get(itemsExpr.size() - 1).getExpression());
 
-            SelectExpressionItem sei = new SelectExpressionItem();
+            SelectItem sei = new SelectItem();
             sei.setExpression(binExpr);
 
             plainSelect.getSelectItems().clear();
             plainSelect.getSelectItems().add(sei);
         }
 
-        ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).setAlias(new Alias(alias));
+        plainSelect.getSelectItems().get(0).setAlias(new Alias(alias));
     }
 
     @Override
@@ -97,18 +94,8 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
     public void visit(WithItem withItem) {}
 
     @Override
-    public void visit(AllTableColumns allTableColumns) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void visit(AllColumns allColumns) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void visit(SelectExpressionItem selectExpressionItem) {
-        itemsExpr.add(selectExpressionItem);
+    public void visit(SelectItem selectItem) {
+        itemsExpr.add(selectItem);
     }
 
     @Override
