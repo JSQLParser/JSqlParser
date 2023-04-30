@@ -31,4 +31,13 @@ class TranscodingFunctionTest {
         String sqlStr = "select * from a order by convert(a.name using gbk) desc";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testIssue1257() throws JSQLParserException {
+        String sqlStr = "SELECT id,name,version,identity,type,desc,enable,content\n"
+                + "FROM tbl_template\n"
+                + "WHERE (name like ?)\n"
+                + "ORDER BY convert(name using GBK) ASC";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
