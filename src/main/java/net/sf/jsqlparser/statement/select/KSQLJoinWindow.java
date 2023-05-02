@@ -12,41 +12,37 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class KSQLJoinWindow extends ASTNodeAccessImpl {
-//
-//    public enum TimeUnit {
-//        DAY ("DAY"),
-//        HOUR ("HOUR"),
-//        MINUTE ("MINUTE"),
-//        SECOND ("SECOND"),
-//        MILLISECOND ("MILLISECOND"),
-//        DAYS ("DAYS"),
-//        HOURS ("HOURS"),
-//        MINUTES ("MINUTES"),
-//        SECONDS ("SECONDS"),
-//        MILLISECONDS ("MILLISECONDS");
-//
-//        private String timeUnit;
-//
-//        TimeUnit(String timeUnit) {
-//            this.timeUnit = timeUnit;
-//        }
-//
-//        public String getTimeUnit() {
-//            return timeUnit;
-//        }
-//
-//        public final static TimeUnit from(String timeUnitStr) {
-//            return Enum.valueOf(TimeUnit.class, timeUnitStr.toUpperCase());
-//        }
-//    }
+
+    public enum TimeUnit {
+        DAY ("DAY"),
+        HOUR ("HOUR"),
+        MINUTE ("MINUTE"),
+        SECOND ("SECOND"),
+        MILLISECOND ("MILLISECOND"),
+        DAYS ("DAYS"),
+        HOURS ("HOURS"),
+        MINUTES ("MINUTES"),
+        SECONDS ("SECONDS"),
+        MILLISECONDS ("MILLISECONDS");
+
+        private String timeUnit;
+
+        TimeUnit(String timeUnit) {
+            this.timeUnit = timeUnit;
+        }
+
+        public String getTimeUnit() {
+            return timeUnit;
+        }
+    }
 
     private boolean beforeAfter;
     private long duration;
-    private KSQLWindow.TimeUnit timeUnit;
+    private TimeUnit timeUnit;
     private long beforeDuration;
-    private KSQLWindow.TimeUnit beforeTimeUnit;
+    private TimeUnit beforeTimeUnit;
     private long afterDuration;
-    private KSQLWindow.TimeUnit afterTimeUnit;
+    private TimeUnit afterTimeUnit;
 
     public KSQLJoinWindow() {
     }
@@ -67,11 +63,11 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
         this.duration = duration;
     }
 
-    public KSQLWindow.TimeUnit getTimeUnit() {
+    public TimeUnit getTimeUnit() {
         return timeUnit;
     }
 
-    public void setTimeUnit(KSQLWindow.TimeUnit timeUnit) {
+    public void setTimeUnit(TimeUnit timeUnit) {
         this.timeUnit = timeUnit;
     }
 
@@ -83,11 +79,11 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
         this.beforeDuration = beforeDuration;
     }
 
-    public KSQLWindow.TimeUnit getBeforeTimeUnit() {
+    public TimeUnit getBeforeTimeUnit() {
         return beforeTimeUnit;
     }
 
-    public void setBeforeTimeUnit(KSQLWindow.TimeUnit beforeTimeUnit) {
+    public void setBeforeTimeUnit(TimeUnit beforeTimeUnit) {
         this.beforeTimeUnit = beforeTimeUnit;
     }
 
@@ -99,11 +95,11 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
         this.afterDuration = afterDuration;
     }
 
-    public KSQLWindow.TimeUnit getAfterTimeUnit() {
+    public TimeUnit getAfterTimeUnit() {
         return afterTimeUnit;
     }
 
-    public void setAfterTimeUnit(KSQLWindow.TimeUnit afterTimeUnit) {
+    public void setAfterTimeUnit(TimeUnit afterTimeUnit) {
         this.afterTimeUnit = afterTimeUnit;
     }
 
@@ -120,7 +116,7 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
         return this;
     }
 
-    public KSQLJoinWindow withTimeUnit(KSQLWindow.TimeUnit timeUnit) {
+    public KSQLJoinWindow withTimeUnit(TimeUnit timeUnit) {
         this.setTimeUnit(timeUnit);
         return this;
     }
@@ -130,7 +126,7 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
         return this;
     }
 
-    public KSQLJoinWindow withBeforeTimeUnit(KSQLWindow.TimeUnit beforeTimeUnit) {
+    public KSQLJoinWindow withBeforeTimeUnit(TimeUnit beforeTimeUnit) {
         this.setBeforeTimeUnit(beforeTimeUnit);
         return this;
     }
@@ -140,8 +136,12 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
         return this;
     }
 
-    public KSQLJoinWindow withAfterTimeUnit(KSQLWindow.TimeUnit afterTimeUnit) {
+    public KSQLJoinWindow withAfterTimeUnit(TimeUnit afterTimeUnit) {
         this.setAfterTimeUnit(afterTimeUnit);
         return this;
+    }
+
+    public final static TimeUnit from(String timeUnitStr) {
+        return Enum.valueOf(TimeUnit.class, timeUnitStr.toUpperCase());
     }
 }

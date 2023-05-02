@@ -12,8 +12,6 @@ package net.sf.jsqlparser.statement.values;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.select.Values;
 import org.junit.jupiter.api.Test;
@@ -30,14 +28,8 @@ public class ValuesTest {
         String statement = "VALUES (1, 2, 'test')";
         assertSqlCanBeParsedAndDeparsed(statement);
 
-        ExpressionList expressions = new ParenthesedExpressionList()
-                                                        .withExpressions(
-                                                                new LongValue(1)
-                                                                ,new LongValue(2)
-                                                                , new StringValue("test")
-                                                        );
-
-        Values values = new Values().withExpressions(expressions);
+        Values values = new Values().addExpressions(new LongValue(1),
+                new LongValue(2), new StringValue("test"));
         assertDeparse(values, statement);
 
         // this test does not make much sense, since the Object Tree is not distinct

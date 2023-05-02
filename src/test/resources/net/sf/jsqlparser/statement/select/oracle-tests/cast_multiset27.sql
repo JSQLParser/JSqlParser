@@ -19,4 +19,3 @@ select deptno
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: select deptno,cast(collect(empsal_ot(ename,sal)order by empsal_ot(ename,sal))as empsal_ntt)as empsals from emp group by recorded first on 1 May 2023, 23:34:56

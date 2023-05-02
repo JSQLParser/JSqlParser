@@ -39,4 +39,3 @@ and dbin.startup_time = s1.startup_time
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: Encountered unexpected token: "(" "(" recorded first on 1 May 2023, 23:34:56

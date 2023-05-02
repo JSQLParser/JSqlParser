@@ -15,7 +15,6 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
@@ -85,22 +84,9 @@ public class ReplaceDeParser extends AbstractDeParser<Replace> implements ItemsL
 
     @Override
     public void visit(ExpressionList expressionList) {
-        buffer.append("VALUES ");
-        for (Iterator<Expression> iter = expressionList.iterator(); iter
-                .hasNext();) {
-            Expression expression = iter.next();
-            expression.accept(expressionVisitor);
-            if (iter.hasNext()) {
-                buffer.append(", ");
-            }
-        }
-    }
-
-    @Override
-    public void visit(ParenthesedExpressionList expressionList) {
         buffer.append("VALUES (");
-        for (Iterator<Expression> iter = expressionList.iterator(); iter
-                                                                            .hasNext();) {
+        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter
+                .hasNext();) {
             Expression expression = iter.next();
             expression.accept(expressionVisitor);
             if (iter.hasNext()) {

@@ -101,7 +101,6 @@ import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
-import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
@@ -562,14 +561,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(ExpressionList expressionList) {
-        new ExpressionListDeParser(this, buffer, true)
-                .deParse(expressionList);
-    }
-
-    @Override
-    public void visit(ParenthesedExpressionList expressionList) {
-        new ExpressionListDeParser(this, buffer, true)
-                .deParse(expressionList);
+        new ExpressionListDeParser(this, buffer, expressionList.isUsingBrackets(), true)
+                .deParse(expressionList.getExpressions());
     }
 
     @Override

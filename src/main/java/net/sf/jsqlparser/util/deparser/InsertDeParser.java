@@ -15,7 +15,6 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
@@ -140,12 +139,8 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
 
     @Override
     public void visit(ExpressionList expressionList) {
-        new ExpressionListDeParser(expressionVisitor, buffer, true).deParse(expressionList);
-    }
-
-    @Override
-    public void visit(ParenthesedExpressionList expressionList) {
-        new ExpressionListDeParser(expressionVisitor, buffer, true).deParse(expressionList);
+        new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(),
+                true).deParse(expressionList.getExpressions());
     }
 
     @Override
@@ -159,7 +154,8 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
         int n = expressionLists.size() - 1;
         int i = 0;
         for (ExpressionList expressionList : expressionLists) {
-            new ExpressionListDeParser(expressionVisitor, buffer, true).deParse(expressionList);
+            new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(),
+                    true).deParse(expressionList.getExpressions());
             if (i < n) {
                 buffer.append(", ");
             }
