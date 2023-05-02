@@ -9,6 +9,12 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.ReferentialAction;
+import net.sf.jsqlparser.statement.ReferentialAction.Action;
+import net.sf.jsqlparser.statement.ReferentialAction.Type;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,11 +22,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.ReferentialAction;
-import net.sf.jsqlparser.statement.ReferentialAction.Action;
-import net.sf.jsqlparser.statement.ReferentialAction.Type;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class ForeignKeyIndex extends NamedConstraint {
 
@@ -96,7 +97,7 @@ public class ForeignKeyIndex extends NamedConstraint {
         if (onDeleteReferenceOption == null) {
             removeReferentialAction(Type.DELETE);
         } else {
-            setReferentialAction(Type.DELETE, Action.byAction(onDeleteReferenceOption));
+            setReferentialAction(Type.DELETE, Action.from(onDeleteReferenceOption));
         }
     }
 
@@ -111,7 +112,7 @@ public class ForeignKeyIndex extends NamedConstraint {
         if (onUpdateReferenceOption == null) {
             removeReferentialAction(Type.UPDATE);
         } else {
-            setReferentialAction(Type.UPDATE, Action.byAction(onUpdateReferenceOption));
+            setReferentialAction(Type.UPDATE, Action.from(onUpdateReferenceOption));
         }
     }
 

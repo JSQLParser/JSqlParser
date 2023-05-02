@@ -87,8 +87,22 @@ public class ReferentialAction implements Serializable {
     }
 
     public enum Type {
-        DELETE,
-        UPDATE
+        DELETE("DELETE"),
+        UPDATE("UPDATE");
+
+        public String getType() {
+            return type;
+        }
+
+        private final String type;
+
+        Type(String type) {
+            this.type = type;
+        }
+
+        public static Type from(String name) {
+            return Enum.valueOf(Type.class, name.toUpperCase());
+        }
     }
 
     public enum Action {
@@ -108,21 +122,11 @@ public class ReferentialAction implements Serializable {
          * @param action
          * @return the {@link Action}, if found, otherwise <code>null</code>
          */
-        public static Action byAction(String action) {
-            for (Action a : values()) {
-                if (a.getAction().equals(action)) {
-                    return a;
-                }
-            }
-            return null;
+        public static Action from(String action) {
+            return Enum.valueOf(Action.class, action.toUpperCase());
         }
 
         public String getAction() {
-            return action;
-        }
-
-        @Override
-        public String toString() {
             return action;
         }
     }

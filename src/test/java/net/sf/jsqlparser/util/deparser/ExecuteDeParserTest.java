@@ -9,16 +9,19 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.execute.Execute.ExecType;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
@@ -42,12 +45,12 @@ public class ExecuteDeParserTest {
         Execute execute = new Execute();
         String name = "name";
 
-        List<Expression> expressions = new ArrayList<>();
+        ParenthesedExpressionList expressions = new ParenthesedExpressionList();
         expressions.add(new JdbcParameter());
         expressions.add(new JdbcParameter());
 
         execute.withName(name)
-                .withExecType(ExecType.EXECUTE).withParenthesis(true)
+                .withExecType(ExecType.EXECUTE)
                 .withExprList(new ExpressionList().withExpressions(expressions));
 
         executeDeParser.deParse(execute);

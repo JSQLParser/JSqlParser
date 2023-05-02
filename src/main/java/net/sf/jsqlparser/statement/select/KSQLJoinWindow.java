@@ -140,4 +140,8 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
         this.setAfterTimeUnit(afterTimeUnit);
         return this;
     }
+
+    public final static TimeUnit from(String timeUnitStr) {
+        return Enum.valueOf(TimeUnit.class, timeUnitStr.toUpperCase());
+    }
 }
