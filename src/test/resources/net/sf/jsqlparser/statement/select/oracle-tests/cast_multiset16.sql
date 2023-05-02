@@ -15,3 +15,4 @@ select deptno
 	
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:07 AM
+--@FAILURE: select deptno,collect(ename)as emps from emp group by recorded first on 1 May 2023, 23:34:56

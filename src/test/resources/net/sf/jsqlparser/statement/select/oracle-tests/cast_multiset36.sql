@@ -19,3 +19,4 @@ select owner
      ,      object_type
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select owner,object_type,set(cast(collect(object_name)as varchar2_ntt))as object_names from all_objects group by recorded first on 1 May 2023, 23:35:02

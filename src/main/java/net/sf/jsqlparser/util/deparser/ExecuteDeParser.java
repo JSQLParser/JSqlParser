@@ -9,10 +9,8 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.List;
-
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.statement.execute.Execute;
 
 public class ExecuteDeParser extends AbstractDeParser<Execute> {
@@ -27,21 +25,20 @@ public class ExecuteDeParser extends AbstractDeParser<Execute> {
     @Override
     public void deParse(Execute execute) {
         buffer.append(execute.getExecType().name()).append(" ").append(execute.getName());
-        if (execute.isParenthesis()) {
+        if (execute.getExprList() instanceof ParenthesedExpressionList) {
             buffer.append(" (");
         } else if (execute.getExprList() != null) {
             buffer.append(" ");
         }
         if (execute.getExprList() != null) {
-            List<Expression> expressions = execute.getExprList().getExpressions();
-            for (int i = 0; i < expressions.size(); i++) {
+            for (int i = 0; i < execute.getExprList().size(); i++) {
                 if (i > 0) {
                     buffer.append(", ");
                 }
-                expressions.get(i).accept(expressionVisitor);
+                execute.getExprList().get(i).accept(expressionVisitor);
             }
         }
-        if (execute.isParenthesis()) {
+        if (execute.getExprList() instanceof ParenthesedExpressionList) {
             buffer.append(")");
         }
     }

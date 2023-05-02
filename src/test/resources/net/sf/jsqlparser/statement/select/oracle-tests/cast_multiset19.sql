@@ -16,3 +16,4 @@ select deptno
             deptno
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select deptno,cast(collect(ename order by hiredate)as varchar2_ntt)as ordered_emps from emp group by recorded first on 1 May 2023, 23:35:02

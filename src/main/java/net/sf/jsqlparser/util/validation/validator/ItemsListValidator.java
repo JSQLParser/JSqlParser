@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 
 /**
@@ -28,6 +29,11 @@ public class ItemsListValidator extends AbstractValidator<ItemsList> implements 
 
     @Override
     public void visit(ExpressionList expressionList) {
+        validateOptionalExpressions(expressionList.getExpressions());
+    }
+
+    @Override
+    public void visit(ParenthesedExpressionList expressionList) {
         validateOptionalExpressions(expressionList.getExpressions());
     }
 

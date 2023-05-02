@@ -23,3 +23,4 @@ select e.deptno
             e.deptno
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select e.deptno,cast(multiset(select e2.ename from emp e2 where e2.deptno=e.deptno order by e2.hiredate)as varchar2_ntt)as ordered_emps from emp e group by order by e.deptno recorded first on 1 May 2023, 23:34:56

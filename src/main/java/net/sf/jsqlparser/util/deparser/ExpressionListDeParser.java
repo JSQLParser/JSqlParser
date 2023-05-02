@@ -11,27 +11,25 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 
-import java.util.Collection;
-
-public class ExpressionListDeParser extends AbstractDeParser<Collection<Expression>> {
+public class ExpressionListDeParser extends AbstractDeParser<ExpressionList> {
 
     private final ExpressionVisitor expressionVisitor;
-    private final boolean useBrackets;
     private final boolean useComma;
 
-    public ExpressionListDeParser(ExpressionVisitor expressionVisitor, StringBuilder builder, boolean useBrackets, boolean useComma) {
+    public ExpressionListDeParser(ExpressionVisitor expressionVisitor, StringBuilder builder, boolean useComma) {
         super(builder);
         this.expressionVisitor = expressionVisitor;
-        this.useBrackets = useBrackets;
         this.useComma = useComma;
     }
 
     @Override
-    public void deParse(Collection<Expression> expressions) {
+    public void deParse(ExpressionList expressions) {
         if (expressions != null) {
             String comma = useComma ? ", " : " ";
-            if (useBrackets) {
+            if (expressions instanceof ParenthesedExpressionList) {
                 buffer.append("(");
             }
             int i=0;
@@ -44,7 +42,7 @@ public class ExpressionListDeParser extends AbstractDeParser<Collection<Expressi
                 i++;
             }
 
-            if (useBrackets) {
+            if (expressions instanceof ParenthesedExpressionList) {
                 buffer.append(")");
             }
         }

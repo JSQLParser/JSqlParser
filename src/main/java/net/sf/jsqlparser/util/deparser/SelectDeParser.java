@@ -21,6 +21,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Fetch;
@@ -622,8 +623,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
     @Override
     public void visit(ExpressionList expressionList) {
-        new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(),
-                true).deParse(expressionList.getExpressions());
+        new ExpressionListDeParser(expressionVisitor, buffer, true).deParse(expressionList);
+    }
+
+    @Override
+    public void visit(ParenthesedExpressionList expressionList) {
+        new ExpressionListDeParser(expressionVisitor, buffer, true).deParse(expressionList);
     }
 
     @Override
@@ -653,8 +658,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         int n = expressionLists.size() - 1;
         int i = 0;
         for (ExpressionList expressionList : expressionLists) {
-            new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(),
-                    true).deParse(expressionList.getExpressions());
+            new ExpressionListDeParser(expressionVisitor, buffer, true).deParse(expressionList);
             if (i < n) {
                 buffer.append(", ");
             }

@@ -34,6 +34,10 @@ public class KSQLWindow extends ASTNodeAccessImpl {
         public String getTimeUnit() {
             return timeUnit;
         }
+
+        public final static TimeUnit from(String timeUnitStr) {
+            return Enum.valueOf(TimeUnit.class, timeUnitStr.toUpperCase());
+        }
     }
 
     public enum WindowType {
@@ -49,6 +53,10 @@ public class KSQLWindow extends ASTNodeAccessImpl {
 
         public String getWindowType() {
             return windowType;
+        }
+
+        public static WindowType from(String type) {
+            return Enum.valueOf(WindowType.class, type.toUpperCase());
         }
     }
 
