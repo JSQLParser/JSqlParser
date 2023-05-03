@@ -2761,8 +2761,6 @@ GroupByElement GroupByColumnReferences():
 {
     <K_GROUP> <K_BY>
     (
-        LOOKAHEAD(2) "(" token=")" { groupBy.setGroupByExpressions( new ParenthesedExpressionList() ); }
-        |
         LOOKAHEAD(2) (
             <K_GROUPING> <K_SETS> "("
             list = GroupingSet() { groupBy.addGroupingSet(list); }
@@ -2792,8 +2790,6 @@ ExpressionList GroupingSet():
 }
 {
     (
-        LOOKAHEAD(2) "(" token=")" { list = new ParenthesedExpressionList(); }
-        |
         LOOKAHEAD(2) list = ParenthesedExpressionList()
         |
         expression = SimpleExpression() { list = new ExpressionList(expression); }
@@ -4666,8 +4662,6 @@ Execute Execute(): {
     funcName=RelObjectNameList() { execute.setName(funcName); }
 
     (
-//        ( "(" token=")" { execute.setExprList( new ParenthesedExpressionList()); })
-//        |
         expressionList=ExpressionList() { execute.setExprList(expressionList); }
     )?
 
