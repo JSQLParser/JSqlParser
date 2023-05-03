@@ -39,7 +39,7 @@ public class Update implements Statement {
     private List<WithItem> withItemsList;
     private Table table;
     private Expression where;
-    private final ArrayList<UpdateSet> updateSets = new ArrayList<>();
+    private List<UpdateSet> updateSets;
     private FromItem fromItem;
     private List<Join> joins;
     private List<Join> startJoins;
@@ -60,8 +60,17 @@ public class Update implements Statement {
         this.outputClause = outputClause;
     }
 
-    public ArrayList<UpdateSet> getUpdateSets() {
+    public List<UpdateSet> getUpdateSets() {
         return updateSets;
+    }
+
+    public void setUpdateSets(List<UpdateSet> updateSets) {
+        this.updateSets = updateSets;
+    }
+
+    public Update withUpdateSets(List<UpdateSet> updateSets) {
+        this.setUpdateSets(updateSets);
+        return this;
     }
 
     @Override
@@ -120,12 +129,16 @@ public class Update implements Statement {
         this.oracleHint = oracleHint;
     }
 
-    public void addUpdateSet(Column column, Expression expression) {
-        updateSets.add(new UpdateSet(column, expression));
+    public Update addUpdateSet(Column column, Expression expression) {
+        return this.addUpdateSet(new UpdateSet(column, expression));
     }
 
-    public void addUpdateSet(UpdateSet updateSet) {
-        updateSets.add(updateSet);
+    public Update addUpdateSet(UpdateSet updateSet) {
+        if (this.updateSets == null) {
+            this.updateSets = new ArrayList<>();
+        }
+        this.updateSets.add(updateSet);
+        return this;
     }
 
     @Deprecated

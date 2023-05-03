@@ -13,7 +13,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class KSQLWindow extends ASTNodeAccessImpl {
 
-    public static enum TimeUnit {
+    public enum TimeUnit {
         DAY("DAY"), HOUR("HOUR"), MINUTE("MINUTE"), SECOND("SECOND"), MILLISECOND(
                 "MILLISECOND"), DAYS("DAYS"), HOURS("HOURS"), MINUTES(
                         "MINUTES"), SECONDS("SECONDS"), MILLISECONDS("MILLISECONDS");

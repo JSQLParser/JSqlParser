@@ -1246,11 +1246,7 @@ Update Update( List<WithItem> with ):
     Table table = null;
     List<Join> startJoins = null;
 
-    UpdateSet updateSet;
-    Column tableColumn;
-    Expression valueExpression;
-    ExpressionList columns;
-    ExpressionList values;
+    List<UpdateSet> updateSets;
     Expression where = null;
     FromItem fromItem = null;
     List<Join> joins = null;
@@ -1269,43 +1265,7 @@ Update Update( List<WithItem> with ):
     [ LOOKAHEAD(2) <K_LOW_PRIORITY> { modifierPriority = UpdateModifierPriority.LOW_PRIORITY; }]
     [ LOOKAHEAD(2) <K_IGNORE> { modifierIgnore = true; }]
     table=TableWithAlias() [ startJoins=JoinsList() ]
-    <K_SET>
-    (
-        (
-            tableColumn=Column() "=" valueExpression=SimpleExpression() { update.addUpdateSet(tableColumn, valueExpression); }
-        )
-        |
-        (
-            { updateSet = new UpdateSet(); update.addUpdateSet(updateSet); }
-            columns = ParenthesedExpressionList() { updateSet.setColumns(columns); }
-            "="
-
-            (
-                LOOKAHEAD(3) valueExpression = ParenthesedSelect() { updateSet.setValues( new ExpressionList(valueExpression)); }
-                |
-                values = ParenthesedExpressionList() { updateSet.setValues(values); }
-            )
-        )
-    )
-
-    (
-        ","
-        (
-            tableColumn=Column() "=" valueExpression=SimpleExpression() { update.addUpdateSet(tableColumn, valueExpression); }
-        )
-        |
-        (
-            { updateSet = new UpdateSet(); update.addUpdateSet(updateSet); }
-
-            columns = ParenthesedExpressionList() { updateSet.setColumns(columns); }
-            "="
-            (
-                LOOKAHEAD(3) valueExpression = ParenthesedSelect() { updateSet.setValues( new ExpressionList(valueExpression)); }
-                |
-                values = ParenthesedExpressionList() { updateSet.setValues(values); }
-            )
-        )
-    )*
+    <K_SET> updateSets = UpdateSets() { update.setUpdateSets(updateSets); }
 
     [ outputClause = OutputClause() {update.setOutputClause(outputClause); } ]
 
@@ -1328,6 +1288,59 @@ Update Update( List<WithItem> with ):
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore)
               .withReturningExpressionList(returning);
+    }
+}
+
+List<UpdateSet> UpdateSets():
+{
+    ArrayList<UpdateSet> updateSets = new ArrayList<UpdateSet>();
+    UpdateSet updateSet;
+    Column tableColumn;
+    Expression valueExpression;
+
+    ExpressionList<Column> columns;
+    ExpressionList<Expression>values;
+}
+{
+    (
+        (
+            tableColumn=Column() "=" valueExpression=SimpleExpression()
+            { updateSets.add( new UpdateSet (tableColumn, valueExpression)); }
+        )
+        |
+        (
+            { updateSet = new UpdateSet(); updateSets.add(updateSet); }
+            columns = ParenthesedExpressionList() { updateSet.setColumns(columns); }
+            "="
+            (
+                LOOKAHEAD(3) valueExpression = ParenthesedSelect() { updateSet.setValues( new ExpressionList(valueExpression)); }
+                |
+                values = ParenthesedExpressionList() { updateSet.setValues(values); }
+            )
+        )
+    )
+
+    (
+        ","
+        (
+            tableColumn=Column() "=" valueExpression=SimpleExpression()
+            { updateSets.add( new UpdateSet (tableColumn, valueExpression)); }
+        )
+        |
+        (
+            { updateSet = new UpdateSet(); updateSets.add(updateSet); }
+            columns = ParenthesedExpressionList() { updateSet.setColumns(columns); }
+            "="
+            (
+                LOOKAHEAD(3) valueExpression = ParenthesedSelect() { updateSet.setValues( new ExpressionList(valueExpression)); }
+                |
+                values = ParenthesedExpressionList() { updateSet.setValues(values); }
+            )
+        )
+    )*
+
+    {
+        return updateSets;
     }
 }
 
@@ -1464,16 +1477,8 @@ InsertConflictTarget  InsertConflictTarget():
 InsertConflictAction InsertConflictAction():
 {
     InsertConflictAction conflictAction;
-    ArrayList<UpdateSet> updateSets = new ArrayList<UpdateSet>();
-    UpdateSet updateSet = null;
     Expression whereExpression = null;
-
-    Column tableColumn = null;
-    ParenthesedSelect subSelect;
-    Expression valueExpression = null;
-
-    ExpressionList<Column> columns;
-    ExpressionList values;
+    List<UpdateSet> updateSets;
 }
 {
     (
@@ -1483,47 +1488,12 @@ InsertConflictAction InsertConflictAction():
         |
         (
             <K_DO> <K_UPDATE> <K_SET> { conflictAction = new InsertConflictAction( ConflictActionType.DO_UPDATE ); }
-            (
-                LOOKAHEAD(3) tableColumn=Column()
-                               "=" valueExpression=SimpleExpression() {
-                                                                        updateSet = new UpdateSet();
-                                                                        updateSet.add(tableColumn);
-                                                                        updateSet.add(valueExpression);
-                                                                        updateSets.add(updateSet);
-                                                                        }
-                             (
-                                ","
-                                tableColumn=Column()
-                                "=" valueExpression=SimpleExpression() {
-                                                                        updateSet = new UpdateSet();
-                                                                        updateSet.add(tableColumn);
-                                                                        updateSet.add(valueExpression);
-                                                                        updateSets.add(updateSet);
-                                                                        }
-                            )*
-                |
-                (
-                    { updateSet = new UpdateSet(); updateSets.add(updateSet); }
-
-                    columns = ExpressionList() { updateSet.setColumns(columns); }
-                    "="
-                    values = ExpressionList() { updateSet.setValues(values); }
-
-                    (
-                        ","  { updateSet = new UpdateSet(); updateSets.add(updateSet); }
-                        columns = ExpressionList() { updateSet.setColumns(columns); }
-                        "="
-                        values = ExpressionList() { updateSet.setValues(values); }
-                    )*
-                )
-            )
-
+            updateSets = UpdateSets() { conflictAction.setUpdateSets(updateSets); }
             [ whereExpression = WhereClause() ]
         )
     )
 
     { return conflictAction
-                .withUpdateSets(updateSets)
                 .withWhereExpression(whereExpression); }
 }
 
