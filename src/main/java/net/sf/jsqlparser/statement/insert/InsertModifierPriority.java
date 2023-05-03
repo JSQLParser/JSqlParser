@@ -13,10 +13,6 @@ public enum InsertModifierPriority {
     LOW_PRIORITY("LOW_PRIORITY"), DELAYED("DELAYED"), HIGH_PRIORITY("HIGH_PRIORITY"), IGNORE(
             "IGNORE");
 
-    public String getPriority() {
-        return priority;
-    }
-
     private final String priority;
 
     InsertModifierPriority(String priority) {
@@ -25,5 +21,9 @@ public enum InsertModifierPriority {
 
     public final static InsertModifierPriority from(String priority) {
         return Enum.valueOf(InsertModifierPriority.class, priority.toUpperCase());
+    }
+
+    public String getPriority() {
+        return priority;
     }
 }

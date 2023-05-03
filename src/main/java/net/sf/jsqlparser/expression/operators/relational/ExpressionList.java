@@ -25,13 +25,10 @@ import java.util.List;
  */
 public class ExpressionList<T extends Expression> extends ArrayList<T>
         implements ItemsList, Expression, Serializable {
+    private transient SimpleNode node;
+
     public ExpressionList(Collection<? extends T> expressions) {
         addAll(expressions);
-    }
-
-    @Deprecated
-    public boolean isUsingBrackets() {
-        return false;
     }
 
     public ExpressionList(List<T> expressions) {
@@ -40,6 +37,11 @@ public class ExpressionList<T extends Expression> extends ArrayList<T>
 
     public ExpressionList(T... expressions) {
         this(Arrays.asList(expressions));
+    }
+
+    @Deprecated
+    public boolean isUsingBrackets() {
+        return false;
     }
 
     @Deprecated
@@ -87,8 +89,6 @@ public class ExpressionList<T extends Expression> extends ArrayList<T>
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
     }
-
-    private transient SimpleNode node;
 
     @Override
     public SimpleNode getASTNode() {

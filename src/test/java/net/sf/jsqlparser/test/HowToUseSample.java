@@ -24,6 +24,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
+import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -165,5 +166,14 @@ public class HowToUseSample {
         // Allow Complex Parsing (which allows nested Expressions, but is much slower)
         Statement stmt2 = CCJSqlParserUtil.parse(sqlStr, parser -> parser
                 .withSquareBracketQuotation(true).withAllowComplexParsing(true).withTimeOut(6000));
+    }
+
+    @Test
+    public void showBracketHandling() throws JSQLParserException {
+        String sqlStr = " ( (values(1,2), (3,4)) UNION (values((1,2), (3,4))) )";
+        Statement statement = CCJSqlParserUtil.parse(sqlStr);
+        final String reflectionString = TestUtils.toReflectionString(statement);
+
+        System.out.println(reflectionString);
     }
 }

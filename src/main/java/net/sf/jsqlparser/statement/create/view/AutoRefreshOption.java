@@ -12,13 +12,9 @@ package net.sf.jsqlparser.statement.create.view;
 public enum AutoRefreshOption {
     NONE("NONE"),
 
-    YES("YESY"),
+    YES("YES"),
 
     NO("NO");
-
-    public String getOption() {
-        return option;
-    }
 
     private final String option;
 
@@ -28,6 +24,10 @@ public enum AutoRefreshOption {
 
     public static AutoRefreshOption from(String option) {
         return Enum.valueOf(AutoRefreshOption.class, option.toUpperCase());
+    }
+
+    public String getOption() {
+        return option;
     }
 
 }

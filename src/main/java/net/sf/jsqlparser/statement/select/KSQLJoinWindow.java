@@ -22,8 +22,6 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
     private long afterDuration;
     private TimeUnit afterTimeUnit;
 
-    public KSQLJoinWindow() {}
-
     public boolean isBeforeAfterWindow() {
         return beforeAfter;
     }
