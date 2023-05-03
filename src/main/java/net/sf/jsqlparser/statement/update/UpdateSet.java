@@ -11,18 +11,17 @@ package net.sf.jsqlparser.statement.update;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.Select;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
 public class UpdateSet implements Serializable {
-    protected boolean usingBracketsForColumns = false;
-    protected boolean usingBracketsForValues = false;
-    protected ArrayList<Column> columns = new ArrayList<>();
-    protected ArrayList<Expression> expressions = new ArrayList<>();
+    protected ExpressionList<Column> columns = new ExpressionList<>();
+    protected ExpressionList values = new ExpressionList();
 
     public UpdateSet() {
 
@@ -32,61 +31,64 @@ public class UpdateSet implements Serializable {
         this.columns.add(column);
     }
 
-    public UpdateSet(Column column, Expression expression) {
+    public UpdateSet(Column column, Expression value) {
         this.columns.add(column);
-        this.expressions.add(expression);
+        this.values.add(value);
     }
 
-    public boolean isUsingBracketsForValues() {
-        return usingBracketsForValues;
-    }
-
-    public void setUsingBracketsForValues(boolean usingBracketsForValues) {
-        this.usingBracketsForValues = usingBracketsForValues;
-    }
-
-    public boolean isUsingBracketsForColumns() {
-        return usingBracketsForColumns;
-    }
-
-    public void setUsingBracketsForColumns(boolean usingBracketsForColumns) {
-        this.usingBracketsForColumns = usingBracketsForColumns;
-    }
-
-    public ArrayList<Column> getColumns() {
+    public ExpressionList<Column> getColumns() {
         return columns;
     }
 
-    public void setColumns(ArrayList<Column> columns) {
+    public void setColumns(ExpressionList<Column> columns) {
         this.columns = Objects.requireNonNull(columns);
     }
 
-    public ArrayList<Expression> getExpressions() {
-        return expressions;
+    public ExpressionList getValues() {
+        return values;
     }
 
-    public void setExpressions(ArrayList<Expression> expressions) {
-        this.expressions = Objects.requireNonNull(expressions);
+    public void setValues(ExpressionList values) {
+        this.values = Objects.requireNonNull(values);
     }
 
-    public void add(Column column, Expression expression) {
-        columns.add(column);
-        expressions.add(expression);
+    public void add(Column column, Expression value) {
+        this.add(column);
+        this.add(value);
     }
 
+    /**
+     * Add another column to the existing column list. Transform this list into a
+     * ParenthesedExpression list when needed.
+     *
+     * @param column
+     */
     public void add(Column column) {
+        if (columns.size() < 2 && !(columns instanceof ParenthesedExpressionList)) {
+            columns = new ParenthesedExpressionList<>(columns);
+        }
         columns.add(column);
     }
 
+    /**
+     * Add another expression to the existing value list. Transform this list into a
+     * ParenthesedExpression list when needed.
+     *
+     * @param expression
+     */
     public void add(Expression expression) {
-        expressions.add(expression);
+        if (values.size() < 2 && !(values instanceof ParenthesedExpressionList)) {
+            values = new ParenthesedExpressionList<>(values);
+        }
+        values.add(expression);
     }
 
     public void add(ExpressionList expressionList) {
-        expressions.addAll(expressionList.getExpressions());
+        values.addAll(expressionList.getExpressions());
     }
 
-    public final static StringBuilder appendUpdateSetsTo(StringBuilder builder, Collection<UpdateSet> updateSets) {
+    public final static StringBuilder appendUpdateSetsTo(StringBuilder builder,
+            Collection<UpdateSet> updateSets) {
         builder.append(" SET ");
 
         int j = 0;
@@ -102,38 +104,11 @@ public class UpdateSet implements Serializable {
         if (j > 0) {
             builder.append(", ");
         }
-
-        if (usingBracketsForColumns) {
-            builder.append("(");
-        }
-
-        for (int i = 0; i < columns.size(); i++) {
-            if (i > 0) {
-                builder.append(", ");
-            }
-            builder.append(columns.get(i));
-        }
-
-        if (usingBracketsForColumns) {
-            builder.append(")");
-        }
-
+        builder.append(
+                Select.getStringList(columns, true, columns instanceof ParenthesedExpressionList));
         builder.append(" = ");
-
-        if (usingBracketsForValues) {
-            builder.append("(");
-        }
-
-        for (int i = 0; i < expressions.size(); i++) {
-            if (i > 0) {
-                builder.append(", ");
-            }
-            builder.append(expressions.get(i));
-        }
-        if (usingBracketsForValues) {
-            builder.append(")");
-        }
-
+        builder.append(
+                Select.getStringList(values, true, values instanceof ParenthesedExpressionList));
         return builder;
     }
 

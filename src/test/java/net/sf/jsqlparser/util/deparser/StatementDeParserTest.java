@@ -22,7 +22,6 @@ import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -134,47 +133,6 @@ public class StatementDeParserTest {
 
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-    public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithoutItemsList() {
-        Replace replace = new Replace();
-        Table table = new Table();
-        List<Column> columns = new ArrayList<Column>();
-        List<Expression> expressions = new ArrayList<Expression>();
-        Column column1 = new Column();
-        Column column2 = new Column();
-        Expression expression1 = mock(Expression.class);
-        Expression expression2 = mock(Expression.class);
-
-        replace.setTable(table);
-        replace.setColumns(columns);
-        replace.setExpressions(expressions);
-        columns.add(column1);
-        columns.add(column2);
-        expressions.add(expression1);
-        expressions.add(expression2);
-
-        statementDeParser.visit(replace);
-
-        then(expression1).should().accept(expressionDeParser);
-        then(expression2).should().accept(expressionDeParser);
-    }
-
-    // @Test
-    // @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-    // public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithItemsList() {
-    // Replace replace = new Replace();
-    // Table table = new Table();
-    // ItemsList itemsList = mock(ItemsList.class);
-    //
-    // replace.setTable(table);
-    // replace.setItemsList(itemsList);
-    //
-    // statementDeParser.visit(replace);
-    //
-    // then(itemsList).should().accept(argThat(is(replaceDeParserWithDeParsers(equalTo(expressionDeParser),
-    // equalTo(selectDeParser)))));
-    // }
-    @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingSelect() {
         WithItem withItem1 = spy(new WithItem());
         withItem1.setSelect(mock(ParenthesedSelect.class));
@@ -273,13 +231,11 @@ public class StatementDeParserTest {
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParserWhenDeParsingExecute() {
         Execute execute = new Execute();
-        ExpressionList exprList = new ExpressionList();
-        List<Expression> expressions = new ArrayList<Expression>();
+        ExpressionList expressions = new ExpressionList();
         Expression expression1 = mock(Expression.class);
         Expression expression2 = mock(Expression.class);
 
-        execute.setExprList(exprList);
-        exprList.setExpressions(expressions);
+        execute.setExprList(expressions);
         expressions.add(expression1);
         expressions.add(expression2);
 
@@ -294,7 +250,7 @@ public class StatementDeParserTest {
     public void shouldUseProvidedDeParserWhenDeParsingSetStatement() {
         String name = "name";
         Expression expression = mock(Expression.class);
-        ArrayList<Expression> expressions = new ArrayList<>();
+        ExpressionList expressions = new ExpressionList();
         expressions.add(expression);
 
         SetStatement setStatement = new SetStatement(name, expressions);

@@ -26,6 +26,7 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -134,7 +135,7 @@ public class Update implements Statement {
 
     @Deprecated
     public List<Expression> getExpressions() {
-        return updateSets.get(0).expressions;
+        return updateSets.get(0).values;
     }
 
     @Deprecated
@@ -148,8 +149,8 @@ public class Update implements Statement {
 
     @Deprecated
     public void setExpressions(List<Expression> list) {
-        updateSets.get(0).expressions.clear();
-        updateSets.get(0).expressions.addAll(list);
+        updateSets.get(0).values.clear();
+        updateSets.get(0).values.addAll(list);
     }
 
     public FromItem getFromItem() {
@@ -179,8 +180,8 @@ public class Update implements Statement {
     @Deprecated
     public Select getSelect() {
         Select select = null;
-        if (updateSets.get(0).expressions.get(0) instanceof Select) {
-            select = (Select) updateSets.get(0).expressions.get(0);
+        if (updateSets.get(0).values.get(0) instanceof Select) {
+            select = (Select) updateSets.get(0).values.get(0);
         }
 
         return select;
@@ -189,23 +190,21 @@ public class Update implements Statement {
     @Deprecated
     public void setSelect(Select select) {
         if (select != null) {
-            if (updateSets.get(0).expressions.isEmpty()) {
-                updateSets.get(0).expressions.add(select);
+            if (updateSets.get(0).values.isEmpty()) {
+                updateSets.get(0).values.add(select);
             } else {
-                updateSets.get(0).expressions.set(0, select);
+                updateSets.get(0).values.set(0, select);
             }
         }
     }
 
     @Deprecated
     public boolean isUseColumnsBrackets() {
-        return updateSets.get(0).usingBracketsForColumns;
+        return false;
     }
 
     @Deprecated
-    public void setUseColumnsBrackets(boolean useColumnsBrackets) {
-        updateSets.get(0).usingBracketsForColumns = useColumnsBrackets;
-    }
+    public void setUseColumnsBrackets(boolean useColumnsBrackets) {}
 
     @Deprecated
     public boolean isUseSelect() {
@@ -406,31 +405,25 @@ public class Update implements Statement {
     }
 
     public Update addColumns(Column... columns) {
-        List<Column> collection =
-                new ArrayList<>(Optional.ofNullable(getColumns()).orElseGet(ArrayList::new));
-        Collections.addAll(collection, columns);
-        return this.withColumns(collection);
+        return addColumns(Arrays.asList(columns));
     }
 
     public Update addColumns(Collection<? extends Column> columns) {
-        List<Column> collection =
-                new ArrayList<>(Optional.ofNullable(getColumns()).orElseGet(ArrayList::new));
-        collection.addAll(columns);
-        return this.withColumns(collection);
+        for (Column column : columns) {
+            updateSets.get(updateSets.size() - 1).add(column);
+        }
+        return this;
     }
 
     public Update addExpressions(Expression... expressions) {
-        List<Expression> collection =
-                new ArrayList<>(Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new));
-        Collections.addAll(collection, expressions);
-        return this.withExpressions(collection);
+        return addExpressions(Arrays.asList(expressions));
     }
 
     public Update addExpressions(Collection<? extends Expression> expressions) {
-        List<Expression> collection =
-                new ArrayList<>(Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new));
-        collection.addAll(expressions);
-        return this.withExpressions(collection);
+        for (Expression expression : expressions) {
+            updateSets.get(updateSets.size() - 1).add(expression);
+        }
+        return this;
     }
 
     public Update addJoins(Join... joins) {

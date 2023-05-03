@@ -53,10 +53,7 @@ public class DateTimeLiteralExpression extends ASTNodeAccessImpl implements Expr
     }
 
     public enum DateTime {
-        DATE("DATE")
-        , TIME("TIME")
-        , TIMESTAMP("TIMESTAMP")
-        , TIMESTAMPTZ("TIMESTAMPTZ");
+        DATE("DATE"), TIME("TIME"), TIMESTAMP("TIMESTAMP"), TIMESTAMPTZ("TIMESTAMPTZ");
 
         public String getDateTime() {
             return dateTime;
@@ -68,7 +65,7 @@ public class DateTimeLiteralExpression extends ASTNodeAccessImpl implements Expr
             this.dateTime = dateTime;
         }
 
-        private final DateTime from(String dateTimeStr) {
+        public static DateTime from(String dateTimeStr) {
             return Enum.valueOf(DateTime.class, dateTimeStr.toUpperCase());
         }
     }

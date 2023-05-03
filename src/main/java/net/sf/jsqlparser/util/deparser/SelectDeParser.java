@@ -622,8 +622,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
     @Override
     public void visit(ExpressionList expressionList) {
-        new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(),
-                true).deParse(expressionList.getExpressions());
+        new ExpressionListDeParser(expressionVisitor, buffer, true)
+                .deParse(expressionList);
     }
 
     @Override
@@ -648,17 +648,16 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
     @Override
-    public void visit(MultiExpressionList multiExprList) {
-        List<ExpressionList> expressionLists = multiExprList.getExpressionLists();
-        int n = expressionLists.size() - 1;
+    public void visit(MultiExpressionList<?> multiExprList) {
+        ExpressionListDeParser<?> expressionListDeParser =
+                new ExpressionListDeParser<>(expressionVisitor, buffer, true);
         int i = 0;
-        for (ExpressionList expressionList : expressionLists) {
-            new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(),
-                    true).deParse(expressionList.getExpressions());
-            if (i < n) {
+
+        for (ExpressionList<?> expressionList : multiExprList) {
+            if (i++ > 0) {
                 buffer.append(", ");
             }
-            i++;
+            expressionListDeParser.deParse(expressionList);
         }
     }
 }

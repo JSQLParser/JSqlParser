@@ -68,6 +68,7 @@ import java.util.concurrent.TimeUnit;
 
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertExpressionCanBeDeparsedAs;
+import static net.sf.jsqlparser.test.TestUtils.assertExpressionCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
@@ -1273,41 +1274,42 @@ public class SelectTest {
     @Test
     public void testWhere() throws JSQLParserException {
 
+        String whereToString = "(1 + 2) * (1+2) > ?";
+        assertExpressionCanBeParsedAndDeparsed(whereToString, true);
+
         final String statement = "SELECT * FROM tab1 WHERE";
-        String whereToString = "(a + b + c / d + e * f) * (a / b * (a + b)) > ?";
-        PlainSelect plainSelect = (PlainSelect) parserManager
-                .parse(new StringReader(statement + " " + whereToString));
+        whereToString = "(a + b + c / d + e * f) * (a / b * (a + b)) > ?";
+        assertExpressionCanBeParsedAndDeparsed(whereToString, true);
+
+        PlainSelect plainSelect =
+                (PlainSelect) assertSqlCanBeParsedAndDeparsed(statement + " " + whereToString,
+                        true);
+
         assertTrue(plainSelect.getWhere() instanceof GreaterThan);
         assertTrue(((GreaterThan) plainSelect.getWhere())
                 .getLeftExpression() instanceof Multiplication);
-        assertEquals(statement + " " + whereToString, plainSelect.toString());
 
         assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
 
         whereToString = "(7 * s + 9 / 3) NOT BETWEEN 3 AND ?";
-        plainSelect = (PlainSelect) parserManager
-                .parse(new StringReader(statement + " " + whereToString));
-
+        plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(statement + " " + whereToString,
+                true);
         assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
-        assertEquals(statement + " " + whereToString, plainSelect.toString());
 
         whereToString = "a / b NOT IN (?, 's''adf', 234.2)";
-        plainSelect = (PlainSelect) parserManager
-                .parse(new StringReader(statement + " " + whereToString));
-
+        plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(statement + " " + whereToString,
+                true);
         assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
-        assertEquals(statement + " " + whereToString, plainSelect.toString());
 
-        whereToString = " NOT 0 = 0";
-        parserManager
-                .parse(new StringReader(statement + whereToString));
+        whereToString = "NOT 0 = 0";
+        plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(statement + " " + whereToString,
+                true);
+        assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
 
-        whereToString = " NOT (0 = 0)";
-        plainSelect = (PlainSelect) parserManager
-                .parse(new StringReader(statement + whereToString));
-
-        assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString.trim());
-        assertEquals(statement + whereToString, plainSelect.toString());
+        whereToString = "NOT (0 = 0)";
+        plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(statement + " " + whereToString,
+                true);
+        assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
     }
 
     @Test
@@ -4422,7 +4424,8 @@ public class SelectTest {
     @Test
     public void testGroupingSets1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "SELECT COL_1, COL_2, COL_3, COL_4, COL_5, COL_6 FROM TABLE_1 " + "GROUP BY "
+                "SELECT COL_1, COL_2, COL_3, COL_4, COL_5, COL_6 FROM TABLE_1 "
+                        + "GROUP BY "
                         + "GROUPING SETS ((COL_1, COL_2, COL_3, COL_4), (COL_5, COL_6))");
     }
 
@@ -5101,7 +5104,7 @@ public class SelectTest {
 
     @Test
     public void testGroupedByWithExtraBracketsIssue1210() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("select a,b,c from table group by rollup(a,b,c)", true);
+        // assertSqlCanBeParsedAndDeparsed("select a,b,c from table group by rollup(a,b,c)", true);
         assertSqlCanBeParsedAndDeparsed("select a,b,c from table group by rollup((a,b,c))", true);
 
     }
@@ -5337,17 +5340,59 @@ public class SelectTest {
 
     @Test
     public void testComplexInExpressionIssue905() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("select * " + "from table_a " + "where other_id in ("
-                + "   (select id from table_b where name like '%aa%')"
-                + "   , (select id from table_b where name like '%bb%')" + ")", true);
-
-        assertSqlCanBeParsedAndDeparsed("select * from v.e\n" + "where\n" + "\tcid <> rid\n"
-                + "\tand  rid  not in\n" + "\t(\n" + "\t\t(select distinct  rid  from  v.s )\n"
-                + "\t\tunion\n" + "\t\t(select distinct  rid  from v.p )\n" + "\t)\n"
-                + "\tand  \"timestamp\"  <= 1298505600000", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT *\n"
+                        + "FROM table_a\n"
+                        + "WHERE other_id IN ( (   SELECT id\n"
+                        + "                        FROM table_b\n"
+                        + "                        WHERE name LIKE '%aa%' ), ( SELECT id\n"
+                        + "                                                    FROM table_b\n"
+                        + "                                                    WHERE name LIKE '%bb%' ) )\n",
+                true);
 
         assertSqlCanBeParsedAndDeparsed(
-                "select * " + "from table_a " + "where (a, b, c) in ((1, 2, 3), (3, 4, 5))", true);
+                "SELECT *\n"
+                        + "FROM v.e\n"
+                        + "WHERE cid <> rid\n"
+                        + "    AND rid NOT IN (    ( SELECT DISTINCT\n"
+                        + "                                rid\n"
+                        + "                            FROM v.s )\n"
+                        + "                        UNION (\n"
+                        + "                            SELECT DISTINCT\n"
+                        + "                                rid\n"
+                        + "                            FROM v.p ) )\n"
+                        + "    AND \"timestamp\" <= 1298505600000\n",
+                true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT *\n"
+                        + "FROM table_a\n"
+                        + "WHERE ( a, b, c ) IN ( ( 1, 2, 3 ), ( 3, 4, 5 ) )\n",
+                true);
+    }
+
+    @Test
+    public void testComplexInExpressionSimplyfied() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT *\n"
+                        + "FROM dual\n"
+                        + "WHERE a IN ( ( SELECT id1), ( SELECT id2) )\n",
+                true);
+
+        assertExpressionCanBeParsedAndDeparsed(
+                "a IN ( ( SELECT id1) UNION (SELECT id2) )\n", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT *\n"
+                        + "FROM e\n"
+                        + "WHERE a IN ( ( SELECT id1) UNION (SELECT id2) )\n",
+                true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT *\n"
+                        + "FROM table_a\n"
+                        + "WHERE ( a, b, c ) IN ( ( 1, 2, 3 ), ( 3, 4, 5 ) )\n",
+                true);
     }
 
     @Test

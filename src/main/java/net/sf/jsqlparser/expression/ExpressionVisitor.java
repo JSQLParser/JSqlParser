@@ -27,6 +27,7 @@ import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
 import net.sf.jsqlparser.expression.operators.relational.GeometryDistance;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
@@ -148,10 +149,6 @@ public interface ExpressionVisitor {
 
     void visit(CastExpression cast);
 
-    void visit(TryCastExpression cast);
-
-    void visit(SafeCastExpression cast);
-
     void visit(Modulo modulo);
 
     void visit(AnalyticExpression aexpr);
@@ -178,9 +175,9 @@ public interface ExpressionVisitor {
 
     void visit(MySQLGroupConcat groupConcat);
 
-    void visit(ValueListExpression valueList);
+    void visit(ExpressionList<?> expressionList);
 
-    void visit(RowConstructor rowConstructor);
+    void visit(RowConstructor<?> rowConstructor);
 
     void visit(RowGetExpression rowGetExpression);
 

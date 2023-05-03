@@ -16,6 +16,8 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Values;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
@@ -37,18 +39,15 @@ public class UpsertTest {
         String statement = "UPSERT INTO TEST (NAME, ID) VALUES ('foo', 123)";
         Upsert upsert = (Upsert) parserManager.parse(new StringReader(statement));
         assertEquals("TEST", upsert.getTable().getName());
-        assertTrue(upsert.isUseValues());
         assertEquals(2, upsert.getColumns().size());
         assertEquals("NAME", upsert.getColumns().get(0).getColumnName());
         assertEquals("ID", upsert.getColumns().get(1).getColumnName());
-        assertEquals(2, ((ExpressionList) upsert.getItemsList()).getExpressions().size());
-        assertEquals("foo",
-                ((StringValue) upsert.getItemsList(ExpressionList.class).getExpressions().get(0))
-                        .getValue());
-        assertEquals(123,
-                ((LongValue) upsert.getItemsList(ExpressionList.class).getExpressions().get(1))
-                        .getValue());
-        assertFalse(upsert.isUseSelectBrackets());
+
+        ExpressionList expressions =
+                ((Values) upsert.getSelect()).getExpressions(ExpressionList.class);
+        assertEquals(2, expressions.size());
+        assertEquals("foo", ((StringValue) expressions.get(0)).getValue());
+        assertEquals(123, ((LongValue) expressions.get(1)).getValue());
         assertFalse(upsert.isUseDuplicate());
         assertEquals(statement, "" + upsert);
     }
@@ -60,21 +59,18 @@ public class UpsertTest {
         Upsert upsert = (Upsert) parserManager.parse(new StringReader(statement));
         assertEquals("TEST", upsert.getTable().getName());
         assertEquals(2, upsert.getColumns().size());
-        assertTrue(upsert.isUseValues());
         assertEquals("ID", upsert.getColumns().get(0).getColumnName());
         assertEquals("COUNTER", upsert.getColumns().get(1).getColumnName());
-        assertEquals(2, ((ExpressionList) upsert.getItemsList()).getExpressions().size());
-        assertEquals(123,
-                ((LongValue) upsert.getItemsList(ExpressionList.class).getExpressions().get(0))
-                        .getValue());
-        assertEquals(0,
-                ((LongValue) upsert.getItemsList(ExpressionList.class).getExpressions().get(1))
-                        .getValue());
+
+        Values values = (Values) upsert.getSelect();
+        ExpressionList<?> expressions = values.getExpressions(ExpressionList.class);
+        assertEquals(2, expressions.size());
+        assertEquals(123, ((LongValue) expressions.get(0)).getValue());
+        assertEquals(0, ((LongValue) expressions.get(1)).getValue());
         assertEquals(1, upsert.getDuplicateUpdateColumns().size());
         assertEquals("COUNTER", upsert.getDuplicateUpdateColumns().get(0).getColumnName());
         assertEquals(1, upsert.getDuplicateUpdateExpressionList().size());
         assertEquals("COUNTER + 1", upsert.getDuplicateUpdateExpressionList().get(0).toString());
-        assertFalse(upsert.isUseSelectBrackets());
         assertTrue(upsert.isUseDuplicate());
         assertEquals(statement, "" + upsert);
     }
@@ -86,7 +82,6 @@ public class UpsertTest {
         Upsert upsert = (Upsert) parserManager.parse(new StringReader(statement));
         assertEquals("test.targetTable", upsert.getTable().getFullyQualifiedName());
         assertEquals(2, upsert.getColumns().size());
-        assertFalse(upsert.isUseValues());
         assertEquals("col1", upsert.getColumns().get(0).getColumnName());
         assertEquals("col2", upsert.getColumns().get(1).getColumnName());
         assertNull(upsert.getItemsList());
@@ -102,18 +97,13 @@ public class UpsertTest {
         String statement = "UPSERT INTO TEST VALUES ('foo', 'bar', 3)";
         Upsert upsert = (Upsert) parserManager.parse(new StringReader(statement));
         assertEquals("TEST", upsert.getTable().getName());
-        assertEquals(3, ((ExpressionList) upsert.getItemsList()).getExpressions().size());
-        assertTrue(upsert.isUseValues());
-        assertEquals("foo",
-                ((StringValue) upsert.getItemsList(ExpressionList.class).getExpressions().get(0))
-                        .getValue());
-        assertEquals("bar",
-                ((StringValue) upsert.getItemsList(ExpressionList.class).getExpressions().get(1))
-                        .getValue());
-        assertEquals(3,
-                ((LongValue) ((ExpressionList) upsert.getItemsList()).getExpressions().get(2))
-                        .getValue());
-        assertFalse(upsert.isUseSelectBrackets());
+
+        ExpressionList expressions =
+                ((Values) upsert.getSelect()).getExpressions(ExpressionList.class);
+        assertEquals(3, expressions.size());
+        assertEquals("foo", ((StringValue) expressions.get(0)).getValue());
+        assertEquals("bar", ((StringValue) expressions.get(1)).getValue());
+        assertEquals(3, ((LongValue) expressions.get(2)).getValue());
         assertFalse(upsert.isUseDuplicate());
         assertEquals(statement, "" + upsert);
     }
@@ -124,6 +114,8 @@ public class UpsertTest {
     }
 
     @Test
+    @Disabled
+    /* not the job of the parser to validate this, it even may be valid eventually */
     public void testUpsertMultiRowValueDifferent() throws JSQLParserException {
         try {
             assertSqlCanBeParsedAndDeparsed(

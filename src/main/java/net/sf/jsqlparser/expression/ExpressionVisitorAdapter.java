@@ -49,7 +49,6 @@ import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.ExpressionListItem;
@@ -88,7 +87,7 @@ public class ExpressionVisitorAdapter
     @Override
     public void visit(Function function) {
         if (function.getParameters() != null) {
-            function.getParameters().accept(this);
+            function.getParameters().accept((ItemsListVisitor) this);
         }
         if (function.getKeep() != null) {
             function.getKeep().accept(this);
@@ -198,8 +197,8 @@ public class ExpressionVisitorAdapter
     }
 
     public void visit(OverlapsCondition overlapsCondition) {
-        overlapsCondition.getLeft().accept(this);
-        overlapsCondition.getRight().accept(this);
+        overlapsCondition.getLeft().accept((ItemsListVisitor) this);
+        overlapsCondition.getRight().accept((ItemsListVisitor) this);
     }
 
 
@@ -347,16 +346,6 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(TryCastExpression expr) {
-        expr.getLeftExpression().accept(this);
-    }
-
-    @Override
-    public void visit(SafeCastExpression expr) {
-        expr.getLeftExpression().accept(this);
-    }
-
-    @Override
     public void visit(Modulo expr) {
         visitBinaryExpression(expr);
     }
@@ -406,8 +395,15 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(ExpressionList expressionList) {
-        for (Expression expr : expressionList.getExpressions()) {
+    public void visit(ExpressionList<?> expressionList) {
+        for (Expression expr : expressionList) {
+            expr.accept(this);
+        }
+    }
+
+    @Override
+    public void visit(RowConstructor<?> rowConstructor) {
+        for (Expression expr : rowConstructor) {
             expr.accept(this);
         }
     }
@@ -420,8 +416,8 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(MultiExpressionList multiExprList) {
-        for (ExpressionList list : multiExprList.getExprList()) {
+    public void visit(MultiExpressionList<?> multiExprList) {
+        for (ExpressionList<?> list : multiExprList.getExprList()) {
             visit(list);
         }
     }
@@ -491,13 +487,6 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(ValueListExpression valueListExpression) {
-        for (Expression expr : valueListExpression.getExpressionList().getExpressions()) {
-            expr.accept(this);
-        }
-    }
-
-    @Override
     public void visit(Pivot pivot) {
         for (FunctionItem item : pivot.getFunctionItems()) {
             item.getFunction().accept(this);
@@ -513,7 +502,7 @@ public class ExpressionVisitorAdapter
 
         if (pivot.getMultiInItems() != null) {
             for (ExpressionListItem item : pivot.getMultiInItems()) {
-                item.getExpressionList().accept(this);
+                item.getExpressionList().accept((ItemsListVisitor) this);
             }
         }
     }
@@ -553,19 +542,6 @@ public class ExpressionVisitorAdapter
     @Override
     public void visit(SelectItem selectExpressionItem) {
         selectExpressionItem.getExpression().accept(this);
-    }
-
-    @Override
-    public void visit(RowConstructor rowConstructor) {
-        if (rowConstructor.getColumnDefinitions().isEmpty()) {
-            for (Expression expression : rowConstructor.getExprList().getExpressions()) {
-                expression.accept(this);
-            }
-        } else {
-            for (ColumnDefinition columnDefinition : rowConstructor.getColumnDefinitions()) {
-                columnDefinition.accept(this);
-            }
-        }
     }
 
     @Override
@@ -692,9 +668,5 @@ public class ExpressionVisitorAdapter
     @Override
     public void visit(TrimFunction trimFunction) {
 
-    }
-
-    public void visit(ColumnDefinition columnDefinition) {
-        columnDefinition.accept(this);
     }
 }

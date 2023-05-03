@@ -281,8 +281,8 @@ public class PlainSelect extends Select {
     }
 
     public PlainSelect addGroupByColumnReference(Expression expr) {
-        groupBy = Optional.ofNullable(groupBy).orElseGet(GroupByElement::new);
-        groupBy.addGroupByExpression(expr);
+        this.groupBy = Optional.ofNullable(groupBy).orElseGet(GroupByElement::new);
+        this.groupBy.addGroupByExpression(expr);
         return this;
     }
 

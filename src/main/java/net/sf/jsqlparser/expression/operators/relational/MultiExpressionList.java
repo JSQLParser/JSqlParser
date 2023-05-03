@@ -9,26 +9,20 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import net.sf.jsqlparser.expression.Expression;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import net.sf.jsqlparser.expression.Expression;
 
 /**
  * A list of ExpressionList items. e.g. multi values of insert statements. This one allows only
  * equally sized ExpressionList.
  */
-public class MultiExpressionList implements ItemsList {
-
-    private List<ExpressionList> expressionLists;
-
-    public MultiExpressionList() {
-        this.expressionLists = new ArrayList<>();
-    }
+public class MultiExpressionList<T extends ExpressionList<? extends Expression>>
+        extends ArrayList<ExpressionList<? extends Expression>> implements ItemsList {
 
     @Override
     public void accept(ItemsListVisitor itemsListVisitor) {
@@ -36,51 +30,56 @@ public class MultiExpressionList implements ItemsList {
     }
 
     @Deprecated
-    public List<ExpressionList> getExprList() {
-        return getExpressionLists();
-    }
-
-    public List<ExpressionList> getExpressionLists() {
-        return expressionLists;
-    }
-
-    public void setExpressionLists(List<ExpressionList> expressionLists) {
-        this.expressionLists = expressionLists;
-    }
-
-    public MultiExpressionList withExpressionLists(List<ExpressionList> expressionLists) {
-        this.setExpressionLists(expressionLists);
+    public MultiExpressionList<?> getExprList() {
         return this;
     }
 
-    public void addExpressionList(ExpressionList el) {
-        if (!expressionLists.isEmpty()
-                && expressionLists.get(0).getExpressions().size() != el.getExpressions().size()) {
-            throw new IllegalArgumentException("different count of parameters");
-        }
-        expressionLists.add(el);
-    }
-
-    public void addExpressionList(List<Expression> list) {
-        addExpressionList(new ExpressionList(list));
-    }
-
-    public void addExpressionList(Expression... expr) {
-        addExpressionList(new ExpressionList(Arrays.asList(expr)));
-    }
-
-    public MultiExpressionList addExpressionLists(ExpressionList... expr) {
-        Stream.of(expr).forEach(this::addExpressionList);
+    @Deprecated
+    public MultiExpressionList<?> getExpressionLists() {
         return this;
     }
 
-    public MultiExpressionList addExpressionLists(Collection<? extends ExpressionList> expr) {
-        expr.stream().forEach(this::addExpressionList);
+    @Deprecated
+    public void setExpressionLists(List<T> expressionLists) {
+        this.clear();
+        this.addAll(expressionLists);
+    }
+
+    public MultiExpressionList<T> addExpressionList(T expressionList) {
+        this.add(expressionList);
         return this;
+    }
+
+    public void addExpressionList(List<Expression> expressions) {
+        this.add(new ExpressionList(expressions));
+    }
+
+    public void addExpressionList(Expression... expressions) {
+        this.add(new ExpressionList(expressions));
+    }
+
+    public MultiExpressionList<T> addExpressions(Collection<T> expressions) {
+        ExpressionList<?> expressionList = new ExpressionList(expressions);
+        this.add(expressionList);
+        return this;
+    }
+
+    public MultiExpressionList<T> addExpressions(T... expressionLists) {
+        return this.addExpressions(Arrays.asList(expressionLists));
+    }
+
+    public MultiExpressionList<T> withExpressionLists(Collection<T> expressionLists) {
+        this.clear();
+        return addExpressions(expressionLists);
+    }
+
+    public MultiExpressionList<T> withExpressionLists(T... expressionLists) {
+        this.clear();
+        return addExpressions(expressionLists);
     }
 
     @Override
     public String toString() {
-        return expressionLists.stream().map(ExpressionList::toString).collect(Collectors.joining(", "));
+        return this.stream().map(ExpressionList::toString).collect(Collectors.joining(", "));
     }
 }

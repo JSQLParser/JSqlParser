@@ -11,35 +11,41 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
+import net.sf.jsqlparser.statement.select.Select;
+
+import java.util.ArrayList;
 
 public class CastExpression extends ASTNodeAccessImpl implements Expression {
+    public String keyword;
 
     private Expression leftExpression;
-    private ColDataType type;
-    private RowConstructor rowConstructor;
+    private ColDataType colDataType = null;
+    private ArrayList<ColumnDefinition> columnDefinitions = new ArrayList<>();
     private boolean useCastKeyword = true;
-    
-    public RowConstructor getRowConstructor() {
-        return rowConstructor;
-    }
-    
-    public void setRowConstructor(RowConstructor rowConstructor) {
-        this.rowConstructor = rowConstructor;
-        this.type = null;
-    }
-    
-    public CastExpression withRowConstructor(RowConstructor rowConstructor) {
-        setRowConstructor(rowConstructor);
-        return this;
+
+    public CastExpression(String keyword) {
+        this.keyword = keyword;
     }
 
-    public ColDataType getType() {
-        return type;
+    public CastExpression() {
+        this("CAST");
     }
 
-    public void setType(ColDataType type) {
-        this.type = type;
-        this.rowConstructor = null;
+    public ColDataType getColDataType() {
+        return colDataType;
+    }
+
+    public ArrayList<ColumnDefinition> getColumnDefinitions() {
+        return columnDefinitions;
+    }
+
+    public void setColDataType(ColDataType colDataType) {
+        this.colDataType = colDataType;
+    }
+
+    public void addColumnDefinition(ColumnDefinition columnDefinition) {
+        this.columnDefinitions.add(columnDefinition);
     }
 
     public Expression getLeftExpression() {
@@ -66,16 +72,17 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         if (useCastKeyword) {
-            return rowConstructor!=null
-              ? "CAST(" + leftExpression + " AS " + rowConstructor.toString() + ")"
-              : "CAST(" + leftExpression + " AS " + type.toString() + ")";
+            return columnDefinitions.size() > 1
+                    ? keyword + "(" + leftExpression + " AS ROW("
+                            + Select.getStringList(columnDefinitions) + "))"
+                    : keyword + "(" + leftExpression + " AS " + colDataType.toString() + ")";
         } else {
-            return leftExpression + "::" + type.toString();
+            return leftExpression + "::" + colDataType.toString();
         }
     }
 
     public CastExpression withType(ColDataType type) {
-        this.setType(type);
+        this.setColDataType(type);
         return this;
     }
 

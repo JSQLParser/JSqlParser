@@ -14,7 +14,6 @@ import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.util.Arrays;
 import java.util.List;
@@ -206,7 +205,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
                 if (isAllColumns()) {
                     b.append("ALL ");
                 }
-                b.append(PlainSelect.getStringList(parameters.getExpressions(), true, false));
+                b.append(parameters);
                 if (orderByElements != null) {
                     b.append(" ORDER BY ");
                     boolean comma = false;
@@ -274,9 +273,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     public Function withParameters(Expression... parameters) {
-        ExpressionList expressionList = new ExpressionList(parameters).withUsingBrackets(false);
-        this.setParameters(expressionList);
-        return this;
+        return withParameters(new ExpressionList(parameters));
     }
 
     public Function withNamedParameters(NamedExpressionList namedParameters) {

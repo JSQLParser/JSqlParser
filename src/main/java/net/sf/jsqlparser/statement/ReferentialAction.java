@@ -62,7 +62,8 @@ public class ReferentialAction implements Serializable {
 
     @Override
     public String toString() {
-        return new StringBuilder(" ON ").append(getType().name()).append(" ").append(getAction().getAction())
+        return new StringBuilder(" ON ").append(getType().name()).append(" ")
+                .append(getAction().getAction())
                 .toString();
     }
 
@@ -78,17 +79,16 @@ public class ReferentialAction implements Serializable {
             return false;
         }
         ReferentialAction other = (ReferentialAction) obj;
-//        if (action != other.action) {
-//            return false;
-//        }
-//        if (type != other.type) {
-//            return false;
-        return action==other.action && type == other.type;
+        // if (action != other.action) {
+        // return false;
+        // }
+        // if (type != other.type) {
+        // return false;
+        return action == other.action && type == other.type;
     }
 
     public enum Type {
-        DELETE("DELETE"),
-        UPDATE("UPDATE");
+        DELETE("DELETE"), UPDATE("UPDATE");
 
         public String getType() {
             return type;
@@ -106,11 +106,8 @@ public class ReferentialAction implements Serializable {
     }
 
     public enum Action {
-        CASCADE("CASCADE"),
-        RESTRICT("RESTRICT"),
-        NO_ACTION("NO ACTION"),
-        SET_DEFAULT("SET DEFAULT"),
-        SET_NULL("SET NULL");
+        CASCADE("CASCADE"), RESTRICT("RESTRICT"), NO_ACTION("NO ACTION"), SET_DEFAULT(
+                "SET DEFAULT"), SET_NULL("SET NULL");
 
         Action(String action) {
             this.action = action;
@@ -123,7 +120,13 @@ public class ReferentialAction implements Serializable {
          * @return the {@link Action}, if found, otherwise <code>null</code>
          */
         public static Action from(String action) {
-            return Enum.valueOf(Action.class, action.toUpperCase());
+            // We can't use Enum.valueOf() since there White Space involved
+            for (Action a : values()) {
+                if (a.getAction().equals(action)) {
+                    return a;
+                }
+            }
+            return null;
         }
 
         public String getAction() {

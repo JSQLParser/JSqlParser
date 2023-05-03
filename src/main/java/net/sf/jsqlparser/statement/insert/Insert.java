@@ -11,7 +11,6 @@ package net.sf.jsqlparser.statement.insert;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
@@ -22,10 +21,11 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.select.Values;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -37,7 +37,7 @@ public class Insert implements Statement {
 
     private Table table;
     private OracleHint oracleHint = null;
-    private List<Column> columns;
+    private ExpressionList<Column> columns;
     private Select select;
     private boolean useDuplicate = false;
     private List<Column> duplicateUpdateColumns;
@@ -85,11 +85,11 @@ public class Insert implements Statement {
         this.oracleHint = oracleHint;
     }
 
-    public List<Column> getColumns() {
+    public ExpressionList<Column> getColumns() {
         return columns;
     }
 
-    public void setColumns(List<Column> list) {
+    public void setColumns(ExpressionList<Column> list) {
         columns = list;
     }
 
@@ -103,17 +103,7 @@ public class Insert implements Statement {
         if (select instanceof Values) {
             Values valuesStatement = (Values) select;
             if (valuesStatement.getExpressions() instanceof ExpressionList) {
-                ExpressionList expressionList =
-                        (ExpressionList) valuesStatement.getExpressions();
-
-                if (expressionList.getExpressions().size() == 1
-                        && expressionList.getExpressions().get(0) instanceof RowConstructor) {
-                    RowConstructor rowConstructor =
-                            (RowConstructor) expressionList.getExpressions().get(0);
-                    return rowConstructor.getExprList();
-                } else {
-                    return expressionList;
-                }
+                return (ExpressionList) valuesStatement.getExpressions();
             } else {
                 return valuesStatement.getExpressions();
             }
@@ -382,7 +372,7 @@ public class Insert implements Statement {
         return this;
     }
 
-    public Insert withColumns(List<Column> columns) {
+    public Insert withColumns(ExpressionList<Column> columns) {
         this.setColumns(columns);
         return this;
     }
@@ -393,13 +383,12 @@ public class Insert implements Statement {
     }
 
     public Insert addColumns(Column... columns) {
-        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, columns);
-        return this.withColumns(collection);
+        return addColumns(Arrays.asList(columns));
     }
 
-    public Insert addColumns(Collection<? extends Column> columns) {
-        List<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ArrayList::new);
+    public Insert addColumns(Collection<Column> columns) {
+        ExpressionList<Column> collection =
+                Optional.ofNullable(getColumns()).orElseGet(ExpressionList::new);
         collection.addAll(columns);
         return this.withColumns(collection);
     }

@@ -139,8 +139,8 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
 
     @Override
     public void visit(ExpressionList expressionList) {
-        new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(),
-                true).deParse(expressionList.getExpressions());
+        new ExpressionListDeParser(expressionVisitor, buffer, true)
+                .deParse(expressionList);
     }
 
     @Override
@@ -150,12 +150,12 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
 
     @Override
     public void visit(MultiExpressionList multiExprList) {
-        List<ExpressionList> expressionLists = multiExprList.getExpressionLists();
+        List<ExpressionList<?>> expressionLists = multiExprList.getExpressionLists();
         int n = expressionLists.size() - 1;
         int i = 0;
         for (ExpressionList expressionList : expressionLists) {
-            new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(),
-                    true).deParse(expressionList.getExpressions());
+            new ExpressionListDeParser(expressionVisitor, buffer, true)
+                    .deParse(expressionList);
             if (i < n) {
                 buffer.append(", ");
             }

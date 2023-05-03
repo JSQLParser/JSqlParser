@@ -30,8 +30,8 @@ public class ItemsListVisitorAdapter implements ItemsListVisitor {
     }
 
     @Override
-    public void visit(MultiExpressionList multiExprList) {
-        for (ExpressionList list : multiExprList.getExprList()) {
+    public void visit(MultiExpressionList<?> multiExprList) {
+        for (ExpressionList<?> list : multiExprList.getExprList()) {
             visit(list);
         }
     }

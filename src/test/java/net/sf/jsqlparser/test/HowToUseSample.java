@@ -98,8 +98,7 @@ public class HowToUseSample {
         SelectItem selectItem =
                 select.getSelectItems().get(0);
         Assertions.assertEquals(
-                new LongValue(1)
-                , selectItem.getExpression());
+                new LongValue(1), selectItem.getExpression());
 
         Table table = (Table) select.getFromItem();
         Assertions.assertEquals("dual", table.getName());

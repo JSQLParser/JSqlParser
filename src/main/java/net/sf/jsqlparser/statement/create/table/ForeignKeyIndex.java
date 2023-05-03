@@ -70,7 +70,8 @@ public class ForeignKeyIndex extends NamedConstraint {
      * @return
      */
     public ReferentialAction getReferentialAction(Type type) {
-        return referentialActions.stream().filter(ra -> type.equals(ra.getType())).findFirst().orElse(null);
+        return referentialActions.stream().filter(ra -> type.equals(ra.getType())).findFirst()
+                .orElse(null);
     }
 
     private void setReferentialAction(Type type, Action action, boolean set) {
@@ -145,13 +146,15 @@ public class ForeignKeyIndex extends NamedConstraint {
     }
 
     public ForeignKeyIndex addReferencedColumnNames(String... referencedColumnNames) {
-        List<String> collection = Optional.ofNullable(getReferencedColumnNames()).orElseGet(ArrayList::new);
+        List<String> collection =
+                Optional.ofNullable(getReferencedColumnNames()).orElseGet(ArrayList::new);
         Collections.addAll(collection, referencedColumnNames);
         return this.withReferencedColumnNames(collection);
     }
 
     public ForeignKeyIndex addReferencedColumnNames(Collection<String> referencedColumnNames) {
-        List<String> collection = Optional.ofNullable(getReferencedColumnNames()).orElseGet(ArrayList::new);
+        List<String> collection =
+                Optional.ofNullable(getReferencedColumnNames()).orElseGet(ArrayList::new);
         collection.addAll(referencedColumnNames);
         return this.withReferencedColumnNames(collection);
     }

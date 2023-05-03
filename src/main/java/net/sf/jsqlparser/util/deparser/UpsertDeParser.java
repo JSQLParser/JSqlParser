@@ -153,11 +153,11 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
     @Override
     public void visit(MultiExpressionList multiExprList) {
         buffer.append(" VALUES ");
-        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
+        for (Iterator<ExpressionList<?>> it = multiExprList.iterator(); it.hasNext();) {
             buffer.append("(");
-            for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter
+            for (Iterator<?> iter = it.next().iterator(); iter
                     .hasNext();) {
-                Expression expression = iter.next();
+                Expression expression = (Expression) iter.next();
                 expression.accept(expressionVisitor);
                 if (iter.hasNext()) {
                     buffer.append(", ");

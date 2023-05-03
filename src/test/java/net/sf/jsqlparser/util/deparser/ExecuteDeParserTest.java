@@ -51,7 +51,7 @@ public class ExecuteDeParserTest {
 
         execute.withName(name)
                 .withExecType(ExecType.EXECUTE)
-                .withExprList(new ExpressionList().withExpressions(expressions));
+                .withExprList(expressions);
 
         executeDeParser.deParse(execute);
 

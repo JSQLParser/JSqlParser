@@ -137,7 +137,7 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     /**
      * a multi-expression in clause: {@code ((a, b), (c, d))}
      */
-    protected void validateOptionalMultiExpressionList(MultiExpressionList multiExprList) {
+    protected void validateOptionalMultiExpressionList(MultiExpressionList<?> multiExprList) {
         if (multiExprList != null) {
             ExpressionValidator v = getValidator(ExpressionValidator.class);
             multiExprList.getExpressionLists().stream().map(ExpressionList::getExpressions)

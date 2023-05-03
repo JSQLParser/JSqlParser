@@ -13,7 +13,9 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
@@ -33,7 +35,7 @@ public class ReplaceTest {
         assertEquals("col2", ((Column) upsert.getColumns().get(1)).getColumnName());
         assertEquals("col3", ((Column) upsert.getColumns().get(2)).getColumnName());
         assertEquals("as", ((StringValue) upsert.getSetExpressions().get(0)).getValue());
-        assertTrue( upsert.getSetExpressions().get(1) instanceof JdbcParameter);
+        assertTrue(upsert.getSetExpressions().get(1) instanceof JdbcParameter);
         assertEquals(565, ((LongValue) upsert.getSetExpressions().get(2)).getValue());
         assertEquals(statement, "" + upsert);
     }
@@ -47,9 +49,12 @@ public class ReplaceTest {
         assertEquals("col1", ((Column) replace.getColumns().get(0)).getColumnName());
         assertEquals("col2", ((Column) replace.getColumns().get(1)).getColumnName());
         assertEquals("col3", ((Column) replace.getColumns().get(2)).getColumnName());
-        assertEquals("as", ((StringValue) replace.getSetExpressions().get(0) ).getValue() );
-        assertTrue( replace.getSetExpressions().get(1) instanceof JdbcParameter);
-        assertEquals(565, ((LongValue) replace.getSetExpressions().get(2)).getValue());
+
+        ExpressionList expressions =
+                (ExpressionList) ((Values) replace.getSelect()).getExpressions();
+        assertEquals("as", ((StringValue) expressions.get(0)).getValue());
+        assertTrue(expressions.get(1) instanceof JdbcParameter);
+        assertEquals(565, ((LongValue) expressions.get(2)).getValue());
         assertEquals(statement, "" + replace);
     }
 
@@ -67,19 +72,19 @@ public class ReplaceTest {
 
     @Test
     public void testProblemReplaceParseDeparse() throws JSQLParserException {
-        TestUtils.
-                assertSqlCanBeParsedAndDeparsed("REPLACE a_table (ID, A, B) SELECT A_ID, A, B FROM b_table", false);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "REPLACE a_table (ID, A, B) SELECT A_ID, A, B FROM b_table", false);
     }
 
     @Test
     public void testProblemMissingIntoIssue389() throws JSQLParserException {
-        TestUtils.
-                assertSqlCanBeParsedAndDeparsed("REPLACE INTO mytable (key, data) VALUES (1, \"aaa\")");
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "REPLACE INTO mytable (key, data) VALUES (1, \"aaa\")");
     }
 
     @Test
     public void testMultipleValues() throws JSQLParserException {
-        TestUtils.
-                assertSqlCanBeParsedAndDeparsed("REPLACE INTO mytable (col1, col2, col3) VALUES (1, \"aaa\", now()), (2, \"bbb\", now())");
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "REPLACE INTO mytable (col1, col2, col3) VALUES (1, \"aaa\", now()), (2, \"bbb\", now())");
     }
 }

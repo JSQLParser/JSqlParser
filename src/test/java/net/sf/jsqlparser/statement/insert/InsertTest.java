@@ -17,6 +17,7 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -31,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
 import java.io.StringReader;
-import java.util.Arrays;
 
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
@@ -69,14 +69,15 @@ public class InsertTest {
                         .getValue());
         assertEquals(statement, insert.toString());
 
-        ExpressionList expressionList = new ExpressionList(new JdbcParameter(),
+        ExpressionList expressionList = new ParenthesedExpressionList(new JdbcParameter(),
                 new StringValue("sadfsd"), new LongValue().withValue(234));
 
         Select select = new Values().withExpressions(expressionList);
 
         Insert insert2 = new Insert().withTable(new Table("mytable"))
                 .withColumns(
-                        Arrays.asList(new Column("col1"), new Column("col2"), new Column("col3")))
+                        new ExpressionList<>(new Column("col1"), new Column("col2"),
+                                new Column("col3")))
                 .withSelect(select);
 
         assertDeparse(insert2, statement);
@@ -197,16 +198,16 @@ public class InsertTest {
         String statement = "INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e)";
         assertSqlCanBeParsedAndDeparsed(statement);
 
-        MultiExpressionList multiExpressionList = new MultiExpressionList()
-                .addExpressionLists(new ExpressionList().addExpressions(new Column("a"))
-                        .addExpressions(new Column("b")))
-                .addExpressionLists(new ExpressionList().addExpressions(new Column("d"))
-                        .addExpressions(new Column("e")));
+        MultiExpressionList<ExpressionList<Column>> multiExpressionList = new MultiExpressionList()
+                .addExpressionList(
+                        new ParenthesedExpressionList<Column>(new Column("a"), new Column("b")))
+                .addExpressionList(
+                        new ParenthesedExpressionList<Column>(new Column("d"), new Column("e")));
 
         Select select = new Values().withExpressions(multiExpressionList);
 
         Insert insert = new Insert().withTable(new Table("mytable"))
-                .withColumns(Arrays.asList(new Column("col1"), new Column("col2")))
+                .withColumns(new ExpressionList<>(new Column("col1"), new Column("col2")))
                 .withSelect(select);
 
         assertDeparse(insert, statement);

@@ -37,7 +37,7 @@ public class ItemsListValidator extends AbstractValidator<ItemsList> implements 
     }
 
     @Override
-    public void visit(MultiExpressionList multiExprList) {
+    public void visit(MultiExpressionList<?> multiExprList) {
         multiExprList.getExpressionLists().forEach(l -> l.accept(this));
     }
 

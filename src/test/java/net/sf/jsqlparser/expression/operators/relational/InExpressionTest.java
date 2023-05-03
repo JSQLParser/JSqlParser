@@ -10,14 +10,14 @@ class InExpressionTest {
 
     @Test
     void testOracleInWithoutBrackets() throws JSQLParserException {
-        String sqlStr="select 1 from dual where a in 1 ";
+        String sqlStr = "select 1 from dual where a in 1 ";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
 
     @Test
     void testOracleInWithBrackets() throws JSQLParserException {
-        String sqlStr="select 1 from dual where a in (1) ";
+        String sqlStr = "select 1 from dual where a in (1) ";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 

@@ -12,8 +12,8 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 public class Values extends Select {
@@ -30,6 +30,10 @@ public class Values extends Select {
 
     public ItemsList getExpressions() {
         return expressions;
+    }
+
+    public <E extends ItemsList> E getExpressions(Class<E> type) {
+        return type.cast(expressions);
     }
 
     public void setExpressions(ItemsList expressions) {
@@ -58,7 +62,7 @@ public class Values extends Select {
             ((ExpressionList) expressions).addExpressions(addExpressions);
             return this;
         } else {
-            return this.withExpressions(new ExpressionList(addExpressions));
+            return this.withExpressions(new ParenthesedExpressionList(addExpressions));
         }
     }
 
@@ -67,7 +71,7 @@ public class Values extends Select {
             ((ExpressionList) expressions).addExpressions(addExpressions);
             return this;
         } else {
-            return this.withExpressions(new ExpressionList(new ArrayList<>(addExpressions)));
+            return this.withExpressions(new ParenthesedExpressionList(addExpressions));
         }
     }
 }

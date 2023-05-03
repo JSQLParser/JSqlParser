@@ -15,9 +15,9 @@ public interface ItemsListVisitor {
 
     void visit(ParenthesedSelect selectBody);
 
-    void visit(ExpressionList expressionList);
+    void visit(ExpressionList<?> expressionList);
 
     void visit(NamedExpressionList namedExpressionList);
 
-    void visit(MultiExpressionList multiExprList);
+    void visit(MultiExpressionList<?> multiExprList);
 }

@@ -24,17 +24,20 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 public class ValuesTest {
 
     @Test
+    public void testRowConstructor() throws JSQLParserException {
+        String sqlStr = "VALUES (1,2), (3,4)";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
     public void testDuplicateKey() throws JSQLParserException {
         String statement = "VALUES (1, 2, 'test')";
         assertSqlCanBeParsedAndDeparsed(statement);
 
-        Values values = new Values().addExpressions(new LongValue(1),
-                new LongValue(2), new StringValue("test"));
+        Values values = new Values()
+                .addExpressions(
+                        new LongValue(1), new LongValue(2), new StringValue("test"));
         assertDeparse(values, statement);
-
-        // this test does not make much sense, since the Object Tree is not distinct
-        // there are several different ways to build the statement above
-        // assertEqualsObjectTree(parsed, created);
     }
 
     @Test

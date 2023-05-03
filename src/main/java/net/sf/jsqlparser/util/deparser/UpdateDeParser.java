@@ -68,41 +68,16 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         }
         buffer.append(" SET ");
 
+        ExpressionListDeParser expressionListDeParser =
+                new ExpressionListDeParser(expressionVisitor, buffer, true);
         int j = 0;
         for (UpdateSet updateSet : update.getUpdateSets()) {
-            if (j > 0) {
+            if (j++ > 0) {
                 buffer.append(", ");
             }
-
-            if (updateSet.isUsingBracketsForColumns()) {
-                buffer.append("(");
-            }
-            for (int i = 0; i < updateSet.getColumns().size(); i++) {
-                if (i > 0) {
-                    buffer.append(", ");
-                }
-                updateSet.getColumns().get(i).accept(expressionVisitor);
-            }
-            if (updateSet.isUsingBracketsForColumns()) {
-                buffer.append(")");
-            }
-
+            expressionListDeParser.deParse(updateSet.getColumns());
             buffer.append(" = ");
-
-            if (updateSet.isUsingBracketsForValues()) {
-                buffer.append("(");
-            }
-            for (int i = 0; i < updateSet.getExpressions().size(); i++) {
-                if (i > 0) {
-                    buffer.append(", ");
-                }
-                updateSet.getExpressions().get(i).accept(expressionVisitor);
-            }
-            if (updateSet.isUsingBracketsForValues()) {
-                buffer.append(")");
-            }
-
-            j++;
+            expressionListDeParser.deParse(updateSet.getValues());
         }
 
         if (update.getOutputClause() != null) {

@@ -11,6 +11,7 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -44,12 +45,12 @@ public class ExpressionVisitorAdapterTest {
             public void visit(InExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
-                exprList.add(expr.getRightExpression());
+                exprList.add(expr.getRightItemsList());
             }
         });
 
-        assertTrue(exprList.get(0) instanceof Expression);
-        assertTrue(exprList.get(1) instanceof RowConstructor);
+        assertTrue(exprList.get(0) instanceof Column);
+        assertTrue(exprList.get(1) instanceof ExpressionList);
     }
 
     @Test
@@ -68,7 +69,7 @@ public class ExpressionVisitorAdapterTest {
             }
         });
 
-        assertTrue(exprList.get(0) instanceof RowConstructor);
+        assertTrue(exprList.get(0) instanceof ExpressionList<?>);
         assertTrue(exprList.get(1) instanceof Select);
     }
 

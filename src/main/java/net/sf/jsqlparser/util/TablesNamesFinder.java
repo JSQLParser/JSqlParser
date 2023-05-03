@@ -48,7 +48,6 @@ import net.sf.jsqlparser.expression.OverlapsCondition;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
-import net.sf.jsqlparser.expression.SafeCastExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
@@ -57,9 +56,7 @@ import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.TimezoneExpression;
 import net.sf.jsqlparser.expression.TranscodingFunction;
 import net.sf.jsqlparser.expression.TrimFunction;
-import net.sf.jsqlparser.expression.TryCastExpression;
 import net.sf.jsqlparser.expression.UserVariable;
-import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.VariableAssignment;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.XMLSerializeExpr;
@@ -159,13 +156,13 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.TableFunction;
+import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import net.sf.jsqlparser.statement.select.Values;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -319,8 +316,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(OverlapsCondition overlapsCondition) {
-        overlapsCondition.getLeft().accept(this);
-        overlapsCondition.getRight().accept(this);
+        overlapsCondition.getLeft().accept((ItemsListVisitor) this);
+        overlapsCondition.getRight().accept((ItemsListVisitor) this);
     }
 
     @Override
@@ -492,7 +489,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(ExpressionList expressionList) {
+    public void visit(ExpressionList<?> expressionList) {
         for (Expression expression : expressionList.getExpressions()) {
             expression.accept(this);
         }
@@ -593,16 +590,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(TryCastExpression cast) {
-        cast.getLeftExpression().accept(this);
-    }
-
-    @Override
-    public void visit(SafeCastExpression cast) {
-        cast.getLeftExpression().accept(this);
-    }
-
-    @Override
     public void visit(Modulo modulo) {
         visitBinaryExpression(modulo);
     }
@@ -636,9 +623,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(MultiExpressionList multiExprList) {
-        for (ExpressionList exprList : multiExprList.getExprList()) {
-            exprList.accept(this);
+    public void visit(MultiExpressionList<?> multiExprList) {
+        for (ExpressionList<?> exprList : multiExprList.getExprList()) {
+            exprList.accept((ItemsListVisitor) this);
         }
     }
 
@@ -741,11 +728,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(MySQLGroupConcat groupConcat) {
 
-    }
-
-    @Override
-    public void visit(ValueListExpression valueList) {
-        valueList.getExpressionList().accept(this);
     }
 
     @Override
@@ -895,8 +877,8 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(RowConstructor rowConstructor) {
-        for (Expression expr : rowConstructor.getExprList().getExpressions()) {
+    public void visit(RowConstructor<?> rowConstructor) {
+        for (Expression expr : rowConstructor) {
             expr.accept(this);
         }
     }
