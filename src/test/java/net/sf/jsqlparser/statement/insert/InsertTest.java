@@ -113,12 +113,15 @@ public class InsertTest {
         assertEquals("col1", insert.getColumns().get(0).getColumnName());
         assertEquals("col2", insert.getColumns().get(1).getColumnName());
         assertEquals("col3", insert.getColumns().get(2).getColumnName());
+
+        // throw a NPE since its a PlainSelect statement
         assertThrows(Exception.class, new Executable() {
             @Override
             public void execute() throws Throwable {
-                Values values = insert.getValues();
+                insert.getValues();
             }
         });
+
         assertNotNull(insert.getSelect());
         assertEquals("mytable2",
                 ((Table) insert.getPlainSelect().getFromItem()).getName());
