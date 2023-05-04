@@ -36,14 +36,11 @@ import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
-import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
@@ -67,7 +64,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.UncommentedEmptyMethodBody"})
 public class ExpressionVisitorAdapter
-        implements ExpressionVisitor, ItemsListVisitor, PivotVisitor, SelectItemVisitor {
+        implements ExpressionVisitor, PivotVisitor, SelectItemVisitor {
 
     private SelectVisitor selectVisitor;
 
@@ -87,7 +84,7 @@ public class ExpressionVisitorAdapter
     @Override
     public void visit(Function function) {
         if (function.getParameters() != null) {
-            function.getParameters().accept((ItemsListVisitor) this);
+            function.getParameters().accept(this);
         }
         if (function.getKeep() != null) {
             function.getKeep().accept(this);
@@ -197,8 +194,8 @@ public class ExpressionVisitorAdapter
     }
 
     public void visit(OverlapsCondition overlapsCondition) {
-        overlapsCondition.getLeft().accept((ItemsListVisitor) this);
-        overlapsCondition.getRight().accept((ItemsListVisitor) this);
+        overlapsCondition.getLeft().accept(this);
+        overlapsCondition.getRight().accept(this);
     }
 
 
@@ -219,14 +216,8 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(InExpression expr) {
-        if (expr.getLeftExpression() != null) {
-            expr.getLeftExpression().accept(this);
-        }
-        if (expr.getRightExpression() != null) {
-            expr.getRightExpression().accept(this);
-        } else if (expr.getRightItemsList() != null) {
-            expr.getRightItemsList().accept(this);
-        }
+        expr.getLeftExpression().accept(this);
+        expr.getRightExpression().accept(this);
     }
 
     @Override
@@ -409,20 +400,6 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(NamedExpressionList namedExpressionList) {
-        for (Expression expr : namedExpressionList.getExpressions()) {
-            expr.accept(this);
-        }
-    }
-
-    @Override
-    public void visit(MultiExpressionList<?> multiExprList) {
-        for (ExpressionList<?> list : multiExprList.getExprList()) {
-            visit(list);
-        }
-    }
-
-    @Override
     public void visit(NotExpression notExpr) {
         notExpr.getExpression().accept(this);
     }
@@ -502,7 +479,7 @@ public class ExpressionVisitorAdapter
 
         if (pivot.getMultiInItems() != null) {
             for (ExpressionListItem item : pivot.getMultiInItems()) {
-                item.getExpressionList().accept((ItemsListVisitor) this);
+                item.getExpressionList().accept(this);
             }
         }
     }

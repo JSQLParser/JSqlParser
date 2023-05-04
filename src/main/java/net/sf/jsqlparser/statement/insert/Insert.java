@@ -12,7 +12,6 @@ package net.sf.jsqlparser.statement.insert;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.OutputClause;
@@ -21,6 +20,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
 
@@ -93,25 +93,6 @@ public class Insert implements Statement {
         columns = list;
     }
 
-    /**
-     * Get the values (as VALUES (...) or SELECT)
-     *
-     * @return the values of the insert
-     */
-    @Deprecated
-    public ItemsList getItemsList() {
-        if (select instanceof Values) {
-            Values valuesStatement = (Values) select;
-            if (valuesStatement.getExpressions() instanceof ExpressionList) {
-                return (ExpressionList) valuesStatement.getExpressions();
-            } else {
-                return valuesStatement.getExpressions();
-            }
-        }
-        return null;
-    }
-
-
     @Deprecated
     public boolean isUseValues() {
         return select != null && select instanceof Values;
@@ -127,6 +108,18 @@ public class Insert implements Statement {
 
     public Select getSelect() {
         return select;
+    }
+
+    public Values getValues() {
+        return select.getValues();
+    }
+
+    public PlainSelect getPlainSelect() {
+        return select.getPlainSelect();
+    }
+
+    public SetOperationList getSetOperationList() {
+        return select.getSetOperationList();
     }
 
     public void setSelect(Select select) {
@@ -461,9 +454,5 @@ public class Insert implements Statement {
                 Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(setExpressionList);
         return this.withSetExpressionList(collection);
-    }
-
-    public <E extends ItemsList> E getItemsList(Class<E> type) {
-        return type.cast(getItemsList());
     }
 }

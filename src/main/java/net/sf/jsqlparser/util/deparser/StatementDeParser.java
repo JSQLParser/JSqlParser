@@ -50,7 +50,6 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeInsert;
 import net.sf.jsqlparser.statement.merge.MergeUpdate;
-import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
@@ -129,17 +128,6 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         InsertDeParser insertDeParser =
                 new InsertDeParser(expressionDeParser, selectDeParser, buffer);
         insertDeParser.deParse(insert);
-    }
-
-    @Override
-    public void visit(Replace replace) {
-        selectDeParser.setBuffer(buffer);
-        expressionDeParser.setSelectVisitor(selectDeParser);
-        expressionDeParser.setBuffer(buffer);
-        selectDeParser.setExpressionVisitor(expressionDeParser);
-        ReplaceDeParser replaceDeParser =
-                new ReplaceDeParser(expressionDeParser, selectDeParser, buffer);
-        replaceDeParser.deParse(replace);
     }
 
     @Override

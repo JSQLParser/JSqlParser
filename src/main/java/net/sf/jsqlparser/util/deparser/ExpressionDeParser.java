@@ -88,14 +88,11 @@ import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
-import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
@@ -120,7 +117,7 @@ import static java.util.stream.Collectors.joining;
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionDeParser extends AbstractDeParser<Expression>
         // FIXME maybe we should implement an ItemsListDeparser too?
-        implements ExpressionVisitor, ItemsListVisitor {
+        implements ExpressionVisitor {
 
     private static final String NOT = "NOT ";
     private SelectVisitor selectVisitor;
@@ -253,11 +250,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(" NOT");
         }
         buffer.append(" IN ");
-        if (inExpression.getRightExpression() != null) {
-            inExpression.getRightExpression().accept(this);
-        } else {
-            inExpression.getRightItemsList().accept(this);
-        }
+        inExpression.getRightExpression().accept(this);
     }
 
     @Override
@@ -515,10 +508,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 buffer.append("UNIQUE ");
             }
             if (function.getNamedParameters() != null) {
-                visit(function.getNamedParameters());
+                function.getNamedParameters().accept(this);
             }
             if (function.getParameters() != null) {
-                visit(function.getParameters());
+                function.getParameters().accept(this);
             }
             if (function.getOrderByElements() != null) {
                 buffer.append(" ORDER BY ");
@@ -552,23 +545,6 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(ParenthesedSelect selectBody) {
         selectBody.getSelect().accept(this);
-    }
-
-    @Override
-    public void visit(NamedExpressionList namedExpressionList) {
-        List<String> names = namedExpressionList.getNames();
-        List<Expression> expressions = namedExpressionList.getExpressions();
-        for (int i = 0; i < names.size(); i++) {
-            if (i > 0) {
-                buffer.append(" ");
-            }
-            String name = names.get(i);
-            if (!name.equals("")) {
-                buffer.append(name);
-                buffer.append(" ");
-            }
-            expressions.get(i).accept(this);
-        }
     }
 
     public SelectVisitor getSelectVisitor() {
@@ -628,16 +604,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(AnyComparisonExpression anyComparisonExpression) {
-        buffer.append(anyComparisonExpression.getAnyType().name()).append(" ( ");
-        ParenthesedSelect subSelect = anyComparisonExpression.getSubSelect();
-        if (subSelect != null) {
-            subSelect.accept((ExpressionVisitor) this);
-        } else {
-            ExpressionList expressionList = (ExpressionList) anyComparisonExpression.getItemsList();
-            buffer.append("VALUES ");
-            buffer.append(expressionList);
-        }
-        buffer.append(" ) ");
+        buffer.append(anyComparisonExpression.getAnyType().name());
+
+        // VALUES or SELECT
+        anyComparisonExpression.getSelect().accept((ExpressionVisitor) this);
     }
 
     @Override
@@ -822,17 +792,6 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public void visit(MultiExpressionList<?> multiExprList) {
-        for (Iterator<ExpressionList<?>> it = multiExprList.getExprList().iterator(); it
-                .hasNext();) {
-            visit(it.next());
-            if (it.hasNext()) {
-                buffer.append(", ");
-            }
-        }
-    }
-
-    @Override
     public void visit(IntervalExpression iexpr) {
         buffer.append(iexpr.toString());
     }
@@ -890,7 +849,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(ExpressionList<?> expressionList) {
         ExpressionListDeParser<?> expressionListDeParser =
-                new ExpressionListDeParser<>(this, buffer, true);
+                new ExpressionListDeParser<>(this, buffer);
         expressionListDeParser.deParse(expressionList);
     }
 
@@ -900,7 +859,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(rowConstructor.getName());
         }
         ExpressionListDeParser<?> expressionListDeParser =
-                new ExpressionListDeParser<>(this, buffer, true);
+                new ExpressionListDeParser<>(this, buffer);
         expressionListDeParser.deParse(rowConstructor);
     }
 

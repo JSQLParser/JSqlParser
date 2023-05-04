@@ -23,7 +23,7 @@ public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
 
     public GroupByDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
         super(buffer);
-        this.expressionListDeParser = new ExpressionListDeParser(expressionVisitor, buffer, true);
+        this.expressionListDeParser = new ExpressionListDeParser(expressionVisitor, buffer);
         this.buffer = buffer;
     }
 

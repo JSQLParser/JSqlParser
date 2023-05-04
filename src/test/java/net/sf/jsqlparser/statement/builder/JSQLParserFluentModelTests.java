@@ -57,7 +57,7 @@ public class JSQLParserFluentModelTests {
                 .withRightExpression(
                         new InExpression()
                                 .withLeftExpression(new Column(asList("t1", "col3")))
-                                .withRightItemsList(
+                                .withRightExpression(
                                         new ParenthesedExpressionList(new StringValue("A"))));
 
         PlainSelect select = new PlainSelect().addSelectItems(new AllColumns()).withFromItem(t1)
@@ -93,7 +93,7 @@ public class JSQLParserFluentModelTests {
                         .withRightExpression(
                                 new InExpression()
                                         .withLeftExpression(new Column(asList("t1", "col3")))
-                                        .withRightItemsList(
+                                        .withRightExpression(
                                                 new ParenthesedExpressionList(new StringValue("B"),
                                                         new StringValue("C")))))
                 .withRightExpression(new Column(asList("t2", "col4")));

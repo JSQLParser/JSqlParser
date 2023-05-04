@@ -11,22 +11,16 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 import java.util.Iterator;
-import java.util.List;
 
-public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsListVisitor {
+public class InsertDeParser extends AbstractDeParser<Insert> {
 
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
@@ -137,37 +131,6 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
         }
     }
 
-    @Override
-    public void visit(ExpressionList expressionList) {
-        new ExpressionListDeParser(expressionVisitor, buffer, true)
-                .deParse(expressionList);
-    }
-
-    @Override
-    public void visit(NamedExpressionList NamedExpressionList) {
-        // not used in a top-level insert statement
-    }
-
-    @Override
-    public void visit(MultiExpressionList multiExprList) {
-        List<ExpressionList<?>> expressionLists = multiExprList.getExpressionLists();
-        int n = expressionLists.size() - 1;
-        int i = 0;
-        for (ExpressionList expressionList : expressionLists) {
-            new ExpressionListDeParser(expressionVisitor, buffer, true)
-                    .deParse(expressionList);
-            if (i < n) {
-                buffer.append(", ");
-            }
-            i++;
-        }
-    }
-
-    @Override
-    public void visit(ParenthesedSelect selectBody) {
-        selectBody.accept(selectVisitor);
-    }
-
     public ExpressionVisitor getExpressionVisitor() {
         return expressionVisitor;
     }
@@ -183,6 +146,4 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
     public void setSelectVisitor(SelectVisitor visitor) {
         selectVisitor = visitor;
     }
-
-
 }

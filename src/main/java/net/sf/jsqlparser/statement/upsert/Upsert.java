@@ -11,13 +11,14 @@ package net.sf.jsqlparser.statement.upsert;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.Values;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +30,7 @@ public class Upsert implements Statement {
 
     private Table table;
     private List<Column> columns;
-    private ItemsList itemsList;
+    private ExpressionList expressions;
     private Select select;
     private boolean useDuplicate = false;
     private List<Column> duplicateUpdateColumns;
@@ -86,18 +87,18 @@ public class Upsert implements Statement {
         return columns;
     }
 
-    public void setItemsList(ItemsList list) {
-        itemsList = list;
+    public void setExpressions(ExpressionList list) {
+        expressions = list;
     }
 
-    public ItemsList getItemsList() {
-        return itemsList;
+    public ExpressionList getExpressions() {
+        return expressions;
     }
 
     public List<Expression> getSetExpressions() {
         List<Expression> expressions = null;
-        if (itemsList instanceof ExpressionList) {
-            ExpressionList expressionList = (ExpressionList) itemsList;
+        if (this.expressions instanceof ExpressionList) {
+            ExpressionList expressionList = (ExpressionList) this.expressions;
             expressions = expressionList.getExpressions();
         }
         return expressions;
@@ -109,6 +110,18 @@ public class Upsert implements Statement {
 
     public Select getSelect() {
         return select;
+    }
+
+    public Values getValues() {
+        return select.getValues();
+    }
+
+    public PlainSelect getPlainSelect() {
+        return select.getPlainSelect();
+    }
+
+    public SetOperationList getSetOperationList() {
+        return select.getSetOperationList();
     }
 
 
@@ -235,8 +248,8 @@ public class Upsert implements Statement {
         return this;
     }
 
-    public Upsert withItemsList(ItemsList itemsList) {
-        this.setItemsList(itemsList);
+    public Upsert withExpressions(ExpressionList expressions) {
+        this.setExpressions(expressions);
         return this;
     }
 
@@ -279,9 +292,5 @@ public class Upsert implements Statement {
                 Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(duplicateUpdateExpressionList);
         return this.withDuplicateUpdateExpressionList(collection);
-    }
-
-    public <E extends ItemsList> E getItemsList(Class<E> type) {
-        return type.cast(getItemsList());
     }
 }

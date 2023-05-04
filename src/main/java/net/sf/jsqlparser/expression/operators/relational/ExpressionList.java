@@ -24,7 +24,7 @@ import java.util.List;
  * A list of expressions, as in SELECT A FROM TAB WHERE B IN (expr1,expr2,expr3)
  */
 public class ExpressionList<T extends Expression> extends ArrayList<T>
-        implements ItemsList, Expression, Serializable {
+        implements Expression, Serializable {
     private transient SimpleNode node;
 
     public ExpressionList(Collection<? extends T> expressions) {
@@ -55,6 +55,11 @@ public class ExpressionList<T extends Expression> extends ArrayList<T>
         this.addAll(expressions);
     }
 
+    public ExpressionList addExpression(T expression) {
+        this.add(expression);
+        return this;
+    }
+
     public ExpressionList addExpressions(T... expressions) {
         addAll(Arrays.asList(expressions));
         return this;
@@ -73,11 +78,6 @@ public class ExpressionList<T extends Expression> extends ArrayList<T>
     public ExpressionList withExpressions(Collection<T> expressions) {
         this.clear();
         return addExpressions(expressions);
-    }
-
-    @Override
-    public void accept(ItemsListVisitor itemsListVisitor) {
-        itemsListVisitor.visit(this);
     }
 
     @Override

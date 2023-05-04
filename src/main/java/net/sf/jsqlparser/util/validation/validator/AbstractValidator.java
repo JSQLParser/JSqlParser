@@ -10,9 +10,6 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsList;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -134,17 +131,6 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         }
     }
 
-    /**
-     * a multi-expression in clause: {@code ((a, b), (c, d))}
-     */
-    protected void validateOptionalMultiExpressionList(MultiExpressionList<?> multiExprList) {
-        if (multiExprList != null) {
-            ExpressionValidator v = getValidator(ExpressionValidator.class);
-            multiExprList.getExpressionLists().stream().map(ExpressionList::getExpressions)
-                    .flatMap(List::stream).forEach(e -> e.accept(v));
-        }
-    }
-
     protected void validateOptionalExpression(Expression expression) {
         validateOptional(expression, e -> e.accept(getValidator(ExpressionValidator.class)));
     }
@@ -178,10 +164,6 @@ public abstract class AbstractValidator<S> implements Validator<S> {
 
     protected void validateOptionalFromItem(FromItem fromItem, SelectValidator v) {
         validateOptional(fromItem, i -> i.accept(v));
-    }
-
-    protected void validateOptionalItemsList(ItemsList itemsList) {
-        validateOptional(itemsList, i -> i.accept(getValidator(ItemsListValidator.class)));
     }
 
     /**

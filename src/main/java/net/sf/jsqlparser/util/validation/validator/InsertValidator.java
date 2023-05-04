@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 
 /**
@@ -23,21 +24,28 @@ public class InsertValidator extends AbstractValidator<Insert> {
     public void validate(Insert insert) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.insert);
-            validateOptionalFeature(c, insert.getItemsList(), Feature.insertValues);
-            validateOptionalFeature(c, insert.getModifierPriority(), Feature.insertModifierPriority);
+
+            if (insert.getSelect() instanceof Values) {
+                validateOptionalFeature(c, insert.getSelect().as(Values.class),
+                        Feature.insertValues);
+            }
+
+            validateOptionalFeature(c, insert.getModifierPriority(),
+                    Feature.insertModifierPriority);
             validateFeature(c, insert.isModifierIgnore(), Feature.insertModifierIgnore);
             validateOptionalFeature(c, insert.getSelect(), Feature.insertFromSelect);
             validateFeature(c, insert.isUseSet(), Feature.insertUseSet);
             validateFeature(c, insert.isUseDuplicate(), Feature.insertUseDuplicateKeyUpdate);
-            validateOptionalFeature(c, insert.getReturningExpressionList(), Feature.insertReturningExpressionList);
+            validateOptionalFeature(c, insert.getReturningExpressionList(),
+                    Feature.insertReturningExpressionList);
         }
 
         validateOptionalFromItem(insert.getTable());
         validateOptionalExpressions(insert.getColumns());
-        validateOptionalItemsList(insert.getItemsList());
 
-        if (insert.getSelect() != null) {
+        if (insert.getSelect() instanceof Values) {
             insert.getSelect().accept(getValidator(StatementValidator.class));
+            validateOptionalExpressions(insert.getValues().getExpressions());
         }
 
         if (insert.isUseSet()) {
@@ -60,7 +68,7 @@ public class InsertValidator extends AbstractValidator<Insert> {
 
         if (isNotEmpty(insert.getReturningExpressionList())) {
             SelectValidator v = getValidator(SelectValidator.class);
-            insert.getReturningExpressionList().forEach(c -> c .accept(v));
+            insert.getReturningExpressionList().forEach(c -> c.accept(v));
         }
     }
 

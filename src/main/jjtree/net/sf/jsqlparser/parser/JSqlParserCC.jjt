@@ -57,7 +57,6 @@ import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
 import net.sf.jsqlparser.statement.drop.*;
 import net.sf.jsqlparser.statement.insert.*;
-import net.sf.jsqlparser.statement.replace.*;
 import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.show.*;
@@ -1230,13 +1229,13 @@ ShowStatement Show(): {
 }
 
 Values Values(): {
-    ItemsList itemsList;
+    ExpressionList expressions;
 } {
     ( <K_VALUES> | <K_VALUE> )
-    itemsList = ExpressionList()
+    expressions = ExpressionList()
 
     {
-        return new Values(itemsList);
+        return new Values(expressions);
     }
 }
 
@@ -1530,12 +1529,10 @@ Upsert Upsert():
     Column tableColumn = null;
     List<Column> columns = new ArrayList<Column>();
     List<Expression> primaryExpList = new ArrayList<Expression>();
-    ItemsList itemsList = null;
+    ExpressionList itemsList = null;
     Expression exp = null;
-    MultiExpressionList multiExpr = null;
     List<SelectItem> returning = null;
     Select select = null;
-    boolean useSelectBrackets = false;
     boolean useDuplicate = false;
     List<Column> duplicateUpdateColumns = null;
     List<Expression> duplicateUpdateExpressionList = null;
@@ -1588,7 +1585,7 @@ Upsert Upsert():
 		if (columns.size() > 0) {
             upsert.setColumns(columns);
         }
-        return upsert.withItemsList(itemsList)
+        return upsert.withExpressions(itemsList)
               .withSelect(select)
               .withTable(table)
               .withUseDuplicate(useDuplicate)
@@ -1874,7 +1871,7 @@ Select Select() #Select:
             |
             LOOKAHEAD(3) select = ParenthesedSelect()
         )
-        [ select = SetOperationList(select) ]
+        [ LOOKAHEAD(2) select = SetOperationList(select) ]
 
         [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { select.setOrderByElements(orderByElements); } ]
 
@@ -2028,14 +2025,14 @@ PlainSelect PlainSelect() #PlainSelect:
 
     selectItems=SelectItemsList()
 
-    [intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); } ]
+    [ LOOKAHEAD(2) intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); } ]
     [ LOOKAHEAD(2) <K_FROM> fromItem=FromItem()
         [ lateralViews=LateralViews() ]
         [ LOOKAHEAD(2) joins=JoinsList() ]
     ]
 
     // Clickhouse FINAL as shown at https://clickhouse.com/docs/en/operations/settings/settings#final
-    [ <K_FINAL> { plainSelect.setUsingFinal(true); } ]
+    [ LOOKAHEAD(2) <K_FINAL> { plainSelect.setUsingFinal(true); } ]
 
     [ LOOKAHEAD(2) ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
     [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); }]
@@ -2061,8 +2058,8 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) <K_FOR> <K_UPDATE> { plainSelect.setForUpdate(true); }
         [ LOOKAHEAD(2) <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ]
         [ LOOKAHEAD(<K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ]
-        [ LOOKAHEAD(2) <K_NOWAIT> { plainSelect.setNoWait(true); }
-               | <K_SKIP> <K_LOCKED> { plainSelect.setSkipLocked(true); } ]
+        [ LOOKAHEAD(2) (<K_NOWAIT> { plainSelect.setNoWait(true); }
+               | <K_SKIP> <K_LOCKED> { plainSelect.setSkipLocked(true); }) ]
     ]
 
     [ LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
@@ -2712,7 +2709,7 @@ OracleHierarchicalExpression OracleHierarchicalQueryClause():
                 result.setConnectExpression(expr);
                 result.setConnectFirst(true);
             }
-            [ <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);} ]
+            [ LOOKAHEAD(2) <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);} ]
         )
     )
     {
@@ -2741,7 +2738,7 @@ GroupByElement GroupByColumnReferences():
         (
             list = ExpressionList() { groupBy.setGroupByExpressions(list); }
             (
-                <K_GROUPING> <K_SETS> "("
+                LOOKAHEAD(2) <K_GROUPING> <K_SETS> "("
                 list = GroupingSet() { groupBy.addGroupingSet(list); }
                 (  LOOKAHEAD(2) "," list = GroupingSet() { groupBy.addGroupingSet(list); })*
                 ")"
@@ -2802,10 +2799,11 @@ OrderByElement OrderByElement():
     columnReference = Expression()
     [ LOOKAHEAD(2) ( <K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )) { orderByElement.setAscDescPresent(true); }  ]
     [ LOOKAHEAD(2) <K_NULLS>
-        [
+        [ LOOKAHEAD(2) (
             <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }
             |
             <K_LAST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_LAST);  }
+            )
         ]
     ]
     {
@@ -3264,30 +3262,30 @@ Expression SQLCondition():
 
 Expression InExpression() #InExpression :
 {
-    InExpression result = new InExpression();
-    ItemsList leftItemsList = null;
-    ExpressionList rightItemsList = null;
-    Expression leftExpression = null;
-    Expression rightExpression = null;
     Token token;
-    MultiExpressionList multiExpressionList = null;
-    ExpressionList expressionList = null;
+    int oldOracleJoin = 0;
+    boolean usesNot = false;
+    Expression leftExpression;
+    Expression rightExpression;
 }
 {
-        leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
-        [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
+    leftExpression=SimpleExpression()
+    [ "(" "+" ")" { oldOracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
 
-    [<K_NOT> { result.setNot(true); } ] <K_IN>
+    [<K_NOT> { usesNot=true; } ] <K_IN>
     (
-        LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  result.setRightExpression(new StringValue(token.image)); }
-        | LOOKAHEAD(3) rightExpression = Function() {  result.setRightExpression(rightExpression); }
-        | LOOKAHEAD(ParenthesedSelect()) rightExpression = ParenthesedSelect() {  result.setRightExpression( rightExpression ); }
-        | LOOKAHEAD(3) rightItemsList = ParenthesedExpressionList() { result.setRightItemsList(rightItemsList); }
-        | rightExpression = SimpleExpression() {  result.setRightExpression(rightExpression); }
+        LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  rightExpression = new StringValue(token.image); }
+        | LOOKAHEAD(3) rightExpression = Function()
+        | LOOKAHEAD(ParenthesedSelect()) rightExpression = ParenthesedSelect()
+        | LOOKAHEAD(3) rightExpression = ParenthesedExpressionList()
+        | rightExpression = SimpleExpression()
     )
     {
-        linkAST(result,jjtThis);
-        return result;
+        InExpression inExpression =  new InExpression(leftExpression, rightExpression)
+                                                .withOldOracleJoinSyntax(oldOracleJoin)
+                                                .withNot(usesNot);
+        linkAST(inExpression,jjtThis);
+        return inExpression;
     }
 }
 
@@ -3566,21 +3564,6 @@ NamedExpressionList NamedExpressionListExprFirst():
     }
 }
 
-
-ExpressionList SimpleExpressionListAtLeastTwoItems():
-{
-    ExpressionList retval = new ExpressionList();
-    List<Expression> expressions = new ArrayList<Expression>();
-    Expression expr = null;
-}
-{
-    expr=SimpleExpression() { expressions.add(expr); } ("," expr=SimpleExpression() { expressions.add(expr); })+
-    {
-        retval.setExpressions(expressions);
-        return retval;
-    }
-}
-
 Expression ComparisonItem() :
 {
     Expression retval = null;
@@ -3601,29 +3584,18 @@ Expression ComparisonItem() :
 
 Expression AnyComparisonExpression() :
 {
-    AnyComparisonExpression anyComparisonExpr = null;
     AnyType anyType;
-    ParenthesedSelect subSelect;
-    ItemsList simpleExpressionList;
+    Select select;
 }
 {
- (<K_ANY> { anyType = AnyType.ANY; } | <K_SOME> { anyType = AnyType.SOME; } | <K_ALL> { anyType = AnyType.ALL; } )
-    "("
-
-    // if the next block looks alike an ExpressionList without Brackets, then parse as List
     (
-        LOOKAHEAD( <K_VALUES> ExpressionList() )
-        (
-            <K_VALUES>
-            simpleExpressionList = ExpressionList() { anyComparisonExpr=new AnyComparisonExpression(anyType, simpleExpressionList).withUseBracketsForValues(false); }
-        )
-         // Otherwise parse it as a ParenthesedSelect
-        | subSelect = ParenthesedSelect() { anyComparisonExpr=new AnyComparisonExpression(anyType, subSelect).withUseBracketsForValues(false); }
-            
+        <K_ANY> { anyType = AnyType.ANY; }
+        | <K_SOME> { anyType = AnyType.SOME; }
+        | <K_ALL> { anyType = AnyType.ALL; }
     )
-    ")"
+    select = Select()
     {
-      return anyComparisonExpr;
+      return new AnyComparisonExpression(anyType, select);
     }
 }
 

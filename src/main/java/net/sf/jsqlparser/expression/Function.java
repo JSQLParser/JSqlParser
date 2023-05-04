@@ -128,7 +128,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
      *
      * @return the list of named parameters of the function (if any, else null)
      */
-    public NamedExpressionList getNamedParameters() {
+    public NamedExpressionList<?> getNamedParameters() {
         return namedParameters;
     }
 

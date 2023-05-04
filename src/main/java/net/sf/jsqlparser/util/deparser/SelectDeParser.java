@@ -17,10 +17,6 @@ import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.expression.WindowDefinition;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Fetch;
@@ -56,7 +52,7 @@ import static java.util.stream.Collectors.joining;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
 public class SelectDeParser extends AbstractDeParser<PlainSelect> implements SelectVisitor,
-        SelectItemVisitor, FromItemVisitor, PivotVisitor, ItemsListVisitor {
+        SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
     private ExpressionVisitor expressionVisitor;
 
@@ -606,7 +602,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
     @Override
     public void visit(Values values) {
-        new ValuesStatementDeParser(this, buffer).deParse(values);
+        new ValuesStatementDeParser(expressionVisitor, buffer).deParse(values);
     }
 
     private void deparseOptimizeFor(OptimizeFor optimizeFor) {
@@ -620,44 +616,4 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         statement.accept((SelectVisitor) this);
     }
 
-    @Override
-    public void visit(ExpressionList expressionList) {
-        new ExpressionListDeParser(expressionVisitor, buffer, true)
-                .deParse(expressionList);
-    }
-
-    @Override
-    public void visit(NamedExpressionList namedExpressionList) {
-        buffer.append(namedExpressionList.toString());
-
-        buffer.append("(");
-        List<Expression> expressions = namedExpressionList.getExpressions();
-        List<String> names = namedExpressionList.getNames();
-        for (int i = 0; i < expressions.size(); i++) {
-            Expression expression = expressions.get(i);
-            String name = names.get(i);
-            if (i > 0) {
-                buffer.append(" ");
-            }
-            if (!name.equals("")) {
-                buffer.append(name).append(" ");
-            }
-            expression.accept(expressionVisitor);
-        }
-        buffer.append(")");
-    }
-
-    @Override
-    public void visit(MultiExpressionList<?> multiExprList) {
-        ExpressionListDeParser<?> expressionListDeParser =
-                new ExpressionListDeParser<>(expressionVisitor, buffer, true);
-        int i = 0;
-
-        for (ExpressionList<?> expressionList : multiExprList) {
-            if (i++ > 0) {
-                buffer.append(", ");
-            }
-            expressionListDeParser.deParse(expressionList);
-        }
-    }
 }

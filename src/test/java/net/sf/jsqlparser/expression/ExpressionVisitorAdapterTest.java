@@ -45,7 +45,7 @@ public class ExpressionVisitorAdapterTest {
             public void visit(InExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
-                exprList.add(expr.getRightItemsList());
+                exprList.add(expr.getRightExpression());
             }
         });
 

@@ -303,8 +303,19 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         return this;
     }
 
-    @Deprecated
-    public <E extends Select> E getSelectBody(Class<E> type) {
+    public Values getValues() {
+        return (Values) this;
+    }
+
+    public PlainSelect getPlainSelect() {
+        return (PlainSelect) this;
+    }
+
+    public SetOperationList getSetOperationList() {
+        return (SetOperationList) this;
+    }
+
+    public <E extends Select> E as(Class<E> type) {
         return type.cast(this);
     }
 }

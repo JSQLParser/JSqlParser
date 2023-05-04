@@ -11,12 +11,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.upsert.UpsertType;
@@ -25,7 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
-public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsListVisitor {
+public class UpsertDeParser extends AbstractDeParser<Upsert> {
 
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
@@ -77,8 +72,8 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
                 appendColumns(upsert);
             }
 
-            if (upsert.getItemsList() != null) {
-                upsert.getItemsList().accept(this);
+            if (upsert.getExpressions() != null) {
+                upsert.getExpressions().accept(expressionVisitor);
             }
 
             if (upsert.getSelect() != null) {
@@ -130,49 +125,6 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> implements ItemsLis
                 buffer.append(", ");
             }
         }
-    }
-
-    @Override
-    public void visit(ExpressionList expressionList) {
-        buffer.append(" VALUES (");
-        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter
-                .hasNext();) {
-            Expression expression = iter.next();
-            expression.accept(expressionVisitor);
-            if (iter.hasNext()) {
-                buffer.append(", ");
-            }
-        }
-        buffer.append(")");
-    }
-
-    // not used by top-level upsert
-    @Override
-    public void visit(NamedExpressionList namedExpressionList) {}
-
-    @Override
-    public void visit(MultiExpressionList multiExprList) {
-        buffer.append(" VALUES ");
-        for (Iterator<ExpressionList<?>> it = multiExprList.iterator(); it.hasNext();) {
-            buffer.append("(");
-            for (Iterator<?> iter = it.next().iterator(); iter
-                    .hasNext();) {
-                Expression expression = (Expression) iter.next();
-                expression.accept(expressionVisitor);
-                if (iter.hasNext()) {
-                    buffer.append(", ");
-                }
-            }
-            buffer.append(")");
-            if (it.hasNext()) {
-                buffer.append(", ");
-            }
-        }
-    }
-
-    @Override
-    public void visit(ParenthesedSelect selectBody) {
-        selectBody.getSelect().accept(selectVisitor);
     }
 
     public ExpressionVisitor getExpressionVisitor() {

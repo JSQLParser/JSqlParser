@@ -113,8 +113,6 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.operators.relational.Matches(),
             new net.sf.jsqlparser.expression.operators.relational.MinorThan(),
             new net.sf.jsqlparser.expression.operators.relational.MinorThanEquals(),
-            new net.sf.jsqlparser.expression.operators.relational.MultiExpressionList<>(),
-            new net.sf.jsqlparser.expression.operators.relational.NamedExpressionList(),
             new net.sf.jsqlparser.expression.operators.relational.NotEqualsTo(),
             new net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator(
                     RegExpMatchOperatorType.MATCH_CASEINSENSITIVE),

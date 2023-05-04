@@ -16,7 +16,6 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Values;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -43,8 +42,7 @@ public class UpsertTest {
         assertEquals("NAME", upsert.getColumns().get(0).getColumnName());
         assertEquals("ID", upsert.getColumns().get(1).getColumnName());
 
-        ExpressionList expressions =
-                ((Values) upsert.getSelect()).getExpressions(ExpressionList.class);
+        ExpressionList expressions = upsert.getValues().getExpressions();
         assertEquals(2, expressions.size());
         assertEquals("foo", ((StringValue) expressions.get(0)).getValue());
         assertEquals(123, ((LongValue) expressions.get(1)).getValue());
@@ -62,8 +60,7 @@ public class UpsertTest {
         assertEquals("ID", upsert.getColumns().get(0).getColumnName());
         assertEquals("COUNTER", upsert.getColumns().get(1).getColumnName());
 
-        Values values = (Values) upsert.getSelect();
-        ExpressionList<?> expressions = values.getExpressions(ExpressionList.class);
+        ExpressionList<?> expressions = upsert.getValues().getExpressions();
         assertEquals(2, expressions.size());
         assertEquals(123, ((LongValue) expressions.get(0)).getValue());
         assertEquals(0, ((LongValue) expressions.get(1)).getValue());
@@ -84,7 +81,7 @@ public class UpsertTest {
         assertEquals(2, upsert.getColumns().size());
         assertEquals("col1", upsert.getColumns().get(0).getColumnName());
         assertEquals("col2", upsert.getColumns().get(1).getColumnName());
-        assertNull(upsert.getItemsList());
+        assertNull(upsert.getExpressions());
         assertNotNull(upsert.getSelect());
         assertEquals("test.sourceTable",
                 ((Table) ((PlainSelect) upsert.getSelect()).getFromItem()).getFullyQualifiedName());
@@ -98,8 +95,7 @@ public class UpsertTest {
         Upsert upsert = (Upsert) parserManager.parse(new StringReader(statement));
         assertEquals("TEST", upsert.getTable().getName());
 
-        ExpressionList expressions =
-                ((Values) upsert.getSelect()).getExpressions(ExpressionList.class);
+        ExpressionList expressions = upsert.getValues().getExpressions();
         assertEquals(3, expressions.size());
         assertEquals("foo", ((StringValue) expressions.get(0)).getValue());
         assertEquals("bar", ((StringValue) expressions.get(1)).getValue());

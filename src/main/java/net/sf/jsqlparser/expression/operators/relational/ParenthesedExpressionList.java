@@ -35,11 +35,6 @@ public class ParenthesedExpressionList<T extends Expression> extends ExpressionL
     }
 
     @Override
-    public void accept(ItemsListVisitor itemsListVisitor) {
-        itemsListVisitor.visit(this);
-    }
-
-    @Override
     public String toString() {
         return PlainSelect.getStringList(this, true, true);
     }

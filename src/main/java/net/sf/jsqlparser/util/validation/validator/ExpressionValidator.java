@@ -215,7 +215,6 @@ public class ExpressionValidator extends AbstractValidator<Expression>
             }
         }
         validateOptionalExpression(inExpression.getRightExpression(), this);
-        validateOptionalItemsList(inExpression.getRightItemsList());
     }
 
     @Override
@@ -335,8 +334,8 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     public void visit(Function function) {
         validateFeature(Feature.function);
 
-        validateOptionalItemsList(function.getNamedParameters());
-        validateOptionalItemsList(function.getParameters());
+        validateOptionalExpressionList(function.getNamedParameters());
+        validateOptionalExpressionList(function.getParameters());
 
         Object attribute = function.getAttribute();
         if (attribute instanceof Expression) {
@@ -385,7 +384,7 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public void visit(AnyComparisonExpression anyComparisonExpression) {
-        anyComparisonExpression.getSubSelect().accept(this);
+        anyComparisonExpression.getSelect().accept(this);
     }
 
     @Override
@@ -510,9 +509,11 @@ public class ExpressionValidator extends AbstractValidator<Expression>
         validateOptionalOrderByElements(groupConcat.getOrderByElements());
     }
 
-    private void validateOptionalExpressionList(ExpressionList expressionList) {
+    private void validateOptionalExpressionList(ExpressionList<?> expressionList) {
         if (expressionList != null) {
-            expressionList.accept(getValidator(ItemsListValidator.class));
+            for (Expression expression : expressionList) {
+                expression.accept(this);
+            }
         }
     }
 

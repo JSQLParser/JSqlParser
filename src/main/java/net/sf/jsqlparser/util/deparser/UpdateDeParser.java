@@ -69,7 +69,7 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         buffer.append(" SET ");
 
         ExpressionListDeParser expressionListDeParser =
-                new ExpressionListDeParser(expressionVisitor, buffer, true);
+                new ExpressionListDeParser(expressionVisitor, buffer);
         int j = 0;
         for (UpdateSet updateSet : update.getUpdateSets()) {
             if (j++ > 0) {

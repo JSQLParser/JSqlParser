@@ -9,44 +9,22 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import net.sf.jsqlparser.expression.Expression;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import net.sf.jsqlparser.expression.Expression;
 
 /**
- * A list of named expressions, as in
- * as in select substr('xyzzy' from 2 for 3)
+ * A list of named expressions, as in as in select substr('xyzzy' from 2 for 3)
  */
-public class NamedExpressionList implements ItemsList {
-
-    private List<Expression> expressions;
+public class NamedExpressionList<T extends Expression> extends ExpressionList<T> {
     private List<String> names;
-
-    public NamedExpressionList() {
-    }
-
-    public NamedExpressionList(List<Expression> expressions) {
-        this.expressions = expressions;
-    }
-
-    public NamedExpressionList(Expression... expressions) {
-        this.expressions = Arrays.asList(expressions);
-    }
-
-    public List<Expression> getExpressions() {
-        return expressions;
-    }
 
     public List<String> getNames() {
         return names;
-    }
-
-    public void setExpressions(List<Expression> list) {
-        expressions = list;
     }
 
     public void setNames(List<String> list) {
@@ -54,23 +32,18 @@ public class NamedExpressionList implements ItemsList {
     }
 
     @Override
-    public void accept(ItemsListVisitor itemsListVisitor) {
-        itemsListVisitor.visit(this);
-    }
-
-    @Override
     public String toString() {
 
         StringBuilder ret = new StringBuilder();
         ret.append("(");
-        for (int i = 0; i < expressions.size(); i++) {
+        for (int i = 0; i < size(); i++) {
             if (i > 0) {
                 ret.append(" ");
             }
             if (!names.get(i).equals("")) {
-                ret.append(names.get(i)).append(" ").append(expressions.get(i));
+                ret.append(names.get(i)).append(" ").append(get(i));
             } else {
-                ret.append(expressions.get(i));
+                ret.append(get(i));
             }
         }
         ret.append(")");
@@ -78,26 +51,9 @@ public class NamedExpressionList implements ItemsList {
         return ret.toString();
     }
 
-    public NamedExpressionList withExpressions(List<Expression> expressions) {
-        this.setExpressions(expressions);
-        return this;
-    }
-
     public NamedExpressionList withNames(List<String> names) {
         this.setNames(names);
         return this;
-    }
-
-    public NamedExpressionList addExpressions(Expression... expressions) {
-        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, expressions);
-        return this.withExpressions(collection);
-    }
-
-    public NamedExpressionList addExpressions(Collection<? extends Expression> expressions) {
-        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
-        collection.addAll(expressions);
-        return this.withExpressions(collection);
     }
 
     public NamedExpressionList addNames(String... names) {

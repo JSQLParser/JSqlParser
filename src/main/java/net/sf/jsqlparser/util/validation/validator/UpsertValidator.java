@@ -26,7 +26,7 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
         }
         validateOptionalFromItem(upsert.getTable());
         validateOptionalExpressions(upsert.getColumns());
-        validateOptionalItemsList(upsert.getItemsList());
+        validateOptionalExpressions(upsert.getExpressions());
         validateOptionalSelect(upsert.getSelect());
         if (upsert.isUseDuplicate()) {
             validateDuplicate(upsert);
