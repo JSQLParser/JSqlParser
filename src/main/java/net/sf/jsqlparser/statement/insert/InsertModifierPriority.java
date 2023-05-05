@@ -10,20 +10,9 @@
 package net.sf.jsqlparser.statement.insert;
 
 public enum InsertModifierPriority {
-    LOW_PRIORITY("LOW_PRIORITY"), DELAYED("DELAYED"), HIGH_PRIORITY("HIGH_PRIORITY"), IGNORE(
-            "IGNORE");
-
-    private final String priority;
-
-    InsertModifierPriority(String priority) {
-        this.priority = priority;
-    }
+    LOW_PRIORITY, DELAYED, HIGH_PRIORITY, IGNORE;
 
     public final static InsertModifierPriority from(String priority) {
         return Enum.valueOf(InsertModifierPriority.class, priority.toUpperCase());
-    }
-
-    public String getPriority() {
-        return priority;
     }
 }

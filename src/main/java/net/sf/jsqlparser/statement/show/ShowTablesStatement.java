@@ -17,6 +17,7 @@ import java.util.EnumSet;
 
 /**
  * A {@code SHOW TABLES} statement
+ * 
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/show-tables.html">MySQL show tables</a>
  */
 public class ShowTablesStatement implements Statement {
@@ -102,10 +103,18 @@ public class ShowTablesStatement implements Statement {
     }
 
     public enum SelectionMode {
-        FROM, IN
+        FROM, IN;
+
+        public static SelectionMode from(String mode) {
+            return Enum.valueOf(SelectionMode.class, mode.toUpperCase());
+        }
     }
 
     public enum Modifiers {
-        EXTENDED, FULL
+        EXTENDED, FULL;
+
+        public static Modifiers from(String modifier) {
+            return Enum.valueOf(Modifiers.class, modifier.toUpperCase());
+        }
     }
 }

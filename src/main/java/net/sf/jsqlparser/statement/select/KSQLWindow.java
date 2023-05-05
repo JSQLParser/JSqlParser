@@ -14,19 +14,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class KSQLWindow extends ASTNodeAccessImpl {
 
     public enum TimeUnit {
-        DAY("DAY"), HOUR("HOUR"), MINUTE("MINUTE"), SECOND("SECOND"), MILLISECOND(
-                "MILLISECOND"), DAYS("DAYS"), HOURS("HOURS"), MINUTES(
-                        "MINUTES"), SECONDS("SECONDS"), MILLISECONDS("MILLISECONDS");
-
-        private String timeUnit;
-
-        TimeUnit(String timeUnit) {
-            this.timeUnit = timeUnit;
-        }
-
-        public String getTimeUnit() {
-            return timeUnit;
-        }
+        DAY, HOUR, MINUTE, SECOND, MILLISECOND, DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS;
 
         public static TimeUnit from(String unit) {
             return Enum.valueOf(TimeUnit.class, unit.toUpperCase());

@@ -15,8 +15,9 @@ package net.sf.jsqlparser.expression;
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public enum JsonFunctionType {
-    OBJECT
-    , ARRAY
-    , POSTGRES_OBJECT
-    , MYSQL_OBJECT
+    OBJECT, ARRAY, POSTGRES_OBJECT, MYSQL_OBJECT;
+
+    public static JsonFunctionType from(String type) {
+        return Enum.valueOf(JsonFunctionType.class, type.toUpperCase());
+    }
 }

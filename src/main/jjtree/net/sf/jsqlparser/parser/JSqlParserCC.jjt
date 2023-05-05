@@ -1369,7 +1369,7 @@ Insert Insert( List<WithItem> with ):
     InsertConflictTarget conflictTarget = null;
     InsertConflictAction conflictAction = null;
 }
-{    
+{
     <K_INSERT> { insert.setOracleHint(getOracleHint()); }
     [LOOKAHEAD(2) (tk = <K_LOW_PRIORITY> | tk = <K_DELAYED> | tk = <K_HIGH_PRIORITY>)
     {if (tk!=null)
@@ -1424,7 +1424,7 @@ Insert Insert( List<WithItem> with ):
     [ <K_RETURNING> returning=SelectItemsList() ]
 
     {
-        if (!columns.isEmpty()) { 
+        if (!columns.isEmpty()) {
             insert.setColumns(columns);
         }
         return insert.withWithItemsList(with)
@@ -1709,9 +1709,9 @@ MergeInsert MergeInsertClause() : {
            "(" exp=SimpleExpression() { expList.add(exp); } ("," exp=SimpleExpression() { expList.add(exp); } )* ")"
 
         { mi.withColumns(columns).withValues(expList); }
-        
+
         [ <K_WHERE> condition = Expression() { mi.setWhereCondition(condition); }]
-        
+
         { return mi; }
 }
 
@@ -1752,7 +1752,7 @@ The following tokens are allowed as Names for Schema, Table, Column and Aliases
 String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
-    ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> 
+    ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR>
        | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BINARY" | tk="BIT" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONFLICT" | tk="CONVERT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATABASE" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GUARD" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGISTER" | tk="RENAME" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TO" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLTEXT" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
@@ -1794,7 +1794,7 @@ String RelObjectNameExt():
 {
     ( result=RelObjectName() | tk=<K_ALL> | tk=<K_ANY>  | tk=<K_SOME> | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
         | tk=<K_DOUBLE> | tk=<K_IF> | tk=<K_IIF> | tk=<K_OPTIMIZE> | tk=<K_LIMIT>
-        | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC> 
+        | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC>
         | tk=<K_CASEWHEN> | tk=<K_IN> | tk=<K_GROUPING> | tk=<K_ORDER>  )
     { return tk!=null ? tk.image : result; }
 }
@@ -3482,7 +3482,7 @@ ExpressionList SimpleExpressionList():
     Expression expr;
 }
 {
-    expr=SimpleExpression() { expressions.add(expr); } 
+    expr=SimpleExpression() { expressions.add(expr); }
     ( LOOKAHEAD(2, {!interrupted} ) "," expr=SimpleExpression() { expressions.add(expr); } )*
     {
         return expressions;
@@ -3621,7 +3621,7 @@ Expression SimpleExpression():
             assignment.setOperation(operation.image);
             assignment.setExpression(retval);
             return assignment;
-        } else 
+        } else
             return retval;
     }
 }
@@ -3970,7 +3970,7 @@ OracleNamedFunctionParameter OracleNamedFunctionParameter() : {
 {
     name=RelObjectNameExt2()
     <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT>
-    expression=Expression() 
+    expression=Expression()
     {
         return new OracleNamedFunctionParameter(name, expression);
     }
@@ -4089,12 +4089,12 @@ JsonFunction JsonFunction() : {
 
     Expression expression = null;
     JsonFunctionExpression functionExpression;
-  
+
 }
 {
     (
-        ( 
-          ( <K_JSON_OBJECT> 
+        (
+          ( <K_JSON_OBJECT>
             "(" { result.setType( JsonFunctionType.OBJECT ); }
                 (
                     (
@@ -4157,18 +4157,18 @@ JsonFunction JsonFunction() : {
             ")"
           )
           |
-          ( 
-            <K_JSON_ARRAY> { result.setType( JsonFunctionType.ARRAY ); } 
-            "(" 
+          (
+            <K_JSON_ARRAY> { result.setType( JsonFunctionType.ARRAY ); }
+            "("
                 (
                     LOOKAHEAD(2) (
                         <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
                     )
                     |
                     expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
-                    
+
                     [ LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); } ]
-                    (   
+                    (
                         ","
                         expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
                         [ LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); } ]
@@ -4194,7 +4194,7 @@ JsonAggregateFunction JsonAggregateFunction() : {
     Token token;
     Expression expression;
     List<OrderByElement> expressionOrderByList = null;
-  
+
     Expression filter;
     ExpressionList expressionList = null;
     List<OrderByElement> olist = null;
@@ -4203,22 +4203,22 @@ JsonAggregateFunction JsonAggregateFunction() : {
 }
 {
     (
-        ( 
-          ( <K_JSON_OBJECTAGG> 
-            "(" { result.setType( JsonFunctionType.OBJECT ); } 
+        (
+          ( <K_JSON_OBJECTAGG>
+            "(" { result.setType( JsonFunctionType.OBJECT ); }
             [ "KEY" { result.setUsingKeyKeyword( true ); } ]
             ( token = <DT_ZONE> | token = <S_DOUBLE> | token = <S_LONG> | token = <S_HEX> | token = <S_CHAR_LITERAL> | token = <S_IDENTIFIER> | token = <S_QUOTED_IDENTIFIER> ) { result.setKey( token.image ); }
-            ( ":" | "VALUE" {result.setUsingValueKeyword( true ); } ) 
+            ( ":" | "VALUE" {result.setUsingValueKeyword( true ); } )
             ( token = <S_IDENTIFIER> | token = <S_QUOTED_IDENTIFIER> ) { result.setValue( token.image ); }
 
             [ <K_FORMAT> <K_JSON> { result.setUsingFormatJson( true ); } ]
 
-            [ 
-              LOOKAHEAD(2) ( 
+            [
+              LOOKAHEAD(2) (
                   <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
               )
               |
-              ( 
+              (
                   <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
               )
             ]
@@ -4235,19 +4235,19 @@ JsonAggregateFunction JsonAggregateFunction() : {
             ")"
           )
           |
-          ( 
+          (
             <K_JSON_ARRAYAGG>
-            "(" { result.setType( JsonFunctionType.ARRAY ); } 
+            "(" { result.setType( JsonFunctionType.ARRAY ); }
             expression=Expression() { result.setExpression( expression ); }
             [ <K_FORMAT> <K_JSON> { result.setUsingFormatJson( true ); } ]
             [ expressionOrderByList = OrderByElements() { result.setExpressionOrderByElements( expressionOrderByList ); } ]
 
-            [ 
-              LOOKAHEAD(2) ( 
+            [
+              LOOKAHEAD(2) (
                   <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
               )
               |
-              ( 
+              (
                   <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
               )
             ]
@@ -4494,10 +4494,10 @@ CastExpression CastExpression():
     {
         retval = new CastExpression(keyword.image);
     }
-    "(" 
-    expression=SimpleExpression() 
-    <K_AS> { retval.setUseCastKeyword(true); } 
-    ( 
+    "("
+    expression=SimpleExpression()
+    <K_AS> { retval.setUseCastKeyword(true); }
+    (
         (
             <K_ROW>
             "("
@@ -4508,7 +4508,7 @@ CastExpression CastExpression():
         |
         type=ColDataType() { retval.setColDataType(type); }
     )
-    ")" 
+    ")"
 
     {
         retval.setLeftExpression(expression);
@@ -4528,7 +4528,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
     <K_CASE> { caseCounter++; }
     [ switchExp=Expression() ]
     ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
-    [<K_ELSE> (LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] elseExp=CaseWhenExpression() [")" { ((CaseExpression) elseExp).setUsingBrackets(true); } ] 
+    [<K_ELSE> (LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] elseExp=CaseWhenExpression() [")" { ((CaseExpression) elseExp).setUsingBrackets(true); } ]
               | elseExp=Expression()
               )
     ]
@@ -4551,7 +4551,7 @@ WhenClause WhenThenSearchCondition():
     <K_WHEN> whenExp=Expression()
     <K_THEN> (
                 LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] thenExp=CaseWhenExpression() [")" { ((CaseExpression) thenExp).setUsingBrackets(true); }]
-                | 
+                |
                 thenExp=Expression()
               )
     {
@@ -4573,7 +4573,7 @@ RowConstructor RowConstructor(): {
 }
 
 /**
-TODO: VariableExpression should be a standalone class with more operations available. 
+TODO: VariableExpression should be a standalone class with more operations available.
 */
 EqualsTo VariableExpression(): {
     Expression left;
@@ -4624,12 +4624,12 @@ FullTextSearch FullTextSearch() : {
 }
 {
     <K_MATCH> "(" col=Column() { matchedColumns.add(col); } ("," col=Column() { matchedColumns.add(col); } )* ")" <K_AGAINST>
-    "(" 
-    ( 
-      againstValue=<S_CHAR_LITERAL> { fs.setAgainstValue(new StringValue(againstValue.image)); } 
-      |  
+    "("
+    (
+      againstValue=<S_CHAR_LITERAL> { fs.setAgainstValue(new StringValue(againstValue.image)); }
+      |
       jdbcParameter=SimpleJdbcParameter() { fs.setAgainstValue(  jdbcParameter ); }
-      |  
+      |
       jdbcNamedParameter=SimpleJdbcNamedParameter() { fs.setAgainstValue(  jdbcNamedParameter ); }
     )
     [
@@ -4672,9 +4672,9 @@ Function SpecialStringFunctionWithNamedParameters() :
     List<OrderByElement> orderByList;
 }
 {
-        funcName = <K_STRING_FUNCTION_NAME> 
+        funcName = <K_STRING_FUNCTION_NAME>
 
-        "(" 
+        "("
         (
             LOOKAHEAD(NamedExpressionListExprFirst(), { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
             |

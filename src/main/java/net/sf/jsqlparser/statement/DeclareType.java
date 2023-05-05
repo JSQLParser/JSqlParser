@@ -14,5 +14,9 @@ package net.sf.jsqlparser.statement;
  * @author tobens
  */
 public enum DeclareType {
-    TABLE, AS, TYPE
+    TABLE, AS, TYPE;
+
+    public static DeclareType from(String type) {
+        return Enum.valueOf(DeclareType.class, type.toUpperCase());
+    }
 }

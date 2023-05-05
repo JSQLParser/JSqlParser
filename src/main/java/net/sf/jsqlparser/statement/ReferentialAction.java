@@ -88,20 +88,10 @@ public class ReferentialAction implements Serializable {
     }
 
     public enum Type {
-        DELETE("DELETE"), UPDATE("UPDATE");
-
-        private final String type;
-
-        Type(String type) {
-            this.type = type;
-        }
+        DELETE, UPDATE;
 
         public static Type from(String name) {
             return Enum.valueOf(Type.class, name.toUpperCase());
-        }
-
-        public String getType() {
-            return type;
         }
     }
 

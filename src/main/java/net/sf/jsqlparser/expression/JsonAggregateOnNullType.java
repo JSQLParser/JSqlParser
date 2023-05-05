@@ -30,6 +30,9 @@ package net.sf.jsqlparser.expression;
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public enum JsonAggregateOnNullType {
-    NULL
-    , ABSENT
+    NULL, ABSENT;
+
+    public static JsonAggregateOnNullType from(String type) {
+        return Enum.valueOf(JsonAggregateOnNullType.class, type.toUpperCase());
+    }
 }

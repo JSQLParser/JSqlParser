@@ -92,6 +92,10 @@ public class Execute implements Statement {
     }
 
     public enum ExecType {
-        EXECUTE, EXEC, CALL
+        EXECUTE, EXEC, CALL;
+
+        public static ExecType from(String type) {
+            return Enum.valueOf(ExecType.class, type.toUpperCase());
+        }
     }
 }
