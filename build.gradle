@@ -1,7 +1,5 @@
 import se.bjurr.gitchangelog.plugin.gradle.GitChangelogTask
 
-import java.nio.charset.Charset
-
 plugins {
     id 'java'
     id 'maven-publish'
@@ -363,6 +361,24 @@ task updateKeywords(type: JavaExec) {
 
 task sphinx(type: Exec) {
     dependsOn(gitChangelogTask, renderRR, updateKeywords)
+
+    doFirst() {
+        exec {
+            args = [
+                    "install"
+                    , "sphinx_rtd_theme"
+                    , "sphinx-book-theme"
+                    , "myst_parser"
+                    , "sphinx-prompt"
+                    , "sphinx_substitution_extensions"
+                    , "sphinx_issues"
+                    , "sphinx_tabs"
+                    , "sphinx_inline_tabs"
+                    , "pygments"
+            ]
+            executable "pip"
+        }
+    }
 
     String PROLOG = """
 .. |_| unicode:: U+00A0

@@ -20,90 +20,85 @@ Compile from Source Code
 
 You will need to have ``JDK 8`` or ``JDK 11`` installed.
 
-.. tabs::
+.. tab:: Maven
 
-  .. tab:: Maven
+  .. code-block:: shell
 
-    .. code-block:: shell
+    git clone https://github.com/JSQLParser/JSqlParser.git
+    cd jsqlformatter
+    mvn install
 
-            git clone https://github.com/JSQLParser/JSqlParser.git
-            cd jsqlformatter
-            mvn install
+.. tab:: Gradle
 
-  .. tab:: Gradle
+  .. code-block:: shell
 
-      .. code-block:: shell
-    
-            git clone https://github.com/JSQLParser/JSqlParser.git
-            cd jsqlformatter
-            gradle build
+    git clone https://github.com/JSQLParser/JSqlParser.git
+    cd jsqlformatter
+    gradle build
 
 
 
 Build Dependencies
 ==============================
 
-.. tabs::
+.. tab:: Maven Release
 
+    .. code-block:: xml
+        :substitutions:
 
-  .. tab:: Maven Release
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>|JSQLPARSER_VERSION|</version>
+        </dependency>
 
-        .. code-block:: xml
-            :substitutions:
+.. tab:: Maven Snapshot
 
-            <dependency>
-                <groupId>com.github.jsqlparser</groupId>
-                <artifactId>jsqlparser</artifactId>
-                <version>|JSQLPARSER_VERSION|</version>
-            </dependency>
+    .. code-block:: xml
+        :substitutions:
 
-  .. tab:: Maven Snapshot
+        <repositories>
+            <repository>
+                <id>jsqlparser-snapshots</id>
+                <snapshots>
+                    <enabled>true</enabled>
+                </snapshots>
+                <url>https://oss.sonatype.org/content/groups/public/</url>
+            </repository>
+        </repositories>
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>|JSQLPARSER_SNAPSHOT_VERSION|</version>
+        </dependency>
 
-        .. code-block:: xml
-            :substitutions:
- 
-            <repositories>
-                <repository>
-                    <id>jsqlparser-snapshots</id>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                    <url>https://oss.sonatype.org/content/groups/public/</url>
-                </repository>
-            </repositories>
-            <dependency>
-                <groupId>com.github.jsqlparser</groupId>
-                <artifactId>jsqlparser</artifactId>
-                <version>|JSQLPARSER_SNAPSHOT_VERSION|</version>
-            </dependency>
+.. tab:: Gradle Stable
 
-  .. tab:: Gradle Stable
+    .. code-block:: groovy
+        :substitutions:
 
-        .. code-block:: groovy
-            :substitutions:
+        repositories {
+            mavenCentral()
+        }
 
-            repositories {
-                mavenCentral()
+        dependencies {
+            implementation 'com.github.jsqlparser:jsqlparser:|JSQLPARSER_VERSION|'
+        }
+
+.. tab:: Gradle Snapshot
+
+    .. code-block:: groovy
+        :substitutions:
+
+        repositories {
+            maven {
+                url = uri('https://oss.sonatype.org/content/groups/public/')
             }
+        }
 
-            dependencies {
-                implementation 'com.github.jsqlparser:jsqlparser:|JSQLPARSER_VERSION|'
-            }
-
-  .. tab:: Gradle Snapshot
-
-        .. code-block:: groovy
-            :substitutions:
-
-            repositories {
-                maven {
-                    url = uri('https://oss.sonatype.org/content/groups/public/')
-                }
-            }
-
-            dependencies {
-                implementation 'com.github.jsqlparser:jsqlparser:|JSQLPARSER_SNAPSHOT_VERSION|'
-            }
+        dependencies {
+            implementation 'com.github.jsqlparser:jsqlparser:|JSQLPARSER_SNAPSHOT_VERSION|'
+        }
 
 
 Parse a SQL Statement
