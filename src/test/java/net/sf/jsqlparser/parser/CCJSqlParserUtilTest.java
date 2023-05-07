@@ -57,7 +57,8 @@ public class CCJSqlParserUtilTest {
 
     @Test
     public void testParseExpressionNonPartial() throws Exception {
-        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseExpression("a+", false));
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parseExpression("a+", false));
 
     }
 
@@ -68,7 +69,8 @@ public class CCJSqlParserUtilTest {
 
     @Test
     public void testParseExpressionFromRaderFail() throws Exception {
-        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(new StringReader("whatever$")));
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse(new StringReader("whatever$")));
     }
 
     @Test
@@ -91,14 +93,17 @@ public class CCJSqlParserUtilTest {
     @Test
     public void testParseFromStreamFail() throws Exception {
         assertThrows(JSQLParserException.class,
-                () -> CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8))));
+                () -> CCJSqlParserUtil
+                        .parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8))));
 
     }
 
     @Test
     public void testParseFromStreamWithEncodingFail() throws Exception {
         assertThrows(JSQLParserException.class,
-                () -> CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8.name()));
+                () -> CCJSqlParserUtil.parse(
+                        new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)),
+                        StandardCharsets.UTF_8.name()));
 
     }
 
@@ -110,7 +115,8 @@ public class CCJSqlParserUtilTest {
 
     @Test
     public void testParseCondExpressionNonPartial2() throws Exception {
-        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseCondExpression("x=92 lasd y=29", false));
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parseCondExpression("x=92 lasd y=29", false));
     }
 
     @Test
@@ -121,7 +127,8 @@ public class CCJSqlParserUtilTest {
 
     @Test
     public void testParseCondExpressionIssue471() throws Exception {
-        Expression result = CCJSqlParserUtil.parseCondExpression("(SSN,SSM) IN ('11111111111111', '22222222222222')");
+        Expression result = CCJSqlParserUtil
+                .parseCondExpression("(SSN,SSM) IN ('11111111111111', '22222222222222')");
         assertEquals("(SSN, SSM) IN ('11111111111111', '22222222222222')", result.toString());
     }
 
@@ -129,14 +136,14 @@ public class CCJSqlParserUtilTest {
     public void testParseStatementsIssue691() throws Exception {
         Statements result = CCJSqlParserUtil.parseStatements(
                 "select * from dual;\n"
-                + "\n"
-                + "select\n"
-                + "*\n"
-                + "from\n"
-                + "dual;\n"
-                + "\n"
-                + "select *\n"
-                + "from dual;");
+                        + "\n"
+                        + "select\n"
+                        + "*\n"
+                        + "from\n"
+                        + "dual;\n"
+                        + "\n"
+                        + "select *\n"
+                        + "from dual;");
         assertEquals("SELECT * FROM dual;\n"
                 + "SELECT * FROM dual;\n"
                 + "SELECT * FROM dual;\n", result.toString());
@@ -169,19 +176,21 @@ public class CCJSqlParserUtilTest {
     public void testParseStatementsFail() throws Exception {
         // This will not fail, but always return the Unsupported Statements
         // Since we can't LOOKAHEAD in the Statements() production
-        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseStatements("select * from dual;WHATEVER!!"));
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parseStatements("select * from dual;WHATEVER!!"));
     }
 
     @Test
     public void testParseASTFail() throws Exception {
-        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseAST("select * from dual;WHATEVER!!"));
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parseAST("select * from dual;WHATEVER!!"));
     }
 
     @Test
     public void testParseStatementsIssue691_2() throws Exception {
         Statements result = CCJSqlParserUtil.parseStatements(
                 "select * from dual;\n"
-                + "---test");
+                        + "---test");
         assertEquals("SELECT * FROM dual;\n", result.toString());
     }
 
@@ -193,9 +202,11 @@ public class CCJSqlParserUtilTest {
                 + "  PRIMARY KEY (`id`),\n"
                 + "  UNIQUE KEY `uk_another_column_id` (`another_column_id`)\n"
                 + ")");
-        assertEquals("CREATE TABLE `table_name` (`id` bigint (20) NOT NULL AUTO_INCREMENT, `another_column_id` "
-                + "bigint (20) NOT NULL COMMENT 'column id as sent by SYSTEM', PRIMARY KEY (`id`), UNIQUE KEY `uk_another_column_id` "
-                + "(`another_column_id`));\n", result.toString());
+        assertEquals(
+                "CREATE TABLE `table_name` (`id` bigint (20) NOT NULL AUTO_INCREMENT, `another_column_id` "
+                        + "bigint (20) NOT NULL COMMENT 'column id as sent by SYSTEM', PRIMARY KEY (`id`), UNIQUE KEY `uk_another_column_id` "
+                        + "(`another_column_id`));\n",
+                result.toString());
     }
 
     @Test
@@ -232,7 +243,8 @@ public class CCJSqlParserUtilTest {
                 + "                            , a.id_instrument_type\n"
                 + "                            , b.id_portfolio\n"
                 + "                            , c.attribute_value product_code\n"
-                + "                            , t.valid_date\n" + "                            , t.ccf\n"
+                + "                            , t.valid_date\n"
+                + "                            , t.ccf\n"
                 + "                    FROM cfe.instrument a\n"
                 + "                        INNER JOIN cfe.impairment b\n"
                 + "                            ON a.id_instrument = b.id_instrument\n"
@@ -258,26 +270,31 @@ public class CCJSqlParserUtilTest {
 
     @Test
     public void testParseStatementIssue1250() throws Exception {
-        Statement result = CCJSqlParserUtil.parse("Select test.* from (Select * from sch.PERSON_TABLE // root test\n) as test");
-        assertEquals("SELECT test.* FROM (SELECT * FROM sch.PERSON_TABLE) AS test", result.toString());
+        Statement result = CCJSqlParserUtil.parse(
+                "Select test.* from (Select * from sch.PERSON_TABLE // root test\n) as test");
+        assertEquals("SELECT test.* FROM (SELECT * FROM sch.PERSON_TABLE) AS test",
+                result.toString());
     }
 
     @Test
     public void testCondExpressionIssue1482() throws JSQLParserException {
-        Expression expr = CCJSqlParserUtil.parseCondExpression("test_table_enum.f1_enum IN ('TEST2'::test.test_enum)", false);
+        Expression expr = CCJSqlParserUtil
+                .parseCondExpression("test_table_enum.f1_enum IN ('TEST2'::test.test_enum)", false);
         assertEquals("test_table_enum.f1_enum IN ('TEST2'::test.test_enum)", expr.toString());
     }
 
     @Test
     public void testCondExpressionIssue1482_2() throws JSQLParserException {
-        Expression expr = CCJSqlParserUtil.parseCondExpression("test_table_enum.f1_enum IN ('TEST2'::test.\"test_enum\")", false);
+        Expression expr = CCJSqlParserUtil.parseCondExpression(
+                "test_table_enum.f1_enum IN ('TEST2'::test.\"test_enum\")", false);
         assertEquals("test_table_enum.f1_enum IN ('TEST2'::test.\"test_enum\")", expr.toString());
     }
 
     @Test
     public void testTimeOutIssue1582() throws InterruptedException {
         // This statement is INVALID on purpose
-        // There are crafted INTO keywords in order to make it fail but only after a long time (40 seconds plus)
+        // There are crafted INTO keywords in order to make it fail but only after a long time (40
+        // seconds plus)
 
         String sqlStr = ""
                 + "select\n"
@@ -309,7 +326,8 @@ public class CCJSqlParserUtilTest {
             }
         });
 
-        // With custom TIMEOUT 60 Seconds, we expect the statement to not timeout but to fail instead
+        // With custom TIMEOUT 60 Seconds, we expect the statement to not timeout but to fail
+        // instead
         // No TimeoutException wrapped into a Parser Exception must be thrown
         // Instead we expect a Parser Exception only
         assertThrows(JSQLParserException.class, new Executable() {
@@ -317,7 +335,7 @@ public class CCJSqlParserUtilTest {
             public void execute() throws Throwable {
                 try {
                     CCJSqlParserUtil.parse(sqlStr, parser -> {
-                        parser.withTimeOut(10000);
+                        parser.withTimeOut(60000);
                         parser.withAllowComplexParsing(false);
                     });
                 } catch (JSQLParserException ex) {

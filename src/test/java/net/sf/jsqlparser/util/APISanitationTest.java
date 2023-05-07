@@ -19,7 +19,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,19 +30,19 @@ interface Visitor<T> {
      * @return {@code true} if the algorithm should visit more results, {@code false} if it should
      *         terminate now.
      */
-    public boolean visit(T t);
+    boolean visit(T t);
 }
 
 
-public class APISanitation {
-    private final static TreeSet<Class> CLASSES = new TreeSet<>(new Comparator<Class>() {
+public class APISanitationTest {
+    private final static TreeSet<Class<?>> CLASSES = new TreeSet<>(new Comparator<Class<?>>() {
         @Override
         public int compare(Class o1, Class o2) {
             return o1.getName().compareTo(o2.getName());
         }
     });
 
-    private final static Logger LOGGER = Logger.getLogger(APISanitation.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(APISanitationTest.class.getName());
 
     public static void findClasses(Visitor<String> visitor) {
         String classpath = System.getProperty("java.class.path");
@@ -57,24 +57,22 @@ public class APISanitation {
 
     private static boolean findClasses(File root, File file, Visitor<String> visitor) {
         if (file.isDirectory()) {
-            for (File child : file.listFiles()) {
+            for (File child : Objects.requireNonNull(file.listFiles())) {
                 if (!findClasses(root, child, visitor)) {
                     return false;
                 }
             }
         } else if (file.getName().toLowerCase().endsWith(".class")) {
-            if (!visitor.visit(createClassName(root, file))) {
-                return false;
-            }
+            return visitor.visit(createClassName(root, file));
         }
 
         return true;
     }
 
     private static String createClassName(File root, File file) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String fileName = file.getName();
-        sb.append(fileName.substring(0, fileName.lastIndexOf(".class")));
+        sb.append(fileName, 0, fileName.lastIndexOf(".class"));
         File file1 = file.getParentFile();
         while (file1 != null && !file1.equals(root)) {
             sb.insert(0, '.').insert(0, file1.getName());
@@ -120,7 +118,7 @@ public class APISanitation {
         }
     }
 
-    private static Stream<Field> fields() throws Exception {
+    private static Stream<Field> fields() {
         TreeSet<Field> fields = new TreeSet<>(new Comparator<Field>() {
             @Override
             public int compare(Field o1, Field o2) {
@@ -254,7 +252,7 @@ public class APISanitation {
         }
     }
 
-    boolean testGenericType(Field field, Class boundClass) {
+    boolean testGenericType(Field field, Class<?> boundClass) {
         Type listType = field.getGenericType();
         if (listType instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) listType;
@@ -272,8 +270,8 @@ public class APISanitation {
         ParameterizedType parameterizedType = (ParameterizedType) superclassType;
         if (parameterizedType != null) {
             for (final Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
-                final TypeVariable<Class<List>> typeVariable =
-                        (TypeVariable<Class<List>>) actualTypeArgument;
+                final TypeVariable<?> typeVariable =
+                        (TypeVariable<?>) actualTypeArgument;
                 for (Type type : typeVariable.getBounds()) {
                     if (type.getTypeName().equals(boundClass.getTypeName())) {
                         return true;
@@ -284,7 +282,8 @@ public class APISanitation {
         return false;
     }
 
-    private final static Class[] EXPRESSION_CLASSES = new Class[] {Expression.class, Column.class};
+    private final static Class<?>[] EXPRESSION_CLASSES =
+            new Class[] {Expression.class, Column.class};
 
     @ParameterizedTest(name = "{index} Field {0}")
     @MethodSource("fields")
@@ -295,7 +294,7 @@ public class APISanitation {
 
         if (!fieldName.equalsIgnoreCase("$jacocoData")) {
             boolean isExpressionList = false;
-            for (Class boundClass : EXPRESSION_CLASSES) {
+            for (Class<?> boundClass : EXPRESSION_CLASSES) {
                 if (Collection.class.isAssignableFrom(clazz)
                         && !ExpressionList.class.isAssignableFrom(clazz)) {
                     isExpressionList |= testGenericType(field, boundClass);
