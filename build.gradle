@@ -3,6 +3,8 @@ import se.bjurr.gitchangelog.plugin.gradle.GitChangelogTask
 plugins {
     id 'java'
     id 'maven-publish'
+    id 'signing'
+
     id "ca.coglinc2.javacc" version "latest.release"
     id 'jacoco'
     id "com.github.spotbugs" version "latest.release"
@@ -15,11 +17,8 @@ plugins {
     id 'org.hidetake.ssh' version "latest.release"
 
     id "se.bjurr.gitchangelog.git-changelog-gradle-plugin" version "latest.release"
+    id "me.champeau.jmh" version "latest.release"
 }
-
-
-
-group = 'com.github.jsqlparser'
 
 def getVersion = { boolean considerSnapshot ->
     def major = 0
@@ -40,7 +39,8 @@ def getVersion = { boolean considerSnapshot ->
             executable "git"
             standardOutput = os
         }
-        def matcher = os.toString() =~ /jsqlparser-(\d*)\.(\d*)-(\d*)-([a-zA-Z\d]*)/
+        def versionStr = os.toString().trim()
+        def matcher = versionStr =~ /jsqlparser-(\d*)\.(\d*)-(\d*)-([a-zA-Z\d]*)/
         matcher.find()
 
         major = matcher[0][1]
@@ -48,7 +48,7 @@ def getVersion = { boolean considerSnapshot ->
         patch = matcher[0][3]
         commit = matcher[0][4]
 
-        if (considerSnapshot) {
+        if (considerSnapshot && versionStr.endsWith("SNAPSHOT")) {
             minor++
             snapshot =  "-SNAPSHOT"
         }
@@ -56,14 +56,18 @@ def getVersion = { boolean considerSnapshot ->
     return "${major}.${minor}${snapshot}"
 }
 version = getVersion(true)
-
+group = 'com.github.jsqlparser'
 description = 'JSQLParser library'
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+archivesBaseName = "JSQLParser"
 
 repositories {
     gradlePluginPortal()
     mavenLocal()
     mavenCentral()
+}
+
+configurations {
+    xmlDoclet
 }
 
 dependencies {
@@ -81,7 +85,14 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-params:+'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:4.+'
+    testImplementation 'org.mockito:mockito-junit-jupiter:+'
+
+    // Performance Benchmark
+    testImplementation 'org.openjdk.jmh:jmh-core:+'
+    testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:+'
+
+    // Java Doc in XML Format
+    xmlDoclet 'com.github.markusbernhardt:xml-doclet:+'
 
     // enforce latest version of JavaCC
     testImplementation 'net.java.dev.javacc:javacc:+'
@@ -95,11 +106,34 @@ compileJavacc {
 java {
     withSourcesJar()
     withJavadocJar()
+
+    sourceCompatibility(JavaVersion.VERSION_1_8)
+    targetCompatibility(JavaVersion.VERSION_1_8)
+
+    // needed for XML-Doclet to work (since Doclet changed again with Java 13)
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
 }
 
+
 javadoc {
-    options.addBooleanOption('html5', true)
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
     options.addBooleanOption("Xdoclint:none", true)
+}
+
+tasks.register('xmldoc', Javadoc) {
+    source = sourceSets.main.allJava
+    destinationDir = reporting.file("xmlDoclet")
+    options.docletpath = configurations.xmlDoclet.files.asType(List)
+    options.doclet = "com.github.markusbernhardt.xmldoclet.XmlDoclet"
+    //options.addBooleanOption("Xdoclint:none", true)
+
+    // @see https://github.com/gradle/gradle/issues/11898#issue-549900869
+    title = null
+    options.noTimestamp(false)
 }
 
 test {
@@ -418,30 +452,78 @@ task sphinx(type: Exec) {
     }
 }
 
+publish {
+    dependsOn(check)
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifactId 'jsqlparser'
-            from(components.java)
+            artifactId = 'jsqlparser'
+
+            from components.java
             versionMapping {
                 usage('java-api') {
-                    fromResolutionOf('testFixturesRuntimeClasspath')
+                    fromResolutionOf('runtimeClasspath')
                 }
                 usage('java-runtime') {
                     fromResolutionResult()
                 }
             }
+            pom {
+                name = 'JSQLParser librar'
+                description = 'JDBC Table or ResultSet to Parquet File Writer'
+                url = 'https://github.com/JSQLParser/JSqlParser'
+                licenses {
+                    license {
+                        name = 'GNU Library or Lesser General Public License (LGPL) V2.1'
+                        url = 'http://www.gnu.org/licenses/lgpl-2.1.html'
+                    }
+                    license {
+                        name = 'The Apache Software License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'twa'
+                        name = 'Tobias Warneke'
+                        email = 't.warneke@gmx.net'
+                    }
+                    developer {
+                        id = 'are'
+                        name = 'Andreas Reichel'
+                        email = 'andreas@manticore-projects.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/JSQLParser/JSqlParser.git'
+                    developerConnection = 'scm:git:ssh://git@github.com:JSQLParser/JSqlParser.git'
+                    url = 'https://github.com/JSQLParser/JSqlParser.git'
+                }
+            }
         }
     }
     repositories {
-
         maven {
-            // Username and Password are defined in ~/.gradle/gradle.properties
             name "ossrh"
-            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+
+            def releasesRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            def snapshotsRepoUrl= "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials(PasswordCredentials)
+        }
+        maven {
+            name = "GitHubPackages"
+
+            url = uri("https://maven.pkg.github.com/manticore-projects/jsqlparser")
             credentials(PasswordCredentials)
         }
     }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }
 
 tasks.withType(JavaCompile) {
