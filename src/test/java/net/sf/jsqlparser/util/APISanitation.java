@@ -35,7 +35,7 @@ interface Visitor<T> {
 
 
 public class APISanitation {
-    private final static TreeSet<Class> classes = new TreeSet<>(new Comparator<Class>() {
+    private final static TreeSet<Class> CLASSES = new TreeSet<>(new Comparator<Class>() {
         @Override
         public int compare(Class o1, Class o2) {
             return o1.getName().compareTo(o2.getName());
@@ -75,10 +75,10 @@ public class APISanitation {
         StringBuffer sb = new StringBuffer();
         String fileName = file.getName();
         sb.append(fileName.substring(0, fileName.lastIndexOf(".class")));
-        file = file.getParentFile();
-        while (file != null && !file.equals(root)) {
-            sb.insert(0, '.').insert(0, file.getName());
-            file = file.getParentFile();
+        File file1 = file.getParentFile();
+        while (file1 != null && !file1.equals(root)) {
+            sb.insert(0, '.').insert(0, file1.getName());
+            file1 = file1.getParentFile();
         }
         return sb.toString();
     }
@@ -102,7 +102,7 @@ public class APISanitation {
                     if (!(className.toLowerCase().startsWith("test")
                             || className.toLowerCase().endsWith("test"))) {
                         try {
-                            classes.add(Class.forName(clazz));
+                            CLASSES.add(Class.forName(clazz));
                         } catch (ClassNotFoundException e) {
                             LOGGER.log(Level.SEVERE, "Class not found", e);
                         }
@@ -128,7 +128,7 @@ public class APISanitation {
             }
         });
 
-        for (Class<?> clazz : classes) {
+        for (Class<?> clazz : CLASSES) {
             // no enums
             if (!clazz.isEnum()) {
                 for (Field field : clazz.getDeclaredFields()) {
@@ -165,10 +165,10 @@ public class APISanitation {
                 foundGetter |= ("get" + fieldName).equalsIgnoreCase(methodName)
                         | (isBooleanType && ("is" + fieldName).equalsIgnoreCase(methodName))
                         | (isBooleanType && fieldName.startsWith("is")
-                                && (fieldName).equalsIgnoreCase(methodName))
+                                && fieldName.equalsIgnoreCase(methodName))
                         | (isBooleanType && ("has" + fieldName).equalsIgnoreCase(methodName))
                         | (isBooleanType && fieldName.startsWith("has")
-                                && (fieldName).equalsIgnoreCase(methodName))
+                                && fieldName.equalsIgnoreCase(methodName))
                         | (isBooleanType && fieldName.startsWith("use")
                                 && ("isUsing" + fieldName.substring("use".length()))
                                         .equalsIgnoreCase(methodName));
@@ -275,8 +275,9 @@ public class APISanitation {
                 final TypeVariable<Class<List>> typeVariable =
                         (TypeVariable<Class<List>>) actualTypeArgument;
                 for (Type type : typeVariable.getBounds()) {
-                    if (type.getTypeName().equals(boundClass.getTypeName()))
+                    if (type.getTypeName().equals(boundClass.getTypeName())) {
                         return true;
+                    }
                 }
             }
         }
